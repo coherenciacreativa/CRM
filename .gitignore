@@ -1,0 +1,10 @@
+.vercel/
+.vscode/
+.env
+*.log
+node_modules/
+__pycache__/
+*.py[cod]
+mlite_tmp_subs.json
+mlite_groups.json
+mlite_campaigns_sent.json

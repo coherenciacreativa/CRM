@@ -1,0 +1,270 @@
+
+Implementation Guide: Enabling Instagram DM API Access for Tranquileza
+
+Overview
+
+Meta’s Messenger Platform exposes Instagram DMs via the Conversations
+API. To read DMs from followers who are not app testers, an app must
+request Advanced Access for the messaging permissions. Meta’s
+documentation notes that apps with Standard access can only interact
+with users who have a role on the app; advanced access is required when
+interacting with the general publichttps://developers.facebook.com/docs/messenger-platform/instagram/#:~:text=,tienen%20un%20rol%20en%20ellas. The
+Conversations API page reiterates that advanced access is required for
+conversations with people who don’t have a role on your app, Instagram
+account or pagehttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=You%20will%20need%3A. Under Meta’s access‑levels
+policy, the advanced level allows a permission to work for any user,
+whereas the standard level only allows data access for app‑role
+holdershttps://developers.facebook.com/docs/graph-api/overview/access-levels/#:~:text=Hay%20dos%20niveles%20de%20acceso%3A,tengan%20un%20rol%20en%20ella. For Instagram messaging, the app
+also needs the instagram_basic, instagram_manage_messages and
+pages_manage_metadata permissionshttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=You%20will%20need%3A.
+
+Your goal is to use the existing Facebook App “Visualizar bien” (do not
+create a new app) to obtain a page access token for the Facebook Page
+“Tranquileza” (ID 333768529823589) and its linked Instagram Business
+account @alejandro_gomez_bernal so that you can programmatically fetch
+direct messages. The steps below outline configuration, app‑review
+justification, and token generation.
+
+1. Pre‑Checks
+
+1.  Verify Page–IG link – In Facebook Business settings, ensure that the
+    Instagram Business account @alejandro_gomez_bernal is linked to the
+    Facebook Page “Tranquileza”. This is mandatory because the current
+    Conversations API uses the page ID to fetch Instagram
+    DMshttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=You%20will%20need%3A.
+2.  Confirm account type – The Instagram account must be a Business or
+    Creator account. In Instagram settings under Connected Tools →
+    Message Control, ensure that access for connected tools is enabled.
+    Without this, the API cannot read DMs.
+3.  Existing App products – Confirm that the “Visualizar bien” app has
+    the products Instagram Graph API and Facebook Login added. These
+    products are needed to request Instagram permissions and generate
+    user tokens.
+
+2. App Dashboard Configuration
+
+1.  Basic settings – Add any required app domain(s) if your CRM runs on
+    a web domain. Configure a Privacy Policy URL, Terms of Service URL,
+    and Data Deletion Instructions URL. These pages should be publicly
+    accessible over HTTPS and describe what data you collect (message
+    content, email addresses, timestamps), the purpose (newsletter
+    enrolment, CRM logging), retention policy and a contact email for
+    deletion requests. A simple Notion/Google Docs page or a static site
+    is acceptable.
+2.  App Mode – Set the app to Live. Only apps in live mode can access
+    data from users who are not testers.
+3.  Business verification – Ensure that the Facebook Business Manager
+    account Coherencia Creativa is verified. Meta’s access‑level policy
+    requires a verified business to obtain advanced
+    permissionshttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=You%20will%20need%3A.
+
+3. Request Advanced Access
+
+Navigate to App Review → Permissions and Features in the
+“Visualizar bien” app dashboard. For each permission below, click
+Request Advanced Access and provide the justification described. You
+must also ensure that the standard access permissions are enabled.
+
+  ----------------------------------------------------------------------------------------
+  Permission                  Level                   Why?
+  --------------------------- ----------------------- ------------------------------------
+  instagram_manage_messages   Advanced                This permission allows reading and
+                                                      responding to Instagram DMs. Without
+                                                      advanced access, the API only
+                                                      returns messages from people who
+                                                      have a role on the
+                                                      apphttps://developers.facebook.com/docs/messenger-platform/instagram/#:~:text=,tienen%20un%20rol%20en%20ellas.
+
+  pages_messaging             Advanced                Required for Messenger Platform to
+                                                      manage conversations via the page.
+                                                      Advanced access is needed for
+                                                      messages from non‑role
+                                                      usershttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=You%20will%20need%3A.
+
+  pages_manage_metadata       Standard                Required to subscribe to message
+                                                      webhooks and to generate page access
+                                                      tokenshttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=,permissions.
+
+  pages_read_engagement       Standard                Needed to read engagements
+                                                      (conversations) on the page.
+
+  pages_show_list             Standard                Required when fetching page tokens
+                                                      and page lists.
+
+  instagram_basic             Standard                Needed to retrieve basic info on the
+                                                      Instagram account (automatically
+                                                      granted when requesting
+                                                      instagram_manage_messages).
+  ----------------------------------------------------------------------------------------
+
+3.1 Justification text
+
+For the advanced permissions, use a clear and concise justification. The
+following template addresses Meta’s allowed usage policies:
+
+  Use case: We run a CRM that logs Instagram direct messages where
+  followers voluntarily share their email addresses to receive a
+  newsletter and class updates. We read messages only to extract emails
+  with explicit consent and maintain a contact log. We do not send
+  unsolicited messages or automate spamming. All data is stored securely
+  and can be removed at the user’s request.
+
+  Functionality shown to reviewers: 1. Demonstrate that the Tranquileza
+  page is linked to @alejandro_gomez_bernal
+  (IG User ID 17841400774959931), using the Graph API call
+  /333768529823589?fields=instagram_business_account. 2. Use Graph API
+  Explorer to list conversations via
+  /333768529823589/conversations?platform=instagram&limit=10. 3.
+  Retrieve messages within one conversation using
+  /CONVERSATION-ID/messages?limit=10&fields=id,from,to,created_time,messagehttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=To%20get%20a%20list%20of,field.
+  4. Show a simple script or CRM interface that extracts an email from a
+  message and stores it in our database.
+
+  Data handling: We store message content and extracted emails in our
+  CRM solely to enrol interested users in a newsletter and to log
+  interactions. Users can request deletion via the policy page.
+
+3.2 Reviewer instructions
+
+Paste these notes into the Notes to Reviewers field when requesting
+permissions:
+
+    Page: Tranquileza (ID: 333768529823589), IG: @alejandro_gomez_bernal (IG_USER_ID: 17841400774959931).
+    Steps (using Graph API Explorer):
+    1. Select App “Visualizar bien” and API v23+.
+    2. Click “Get User Access Token” and select only the Page “Tranquileza”.  Include scopes: instagram_manage_messages, pages_messaging, pages_manage_metadata, pages_read_engagement, pages_show_list.
+    3. Generate the user token and fetch the Page token via:
+       GET /333768529823589?fields=access_token
+    4. Verify the Instagram business account:
+       GET /333768529823589?fields=instagram_business_account
+    5. List conversations (platform=instagram):
+       GET /333768529823589/conversations?platform=instagram&limit=10
+    6. For any returned conversation ID:
+       GET /{conversation-id}/messages?limit=10&fields=id,from,to,created_time,message
+    Expected result: The API returns Instagram DM conversations and messages for the page.
+
+4. Token Generation and Stable Access
+
+4.1 Testing with Graph API Explorer
+
+During development or review, you can use Graph API Explorer to generate
+a short‑lived user access token. Select the Visualizar bien app, choose
+API version (v23+), and check the required permissions. Then exchange
+the user token for a page access token:
+
+    # Replace {user-token} with the user access token and {page-id} with 333768529823589.
+    curl -G -d "access_token={user-token}" \
+         "https://graph.facebook.com/v23.0/{page-id}?fields=access_token"
+
+This returns JSON with the page access token. Use the page token to call
+the Conversations API:
+
+    curl -G -d "platform=instagram" -d "access_token={page-token}" \
+         "https://graph.facebook.com/v23.0/{page-id}/conversations?limit=10"
+
+4.2 Production token via Business Manager (recommended)
+
+Short‑lived user tokens expire quickly. After approval, generate a
+stable system‑user token in Business Manager:
+
+1.  In Business Settings, under System Users, create a new system user
+    for your business (e.g., “Tranquileza Bot”).
+2.  Assign the “Visualizar bien” app to this system user.
+3.  Assign the Tranquileza page (and the Instagram asset if necessary).
+4.  Generate a permanent system user access token and select the scopes:
+    instagram_manage_messages, pages_messaging, pages_manage_metadata,
+    pages_read_engagement, pages_show_list.
+5.  Store this token securely (e.g., in your CLI Keychain under the
+    account “tranquileza”).
+
+4.3 Verification
+
+Use the stable token to verify the setup:
+
+    # Confirm IG business account mapping
+    curl -G -d "fields=instagram_business_account" -d "access_token={page-token}" \
+         "https://graph.facebook.com/v23.0/333768529823589"
+
+    # List IG conversations
+    curl -G -d "platform=instagram" -d "limit=10" -d "access_token={page-token}" \
+         "https://graph.facebook.com/v23.0/333768529823589/conversations"
+
+    # Fetch messages from a conversation
+    curl -G -d "fields=id,from,to,created_time,message" -d "limit=10" -d "access_token={page-token}" \
+         "https://graph.facebook.com/v23.0/{conversation-id}/messages"
+
+The JSON response will include conversation IDs and message objects.
+Meta’s Conversations API returns up to the 20 most recent messages per
+conversationhttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=Default%20fields%20are%20,created_time.
+
+5. Storing Messages in Supabase
+
+Once you have a working page token, integrate it into your CLI or
+backend. A simple Python example using requests to fetch messages and
+insert them into a database might look like:
+
+    import requests
+
+    API_VERSION = "v23.0"
+    PAGE_ID = "333768529823589"
+    PAGE_TOKEN = "your_page_access_token"  # replace with system user token
+
+    # 1. Get IG conversations
+    def list_conversations(page_id=PAGE_ID, page_token=PAGE_TOKEN, limit=10):
+        url = f"https://graph.facebook.com/{API_VERSION}/{page_id}/conversations"
+        params = {"platform": "instagram", "limit": limit, "access_token": page_token}
+        return requests.get(url, params=params).json().get("data", [])
+
+    # 2. Fetch messages in a conversation
+    def list_messages(conversation_id, page_token=PAGE_TOKEN, limit=10):
+        url = f"https://graph.facebook.com/{API_VERSION}/{conversation_id}/messages"
+        params = {
+            "fields": "id,from,to,created_time,message",
+            "limit": limit,
+            "access_token": page_token,
+        }
+        return requests.get(url, params=params).json().get("data", [])
+
+    # Example usage:
+    conversations = list_conversations()
+    for conv in conversations:
+        msgs = list_messages(conv["id"])
+        for msg in msgs:
+            # Extract email addresses with regex or your custom parser
+            # Insert into Supabase (not shown)
+            print(msg)
+
+This script lists Instagram conversations and messages using your page
+token. Integrate similar logic into your supa.py CLI (e.g., by calling
+python supa.py ingest-ig-dms --days 30).
+
+6. Compliance & Best Practices
+
+-   Privacy notices – Maintain a clear privacy policy describing the
+    data collected (message content, email addresses and timestamps) and
+    how it is used. Provide an email address for deletion requests.
+    Include a similar statement in your terms of service.
+-   Data minimization – Only process messages to extract emails and log
+    interactions. Avoid storing unnecessary personal information.
+-   User consent – Only enrol users in newsletters when they explicitly
+    provide their email via DM. Do not send unsolicited messages or bulk
+    marketing.
+-   Security – Store tokens and message content securely (e.g., in
+    environment variables or secret managers). Use HTTPS for webhooks
+    and data transmission.
+-   Annual Data Use Check – Meta requires apps with advanced access to
+    complete an annual data usage checkhttps://developers.facebook.com/docs/graph-api/overview/access-levels/#:~:text=Comprobaci%C3%B3n%20de%20uso%20de%20datos.
+    Plan to complete this in your developer dashboard.
+
+7. Summary
+
+By following this guide, you will configure the existing
+“Visualizar bien” app to access Instagram DMs for the “Tranquileza”
+page. Key steps include linking the page to your IG professional
+account, setting up privacy documentation, requesting advanced access
+for instagram_manage_messages and pages_messaging, providing clear
+justification and reviewer instructions, generating a long‑lived system
+user token, and verifying access using the Conversations API. Remember
+that advanced access is necessary to read messages from followers who
+are not
+testershttps://developers.facebook.com/docs/messenger-platform/instagram/#:~:text=,tienen%20un%20rol%20en%20ellashttps://developers.facebook.com/docs/messenger-platform/conversations/#:~:text=You%20will%20need%3A.

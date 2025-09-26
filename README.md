@@ -1,0 +1,121 @@
+MailerLite CLI for CRM
+======================
+
+This repo provides a minimal Python CLI to interact with the MailerLite API and store your API key securely in the macOS Keychain. It is designed to be run from VS Code/terminal so you can pull/push data to MailerLite without retyping credentials.
+
+Quick Start
+-----------
+
+1) Ensure Python 3.10+ is available.
+
+2) Set your API key (stored in Keychain):
+
+   - Prompted entry:
+     `python mlite.py auth set`
+
+   - Or provide inline:
+     `python mlite.py auth set --key YOUR_API_KEY`
+
+3) Verify:
+   `python mlite.py auth show`
+
+4) Call endpoints:
+
+   - Account info: `python mlite.py account get`
+   - List subscribers: `python mlite.py subscribers list --limit 25 --page 1`
+   - Get one subscriber: `python mlite.py subscribers get SUBSCRIBER_ID`
+   - Create a subscriber: `python mlite.py subscribers create --email test@example.com --name Testy --fields '{"country":"US"}'`
+
+People (Power Helpers)
+----------------------
+
+- Find by tokens/email:
+  `python mlite.py people find --tokens "natalia cardenas bedout" --use-search --show-groups`
+
+- Show by id/email:
+  `python mlite.py people show --email someone@example.com`
+
+- Update fields:
+  `python mlite.py people set-fields --email someone@example.com --fields '{"phone":"+57...","city":"Cali"}'`
+
+- Add/remove group by name:
+  `python mlite.py people group-add --email someone@example.com --group "Group Name"`
+  `python mlite.py people group-remove --email someone@example.com --group "Group Name"`
+
+Notes
+-----
+
+- Credentials are stored under a generic password item in the macOS Keychain using the `security` command with service `CRM-MailerLite` and account `default`.
+- If the Keychain is unavailable, the CLI falls back to the `MAILERLITE_API_KEY` environment variable for the current process.
+- Base URL: `https://connect.mailerlite.com/api`. Authorization: `Authorization: Bearer <API_KEY>`.
+- No external dependencies are required (uses Python stdlib `urllib`).
+
+Extending
+--------
+
+Endpoints are wrapped in `mailerlite_cli/client.py`. Add new commands in `mailerlite_cli/cli.py` following the existing patterns.
+
+Instagram Integration
+---------------------
+
+The repo also includes a minimal Instagram Graph API CLI with Keychain and `.env` support.
+
+- Entry: `ig.py`
+- Code: `instagram_cli/*`
+
+Tokens & .env
+- You can store your access token either in macOS Keychain or in `.env`.
+- Supported keys in `.env`: `IG_ACCESS_TOKEN`, `IG_LONG_LIVED_TOKEN`, `FB_USER_TOKEN`, `IG_APP_ID`, `IG_APP_SECRET`.
+ - To get started, copy `.env.example` to `.env` and fill the placeholders: `cp .env.example .env`
+
+Auth commands
+- Store token in Keychain: `python ig.py auth set --token YOUR_TOKEN`
+- Store token in .env: `python ig.py auth set --token YOUR_TOKEN --store env`
+- Show masked: `python ig.py auth show`
+- Exchange short→long (Facebook):
+  `python ig.py auth exchange --mode facebook --app-id $IG_APP_ID --app-secret $IG_APP_SECRET --token SHORT --save`
+- Exchange short→long (Basic Display):
+  `python ig.py auth exchange --mode basic --app-secret $IG_APP_SECRET --token SHORT --save`
+- Debug token: `python ig.py auth debug --app-id $IG_APP_ID --app-secret $IG_APP_SECRET`
+
+Pages and IG user
+- List pages: `python ig.py pages list [--kc-account your_account | --token YOUR_TOKEN]`
+- Get IG user id for a page: `python ig.py pages ig PAGE_ID [--kc-account ... | --token ...]`
+
+Instagram user/media
+- User info: `python ig.py ig user IG_USER_ID [--kc-account ... | --token ...]`
+- List media: `python ig.py ig media IG_USER_ID --limit 25 [--kc-account ... | --token ...]`
+- Comments for media: `python ig.py ig comments MEDIA_ID --limit 25 [--kc-account ... | --token ...]`
+
+Notes
+- For Business/Creator accounts, use the Graph API (via Facebook app) and connect your IG account to a Facebook Page.
+- For personal accounts and read-only media, the Basic Display API uses `graph.instagram.com` and its own token exchange.
+- This CLI assumes you have a valid access token with sufficient permissions. Provide credentials and tokens in Keychain or `.env` as outlined above.
+
+ManyChat Webhook (Vercel)
+------------------------
+
+- Endpoint: `https://crm-manychat-webhook.vercel.app/api/manychat-webhook` (POST only, JSON body from ManyChat).
+- Security: include header `x-webhook-secret` with the value stored in the `MANYCHAT_WEBHOOK_SECRET` env var (configured in Vercel and `.env`).
+- Behaviour: upserts the contact into Supabase (`contacts` table) and records the payload in `interactions`; if Supabase is unreachable the function logs the failure and returns a 5xx so ManyChat retries.
+- Deployment: Vercel project `crm-manychat-webhook`. Manage env vars via `vercel env add <KEY> production|preview` and redeploy with `npx vercel deploy --prod --token $VERCEL_ACCESS_TOKEN`.
+- Dependencies: requires `SUPABASE_URL_CRM` and `SUPABASE_SERVICE_ROLE_CRM`; make sure the Supabase URL resolves publicly before pointing ManyChat at the webhook.
+- Quick test:
+  ```bash
+  curl -X POST \
+    -H 'Content-Type: application/json' \
+    -H 'x-webhook-secret: $MANYCHAT_WEBHOOK_SECRET' \
+    -d '{"event":"ping","contact":{"id":"test","emails":["test@example.com"]}}' \
+    https://crm-manychat-webhook.vercel.app/api/manychat-webhook
+  ```
+
+Workflow Overview
+-----------------
+
+- **Contacts**: `contacts` rows are keyed by `manychat_contact_id`; the Vercel webhook upserts a record for every inbound ManyChat event, so duplicates just update the existing contact and timestamps.
+- **Interactions log**: every webhook call creates an entry in `interactions` with `contact_id`, `platform='instagram'`, and `external_id` of the form `manychat:<contact_id>:<timestamp>` so you can easily query a person’s full DM history.
+- **Querying history**:
+  - Supabase REST: `curl -H "apikey: $SUPABASE_SERVICE_ROLE_CRM" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_CRM" "$SUPABASE_URL_CRM/rest/v1/interactions?select=occurred_at,content,meta&contact_id=eq.CONTACT_UUID&order=occurred_at.desc"`
+  - SQL editor: `select i.occurred_at, i.content from interactions i join contacts c on c.id = i.contact_id where c.manychat_contact_id = '563924665' order by occurred_at desc;`
+- **Triage tip**: create a Supabase view joining `contacts` + latest interaction for fast browsing in the dashboard.
+
