@@ -1,5 +1,216 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+const MAILERLITE_API_KEY = process.env.MAILERLITE_API_KEY ?? process.env.ML_API_KEY;
+const MAILERLITE_GROUP_IDS = (process.env.MAILERLITE_GROUP_IDS ?? process.env.ML_GROUPS ?? '')
+  .split(',')
+  .map((value) => (typeof value === 'string' ? value.trim() : ''))
+  .filter(Boolean);
+const MAILERLITE_DEFAULT_NOTES =
+  process.env.MAILERLITE_DEFAULT_NOTES ??
+  process.env.DEFAULT_NOTES ??
+  'Lead captured via Instagram DM';
+const MAILERLITE_ENDPOINT = 'https://connect.mailerlite.com/api/subscribers';
+const MAX_MAILERLITE_ATTEMPTS = 3;
+const ALERT_WEBHOOK_URL = process.env.ALERT_WEBHOOK_URL ?? process.env.ALERT_SLACK_WEBHOOK;
+const ALERT_WEBHOOK_CHANNEL = process.env.ALERT_WEBHOOK_CHANNEL ?? 'crm-alerts';
+
+type ParsedLeadDetails = {
+  email?: string;
+  name?: string;
+  country?: string;
+  city?: string;
+  phone?: string;
+  message?: string;
+  rawText?: string;
+  confidence: number;
+  matched: string[];
+  sources: Partial<Record<keyof ParsedLeadDetails, string>>;
+  sourceRanks: Partial<Record<keyof ParsedLeadDetails, number>>;
+};
+
+const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+const phoneRegex = /\+?\d[\d .()/-]{6,}\d/;
+
+const normalize = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const normalizeLabel = (value: string): string =>
+  normalize(value).replace(/[^a-z0-9]+/g, ' ').trim();
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const toTitleCase = (value: string): string =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+
+const humanizeIdentifier = (value: string | undefined): string | undefined => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const normalized = trimmed.replace(/^[^a-z0-9]+/i, '').replace(/[^a-z0-9]+$/i, '');
+  if (!normalized) return undefined;
+  const tokens = normalized.split(/[_.\-\s]+/).filter(Boolean);
+  if (!tokens.length) return undefined;
+  return tokens.map((token) => toTitleCase(token)).join(' ');
+};
+
+const deriveNameFromEmail = (email: string | undefined): string | undefined => {
+  if (!email) return undefined;
+  const trimmed = email.trim();
+  if (!trimmed) return undefined;
+  const [local] = trimmed.split('@');
+  if (!local) return undefined;
+  const tokens = local.split(/[._+\-]+/).filter(Boolean);
+  if (tokens.length < 1) return undefined;
+  const meaningful = tokens.filter((token) => /[a-zA-Z]/.test(token));
+  if (!meaningful.length) return undefined;
+  if (meaningful.length === 1 && meaningful[0].length < 3) return undefined;
+  const candidate = meaningful.map((token) => toTitleCase(token)).join(' ');
+  return candidate || undefined;
+};
+
+const normalizeCountryKey = (value: string): string =>
+  normalize(value)
+    .replace(/[^a-z\s]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+type CountryAliasConfig = { canonical: string; aliases?: string[] };
+
+const COUNTRY_ALIASES: CountryAliasConfig[] = [
+  { canonical: 'Argentina' },
+  { canonical: 'Bolivia' },
+  { canonical: 'Brasil', aliases: ['Brazil'] },
+  { canonical: 'Chile' },
+  { canonical: 'Colombia' },
+  { canonical: 'Costa Rica' },
+  { canonical: 'Cuba' },
+  { canonical: 'Ecuador' },
+  { canonical: 'El Salvador', aliases: ['Salvador'] },
+  { canonical: 'España', aliases: ['Spain'] },
+  { canonical: 'Estados Unidos', aliases: ['United States', 'USA', 'EEUU', 'U.S.A.', 'Usa'] },
+  { canonical: 'Guatemala' },
+  { canonical: 'Honduras' },
+  { canonical: 'México', aliases: ['Mexico'] },
+  { canonical: 'Nicaragua' },
+  { canonical: 'Panamá', aliases: ['Panama'] },
+  { canonical: 'Paraguay' },
+  { canonical: 'Perú', aliases: ['Peru'] },
+  { canonical: 'Puerto Rico' },
+  { canonical: 'República Dominicana', aliases: ['Republica Dominicana'] },
+  { canonical: 'Uruguay' },
+  { canonical: 'Venezuela' },
+  { canonical: 'Canadá', aliases: ['Canada'] },
+  { canonical: 'Italia', aliases: ['Italy'] },
+  { canonical: 'Francia', aliases: ['France'] },
+  { canonical: 'Alemania', aliases: ['Germany'] },
+  { canonical: 'Portugal' },
+  { canonical: 'Reino Unido', aliases: ['United Kingdom', 'Inglaterra', 'England'] },
+  { canonical: 'Suiza', aliases: ['Switzerland'] },
+  { canonical: 'Suecia', aliases: ['Sweden'] },
+  { canonical: 'Países Bajos', aliases: ['Holanda', 'Netherlands'] },
+  { canonical: 'Australia' },
+  { canonical: 'Nueva Zelanda', aliases: ['New Zealand'] },
+  { canonical: 'Japón', aliases: ['Japan'] },
+  { canonical: 'China' },
+  { canonical: 'India' },
+  { canonical: 'Filipinas', aliases: ['Philippines'] },
+  { canonical: 'Corea del Sur', aliases: ['South Korea'] },
+];
+
+const COUNTRY_MAP = (() => {
+  const map = new Map<string, string>();
+  for (const entry of COUNTRY_ALIASES) {
+    const canonicalKey = normalizeCountryKey(entry.canonical);
+    if (canonicalKey) {
+      map.set(canonicalKey, entry.canonical);
+    }
+    for (const alias of entry.aliases ?? []) {
+      const aliasKey = normalizeCountryKey(alias);
+      if (aliasKey) {
+        map.set(aliasKey, entry.canonical);
+      }
+    }
+  }
+  return map;
+})();
+
+const matchCountryName = (value: string | undefined): string | undefined => {
+  if (!value) return undefined;
+  const normalized = normalizeCountryKey(value);
+  if (!normalized) return undefined;
+  return COUNTRY_MAP.get(normalized);
+};
+
+const parseLocationComponents = (raw: string): { city?: string; country?: string } => {
+  if (!raw) return {};
+  const cleaned = raw.replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').replace(/^[,;\s]+|[,;\s]+$/g, '').trim();
+  if (!cleaned) return {};
+
+  const parts = cleaned.split(/[,;]+/).map((part) => part.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    const cityCandidate = parts[0];
+    const countryAggregate = parts.slice(1).join(' ');
+    const matchedCountry = matchCountryName(countryAggregate) ?? matchCountryName(parts[parts.length - 1]);
+    return {
+      city: cityCandidate ? toTitleCase(cityCandidate) : undefined,
+      country: matchedCountry ?? (countryAggregate ? toTitleCase(countryAggregate) : undefined),
+    };
+  }
+
+  const tokens = cleaned.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return {};
+
+  for (let start = tokens.length - 1; start >= 0; start -= 1) {
+    const candidate = tokens.slice(start).join(' ');
+    const matchedCountry = matchCountryName(candidate);
+    if (matchedCountry) {
+      const cityTokens = tokens.slice(0, start);
+      return {
+        city: cityTokens.length ? toTitleCase(cityTokens.join(' ')) : undefined,
+        country: matchedCountry,
+      };
+    }
+  }
+
+  return { city: toTitleCase(cleaned) };
+};
+
+const postAlert = async (payload: Record<string, unknown>) => {
+  if (!ALERT_WEBHOOK_URL) return;
+  try {
+    await fetch(ALERT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: ALERT_WEBHOOK_CHANNEL,
+        ...payload,
+      }),
+    });
+  } catch (error) {
+    console.error('Alert webhook failed', error);
+  }
+};
+
+const formatAlertPayload = (context: {
+  title: string;
+  severity: 'info' | 'warn' | 'error';
+  message: string;
+  meta?: Record<string, unknown>;
+}) => ({
+  severity: context.severity,
+  title: context.title,
+  message: context.message,
+  meta: context.meta,
+  timestamp: new Date().toISOString(),
+});
+
 type ManyChatCustomField = Record<string, unknown> | Array<{
   id?: string | number;
   name?: string;
@@ -44,7 +255,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_CRM;
 
 const jsonHeaders = { 'Content-Type': 'application/json' } as const;
 
-const lower = (value: unknown): string => (typeof value === 'string' ? value.toLowerCase() : '');
+const lower = (value: unknown): string => (typeof value === 'string' ? normalize(value) : '');
 
 const safetyString = (value: unknown): string | undefined => {
   if (value == null) return undefined;
@@ -134,19 +345,23 @@ const pickFirst = <T>(value: unknown): T | undefined => {
 
 const findCustomField = (fields: ManyChatCustomField | undefined, candidates: string[]): string | undefined => {
   if (!fields) return undefined;
+  const normalizedCandidates = candidates.map((candidate) => normalizeLabel(candidate));
 
   if (Array.isArray(fields)) {
-    for (const name of candidates) {
-      const match = fields.find((field) => lower(field?.name ?? field?.title) === name);
-      if (match?.value != null && match.value !== '') {
-        return safetyString(match.value);
-      }
+    for (const field of fields) {
+      const label = normalizeLabel(safetyString(field?.name) ?? safetyString(field?.title) ?? '');
+      if (!label) continue;
+      if (!normalizedCandidates.includes(label)) continue;
+      const value = safetyString(field?.value);
+      if (value) return value;
     }
     return undefined;
   }
 
-  for (const name of candidates) {
-    const value = (fields as Record<string, unknown>)[name];
+  const record = fields as Record<string, unknown>;
+  for (const [key, value] of Object.entries(record)) {
+    const label = normalizeLabel(key);
+    if (!label || !normalizedCandidates.includes(label)) continue;
     const str = safetyString(value);
     if (str) return str;
   }
@@ -204,6 +419,17 @@ const extractContactRecord = (payload: ManyChatPayload) => {
     'ig_username',
   ]) ?? fallbackInstagramUsername;
   const customIgId = findCustomField(contact.custom_fields, ['instagram_id', 'ig_id']) ?? fallbackInstagramId;
+  const customCountry = findCustomField(contact.custom_fields, [
+    'country',
+    'pais',
+    'país',
+  ]);
+  const customCity = findCustomField(contact.custom_fields, [
+    'city',
+    'ciudad',
+    'ciudad_residencia',
+    'city_name',
+  ]);
 
   const rawEmail = safetyString(contact.email) ?? safetyString(contact.emails && pickFirst(contact.emails));
   const rawPhone = safetyString(contact.phone) ?? safetyString(contact.phones && pickFirst(contact.phones));
@@ -224,6 +450,8 @@ const extractContactRecord = (payload: ManyChatPayload) => {
     last_name: safetyString(contact.last_name),
     email,
     phone,
+    country: safetyString(customCountry) ?? fallbackString(payload, 'country'),
+    city: safetyString(customCity) ?? fallbackString(payload, 'city'),
     instagram_username: safetyString(customHandle) ?? instagramUsername,
     ig_user_id: safetyString(customIgId) ?? instagramId,
     tags: mapTags(contact.tags),
@@ -235,6 +463,216 @@ const extractContactRecord = (payload: ManyChatPayload) => {
     record,
     contact,
   };
+};
+
+const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): ParsedLeadDetails => {
+  const details: ParsedLeadDetails = {
+    confidence: 0,
+    matched: [],
+    sources: {},
+    sourceRanks: {},
+  };
+
+  const { username: instagramUsernameRaw } = extractInstagram(contact);
+  const instagramUsername = safetyString(instagramUsernameRaw);
+
+  const sourcePriority = (origin: string): number => {
+    if (origin.startsWith('text:heuristic')) return 400;
+    if (origin.startsWith('text')) return 300;
+    if (origin === 'custom_field') return 200;
+    if (origin === 'contact') return 100;
+    if (origin === 'instagram_username') return 90;
+    if (origin === 'email_local') return 80;
+    return 50;
+  };
+
+  const capture = (field: keyof ParsedLeadDetails, value: string | undefined, origin: string) => {
+    const safe = safetyString(value);
+    if (!safe) return;
+    const rank = sourcePriority(origin);
+    const currentRank = (details.sourceRanks[field] ?? Number.NEGATIVE_INFINITY) as number;
+
+    if (field === 'message') {
+      if (rank < currentRank) return;
+      if (rank === currentRank && details.message && safe.length <= details.message.length) return;
+      details.message = safe;
+      details.sourceRanks[field] = rank;
+      details.sources[field] = origin;
+      details.matched.push(origin);
+      return;
+    }
+
+    if (rank < currentRank) return;
+    if (rank === currentRank && details[field]) return;
+
+    details[field] = safe;
+    details.sourceRanks[field] = rank;
+    details.sources[field] = origin;
+    details.matched.push(origin);
+  };
+
+  const applyLocationCandidate = (raw: string | undefined, origin: string) => {
+    if (!raw) return;
+    const parsed = parseLocationComponents(raw);
+    if (parsed.city) capture('city', parsed.city, origin);
+    if (parsed.country) capture('country', parsed.country, origin);
+  };
+
+  const contactEmail = safetyString(contact?.email) ?? safetyString(contact?.emails && pickFirst(contact.emails));
+  capture('email', contactEmail, 'contact');
+
+  const assembledName =
+    safetyString(contact?.name) ??
+    [safetyString(contact?.first_name), safetyString(contact?.last_name)].filter(Boolean).join(' ').trim();
+  const normalizedContactName = humanizeIdentifier(assembledName) ?? assembledName;
+  if (normalizedContactName) {
+    capture('name', normalizedContactName, 'contact');
+  }
+  capture('phone', safetyString(contact?.phone) ?? safetyString(contact?.phones && pickFirst(contact.phones)), 'contact');
+
+  const fieldCountry = findCustomField(contact?.custom_fields, ['country', 'pais', 'país']);
+  const fieldCity = findCustomField(contact?.custom_fields, ['city', 'ciudad', 'city_name', 'ciudad_residencia']);
+  capture('country', fieldCountry, 'custom_field');
+  capture('city', fieldCity, 'custom_field');
+
+  const textCandidates = new Set<string>();
+  const pushText = (value?: string) => {
+    const safe = safetyString(value);
+    if (safe) textCandidates.add(safe);
+  };
+
+  pushText(payload.message?.text);
+  pushText(fallbackString(payload, 'last_text_input'));
+  pushText(fallbackString(payload, 'message_text'));
+  pushText(fallbackString(payload, 'text'));
+
+  if (payload.data && typeof payload.data === 'object') {
+    const dataObject = payload.data as Record<string, unknown>;
+    for (const value of Object.values(dataObject)) {
+      if (typeof value === 'string') {
+        pushText(value);
+      }
+    }
+  }
+
+  const text = Array.from(textCandidates).join('\n').trim();
+  if (text) {
+    details.rawText = text;
+
+    const emailMatch = text.match(emailRegex);
+    capture('email', emailMatch ? emailMatch[0] : undefined, 'text');
+
+    const phoneMatch = text.match(phoneRegex);
+    capture('phone', phoneMatch ? phoneMatch[0] : undefined, 'text');
+
+    const messageHeuristics: Array<{ regex: RegExp; field: keyof ParsedLeadDetails; post?: (match: RegExpMatchArray) => string | undefined }>
+      = [
+        {
+          regex: /(?:mi\s+nombre\s+es|me\s+llamo|soy)\s+([a-záéíóúñü' ]{2,80})/i,
+          field: 'name',
+          post: (match) => {
+            const candidate = match[1]?.replace(/[.,;].*$/, '').trim();
+            return candidate ? toTitleCase(candidate) : undefined;
+          },
+        },
+        {
+          regex: /(?:aqui|aquí)?\s*(?:te\s+escribe|te\s+habla|te\s+saluda|quien\s+te\s+escribe\s+es|quien\s+te\s+saluda\s+es|este\s+es)\s+([a-záéíóúñü' ]{2,80})/i,
+          field: 'name',
+          post: (match) => {
+            const candidate = match[1]?.replace(/[.,;].*$/, '').trim();
+            return candidate ? toTitleCase(candidate) : undefined;
+          },
+        },
+      ];
+
+    for (const heuristic of messageHeuristics) {
+      const found = text.match(heuristic.regex);
+      if (!found) continue;
+      const value = heuristic.post ? heuristic.post(found) : safetyString(found[1]);
+      if (value) capture(heuristic.field, value, 'text:heuristic');
+    }
+
+  const locationMatch = text.match(
+    /(?:vivo|resido|estoy|radico|me\s+encuentro)\s+(?:actualmente\s+)?(?:en|en\s+la\s+ciudad\s+de)\s+([a-záéíóúñü' ,]+?)(?:[.!?]|$)/i,
+  );
+  if (locationMatch) {
+    applyLocationCandidate(locationMatch[1], 'text:heuristic');
+  }
+
+  const generalLocationMatch = text.match(
+    /(?:de|desde|soy\s+de|somos\s+de|procedo\s+de|vengo\s+de|originario\s+de|originaria\s+de|nac[ií]\s+en)\s+([a-záéíóúñü' ,]+?)(?:[.!?]|$)/i,
+  );
+  if (generalLocationMatch) {
+    applyLocationCandidate(generalLocationMatch[1], 'text:heuristic');
+  }
+
+    const lineMatches = text
+      .split(/\r?\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const labelMapping: Array<{ labels: string[]; field: keyof ParsedLeadDetails }> = [
+      { labels: ['nombre', 'name', 'full name', 'nombre completo'], field: 'name' },
+      { labels: ['correo', 'email', 'correo electronico', 'correo electrónico', 'mail'], field: 'email' },
+      { labels: ['pais', 'país', 'country'], field: 'country' },
+      { labels: ['ciudad', 'city'], field: 'city' },
+      { labels: ['mensaje', 'message', 'comentario', 'message body'], field: 'message' },
+      { labels: ['telefono', 'teléfono', 'phone', 'whatsapp'], field: 'phone' },
+    ];
+
+    const labelLookup = new Map<string, keyof ParsedLeadDetails>();
+    for (const { labels, field } of labelMapping) {
+      for (const label of labels) {
+        labelLookup.set(normalizeLabel(label), field);
+      }
+    }
+
+    for (let index = 0; index < lineMatches.length; index += 1) {
+      const line = lineMatches[index];
+      const [rawLabel, ...restPieces] = line.split(/[:\-–]/);
+      if (!rawLabel || !restPieces.length) continue;
+      const labelKey = normalizeLabel(rawLabel);
+      const field = labelLookup.get(labelKey);
+      if (!field) continue;
+      const remainder = restPieces.join(':').trim();
+      if (field === 'message') {
+        const collected = [remainder];
+        let lookahead = index + 1;
+        while (lookahead < lineMatches.length) {
+          const nextLine = lineMatches[lookahead];
+          const [nextLabel] = nextLine.split(/[:\-–]/);
+          const normalizedNext = nextLabel ? normalizeLabel(nextLabel) : '';
+          if (normalizedNext && labelLookup.has(normalizedNext)) {
+            break;
+          }
+          collected.push(nextLine);
+          lookahead += 1;
+        }
+        capture('message', collected.join(' ').trim(), 'text');
+        continue;
+      }
+      capture(field, remainder, 'text');
+    }
+
+    if (!details.message) {
+      capture('message', text, 'text:fallback');
+    }
+  }
+
+  if (!details.name) {
+    capture('name', humanizeIdentifier(instagramUsername), 'instagram_username');
+  }
+  if (!details.name) {
+    const emailCandidate = details.email ?? contactEmail ?? fallbackString(payload, 'contact_email');
+    capture('name', deriveNameFromEmail(emailCandidate), 'email_local');
+  }
+
+  const focusFields: Array<keyof ParsedLeadDetails> = ['email', 'name', 'country', 'city', 'message'];
+  const filled = focusFields.reduce((count, field) => (details[field] ? count + 1 : count), 0);
+  const bonus = details.phone ? 0.1 : 0;
+  details.confidence = Math.min(1, Number((filled / focusFields.length + bonus).toFixed(2)));
+
+  return details;
 };
 
 const insertContact = async (record: Record<string, unknown>) => {
@@ -272,6 +710,7 @@ const insertInteraction = async (
   payload: ManyChatPayload,
   platformHint: 'instagram' | 'other',
   manychatContactId?: string,
+  parsed?: ParsedLeadDetails,
 ) => {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     throw new Error('Missing Supabase credentials');
@@ -287,14 +726,18 @@ const insertInteraction = async (
   if (payload.event) externalIdParts.push(`event:${payload.event}`);
   externalIdParts.push(resolvedTimestamp);
 
+  const resolvedContent = safetyString(parsed?.message) ?? safetyString(payload.message?.text) ?? fallbackString(payload, 'last_text_input');
+
   const record = {
     contact_id: contactId,
     platform: platformHint,
     direction: 'inbound',
     type: payload.event ? `manychat_${payload.event}` : 'manychat_webhook',
     external_id: externalIdParts.join(':'),
-    content: safetyString(payload.message?.text) ?? fallbackString(payload, 'last_text_input'),
-    meta: payload,
+    content: resolvedContent,
+    extracted_email: parsed?.email,
+    extraction_confidence: parsed?.confidence,
+    meta: { ...payload, parsed_lead: parsed },
     occurred_at: resolvedTimestamp,
   };
 
@@ -312,6 +755,129 @@ const insertInteraction = async (
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Supabase interactions insert failed: ${text || response.status}`);
+  }
+};
+
+type MailerLiteSyncInput = {
+  email?: string;
+  name?: string;
+  country?: string;
+  city?: string;
+  phone?: string;
+  message?: string;
+  instagramUsername?: string;
+  manychatId?: string;
+};
+
+const shouldRetryMailerLite = (status: number) => status === 429 || status >= 500;
+
+const readResponsePayload = async (response: any): Promise<Record<string, unknown> | null> => {
+  const text = await response.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch (error) {
+    console.error('Failed to parse MailerLite response JSON', error, text);
+    return { raw: text } as Record<string, unknown>;
+  }
+};
+
+const syncMailerLite = async (input: MailerLiteSyncInput) => {
+  if (!MAILERLITE_API_KEY) {
+    console.warn('MailerLite sync skipped: missing MAILERLITE_API_KEY');
+    return;
+  }
+  if (!MAILERLITE_GROUP_IDS.length) {
+    throw new Error('MailerLite sync aborted: no group IDs configured (set MAILERLITE_GROUP_IDS or ML_GROUPS)');
+  }
+  const email = safetyString(input.email);
+  if (!email) {
+    console.warn('MailerLite sync skipped: no email detected');
+    return;
+  }
+
+  const fields: Record<string, string> = {};
+  if (input.name) fields.name = input.name;
+  if (input.country) fields.country = input.country;
+  if (input.city) fields.city = input.city;
+  if (input.phone) fields.phone = input.phone;
+  if (input.instagramUsername) fields.instagram = input.instagramUsername;
+
+  const notesParts: string[] = [];
+  if (MAILERLITE_DEFAULT_NOTES) notesParts.push(MAILERLITE_DEFAULT_NOTES);
+  if (input.message) notesParts.push(input.message);
+  if (input.manychatId) notesParts.push(`ManyChat ID: ${input.manychatId}`);
+  if (notesParts.length) {
+    fields.notas = notesParts.join(' - ');
+  }
+
+  const payload: Record<string, unknown> = {
+    email,
+    resubscribe: true,
+    groups: MAILERLITE_GROUP_IDS,
+  };
+
+  if (input.name) {
+    payload.name = input.name;
+    const tokens = input.name.split(/\s+/).filter(Boolean);
+    if (!fields.first_name && tokens.length) {
+      fields.first_name = tokens[0];
+    }
+    if (!fields.last_name && tokens.length > 1) {
+      fields.last_name = tokens.slice(1).join(' ');
+    }
+  }
+
+  if (Object.keys(fields).length) {
+    payload.fields = fields;
+  }
+
+  let attempt = 0;
+  while (attempt < MAX_MAILERLITE_ATTEMPTS) {
+    attempt += 1;
+    const response = await fetch(MAILERLITE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${MAILERLITE_API_KEY}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await readResponsePayload(response);
+    if (response.ok) {
+      return data;
+    }
+
+    if (response.status === 409) {
+      console.warn('MailerLite reported existing subscriber conflict; treating as success', data);
+      return data;
+    }
+
+    if (response.status === 422) {
+      const errors = Array.isArray((data as { errors?: unknown }).errors)
+        ? ((data as { errors: Array<{ message?: string }> }).errors as Array<{ message?: string }> )
+        : [];
+      const duplicateEmail = errors.find((err) => typeof err?.message === 'string' && err.message.toLowerCase().includes('already'));
+      if (duplicateEmail) {
+        console.warn('MailerLite reports subscriber already exists; update skipped', data);
+        return data;
+      }
+    }
+
+    if (attempt < MAX_MAILERLITE_ATTEMPTS && shouldRetryMailerLite(response.status)) {
+      const delay = 500 * attempt;
+      console.warn(`MailerLite sync retry ${attempt}/${MAX_MAILERLITE_ATTEMPTS} after ${delay}ms`, data);
+      await sleep(delay);
+      continue;
+    }
+
+    throw new Error(
+      `MailerLite sync failed (status ${response.status}): ${
+        data ? JSON.stringify(data) : 'no body'
+      }`,
+    );
   }
 };
 
@@ -339,24 +905,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const { record, contact } = extractContactRecord(payload);
+    const parsedLead = parseLeadDetails(payload, contact);
+
+    if (parsedLead.confidence < 0.4) {
+      await postAlert(
+        formatAlertPayload({
+          severity: 'warn',
+          title: 'Lead parsing low confidence',
+          message: `Confidence ${parsedLead.confidence} for contact ${record.manychat_contact_id ?? 'unknown'}`,
+          meta: {
+            manychat_contact_id: record.manychat_contact_id,
+            email: parsedLead.email ?? record.email,
+            instagram_username: record.instagram_username,
+            matched_sources: parsedLead.matched,
+          },
+        }),
+      );
+    }
+
+    if (parsedLead.email) record.email = parsedLead.email;
+    if (parsedLead.phone) record.phone = parsedLead.phone;
+    if (parsedLead.country) record.country = parsedLead.country;
+    if (parsedLead.city) record.city = parsedLead.city;
+    if (parsedLead.name) {
+      record.name = parsedLead.name;
+      const nameTokens = parsedLead.name.split(/\s+/).filter(Boolean);
+      if (nameTokens.length) {
+        record.first_name = nameTokens[0];
+        record.last_name = nameTokens.length > 1 ? nameTokens.slice(1).join(' ') : undefined;
+      }
+    }
+    if (parsedLead.message) {
+      record.notes = parsedLead.message;
+    }
     if (!record.manychat_contact_id) {
       return res.status(400).json({ ok: false, error: 'Missing ManyChat contact id' });
     }
 
     const contactRow = await insertContact(record);
 
-    const platformHint = record.instagram_username || record.ig_user_id ? 'instagram' : 'other';
+    const resolvedEmail = parsedLead.email ?? safetyString((contactRow as Record<string, unknown>).email) ?? safetyString(record.email);
+    const resolvedName = parsedLead.name ?? safetyString((contactRow as Record<string, unknown>).name) ?? safetyString(record.name);
+    const resolvedCountry =
+      parsedLead.country ?? safetyString((contactRow as Record<string, unknown>).country) ?? safetyString(record.country);
+    const resolvedCity = parsedLead.city ?? safetyString((contactRow as Record<string, unknown>).city) ?? safetyString(record.city);
+    const resolvedPhone = parsedLead.phone ?? safetyString((contactRow as Record<string, unknown>).phone) ?? safetyString(record.phone);
+    const resolvedInstagram =
+      safetyString((contactRow as Record<string, unknown>).instagram_username) ?? safetyString(record.instagram_username);
+    const manychatContactId =
+      safetyString((contactRow as Record<string, unknown>).manychat_contact_id) ?? safetyString(record.manychat_contact_id);
+
+    const platformHint = resolvedInstagram || safetyString(record.ig_user_id) ? 'instagram' : 'other';
 
     try {
-      await insertInteraction(contactRow.id as string, payload, platformHint, record.manychat_contact_id as string | undefined);
+      await insertInteraction(contactRow.id as string, payload, platformHint, manychatContactId, parsedLead);
     } catch (interactionError) {
       console.error('Failed to insert interaction', interactionError);
+    }
+
+    try {
+      await syncMailerLite({
+        email: resolvedEmail,
+        name: resolvedName,
+        country: resolvedCountry,
+        city: resolvedCity,
+        phone: resolvedPhone,
+        message: parsedLead.message,
+        instagramUsername: resolvedInstagram,
+        manychatId: manychatContactId,
+      });
+    } catch (mailerliteError) {
+      await postAlert(
+        formatAlertPayload({
+          severity: 'error',
+          title: 'MailerLite sync failed',
+          message: (mailerliteError as Error).message,
+          meta: {
+            email: resolvedEmail,
+            manychat_contact_id: manychatContactId,
+          },
+        }),
+      );
+      throw mailerliteError;
     }
 
     console.log('ManyChat webhook processed', {
       contact_id: contactRow.id,
       manychat_contact_id: record.manychat_contact_id,
       event: payload.event,
+      parsed: parsedLead.matched,
     });
 
     return res.status(200).json({
@@ -367,6 +1004,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     console.error('ManyChat webhook error', error);
+    await postAlert(
+      formatAlertPayload({
+        severity: 'error',
+        title: 'ManyChat webhook failed',
+        message: (error as Error).message,
+        meta: {
+          requestId: (res as unknown as { reqId?: string })?.reqId ?? null,
+        },
+      }),
+    );
     return res.status(500).json({ ok: false, error: (error as Error).message });
   }
 }

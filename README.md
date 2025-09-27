@@ -1,7 +1,11 @@
-MailerLite CLI for CRM
+CRM Automation Toolkit
 ======================
 
-This repo provides a minimal Python CLI to interact with the MailerLite API and store your API key securely in the macOS Keychain. It is designed to be run from VS Code/terminal so you can pull/push data to MailerLite without retyping credentials.
+This repository bundles the building blocks that power our Instagram→ManyChat→Supabase→MailerLite CRM flow together with supporting CLIs. It now covers three main areas:
+
+- A Python CLI for MailerLite operations (token storage, people lookups, group membership).
+- A set of Instagram Graph helpers for token management and troubleshooting.
+- A production Vercel webhook that receives DMs from ManyChat, enriches/normalises the lead, syncs Supabase, pushes MailerLite, and raises alerts when something looks suspicious.
 
 Quick Start
 -----------
@@ -97,9 +101,16 @@ ManyChat Webhook (Vercel)
 
 - Endpoint: `https://crm-manychat-webhook.vercel.app/api/manychat-webhook` (POST only, JSON body from ManyChat).
 - Security: include header `x-webhook-secret` with the value stored in the `MANYCHAT_WEBHOOK_SECRET` env var (configured in Vercel and `.env`).
-- Behaviour: upserts the contact into Supabase (`contacts` table) and records the payload in `interactions`; if Supabase is unreachable the function logs the failure and returns a 5xx so ManyChat retries.
+- Behaviour: upserts the contact into Supabase (`contacts` table), records the payload in `interactions`, runs multilingual heuristics over the DM to extract name/email/phone/city/country/message, and mirrors the lead into MailerLite (adds to the welcome groups and updates custom fields). If Supabase or MailerLite are unreachable the function logs the failure, emits an alert (see below), and returns a 5xx so ManyChat retries.
 - Deployment: Vercel project `crm-manychat-webhook`. Manage env vars via `vercel env add <KEY> production|preview` and redeploy with `npx vercel deploy --prod --token $VERCEL_ACCESS_TOKEN`.
 - Dependencies: requires `SUPABASE_URL_CRM` and `SUPABASE_SERVICE_ROLE_CRM`; make sure the Supabase URL resolves publicly before pointing ManyChat at the webhook.
+- MailerLite env vars:
+  - `MAILERLITE_API_KEY` (or fallback `ML_API_KEY` for backwards compatibility)
+  - `MAILERLITE_GROUP_IDS` (comma-separated numeric IDs; fallback `ML_GROUPS` supported)
+  - Optional `MAILERLITE_DEFAULT_NOTES` for the leading part of the notes field.
+- Alerts / Observability env vars:
+  - `ALERT_WEBHOOK_URL` – optional Slack/Teams/webhook endpoint that receives JSON alerts.
+  - `ALERT_WEBHOOK_CHANNEL` – optional channel/group identifier (defaults to `crm-alerts`).
 - Quick test:
   ```bash
   curl -X POST \
@@ -114,8 +125,9 @@ Workflow Overview
 
 - **Contacts**: `contacts` rows are keyed by `manychat_contact_id`; the Vercel webhook upserts a record for every inbound ManyChat event, so duplicates just update the existing contact and timestamps.
 - **Interactions log**: every webhook call creates an entry in `interactions` with `contact_id`, `platform='instagram'`, and `external_id` of the form `manychat:<contact_id>:<timestamp>` so you can easily query a person’s full DM history.
+- **Parsing heuristics**: the webhook recognises phrasing such as “me llamo…”, “mi nombre es…”, “aquí te escribe…”, “soy de…”, “estamos en…”, etc. Cities/countries are normalised (e.g. “de la paz Bolivia” → `city=La Paz`, `country=Bolivia`) and names are humanised from email/Instagram when users omit them.
+- **Alerts**: low-confidence extractions or sync failures trigger a POST to `ALERT_WEBHOOK_URL` so we can follow-up manually. Alerts include the matched sources and identifiers to speed up triage.
 - **Querying history**:
   - Supabase REST: `curl -H "apikey: $SUPABASE_SERVICE_ROLE_CRM" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_CRM" "$SUPABASE_URL_CRM/rest/v1/interactions?select=occurred_at,content,meta&contact_id=eq.CONTACT_UUID&order=occurred_at.desc"`
   - SQL editor: `select i.occurred_at, i.content from interactions i join contacts c on c.id = i.contact_id where c.manychat_contact_id = '563924665' order by occurred_at desc;`
 - **Triage tip**: create a Supabase view joining `contacts` + latest interaction for fast browsing in the dashboard.
-
