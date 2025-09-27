@@ -1028,7 +1028,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ ok: false, error: 'Unauthorized' });
     }
 
-    const payload = (req.body ?? {}) as ManyChatPayload;
+    let payload: ManyChatPayload | string | undefined = req.body as ManyChatPayload | string | undefined;
+    if (typeof payload === 'string') {
+      try {
+        payload = JSON.parse(payload) as ManyChatPayload;
+      } catch (parseError) {
+        console.error('ManyChat webhook JSON parse error', parseError, payload);
+        return res.status(400).json({ ok: false, error: 'Invalid payload JSON' });
+      }
+    }
+
     if (!payload || typeof payload !== 'object') {
       return res.status(400).json({ ok: false, error: 'Invalid payload' });
     }
