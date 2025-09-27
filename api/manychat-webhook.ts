@@ -75,6 +75,21 @@ const deriveNameFromEmail = (email: string | undefined): string | undefined => {
   return candidate || undefined;
 };
 
+const splitName = (value: string | undefined): { first?: string; last?: string } => {
+  if (!value) return {};
+  const tokens = value
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+  if (!tokens.length) return {};
+  if (tokens.length === 1) {
+    return { first: toTitleCase(tokens[0]) };
+  }
+  const first = toTitleCase(tokens[0]);
+  const last = toTitleCase(tokens.slice(1).join(' '));
+  return { first, last };
+};
+
 const normalizeCountryKey = (value: string): string =>
   normalize(value)
     .replace(/[^a-z\s]+/g, ' ')
@@ -146,6 +161,106 @@ const matchCountryName = (value: string | undefined): string | undefined => {
   const normalized = normalizeCountryKey(value);
   if (!normalized) return undefined;
   return COUNTRY_MAP.get(normalized);
+};
+
+const CITY_TO_COUNTRY_ENTRIES: Array<[string, string]> = [
+  ['bogota', 'Colombia'],
+  ['bogotá', 'Colombia'],
+  ['medellin', 'Colombia'],
+  ['medellín', 'Colombia'],
+  ['cali', 'Colombia'],
+  ['barranquilla', 'Colombia'],
+  ['cartagena', 'Colombia'],
+  ['bucaramanga', 'Colombia'],
+  ['pereira', 'Colombia'],
+  ['manizales', 'Colombia'],
+  ['santa marta', 'Colombia'],
+  ['santamarta', 'Colombia'],
+  ['armenia', 'Colombia'],
+  ['cucuta', 'Colombia'],
+  ['cúcuta', 'Colombia'],
+  ['envigado', 'Colombia'],
+  ['soacha', 'Colombia'],
+  ['ibague', 'Colombia'],
+  ['ibagué', 'Colombia'],
+  ['neiva', 'Colombia'],
+  ['villavicencio', 'Colombia'],
+  ['sincelejo', 'Colombia'],
+  ['tunja', 'Colombia'],
+  ['popayan', 'Colombia'],
+  ['popayán', 'Colombia'],
+  ['cartago', 'Colombia'],
+  ['la paz', 'Bolivia'],
+  ['lapaz', 'Bolivia'],
+  ['santa cruz', 'Bolivia'],
+  ['santacruz', 'Bolivia'],
+  ['cochabamba', 'Bolivia'],
+  ['sucre', 'Bolivia'],
+  ['potosi', 'Bolivia'],
+  ['potosí', 'Bolivia'],
+  ['tarija', 'Bolivia'],
+  ['oruro', 'Bolivia'],
+  ['trinidad', 'Bolivia'],
+  ['montero', 'Bolivia'],
+  ['quito', 'Ecuador'],
+  ['guayaquil', 'Ecuador'],
+  ['cuenca', 'Ecuador'],
+  ['ambato', 'Ecuador'],
+  ['machala', 'Ecuador'],
+  ['loja', 'Ecuador'],
+  ['duran', 'Ecuador'],
+  ['durán', 'Ecuador'],
+  ['santiago', 'Chile'],
+  ['valparaiso', 'Chile'],
+  ['valparaíso', 'Chile'],
+  ['concepcion', 'Chile'],
+  ['concepción', 'Chile'],
+  ['lima', 'Perú'],
+  ['cusco', 'Perú'],
+  ['cuzco', 'Perú'],
+  ['arequipa', 'Perú'],
+  ['trujillo', 'Perú'],
+  ['piura', 'Perú'],
+  ['chiclayo', 'Perú'],
+  ['huancayo', 'Perú'],
+  ['puno', 'Perú'],
+  ['iquitos', 'Perú'],
+  ['mexico', 'México'],
+  ['méxico', 'México'],
+  ['ciudad de mexico', 'México'],
+  ['cdmx', 'México'],
+  ['guadalajara', 'México'],
+  ['monterrey', 'México'],
+  ['queretaro', 'México'],
+  ['querétaro', 'México'],
+  ['puebla', 'México'],
+  ['leon', 'México'],
+  ['león', 'México'],
+  ['tijuana', 'México'],
+  ['cancun', 'México'],
+  ['cancún', 'México'],
+  ['buenos aires', 'Argentina'],
+  ['cordoba', 'Argentina'],
+  ['córdoba', 'Argentina'],
+  ['rosario', 'Argentina'],
+  ['mendoza', 'Argentina'],
+  ['salta', 'Argentina'],
+];
+
+const CITY_TO_COUNTRY_MAP = (() => {
+  const map = new Map<string, string>();
+  for (const [city, country] of CITY_TO_COUNTRY_ENTRIES) {
+    const key = normalize(city);
+    if (key) map.set(key, country);
+  }
+  return map;
+})();
+
+const matchCountryFromCity = (city: string | undefined): string | undefined => {
+  if (!city) return undefined;
+  const key = normalize(city);
+  if (!key) return undefined;
+  return CITY_TO_COUNTRY_MAP.get(key);
 };
 
 const parseLocationComponents = (raw: string): { city?: string; country?: string } => {
@@ -515,7 +630,12 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
     if (!raw) return;
     const parsed = parseLocationComponents(raw);
     if (parsed.city) capture('city', parsed.city, origin);
-    if (parsed.country) capture('country', parsed.country, origin);
+    if (parsed.country) {
+      capture('country', parsed.country, origin);
+    } else if (parsed.city) {
+      const inferredCountry = matchCountryFromCity(parsed.city);
+      if (inferredCountry) capture('country', inferredCountry, `${origin}:city-inferred`);
+    }
   };
 
   const contactEmail = safetyString(contact?.email) ?? safetyString(contact?.emails && pickFirst(contact.emails));
@@ -600,7 +720,7 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   }
 
   const generalLocationMatch = text.match(
-    /(?:de|desde|soy\s+de|somos\s+de|procedo\s+de|vengo\s+de|originario\s+de|originaria\s+de|nac[ií]\s+en)\s+([a-záéíóúñü' ,]+?)(?:[.!?]|$)/i,
+    /(?:de|desde|soy\s+de|somos\s+de|procedo\s+de|vengo\s+de|originario\s+de|originaria\s+de|nac[ií]\s+en|radico\s+en)\s+([a-záéíóúñü' ,]+?)(?:[.!?]|$)/i,
   );
   if (generalLocationMatch) {
     applyLocationCandidate(generalLocationMatch[1], 'text:heuristic');
@@ -665,6 +785,11 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   if (!details.name) {
     const emailCandidate = details.email ?? contactEmail ?? fallbackString(payload, 'contact_email');
     capture('name', deriveNameFromEmail(emailCandidate), 'email_local');
+  }
+
+  if (details.city && !details.country) {
+    const inferredCountry = matchCountryFromCity(details.city);
+    if (inferredCountry) capture('country', inferredCountry, 'city-inferred');
   }
 
   const focusFields: Array<keyof ParsedLeadDetails> = ['email', 'name', 'country', 'city', 'message'];
@@ -797,11 +922,22 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
   }
 
   const fields: Record<string, string> = {};
-  if (input.name) fields.name = input.name;
   if (input.country) fields.country = input.country;
   if (input.city) fields.city = input.city;
   if (input.phone) fields.phone = input.phone;
   if (input.instagramUsername) fields.instagram = input.instagramUsername;
+
+  const { first: firstName, last: lastName } = splitName(input.name);
+  if (firstName) {
+    fields.first_name = firstName;
+    if (!fields.name) fields.name = firstName;
+  }
+  if (lastName) {
+    fields.last_name = lastName;
+  }
+  if (!fields.name && input.name) {
+    fields.name = input.name;
+  }
 
   const notesParts: string[] = [];
   if (MAILERLITE_DEFAULT_NOTES) notesParts.push(MAILERLITE_DEFAULT_NOTES);
@@ -817,15 +953,8 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
     groups: MAILERLITE_GROUP_IDS,
   };
 
-  if (input.name) {
-    payload.name = input.name;
-    const tokens = input.name.split(/\s+/).filter(Boolean);
-    if (!fields.first_name && tokens.length) {
-      fields.first_name = tokens[0];
-    }
-    if (!fields.last_name && tokens.length > 1) {
-      fields.last_name = tokens.slice(1).join(' ');
-    }
+  if (firstName || input.name) {
+    payload.name = firstName ?? input.name;
   }
 
   if (Object.keys(fields).length) {
