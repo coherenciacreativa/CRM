@@ -711,9 +711,9 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
     if (field === 'name') {
       const cleaned = sanitizeName(safe);
       if (!cleaned) return;
-      details[field] = cleaned;
+      (details as Record<string, unknown>)[field] = cleaned;
     } else {
-      details[field] = safe;
+      (details as Record<string, unknown>)[field] = safe;
     }
     details.sourceRanks[field] = rank;
     details.sources[field] = origin;

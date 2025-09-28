@@ -1,3 +1,5 @@
+export {};
+
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE = 'dummy-service-role-key';
 process.env.SUPABASE_URL_CRM = process.env.SUPABASE_URL;

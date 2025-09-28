@@ -73,7 +73,6 @@ export default function OpsDashboard() {
   const guardToken = process.env.NEXT_PUBLIC_DASHBOARD_TOKEN || "";
   const [allowed, setAllowed] = useState<boolean>(!guardToken);
 
-  // Soft guard via query token
   useEffect(() => {
     if (!guardToken) return;
     try {
@@ -91,9 +90,10 @@ export default function OpsDashboard() {
       setError(null);
       const [h, hb, s] = await Promise.all([
         fetchJSON<Health>("/api/healthz"),
-        fetchJSON<{ ok: boolean; last: HeartbeatRow | null }>("/api/ops/heartbeat").catch(
-          () => ({ ok: false, last: null })
-        ),
+        fetchJSON<{ ok: boolean; last: HeartbeatRow | null }>("/api/ops/heartbeat").catch(() => ({
+          ok: false,
+          last: null,
+        })),
         fetchJSON<{ ok: boolean; latest: DebugItem[] }>("/api/stats/daily").catch(() => ({
           ok: false,
           latest: [],
@@ -332,7 +332,7 @@ export default function OpsDashboard() {
 
 function KPI({ title, value, subtitle, ok }: { title: string; value?: string; subtitle?: string; ok?: boolean }) {
   return (
-    <div className={cx("kpi", ok ? "ok" : "")}> 
+    <div className={cx("kpi", ok ? "ok" : "")}>
       <div className="kpi-title">{title}</div>
       <div className="kpi-value">{value ?? (ok ? "OK" : "—")}</div>
       {subtitle ? <div className="kpi-sub">{subtitle}</div> : null}
@@ -340,15 +340,43 @@ function KPI({ title, value, subtitle, ok }: { title: string; value?: string; su
   );
 }
 
-const styles = (
-  <>
-    <style jsx>{`
-      :global(html, body, #__next) { height: 100%; }
-      .wrap { min-height: 100%; background: #0b1020; color: #dfe7ff; padding: 24px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-      .header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-      h1 { font-size: 22px; margin: 0; }
-*** End Patch
-PATCH
+const styles = `
+  :global(html, body, #__next) { height: 100%; }
+  .wrap { min-height: 100%; background: #0b1020; color: #dfe7ff; padding: 24px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+  .header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+  h1 { font-size: 22px; margin: 0; }
+  .muted { color: #9db0d4; }
+  .actions { display: flex; gap: 8px; }
+  .btn { background: #1b2540; border: 1px solid #2a3a6a; color: #eaf0ff; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .btn:hover { background: #212d52; }
+  .btn[disabled] { opacity: .6; cursor: not-allowed; }
+  .btn.primary { background: #2b6ef2; border-color: #2b6ef2; }
+  .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: linear-gradient(180deg,#141b33,#0e152b); border:1px solid #1c2749; border-radius: 14px; padding: 14px; }
+  .kpi.ok { border-color: #2b6ef2; box-shadow: 0 0 0 1px rgba(43,110,242,.25) inset; }
+  .kpi-title { color:#9db0d4; font-size: 12px; letter-spacing:.6px; text-transform: uppercase; }
+  .kpi-value { font-size: 26px; font-weight: 800; margin-top: 6px; }
+  .kpi-sub { color:#9db0d4; font-size: 12px; margin-top: 2px; }
+  .stack { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .panel { background: #0e152b; border:1px solid #1c2749; border-radius: 14px; padding: 16px; }
+  .panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { background:#101a34; border:1px solid #243463; border-radius: 999px; padding:6px 10px; color:#bfd0ff; font-size:12px; }
+  .input { background:#0b1226; border:1px solid #1c2749; color:#eaf0ff; padding:8px 10px; border-radius:10px; min-width: 220px; }
+  .table { width:100%; border-collapse: collapse; }
+  .table th, .table td { text-align:left; padding: 10px 8px; border-bottom: 1px dashed #1f2a50; }
+  .table thead th { color:#9db0d4; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  .badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .badge.processed { background:#14381b; color:#7be08f; border:1px solid #1e6b2e; }
+  .badge.failed { background:#3a1218; color:#ff9da4; border:1px solid #7b2a34; }
+  .badge.new { background:#17233e; color:#8eb6ff; border:1px solid #2b6ef2; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  .foot { display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top: 16px; color:#9db0d4; }
+  .alert { background:#3a1218; color:#ffb5bb; border:1px solid #7b2a34; padding:10px 12px; border-radius:12px; margin-bottom:10px; }
+  @media (max-width: 1100px){ .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 640px){ .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .actions{ flex-wrap:wrap; } }
+`;
 
 // TODO: Add per-row actions (view payload, single reprocess)
 // TODO: Include time-series charts for processed/failed events

@@ -1,13 +1,30 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "esModuleInterop": true,
     "strict": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "lib": ["ES2020", "DOM"]
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "jsx": "preserve"
   },
-  "include": ["api/**/*", "lib/**/*", "pages/**/*", "scripts/**/*"]
+  "include": [
+    "next-env.d.ts",
+    "api/**/*",
+    "lib/**/*",
+    "pages/**/*",
+    "types/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
