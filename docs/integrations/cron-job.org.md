@@ -26,3 +26,8 @@ curl -sS -H "Authorization: Bearer ${CRONJOB_API_KEY}" \
 # confirmar ingestas webhooks recientes
 curl -sS "${BASE_URL}/api/debug/last?limit=10" | jq
 ```
+
+## Observabilidad
+- Heartbeat: `GET ${BASE_URL}/api/ops/heartbeat` → último reprocess (processed/failed/checked, timestamp).
+- Stats: `GET ${BASE_URL}/api/stats/daily` → últimos 50 eventos con `attempt_count` y `permanent_failed`.
+- Límite de intentos: `REPROCESS_MAX_ATTEMPTS` (default 5). Cuando un evento lo alcanza queda con `permanent_failed=true` y el cron deja de reintentarlo.

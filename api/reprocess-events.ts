@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { EmailGuess } from '../lib/utils/extract.js';
-import { sbReady, sbSelect, sbPatch } from '../lib/utils/sb.js';
-import { executePipeline, type ManyChatPayload, type PipelineResult } from './manychat-webhook.js';
+import { upsertContactAndMailerlite } from '../lib/app/lead-pipeline.js';
+import { sbReady, sbSelect, sbPatch, sbInsert } from '../lib/utils/sb.js';
 
 const DEFAULT_LIMIT = 100;
+const MAX_ATTEMPTS = Number(process.env.REPROCESS_MAX_ATTEMPTS || 5);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -26,63 +26,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? Math.min(200, Math.max(1, requestedLimit))
       : DEFAULT_LIMIT;
 
-    const selectResult = await sbSelect(
-      `webhook_events?select=*&status=in.(NEW,FAILED)&order=created_at.asc&limit=${limit}`,
-    );
+    const query = [
+      'webhook_events?select=*',
+      'status=in.(NEW,FAILED)',
+      'permanent_failed=is.false',
+      `attempt_count=lt.${MAX_ATTEMPTS}`,
+      'order=created_at.asc',
+      `limit=${limit}`,
+    ].join('&');
+
+    const selectResult = await sbSelect(query);
     if (!selectResult.ok || !Array.isArray(selectResult.json)) {
-      return res.status(500).json({ ok: false, error: 'select_failed', detail: selectResult.json });
+      return res.status(selectResult.status).json({ ok: false, error: 'select_failed', detail: selectResult.json });
     }
 
-    const events = selectResult.json as Array<Record<string, unknown>>;
+    const events = selectResult.json as Array<Record<string, any>>;
     let processed = 0;
     let failed = 0;
+    let checked = 0;
 
-    for (const event of events) {
-      const id = event.id as number | string;
-      const rawPayload = event.raw_payload as ManyChatPayload | undefined;
-      const extractedEmail = typeof event.extracted_email === 'string' ? event.extracted_email : null;
-      const extractionConfidence = Number(event.extraction_confidence ?? 0) || 0;
-      const guess: EmailGuess | null = extractedEmail
-        ? { email: extractedEmail, confidence: extractionConfidence }
-        : null;
+    for (const ev of events) {
+      checked += 1;
+      const eventId = ev.id;
+      const currentAttempts = Number(ev.attempt_count ?? 0) + 1;
 
-      let status: 'PROCESSED' | 'FAILED' = 'PROCESSED';
-      let errorMessage: string | null = null;
-      let pipelineResult: PipelineResult | null = null;
+      await sbPatch(`webhook_events?id=eq.${encodeURIComponent(String(eventId))}`, {
+        attempt_count: currentAttempts,
+        last_attempt_at: new Date().toISOString(),
+      });
 
-      if (!rawPayload || typeof rawPayload !== 'object') {
-        status = 'FAILED';
-        errorMessage = 'missing_raw_payload';
+      try {
+        await upsertContactAndMailerlite({
+          payload: ev.raw_payload,
+          email: ev.extracted_email,
+          confidence: typeof ev.extraction_confidence === 'number' ? ev.extraction_confidence : undefined,
+        });
+        await sbPatch(`webhook_events?id=eq.${encodeURIComponent(String(eventId))}`, {
+          status: 'PROCESSED',
+          error: null,
+          permanent_failed: false,
+          updated_at: new Date().toISOString(),
+        });
+        processed += 1;
+      } catch (error) {
+        const permanent = currentAttempts >= MAX_ATTEMPTS;
+        await sbPatch(`webhook_events?id=eq.${encodeURIComponent(String(eventId))}`, {
+          status: 'FAILED',
+          permanent_failed: permanent,
+          error: (error as Error).message ?? String(error),
+          updated_at: new Date().toISOString(),
+        });
         failed += 1;
-      } else {
-        try {
-          pipelineResult = await executePipeline(rawPayload, guess);
-          processed += 1;
-        } catch (pipelineError) {
-          status = 'FAILED';
-          errorMessage = (pipelineError as Error).message;
-          failed += 1;
-        }
       }
-
-      const patchPayload: Record<string, unknown> = {
-        status,
-        error: errorMessage,
-        updated_at: new Date().toISOString(),
-      };
-      if (pipelineResult?.resolvedEmail ?? guess?.email) {
-        patchPayload.extracted_email = pipelineResult?.resolvedEmail ?? guess?.email;
-      }
-
-      await sbPatch(`webhook_events?id=eq.${encodeURIComponent(String(id))}`, patchPayload);
     }
 
-    return res.status(200).json({
-      ok: true,
-      checked: events.length,
-      processed,
-      failed,
+    await sbInsert('event_log', {
+      source: 'cron',
+      action: 'reprocess',
+      level: 'info',
+      data: { processed, failed, checked, maxAttempts: MAX_ATTEMPTS },
+      created_at: new Date().toISOString(),
     });
+
+    return res.status(200).json({ ok: true, processed, failed, checked, maxAttempts: MAX_ATTEMPTS });
   } catch (error) {
     return res.status(500).json({ ok: false, error: (error as Error).message });
   }
