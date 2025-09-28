@@ -1,0 +1,10 @@
+export default function handler(req: any, res: any) {
+  const supabaseOk = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE);
+  const mailerliteOk = Boolean(process.env.MAILERLITE_API_KEY || process.env.MAILERLITE_TOKEN);
+  return res.status(200).json({
+    ok: supabaseOk,
+    supabase_ok: supabaseOk,
+    mailerlite_key_present: mailerliteOk,
+    ts: new Date().toISOString(),
+  });
+}
