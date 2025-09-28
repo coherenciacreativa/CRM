@@ -1,4 +1,5 @@
 import type { EmailGuess } from '../utils/extract.js';
+import { getDmText } from '../utils/payload.js';
 import { executePipeline, type ManyChatPayload, type PipelineResult } from '../../api/manychat-webhook.js';
 
 export type UpsertInput = {
@@ -27,5 +28,20 @@ export async function upsertContactAndMailerlite({
       }
     : null;
 
-  return executePipeline(payload, guess);
+  const dmText = getDmText(payload as any);
+  const igProfileName =
+    (payload as any)?.full_name ??
+    (payload as any)?.subscriber?.name ??
+    (payload as any)?.subscriber?.full_name ??
+    '';
+  const igUsername =
+    (payload as any)?.instagram_username ??
+    (payload as any)?.subscriber?.username ??
+    '';
+
+  return executePipeline(payload, guess, {
+    dmText,
+    igProfileName,
+    igUsername,
+  });
 }

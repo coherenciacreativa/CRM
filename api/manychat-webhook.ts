@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { extractEmail, type EmailGuess } from '../lib/utils/extract.js';
+import { extractLocationFromText } from '../lib/utils/location.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
-import { sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
+import { safeSbPatchContactByEmail, sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
 
 console.log('[manychat-webhook] module loaded');
 
@@ -105,6 +106,60 @@ const deriveNameFromEmail = (email: string | undefined): string | undefined => {
   if (meaningful.length === 1 && meaningful[0].length < 3) return undefined;
   const candidate = meaningful.map((token) => toTitleCase(token)).join(' ');
   return candidate || undefined;
+};
+
+const NAME_HEURISTICS: Array<(text: string) => string | undefined> = [
+  (text) => {
+    const match = text.match(/(?:mi\s+nombre\s+es|me\s+llamo|soy)\s+([a-záéíóúñü' ]{2,80})/i);
+    if (!match?.[1]) return undefined;
+    return match[1].replace(/[.,;].*$/, '').trim();
+  },
+  (text) => {
+    const match = text.match(
+      /(?:aqui|aquí)?\s*(?:te\s+escribe|te\s+habla|te\s+saluda|quien\s+te\s+escribe\s+es|quien\s+te\s+saluda\s+es|este\s+es)\s+([a-záéíóúñü' ]{2,80})/i,
+    );
+    if (!match?.[1]) return undefined;
+    return match[1].replace(/[.,;].*$/, '').trim();
+  },
+];
+
+const extractNameFromDmText = (text?: string): string | undefined => {
+  if (!text) return undefined;
+  const cleaned = text.replace(/\s+/g, ' ').trim();
+  for (const heuristic of NAME_HEURISTICS) {
+    const candidate = heuristic(cleaned);
+    const sanitized = sanitizeName(candidate);
+    if (sanitized) return sanitized;
+  }
+  return undefined;
+};
+
+const derivePreferredName = (input: {
+  igProfileName?: string;
+  existingName?: string;
+  dmName?: string;
+  igUsername?: string;
+  email?: string | null | undefined;
+}): string | undefined => {
+  const candidates: string[] = [];
+  const pushCandidate = (value?: string) => {
+    const sanitized = sanitizeName(value);
+    if (sanitized && !candidates.includes(sanitized)) {
+      candidates.push(sanitized);
+    }
+  };
+
+  pushCandidate(input.igProfileName);
+  pushCandidate(input.existingName);
+  pushCandidate(input.dmName);
+  if (input.igUsername) {
+    pushCandidate(humanizeIdentifier(input.igUsername) ?? input.igUsername);
+  }
+  if (input.email) {
+    pushCandidate(deriveNameFromEmail(input.email));
+  }
+
+  return candidates[0];
 };
 
 const splitName = (value: string | undefined): { first?: string; last?: string } => {
@@ -1077,6 +1132,7 @@ export type PipelineResult = {
 export const executePipeline = async (
   payload: ManyChatPayload,
   emailGuess?: EmailGuess | null,
+  context: { dmText?: string; igProfileName?: string; igUsername?: string } = {},
 ): Promise<PipelineResult> => {
   const { record, contact } = extractContactRecord(payload);
   const parsedLead = parseLeadDetails(payload, contact);
@@ -1089,6 +1145,27 @@ export const executePipeline = async (
       parsedLead.matched.push('email:fast-extract');
     }
     parsedLead.confidence = Math.max(parsedLead.confidence, emailGuess.confidence);
+  }
+
+  const dmText = context.dmText ?? '';
+  const locationGuess = extractLocationFromText(dmText);
+  if (locationGuess?.city && !parsedLead.city) parsedLead.city = locationGuess.city;
+  if (locationGuess?.country && !parsedLead.country) parsedLead.country = locationGuess.country;
+  if (locationGuess?.city && !record.city) record.city = locationGuess.city;
+  if (locationGuess?.country && !record.country) record.country = locationGuess.country;
+
+  const dmDerivedName = extractNameFromDmText(dmText);
+  const preferredName = derivePreferredName({
+    igProfileName: context.igProfileName,
+    existingName: parsedLead.name ?? (typeof record.name === 'string' ? record.name : undefined),
+    dmName: dmDerivedName,
+    igUsername: context.igUsername,
+    email: emailGuess?.email ?? parsedLead.email ?? (typeof record.email === 'string' ? record.email : undefined),
+  });
+
+  if (preferredName) {
+    parsedLead.name = preferredName;
+    record.name = preferredName;
   }
 
   if (parsedLead.confidence < 0.4) {
@@ -1183,6 +1260,22 @@ export const executePipeline = async (
   const resolvedManychatId =
     safetyString((contactRow as Record<string, unknown>).manychat_contact_id) ?? safetyString(record.manychat_contact_id);
 
+  if (resolvedEmail) {
+    const patchPayload: Record<string, unknown> = {};
+    if (preferredName && !safetyString((contactRow as Record<string, unknown>).name)) {
+      patchPayload.name = preferredName;
+    }
+    if (locationGuess?.city && !safetyString((contactRow as Record<string, unknown>).city)) {
+      patchPayload.city = locationGuess.city;
+    }
+    if (locationGuess?.country && !safetyString((contactRow as Record<string, unknown>).country)) {
+      patchPayload.country = locationGuess.country;
+    }
+    if (Object.keys(patchPayload).length) {
+      await safeSbPatchContactByEmail(resolvedEmail, patchPayload);
+    }
+  }
+
   const platformHint = resolvedInstagram || safetyString(record.ig_user_id) ? 'instagram' : 'other';
 
   try {
@@ -1274,8 +1367,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const typedPayload = payload as ManyChatPayload;
-    const dmText = getDmText(typedPayload as any);
+    const rawPayload = typedPayload as any;
+    const dmText = getDmText(rawPayload);
     const emailGuess = extractEmail(dmText);
+    const igProfileNameTop =
+      safetyString(rawPayload?.full_name) ??
+      safetyString(rawPayload?.subscriber?.name) ??
+      safetyString(rawPayload?.subscriber?.full_name) ??
+      undefined;
+    const igUsernameTop =
+      safetyString(rawPayload?.instagram_username) ??
+      safetyString(rawPayload?.subscriber?.username) ??
+      undefined;
 
     const rawContactId =
       safetyString(typedPayload.contact?.id) ??
@@ -1315,7 +1418,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let pipelineResult: PipelineResult | null = null;
 
     try {
-      pipelineResult = await executePipeline(typedPayload, emailGuess);
+      pipelineResult = await executePipeline(typedPayload, emailGuess, {
+        dmText,
+        igProfileName: igProfileNameTop,
+        igUsername: igUsernameTop,
+      });
     } catch (error) {
       finalStatus = 'FAILED';
       pipelineError = error as Error;

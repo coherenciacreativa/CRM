@@ -11,11 +11,12 @@ export function sbReady() {
   return Boolean(SB && SR);
 }
 
-export async function sbInsert(table: string, row: Record<string, unknown>) {
+export async function sbInsert(table: string, row: Record<string, unknown> | Record<string, unknown>[]) {
+  const payload = Array.isArray(row) ? row : [row];
   const response = await fetch(`${SB}/rest/v1/${table}`, {
     method: 'POST',
     headers: SB_HEADERS,
-    body: JSON.stringify([row]),
+    body: JSON.stringify(payload),
   });
   const json = await response.json().catch(() => ({}));
   return { ok: response.ok, status: response.status, json };
@@ -38,4 +39,24 @@ export async function sbSelect(qs: string) {
   });
   const json = await response.json().catch(() => ({}));
   return { ok: response.ok, status: response.status, json };
+}
+
+export async function safeSbPatchContactByEmail(email: string | undefined, patch: Record<string, unknown>) {
+  if (!email || !email.trim()) return;
+  if (!patch || !Object.keys(patch).length) return;
+  try {
+    const response = await fetch(`${SB}/rest/v1/contacts?email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH',
+      headers: {
+        ...SB_HEADERS,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(patch),
+    });
+    if (!response.ok && response.status >= 500) {
+      throw new Error(`Supabase contact patch failed (status ${response.status})`);
+    }
+  } catch (error) {
+    console.warn('safeSbPatchContactByEmail failed', error);
+  }
 }
