@@ -1,16 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { extractEmail, type EmailGuess } from '../lib/utils/extract.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
+import { resolveMlGroups } from '../lib/config/ml-groups.js';
 import { sbInsert, sbPatch, sbReady } from '../lib/utils/sb.js';
 
 console.log('[manychat-webhook] module loaded');
 
 const MAILERLITE_API_KEY =
   process.env.MAILERLITE_API_KEY ?? process.env.MAILERLITE_TOKEN ?? process.env.ML_API_KEY;
-const MAILERLITE_GROUP_IDS = (process.env.MAILERLITE_GROUP_IDS ?? process.env.ML_GROUPS ?? '')
-  .split(',')
-  .map((value) => (typeof value === 'string' ? value.trim() : ''))
-  .filter(Boolean);
 const MAILERLITE_DEFAULT_NOTES =
   process.env.MAILERLITE_DEFAULT_NOTES ??
   process.env.DEFAULT_NOTES ??
@@ -952,13 +949,17 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
     console.warn('MailerLite sync skipped: missing MAILERLITE_API_KEY');
     return;
   }
-  if (!MAILERLITE_GROUP_IDS.length) {
-    throw new Error('MailerLite sync aborted: no group IDs configured (set MAILERLITE_GROUP_IDS or ML_GROUPS)');
-  }
   const email = safetyString(input.email);
   if (!email) {
     console.warn('MailerLite sync skipped: no email detected');
     return;
+  }
+
+  const triggerGroups = resolveMlGroups();
+  if (!triggerGroups.length) {
+    throw new Error(
+      'MailerLite sync aborted: no group IDs configured (set MAILERLITE_GROUP_IDS, MAILERLITE_GROUP_ID or MAILERLITE_ALLOWED_GROUP_ID)',
+    );
   }
 
   const fields: Record<string, string> = {};
@@ -991,8 +992,11 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
   const payload: Record<string, unknown> = {
     email,
     resubscribe: true,
-    groups: MAILERLITE_GROUP_IDS.map(Number).filter(Boolean),
   };
+
+  if (triggerGroups.length) {
+    payload.groups = triggerGroups;
+  }
 
   if (safeName || firstName) {
     payload.name = safeName ?? firstName;
