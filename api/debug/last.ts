@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sbReady, sbSelect } from '../../../lib/utils/sb';
+import { sbReady, sbSelect } from '../../lib/utils/sb';
 
 function parseLimit(value: unknown, fallback: number): number {
   const numeric = Number(Array.isArray(value) ? value[0] : value);

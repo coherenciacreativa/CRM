@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { EmailGuess } from '../../lib/utils/extract';
-import { sbReady, sbSelect, sbPatch } from '../../lib/utils/sb';
-import { executePipeline, type ManyChatPayload, type PipelineResult } from '../../api/manychat-webhook';
+import type { EmailGuess } from '../lib/utils/extract';
+import { sbReady, sbSelect, sbPatch } from '../lib/utils/sb';
+import { executePipeline, type ManyChatPayload, type PipelineResult } from './manychat-webhook';
 
 const MAX_BATCH = 100;
 
