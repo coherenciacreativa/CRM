@@ -3,15 +3,17 @@ import type { EmailGuess } from '../lib/utils/extract.js';
 import { sbReady, sbSelect, sbPatch } from '../lib/utils/sb.js';
 import { executePipeline, type ManyChatPayload, type PipelineResult } from './manychat-webhook.js';
 
-const MAX_BATCH = 100;
+const DEFAULT_LIMIT = 100;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const tokenOk =
-      !process.env.API_TOKEN ||
-      req.headers['x-api-token'] === process.env.API_TOKEN ||
-      req.query?.token === process.env.API_TOKEN;
-    if (!tokenOk) {
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      res.setHeader('Allow', ['GET', 'POST']);
+      return res.status(405).json({ ok: false, error: 'method_not_allowed' });
+    }
+
+    const providedToken = String(req.headers['x-api-token'] || req.query?.token || '');
+    if (process.env.API_TOKEN && providedToken !== process.env.API_TOKEN) {
       return res.status(401).json({ ok: false, error: 'unauthorized' });
     }
 
@@ -19,9 +21,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(503).json({ ok: false, error: 'missing_supabase_env' });
     }
 
-    const qs = `webhook_events?select=*&status=in.(NEW,FAILED)&order=created_at.asc&limit=${MAX_BATCH}`;
-    const selectResult = await sbSelect(qs);
+    const requestedLimit = parseInt(String(req.query?.limit ?? DEFAULT_LIMIT), 10);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.min(200, Math.max(1, requestedLimit))
+      : DEFAULT_LIMIT;
 
+    const selectResult = await sbSelect(
+      `webhook_events?select=*&status=in.(NEW,FAILED)&order=created_at.asc&limit=${limit}`,
+    );
     if (!selectResult.ok || !Array.isArray(selectResult.json)) {
       return res.status(500).json({ ok: false, error: 'select_failed', detail: selectResult.json });
     }
@@ -29,7 +36,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const events = selectResult.json as Array<Record<string, unknown>>;
     let processed = 0;
     let failed = 0;
-    const results: Array<{ id: number | string; status: 'PROCESSED' | 'FAILED'; error: string | null }> = [];
 
     for (const event of events) {
       const id = event.id as number | string;
@@ -69,16 +75,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       await sbPatch(`webhook_events?id=eq.${encodeURIComponent(String(id))}`, patchPayload);
-      results.push({ id, status, error: errorMessage });
     }
 
     return res.status(200).json({
       ok: true,
-      started: true,
-      total: events.length,
+      checked: events.length,
       processed,
       failed,
-      results,
     });
   } catch (error) {
     return res.status(500).json({ ok: false, error: (error as Error).message });
