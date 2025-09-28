@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { EmailGuess } from '../lib/utils/extract';
-import { sbReady, sbSelect, sbPatch } from '../lib/utils/sb';
-import { executePipeline, type ManyChatPayload, type PipelineResult } from './manychat-webhook';
+import type { EmailGuess } from '../lib/utils/extract.js';
+import { sbReady, sbSelect, sbPatch } from '../lib/utils/sb.js';
+import { executePipeline, type ManyChatPayload, type PipelineResult } from './manychat-webhook.js';
 
 const MAX_BATCH = 100;
 
@@ -19,11 +19,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(503).json({ ok: false, error: 'missing_supabase_env' });
     }
 
-    const selectResult = await sbSelect('webhook_events', {
-      status: 'in.(NEW,FAILED)',
-      order: 'created_at.asc',
-      limit: MAX_BATCH,
-    });
+    const qs = `webhook_events?select=*&status=in.(NEW,FAILED)&order=created_at.asc&limit=${MAX_BATCH}`;
+    const selectResult = await sbSelect(qs);
 
     if (!selectResult.ok || !Array.isArray(selectResult.json)) {
       return res.status(500).json({ ok: false, error: 'select_failed', detail: selectResult.json });

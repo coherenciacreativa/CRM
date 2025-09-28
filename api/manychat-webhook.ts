@@ -1,7 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { extractEmail, type EmailGuess } from '../lib/utils/extract';
-import { getDmText, makeDedupeKey } from '../lib/utils/payload';
-import { sbInsert, sbPatch, sbReady } from '../lib/utils/sb';
+import { extractEmail, type EmailGuess } from '../lib/utils/extract.js';
+import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
+import { sbInsert, sbPatch, sbReady } from '../lib/utils/sb.js';
+
+console.log('[manychat-webhook] module loaded');
 
 const MAILERLITE_API_KEY =
   process.env.MAILERLITE_API_KEY ?? process.env.MAILERLITE_TOKEN ?? process.env.ML_API_KEY;
@@ -1198,6 +1200,7 @@ const validateSecret = (req: VercelRequest): boolean => {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('[manychat-webhook] start');
   const provider = 'instagram';
   try {
     if (req.method !== 'POST') {
