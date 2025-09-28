@@ -1,5 +1,10 @@
 const ENDPOINT = 'https://api.cron-job.org';
-const API_KEY = process.env.CRONJOB_API_KEY || '';
+const rawKey = process.env.CRONJOB_API_KEY || '';
+let API_KEY = rawKey.trim();
+if (API_KEY.length % 4 !== 0) {
+  const padLength = (4 - (API_KEY.length % 4)) % 4;
+  API_KEY = API_KEY + '='.repeat(padLength);
+}
 
 if (!API_KEY) {
   console.error('Missing CRONJOB_API_KEY');
