@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { extractEmail, type EmailGuess } from '../lib/utils/extract.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
-import { sbInsert, sbPatch, sbReady } from '../lib/utils/sb.js';
+import { sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
 
 console.log('[manychat-webhook] module loaded');
 
@@ -867,6 +867,17 @@ const insertContact = async (record: Record<string, unknown>) => {
   return body[0];
 };
 
+const fetchContactByEmail = async (email: string | undefined) => {
+  if (!email) return null;
+  const result = await sbSelect(
+    `contacts?select=*&email=eq.${encodeURIComponent(email)}&limit=1`,
+  );
+  if (!result.ok || !Array.isArray(result.json) || !result.json.length) {
+    return null;
+  }
+  return result.json[0] as Record<string, unknown>;
+};
+
 const insertInteraction = async (
   contactId: string,
   payload: ManyChatPayload,
@@ -1117,7 +1128,35 @@ export const executePipeline = async (
     throw new Error('Missing ManyChat contact id');
   }
 
-  const contactRow = await insertContact(record);
+  let contactRow: Record<string, unknown> | null = null;
+  try {
+    contactRow = await insertContact(record);
+  } catch (contactError) {
+    const message = (contactError as Error).message || '';
+    const duplicateEmail = message.includes('contacts_email_key') || message.includes('duplicate key value');
+    if (!duplicateEmail) {
+      throw contactError;
+    }
+
+    const existingByEmail = await fetchContactByEmail(safetyString(record.email));
+    if (!existingByEmail) {
+      throw contactError;
+    }
+
+    contactRow = existingByEmail;
+
+    try {
+      const patchPayload = { ...record } as Record<string, unknown>;
+      delete patchPayload.manychat_contact_id;
+      await sbPatch(`contacts?id=eq.${encodeURIComponent(String(existingByEmail.id))}`, patchPayload);
+    } catch (patchError) {
+      console.warn('Failed to patch contact after duplicate email match', patchError);
+    }
+  }
+
+  if (!contactRow) {
+    throw new Error('Supabase contact insert failed without fallback');
+  }
 
   const resolvedEmail =
     parsedLead.email ??
