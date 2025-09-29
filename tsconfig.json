@@ -22,6 +22,7 @@
     "api/**/*",
     "lib/**/*",
     "pages/**/*",
+    "__tests__/**/*",
     "types/**/*"
   ],
   "exclude": [

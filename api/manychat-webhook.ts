@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { extractEmail, type EmailGuess } from '../lib/utils/extract.js';
 import { extractLocationFromText } from '../lib/utils/location.js';
+import {
+  deriveName,
+  deriveNameFromEmail,
+  humanizeIdentifier,
+  isBadName,
+  sanitizeName,
+} from '../lib/utils/name.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
 import { safeSbPatchContactByEmail, sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
@@ -53,114 +60,6 @@ const toTitleCase = (value: string): string =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 
-// --- Anti-placeholder name guards ---
-const BAD_NAMES = new Set([
-  'full name',
-  'fullname',
-  'your name',
-  'tu nombre',
-  'name',
-  'n/a',
-  'na',
-  '-',
-  '—',
-  'unknown',
-  'test',
-  'prueba',
-]);
-
-const sanitizeName = (raw?: string): string | undefined => {
-  const s = typeof raw === 'string' ? raw.trim() : '';
-  if (!s) return undefined;
-  if (s.includes('@')) return undefined;
-  if (BAD_NAMES.has(s.toLowerCase())) return undefined;
-  const letters = s.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, '');
-  const digits = s.replace(/\D/g, '');
-  if (letters.length < 2) return undefined;
-  if (digits.length > Math.max(2, Math.floor(letters.length / 2))) return undefined;
-  const t = s.replace(/[._\-]+/g, ' ').replace(/\s+/g, ' ').trim();
-  return toTitleCase(t);
-};
-
-const humanizeIdentifier = (value: string | undefined): string | undefined => {
-  if (!value) return undefined;
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  const normalized = trimmed.replace(/^[^a-z0-9]+/i, '').replace(/[^a-z0-9]+$/i, '');
-  if (!normalized) return undefined;
-  const tokens = normalized.split(/[_.\-\s]+/).filter(Boolean);
-  if (!tokens.length) return undefined;
-  return tokens.map((token) => toTitleCase(token)).join(' ');
-};
-
-const deriveNameFromEmail = (email: string | undefined): string | undefined => {
-  if (!email) return undefined;
-  const trimmed = email.trim();
-  if (!trimmed) return undefined;
-  const [local] = trimmed.split('@');
-  if (!local) return undefined;
-  const tokens = local.split(/[._+\-]+/).filter(Boolean);
-  if (tokens.length < 1) return undefined;
-  const meaningful = tokens.filter((token) => /[a-zA-Z]/.test(token));
-  if (!meaningful.length) return undefined;
-  if (meaningful.length === 1 && meaningful[0].length < 3) return undefined;
-  const candidate = meaningful.map((token) => toTitleCase(token)).join(' ');
-  return candidate || undefined;
-};
-
-const NAME_HEURISTICS: Array<(text: string) => string | undefined> = [
-  (text) => {
-    const match = text.match(/(?:mi\s+nombre\s+es|me\s+llamo|soy)\s+([a-záéíóúñü' ]{2,80})/i);
-    if (!match?.[1]) return undefined;
-    return match[1].replace(/[.,;].*$/, '').trim();
-  },
-  (text) => {
-    const match = text.match(
-      /(?:aqui|aquí)?\s*(?:te\s+escribe|te\s+habla|te\s+saluda|quien\s+te\s+escribe\s+es|quien\s+te\s+saluda\s+es|este\s+es)\s+([a-záéíóúñü' ]{2,80})/i,
-    );
-    if (!match?.[1]) return undefined;
-    return match[1].replace(/[.,;].*$/, '').trim();
-  },
-];
-
-const extractNameFromDmText = (text?: string): string | undefined => {
-  if (!text) return undefined;
-  const cleaned = text.replace(/\s+/g, ' ').trim();
-  for (const heuristic of NAME_HEURISTICS) {
-    const candidate = heuristic(cleaned);
-    const sanitized = sanitizeName(candidate);
-    if (sanitized) return sanitized;
-  }
-  return undefined;
-};
-
-const derivePreferredName = (input: {
-  igProfileName?: string;
-  existingName?: string;
-  dmName?: string;
-  igUsername?: string;
-  email?: string | null | undefined;
-}): string | undefined => {
-  const candidates: string[] = [];
-  const pushCandidate = (value?: string) => {
-    const sanitized = sanitizeName(value);
-    if (sanitized && !candidates.includes(sanitized)) {
-      candidates.push(sanitized);
-    }
-  };
-
-  pushCandidate(input.igProfileName);
-  pushCandidate(input.existingName);
-  pushCandidate(input.dmName);
-  if (input.igUsername) {
-    pushCandidate(humanizeIdentifier(input.igUsername) ?? input.igUsername);
-  }
-  if (input.email) {
-    pushCandidate(deriveNameFromEmail(input.email));
-  }
-
-  return candidates[0];
-};
 
 const splitName = (value: string | undefined): { first?: string; last?: string } => {
   if (!value) return {};
@@ -986,7 +885,7 @@ const insertInteraction = async (
   }
 };
 
-type MailerLiteSyncInput = {
+type MailerLiteUpsertInput = {
   email?: string;
   name?: string;
   country?: string;
@@ -995,6 +894,8 @@ type MailerLiteSyncInput = {
   message?: string;
   instagramUsername?: string;
   manychatId?: string;
+  fields?: Record<string, string>;
+  groups?: Array<number | string>;
 };
 
 const shouldRetryMailerLite = (status: number) => status === 429 || status >= 500;
@@ -1010,7 +911,7 @@ const readResponsePayload = async (response: any): Promise<Record<string, unknow
   }
 };
 
-const syncMailerLite = async (input: MailerLiteSyncInput) => {
+const mailerliteUpsert = async (input: MailerLiteUpsertInput) => {
   if (!MAILERLITE_API_KEY) {
     console.warn('MailerLite sync skipped: missing MAILERLITE_API_KEY');
     return;
@@ -1021,11 +922,11 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
     return;
   }
 
-  const triggerGroups = resolveMlGroups();
+  const triggerGroups = (input.groups && input.groups.length ? input.groups : resolveMlGroups()).map((value) =>
+    typeof value === 'string' ? Number(value) : Number(value || 0),
+  ).filter((value) => Number.isFinite(value) && value > 0);
   if (!triggerGroups.length) {
-    throw new Error(
-      'MailerLite sync aborted: no group IDs configured (set MAILERLITE_GROUP_IDS, MAILERLITE_GROUP_ID or MAILERLITE_ALLOWED_GROUP_ID)',
-    );
+    throw new Error('MailerLite sync aborted: no group IDs resolved (check resolveMlGroups configuration)');
   }
 
   const fields: Record<string, string> = {};
@@ -1033,6 +934,11 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
   if (input.city) fields.city = input.city;
   if (input.phone) fields.phone = input.phone;
   if (input.instagramUsername) fields.instagram = input.instagramUsername;
+  for (const [key, value] of Object.entries(input.fields ?? {})) {
+    if (typeof value === 'string' && value.trim()) {
+      fields[key] = value.trim();
+    }
+  }
 
   const safeName = sanitizeName(input.name);
   const { first: firstName, last: lastName } = splitName(safeName);
@@ -1058,11 +964,8 @@ const syncMailerLite = async (input: MailerLiteSyncInput) => {
   const payload: Record<string, unknown> = {
     email,
     resubscribe: true,
+    groups: triggerGroups,
   };
-
-  if (triggerGroups.length) {
-    payload.groups = triggerGroups;
-  }
 
   if (safeName || firstName) {
     payload.name = safeName ?? firstName;
@@ -1149,19 +1052,27 @@ export const executePipeline = async (
 
   const dmText = context.dmText ?? '';
   const locationGuess = extractLocationFromText(dmText);
-  if (locationGuess?.city && !parsedLead.city) parsedLead.city = locationGuess.city;
-  if (locationGuess?.country && !parsedLead.country) parsedLead.country = locationGuess.country;
-  if (locationGuess?.city && !record.city) record.city = locationGuess.city;
-  if (locationGuess?.country && !record.country) record.country = locationGuess.country;
+  const locationScore = locationGuess?.score ?? 0;
+  if (locationGuess?.city && locationScore >= 0.6 && !parsedLead.city) parsedLead.city = locationGuess.city;
+  if (locationGuess?.country && locationScore >= 0.6 && !parsedLead.country) parsedLead.country = locationGuess.country;
+  if (locationGuess?.city && locationScore >= 0.6 && !record.city) record.city = locationGuess.city;
+  if (locationGuess?.country && locationScore >= 0.6 && !record.country) record.country = locationGuess.country;
 
-  const dmDerivedName = extractNameFromDmText(dmText);
-  const preferredName = derivePreferredName({
+  const nameGuess = deriveName({
     igProfileName: context.igProfileName,
-    existingName: parsedLead.name ?? (typeof record.name === 'string' ? record.name : undefined),
-    dmName: dmDerivedName,
     igUsername: context.igUsername,
+    dmText,
     email: emailGuess?.email ?? parsedLead.email ?? (typeof record.email === 'string' ? record.email : undefined),
   });
+
+  const safeNameCandidate =
+    nameGuess.value && !isBadName(nameGuess.value) && nameGuess.score >= 0.6
+      ? nameGuess.value
+      : undefined;
+  if (!safeNameCandidate && nameGuess.value) {
+    console.log('name.placeholder_blocked', { raw: nameGuess.value, source: nameGuess.source });
+  }
+  const preferredName = safeNameCandidate ?? undefined;
 
   if (preferredName) {
     parsedLead.name = preferredName;
@@ -1259,16 +1170,22 @@ export const executePipeline = async (
     safetyString((contactRow as Record<string, unknown>).instagram_username) ?? safetyString(record.instagram_username);
   const resolvedManychatId =
     safetyString((contactRow as Record<string, unknown>).manychat_contact_id) ?? safetyString(record.manychat_contact_id);
+  const mailerFields: Record<string, string> = {};
+  if (safeNameCandidate) mailerFields.name = safeNameCandidate;
+  if (locationGuess?.city && locationScore >= 0.6) mailerFields.city = locationGuess.city;
+  if (locationGuess?.country && locationScore >= 0.6) mailerFields.country = locationGuess.country;
+  if (resolvedPhone) mailerFields.phone = resolvedPhone;
+  if (resolvedInstagram) mailerFields.instagram = resolvedInstagram;
 
   if (resolvedEmail) {
     const patchPayload: Record<string, unknown> = {};
     if (preferredName && !safetyString((contactRow as Record<string, unknown>).name)) {
       patchPayload.name = preferredName;
     }
-    if (locationGuess?.city && !safetyString((contactRow as Record<string, unknown>).city)) {
+    if (locationGuess?.city && locationScore >= 0.6 && !safetyString((contactRow as Record<string, unknown>).city)) {
       patchPayload.city = locationGuess.city;
     }
-    if (locationGuess?.country && !safetyString((contactRow as Record<string, unknown>).country)) {
+    if (locationGuess?.country && locationScore >= 0.6 && !safetyString((contactRow as Record<string, unknown>).country)) {
       patchPayload.country = locationGuess.country;
     }
     if (Object.keys(patchPayload).length) {
@@ -1285,15 +1202,16 @@ export const executePipeline = async (
   }
 
   try {
-    await syncMailerLite({
+    await mailerliteUpsert({
       email: resolvedEmail,
-      name: resolvedName,
+      name: preferredName ?? resolvedName,
       country: resolvedCountry,
       city: resolvedCity,
       phone: resolvedPhone,
       message: parsedLead.message,
       instagramUsername: resolvedInstagram,
       manychatId: resolvedManychatId,
+      fields: Object.keys(mailerFields).length ? mailerFields : undefined,
     });
   } catch (mailerliteError) {
     await postAlert(

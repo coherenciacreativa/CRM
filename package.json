@@ -7,13 +7,16 @@
     "@types/node": "^24.5.2",
     "@types/react": "19.1.15",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "cronjob:setup": "node scripts/setup-cronjob.mjs"
+    "test": "vitest run",
+    "cronjob:setup": "node scripts/setup-cronjob.mjs",
+    "fix:names": "node scripts/fix-ml-names.mjs"
   },
   "dependencies": {
     "next": "^13.5.6",

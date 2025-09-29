@@ -1,58 +1,35 @@
+import cities from '../../data/latam_cities.min.json' assert { type: 'json' };
+
 export type LocationGuess = { city?: string; country?: string; score: number; source: 'dm_text' | 'ig' };
 
-type CanonEntry = { city: string; country?: string; synonyms: string[] };
+const COUNTRIES = [
+  'argentina','bolivia','brasil','brazil','chile','colombia','costa rica','cuba','ecuador','el salvador',
+  'guatemala','haiti','haití','honduras','mexico','méxico','nicaragua','panama','panamá','paraguay',
+  'peru','perú','puerto rico','república dominicana','republica dominicana','uruguay','venezuela'
+];
 
-const CANON: Record<string, CanonEntry> = {
-  bogota: {
-    city: 'Bogotá',
-    country: 'Colombia',
-    synonyms: ['bogota', 'bogotá', 'bta', 'bogota dc', 'bogotá d.c.', 'santa fe de bogota', 'bogoá'],
-  },
-  medellin: { city: 'Medellín', country: 'Colombia', synonyms: ['medellin', 'medellín'] },
-  cali: { city: 'Cali', country: 'Colombia', synonyms: ['cali', 'santiago de cali'] },
-  barranquilla: { city: 'Barranquilla', country: 'Colombia', synonyms: ['barranquilla'] },
-  cartagena: { city: 'Cartagena', country: 'Colombia', synonyms: ['cartagena', 'cartagena de indias'] },
-  bucaramanga: { city: 'Bucaramanga', country: 'Colombia', synonyms: ['bucaramanga'] },
-  cucuta: { city: 'Cúcuta', country: 'Colombia', synonyms: ['cucuta', 'cúcuta'] },
-  pereira: { city: 'Pereira', country: 'Colombia', synonyms: ['pereira'] },
-  manizales: { city: 'Manizales', country: 'Colombia', synonyms: ['manizales'] },
-  armenia: { city: 'Armenia', country: 'Colombia', synonyms: ['armenia'] },
-  ibague: { city: 'Ibagué', country: 'Colombia', synonyms: ['ibague', 'ibagué'] },
-  neiva: { city: 'Neiva', country: 'Colombia', synonyms: ['neiva'] },
-  pasto: { city: 'Pasto', country: 'Colombia', synonyms: ['pasto'] },
-  popayan: { city: 'Popayán', country: 'Colombia', synonyms: ['popayan', 'popayán'] },
-  monteria: { city: 'Montería', country: 'Colombia', synonyms: ['monteria', 'montería'] },
-  villavicencio: { city: 'Villavicencio', country: 'Colombia', synonyms: ['villavicencio'] },
-  'santa marta': { city: 'Santa Marta', country: 'Colombia', synonyms: ['santa marta'] },
-  tunja: { city: 'Tunja', country: 'Colombia', synonyms: ['tunja'] },
-  valledupar: { city: 'Valledupar', country: 'Colombia', synonyms: ['valledupar'] },
-  soacha: { city: 'Soacha', country: 'Colombia', synonyms: ['soacha'] },
-  envigado: { city: 'Envigado', country: 'Colombia', synonyms: ['envigado'] },
-  itagui: { city: 'Itagüí', country: 'Colombia', synonyms: ['itagui', 'itagüí'] },
-  subachoque: { city: 'Subachoque', country: 'Colombia', synonyms: ['subachoque'] },
-  'la vega': { city: 'La Vega', country: 'Colombia', synonyms: ['la vega'] },
-  'buenos aires': { city: 'Buenos Aires', country: 'Argentina', synonyms: ['buenos aires', 'bs as'] },
-  lima: { city: 'Lima', country: 'Perú', synonyms: ['lima'] },
-  santiago: { city: 'Santiago', country: 'Chile', synonyms: ['santiago', 'santiago de chile'] },
-  quito: { city: 'Quito', country: 'Ecuador', synonyms: ['quito'] },
-  montevideo: { city: 'Montevideo', country: 'Uruguay', synonyms: ['montevideo'] },
-  asuncion: { city: 'Asunción', country: 'Paraguay', synonyms: ['asuncion', 'asunción'] },
-  'la paz': { city: 'La Paz', country: 'Bolivia', synonyms: ['la paz'] },
-  cdmx: {
-    city: 'Ciudad de México',
-    country: 'México',
-    synonyms: ['cdmx', 'mexico', 'méxico', 'ciudad de mexico', 'ciudad de méxico'],
-  },
-  panama: { city: 'Panamá', country: 'Panamá', synonyms: ['panama', 'panamá'] },
-};
+const STOPWORDS = new Set([
+  'la','el','los','las','de','del','en',
+  'ciudad','capital','region','región','estado','provincia','municipio',
+  'bella','bonita','hermosa','linda','preciosa','lindisima','lindísima','maravillosa'
+]);
 
-const strip = (value: string): string =>
-  value
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+const SPACE = /\s+/g;
+const DIAC = /[\u0300-\u036f]/g;
 
-const levenshtein = (a: string, b: string): number => {
+function strip(value: string) {
+  return value.normalize('NFKD').replace(DIAC, '').toLowerCase().trim();
+}
+
+function title(value: string) {
+  return value
+    .split(SPACE)
+    .filter(Boolean)
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w))
+    .join(' ');
+}
+
+function levenshtein(a: string, b: string) {
   const m = a.length;
   const n = b.length;
   if (m === 0) return n;
@@ -67,48 +44,110 @@ const levenshtein = (a: string, b: string): number => {
     }
   }
   return dp[m][n];
-};
+}
 
-const bestMatch = (raw: string) => {
-  const query = strip(raw.trim());
+type Entry = { key: string; city: string; country?: string };
+const INDEX: Entry[] = [];
+
+for (const item of cities as Array<{ city: string; country?: string; syn?: string[] }>) {
+  const base = strip(item.city);
+  INDEX.push({ key: base, city: item.city, country: item.country });
+  const syn = Array.isArray(item.syn) ? item.syn : [];
+  for (const alias of syn) {
+    INDEX.push({ key: strip(alias), city: item.city, country: item.country });
+  }
+}
+
+function bestCityMatch(raw: string) {
+  const query = strip(raw);
   if (!query) return null;
-  let best: { canon: CanonEntry; distance: number } | null = null;
-  for (const canon of Object.values(CANON)) {
-    for (const synonym of canon.synonyms) {
-      const distance = levenshtein(query, strip(synonym));
-      if (!best || distance < best.distance) {
-        best = { canon, distance };
-      }
-      if (distance === 0) break;
+  let best: { entry: Entry; dist: number } | null = null;
+  for (const entry of INDEX) {
+    const distance = levenshtein(query, entry.key);
+    if (!best || distance < best.dist) {
+      best = { entry, dist: distance };
     }
+    if (best.dist === 0) break;
   }
   if (!best) return null;
-  const ratio = best.distance / Math.max(3, query.length);
+  const ratio = best.dist / Math.max(3, query.length);
   if (ratio <= 0.3) {
-    return {
-      city: best.canon.city,
-      country: best.canon.country,
-      score: Number((0.8 - ratio * 0.5).toFixed(3)),
-    };
+    const score = 0.9 - ratio * 0.5;
+    return { city: best.entry.city, country: best.entry.country, score };
   }
   return null;
-};
+}
 
-export function extractLocationFromText(text?: string): LocationGuess | null {
-  if (!text) return null;
-  const normalized = ` ${text.replace(/\s+/g, ' ').trim()} `;
-  const pattern =
-    /\b(?:en|desde|soy de|vivo en|me encuentro en|estoy en|resido en|radico en|de la ciudad de|la ciudad de)\s+([A-Za-zÁÉÍÓÚÜÑáéíóúüñ\.\-\'\s]{2,})/i;
-  const match = normalized.match(pattern);
+function tryCountry(raw: string) {
+  const query = strip(raw);
+  if (!query) return null;
+  const match = COUNTRIES.find((c) => levenshtein(query, c) <= Math.ceil(Math.max(1, query.length * 0.2)));
   if (!match) return null;
-  let candidate = match[1]?.split(/[.,;]/)[0] ?? '';
-  candidate = candidate.replace(/\b(ciudad|de)\b/gi, ' ').replace(/\s+/g, ' ').trim();
-  if (!candidate) return null;
+  const mapping: Record<string, string> = {
+    mexico: 'México',
+    peru: 'Perú',
+    panama: 'Panamá',
+    haiti: 'Haití',
+    'republica dominicana': 'República Dominicana',
+  };
+  const normalized = strip(match);
+  return mapping[normalized] || title(match);
+}
 
-  const tokens = candidate.split(' ').slice(0, 3);
-  const joined = tokens.join(' ');
-  const guess =
-    bestMatch(joined) || bestMatch(tokens.slice(0, 2).join(' ')) || bestMatch(tokens[0]);
-  if (!guess) return null;
-  return { ...guess, source: 'dm_text' };
+function extractPhrase(input?: string) {
+  if (!input) return '';
+  const normal = ` ${input.replace(/\s+/g, ' ').trim()} `;
+  const pattern =
+    /\b(?:en|desde|soy de|vivo en|me encuentro en|estoy en|resido en|radico en|de la ciudad de|la ciudad de)\s+([A-Za-zÁÉÍÓÚÜÑáéíóúüñ\.\-'\s]{2,})/i;
+  const match = normal.match(pattern);
+  if (!match) return '';
+  let candidate = match[1]?.split(/[.;,\n]/)[0]?.trim() ?? '';
+  candidate = candidate
+    .replace(/\b(ciudad|capital|de|del|la|el|los|las|bella|bonita|hermosa|linda|preciosa|lindisima|lindísima|maravillosa)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return candidate;
+}
+
+export function extractLocationFromText(dm?: string): LocationGuess | null {
+  const phrase = extractPhrase(dm);
+  if (!phrase) return null;
+
+  const parts = phrase.split(/,|\s-\s/).map((p) => p.trim()).filter(Boolean);
+  const tokens = parts.length === 1 ? phrase.split(' ') : parts;
+
+  if (tokens.length >= 2) {
+    const maybeCountry = tryCountry(tokens[tokens.length - 1]);
+    if (maybeCountry) {
+      const cityCandidate = tokens
+        .slice(0, tokens.length - 1)
+        .filter((w) => !STOPWORDS.has(strip(w)))
+        .join(' ')
+        .trim();
+      const match = bestCityMatch(cityCandidate);
+      if (match) {
+        return { ...match, country: match.country || maybeCountry, source: 'dm_text' };
+      }
+      if (cityCandidate.length >= 3) {
+        return { city: title(cityCandidate), country: maybeCountry, score: 0.55, source: 'dm_text' };
+      }
+    }
+  }
+
+  const match = bestCityMatch(phrase);
+  if (match) {
+    return { ...match, source: 'dm_text' };
+  }
+
+  const rough = phrase
+    .split(' ')
+    .filter((w) => !STOPWORDS.has(strip(w)))
+    .slice(0, 3)
+    .join(' ')
+    .trim();
+  if (rough.length >= 3) {
+    return { city: title(rough), score: 0.5, source: 'dm_text' };
+  }
+
+  return null;
 }
