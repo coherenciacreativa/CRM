@@ -1,61 +1,36 @@
-import { createRequire } from 'module';
+import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 
-const CANDIDATE_MODULES = ['../integrations/ml-constants.js', '../integrations/mailerlite.js'];
+export function resolveMlGroups(): string[] {
+  const blobs: Array<string> = [];
 
-const collectTokens = (value: unknown, bucket: Set<string>) => {
-  if (!value) return;
-  if (Array.isArray(value)) {
-    for (const entry of value) {
-      collectTokens(entry, bucket);
+  for (const key of ['MAILERLITE_GROUP_IDS', 'MAILERLITE_GROUP_ID', 'MAILERLITE_ALLOWED_GROUP_ID'] as const) {
+    const value = process.env[key];
+    if (value) blobs.push(String(value));
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const legacy = require('../integrations/ml-constants.js');
+    const legacyValues = [legacy?.DEFAULT_GROUP_IDS, legacy?.TRIGGER_GROUP_IDS].filter(Boolean);
+    for (const entry of legacyValues) {
+      blobs.push(Array.isArray(entry) ? entry.join(',') : String(entry));
     }
-    return;
+  } catch (_) {
+    // optional legacy constants missing; ignore
   }
-  if (typeof value === 'number' || typeof value === 'bigint') {
-    bucket.add(String(value));
-    return;
-  }
-  if (typeof value === 'string') {
-    const matches = value.match(/\d+/g);
-    if (matches) {
-      for (const match of matches) {
-        if (match) bucket.add(match);
+
+  const out = new Set<string>();
+  for (const raw of blobs) {
+    for (const token of String(raw).split(/[\s,]+/)) {
+      const trimmed = token.trim();
+      if (!trimmed) continue;
+      if (/^\d{5,}$/.test(trimmed)) {
+        out.add(trimmed);
       }
     }
-  } else if (typeof value === 'object') {
-    for (const entry of Object.values(value as Record<string, unknown>)) {
-      collectTokens(entry, bucket);
-    }
-  }
-};
-
-/**
- * Devuelve los IDs de grupos de MailerLite a los que SIEMPRE agregamos a cada suscriptor nuevo.
- * Tolerante con envs legacy y con posibles constantes ya existentes en el repo.
- */
-export function resolveMlGroups(): string[] {
-  const uniqueIds = new Set<string>();
-
-  const envCandidates = [
-    process.env.MAILERLITE_GROUP_IDS,
-    process.env.MAILERLITE_GROUP_ID,
-    process.env.MAILERLITE_ALLOWED_GROUP_ID,
-    process.env.ML_GROUPS,
-  ];
-
-  for (const candidate of envCandidates) {
-    collectTokens(candidate, uniqueIds);
   }
 
-  for (const modPath of CANDIDATE_MODULES) {
-    try {
-      const legacy = require(modPath);
-      collectTokens(legacy, uniqueIds);
-    } catch (error) {
-      // no-op: module not found or invalid shape
-    }
-  }
-
-  return Array.from(uniqueIds);
+  return Array.from(out);
 }

@@ -16,7 +16,10 @@
     "start": "next start",
     "test": "vitest run",
     "cronjob:setup": "node scripts/setup-cronjob.mjs",
-    "fix:names": "node scripts/fix-ml-names.mjs"
+    "fix:names": "node scripts/fix-ml-names.mjs",
+    "ml:cleanup-lastname": "node scripts/cleanup-ml-lastname.mjs",
+    "backfill:names": "node scripts/backfill_names.mjs",
+    "dev:set-debug": "vercel env add DEBUG_TOKEN"
   },
   "dependencies": {
     "next": "^13.5.6",

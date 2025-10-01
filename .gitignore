@@ -8,3 +8,7 @@ __pycache__/
 mlite_tmp_subs.json
 mlite_groups.json
 mlite_campaigns_sent.json
+.next
+out
+node_modules
+.env*.local

@@ -56,6 +56,10 @@ export async function safeSbPatchContactByEmail(email: string | undefined, patch
     if (!response.ok && response.status >= 500) {
       throw new Error(`Supabase contact patch failed (status ${response.status})`);
     }
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Supabase contact patch failed: ${text || response.status}`);
+    }
   } catch (error) {
     console.warn('safeSbPatchContactByEmail failed', error);
   }

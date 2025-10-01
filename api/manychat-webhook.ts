@@ -8,9 +8,10 @@ import {
   isBadName,
   sanitizeName,
 } from '../lib/utils/name.js';
+import { bestName } from '../lib/names.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
-import { safeSbPatchContactByEmail, sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
+import { sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
 
 console.log('[manychat-webhook] module loaded');
 
@@ -21,7 +22,6 @@ const MAILERLITE_DEFAULT_NOTES =
   process.env.DEFAULT_NOTES ??
   'Lead captured via Instagram DM';
 const MAILERLITE_ENDPOINT = 'https://connect.mailerlite.com/api/subscribers';
-const MAX_MAILERLITE_ATTEMPTS = 3;
 const ALERT_WEBHOOK_URL = process.env.ALERT_WEBHOOK_URL ?? process.env.ALERT_SLACK_WEBHOOK;
 const ALERT_WEBHOOK_CHANNEL = process.env.ALERT_WEBHOOK_CHANNEL ?? 'crm-alerts';
 
@@ -50,8 +50,6 @@ const normalize = (value: string): string =>
 
 const normalizeLabel = (value: string): string =>
   normalize(value).replace(/[^a-z0-9]+/g, ' ').trim();
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const toTitleCase = (value: string): string =>
   value
@@ -370,10 +368,32 @@ const fallbackString = (payload: ManyChatPayload, key: string): string | undefin
   return safetyString((payload as Record<string, unknown>)[key]);
 };
 
+const getFullContactData = (payload: ManyChatPayload | Record<string, unknown>): Record<string, unknown> | null => {
+  if (!payload || typeof payload !== 'object') return null;
+  const raw = payload as Record<string, unknown>;
+  const candidate = raw.Full_Contact_Data ?? raw.full_contact_data ?? raw.fullContactData;
+  if (!candidate) return null;
+  if (Array.isArray(candidate)) {
+    for (const entry of candidate) {
+      if (entry && typeof entry === 'object') {
+        return entry as Record<string, unknown>;
+      }
+    }
+    return null;
+  }
+  if (typeof candidate === 'object') {
+    return candidate as Record<string, unknown>;
+  }
+  return null;
+};
+
 const coerceContact = (payload: ManyChatPayload): ManyChatContact => {
   const contact = { ...(payload.contact ?? {}) } as ManyChatContact;
   const rawPayload = (payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {}) as Record<string, unknown>;
   const fromPayload = (key: string) => fallbackString(payload, key);
+  const fullContact = getFullContactData(payload);
+  const fromFullContact = (key: string) =>
+    fullContact && typeof fullContact === 'object' ? safetyString((fullContact as Record<string, unknown>)[key]) : undefined;
 
   contact.id = contact.id ?? fromPayload('contact_id');
   contact.name = contact.name ?? fromPayload('full_name');
@@ -381,6 +401,15 @@ const coerceContact = (payload: ManyChatPayload): ManyChatContact => {
   contact.last_name = contact.last_name ?? fromPayload('last_name');
   contact.email = contact.email ?? fromPayload('email') ?? fromPayload('subscriber_email');
   contact.phone = contact.phone ?? fromPayload('phone') ?? fromPayload('subscriber_phone');
+
+  const fullContactIdRaw = fromFullContact('id') ?? fromFullContact('key');
+  const fullContactId = fullContactIdRaw ? fullContactIdRaw.replace(/^user:/i, '') : undefined;
+  contact.id = contact.id ?? fullContactId;
+  contact.name = contact.name ?? fromFullContact('name');
+  contact.first_name = contact.first_name ?? fromFullContact('first_name');
+  contact.last_name = contact.last_name ?? fromFullContact('last_name');
+  contact.email = contact.email ?? fromFullContact('email');
+  contact.phone = contact.phone ?? fromFullContact('phone');
 
   if (!contact.emails) {
     const value = rawPayload['emails'];
@@ -400,6 +429,10 @@ const coerceContact = (payload: ManyChatPayload): ManyChatContact => {
         }
       }
     }
+  }
+
+  if (!contact.emails && fromFullContact('email')) {
+    contact.emails = [fromFullContact('email')!];
   }
 
   if (!contact.phones) {
@@ -426,6 +459,34 @@ const coerceContact = (payload: ManyChatPayload): ManyChatContact => {
     const tags = rawPayload['tags'];
     if (Array.isArray(tags)) {
       contact.tags = tags as ManyChatContact['tags'];
+    }
+  }
+
+  const fullContactCustomFields = fullContact && typeof fullContact === 'object' ? (fullContact as Record<string, unknown>).custom_fields : undefined;
+  if (fullContactCustomFields) {
+    if (!contact.custom_fields) {
+      contact.custom_fields = fullContactCustomFields as ManyChatCustomField;
+    } else if (
+      typeof contact.custom_fields === 'object' &&
+      !Array.isArray(contact.custom_fields) &&
+      typeof fullContactCustomFields === 'object' &&
+      !Array.isArray(fullContactCustomFields)
+    ) {
+      contact.custom_fields = {
+        ...(fullContactCustomFields as Record<string, unknown>),
+        ...(contact.custom_fields as Record<string, unknown>),
+      } as ManyChatCustomField;
+    }
+  }
+
+  const fullContactIgUsername = fromFullContact('ig_username');
+  const fullContactIgId = fromFullContact('ig_id');
+  if (fullContactIgUsername) {
+    const existingProfiles = contact.social_profiles ?? [];
+    const alreadyPresent = existingProfiles.some((profile) => safetyString(profile?.username) === fullContactIgUsername);
+    if (!alreadyPresent) {
+      existingProfiles.push({ type: 'instagram', username: fullContactIgUsername, id: fullContactIgId });
+      contact.social_profiles = existingProfiles;
     }
   }
 
@@ -497,9 +558,20 @@ const extractInstagram = (contact: ManyChatContact | undefined): { username?: st
 
 const extractContactRecord = (payload: ManyChatPayload) => {
   const contact = coerceContact(payload);
+  const fullContact = getFullContactData(payload);
+  const fullContactKeyRaw = fullContact
+    ? (fullContact as Record<string, unknown>).id ?? (fullContact as Record<string, unknown>).key
+    : undefined;
+  const normalizedFullId = (() => {
+    const raw = safetyString(fullContactKeyRaw);
+    if (!raw) return undefined;
+    return raw.replace(/^user:/i, '');
+  })();
   const { username: instagramUsername, id: instagramId } = extractInstagram(contact);
   const fallbackInstagramUsername = fallbackString(payload, 'instagram_username');
   const fallbackInstagramId = fallbackString(payload, 'instagram_id') ?? fallbackString(payload, 'instagram_user_id');
+  const fullIgUsername = fullContact ? safetyString((fullContact as Record<string, unknown>).ig_username ?? (fullContact as Record<string, unknown>).username) : undefined;
+  const fullIgId = fullContact ? safetyString((fullContact as Record<string, unknown>).ig_id ?? (fullContact as Record<string, unknown>).instagram_id) : undefined;
 
   const customEmail = findCustomField(contact.custom_fields, [
     'email',
@@ -518,8 +590,8 @@ const extractContactRecord = (payload: ManyChatPayload) => {
     'instagram_handle',
     'instagram_username',
     'ig_username',
-  ]) ?? fallbackInstagramUsername;
-  const customIgId = findCustomField(contact.custom_fields, ['instagram_id', 'ig_id']) ?? fallbackInstagramId;
+  ]) ?? fallbackInstagramUsername ?? fullIgUsername;
+  const customIgId = findCustomField(contact.custom_fields, ['instagram_id', 'ig_id']) ?? fallbackInstagramId ?? fullIgId;
   const customCountry = findCustomField(contact.custom_fields, [
     'country',
     'pais',
@@ -532,30 +604,41 @@ const extractContactRecord = (payload: ManyChatPayload) => {
     'city_name',
   ]);
 
-  const rawEmail = safetyString(contact.email) ?? safetyString(contact.emails && pickFirst(contact.emails));
+  const fullContactEmail = fullContact ? safetyString((fullContact as Record<string, unknown>).email) : undefined;
+  const rawEmail = safetyString(contact.email) ?? safetyString(contact.emails && pickFirst(contact.emails)) ?? fullContactEmail;
   const rawPhone = safetyString(contact.phone) ?? safetyString(contact.phones && pickFirst(contact.phones));
 
   const email = safetyString(customEmail ?? rawEmail ?? fallbackString(payload, 'contact_email'));
   const phone = safetyString(customPhone ?? rawPhone ?? fallbackString(payload, 'contact_phone'));
-  const manychatId = safetyString(contact.id) ?? fallbackString(payload, 'contact_id');
+  const manychatId = safetyString(contact.id) ?? fallbackString(payload, 'contact_id') ?? normalizedFullId;
 
+  const fullContactName = fullContact ? safetyString((fullContact as Record<string, unknown>).name) : undefined;
+  const fullFirstName = fullContact ? safetyString((fullContact as Record<string, unknown>).first_name) : undefined;
+  const fullLastName = fullContact ? safetyString((fullContact as Record<string, unknown>).last_name) : undefined;
+
+  const assembledNameParts = [safetyString(contact.first_name), safetyString(contact.last_name)].filter(
+    (part): part is string => Boolean(part),
+  );
+  const assembledNameValue = assembledNameParts.length ? assembledNameParts.join(' ').trim() : undefined;
   const rawName =
-    (safetyString(contact.name) ??
-      [safetyString(contact.first_name), safetyString(contact.last_name)].filter(Boolean).join(' ').trim()) ||
+    safetyString(contact.name) ??
+    safetyString(assembledNameValue) ??
+    fullContactName ??
     '';
   const name = sanitizeName(humanizeIdentifier(rawName) ?? rawName);
 
   const record: Record<string, unknown> = {
     manychat_contact_id: manychatId,
     name: name || undefined, // only if it passed sanitizeName
-    first_name: safetyString(contact.first_name),
-    last_name: safetyString(contact.last_name),
+    first_name: safetyString(contact.first_name) ?? fullFirstName ?? undefined,
+    last_name: safetyString(contact.last_name) ?? fullLastName ?? undefined,
     email,
     phone,
     country: safetyString(customCountry) ?? fallbackString(payload, 'country'),
     city: safetyString(customCity) ?? fallbackString(payload, 'city'),
-    instagram_username: safetyString(customHandle) ?? instagramUsername,
-    ig_user_id: safetyString(customIgId) ?? instagramId,
+    instagram_username: safetyString(customHandle) ?? instagramUsername ?? fullIgUsername,
+    ig_user_id: safetyString(customIgId) ?? instagramId ?? fullIgId,
+    ig_display_name: fullContactName ?? undefined,
     tags: mapTags(contact.tags),
     source: 'manychat',
     updated_at: new Date().toISOString(),
@@ -575,6 +658,7 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
     sourceRanks: {},
   };
 
+  const fullContact = getFullContactData(payload);
   const { username: instagramUsernameRaw } = extractInstagram(contact);
   const instagramUsername = safetyString(instagramUsernameRaw);
 
@@ -634,6 +718,19 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   const contactEmail = safetyString(contact?.email) ?? safetyString(contact?.emails && pickFirst(contact.emails));
   capture('email', contactEmail, 'contact');
 
+  if (fullContact) {
+    const fcRecord = fullContact as Record<string, unknown>;
+    capture('name', safetyString(fcRecord.name), 'contact:full');
+    capture('email', safetyString(fcRecord.email), 'contact:full');
+    const customFields = fcRecord.custom_fields as Record<string, unknown> | undefined;
+    const messageCandidate =
+      safetyString(fcRecord.last_input_text) ||
+      (customFields && typeof customFields === 'object'
+        ? safetyString((customFields as Record<string, unknown>).last_dm_text)
+        : undefined);
+    if (messageCandidate) capture('message', messageCandidate, 'contact:full');
+  }
+
   const assembledName =
     safetyString(contact?.name) ??
     [safetyString(contact?.first_name), safetyString(contact?.last_name)].filter(Boolean).join(' ').trim();
@@ -656,6 +753,16 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   pushText(fallbackString(payload, 'last_text_input'));
   pushText(fallbackString(payload, 'message_text'));
   pushText(fallbackString(payload, 'text'));
+
+  if (fullContact) {
+    const fcRecord = fullContact as Record<string, unknown>;
+    pushText(safetyString(fcRecord.last_input_text));
+    pushText(
+      fcRecord.custom_fields && typeof fcRecord.custom_fields === 'object'
+        ? safetyString((fcRecord.custom_fields as Record<string, unknown>).last_dm_text)
+        : undefined,
+    );
+  }
 
   if (payload.data && typeof payload.data === 'object') {
     const dataObject = payload.data as Record<string, unknown>;
@@ -791,6 +898,32 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   return details;
 };
 
+const OPTIONAL_CONTACT_COLUMNS = new Set(['ig_username', 'ig_display_name', 'name_source']);
+
+const pruneOptionalColumns = (payload: Record<string, unknown>, errorMessage: string | undefined) => {
+  if (!errorMessage) return false;
+  let mutated = false;
+  for (const column of OPTIONAL_CONTACT_COLUMNS) {
+    if (errorMessage.includes(`'${column}'`) && column in payload) {
+      delete payload[column];
+      mutated = true;
+    }
+  }
+  return mutated;
+};
+
+const fetchContactByColumn = async (column: string, value: string | undefined | null) => {
+  const safe = safetyString(value);
+  if (!safe) return null;
+  const result = await sbSelect(
+    `contacts?select=*&${column}=eq.${encodeURIComponent(safe)}&limit=1`,
+  );
+  if (!result.ok || !Array.isArray(result.json) || !result.json.length) {
+    return null;
+  }
+  return result.json[0] as Record<string, unknown>;
+};
+
 const insertContact = async (record: Record<string, unknown>) => {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     throw new Error('Missing Supabase credentials');
@@ -811,6 +944,11 @@ const insertContact = async (record: Record<string, unknown>) => {
 
   if (!response.ok) {
     const error = body && typeof body === 'object' ? body : { message: bodyText };
+    const message = typeof error === 'object' && error ? String((error as Record<string, unknown>).message ?? '') : String(error);
+    const prunedRecord = { ...record };
+    if (pruneOptionalColumns(prunedRecord, message)) {
+      return insertContact(prunedRecord);
+    }
     throw new Error(`Supabase contacts upsert failed: ${JSON.stringify(error)}`);
   }
 
@@ -821,16 +959,51 @@ const insertContact = async (record: Record<string, unknown>) => {
   return body[0];
 };
 
-const fetchContactByEmail = async (email: string | undefined) => {
-  if (!email) return null;
-  const result = await sbSelect(
-    `contacts?select=*&email=eq.${encodeURIComponent(email)}&limit=1`,
-  );
-  if (!result.ok || !Array.isArray(result.json) || !result.json.length) {
-    return null;
+const patchContactByEmail = async (email: string | undefined, patch: Record<string, unknown>) => {
+  if (!email || !email.trim()) return;
+  if (!patch || !Object.keys(patch).length) return;
+  try {
+    const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/contacts?email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH',
+      headers: {
+        ...jsonHeaders,
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(patch),
+    });
+    if (response.ok) return;
+    const text = await response.text();
+    const message = text || String(response.status);
+    if (pruneOptionalColumns(patch, message)) {
+      await patchContactByEmail(email, patch);
+      return;
+    }
+    if (response.status >= 500) {
+      throw new Error(`Supabase contact patch failed (status ${response.status})`);
+    }
+    console.warn('Supabase contact patch failed', response.status, message);
+  } catch (error) {
+    console.warn('patchContactByEmail failed', error);
   }
-  return result.json[0] as Record<string, unknown>;
 };
+
+const fetchContactByEmail = async (email: string | undefined) => {
+  return fetchContactByColumn('email', email);
+};
+
+const fetchContactByManychatId = async (manychatId: string | undefined | null) =>
+  fetchContactByColumn('manychat_contact_id', manychatId);
+
+const fetchContactByIgUserId = async (igUserId: string | undefined | null) =>
+  fetchContactByColumn('ig_user_id', igUserId);
+
+const fetchContactByInstagramUsername = async (username: string | undefined | null) =>
+  fetchContactByColumn('instagram_username', username);
+
+const fetchContactByIgUsername = async (username: string | undefined | null) =>
+  fetchContactByColumn('ig_username', username);
 
 const insertInteraction = async (
   contactId: string,
@@ -895,37 +1068,67 @@ type MailerLiteUpsertInput = {
   instagramUsername?: string;
   manychatId?: string;
   fields?: Record<string, string>;
-  groups?: Array<number | string>;
+  groups?: string[];
 };
 
-const shouldRetryMailerLite = (status: number) => status === 429 || status >= 500;
+type MailerLiteSyncResult = {
+  ok: true;
+  status: number;
+  json: unknown;
+  groupsSent: string[];
+  keyFp: string;
+};
 
-const readResponsePayload = async (response: any): Promise<Record<string, unknown> | null> => {
-  const text = await response.text();
-  if (!text) return null;
-  try {
-    return JSON.parse(text) as Record<string, unknown>;
-  } catch (error) {
-    console.error('Failed to parse MailerLite response JSON', error, text);
-    return { raw: text } as Record<string, unknown>;
+const getMailerLiteKey = () =>
+  process.env.MAILERLITE_API_KEY || process.env.MAILERLITE_TOKEN || process.env.ML_API_KEY || '';
+
+const mailerLiteKeyFingerprint = (key: string) => (key ? key.slice(-6) : '');
+
+const looksLikePlaceholder = (value: string) =>
+  /\{\{|\}\}|%7B%7B|%7D%7D|<[^>]*>|\[[^\]]*\]/i.test(value);
+
+const normalizeNameSource = (source: string | undefined): 'instagram_full_name' | 'instagram_handle_titlecase' | 'email_local' | 'manual' | 'unknown' => {
+  switch (source) {
+    case 'instagram_full_name':
+    case 'instagram_handle_titlecase':
+    case 'email_local':
+    case 'manual':
+    case 'unknown':
+      return source;
+    case 'ig_full_name':
+      return 'instagram_full_name';
+    case 'ig_username':
+      return 'instagram_handle_titlecase';
+    case 'dm_text':
+      return 'manual';
+    default:
+      return 'unknown';
   }
 };
 
-const mailerliteUpsert = async (input: MailerLiteUpsertInput) => {
-  if (!MAILERLITE_API_KEY) {
-    console.warn('MailerLite sync skipped: missing MAILERLITE_API_KEY');
-    return;
+const mailerliteUpsert = async (input: MailerLiteUpsertInput): Promise<MailerLiteSyncResult | undefined> => {
+  const key = getMailerLiteKey();
+  if (!key) {
+    console.warn('MailerLite sync skipped: missing MAILERLITE_API_KEY/MAILERLITE_TOKEN');
+    return undefined;
   }
+
   const email = safetyString(input.email);
   if (!email) {
     console.warn('MailerLite sync skipped: no email detected');
-    return;
+    return undefined;
   }
 
-  const triggerGroups = (input.groups && input.groups.length ? input.groups : resolveMlGroups()).map((value) =>
-    typeof value === 'string' ? Number(value) : Number(value || 0),
-  ).filter((value) => Number.isFinite(value) && value > 0);
-  if (!triggerGroups.length) {
+  const groupsSource = Array.isArray(input.groups) && input.groups.length ? input.groups : resolveMlGroups();
+  const groups = Array.from(
+    new Set(
+      groupsSource
+        .map((value) => String(value).trim())
+        .filter((value) => /^\d{5,}$/.test(value)),
+    ),
+  );
+
+  if (!groups.length) {
     throw new Error('MailerLite sync aborted: no group IDs resolved (check resolveMlGroups configuration)');
   }
 
@@ -934,37 +1137,47 @@ const mailerliteUpsert = async (input: MailerLiteUpsertInput) => {
   if (input.city) fields.city = input.city;
   if (input.phone) fields.phone = input.phone;
   if (input.instagramUsername) fields.instagram = input.instagramUsername;
-  for (const [key, value] of Object.entries(input.fields ?? {})) {
+
+  for (const [keyName, value] of Object.entries(input.fields ?? {})) {
     if (typeof value === 'string' && value.trim()) {
-      fields[key] = value.trim();
+      fields[keyName] = value.trim();
     }
   }
 
-  const safeName = sanitizeName(input.name);
-  const { first: firstName, last: lastName } = splitName(safeName);
-  if (safeName) {
-    fields.name = safeName;
-  }
+  const initialName = sanitizeName(input.name);
+  const safeName = initialName && !looksLikePlaceholder(initialName) ? initialName : undefined;
+  const { first: firstName } = splitName(safeName);
+  if (safeName) fields.name = safeName;
   if (firstName) {
     fields.first_name = firstName;
     if (!fields.name) fields.name = firstName;
-  }
-  if (lastName) {
-    fields.last_name = lastName;
   }
 
   const notesParts: string[] = [];
   if (MAILERLITE_DEFAULT_NOTES) notesParts.push(MAILERLITE_DEFAULT_NOTES);
   if (input.message) notesParts.push(input.message);
   if (input.manychatId) notesParts.push(`ManyChat ID: ${input.manychatId}`);
-  if (notesParts.length) {
-    fields.notas = notesParts.join(' - ');
+  if (notesParts.length) fields.notas = notesParts.join(' - ');
+
+  if (fields.name && looksLikePlaceholder(fields.name)) {
+    delete fields.name;
+  }
+
+  if ('last_name' in fields) {
+    delete fields.last_name;
+  }
+
+  for (const key of Object.keys(fields)) {
+    const value = String(fields[key] ?? '').trim();
+    if (!value || looksLikePlaceholder(value)) {
+      delete fields[key];
+    }
   }
 
   const payload: Record<string, unknown> = {
     email,
     resubscribe: true,
-    groups: triggerGroups,
+    groups,
   };
 
   if (safeName || firstName) {
@@ -975,53 +1188,64 @@ const mailerliteUpsert = async (input: MailerLiteUpsertInput) => {
     payload.fields = fields;
   }
 
-  let attempt = 0;
-  while (attempt < MAX_MAILERLITE_ATTEMPTS) {
-    attempt += 1;
-    const response = await fetch(MAILERLITE_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${MAILERLITE_API_KEY}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+  const response = await fetch(MAILERLITE_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 
-    const data = await readResponsePayload(response);
-    if (response.ok) {
-      return data;
+  const text = await response.text();
+  let data: unknown = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (error) {
+      data = { raw: text };
     }
-
-    if (response.status === 409) {
-      console.warn('MailerLite reported existing subscriber conflict; treating as success', data);
-      return data;
-    }
-
-    if (response.status === 422) {
-      const errors = Array.isArray((data as { errors?: unknown }).errors)
-        ? ((data as { errors: Array<{ message?: string }> }).errors as Array<{ message?: string }> )
-        : [];
-      const duplicateEmail = errors.find((err) => typeof err?.message === 'string' && err.message.toLowerCase().includes('already'));
-      if (duplicateEmail) {
-        console.warn('MailerLite reports subscriber already exists; update skipped', data);
-        return data;
-      }
-    }
-
-    if (attempt < MAX_MAILERLITE_ATTEMPTS && shouldRetryMailerLite(response.status)) {
-      const delay = 500 * attempt;
-      console.warn(`MailerLite sync retry ${attempt}/${MAX_MAILERLITE_ATTEMPTS} after ${delay}ms`, data);
-      await sleep(delay);
-      continue;
-    }
-
-    throw new Error(
-      `MailerLite sync failed (status ${response.status}): ${
-        data ? JSON.stringify(data) : 'no body'
-      }`,
-    );
   }
+
+  const successResult: MailerLiteSyncResult = {
+    ok: true,
+    status: response.status,
+    json: data,
+    groupsSent: groups,
+    keyFp: mailerLiteKeyFingerprint(key),
+  };
+
+  if (response.ok) {
+    return successResult;
+  }
+
+  if (response.status === 409) {
+    console.warn('MailerLite reported existing subscriber conflict; treating as success', data);
+    return successResult;
+  }
+
+  if (response.status === 422) {
+    const errors = Array.isArray((data as { errors?: unknown }).errors)
+      ? ((data as { errors: Array<{ message?: string }> }).errors as Array<{ message?: string }> )
+      : [];
+    const duplicateEmail = errors.find(
+      (err) => typeof err?.message === 'string' && err.message.toLowerCase().includes('already'),
+    );
+    if (duplicateEmail) {
+      console.warn('MailerLite reports subscriber already exists; update skipped', data);
+      return successResult;
+    }
+  }
+
+  const error = new Error(`Mailerlite ${response.status}`);
+  (error as Error & { response?: Record<string, unknown> }).response = {
+    status: response.status,
+    body: data,
+    groups,
+    keyFp: successResult.keyFp,
+  };
+  throw error;
 };
 
 export type PipelineResult = {
@@ -1030,15 +1254,30 @@ export type PipelineResult = {
   event: string | null;
   resolvedEmail?: string;
   matchedSources: string[];
+  mailerlite?: MailerLiteSyncResult;
+  finalName?: string | null;
+  finalNameSource?: string;
+  contactRecord: Record<string, unknown>;
+  contactPatch?: Record<string, unknown> | null;
+  mailerlitePlan?: MailerLiteUpsertInput;
 };
 
 export const executePipeline = async (
   payload: ManyChatPayload,
   emailGuess?: EmailGuess | null,
-  context: { dmText?: string; igProfileName?: string; igUsername?: string } = {},
+  context: {
+    dmText?: string;
+    igProfileName?: string;
+    igUsername?: string;
+    dryRun?: boolean;
+    simulate?: boolean;
+  } = {},
 ): Promise<PipelineResult> => {
   const { record, contact } = extractContactRecord(payload);
   const parsedLead = parseLeadDetails(payload, contact);
+  const dryRun = Boolean(context.dryRun);
+  const simulate = Boolean(context.simulate);
+  let mailerliteResult: MailerLiteSyncResult | undefined;
 
   if (emailGuess?.email && !parsedLead.email) {
     parsedLead.email = emailGuess.email;
@@ -1051,6 +1290,17 @@ export const executePipeline = async (
   }
 
   const dmText = context.dmText ?? '';
+  const igProfileName = context.igProfileName ?? '';
+  const igUsername = context.igUsername ?? '';
+  const bestCandidate = bestName({
+    fullName: igProfileName,
+    username: igUsername,
+    email:
+      emailGuess?.email ??
+      parsedLead.email ??
+      (typeof record.email === 'string' ? record.email : undefined),
+  });
+  const bestClean = bestCandidate.name ? sanitizeName(bestCandidate.name) : undefined;
   const locationGuess = extractLocationFromText(dmText);
   const locationScore = locationGuess?.score ?? 0;
   if (locationGuess?.city && locationScore >= 0.6 && !parsedLead.city) parsedLead.city = locationGuess.city;
@@ -1059,24 +1309,46 @@ export const executePipeline = async (
   if (locationGuess?.country && locationScore >= 0.6 && !record.country) record.country = locationGuess.country;
 
   const nameGuess = deriveName({
-    igProfileName: context.igProfileName,
-    igUsername: context.igUsername,
+    igProfileName,
+    igUsername,
     dmText,
     email: emailGuess?.email ?? parsedLead.email ?? (typeof record.email === 'string' ? record.email : undefined),
   });
 
-  const safeNameCandidate =
-    nameGuess.value && !isBadName(nameGuess.value) && nameGuess.score >= 0.6
-      ? nameGuess.value
-      : undefined;
-  if (!safeNameCandidate && nameGuess.value) {
+  const deriveClean =
+    nameGuess.value && !isBadName(nameGuess.value) && nameGuess.score >= 0.6 ? nameGuess.value : undefined;
+  if (!deriveClean && nameGuess.value) {
     console.log('name.placeholder_blocked', { raw: nameGuess.value, source: nameGuess.source });
   }
-  const preferredName = safeNameCandidate ?? undefined;
+  if (bestCandidate.name && (!bestClean || isBadName(bestCandidate.name))) {
+    console.log('name.best_blocked', { raw: bestCandidate.name, source: bestCandidate.source });
+  }
 
-  if (preferredName) {
-    parsedLead.name = preferredName;
-    record.name = preferredName;
+  let finalName = deriveClean ?? undefined;
+  let finalSource = normalizeNameSource(nameGuess.source as string | undefined);
+
+  if (bestClean && !isBadName(bestClean)) {
+    finalName = bestClean;
+    finalSource = normalizeNameSource(bestCandidate.source);
+  } else if (!finalName && bestCandidate.name && !isBadName(bestCandidate.name)) {
+    finalName = bestCandidate.name;
+    finalSource = normalizeNameSource(bestCandidate.source);
+  }
+
+  const finalNameSource = finalName ? finalSource : 'unknown';
+
+  if (finalName) {
+    parsedLead.name = finalName;
+    record.name = finalName;
+    record.name_source = finalSource;
+  }
+  record.name_source = (record.name_source as string | undefined) ?? (finalName ? finalSource : 'unknown');
+
+  if (igUsername) {
+    record.ig_username = igUsername;
+  }
+  if (igProfileName) {
+    record.ig_display_name = igProfileName;
   }
 
   if (parsedLead.confidence < 0.4) {
@@ -1101,11 +1373,11 @@ export const executePipeline = async (
   if (parsedLead.city) record.city = parsedLead.city;
   if (parsedLead.name) {
     record.name = parsedLead.name;
-    const nameTokens = parsedLead.name.split(/\s+/).filter(Boolean);
-    if (nameTokens.length) {
-      record.first_name = nameTokens[0];
-      record.last_name = nameTokens.length > 1 ? nameTokens.slice(1).join(' ') : undefined;
-    }
+  }
+  const finalNameTokens = parsedLead.name ? parsedLead.name.split(/\s+/).filter(Boolean) : [];
+  if (finalNameTokens.length) {
+    record.first_name = finalNameTokens[0];
+    record.last_name = finalNameTokens.length > 1 ? finalNameTokens.slice(1).join(' ') : undefined;
   }
   if (parsedLead.message) {
     record.notes = parsedLead.message;
@@ -1117,43 +1389,146 @@ export const executePipeline = async (
   }
 
   let contactRow: Record<string, unknown> | null = null;
-  try {
-    contactRow = await insertContact(record);
-  } catch (contactError) {
-    const message = (contactError as Error).message || '';
-    const duplicateEmail = message.includes('contacts_email_key') || message.includes('duplicate key value');
-    if (!duplicateEmail) {
-      throw contactError;
-    }
-
-    const existingByEmail = await fetchContactByEmail(safetyString(record.email));
-    if (!existingByEmail) {
-      throw contactError;
-    }
-
-    contactRow = existingByEmail;
-
+  if (dryRun) {
+    contactRow = { id: 'dry-contact', ...record };
+  } else {
     try {
-      const patchPayload = { ...record } as Record<string, unknown>;
-      delete patchPayload.manychat_contact_id;
-      await sbPatch(`contacts?id=eq.${encodeURIComponent(String(existingByEmail.id))}`, patchPayload);
-    } catch (patchError) {
-      console.warn('Failed to patch contact after duplicate email match', patchError);
+      contactRow = await insertContact(record);
+    } catch (contactError) {
+      const message = (contactError as Error).message || '';
+      const isUniqueViolation =
+        /duplicate key value/i.test(message) ||
+        message.includes('already exists') ||
+        message.includes('on_conflict');
+      if (!isUniqueViolation) {
+        throw contactError;
+      }
+
+      const igUserIdValue = safetyString(record.ig_user_id);
+      const instagramUsernameValue = safetyString((record as Record<string, unknown>).instagram_username);
+      const igUsernameValue = safetyString((record as Record<string, unknown>).ig_username);
+      const manychatIdValue = manychatContactId;
+      const emailValue = safetyString(record.email);
+
+      type MatchStrategy =
+        | 'ig_user_id'
+        | 'instagram_username'
+        | 'ig_username'
+        | 'manychat_contact_id'
+        | 'email'
+        | 'unknown';
+
+      const lookupOrder: Array<{ finder: () => Promise<Record<string, unknown> | null>; reason: MatchStrategy }> = [];
+
+      if (igUserIdValue) {
+        lookupOrder.push({ finder: () => fetchContactByIgUserId(igUserIdValue), reason: 'ig_user_id' });
+      }
+      if (instagramUsernameValue) {
+        lookupOrder.push({ finder: () => fetchContactByInstagramUsername(instagramUsernameValue), reason: 'instagram_username' });
+      }
+      if (igUsernameValue) {
+        lookupOrder.push({ finder: () => fetchContactByIgUsername(igUsernameValue), reason: 'ig_username' });
+      }
+      if (manychatIdValue) {
+        lookupOrder.push({ finder: () => fetchContactByManychatId(manychatIdValue), reason: 'manychat_contact_id' });
+      }
+      if (emailValue) {
+        lookupOrder.push({ finder: () => fetchContactByEmail(emailValue), reason: 'email' });
+      }
+
+      let existingContact: Record<string, unknown> | null = null;
+      let matchedBy: MatchStrategy = 'unknown';
+      for (const { finder, reason } of lookupOrder) {
+        existingContact = await finder();
+        if (existingContact) {
+          matchedBy = reason;
+          break;
+        }
+      }
+
+      if (!existingContact) {
+        throw contactError;
+      }
+
+      contactRow = existingContact;
+
+      const existingName = safetyString((existingContact as Record<string, unknown>).name);
+      const existingNameSource =
+        safetyString((existingContact as Record<string, unknown>).name_source) ?? 'unknown';
+      const existingIgUsername =
+        safetyString((existingContact as Record<string, unknown>).ig_username) ??
+        safetyString((existingContact as Record<string, unknown>).instagram_username);
+      const allowUpdateExistingName =
+        !existingName || existingName === existingIgUsername || existingNameSource !== 'manual';
+
+      try {
+        const patchPayload = { ...record } as Record<string, unknown>;
+        if (!allowUpdateExistingName) {
+          delete patchPayload.name;
+          delete patchPayload.name_source;
+          delete patchPayload.first_name;
+          delete patchPayload.last_name;
+        }
+
+        if (!patchPayload.updated_at) {
+          patchPayload.updated_at = new Date().toISOString();
+        }
+
+        const targetId = safetyString((existingContact as Record<string, unknown>).id);
+        if (!targetId) {
+          console.warn('Duplicate contact reconciliation missing target id', existingContact);
+        } else {
+          let patchResponse = await sbPatch(
+            `contacts?id=eq.${encodeURIComponent(targetId)}`,
+            patchPayload,
+          );
+          if (!patchResponse.ok) {
+            const failureMessage = String(
+              (patchResponse.json as Record<string, unknown>)?.message ?? patchResponse.status,
+            );
+            if (pruneOptionalColumns(patchPayload, failureMessage)) {
+              patchResponse = await sbPatch(
+                `contacts?id=eq.${encodeURIComponent(targetId)}`,
+                patchPayload,
+              );
+            }
+          }
+
+          if (!patchResponse.ok) {
+            console.warn('Failed to patch contact after duplicate match', {
+              matched_by: matchedBy,
+              response: patchResponse,
+            });
+          } else {
+            contactRow = { ...existingContact, ...patchPayload };
+          }
+        }
+      } catch (patchError) {
+        console.warn('Failed to patch contact after duplicate match', patchError);
+      }
+    }
+
+    if (!contactRow) {
+      throw new Error('Supabase contact insert failed without fallback');
     }
   }
 
-  if (!contactRow) {
-    throw new Error('Supabase contact insert failed without fallback');
-  }
+  const currentName = safetyString((contactRow as Record<string, unknown>).name);
+  const currentNameSource =
+    safetyString((contactRow as Record<string, unknown>).name_source) ?? 'unknown';
+  const currentIgUsername =
+    safetyString((contactRow as Record<string, unknown>).ig_username) ??
+    safetyString((contactRow as Record<string, unknown>).instagram_username);
+  const allowUpdateName =
+    !currentName ||
+    currentName === currentIgUsername ||
+    currentNameSource !== 'manual' ||
+    (finalName && finalNameSource !== 'manual');
 
   const resolvedEmail =
     parsedLead.email ??
     safetyString((contactRow as Record<string, unknown>).email) ??
     safetyString(record.email);
-  const resolvedName =
-    parsedLead.name ??
-    safetyString((contactRow as Record<string, unknown>).name) ??
-    safetyString(record.name);
   const resolvedCountry =
     parsedLead.country ??
     safetyString((contactRow as Record<string, unknown>).country) ??
@@ -1171,16 +1546,27 @@ export const executePipeline = async (
   const resolvedManychatId =
     safetyString((contactRow as Record<string, unknown>).manychat_contact_id) ?? safetyString(record.manychat_contact_id);
   const mailerFields: Record<string, string> = {};
-  if (safeNameCandidate) mailerFields.name = safeNameCandidate;
+  if (finalName) mailerFields.name = finalName;
   if (locationGuess?.city && locationScore >= 0.6) mailerFields.city = locationGuess.city;
   if (locationGuess?.country && locationScore >= 0.6) mailerFields.country = locationGuess.country;
   if (resolvedPhone) mailerFields.phone = resolvedPhone;
   if (resolvedInstagram) mailerFields.instagram = resolvedInstagram;
 
+  let contactPatchPlan: Record<string, unknown> | null = null;
+
   if (resolvedEmail) {
     const patchPayload: Record<string, unknown> = {};
-    if (preferredName && !safetyString((contactRow as Record<string, unknown>).name)) {
-      patchPayload.name = preferredName;
+    if (allowUpdateName && finalName) {
+      patchPayload.name = finalName;
+      patchPayload.name_source = finalNameSource;
+      patchPayload.first_name = finalNameTokens[0] ?? null;
+      patchPayload.last_name = finalNameTokens.length > 1 ? finalNameTokens.slice(1).join(' ') : null;
+    }
+    if (igUsername) {
+      patchPayload.ig_username = igUsername;
+    }
+    if (igProfileName) {
+      patchPayload.ig_display_name = igProfileName;
     }
     if (locationGuess?.city && locationScore >= 0.6 && !safetyString((contactRow as Record<string, unknown>).city)) {
       patchPayload.city = locationGuess.city;
@@ -1189,44 +1575,60 @@ export const executePipeline = async (
       patchPayload.country = locationGuess.country;
     }
     if (Object.keys(patchPayload).length) {
-      await safeSbPatchContactByEmail(resolvedEmail, patchPayload);
+      contactPatchPlan = { ...patchPayload };
+      if (!dryRun) {
+        await patchContactByEmail(resolvedEmail, patchPayload);
+      }
     }
   }
 
   const platformHint = resolvedInstagram || safetyString(record.ig_user_id) ? 'instagram' : 'other';
 
-  try {
-    await insertInteraction(contactRow.id as string, payload, platformHint, resolvedManychatId, parsedLead);
-  } catch (interactionError) {
-    console.error('Failed to insert interaction', interactionError);
+  if (!dryRun) {
+    try {
+      await insertInteraction(contactRow.id as string, payload, platformHint, resolvedManychatId, parsedLead);
+    } catch (interactionError) {
+      console.error('Failed to insert interaction', interactionError);
+    }
   }
 
-  try {
-    await mailerliteUpsert({
-      email: resolvedEmail,
-      name: preferredName ?? resolvedName,
-      country: resolvedCountry,
-      city: resolvedCity,
-      phone: resolvedPhone,
-      message: parsedLead.message,
-      instagramUsername: resolvedInstagram,
-      manychatId: resolvedManychatId,
-      fields: Object.keys(mailerFields).length ? mailerFields : undefined,
-    });
-  } catch (mailerliteError) {
-    await postAlert(
-      formatAlertPayload({
-        severity: 'error',
-        title: 'MailerLite sync failed',
-        message: (mailerliteError as Error).message,
-        meta: {
-          email: resolvedEmail,
-          manychat_contact_id: resolvedManychatId,
-        },
-      }),
-    );
-    throw mailerliteError;
+  const mlGroups = resolveMlGroups();
+
+  const mailerlitePlan: MailerLiteUpsertInput = {
+    email: resolvedEmail,
+    name: finalName ?? undefined,
+    country: resolvedCountry,
+    city: resolvedCity,
+    phone: resolvedPhone,
+    message: parsedLead.message,
+    instagramUsername: resolvedInstagram,
+    manychatId: resolvedManychatId,
+    fields: Object.keys(mailerFields).length ? { ...mailerFields } : undefined,
+    groups: mlGroups,
+  };
+
+  if (!dryRun) {
+    try {
+      mailerliteResult = await mailerliteUpsert(mailerlitePlan);
+    } catch (mailerliteError) {
+      if (!simulate) {
+        await postAlert(
+          formatAlertPayload({
+            severity: 'error',
+            title: 'MailerLite sync failed',
+            message: (mailerliteError as Error).message,
+            meta: {
+              email: resolvedEmail,
+              manychat_contact_id: resolvedManychatId,
+            },
+          }),
+        );
+      }
+      throw mailerliteError;
+    }
   }
+
+  const contactRecordPlan = { ...record };
 
   const eventName = payload.event ?? null;
   console.log('ManyChat webhook processed', {
@@ -1234,6 +1636,8 @@ export const executePipeline = async (
     manychat_contact_id: manychatContactId,
     event: eventName,
     parsed: parsedLead.matched,
+    name_source: finalNameSource,
+    final_name: finalName,
   });
 
   return {
@@ -1242,6 +1646,12 @@ export const executePipeline = async (
     event: eventName,
     resolvedEmail: resolvedEmail ?? undefined,
     matchedSources: parsedLead.matched,
+    mailerlite: mailerliteResult,
+    finalName: finalName ?? null,
+    finalNameSource,
+    contactRecord: contactRecordPlan,
+    contactPatch: contactPatchPlan,
+    mailerlitePlan,
   };
 };
 
@@ -1256,13 +1666,31 @@ const validateSecret = (req: VercelRequest): boolean => {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('[manychat-webhook] start');
   const provider = 'instagram';
+  const simulateQuery = req.query?.simulate;
+  const dryQuery = req.query?.dry;
+  const simulateFlag = Array.isArray(simulateQuery) ? simulateQuery.includes('1') : simulateQuery === '1';
+  const dryFlag = Array.isArray(dryQuery) ? dryQuery.includes('1') : dryQuery === '1';
+  const debugHeaderRaw = req.headers['x-debug-token'];
+  const debugToken = Array.isArray(debugHeaderRaw) ? debugHeaderRaw[0] : debugHeaderRaw;
+  const hasDebugToken = Boolean(process.env.DEBUG_TOKEN);
+  const validDebugToken = hasDebugToken && debugToken === process.env.DEBUG_TOKEN;
+  if (simulateFlag && !validDebugToken) {
+    return res.status(401).json({ error: 'bad debug token' });
+  }
   try {
+    console.log('[manychat-webhook] method:', req.method);
+
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Allow', 'POST, OPTIONS');
+      return res.status(204).end();
+    }
+
     if (req.method !== 'POST') {
-      res.setHeader('Allow', 'POST');
+      res.setHeader('Allow', 'POST, OPTIONS');
       return res.status(405).json({ ok: false, error: 'method_not_allowed' });
     }
 
-    if (!validateSecret(req)) {
+    if (!simulateFlag && !validateSecret(req)) {
       return res.status(401).json({ ok: false, error: 'unauthorized' });
     }
 
@@ -1280,7 +1708,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ ok: false, error: 'invalid_payload' });
     }
 
-    if (!sbReady()) {
+    if (!sbReady() && !dryFlag) {
       return res.status(503).json({ ok: false, error: 'missing_supabase_env' });
     }
 
@@ -1288,21 +1716,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rawPayload = typedPayload as any;
     const dmText = getDmText(rawPayload);
     const emailGuess = extractEmail(dmText);
+    const fullContactTop = getFullContactData(rawPayload);
     const igProfileNameTop =
       safetyString(rawPayload?.full_name) ??
       safetyString(rawPayload?.subscriber?.name) ??
       safetyString(rawPayload?.subscriber?.full_name) ??
-      undefined;
+      (fullContactTop ? safetyString((fullContactTop as Record<string, unknown>).name) : undefined) ??
+      '';
     const igUsernameTop =
       safetyString(rawPayload?.instagram_username) ??
       safetyString(rawPayload?.subscriber?.username) ??
-      undefined;
+      (fullContactTop
+        ? safetyString(
+            (fullContactTop as Record<string, unknown>).ig_username ??
+              (fullContactTop as Record<string, unknown>).username,
+          )
+        : undefined) ??
+      '';
 
     const rawContactId =
       safetyString(typedPayload.contact?.id) ??
       fallbackString(typedPayload, 'contact_id') ??
       safetyString((typedPayload as Record<string, unknown>).contact_id) ??
-      safetyString((typedPayload as Record<string, unknown>).subscriber && (typedPayload as any)?.subscriber?.id);
+      safetyString((typedPayload as Record<string, unknown>).subscriber && (typedPayload as any)?.subscriber?.id) ??
+      (fullContactTop
+        ? (() => {
+            const rawId = safetyString(
+              (fullContactTop as Record<string, unknown>).id ??
+                (fullContactTop as Record<string, unknown>).key,
+            );
+            return rawId ? rawId.replace(/^user:/i, '') : undefined;
+          })()
+        : undefined);
     const contactId = rawContactId || null;
 
     const messageId =
@@ -1324,39 +1769,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       status: 'NEW',
     };
 
-    const saveResult = await sbInsert('webhook_events', eventRow);
-    const persisted = saveResult.ok || saveResult.status === 409;
-    if (!persisted) {
-      console.error('Failed to persist webhook event', saveResult);
-      return res.status(500).json({ ok: false, error: 'persist_failed', detail: saveResult.json });
+    let persisted = true;
+    if (!dryFlag) {
+      const saveResult = await sbInsert('webhook_events', eventRow);
+      persisted = saveResult.ok || saveResult.status === 409;
+      if (!persisted) {
+        console.error('Failed to persist webhook event', saveResult);
+        return res.status(500).json({ ok: false, error: 'persist_failed', detail: saveResult.json });
+      }
     }
 
     let finalStatus: 'PROCESSED' | 'FAILED' = 'PROCESSED';
     let pipelineError: Error | null = null;
     let pipelineResult: PipelineResult | null = null;
+    let mlDebugPayload: { groups?: string[]; key_fp?: string; body?: unknown; plan?: MailerLiteUpsertInput | null } | undefined;
 
     try {
       pipelineResult = await executePipeline(typedPayload, emailGuess, {
         dmText,
         igProfileName: igProfileNameTop,
         igUsername: igUsernameTop,
+        dryRun: dryFlag,
+        simulate: simulateFlag,
       });
     } catch (error) {
       finalStatus = 'FAILED';
       pipelineError = error as Error;
       console.error('ManyChat pipeline execution failed', error);
-      await postAlert(
-        formatAlertPayload({
-          severity: 'error',
-          title: 'ManyChat webhook failed',
-          message: (pipelineError as Error).message,
-          meta: {
-            requestId: (res as unknown as { reqId?: string })?.reqId ?? null,
-            contact_id: contactId,
-            message_id: messageId,
-          },
-        }),
-      );
+      if (!simulateFlag) {
+        await postAlert(
+          formatAlertPayload({
+            severity: 'error',
+            title: 'ManyChat webhook failed',
+            message: (pipelineError as Error).message,
+            meta: {
+              requestId: (res as unknown as { reqId?: string })?.reqId ?? null,
+              contact_id: contactId,
+              message_id: messageId,
+            },
+          }),
+        );
+      }
     }
 
     const patchPayload: Record<string, unknown> = {
@@ -1368,15 +1821,68 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       patchPayload.extracted_email = pipelineResult?.resolvedEmail ?? emailGuess?.email;
     }
 
-    const patchResult = await sbPatch(
-      `webhook_events?provider=eq.${encodeURIComponent(provider)}&dedupe_key=eq.${encodeURIComponent(dedupeKey)}`,
-      patchPayload,
-    );
-    if (!patchResult.ok) {
-      console.error('Failed to update webhook event status', patchResult);
+    if (!dryFlag) {
+      const patchResult = await sbPatch(
+        `webhook_events?provider=eq.${encodeURIComponent(provider)}&dedupe_key=eq.${encodeURIComponent(dedupeKey)}`,
+        patchPayload,
+      );
+      if (!patchResult.ok) {
+        console.error('Failed to update webhook event status', patchResult);
+      }
     }
 
-    return res.status(200).json({
+    const queryDebug = req.query?.debug as string | string[] | undefined;
+    const debugFromQuery = Array.isArray(queryDebug) ? queryDebug.includes('1') : queryDebug === '1';
+    const headerDebugRaw = req.headers['x-debug'];
+    const debugFromHeader = Array.isArray(headerDebugRaw) ? headerDebugRaw.includes('1') : headerDebugRaw === '1';
+    const hasDebugFlag = debugFromQuery || debugFromHeader;
+    const debugMode = hasDebugFlag && (!process.env.API_TOKEN || req.headers['x-api-token'] === process.env.API_TOKEN);
+
+    const mlErrorResponse = (pipelineError as Error & {
+      response?: { status?: number; body?: unknown; groups?: string[]; keyFp?: string };
+    })?.response;
+
+    if (debugMode) {
+      if (mlErrorResponse) {
+        mlDebugPayload = {
+          groups: mlErrorResponse.groups,
+          key_fp: mlErrorResponse.keyFp,
+          body: mlErrorResponse.body,
+        };
+      } else if (pipelineResult?.mailerlite) {
+        mlDebugPayload = {
+          groups: pipelineResult.mailerlite.groupsSent,
+          key_fp: pipelineResult.mailerlite.keyFp,
+        };
+      } else if (pipelineResult?.mailerlitePlan) {
+        mlDebugPayload = {
+          groups: pipelineResult.mailerlitePlan.groups,
+          key_fp: pipelineResult.mailerlite?.keyFp,
+          plan: pipelineResult.mailerlitePlan,
+        };
+      }
+    }
+
+    let errorMessage: string | null = null;
+    if (pipelineError) {
+      if (mlErrorResponse?.status) {
+        errorMessage = `MailerLite sync failed (status ${mlErrorResponse.status})`;
+      } else {
+        errorMessage = pipelineError.message || 'MailerLite sync failed';
+      }
+    }
+
+    if (simulateFlag) {
+      return res.status(200).json({
+        dry: dryFlag,
+        finalName: pipelineResult?.finalName ?? null,
+        name_source: pipelineResult?.finalNameSource ?? 'unknown',
+        would_write: pipelineResult?.contactPatch ?? pipelineResult?.contactRecord ?? null,
+        mailerlite_plan: pipelineResult?.mailerlitePlan ?? null,
+      });
+    }
+
+    const responsePayload: Record<string, unknown> = {
       ok: true,
       saved: true,
       status: finalStatus,
@@ -1384,8 +1890,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       contact_id: pipelineResult?.contactId ?? null,
       manychat_contact_id: pipelineResult?.manychatContactId ?? contactId,
       event: pipelineResult?.event ?? typedPayload.event ?? null,
-      error: pipelineError ? pipelineError.message : null,
-    });
+      error: errorMessage,
+    };
+
+    if (mlDebugPayload) {
+      responsePayload.ml_debug = mlDebugPayload;
+    }
+
+    return res.status(200).json(responsePayload);
   } catch (error) {
     console.error('ManyChat webhook error', error);
     await postAlert(

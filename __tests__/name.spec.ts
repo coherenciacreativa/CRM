@@ -1,12 +1,15 @@
 import { describe, expect, test } from 'vitest';
-import { deriveName, isBadName } from '../lib/utils/name.js';
+import { deriveName, isBadName, stripPlaceholderArtifacts } from '../lib/utils/name.js';
 
 describe('name utils', () => {
-  test('blocks handlebars/double-curly', () => {
-    expect(isBadName('{{full Name}} Name}}')).toBe(true);
-    expect(isBadName('{{name}}')).toBe(true);
-    expect(isBadName('{name}')).toBe(true);
-    expect(isBadName('%7B%7Bname%7D%7D')).toBe(true);
+  test('stripPlaceholderArtifacts rescues plain value', () => {
+    expect(stripPlaceholderArtifacts('Rafarontiveros Name}}')).toBe('Rafarontiveros');
+  });
+
+  test('placeholder fragments are flagged', () => {
+    ['Rafarontiveros Name}}', '{{name}}', '{name}', '%7B%7Bname%7D%7D', '[Name]', '<name>'].forEach((token) => {
+      expect(isBadName(token)).toBe(true);
+    });
   });
 
   test('accepts clean IG full_name', () => {

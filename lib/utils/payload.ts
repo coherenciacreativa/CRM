@@ -33,6 +33,28 @@ export function getDmText(payload: any): string {
     }
   }
 
+  const fullContact = payload?.Full_Contact_Data ?? payload?.full_contact_data ?? payload?.fullContactData;
+  const fullContacts = Array.isArray(fullContact)
+    ? fullContact
+    : fullContact && typeof fullContact === 'object'
+      ? [fullContact]
+      : [];
+  for (const entry of fullContacts) {
+    if (!entry || typeof entry !== 'object') continue;
+    const record = entry as Record<string, unknown>;
+    const candidate =
+      (typeof record.last_input_text === 'string' && record.last_input_text.trim()) ? record.last_input_text.trim() :
+      (typeof record.last_dm_text === 'string' && record.last_dm_text.trim()) ? record.last_dm_text.trim() :
+      (record.custom_fields && typeof record.custom_fields === 'object'
+        ? (() => {
+            const cf = record.custom_fields as Record<string, unknown>;
+            const lastDm = cf.last_dm_text;
+            return typeof lastDm === 'string' && lastDm.trim() ? lastDm.trim() : undefined;
+          })()
+        : undefined);
+    if (candidate) return candidate;
+  }
+
   return '';
 }
 
