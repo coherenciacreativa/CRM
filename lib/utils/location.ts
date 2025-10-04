@@ -14,10 +14,6 @@ const COUNTRIES = [
 ];
 
 const STOPWORDS = new Set([
-  'la',
-  'el',
-  'los',
-  'las',
   'de',
   'del',
   'en',
@@ -168,7 +164,7 @@ function extractPhrase(input?: string) {
   if (!match) return '';
   let candidate = match[1] ?? '';
   candidate = candidate
-    .replace(/\b(ciudad|capital|de|del|la|el|los|las|bella|bonita|hermosa|linda|preciosa|lindisima|lindísima|maravillosa)\b/gi, ' ')
+    .replace(/\b(ciudad|capital|de|del|bella|bonita|hermosa|linda|preciosa|lindisima|lindísima|maravillosa)\b/gi, ' ')
     .replace(/\b(?:el|la)?\s*pueblo\s+se\s+llama\b/gi, ' ')
     .replace(/\b(?:el|la)?\s*ciudad\s+se\s+llama\b/gi, ' ')
     .replace(/\bentre\b/gi, ' ')
@@ -230,6 +226,8 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       }
     }
 
+    const rawCityTokens = city ? city.split(/\s+/).filter(Boolean) : [];
+
     if (!resolvedCity && city) {
       const trimmedCity = city.trim();
       if (trimmedCity) {
@@ -260,6 +258,36 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       const inferredCountry = lookupCountry(resolvedCity);
       if (inferredCountry) {
         resolvedCountry = inferredCountry;
+      }
+    }
+
+    const tokensForSplit = (resolvedCity ?? city ?? '').split(/\s+/).filter(Boolean);
+    if (tokensForSplit.length >= 2) {
+      for (let suffix = 1; suffix < tokensForSplit.length; suffix += 1) {
+        const tail = tokensForSplit.slice(tokensForSplit.length - suffix).join(' ');
+        const matchedCountry = tryCountry(tail);
+        if (!matchedCountry) continue;
+
+        if (!resolvedCountry) {
+          resolvedCountry = matchedCountry;
+        }
+
+        const cityPortion = tokensForSplit.slice(0, tokensForSplit.length - suffix);
+        if (cityPortion.length) {
+          const candidateCity = title(cityPortion.join(' '));
+          const matchedCity = bestCityMatch(candidateCity);
+          if (matchedCity) {
+            resolvedCity = matchedCity.city;
+            if (!resolvedCountry && matchedCity.country) {
+              resolvedCountry = matchedCity.country;
+            }
+          } else {
+            resolvedCity = candidateCity;
+          }
+        } else {
+          resolvedCity = rawCityTokens.length ? title(rawCityTokens.join(' ')) : undefined;
+        }
+        break;
       }
     }
 
