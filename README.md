@@ -102,6 +102,7 @@ ManyChat Webhook (Vercel)
 - Endpoint: `https://crm-manychat-webhook.vercel.app/api/manychat-webhook` (POST only, JSON body from ManyChat).
 - Security: include header `x-webhook-secret` with the value stored in the `MANYCHAT_WEBHOOK_SECRET` env var (configured in Vercel and `.env`).
 - Behaviour: upserts the contact into Supabase (`contacts` table), records the payload in `interactions`, runs multilingual heuristics over the DM to extract name/email/phone/city/country/message, and mirrors the lead into MailerLite (adds to the welcome groups and updates custom fields). If Supabase or MailerLite are unreachable the function logs the failure, emits an alert (see below), and returns a 5xx so ManyChat retries.
+- Contact reconciliation: duplicate inserts are now merged by `manychat_contact_id`, `ig_user_id`, Instagram usernames, or email. The webhook patches the existing Supabase row (respecting manual name overrides) instead of failing when ManyChat replays older contacts.
 - Deployment: Vercel project `crm-manychat-webhook`. Manage env vars via `vercel env add <KEY> production|preview` and redeploy with `npx vercel deploy --prod --token $VERCEL_ACCESS_TOKEN`.
 - Dependencies: requires `SUPABASE_URL_CRM` and `SUPABASE_SERVICE_ROLE_CRM`; make sure the Supabase URL resolves publicly before pointing ManyChat at the webhook.
 - MailerLite env vars:
@@ -126,8 +127,49 @@ Workflow Overview
 - **Contacts**: `contacts` rows are keyed by `manychat_contact_id`; the Vercel webhook upserts a record for every inbound ManyChat event, so duplicates just update the existing contact and timestamps.
 - **Interactions log**: every webhook call creates an entry in `interactions` with `contact_id`, `platform='instagram'`, and `external_id` of the form `manychat:<contact_id>:<timestamp>` so you can easily query a person’s full DM history.
 - **Parsing heuristics**: the webhook recognises phrasing such as “me llamo…”, “mi nombre es…”, “aquí te escribe…”, “soy de…”, “estamos en…”, etc. Cities/countries are normalised (e.g. “de la paz Bolivia” → `city=La Paz`, `country=Bolivia`) and names are humanised from email/Instagram when users omit them.
+- **Location upgrades**: the extractor ignores trailing contact-info phrases (`mi correo es…`) so that multi-line messages still resolve to clean `city` / `country` values (e.g. “Vivo en Bogotá mi correo es…” → `city=Bogotá`, `country=Colombia`).
 - **Alerts**: low-confidence extractions or sync failures trigger a POST to `ALERT_WEBHOOK_URL` so we can follow-up manually. Alerts include the matched sources and identifiers to speed up triage.
 - **Querying history**:
   - Supabase REST: `curl -H "apikey: $SUPABASE_SERVICE_ROLE_CRM" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_CRM" "$SUPABASE_URL_CRM/rest/v1/interactions?select=occurred_at,content,meta&contact_id=eq.CONTACT_UUID&order=occurred_at.desc"`
   - SQL editor: `select i.occurred_at, i.content from interactions i join contacts c on c.id = i.contact_id where c.manychat_contact_id = '563924665' order by occurred_at desc;`
 - **Triage tip**: create a Supabase view joining `contacts` + latest interaction for fast browsing in the dashboard.
+
+ManyChat configuration guide
+----------------------------
+
+- **Send full contact data**: in ManyChat, enable “Send full contact data” on the External Request step that targets this webhook. The payload should include `Full_Contact_Data.custom_fields.last_dm_text` so we capture multi-line replies, emails and phone numbers even when the main message bubble is short.
+- **Buffer enrichment**: if the automation needs to pre-process raw text before sending it to us, call the lightweight helper endpoint `POST https://crm-manychat-webhook.vercel.app/api/detect-email` with `{ "buffer": "Texto libre" }`. The response returns `{ hasEmail, email, emails }` and is safe to use inside ManyChat JSON actions.
+- **Simulation / debugging**:
+  - `scripts/test-sim-daniel.sh` / `scripts/test-sim-paola.sh` post sample payloads against the production webhook with `?simulate=1&dry=1`. Set `DEBUG_TOKEN` before running.
+  - You can also replay real payloads from Supabase (`webhook_events.raw_payload`) by piping them back to the webhook with the `x-webhook-secret` header.
+- **Retry behaviour**: the webhook returns 5xx on downstream failures (Supabase/MailerLite) so ManyChat retries automatically. Duplicate submissions are merged, so replays are safe.
+
+Serverless API reference
+------------------------
+
+| Endpoint | Method | Purpose |
+| --- | --- | --- |
+| `/api/healthz` | GET | Readiness check; includes MailerLite group count and Supabase connectivity signal. |
+| `/api/manychat-webhook` | POST | Primary ingestion pipeline (ManyChat → Supabase → MailerLite). Requires `x-webhook-secret`. Supports `simulate=1` + `dry=1` for dry runs. |
+| `/api/detect-email` | POST | Helper for ManyChat automations. Parses the provided `buffer` text and returns `{ hasEmail, email, emails }`. No auth required. |
+| `/api/debug/last` | GET | Lists the most recent ingestion events (for troubleshooting). |
+
+Lead enrichment pipeline
+------------------------
+
+1. **Payload normalisation** – merge top-level `contact`, `subscriber`, and `Full_Contact_Data` into a single record. Emails / phones can arrive in custom fields, direct keys, or nested arrays.
+2. **Deduplication** – before inserting we check Supabase for matches by `manychat_contact_id`, `ig_user_id`, Instagram usernames (`instagram_username` and `ig_username`), and email. Existing contacts are patched instead of rejected, preserving manual `name` updates when `name_source = 'manual'`.
+3. **Field derivation** – heuristics fill gaps via:
+   - `bestName()` and `deriveName()` for human-readable names from DMs, email locals, or IG handles.
+   - `extractLocationFromText()` for cities/countries with noise filtering and alias mapping across LATAM locales.
+   - Email/phone extraction using regex + punctuation cleanup, reused by the `/api/detect-email` helper.
+4. **Persistence** – we upsert into Supabase and append an interaction log with the full original payload (for replay) plus the parsed summary.
+5. **Fan-out** – MailerLite is updated (idempotent, handles 409/422 gracefully). Optional alerting fires when parsing confidence drops below threshold or external APIs fail.
+
+Release log highlights (2025-Q3)
+--------------------------------
+
+- Added `/api/detect-email` for ManyChat buffer parsing (enables on-platform validation before hitting the main webhook).
+- Hardened contact reconciliation in the webhook to resolve duplicates by IG identifiers and email while respecting manual data curation.
+- Expanded location/name heuristics to strip trailing contact info and normalise accented city names from free-form DMs.
+- Added simulation scripts and Supabase replay strategy for debugging ManyChat automations without affecting production data.

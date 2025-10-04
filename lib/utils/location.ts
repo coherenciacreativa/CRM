@@ -9,7 +9,8 @@ export type LocationGuess = { city?: string; country?: string; score: number; so
 const COUNTRIES = [
   'argentina','bolivia','brasil','brazil','chile','colombia','costa rica','cuba','ecuador','el salvador',
   'guatemala','haiti','haití','honduras','mexico','méxico','nicaragua','panama','panamá','paraguay',
-  'peru','perú','puerto rico','república dominicana','republica dominicana','uruguay','venezuela'
+  'peru','perú','puerto rico','república dominicana','republica dominicana','uruguay','venezuela',
+  'estados unidos','united states','usa','u.s.a','u.s.a.','eeuu','e.e.u.u','canada','canadá'
 ];
 
 const STOPWORDS = new Set([
@@ -188,6 +189,80 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
   const phrase = extractPhrase(dm);
   if (!phrase) return null;
 
+  const finalizeResult = (
+    city: string | undefined,
+    country: string | undefined,
+    score: number,
+  ): LocationGuess | null => {
+    let resolvedScore = score;
+    let resolvedCountry = country ? tryCountry(country) : undefined;
+    let resolvedCity: string | undefined;
+
+    if (city) {
+      const cityMatch = bestCityMatch(city);
+      if (cityMatch) {
+        resolvedCity = cityMatch.city;
+        if (!resolvedCountry && cityMatch.country) {
+          resolvedCountry = cityMatch.country;
+        }
+        if (typeof cityMatch.score === 'number') {
+          resolvedScore = Math.max(resolvedScore, cityMatch.score);
+        } else {
+          resolvedScore = Math.max(resolvedScore, 0.6);
+        }
+      } else {
+        const cityAsCountry = tryCountry(city);
+        if (cityAsCountry) {
+          resolvedCountry = resolvedCountry ?? cityAsCountry;
+        }
+      }
+    }
+
+    if (resolvedCity && !resolvedCountry) {
+      const inferred = matchCountryFromCity(resolvedCity);
+      if (inferred) {
+        resolvedCountry = inferred;
+      }
+    }
+
+    if (!resolvedCity && city) {
+      const trimmedCity = city.trim();
+      if (trimmedCity) {
+        const loweredCity = strip(trimmedCity);
+        const cityTokens = trimmedCity.split(/\s+/).filter(Boolean);
+        const invalidCityKeywords = [
+          'pais',
+          'país',
+          'estado',
+          'estados',
+          'unidos',
+          'viviendo',
+          'actualmente',
+          'ahora',
+          'vivir',
+          'vivo',
+          'poco',
+          'conocido',
+        ];
+        const containsInvalid = invalidCityKeywords.some((keyword) => loweredCity.includes(keyword));
+        if (!containsInvalid && cityTokens.length <= 3) {
+          resolvedCity = title(trimmedCity);
+        }
+      }
+    }
+
+    if (!resolvedCity && !resolvedCountry) {
+      return null;
+    }
+
+    return {
+      city: resolvedCity,
+      country: resolvedCountry,
+      score: resolvedScore,
+      source: 'dm_text',
+    };
+  };
+
   const lowered = phrase.toLowerCase();
   let nationalityCountry: string | undefined;
   for (const [keyword, country] of NATIONALITY_COUNTRY.entries()) {
@@ -202,6 +277,8 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
     .split(/,|\s-\s/)
     .map((p) => cleanSegment(p.trim()))
     .filter((segment) => segment && !LOCATION_SEGMENT_STOP_RE.test(segment));
+
+  let detectedCountry = nationalityCountry;
 
   const commaParts = phrase
     .split(',')
@@ -222,16 +299,12 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       return true;
     });
     if (commaCity) {
-      return {
-        city: title(commaCity),
-        country: commaCountry || tryCountry(commaParts[0]) || nationalityCountry,
-        score: 0.65,
-        source: 'dm_text',
-      };
+      const candidateCountry = commaCountry || tryCountry(commaParts[0]) || nationalityCountry;
+      const result = finalizeResult(title(commaCity), candidateCountry, 0.65);
+      if (result) return result;
     }
+    if (commaCountry) detectedCountry = commaCountry;
   }
-
-  let detectedCountry = nationalityCountry;
   for (const segment of parts) {
     const maybeCountry = tryCountry(segment);
     if (maybeCountry) {
@@ -243,11 +316,8 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
   for (const segment of parts) {
     const match = bestCityMatch(segment);
     if (match) {
-      return {
-        ...match,
-        country: match.country || detectedCountry,
-        source: 'dm_text',
-      };
+      const result = finalizeResult(match.city, match.country || detectedCountry, match.score ?? 0.7);
+      if (result) return result;
     }
   }
 
@@ -262,10 +332,12 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
         .trim();
       const match = bestCityMatch(cityCandidate);
       if (match) {
-        return { ...match, country: match.country || maybeCountry, source: 'dm_text' };
+        const result = finalizeResult(match.city, match.country || maybeCountry, match.score ?? 0.7);
+        if (result) return result;
       }
       if (cityCandidate.length >= 3) {
-        return { city: title(cityCandidate), country: maybeCountry, score: 0.55, source: 'dm_text' };
+        const result = finalizeResult(title(cityCandidate), maybeCountry, 0.55);
+        if (result) return result;
       }
     }
   }
@@ -273,17 +345,15 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
   for (const part of parts) {
     const matchCity = bestCityMatch(part);
     if (matchCity) {
-      return {
-        ...matchCity,
-        country: matchCity.country || nationalityCountry,
-        source: 'dm_text',
-      };
+      const result = finalizeResult(matchCity.city, matchCity.country || nationalityCountry, matchCity.score ?? 0.7);
+      if (result) return result;
     }
   }
 
   const match = bestCityMatch(phrase);
   if (match) {
-    return { ...match, country: match.country || detectedCountry, source: 'dm_text' };
+    const result = finalizeResult(match.city, match.country || detectedCountry, match.score ?? 0.7);
+    if (result) return result;
   }
 
   if (parts.length) {
@@ -299,7 +369,8 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       return true;
     });
     if (fallbackSegment) {
-      return { city: title(fallbackSegment), country: detectedCountry, score: 0.5, source: 'dm_text' };
+      const result = finalizeResult(title(fallbackSegment), detectedCountry, 0.5);
+      if (result) return result;
     }
   }
 
@@ -310,11 +381,13 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
     .join(' ')
     .trim();
   if (rough.length >= 3) {
-    return { city: title(rough), country: detectedCountry, score: 0.5, source: 'dm_text' };
+    const result = finalizeResult(title(rough), detectedCountry, 0.5);
+    if (result) return result;
   }
 
   if (detectedCountry) {
-    return { country: detectedCountry, score: 0.4, source: 'dm_text' };
+    const result = finalizeResult(undefined, detectedCountry, 0.4);
+    if (result) return result;
   }
 
   return null;

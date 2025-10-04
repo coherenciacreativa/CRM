@@ -9,6 +9,7 @@ import {
   sanitizeName,
 } from '../lib/utils/name.js';
 import { bestName } from '../lib/names.js';
+import { parseFullName } from '../lib/names/parseFullName.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
 import { sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
@@ -249,36 +250,177 @@ const matchCountryFromCity = (city: string | undefined): string | undefined => {
 
 const parseLocationComponents = (raw: string): { city?: string; country?: string } => {
   if (!raw) return {};
-  const cleaned = raw.replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').replace(/^[,;\s]+|[,;\s]+$/g, '').trim();
+  const cleaned = raw
+    .replace(/[\n\r]+/g, ' ')
+    .replace(/[-–—]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[,;\s]+|[,;\s]+$/g, '')
+    .trim();
   if (!cleaned) return {};
+
+  const leadingStopwords = new Set([
+    'de',
+    'del',
+    'la',
+    'el',
+    'los',
+    'las',
+    'desde',
+    'hermosa',
+    'hermoso',
+    'bella',
+    'bello',
+    'bonita',
+    'bonito',
+    'preciosa',
+    'precioso',
+    'linda',
+    'lindo',
+    'ciudad',
+    'ciudadela',
+    'pueblo',
+  ]);
+
+  const trailingStopwords = new Set(['de', 'del', 'la', 'el', 'las', 'los', 'desde']);
+
+  const trimConnectors = (tokens: string[]): string[] => {
+    const result = [...tokens];
+    while (result.length) {
+      const last = normalize(result[result.length - 1]);
+      if (!last || trailingStopwords.has(last)) {
+        result.pop();
+        continue;
+      }
+      break;
+    }
+
+    while (result.length > 1) {
+      const first = normalize(result[0]);
+      if (!first || leadingStopwords.has(first)) {
+        result.shift();
+        continue;
+      }
+      break;
+    }
+    return result;
+  };
+
+  const sanitizeCityValue = (value: string | undefined): string | undefined => {
+    if (!value) return undefined;
+    const tokens = value.split(/\s+/).filter(Boolean);
+    const trimmedTokens = trimConnectors(tokens);
+    return trimmedTokens.length ? toTitleCase(trimmedTokens.join(' ')) : undefined;
+  };
+
+  const finalize = (cityCandidate?: string, countryCandidate?: string) => {
+    let resolvedCity: string | undefined;
+    let resolvedCountry: string | undefined;
+
+    const applyCity = (value?: string) => {
+      if (!value) return;
+      const variants = new Set<string>();
+      variants.add(value);
+      for (const part of value.split(/[,;/]/)) {
+        const trimmed = sanitizeCityValue(part.trim());
+        if (trimmed) variants.add(trimmed);
+      }
+      for (const candidate of variants) {
+        const cleanCandidate = sanitizeCityValue(candidate);
+        if (!cleanCandidate) continue;
+        const guess = extractLocationFromText(`vivo en ${cleanCandidate}`);
+        if (guess?.city) {
+          resolvedCity = guess.city;
+          if (guess.country) resolvedCountry = resolvedCountry ?? guess.country;
+          return;
+        }
+        const candidateCountry = matchCountryName(cleanCandidate);
+        if (candidateCountry) {
+          resolvedCountry = resolvedCountry ?? candidateCountry;
+        }
+      }
+    };
+
+    const applyCountry = (value?: string) => {
+      if (!value) return;
+      const variants = new Set<string>();
+      variants.add(value);
+      for (const part of value.split(/[,;/]/)) {
+        const trimmed = part.trim();
+        if (trimmed) variants.add(trimmed);
+      }
+      for (const candidate of variants) {
+        const matched = matchCountryName(candidate);
+        if (matched) {
+          resolvedCountry = resolvedCountry ?? matched;
+          return;
+        }
+      }
+      const guess = extractLocationFromText(value);
+      if (guess?.country) {
+        resolvedCountry = resolvedCountry ?? guess.country;
+      }
+    };
+
+    applyCity(cityCandidate);
+    applyCountry(countryCandidate);
+
+    if (resolvedCity && !resolvedCountry) {
+      const inferred = matchCountryFromCity(resolvedCity);
+      if (inferred) resolvedCountry = inferred;
+    }
+
+    const outcome: { city?: string; country?: string } = {};
+    if (resolvedCity) outcome.city = resolvedCity;
+    if (resolvedCountry) outcome.country = resolvedCountry;
+    return outcome;
+  };
+
+  const attempt = (pairs: Array<[string | undefined, string | undefined]>) => {
+    for (const [cityCandidate, countryCandidate] of pairs) {
+      const result = finalize(cityCandidate, countryCandidate);
+      if (result.city || result.country) {
+        return result;
+      }
+    }
+    return null;
+  };
 
   const parts = cleaned.split(/[,;]+/).map((part) => part.trim()).filter(Boolean);
   if (parts.length >= 2) {
-    const cityCandidate = parts[0];
-    const countryAggregate = parts.slice(1).join(' ');
-    const matchedCountry = matchCountryName(countryAggregate) ?? matchCountryName(parts[parts.length - 1]);
-    return {
-      city: cityCandidate ? toTitleCase(cityCandidate) : undefined,
-      country: matchedCountry ?? (countryAggregate ? toTitleCase(countryAggregate) : undefined),
-    };
+    const firstCity = sanitizeCityValue(parts[0]);
+    const trailing = parts.slice(1).join(' ');
+    const combos: Array<[string | undefined, string | undefined]> = [
+      [firstCity, trailing],
+      [sanitizeCityValue(parts[parts.length - 1]), parts.slice(0, parts.length - 1).join(' ')],
+    ];
+    for (const segment of parts) {
+      combos.push([sanitizeCityValue(segment), undefined]);
+      combos.push([undefined, segment]);
+    }
+    const resolved = attempt(combos);
+    if (resolved) return resolved;
   }
 
   const tokens = cleaned.split(/\s+/).filter(Boolean);
-  if (!tokens.length) return {};
-
-  for (let start = tokens.length - 1; start >= 0; start -= 1) {
-    const candidate = tokens.slice(start).join(' ');
-    const matchedCountry = matchCountryName(candidate);
-    if (matchedCountry) {
-      const cityTokens = tokens.slice(0, start);
-      return {
-        city: cityTokens.length ? toTitleCase(cityTokens.join(' ')) : undefined,
-        country: matchedCountry,
-      };
+  if (tokens.length) {
+    for (let split = tokens.length; split >= 1; split -= 1) {
+      const citySlice = tokens.slice(0, split).join(' ');
+      const countrySlice = tokens.slice(split).join(' ');
+      const cityValue = sanitizeCityValue(citySlice);
+      const resolved = finalize(cityValue, countrySlice);
+      if (resolved.city || resolved.country) {
+        return resolved;
+      }
     }
   }
 
-  return { city: toTitleCase(cleaned) };
+  const countryOnly = finalize(undefined, cleaned);
+  if (countryOnly.city || countryOnly.country) return countryOnly;
+
+  const cityOnly = finalize(sanitizeCityValue(cleaned), undefined);
+  if (cityOnly.city || cityOnly.country) return cityOnly;
+
+  return {};
 };
 
 const postAlert = async (payload: Record<string, unknown>) => {
@@ -573,18 +715,24 @@ const extractContactRecord = (payload: ManyChatPayload) => {
   const fullIgUsername = fullContact ? safetyString((fullContact as Record<string, unknown>).ig_username ?? (fullContact as Record<string, unknown>).username) : undefined;
   const fullIgId = fullContact ? safetyString((fullContact as Record<string, unknown>).ig_id ?? (fullContact as Record<string, unknown>).instagram_id) : undefined;
 
-  const customEmail = findCustomField(contact.custom_fields, [
-    'email',
-    'correo',
-    'correo_electronico',
-    'mail',
-  ]);
-  const customPhone = findCustomField(contact.custom_fields, [
-    'phone',
-    'telefono',
-    'celular',
-    'whatsapp',
-  ]);
+const customEmail = findCustomField(contact.custom_fields, [
+  'email',
+  'correo',
+  'correo_electronico',
+  'mail',
+  'email_raw_from_first_dm',
+  'email_from_first_dm',
+  'email_dm',
+  'correo_dm',
+]);
+const customPhone = findCustomField(contact.custom_fields, [
+  'phone',
+  'telefono',
+  'celular',
+  'whatsapp',
+  'phone_raw_from_first_dm',
+  'telefono_dm',
+]);
   const customHandle = findCustomField(contact.custom_fields, [
     'instagram',
     'instagram_handle',
@@ -604,6 +752,22 @@ const extractContactRecord = (payload: ManyChatPayload) => {
     'city_name',
   ]);
 
+  const payloadData =
+    payload && typeof payload === 'object' && (payload as Record<string, unknown>).data &&
+    typeof (payload as Record<string, unknown>).data === 'object'
+      ? ((payload as Record<string, unknown>).data as Record<string, unknown>)
+      : undefined;
+
+  const readPayloadValue = (key: string): string | undefined => {
+    const direct = fallbackString(payload, key);
+    if (direct) return direct;
+    if (payloadData) {
+      const nested = safetyString(payloadData[key]);
+      if (nested) return nested;
+    }
+    return undefined;
+  };
+
   const fullContactEmail = fullContact ? safetyString((fullContact as Record<string, unknown>).email) : undefined;
   const rawEmail = safetyString(contact.email) ?? safetyString(contact.emails && pickFirst(contact.emails)) ?? fullContactEmail;
   const rawPhone = safetyString(contact.phone) ?? safetyString(contact.phones && pickFirst(contact.phones));
@@ -616,9 +780,55 @@ const extractContactRecord = (payload: ManyChatPayload) => {
   const fullFirstName = fullContact ? safetyString((fullContact as Record<string, unknown>).first_name) : undefined;
   const fullLastName = fullContact ? safetyString((fullContact as Record<string, unknown>).last_name) : undefined;
 
-  const assembledNameParts = [safetyString(contact.first_name), safetyString(contact.last_name)].filter(
-    (part): part is string => Boolean(part),
-  );
+  const guessFirstName = readPayloadValue('first_name_guess') ?? findCustomField(contact.custom_fields, ['first_name_guess']);
+  const guessLastName = readPayloadValue('last_name_guess') ?? findCustomField(contact.custom_fields, ['last_name_guess']);
+
+  const payloadFirstName = readPayloadValue('first_name');
+  const payloadLastName = readPayloadValue('last_name');
+
+  let resolvedFirstName =
+    safetyString(contact.first_name) ??
+    payloadFirstName ??
+    fullFirstName ??
+    undefined;
+  let resolvedLastName =
+    safetyString(contact.last_name) ??
+    payloadLastName ??
+    fullLastName ??
+    undefined;
+
+  if (!resolvedFirstName && guessFirstName) resolvedFirstName = guessFirstName;
+  if (!resolvedLastName && guessLastName) resolvedLastName = guessLastName;
+
+  const nameRawFirstReplyFromCustom = findCustomField(contact.custom_fields, ['name_raw_first_reply']);
+  const fullContactCustom =
+    fullContact && typeof fullContact === 'object'
+      ? ((fullContact as Record<string, unknown>).custom_fields as ManyChatCustomField | undefined)
+      : undefined;
+  const nameRawFirstReplyFull = findCustomField(fullContactCustom, ['name_raw_first_reply']);
+  const nameRawFirstReply =
+    readPayloadValue('name_raw_first_reply') ??
+    nameRawFirstReplyFromCustom ??
+    nameRawFirstReplyFull;
+
+  if ((!resolvedFirstName || !resolvedLastName) && nameRawFirstReply) {
+    const parsed = parseFullName(nameRawFirstReply);
+    if (parsed.hasSurname) {
+      if (!resolvedFirstName && parsed.firstName) resolvedFirstName = parsed.firstName;
+      if (!resolvedLastName && parsed.lastName) resolvedLastName = parsed.lastName;
+    }
+  }
+
+  if (resolvedFirstName) {
+    contact.first_name = resolvedFirstName;
+  }
+  if (resolvedLastName) {
+    contact.last_name = resolvedLastName;
+  }
+
+  const assembledNameParts = [resolvedFirstName, resolvedLastName]
+    .map((value) => (value ? safetyString(value) : undefined))
+    .filter((part): part is string => Boolean(part));
   const assembledNameValue = assembledNameParts.length ? assembledNameParts.join(' ').trim() : undefined;
   const rawName =
     safetyString(contact.name) ??
@@ -630,8 +840,8 @@ const extractContactRecord = (payload: ManyChatPayload) => {
   const record: Record<string, unknown> = {
     manychat_contact_id: manychatId,
     name: name || undefined, // only if it passed sanitizeName
-    first_name: safetyString(contact.first_name) ?? fullFirstName ?? undefined,
-    last_name: safetyString(contact.last_name) ?? fullLastName ?? undefined,
+    first_name: resolvedFirstName ?? undefined,
+    last_name: resolvedLastName ?? undefined,
     email,
     phone,
     country: safetyString(customCountry) ?? fallbackString(payload, 'country'),
@@ -738,10 +948,21 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   if (normalizedContactName) capture('name', normalizedContactName, 'contact');
   capture('phone', safetyString(contact?.phone) ?? safetyString(contact?.phones && pickFirst(contact.phones)), 'contact');
 
-  const fieldCountry = findCustomField(contact?.custom_fields, ['country', 'pais', 'país']);
-  const fieldCity = findCustomField(contact?.custom_fields, ['city', 'ciudad', 'city_name', 'ciudad_residencia']);
-  capture('country', fieldCountry, 'custom_field');
-  capture('city', fieldCity, 'custom_field');
+const fieldCountry = findCustomField(contact?.custom_fields, ['country', 'pais', 'país']);
+const fieldCity = findCustomField(contact?.custom_fields, ['city', 'ciudad', 'city_name', 'ciudad_residencia']);
+const fieldEmail = findCustomField(contact?.custom_fields, [
+  'email',
+  'correo',
+  'correo_electronico',
+  'mail',
+  'email_raw_from_first_dm',
+  'email_from_first_dm',
+  'email_dm',
+  'correo_dm',
+]);
+capture('country', fieldCountry, 'custom_field');
+capture('city', fieldCity, 'custom_field');
+capture('email', fieldEmail, 'custom_field');
 
   const textCandidates = new Set<string>();
   const pushText = (value?: string) => {
@@ -757,11 +978,26 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
   if (fullContact) {
     const fcRecord = fullContact as Record<string, unknown>;
     pushText(safetyString(fcRecord.last_input_text));
-    pushText(
+    const customFieldsRecord =
       fcRecord.custom_fields && typeof fcRecord.custom_fields === 'object'
-        ? safetyString((fcRecord.custom_fields as Record<string, unknown>).last_dm_text)
-        : undefined,
-    );
+        ? (fcRecord.custom_fields as Record<string, unknown>)
+        : undefined;
+    if (customFieldsRecord) {
+      pushText(safetyString(customFieldsRecord.last_dm_text));
+      const extraDmKeys = [
+        'dm_buffer',
+        'message_buffer',
+        'mensaje_buffer',
+        'mensaje_dm',
+        'raw_dm_buffer',
+        'dm_text_buffer',
+      ];
+      for (const key of extraDmKeys) {
+        if (key in customFieldsRecord) {
+          pushText(safetyString(customFieldsRecord[key]));
+        }
+      }
+    }
   }
 
   if (payload.data && typeof payload.data === 'object') {
@@ -811,14 +1047,14 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
     }
 
   const locationMatch = text.match(
-    /(?:vivo|resido|estoy|radico|me\s+encuentro)\s+(?:actualmente\s+)?(?:en|en\s+la\s+ciudad\s+de)\s+([a-záéíóúñü' ,]+?)(?:[.!?]|$)/i,
+    /(?:vivo|resido|estoy|radico|me\s+encuentro)\s+(?:actualmente\s+)?(?:en|en\s+la\s+ciudad\s+de)\s+([a-záéíóúñü' ,\-]+?)(?:[.!?\n]|$)/i,
   );
   if (locationMatch) {
     applyLocationCandidate(locationMatch[1], 'text:heuristic');
   }
 
   const generalLocationMatch = text.match(
-    /(?:de|desde|soy\s+de|somos\s+de|procedo\s+de|vengo\s+de|originario\s+de|originaria\s+de|nac[ií]\s+en|radico\s+en)\s+([a-záéíóúñü' ,]+?)(?:[.!?]|$)/i,
+    /(?:de|desde|soy\s+de|somos\s+de|procedo\s+de|vengo\s+de|originario\s+de|originaria\s+de|nac[ií]\s+en|radico\s+en)\s+([a-záéíóúñü' ,\-]+?)(?:[.!?\n]|$)/i,
   );
   if (generalLocationMatch) {
     applyLocationCandidate(generalLocationMatch[1], 'text:heuristic');
