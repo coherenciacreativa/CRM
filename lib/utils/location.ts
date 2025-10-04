@@ -111,6 +111,18 @@ for (const item of cities as Array<{ city: string; country?: string; syn?: strin
   }
 }
 
+function lookupCountry(city: string | undefined) {
+  if (!city) return undefined;
+  const key = strip(city);
+  if (!key) return undefined;
+  for (const entry of INDEX) {
+    if (entry.key === key && entry.country) {
+      return entry.country;
+    }
+  }
+  return undefined;
+}
+
 function bestCityMatch(raw: string) {
   const query = strip(raw);
   if (!query) return null;
@@ -218,13 +230,6 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       }
     }
 
-    if (resolvedCity && !resolvedCountry) {
-      const inferred = matchCountryFromCity(resolvedCity);
-      if (inferred) {
-        resolvedCountry = inferred;
-      }
-    }
-
     if (!resolvedCity && city) {
       const trimmedCity = city.trim();
       if (trimmedCity) {
@@ -248,6 +253,13 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
         if (!containsInvalid && cityTokens.length <= 3) {
           resolvedCity = title(trimmedCity);
         }
+      }
+    }
+
+    if (resolvedCity && !resolvedCountry) {
+      const inferredCountry = lookupCountry(resolvedCity);
+      if (inferredCountry) {
+        resolvedCountry = inferredCountry;
       }
     }
 
