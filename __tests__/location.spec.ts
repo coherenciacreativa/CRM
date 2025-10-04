@@ -9,4 +9,11 @@ describe('location extractor', () => {
     expect(result?.country).toBe('Costa Rica');
     expect(result?.city).toBe('San Carlos');
   });
+
+  test('keeps articles in city names and strips trailing country word', () => {
+    const text = 'Soy de La Paz bolivia';
+    const result = extractLocationFromText(text);
+    expect(result?.country).toBe('Bolivia');
+    expect(result?.city).toBe('La Paz');
+  });
 });
