@@ -168,6 +168,21 @@ CRM Lookup UI (`/search`)
 - Mobile-friendly → añade la página a la pantalla de inicio para usarla como app.
 - APIs de soporte: `GET /api/search-contact?q=…` y `GET /api/contact-details?id=…` o `?email=…`.
 
+Gmail Feed (beta)
+-----------------
+
+- Credenciales: define `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` (OAuth 2.0 Web app).
+- OAuth start: visita `https://crm-manychat-webhook.vercel.app/api/google/oauth/start` (o `http://localhost:3000/...` en dev) y concede acceso con la cuenta que quieras monitorear.
+- Callback: `/api/google/oauth/callback` guarda `access_token`/`refresh_token` en Supabase (`gmail_tokens`) junto con el email de la cuenta.
+- Sync endpoint: `POST /api/gmail/sync` (Auth: `Authorization: Bearer $CRONJOB_API_KEY`). Extrae los últimos mensajes `INBOX` + `SENT` (30 días) y los normaliza en `gmail_messages`.
+  ```bash
+  curl -X POST \
+    -H "Authorization: Bearer $CRONJOB_API_KEY" \
+    https://crm-manychat-webhook.vercel.app/api/gmail/sync
+  ```
+- Cron sugerido (cada 15 min): crea un job en cron-job.org apuntando al endpoint anterior usando el header `Authorization: Bearer $CRONJOB_API_KEY`.
+- Datos almacenados: asunto, snippet, fecha, dirección derivada (inbound/outbound) y JSON metadata por si queremos enriquecer el dashboard.
+
 Lead enrichment pipeline
 ------------------------
 
