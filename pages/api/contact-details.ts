@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { sbSelect } from '../../lib/utils/sb.js';
+import { sbSelect } from '../../lib/utils/sb';
 
 const MAILERLITE_KEY =
   process.env.MAILERLITE_API_KEY || process.env.MAILERLITE_TOKEN || process.env.ML_API_KEY || '';

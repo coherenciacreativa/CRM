@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { sbSelect } from '../../lib/utils/sb.js';
+import { sbSelect } from '../../lib/utils/sb';
 
 const sanitizeQuery = (input: string): string =>
   input
