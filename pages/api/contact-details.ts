@@ -39,6 +39,63 @@ const buildMailerLiteSummary = (payload: unknown, email?: string) => {
   };
 };
 
+async function fetchMailerLiteGroups(subscriberId: string, useCurl = false): Promise<unknown[]> {
+  if (!MAILERLITE_KEY || !subscriberId) return [];
+
+  const endpoint = `https://connect.mailerlite.com/api/subscribers/${encodeURIComponent(subscriberId)}/groups`;
+
+  if (!useCurl) {
+    try {
+      const response = await fetch(endpoint, {
+        headers: {
+          Authorization: `Bearer ${MAILERLITE_KEY}`,
+          Accept: 'application/json',
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+        },
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const items = Array.isArray((data as { data?: unknown }).data)
+          ? ((data as { data?: unknown[] }).data as unknown[])
+          : Array.isArray(data)
+            ? (data as unknown[])
+            : [];
+        return items;
+      }
+    } catch (error) {
+      console.error('contact-details mailerlite groups fetch error', error);
+    }
+  }
+
+  try {
+    const { stdout } = await execFileAsync('curl', [
+      '--http2',
+      '--silent',
+      '--show-error',
+      '--compressed',
+      '--globoff',
+      '-H', `Authorization: Bearer ${MAILERLITE_KEY}`,
+      '-H', 'Accept: application/json',
+      '-H',
+      'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+      endpoint,
+    ]);
+    if (!stdout) return [];
+    const data = JSON.parse(stdout);
+    const items = Array.isArray((data as { data?: unknown }).data)
+      ? ((data as { data?: unknown[] }).data as unknown[])
+      : Array.isArray(data)
+        ? (data as unknown[])
+        : [];
+    return items;
+  } catch (error) {
+    console.error('contact-details mailerlite groups curl error', error);
+  }
+  return [];
+}
+
 async function fetchMailerLiteSubscriber(email: string) {
   if (!MAILERLITE_KEY || !email) return null;
   try {
@@ -61,7 +118,11 @@ async function fetchMailerLiteSubscriber(email: string) {
     }
 
     const data = await response.json();
-    return buildMailerLiteSummary(data, email);
+    const summary = buildMailerLiteSummary(data, email);
+    if (summary?.id) {
+      summary.groups = await fetchMailerLiteGroups(String(summary.id));
+    }
+    return summary;
   } catch (error) {
     console.error('contact-details mailerlite error', error);
     return { error: true };
@@ -86,7 +147,11 @@ async function fetchMailerLiteViaCurl(email: string) {
 
     if (!stdout) return null;
     const data = JSON.parse(stdout);
-    return buildMailerLiteSummary(data, email);
+    const summary = buildMailerLiteSummary(data, email);
+    if (summary?.id) {
+      summary.groups = await fetchMailerLiteGroups(String(summary.id), true);
+    }
+    return summary;
   } catch (error) {
     console.error('contact-details mailerlite curl fallback error', error);
     return { error: true };
