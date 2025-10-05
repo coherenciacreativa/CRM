@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { sbSelect } from '../../lib/utils/sb.js';
+import { sbSelect } from '../../lib/utils/sb';
 
 const execFileAsync = promisify(execFile);
 
