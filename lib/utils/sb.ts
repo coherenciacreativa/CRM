@@ -22,6 +22,24 @@ export async function sbInsert(table: string, row: Record<string, unknown> | Rec
   return { ok: response.ok, status: response.status, json };
 }
 
+export async function sbUpsert(
+  table: string,
+  row: Record<string, unknown> | Record<string, unknown>[],
+  { returning = 'representation' }: { returning?: 'representation' | 'minimal' } = {},
+) {
+  const payload = Array.isArray(row) ? row : [row];
+  const response = await fetch(`${SB}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      ...SB_HEADERS,
+      Prefer: `resolution=merge-duplicates,return=${returning}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const json = returning === 'minimal' ? {} : await response.json().catch(() => ({}));
+  return { ok: response.ok, status: response.status, json };
+}
+
 export async function sbPatch(resource: string, patch: Record<string, unknown>) {
   const response = await fetch(`${SB}/rest/v1/${resource}`, {
     method: 'PATCH',
