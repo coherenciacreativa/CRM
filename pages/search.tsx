@@ -162,7 +162,22 @@ export default function SearchPage() {
         {detailLoading ? <p className="loading">Cargando detalles…</p> : null}
         {!detailLoading && details?.ok && details.contact ? (
           <div className="detail-card">
-            <h2>{buildDisplayName((details.contact as ContactSummary) ?? {})}</h2>
+            <h2>
+              {buildDisplayName(
+                selectedContact ?? {
+                  id: String(((details.contact as { id?: string })?.id ?? selectedId ?? '')),
+                  name: (details.contact as { name?: string | null })?.name ?? null,
+                  first_name: (details.contact as { first_name?: string | null })?.first_name ?? null,
+                  last_name: (details.contact as { last_name?: string | null })?.last_name ?? null,
+                  email: (details.contact as { email?: string | null })?.email ?? null,
+                  phone: (details.contact as { phone?: string | null })?.phone ?? null,
+                  city: (details.contact as { city?: string | null })?.city ?? null,
+                  country: (details.contact as { country?: string | null })?.country ?? null,
+                  instagram_username: (details.contact as { instagram_username?: string | null })?.instagram_username ?? null,
+                  updated_at: (details.contact as { updated_at?: string | null })?.updated_at ?? null,
+                },
+              )}
+            </h2>
             <div className="grid">
               {Object.entries(details.contact as Record<string, unknown>)
                 .filter(([key]) =>
