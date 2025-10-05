@@ -80,8 +80,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ ok: false, error: 'missing_cron_secret' });
   }
 
+  const tokenParam = typeof req.query.token === 'string' ? req.query.token : undefined;
   const auth = req.headers.authorization;
-  if (!auth || auth !== `Bearer ${CRON_SECRET}`) {
+  const bearer = auth && auth.toLowerCase().startsWith('bearer ')
+    ? auth.slice(7)
+    : auth;
+  const providedSecret = bearer || tokenParam;
+
+  if (!providedSecret || providedSecret !== CRON_SECRET) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
 
