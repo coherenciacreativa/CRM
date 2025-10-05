@@ -62,6 +62,44 @@ function parseInternalDate(value: unknown) {
   return new Date(num).toISOString();
 }
 
+const HEADER_ALIAS_INBOUND = [
+  'Delivered-To',
+  'X-Delivered-To',
+  'X-Original-To',
+  'X-Forwarded-To',
+  'To',
+  'Cc',
+  'Bcc',
+  'Envelope-To',
+];
+
+const HEADER_ALIAS_OUTBOUND = ['From', 'Reply-To'];
+
+function valueContainsAlias(value: string | null | undefined, alias: string) {
+  if (!value) return false;
+  const lowered = value.toLowerCase();
+  return lowered.includes(alias);
+}
+
+function matchAliasInHeaders(headers: Array<Record<string, string>>, names: string[], alias: string) {
+  for (const header of headers) {
+    const name = header?.name;
+    if (!name || !names.includes(name)) continue;
+    if (valueContainsAlias(header.value, alias)) {
+      return true;
+    }
+    const value = header.value || '';
+    const parts = value.split(',');
+    for (const part of parts) {
+      const address = extractEmailAddress(part) ?? part.trim().toLowerCase();
+      if (address && address.includes(alias)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 async function storeMessages(messages: Array<Record<string, unknown>>) {
   if (!messages.length) return { inserted: 0 };
   const payload = messages.map((message) => ({
@@ -123,7 +161,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       for (const item of ids) {
         const message = await fetchMessage(ensured.access_token, item.id);
         const payload = (message.payload as Record<string, unknown>) || {};
-        const headers = payload.headers;
+        const headers = (payload.headers as Array<Record<string, string>>) || [];
+        if (SYNC_ALIAS) {
+          const aliasLower = SYNC_ALIAS.toLowerCase();
+          const names = label.direction === 'inbound' ? HEADER_ALIAS_INBOUND : HEADER_ALIAS_OUTBOUND;
+          if (!matchAliasInHeaders(headers, names, aliasLower)) {
+            continue;
+          }
+        }
         const subject = extractHeader(headers, 'Subject');
         const fromHeader = extractHeader(headers, 'From');
         const toHeader = extractHeader(headers, 'To');
