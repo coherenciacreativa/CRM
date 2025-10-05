@@ -3,8 +3,17 @@ import { ensureAccessToken, getGmailToken, extractEmailAddress } from '../../../
 import { sbUpsert } from '../../../lib/utils/sb';
 
 const CRON_SECRET = process.env.CRONJOB_API_KEY ?? '';
+const SYNC_ALIAS = (process.env.GMAIL_SYNC_ALIAS ?? '').trim().toLowerCase();
+const DEFAULT_BASE_QUERY = 'newer_than:30d';
+const INBOX_QUERY =
+  process.env.GMAIL_SYNC_QUERY_INBOX ??
+  (SYNC_ALIAS ? `${DEFAULT_BASE_QUERY} to:${SYNC_ALIAS}` : DEFAULT_BASE_QUERY);
+const SENT_QUERY =
+  process.env.GMAIL_SYNC_QUERY_SENT ??
+  (SYNC_ALIAS ? `${DEFAULT_BASE_QUERY} from:${SYNC_ALIAS}` : DEFAULT_BASE_QUERY);
+const MAX_RESULTS = Number.parseInt(process.env.GMAIL_SYNC_MAX_RESULTS ?? '50', 10) || 50;
 
-async function listMessages(accessToken: string, labelId: string, query = 'newer_than:30d', maxResults = 50) {
+async function listMessages(accessToken: string, labelId: string, query: string, maxResults: number) {
   const url = new URL('https://gmail.googleapis.com/gmail/v1/users/me/messages');
   url.searchParams.set('maxResults', String(maxResults));
   url.searchParams.append('labelIds', labelId);
@@ -102,15 +111,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ ok: false, error: 'unable_to_refresh_token' });
     }
 
-    const labels: Array<{ id: string; direction: 'inbound' | 'outbound' }> = [
-      { id: 'INBOX', direction: 'inbound' },
-      { id: 'SENT', direction: 'outbound' },
+    const labels: Array<{ id: string; direction: 'inbound' | 'outbound'; query: string }> = [
+      { id: 'INBOX', direction: 'inbound', query: INBOX_QUERY },
+      { id: 'SENT', direction: 'outbound', query: SENT_QUERY },
     ];
 
     const messagesToStore: Array<Record<string, unknown>> = [];
 
     for (const label of labels) {
-      const ids = await listMessages(ensured.access_token, label.id);
+      const ids = await listMessages(ensured.access_token, label.id, label.query, MAX_RESULTS);
       for (const item of ids) {
         const message = await fetchMessage(ensured.access_token, item.id);
         const payload = (message.payload as Record<string, unknown>) || {};

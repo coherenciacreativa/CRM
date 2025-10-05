@@ -172,6 +172,7 @@ Gmail Feed (beta)
 -----------------
 
 - Credenciales: define `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` (OAuth 2.0 Web app).
+- Filtrado: usa `GMAIL_SYNC_ALIAS` (ej. `notasdealejandro@coherenciacreativa.com`) para que sólo se procesen mensajes **dirigidos a** esa dirección en `INBOX` y **enviados desde** esa dirección en `SENT`. Si necesitas expresiones avanzadas, sobreescribe `GMAIL_SYNC_QUERY_INBOX` / `GMAIL_SYNC_QUERY_SENT`.
 - OAuth start: visita `https://crm-manychat-webhook.vercel.app/api/google/oauth/start` (o `http://localhost:3000/...` en dev) y concede acceso con la cuenta que quieras monitorear.
 - Callback: `/api/google/oauth/callback` guarda `access_token`/`refresh_token` en Supabase (`gmail_tokens`) junto con el email de la cuenta.
 - Sync endpoint: `POST /api/gmail/sync` (Auth: `Authorization: Bearer $CRONJOB_API_KEY`). Extrae los últimos mensajes `INBOX` + `SENT` (30 días) y los normaliza en `gmail_messages`.
