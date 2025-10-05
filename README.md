@@ -128,6 +128,7 @@ Workflow Overview
 - **Interactions log**: every webhook call creates an entry in `interactions` with `contact_id`, `platform='instagram'`, and `external_id` of the form `manychat:<contact_id>:<timestamp>` so you can easily query a person’s full DM history.
 - **Parsing heuristics**: the webhook recognises phrasing such as “me llamo…”, “mi nombre es…”, “aquí te escribe…”, “soy de…”, “estamos en…”, etc. Cities/countries are normalised (e.g. “de la paz Bolivia” → `city=La Paz`, `country=Bolivia`) and names are humanised from email/Instagram when users omit them.
 - **Location upgrades**: the extractor ignores trailing contact-info phrases (`mi correo es…`) so that multi-line messages still resolve to clean `city` / `country` values (e.g. “Vivo en Bogotá mi correo es…” → `city=Bogotá`, `country=Colombia`).
+- **Etiquetas con “País y ciudad:”**: también interpreta líneas con formato `País y ciudad: Colombia, Medellín` u otras variantes con dos puntos, eliminando conectores finales como “en” y normalizando la ciudad con nuestro índice LATAM.
 - **Alerts**: low-confidence extractions or sync failures trigger a POST to `ALERT_WEBHOOK_URL` so we can follow-up manually. Alerts include the matched sources and identifiers to speed up triage.
 - **Querying history**:
   - Supabase REST: `curl -H "apikey: $SUPABASE_SERVICE_ROLE_CRM" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_CRM" "$SUPABASE_URL_CRM/rest/v1/interactions?select=occurred_at,content,meta&contact_id=eq.CONTACT_UUID&order=occurred_at.desc"`
@@ -153,6 +154,19 @@ Serverless API reference
 | `/api/manychat-webhook` | POST | Primary ingestion pipeline (ManyChat → Supabase → MailerLite). Requires `x-webhook-secret`. Supports `simulate=1` + `dry=1` for dry runs. |
 | `/api/detect-email` | POST | Helper for ManyChat automations. Parses the provided `buffer` text and returns `{ hasEmail, email, emails }`. No auth required. |
 | `/api/debug/last` | GET | Lists the most recent ingestion events (for troubleshooting). |
+| `/api/search-contact` | GET | Fuzzy search across `contacts` (name, email, IG). Query param `q` (min 2 chars). |
+| `/api/contact-details` | GET | Consolidated `{ contact, interactions, mailerlite }` view given `id` or `email`. Includes MailerLite groups via HTTP/2 fallback. |
+
+CRM Lookup UI (`/search`)
+-------------------------
+
+- URL: `https://crm-manychat-webhook.vercel.app/search`
+- Funcionalidades clave:
+  - Campo único de búsqueda con resultados en vivo (nombre, correo o usuario de Instagram).
+  - Tarjetas de resultados que muestran correo y ubicación rápida; selección abre detalles.
+  - Panel de detalles con datos Supabase (contacto + notas), últimas interacciones y snapshot de MailerLite (estado, campos, grupos). Si MailerLite bloquea el filtro por email, el endpoint usa un fallback `curl --http2` para obtener los grupos.
+- Mobile-friendly → añade la página a la pantalla de inicio para usarla como app.
+- APIs de soporte: `GET /api/search-contact?q=…` y `GET /api/contact-details?id=…` o `?email=…`.
 
 Lead enrichment pipeline
 ------------------------
@@ -171,5 +185,6 @@ Release log highlights (2025-Q3)
 
 - Added `/api/detect-email` for ManyChat buffer parsing (enables on-platform validation before hitting the main webhook).
 - Hardened contact reconciliation in the webhook to resolve duplicates by IG identifiers and email while respecting manual data curation.
-- Expanded location/name heuristics to strip trailing contact info and normalise accented city names from free-form DMs.
+- Expanded location/name heuristics para quitar conectores finales, interpretar etiquetas con colon (e.g. “País y ciudad: Colombia, Medellín”) y normalizar nombres/ciudades con alias LATAM.
 - Added simulation scripts and Supabase replay strategy for debugging ManyChat automations without affecting production data.
+- Introduced `/search` UI + serverless endpoints para consultar rápidamente contactos y detalles cruzados con MailerLite.
