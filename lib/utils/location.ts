@@ -182,15 +182,8 @@ function tryCountry(raw: string) {
   return mapping[normalized] || title(match);
 }
 
-function extractPhrase(input?: string) {
-  if (!input) return '';
-  const normal = ` ${input.replace(/\s+/g, ' ').trim()} `;
-  const pattern =
-    /\b(?:en|desde|soy de|soy originari[ao] de|vivo en|vivo entre|me encuentro en|estoy en|resido en|radico en|de la ciudad de|la ciudad de)\s+(.+)/i;
-  const match = normal.match(pattern);
-  if (!match) return '';
-  let candidate = match[1] ?? '';
-  candidate = candidate
+const cleanCandidateValue = (value: string) =>
+  value
     .replace(/\b(ciudad|capital|de|del|bella|bonita|hermosa|linda|preciosa|lindisima|lindísima|maravillosa)\b/gi, ' ')
     .replace(/\b(?:el|la)?\s*pueblo\s+se\s+llama\b/gi, ' ')
     .replace(/\b(?:el|la)?\s*ciudad\s+se\s+llama\b/gi, ' ')
@@ -204,7 +197,30 @@ function extractPhrase(input?: string) {
     .replace(/\bmi\s+n[úu]mero\b.*$/i, '')
     .replace(/[?.!]+$/g, '')
     .trim();
-  return candidate;
+
+function extractPhrase(input?: string) {
+  if (!input) return '';
+  const normal = ` ${input.replace(/\s+/g, ' ').trim()} `;
+  const pattern =
+    /\b(?:en|desde|soy de|soy originari[ao] de|vivo en|vivo entre|me encuentro en|estoy en|resido en|radico en|de la ciudad de|la ciudad de)\s+(.+)/i;
+  const match = normal.match(pattern);
+  if (match) {
+    const initial = cleanCandidateValue(match[1] ?? '');
+    if (initial) return initial;
+  }
+
+  const labelPattern = /\b(?:pa[ií]s(?:es)?(?:\s+y\s+ciudad)?|ciudad(?:\s+y\s+pa[ií]s)?|ubicaci[óo]n)\b/i;
+  for (const line of input.split(/\r?\n+/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const [label, rest] = trimmed.split(/:\s*/, 2);
+    if (!rest) continue;
+    if (!labelPattern.test(label)) continue;
+    const candidate = cleanCandidateValue(rest);
+    if (candidate) return candidate;
+  }
+
+  return '';
 }
 
 const cleanSegment = (segment: string) =>
@@ -344,6 +360,16 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
     .split(/,|\s-\s/)
     .map((p) => cleanSegment(p.trim()))
     .filter((segment) => segment && !LOCATION_SEGMENT_STOP_RE.test(segment));
+
+  if (!parts.length) {
+    const colonSegments = phrase
+      .split(/:\s*/)
+      .map((segment) => cleanSegment(segment.trim()))
+      .filter((segment) => segment && !LOCATION_SEGMENT_STOP_RE.test(segment));
+    if (colonSegments.length) {
+      parts.push(...colonSegments);
+    }
+  }
 
   let detectedCountry = nationalityCountry;
 

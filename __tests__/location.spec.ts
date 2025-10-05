@@ -23,4 +23,11 @@ describe('location extractor', () => {
     expect(result?.country).toBe('Ecuador');
     expect(result?.city).toBe('Quito');
   });
+
+  test('parses labelled lines with colon syntax', () => {
+    const text = 'País y ciudad: Colombia, Medellín';
+    const result = extractLocationFromText(text);
+    expect(result?.country).toBe('Colombia');
+    expect(result?.city).toBe('Medellín');
+  });
 });
