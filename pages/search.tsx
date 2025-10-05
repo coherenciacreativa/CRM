@@ -195,13 +195,19 @@ export default function SearchPage() {
               <h3>Interacciones recientes</h3>
               {details.interactions && details.interactions.length ? (
                 <ul>
-                  {details.interactions.map((interaction, index) => (
-                    <li key={index}>
-                      <strong>{formatDate(interaction.occurred_at)}</strong>
-                      <div>{interaction.content ?? '—'}</div>
-                      {interaction.extracted_email ? <div className="tag">Email detectado: {interaction.extracted_email}</div> : null}
-                    </li>
-                  ))}
+                  {details.interactions.map((interaction, index) => {
+                    const content = (interaction as Record<string, unknown>).content;
+                    const extractedEmail = (interaction as Record<string, unknown>).extracted_email;
+                    return (
+                      <li key={index}>
+                        <strong>{formatDate((interaction as Record<string, unknown>).occurred_at)}</strong>
+                        <div>{content ? String(content) : '—'}</div>
+                        {extractedEmail ? (
+                          <div className="tag">Email detectado: {String(extractedEmail)}</div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <p className="muted">Sin interacciones registradas.</p>
