@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { serialize, parse } from 'cookie';
-import { gmailReady, storeGmailToken, getGmailToken } from '../../../lib/utils/gmail';
+import { gmailReady, storeGmailToken, getGmailToken } from '../../../../lib/utils/gmail';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? '';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? '';
