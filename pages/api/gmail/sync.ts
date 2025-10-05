@@ -7,7 +7,7 @@ const SYNC_ALIAS = (process.env.GMAIL_SYNC_ALIAS ?? '').trim().toLowerCase();
 const DEFAULT_BASE_QUERY = 'newer_than:30d';
 const INBOX_QUERY =
   process.env.GMAIL_SYNC_QUERY_INBOX ??
-  (SYNC_ALIAS ? `${DEFAULT_BASE_QUERY} to:${SYNC_ALIAS}` : DEFAULT_BASE_QUERY);
+  (SYNC_ALIAS ? `${DEFAULT_BASE_QUERY} deliveredto:${SYNC_ALIAS}` : DEFAULT_BASE_QUERY);
 const SENT_QUERY =
   process.env.GMAIL_SYNC_QUERY_SENT ??
   (SYNC_ALIAS ? `${DEFAULT_BASE_QUERY} from:${SYNC_ALIAS}` : DEFAULT_BASE_QUERY);
