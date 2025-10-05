@@ -1,4 +1,4 @@
-import { sbSelect, sbUpsert } from './sb';
+import { sbSelect, sbUpsert } from './sb.js';
 
 export type GmailTokenRecord = {
   id: string;

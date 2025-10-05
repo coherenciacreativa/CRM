@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ensureAccessToken, getGmailToken, extractEmailAddress } from '../../../lib/utils/gmail';
-import { sbUpsert } from '../../../lib/utils/sb';
+import { ensureAccessToken, getGmailToken, extractEmailAddress } from '../../../lib/utils/gmail.js';
+import { sbUpsert } from '../../../lib/utils/sb.js';
 
 const CRON_SECRET = process.env.CRONJOB_API_KEY ?? '';
 
