@@ -151,3 +151,40 @@ def insert_interaction(url: str, key: str, record: Dict[str, Any]) -> Tuple[int,
     h = _headers(key)
     h["Prefer"] = "return=representation"
     return _curl_json("POST", f"{_base(url)}/rest/v1/interactions", headers=h, data=[record])
+
+
+def upsert_mailerlite_campaign(url: str, key: str, record: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+    h = _headers(key)
+    h["Prefer"] = "resolution=merge-duplicates,return=representation"
+    return _curl_json("POST", f"{_base(url)}/rest/v1/mailerlite_campaigns", headers=h, data=[record])
+
+
+def insert_mailerlite_event(url: str, key: str, record: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+    h = _headers(key)
+    h["Prefer"] = "return=representation"
+    return _curl_json("POST", f"{_base(url)}/rest/v1/mailerlite_events", headers=h, data=[record])
+
+
+def find_contact_id(url: str, key: str, email: str) -> Optional[str]:
+    if not email:
+        return None
+    params = {
+        "select": "id",
+        "email": f"eq.{email}",
+        "limit": 1,
+    }
+    status, payload = get(url, key, "rest/v1/contacts", params)
+    if status == 200 and isinstance(payload, list) and payload:
+        return str(payload[0].get("id")) if payload[0].get("id") else None
+    return None
+
+
+def patch_mailerlite_event(url: str, key: str, event_id: str, patch: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+    h = _headers(key)
+    h["Prefer"] = "return=representation"
+    return _curl_json(
+        "PATCH",
+        f"{_base(url)}/rest/v1/mailerlite_events?id=eq.{event_id}",
+        headers=h,
+        data=patch,
+    )

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 
 from instagram_cli.env import load_env, save_env
 from .client import (
@@ -14,6 +15,7 @@ from .client import (
     upsert_contact,
 )
 from .importers import import_mailerlite
+from .backfill_mailerlite import CAMPAIGN_EVENT_SPECS, backfill_mailerlite
 from .ingest_ig import ingest_ig_dms
 
 
@@ -89,6 +91,35 @@ def cmd_import_mailerlite(args: argparse.Namespace) -> int:
     return 0
 
 
+def _parse_datetime(value: str) -> datetime:
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(f"Invalid ISO datetime: {value}") from error
+
+
+def cmd_backfill_mailerlite(args: argparse.Namespace) -> int:
+    url, key = _resolve_creds(args)
+    if not url or not key:
+        print("Missing URL or key", file=sys.stderr)
+        return 1
+    since = _parse_datetime(args.since) if args.since else None
+    stats = backfill_mailerlite(
+        url=url,
+        key=key,
+        since=since,
+        days=args.days,
+        campaign_limit=args.limit,
+        max_pages=args.max_pages,
+        events=args.events,
+        include_automations=args.include_automations,
+        delay_s=args.delay,
+        dry_run=args.dry_run,
+    )
+    _print(stats)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Supabase REST CLI (Keychain + .env)")
     p.add_argument("--url")
@@ -118,6 +149,22 @@ def build_parser() -> argparse.ArgumentParser:
     pimp.add_argument("--limit", type=int, default=100)
     pimp.add_argument("--max-pages", type=int, default=100)
     pimp.set_defaults(func=cmd_import_mailerlite)
+
+    pbf = sub.add_parser("backfill-mailerlite", help="Backfill MailerLite campaign events into Supabase")
+    pbf.add_argument("--since", help="ISO timestamp (UTC) to start from")
+    pbf.add_argument("--days", type=int, default=30, help="Fallback window if --since is not provided")
+    pbf.add_argument("--limit", type=int, default=100, help="Campaign page size")
+    pbf.add_argument("--max-pages", type=int, default=10, help="Max pages per campaign + event request")
+    pbf.add_argument(
+        "--events",
+        nargs="*",
+        default=list(CAMPAIGN_EVENT_SPECS.keys()),
+        help="Event names to backfill (default campaign.sent, campaign.open, campaign.click)",
+    )
+    pbf.add_argument("--delay", type=float, default=0.3, help="Delay (seconds) between API calls")
+    pbf.add_argument("--include-automations", action="store_true", help="Attempt automation backfill (beta)")
+    pbf.add_argument("--dry-run", action="store_true", help="Only log stats without writing to Supabase")
+    pbf.set_defaults(func=cmd_backfill_mailerlite)
 
     pig = sub.add_parser("ingest-ig-dms", help="Ingest last N days of Instagram DMs into interactions (extracting emails)")
     pig.add_argument("--page-id", default="333768529823589")
