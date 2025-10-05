@@ -16,4 +16,11 @@ describe('location extractor', () => {
     expect(result?.country).toBe('Bolivia');
     expect(result?.city).toBe('La Paz');
   });
+
+  test('drops connector before country while keeping city token', () => {
+    const text = 'te escribo desde Quito en Ecuador';
+    const result = extractLocationFromText(text);
+    expect(result?.country).toBe('Ecuador');
+    expect(result?.city).toBe('Quito');
+  });
 });

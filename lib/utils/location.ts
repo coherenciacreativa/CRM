@@ -42,6 +42,21 @@ const STOPWORDS = new Set([
 const SPACE = /\s+/g;
 const DIAC = /[\u0300-\u036f]/g;
 
+const TRAILING_CONNECTORS = new Set([
+  'en',
+  'del',
+  'de',
+  'al',
+  'a',
+  'la',
+  'el',
+  'los',
+  'las',
+  'por',
+  'para',
+  'con',
+]);
+
 const LOCATION_SEGMENT_STOP_RE =
   /\b(gracias|grac\s?ias|claro|mensaje|correo|email|mail|proyecto|depresi(?:[óo]n)?|salida|proceso|años|ano|bendiciones|familia|ayuda|apoyo|obsequio)\b/i;
 
@@ -77,6 +92,18 @@ function title(value: string) {
     .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w))
     .join(' ');
 }
+
+const trimTrailingConnectors = (tokens: string[]): string[] => {
+  const result = [...tokens];
+  while (result.length > 1) {
+    const last = result[result.length - 1];
+    if (!last) break;
+    const normalized = strip(last);
+    if (!normalized || !TRAILING_CONNECTORS.has(normalized)) break;
+    result.pop();
+  }
+  return result;
+};
 
 function levenshtein(a: string, b: string) {
   const m = a.length;
@@ -226,13 +253,13 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       }
     }
 
-    const rawCityTokens = city ? city.split(/\s+/).filter(Boolean) : [];
+    const rawCityTokens = city ? trimTrailingConnectors(city.split(/\s+/).filter(Boolean)) : [];
 
     if (!resolvedCity && city) {
       const trimmedCity = city.trim();
       if (trimmedCity) {
         const loweredCity = strip(trimmedCity);
-        const cityTokens = trimmedCity.split(/\s+/).filter(Boolean);
+        const cityTokens = trimTrailingConnectors(trimmedCity.split(/\s+/).filter(Boolean));
         const invalidCityKeywords = [
           'pais',
           'país',
@@ -248,8 +275,8 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
           'conocido',
         ];
         const containsInvalid = invalidCityKeywords.some((keyword) => loweredCity.includes(keyword));
-        if (!containsInvalid && cityTokens.length <= 3) {
-          resolvedCity = title(trimmedCity);
+        if (!containsInvalid && cityTokens.length) {
+          resolvedCity = title(cityTokens.join(' '));
         }
       }
     }
@@ -261,7 +288,7 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
       }
     }
 
-    const tokensForSplit = (resolvedCity ?? city ?? '').split(/\s+/).filter(Boolean);
+    const tokensForSplit = trimTrailingConnectors((resolvedCity ?? city ?? '').split(/\s+/).filter(Boolean));
     if (tokensForSplit.length >= 2) {
       for (let suffix = 1; suffix < tokensForSplit.length; suffix += 1) {
         const tail = tokensForSplit.slice(tokensForSplit.length - suffix).join(' ');
@@ -272,7 +299,7 @@ export function extractLocationFromText(dm?: string): LocationGuess | null {
           resolvedCountry = matchedCountry;
         }
 
-        const cityPortion = tokensForSplit.slice(0, tokensForSplit.length - suffix);
+        const cityPortion = trimTrailingConnectors(tokensForSplit.slice(0, tokensForSplit.length - suffix));
         if (cityPortion.length) {
           const candidateCity = title(cityPortion.join(' '));
           const matchedCity = bestCityMatch(candidateCity);
