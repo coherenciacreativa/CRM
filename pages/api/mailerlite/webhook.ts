@@ -41,21 +41,73 @@ function timingSafeEqual(a: Buffer, b: Buffer) {
   return crypto.timingSafeEqual(a, b);
 }
 
-function verifySignature(raw: Buffer, signatureHeader: string | string[] | undefined): boolean {
-  if (!SECRET) return true;
-  if (!signatureHeader) return false;
-  const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
-  if (!signature) return false;
-  const expected = crypto.createHmac('sha256', SECRET).update(raw).digest('hex');
-  const cleaned = signature.startsWith('sha256=') ? signature.slice(7) : signature;
-  try {
-    const expectedBuf = Buffer.from(expected, 'hex');
-    const providedBuf = Buffer.from(cleaned, 'hex');
-    return timingSafeEqual(expectedBuf, providedBuf);
-  } catch (error) {
-    console.warn('[mailerlite-webhook] invalid signature format', error);
-    return false;
+function normalizeHeaderValues(value: string | string[] | undefined): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean);
   }
+  return typeof value === 'string' && value ? [value] : [];
+}
+
+function bufferFromSignature(candidate: string): Buffer | null {
+  const trimmed = candidate.trim();
+  if (!trimmed) return null;
+  const cleaned = trimmed.startsWith('sha256=') ? trimmed.slice(7) : trimmed;
+  for (const encoding of ['hex', 'base64'] as const) {
+    try {
+      const buf = Buffer.from(cleaned, encoding);
+      if (buf.length) {
+        return buf;
+      }
+    } catch (error) {
+      // Ignore decoding failures; we'll try the next encoding or fall back below.
+    }
+  }
+  return null;
+}
+
+function verifySignature(
+  raw: Buffer,
+  signatureHeader: string | string[] | undefined,
+  tokenHeader: string | string[] | undefined,
+): boolean {
+  if (!SECRET) return true;
+
+  const candidates = [
+    ...normalizeHeaderValues(signatureHeader),
+    ...normalizeHeaderValues(tokenHeader),
+  ];
+
+  if (!candidates.length) return false;
+
+  const expected = crypto.createHmac('sha256', SECRET).update(raw).digest();
+  const expectedHex = expected.toString('hex');
+  const expectedBase64 = expected.toString('base64');
+
+  for (const candidate of candidates) {
+    const trimmed = candidate.trim();
+    if (!trimmed) continue;
+
+    const variants = [trimmed];
+    if (trimmed.startsWith('sha256=')) {
+      variants.push(trimmed.slice(7));
+    }
+
+    for (const variant of variants) {
+      if (!variant) continue;
+      if (variant === SECRET || variant === expectedHex || variant === expectedBase64) {
+        return true;
+      }
+
+      const provided = bufferFromSignature(variant);
+      if (provided && timingSafeEqual(expected, provided)) {
+        return true;
+      }
+    }
+  }
+
+  console.warn('[mailerlite-webhook] signature verification failed');
+  return false;
 }
 
 function parseTimestamp(payload: MailerLiteWebhookPayload): string | undefined {
@@ -160,7 +212,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const rawBody = await getRawBody(req);
 
-  if (!verifySignature(rawBody, req.headers['x-mailerlite-signature'])) {
+  if (
+    !verifySignature(rawBody, req.headers['x-mailerlite-signature'], req.headers['x-mailerlite-token'])
+  ) {
     return res.status(401).json({ ok: false, error: 'invalid_signature' });
   }
 
