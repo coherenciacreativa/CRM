@@ -10,7 +10,7 @@ export const config = {
   },
 };
 
-type MailerLiteWebhookPayload = {
+export type MailerLiteWebhookPayload = {
   event?: string;
   timestamp?: string;
   data?: Record<string, any>;
@@ -28,6 +28,8 @@ type InteractionRecord = {
   occurred_at?: string;
 };
 
+console.log('[mailerlite-webhook] module loaded');
+
 async function getRawBody(req: NextApiRequest): Promise<Buffer> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -41,21 +43,73 @@ function timingSafeEqual(a: Buffer, b: Buffer) {
   return crypto.timingSafeEqual(a, b);
 }
 
-function verifySignature(raw: Buffer, signatureHeader: string | string[] | undefined): boolean {
-  if (!SECRET) return true;
-  if (!signatureHeader) return false;
-  const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
-  if (!signature) return false;
-  const expected = crypto.createHmac('sha256', SECRET).update(raw).digest('hex');
-  const cleaned = signature.startsWith('sha256=') ? signature.slice(7) : signature;
-  try {
-    const expectedBuf = Buffer.from(expected, 'hex');
-    const providedBuf = Buffer.from(cleaned, 'hex');
-    return timingSafeEqual(expectedBuf, providedBuf);
-  } catch (error) {
-    console.warn('[mailerlite-webhook] invalid signature format', error);
-    return false;
+function normalizeHeaderValues(value: string | string[] | undefined): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean);
   }
+  return typeof value === 'string' && value ? [value] : [];
+}
+
+function bufferFromSignature(candidate: string): Buffer | null {
+  const trimmed = candidate.trim();
+  if (!trimmed) return null;
+  const cleaned = trimmed.startsWith('sha256=') ? trimmed.slice(7) : trimmed;
+  for (const encoding of ['hex', 'base64'] as const) {
+    try {
+      const buf = Buffer.from(cleaned, encoding);
+      if (buf.length) {
+        return buf;
+      }
+    } catch (error) {
+      // Ignore decoding failures; we'll try the next encoding or fall back below.
+    }
+  }
+  return null;
+}
+
+function verifySignature(
+  raw: Buffer,
+  signatureHeader: string | string[] | undefined,
+  tokenHeader: string | string[] | undefined,
+): boolean {
+  if (!SECRET) return true;
+
+  const candidates = [
+    ...normalizeHeaderValues(signatureHeader),
+    ...normalizeHeaderValues(tokenHeader),
+  ];
+
+  if (!candidates.length) return false;
+
+  const expected = crypto.createHmac('sha256', SECRET).update(raw).digest();
+  const expectedHex = expected.toString('hex');
+  const expectedBase64 = expected.toString('base64');
+
+  for (const candidate of candidates) {
+    const trimmed = candidate.trim();
+    if (!trimmed) continue;
+
+    const variants = [trimmed];
+    if (trimmed.startsWith('sha256=')) {
+      variants.push(trimmed.slice(7));
+    }
+
+    for (const variant of variants) {
+      if (!variant) continue;
+      if (variant === SECRET || variant === expectedHex || variant === expectedBase64) {
+        return true;
+      }
+
+      const provided = bufferFromSignature(variant);
+      if (provided && timingSafeEqual(expected, provided)) {
+        return true;
+      }
+    }
+  }
+
+  console.warn('[mailerlite-webhook] signature verification failed');
+  return false;
 }
 
 function parseTimestamp(payload: MailerLiteWebhookPayload): string | undefined {
@@ -133,7 +187,36 @@ async function resolveContactId(email: string | undefined) {
   return null;
 }
 
-function buildExternalId(
+function extractSubscriberId(data: Record<string, any>): string | undefined {
+  const candidates = [
+    data.subscriber_id,
+    data.id,
+    data.subscriber,
+    data.recipient_id,
+    data.subscriber?.id,
+    data.subscriber?.subscriber_id,
+    data.member?.id,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate === null || candidate === undefined) continue;
+    if (typeof candidate === 'string' || typeof candidate === 'number') {
+      const value = String(candidate).trim();
+      if (value) return value;
+      continue;
+    }
+    if (typeof candidate === 'object' && 'id' in candidate) {
+      const nested = candidate.id;
+      if (nested === null || nested === undefined) continue;
+      const value = String(nested).trim();
+      if (value) return value;
+    }
+  }
+
+  return undefined;
+}
+
+export function buildExternalId(
   payload: MailerLiteWebhookPayload,
   email: string | undefined,
   event: string | undefined,
@@ -141,15 +224,12 @@ function buildExternalId(
 ) {
   const data = payload.data || {};
   const provided =
-    payload.id ||
-    data.id ||
-    data.event_id ||
-    data.history_id ||
-    data.log_id ||
-    data.subscriber_id;
+    payload.id || data.id || data.event_id || data.history_id || data.log_id || data.uuid;
   if (provided) return String(provided);
   const timestampPart = fallbackTimestamp ? new Date(fallbackTimestamp).getTime() : Date.now();
-  return `${event ?? 'event'}:${email ?? 'unknown'}:${timestampPart}`;
+  const subscriberPart = extractSubscriberId(data) ?? 'anon';
+  const emailPart = email || data.subscriber_email || data.email || 'unknown';
+  return `${event ?? 'event'}:${subscriberPart}:${emailPart}:${timestampPart}`;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -160,7 +240,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const rawBody = await getRawBody(req);
 
-  if (!verifySignature(rawBody, req.headers['x-mailerlite-signature'])) {
+  if (
+    !verifySignature(rawBody, req.headers['x-mailerlite-signature'], req.headers['x-mailerlite-token'])
+  ) {
     return res.status(401).json({ ok: false, error: 'invalid_signature' });
   }
 
