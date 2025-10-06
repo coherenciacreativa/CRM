@@ -10,7 +10,7 @@ export const config = {
   },
 };
 
-type MailerLiteWebhookPayload = {
+export type MailerLiteWebhookPayload = {
   event?: string;
   timestamp?: string;
   data?: Record<string, any>;
@@ -27,6 +27,8 @@ type InteractionRecord = {
   meta: Record<string, unknown>;
   occurred_at?: string;
 };
+
+console.log('[mailerlite-webhook] module loaded');
 
 async function getRawBody(req: NextApiRequest): Promise<Buffer> {
   const chunks: Buffer[] = [];
@@ -185,7 +187,36 @@ async function resolveContactId(email: string | undefined) {
   return null;
 }
 
-function buildExternalId(
+function extractSubscriberId(data: Record<string, any>): string | undefined {
+  const candidates = [
+    data.subscriber_id,
+    data.id,
+    data.subscriber,
+    data.recipient_id,
+    data.subscriber?.id,
+    data.subscriber?.subscriber_id,
+    data.member?.id,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate === null || candidate === undefined) continue;
+    if (typeof candidate === 'string' || typeof candidate === 'number') {
+      const value = String(candidate).trim();
+      if (value) return value;
+      continue;
+    }
+    if (typeof candidate === 'object' && 'id' in candidate) {
+      const nested = candidate.id;
+      if (nested === null || nested === undefined) continue;
+      const value = String(nested).trim();
+      if (value) return value;
+    }
+  }
+
+  return undefined;
+}
+
+export function buildExternalId(
   payload: MailerLiteWebhookPayload,
   email: string | undefined,
   event: string | undefined,
@@ -193,15 +224,12 @@ function buildExternalId(
 ) {
   const data = payload.data || {};
   const provided =
-    payload.id ||
-    data.id ||
-    data.event_id ||
-    data.history_id ||
-    data.log_id ||
-    data.subscriber_id;
+    payload.id || data.id || data.event_id || data.history_id || data.log_id || data.uuid;
   if (provided) return String(provided);
   const timestampPart = fallbackTimestamp ? new Date(fallbackTimestamp).getTime() : Date.now();
-  return `${event ?? 'event'}:${email ?? 'unknown'}:${timestampPart}`;
+  const subscriberPart = extractSubscriberId(data) ?? 'anon';
+  const emailPart = email || data.subscriber_email || data.email || 'unknown';
+  return `${event ?? 'event'}:${subscriberPart}:${emailPart}:${timestampPart}`;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

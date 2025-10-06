@@ -157,6 +157,45 @@ Serverless API reference
 | `/api/search-contact` | GET | Fuzzy search across `contacts` (name, email, IG). Query param `q` (min 2 chars). |
 | `/api/contact-details` | GET | Consolidated `{ contact, interactions, mailerlite }` view given `id` or `email`. Includes MailerLite groups via HTTP/2 fallback. |
 
+Next.js vs `api/` directory on Vercel
+-------------------------------------
+
+The project uses **both** Next.js API routes (`pages/api/*`) and legacy Vercel Serverless Functions (`api/*`). When Vercel detects
+a Next.js app alongside the standalone `api` folder it prints a warning suggesting that JavaScript functions should live under
+`pages/api`. In our case the split is intentional:
+
+- `pages/api/*` hosts the routes that benefit from the Next.js request/response helpers (e.g. Gmail + MailerLite webhooks).
+- `api/*` contains long-lived endpoints that were created before the Next.js migration and still rely on Vercel's plain Node
+  runtime (for example, `/api/manychat-webhook`).
+
+As long as the endpoints keep working in production this warning can be ignored; it is informational only and does not block the
+deployment. If/when we decide to migrate the remaining functions into `pages/api` we can remove the `api` directory entirely to
+silence the notice.
+
+Deploy workflow (GitHub → Vercel)
+---------------------------------
+
+1. Push or merge commits into the default branch (`main`). The linked Vercel project automatically builds every commit pushed to
+   GitHub and promotes the latest successful build to production.
+2. If you need to re-run a build without new commits, use the **Redeploy** button in the Vercel dashboard. It reuses the most
+   recent commit from GitHub and rebuilds it from scratch, so the code that is live after the redeploy is exactly what is stored
+   in the repo.
+3. Preview deployments are created for pull requests. Once a PR is merged, Vercel automatically triggers a fresh production
+   deployment for the merge commit; no manual redeploy is required unless you want to force a rebuild.
+
+Observing webhook activity in Vercel logs
+----------------------------------------
+
+- Vercel initialises each serverless module only when it needs it. The log line `[manychat-webhook] module loaded` that appears
+  on every cold start just means Vercel spun up the legacy `api/manychat-webhook.ts` function; it does not indicate a MailerLite
+  delivery.
+- The MailerLite route now mirrors that behaviour with `[mailerlite-webhook] module loaded`. Seeing this entry confirms Vercel
+  has pulled the MailerLite handler into memory and is ready to receive events; each subsequent request then emits structured
+  logs from inside the handler (errors, Supabase insert status, etc.).
+- If you only see the ManyChat message after testing MailerLite, double-check that the request URL points to `/api/mailerlite/webhook`
+  (production: `https://crm-manychat-webhook.vercel.app/api/mailerlite/webhook`). Missing events never reach Vercel, so there will
+  be no `[mailerlite-webhook]` log lines.
+
 CRM Lookup UI (`/search`)
 -------------------------
 
