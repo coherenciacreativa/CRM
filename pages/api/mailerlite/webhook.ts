@@ -15,6 +15,18 @@ export type MailerLiteWebhookPayload = {
   timestamp?: string;
   data?: Record<string, any>;
   id?: string | number;
+  subscriber?: Record<string, any>;
+  subscriber_id?: string | number;
+  email?: string;
+  subscriber_email?: string;
+  recipient_email?: string;
+  recipient_id?: string | number;
+  member?: Record<string, any>;
+  campaign?: Record<string, any>;
+  campaign_id?: string | number;
+  campaign_name?: string;
+  name?: string;
+  subject?: string;
 };
 
 type InteractionRecord = {
@@ -157,24 +169,41 @@ function parseTimestamp(payload: MailerLiteWebhookPayload): string | undefined {
   return undefined;
 }
 
-function extractEmail(payload: MailerLiteWebhookPayload): string | undefined {
+export function extractEmail(payload: MailerLiteWebhookPayload): string | undefined {
   const data = payload.data || {};
-  return (
-    data.subscriber?.email ||
-    data.email ||
-    data.recipient_email ||
-    data.subscriber_email ||
-    data.member?.email_address ||
-    undefined
-  );
+  const root = payload as Record<string, any>;
+  const subscriber = data.subscriber || root.subscriber || {};
+  const member = data.member || root.member || {};
+  const candidates: Array<string | undefined> = [
+    subscriber?.email,
+    data.email,
+    root.email,
+    data.recipient_email,
+    root.recipient_email,
+    data.subscriber_email,
+    root.subscriber_email,
+    member?.email_address,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && typeof candidate === 'string') {
+      const value = candidate.trim();
+      if (value) return value;
+    }
+  }
+
+  return undefined;
 }
 
-function extractCampaignDetails(payload: MailerLiteWebhookPayload) {
+export function extractCampaignDetails(payload: MailerLiteWebhookPayload) {
   const data = payload.data || {};
-  const campaign = data.campaign || {};
-  const campaignName: string | undefined = campaign.name || data.campaign_name || data.name;
-  const subject: string | undefined = campaign.subject || data.subject;
-  const campaignId: string | undefined = campaign.id || data.campaign_id || data.id;
+  const root = payload as Record<string, any>;
+  const campaign = data.campaign || root.campaign || {};
+  const campaignName: string | undefined =
+    campaign.name || data.campaign_name || root.campaign_name || data.name || root.name;
+  const subject: string | undefined = campaign.subject || data.subject || root.subject;
+  const campaignId: string | undefined =
+    campaign.id || data.campaign_id || root.campaign_id || data.id || campaign.campaign_id;
   return { campaignId, campaignName, subject };
 }
 
@@ -207,29 +236,50 @@ async function resolveContactId(email: string | undefined) {
   return null;
 }
 
-function extractSubscriberId(data: Record<string, any>): string | undefined {
+export function extractSubscriberId(payload: MailerLiteWebhookPayload): string | undefined {
+  const data = payload.data || {};
+  const root = payload as Record<string, any>;
+  const subscriber = data.subscriber || root.subscriber || {};
+  const member = data.member || root.member || {};
   const candidates = [
     data.subscriber_id,
+    root.subscriber_id,
     data.id,
     data.subscriber,
     data.recipient_id,
+    root.recipient_id,
     data.subscriber?.id,
     data.subscriber?.subscriber_id,
     data.member?.id,
+    subscriber?.id,
+    subscriber?.subscriber_id,
+    member?.id,
   ];
 
   for (const candidate of candidates) {
     if (candidate === null || candidate === undefined) continue;
+
     if (typeof candidate === 'string' || typeof candidate === 'number') {
       const value = String(candidate).trim();
       if (value) return value;
       continue;
     }
-    if (typeof candidate === 'object' && 'id' in candidate) {
-      const nested = candidate.id;
-      if (nested === null || nested === undefined) continue;
-      const value = String(nested).trim();
-      if (value) return value;
+
+    if (typeof candidate === 'object') {
+      if (candidate && 'id' in candidate) {
+        const nested = candidate.id;
+        if (nested !== null && nested !== undefined) {
+          const value = String(nested).trim();
+          if (value) return value;
+        }
+      }
+      if (candidate && 'subscriber_id' in candidate) {
+        const nested = candidate.subscriber_id;
+        if (nested !== null && nested !== undefined) {
+          const value = String(nested).trim();
+          if (value) return value;
+        }
+      }
     }
   }
 
@@ -247,8 +297,16 @@ export function buildExternalId(
     payload.id || data.id || data.event_id || data.history_id || data.log_id || data.uuid;
   if (provided) return String(provided);
   const timestampPart = fallbackTimestamp ? new Date(fallbackTimestamp).getTime() : Date.now();
-  const subscriberPart = extractSubscriberId(data) ?? 'anon';
-  const emailPart = email || data.subscriber_email || data.email || 'unknown';
+  const subscriberPart = extractSubscriberId(payload) ?? 'anon';
+  const emailPart =
+    email ||
+    data.subscriber_email ||
+    data.email ||
+    data.recipient_email ||
+    payload.subscriber_email ||
+    payload.email ||
+    payload.recipient_email ||
+    'unknown';
   return `${event ?? 'event'}:${subscriberPart}:${emailPart}:${timestampPart}`;
 }
 
