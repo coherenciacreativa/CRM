@@ -75,12 +75,23 @@ function verifySignature(
 ): boolean {
   if (!SECRET) return true;
 
-  const candidates = [
-    ...normalizeHeaderValues(signatureHeader),
-    ...normalizeHeaderValues(tokenHeader),
-  ];
+  const signatureValues = normalizeHeaderValues(signatureHeader);
+  const tokenValues = normalizeHeaderValues(tokenHeader);
+  const candidates = [...signatureValues, ...tokenValues];
 
-  if (!candidates.length) return false;
+  if (!candidates.length) {
+    console.warn('[mailerlite-webhook] signature verification failed', {
+      reason: 'no_candidates',
+      candidateCount: candidates.length,
+      signatureHeaderPresent: typeof signatureHeader !== 'undefined',
+      signatureValuesCount: signatureValues.length,
+      signatureValueLengths: signatureValues.map((value) => value.length),
+      tokenHeaderPresent: typeof tokenHeader !== 'undefined',
+      tokenValuesCount: tokenValues.length,
+      tokenValueLengths: tokenValues.map((value) => value.length),
+    });
+    return false;
+  }
 
   const expected = crypto.createHmac('sha256', SECRET).update(raw).digest();
   const expectedHex = expected.toString('hex');
@@ -108,7 +119,16 @@ function verifySignature(
     }
   }
 
-  console.warn('[mailerlite-webhook] signature verification failed');
+  console.warn('[mailerlite-webhook] signature verification failed', {
+    reason: 'no_match',
+    candidateCount: candidates.length,
+    signatureHeaderPresent: typeof signatureHeader !== 'undefined',
+    signatureValuesCount: signatureValues.length,
+    signatureValueLengths: signatureValues.map((value) => value.length),
+    tokenHeaderPresent: typeof tokenHeader !== 'undefined',
+    tokenValuesCount: tokenValues.length,
+    tokenValueLengths: tokenValues.map((value) => value.length),
+  });
   return false;
 }
 
