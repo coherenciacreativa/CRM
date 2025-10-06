@@ -10,11 +10,16 @@ export const config = {
   },
 };
 
-export type MailerLiteWebhookPayload = {
+export type MailerLiteWebhookEvent = {
   event?: string;
+  type?: string;
   timestamp?: string;
   data?: Record<string, any>;
   id?: string | number;
+};
+
+export type MailerLiteWebhookPayload = MailerLiteWebhookEvent & {
+  events?: MailerLiteWebhookEvent[];
 };
 
 type InteractionRecord = {
@@ -132,7 +137,7 @@ function verifySignature(
   return false;
 }
 
-function parseTimestamp(payload: MailerLiteWebhookPayload): string | undefined {
+function parseTimestamp(payload: MailerLiteWebhookEvent): string | undefined {
   const candidates: Array<string | number | undefined> = [
     payload.timestamp,
     payload.data?.timestamp,
@@ -157,7 +162,7 @@ function parseTimestamp(payload: MailerLiteWebhookPayload): string | undefined {
   return undefined;
 }
 
-function extractEmail(payload: MailerLiteWebhookPayload): string | undefined {
+function extractEmail(payload: MailerLiteWebhookEvent): string | undefined {
   const data = payload.data || {};
   return (
     data.subscriber?.email ||
@@ -169,7 +174,7 @@ function extractEmail(payload: MailerLiteWebhookPayload): string | undefined {
   );
 }
 
-function extractCampaignDetails(payload: MailerLiteWebhookPayload) {
+function extractCampaignDetails(payload: MailerLiteWebhookEvent) {
   const data = payload.data || {};
   const campaign = data.campaign || {};
   const campaignName: string | undefined = campaign.name || data.campaign_name || data.name;
@@ -237,7 +242,7 @@ function extractSubscriberId(data: Record<string, any>): string | undefined {
 }
 
 export function buildExternalId(
-  payload: MailerLiteWebhookPayload,
+  payload: MailerLiteWebhookEvent,
   email: string | undefined,
   event: string | undefined,
   fallbackTimestamp?: string,
@@ -274,59 +279,79 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ ok: false, error: 'invalid_json' });
   }
 
-  if (payload?.event === 'webhook.verify') {
+  const topLevelEventName = payload?.event || payload?.type;
+  if (topLevelEventName === 'webhook.verify') {
     return res.status(200).json({ ok: true, received: 'verification' });
   }
 
-  const event = payload?.event;
-  if (!event) {
+  const candidateEvents = Array.isArray(payload?.events) && payload.events?.length
+    ? payload.events
+    : [payload];
+
+  const normalizedEvents = candidateEvents
+    .filter((entry): entry is MailerLiteWebhookEvent => Boolean(entry) && typeof entry === 'object')
+    .map((entry) => ({ entry, name: entry.event || entry.type }))
+    .filter((item): item is { entry: MailerLiteWebhookEvent; name: string } => Boolean(item.name));
+
+  if (!normalizedEvents.length) {
     return res.status(400).json({ ok: false, error: 'missing_event' });
   }
-
-  const { type, direction } = mapEventToType(event);
-  const occurredAt = parseTimestamp(payload) ?? new Date().toISOString();
-  const email = extractEmail(payload);
-  const { campaignId, campaignName, subject } = extractCampaignDetails(payload);
-  const externalId = buildExternalId(payload, email, event, occurredAt);
-  const summaryParts = [event];
-  if (campaignName) summaryParts.push(campaignName);
-  else if (subject) summaryParts.push(subject);
-  const content = summaryParts.join(' — ');
-
-  let contactId: string | null = null;
-  try {
-    contactId = await resolveContactId(email);
-  } catch (error) {
-    console.warn('[mailerlite-webhook] resolveContactId failed', error);
-  }
-
-  const record: InteractionRecord = {
-    contact_id: contactId,
-    platform: 'mailerlite',
-    direction,
-    type,
-    external_id: String(externalId),
-    content: content || null,
-    meta: {
-      ...payload,
-      campaign_id: campaignId ?? null,
-    },
-    occurred_at: occurredAt,
-  };
 
   if (!sbReady()) {
     console.error('[mailerlite-webhook] Supabase not configured');
     return res.status(500).json({ ok: false, error: 'supabase_not_configured' });
   }
 
-  const response = await sbInsert('interactions', record);
-  if (!response.ok) {
-    if (response.status === 409) {
-      return res.status(200).json({ ok: true, deduplicated: true });
+  const results = {
+    processed: 0,
+    deduplicated: 0,
+  };
+
+  for (const { entry, name } of normalizedEvents) {
+    const { type, direction } = mapEventToType(name);
+    const occurredAt = parseTimestamp(entry) ?? new Date().toISOString();
+    const email = extractEmail(entry);
+    const { campaignId, campaignName, subject } = extractCampaignDetails(entry);
+    const externalId = buildExternalId(entry, email, name, occurredAt);
+    const summaryParts = [name];
+    if (campaignName) summaryParts.push(campaignName);
+    else if (subject) summaryParts.push(subject);
+    const content = summaryParts.join(' — ');
+
+    let contactId: string | null = null;
+    try {
+      contactId = await resolveContactId(email);
+    } catch (error) {
+      console.warn('[mailerlite-webhook] resolveContactId failed', error);
     }
-    console.error('[mailerlite-webhook] insert failed', response.status, response.json);
-    return res.status(500).json({ ok: false, error: 'insert_failed' });
+
+    const record: InteractionRecord = {
+      contact_id: contactId,
+      platform: 'mailerlite',
+      direction,
+      type,
+      external_id: String(externalId),
+      content: content || null,
+      meta: {
+        ...entry,
+        event: entry.event ?? name,
+        type: entry.type ?? name,
+        campaign_id: campaignId ?? null,
+      },
+      occurred_at: occurredAt,
+    };
+
+    const response = await sbInsert('interactions', record);
+    results.processed += 1;
+    if (!response.ok) {
+      if (response.status === 409) {
+        results.deduplicated += 1;
+        continue;
+      }
+      console.error('[mailerlite-webhook] insert failed', response.status, response.json);
+      return res.status(500).json({ ok: false, error: 'insert_failed' });
+    }
   }
 
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, processed: results.processed, deduplicated: results.deduplicated });
 }
