@@ -68,27 +68,31 @@ function bufferFromSignature(candidate: string): Buffer | null {
   return null;
 }
 
-function verifySignature(
+export function verifySignature(
   raw: Buffer,
-  signatureHeader: string | string[] | undefined,
-  tokenHeader: string | string[] | undefined,
+  headers: Record<string, string | string[] | undefined> = {},
 ): boolean {
   if (!SECRET) return true;
 
-  const signatureValues = normalizeHeaderValues(signatureHeader);
-  const tokenValues = normalizeHeaderValues(tokenHeader);
-  const candidates = [...signatureValues, ...tokenValues];
+  const headerEntries = Object.entries(headers).map(([label, headerValue]) => {
+    const values = normalizeHeaderValues(headerValue);
+    return { label, headerValue, values };
+  });
+
+  const candidates = headerEntries.flatMap((entry) => entry.values);
+
+  const headerLog = headerEntries.reduce<Record<string, unknown>>((acc, entry) => {
+    acc[`${entry.label}Present`] = typeof entry.headerValue !== 'undefined';
+    acc[`${entry.label}ValuesCount`] = entry.values.length;
+    acc[`${entry.label}ValueLengths`] = entry.values.map((value) => value.length);
+    return acc;
+  }, {});
 
   if (!candidates.length) {
     console.warn('[mailerlite-webhook] signature verification failed', {
       reason: 'no_candidates',
       candidateCount: candidates.length,
-      signatureHeaderPresent: typeof signatureHeader !== 'undefined',
-      signatureValuesCount: signatureValues.length,
-      signatureValueLengths: signatureValues.map((value) => value.length),
-      tokenHeaderPresent: typeof tokenHeader !== 'undefined',
-      tokenValuesCount: tokenValues.length,
-      tokenValueLengths: tokenValues.map((value) => value.length),
+      ...headerLog,
     });
     return false;
   }
@@ -122,12 +126,7 @@ function verifySignature(
   console.warn('[mailerlite-webhook] signature verification failed', {
     reason: 'no_match',
     candidateCount: candidates.length,
-    signatureHeaderPresent: typeof signatureHeader !== 'undefined',
-    signatureValuesCount: signatureValues.length,
-    signatureValueLengths: signatureValues.map((value) => value.length),
-    tokenHeaderPresent: typeof tokenHeader !== 'undefined',
-    tokenValuesCount: tokenValues.length,
-    tokenValueLengths: tokenValues.map((value) => value.length),
+    ...headerLog,
   });
   return false;
 }
@@ -261,7 +260,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const rawBody = await getRawBody(req);
 
   if (
-    !verifySignature(rawBody, req.headers['x-mailerlite-signature'], req.headers['x-mailerlite-token'])
+    !verifySignature(rawBody, {
+      signatureHeader: req.headers['x-mailerlite-signature'],
+      tokenHeader: req.headers['x-mailerlite-token'],
+      signature: req.headers.signature,
+      xSignature: req.headers['x-signature'],
+    })
   ) {
     return res.status(401).json({ ok: false, error: 'invalid_signature' });
   }
