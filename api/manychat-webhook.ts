@@ -1349,9 +1349,10 @@ const mailerliteUpsert = async (input: MailerLiteUpsertInput): Promise<MailerLit
     return undefined;
   }
 
-  const email = safetyString(input.email);
+  const emailGuess = extractEmail(safetyString(input.email));
+  const email = emailGuess?.email;
   if (!email) {
-    console.warn('MailerLite sync skipped: no email detected');
+    console.warn('MailerLite sync skipped: no valid email detected');
     return undefined;
   }
 
@@ -1471,6 +1472,62 @@ const mailerliteUpsert = async (input: MailerLiteUpsertInput): Promise<MailerLit
     if (duplicateEmail) {
       console.warn('MailerLite reports subscriber already exists; update skipped', data);
       return successResult;
+    }
+
+    // Non-blocking fallback: retry once with a minimal payload and skip hard-fail on persistent 422.
+    const minimalPayload: Record<string, unknown> = {
+      email,
+      resubscribe: true,
+      groups,
+    };
+    const retry = await fetch(MAILERLITE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(minimalPayload),
+    });
+
+    const retryText = await retry.text();
+    let retryData: unknown = {};
+    if (retryText) {
+      try {
+        retryData = JSON.parse(retryText);
+      } catch {
+        retryData = { raw: retryText };
+      }
+    }
+
+    if (retry.ok || retry.status === 409) {
+      return {
+        ok: true,
+        status: retry.status,
+        json: retryData,
+        groupsSent: groups,
+        keyFp: successResult.keyFp,
+      };
+    }
+
+    if (retry.status === 422) {
+      const retryErrors = Array.isArray((retryData as { errors?: unknown }).errors)
+        ? ((retryData as { errors: Array<{ message?: string }> }).errors as Array<{ message?: string }> )
+        : [];
+      const retryDuplicate = retryErrors.find(
+        (err) => typeof err?.message === 'string' && err.message.toLowerCase().includes('already'),
+      );
+      if (retryDuplicate) {
+        return {
+          ok: true,
+          status: retry.status,
+          json: retryData,
+          groupsSent: groups,
+          keyFp: successResult.keyFp,
+        };
+      }
+      console.warn('MailerLite 422 persisted after minimal retry; skipping sync for this event');
+      return undefined;
     }
   }
 
