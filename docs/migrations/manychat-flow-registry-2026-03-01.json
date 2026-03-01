@@ -1,0 +1,279 @@
+{
+  "generated_at": "2026-03-01",
+  "source": {
+    "platform": "ManyChat",
+    "account_id": "fb2853446",
+    "view": "Automation > My Automations",
+    "mode": "read-only UI inventory"
+  },
+  "summary": {
+    "total_flows": 24,
+    "status_counts": {
+      "LIVE": 2,
+      "STOPPED": 13,
+      "DRAFT": 9
+    },
+    "category_counts": {
+      "keep_live": 1,
+      "migrate_first": 4,
+      "archive_candidates": 19
+    }
+  },
+  "keep_live": [
+    {
+      "flow_id": "content20251013163002_607385",
+      "name": "Say hi to new followers",
+      "status": "LIVE",
+      "runs": "243",
+      "last_modified": "2 weeks ago",
+      "trigger_type": "Platform event (likely new follower/welcome)",
+      "trigger_detail_visible": "Not expanded in list row",
+      "rationale": "Currently live non-CRM engagement flow; keep active during Batch 1 to avoid audience-response regression while CRM ingestion cutover is validated."
+    }
+  ],
+  "migrate_first": [
+    {
+      "flow_id": "content20250930140219_013526",
+      "name": "To CRM copy 2",
+      "status": "LIVE",
+      "runs": "850",
+      "last_modified": "2 weeks ago",
+      "trigger_type": "Keyword DM trigger",
+      "trigger_detail_visible": "Message contains: a ; Message contains: ee e",
+      "rationale": "Primary active CRM handoff path by volume; highest risk if not ported first to CRM-first ingestion contract."
+    },
+    {
+      "flow_id": "content20260213192513_254711",
+      "name": "To CRM copy 3 con flow de audio",
+      "status": "STOPPED",
+      "runs": "66",
+      "last_modified": "2 weeks ago",
+      "trigger_type": "Keyword DM trigger",
+      "trigger_detail_visible": "Message contains: a ; Message contains: ee e",
+      "rationale": "Recent CRM variant with audio branch; migrate early as controlled fallback/variant once contract is stable."
+    },
+    {
+      "flow_id": "content20250914162443_862288",
+      "name": "To CRM",
+      "status": "STOPPED",
+      "runs": "400",
+      "last_modified": "5 months ago",
+      "trigger_type": "Keyword DM trigger",
+      "trigger_detail_visible": "Message contains: a ; Message contains: ee e",
+      "rationale": "Legacy but high historical volume; useful as reference mapping during parity checks and rollback design."
+    },
+    {
+      "flow_id": "content20251001232041_100556",
+      "name": "Buffer — Accumulate DMs (40s window)",
+      "status": "STOPPED",
+      "runs": "2",
+      "last_modified": "5 months ago",
+      "trigger_type": "Keyword DM trigger",
+      "trigger_detail_visible": "Message contains: a ; Message contains: e",
+      "rationale": "Supports anti-duplication/buffering pattern that may be needed in CRM-first ingestion to prevent burst duplicates."
+    }
+  ],
+  "archive_candidates": [
+    {
+      "flow_id": "content20260213190526_085875",
+      "name": "Untitled",
+      "status": "STOPPED",
+      "runs": "1",
+      "last_modified": "2 weeks ago",
+      "trigger_type": "Keyword exact match",
+      "trigger_detail_visible": "Message contains whole word: Joy variants",
+      "rationale": "Low volume and unnamed test pattern; archive unless explicitly tied to campaign."
+    },
+    {
+      "flow_id": "content20251008145324_829827",
+      "name": "Untitled",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "5 months ago",
+      "trigger_type": "IG comments trigger (any/specific post + keyword)",
+      "trigger_detail_visible": "User comments on Post/Reel; keyword shanti",
+      "rationale": "Draft and inactive; keep out of Batch 1 scope."
+    },
+    {
+      "flow_id": "content20251008144453_420182",
+      "name": "Auto-reply to comment in DM",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "5 months ago",
+      "trigger_type": "IG comment keyword trigger",
+      "trigger_detail_visible": "User comments on specific post/reel and comment contains keyword",
+      "rationale": "Unpublished draft; no active dependency for cutover."
+    },
+    {
+      "flow_id": "content20251002002555_695141",
+      "name": "Message contains a, e, i, o, u, @, ., -, 0, 1, 2, 3, 4, 5...",
+      "status": "STOPPED",
+      "runs": "0",
+      "last_modified": "5 months ago",
+      "trigger_type": "Broad DM keyword catch-all",
+      "trigger_detail_visible": "Message contains long wildcard-like character list",
+      "rationale": "Zero runs and high false-positive risk; archive candidate after confirming no hidden dependency."
+    },
+    {
+      "flow_id": "content20250927145808_823549",
+      "name": "Untitled",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "5 months ago",
+      "trigger_type": "Unknown (not expanded)",
+      "trigger_detail_visible": "Not visible in row",
+      "rationale": "Unnamed draft with no run history."
+    },
+    {
+      "flow_id": "content20250927105825_268133",
+      "name": "To CRM copy",
+      "status": "STOPPED",
+      "runs": "4",
+      "last_modified": "5 months ago",
+      "trigger_type": "Keyword DM trigger",
+      "trigger_detail_visible": "Message contains: a ; Message contains: ee e",
+      "rationale": "Superseded by newer CRM copies; keep only as historical reference."
+    },
+    {
+      "flow_id": "content20250913191704_895708",
+      "name": "Untitled",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "5 months ago",
+      "trigger_type": "DM keyword trigger",
+      "trigger_detail_visible": "Message contains: @",
+      "rationale": "Draft duplicate pattern with no production usage."
+    },
+    {
+      "flow_id": "content20250927000529_141886",
+      "name": "Message contains @",
+      "status": "STOPPED",
+      "runs": "0",
+      "last_modified": "5 months ago",
+      "trigger_type": "DM keyword trigger",
+      "trigger_detail_visible": "Message contains: @",
+      "rationale": "No recent activity; narrow/legacy use."
+    },
+    {
+      "flow_id": "content20250927000735_496986",
+      "name": "Message contains @ copy",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "5 months ago",
+      "trigger_type": "Likely DM keyword trigger",
+      "trigger_detail_visible": "Not expanded",
+      "rationale": "Draft duplicate of stopped flow."
+    },
+    {
+      "flow_id": "content20250914154802_168813",
+      "name": "Untitled",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "6 months ago",
+      "trigger_type": "System field changed trigger",
+      "trigger_detail_visible": "System field value is changed",
+      "rationale": "Old draft automation without clear business owner."
+    },
+    {
+      "flow_id": "content20250914152140_928758",
+      "name": "Untitled",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "6 months ago",
+      "trigger_type": "Unknown (not expanded)",
+      "trigger_detail_visible": "Not visible in row",
+      "rationale": "Old unnamed draft."
+    },
+    {
+      "flow_id": "content20250913194041_396402",
+      "name": "Instagram Default Reply",
+      "status": "STOPPED",
+      "runs": "11",
+      "last_modified": "6 months ago",
+      "trigger_type": "Instagram default reply",
+      "trigger_detail_visible": "Not expanded",
+      "rationale": "Inactive default fallback; move to archive once CRM fallback message exists."
+    },
+    {
+      "flow_id": "content20250914124316_982836",
+      "name": "Untitled",
+      "status": "STOPPED",
+      "runs": "2",
+      "last_modified": "6 months ago",
+      "trigger_type": "Mixed (DM contains '*' + IG Ad)",
+      "trigger_detail_visible": "Message contains '*' ; Instagram Ads #2",
+      "rationale": "Low usage test/hybrid trigger; not needed for initial cutover."
+    },
+    {
+      "flow_id": "content20250914121140_539719",
+      "name": "Untitled",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "6 months ago",
+      "trigger_type": "Unknown (not expanded)",
+      "trigger_detail_visible": "Not visible in row",
+      "rationale": "No signs of production use."
+    },
+    {
+      "flow_id": "content20250507192623_661504",
+      "name": "Notify when \"quiero\"",
+      "status": "STOPPED",
+      "runs": "10",
+      "last_modified": "10 months ago",
+      "trigger_type": "IG comment keyword + referral link click",
+      "trigger_detail_visible": "Comment contains 'quiero' on specific Post/Reel; referral link click",
+      "rationale": "Campaign-specific and stale; archive unless campaign relaunch planned."
+    },
+    {
+      "flow_id": "content20250507203227_324440",
+      "name": "LAUNCH Unqualified DM",
+      "status": "STOPPED",
+      "runs": "2",
+      "last_modified": "10 months ago",
+      "trigger_type": "Tag applied trigger",
+      "trigger_detail_visible": "Tag is applied to a contact",
+      "rationale": "Legacy launch experiment with low volume."
+    },
+    {
+      "flow_id": "content20250507202217_610901",
+      "name": "LAUNCH Approved DM",
+      "status": "STOPPED",
+      "runs": "4",
+      "last_modified": "10 months ago",
+      "trigger_type": "Tag applied trigger",
+      "trigger_detail_visible": "Tag is applied to a contact",
+      "rationale": "Legacy launch experiment; superseded by newer variants."
+    },
+    {
+      "flow_id": "content20250430232401_843160",
+      "name": "email capture upon ad click",
+      "status": "DRAFT",
+      "runs": "n/a",
+      "last_modified": "10 months ago",
+      "trigger_type": "Instagram Ads trigger",
+      "trigger_detail_visible": "Instagram Ads #1",
+      "rationale": "Draft ad-capture concept; defer until post-cutover optimization."
+    },
+    {
+      "flow_id": "content20250430193940_912151",
+      "name": "Register comments on one reel",
+      "status": "STOPPED",
+      "runs": "2",
+      "last_modified": "10 months ago",
+      "trigger_type": "IG comment trigger on specific post/reel",
+      "trigger_detail_visible": "User comments on specific Post/Reel",
+      "rationale": "Single-asset campaign flow; safe archive candidate."
+    }
+  ],
+  "inventory_notes": {
+    "data_limitations": [
+      "Inventory is based on list-view visibility only; no flow editors were opened.",
+      "Some rows do not expose trigger snippets in collapsed state and are marked as unknown/likely.",
+      "Runs and modified values are captured as displayed (relative time strings)."
+    ],
+    "safety": [
+      "No destructive actions taken (no delete/disable/publish/regenerate).",
+      "Read-only navigation only."
+    ]
+  }
+}

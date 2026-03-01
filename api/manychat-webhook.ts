@@ -12,6 +12,12 @@ import { bestName } from '../lib/names.js';
 import { parseFullName } from '../lib/names/parseFullName.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
+import { getCrmIngestionFlags, isFlowAllowed } from '../lib/config/crm-ingestion.js';
+import {
+  buildCanonicalIngestionEventV1,
+  buildContractNormalizedPayload,
+  type CanonicalIngestionEventV1,
+} from '../lib/manychat/ingestion-contract-v1.js';
 import { sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
 
 console.log('[manychat-webhook] module loaded');
@@ -1891,6 +1897,40 @@ export const executePipeline = async (
   };
 };
 
+type CrmIngestionRouteMode = 'legacy' | 'shadow' | 'crm';
+
+const resolveIngestionRouteMode = (input: {
+  enabled: boolean;
+  directFallback: boolean;
+  shadowOnly: boolean;
+  flowAllowed: boolean;
+}): CrmIngestionRouteMode => {
+  if (!input.enabled || input.directFallback) return 'legacy';
+  if (input.shadowOnly) return 'shadow';
+  if (!input.flowAllowed) return 'legacy';
+  return 'crm';
+};
+
+const executePipelineFromContract = async (
+  payload: ManyChatPayload,
+  contract: CanonicalIngestionEventV1,
+  emailGuess: EmailGuess | null,
+  context: {
+    dmText?: string;
+    igProfileName?: string;
+    igUsername?: string;
+    dryRun?: boolean;
+    simulate?: boolean;
+  },
+): Promise<PipelineResult> => {
+  const normalizedPayload = buildContractNormalizedPayload(payload, contract) as ManyChatPayload;
+  const normalizedContext = {
+    ...context,
+    dmText: contract.message_text,
+  };
+  return executePipeline(normalizedPayload, emailGuess, normalizedContext);
+};
+
 const validateSecret = (req: VercelRequest): boolean => {
   const expected = safetyString(process.env.MANYCHAT_WEBHOOK_SECRET);
   if (!expected) return true;
@@ -1970,6 +2010,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : undefined) ??
       '';
 
+    const contractBuild = buildCanonicalIngestionEventV1(typedPayload);
+    const contract = contractBuild.contract;
+
     const rawContactId =
       safetyString(typedPayload.contact?.id) ??
       fallbackString(typedPayload, 'contact_id') ??
@@ -1984,21 +2027,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return rawId ? rawId.replace(/^user:/i, '') : undefined;
           })()
         : undefined);
-    const contactId = rawContactId || null;
+    const contactId = rawContactId || contract.contact_id || null;
 
     const messageId =
       safetyString((typedPayload as Record<string, unknown>).message_id) ??
       fallbackString(typedPayload, 'message_id') ??
       fallbackString(typedPayload, 'last_received_message_id') ??
+      contract.message_id ??
       null;
 
     const dedupeKey = makeDedupeKey('instagram', contactId ?? undefined, dmText || undefined);
+
+    const ingestionFlags = getCrmIngestionFlags();
+    const flowAllowed = isFlowAllowed(contract.flow_id, contract.flow_name, ingestionFlags.allowlist);
+    const routeMode = resolveIngestionRouteMode({
+      enabled: ingestionFlags.enabled,
+      directFallback: ingestionFlags.directFallback,
+      shadowOnly: ingestionFlags.shadowOnly,
+      flowAllowed,
+    });
+
+    if (contractBuild.requiredMissing.length) {
+      console.warn('crm_ingestion.contract_missing_required', {
+        missing: contractBuild.requiredMissing,
+        flow_id: contract.flow_id,
+        flow_name: contract.flow_name,
+        contact_id: contract.contact_id,
+      });
+    }
+
+    if (routeMode === 'shadow') {
+      console.log('crm_ingestion.shadow_compare', {
+        dedupe_legacy: dedupeKey,
+        dedupe_contract: contract.dedupe_key,
+        flow_id: contract.flow_id,
+        flow_name: contract.flow_name,
+        trigger_type: contract.trigger_type,
+        contract_version: contract.version,
+      });
+    }
+
+    if (routeMode === 'crm') {
+      console.log('crm_ingestion.crm_route', {
+        flow_id: contract.flow_id,
+        flow_name: contract.flow_name,
+        trigger_type: contract.trigger_type,
+        dedupe_key: contract.dedupe_key,
+      });
+    }
+
     const eventRow = {
       provider,
       contact_id: contactId,
       message_id: messageId,
       dedupe_key: dedupeKey,
-      message_text: dmText || null,
+      message_text: dmText || contract.message_text || null,
       extracted_email: emailGuess?.email ?? null,
       extraction_confidence: emailGuess?.confidence ?? null,
       raw_payload: typedPayload,
@@ -2021,13 +2104,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let mlDebugPayload: { groups?: string[]; key_fp?: string; body?: unknown; plan?: MailerLiteUpsertInput | null } | undefined;
 
     try {
-      pipelineResult = await executePipeline(typedPayload, emailGuess, {
-        dmText,
-        igProfileName: igProfileNameTop,
-        igUsername: igUsernameTop,
-        dryRun: dryFlag,
-        simulate: simulateFlag,
-      });
+      if (routeMode === 'crm') {
+        pipelineResult = await executePipelineFromContract(typedPayload, contract, emailGuess, {
+          dmText,
+          igProfileName: igProfileNameTop,
+          igUsername: igUsernameTop,
+          dryRun: dryFlag,
+          simulate: simulateFlag,
+        });
+      } else {
+        pipelineResult = await executePipeline(typedPayload, emailGuess, {
+          dmText,
+          igProfileName: igProfileNameTop,
+          igUsername: igUsernameTop,
+          dryRun: dryFlag,
+          simulate: simulateFlag,
+        });
+      }
     } catch (error) {
       finalStatus = 'FAILED';
       pipelineError = error as Error;
@@ -2111,6 +2204,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (simulateFlag) {
       return res.status(200).json({
         dry: dryFlag,
+        route_mode: routeMode,
+        flow_allowed: flowAllowed,
+        contract_version: contract.version,
+        contract_dedupe_key: contract.dedupe_key,
         finalName: pipelineResult?.finalName ?? null,
         name_source: pipelineResult?.finalNameSource ?? 'unknown',
         would_write: pipelineResult?.contactPatch ?? pipelineResult?.contactRecord ?? null,
@@ -2122,6 +2219,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: true,
       saved: true,
       status: finalStatus,
+      route_mode: routeMode,
       email: pipelineResult?.resolvedEmail ?? emailGuess?.email ?? null,
       contact_id: pipelineResult?.contactId ?? null,
       manychat_contact_id: pipelineResult?.manychatContactId ?? contactId,
