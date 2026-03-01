@@ -54,6 +54,15 @@ type ParsedLeadDetails = {
 const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 const phoneRegex = /\+?\d[\d .()/-]{6,}\d/;
 
+const looksLikePlaceholder = (value: string) =>
+  /\{\{|\}\}|%7B%7B|%7D%7D|<[^>]*>|\[[^\]]*\]/i.test(value);
+
+const sanitizeEmailCandidate = (value: string | undefined | null): string | undefined => {
+  const safe = safetyString(value);
+  if (!safe || looksLikePlaceholder(safe)) return undefined;
+  return extractEmail(safe)?.email;
+};
+
 const normalize = (value: string): string =>
   value
     .normalize('NFD')
@@ -783,7 +792,10 @@ const customPhone = findCustomField(contact.custom_fields, [
   const rawEmail = safetyString(contact.email) ?? safetyString(contact.emails && pickFirst(contact.emails)) ?? fullContactEmail;
   const rawPhone = safetyString(contact.phone) ?? safetyString(contact.phones && pickFirst(contact.phones));
 
-  const email = safetyString(customEmail ?? rawEmail ?? fallbackString(payload, 'contact_email'));
+  const email =
+    sanitizeEmailCandidate(customEmail) ??
+    sanitizeEmailCandidate(rawEmail) ??
+    sanitizeEmailCandidate(fallbackString(payload, 'contact_email'));
   const phone = safetyString(customPhone ?? rawPhone ?? fallbackString(payload, 'contact_phone'));
   const manychatId = safetyString(contact.id) ?? fallbackString(payload, 'contact_id') ?? normalizedFullId;
 
@@ -912,7 +924,11 @@ const parseLeadDetails = (payload: ManyChatPayload, contact: ManyChatContact): P
     if (rank < currentRank) return;
     if (rank === currentRank && details[field]) return;
 
-    if (field === 'name') {
+    if (field === 'email') {
+      const normalizedEmail = sanitizeEmailCandidate(safe);
+      if (!normalizedEmail) return;
+      details.email = normalizedEmail;
+    } else if (field === 'name') {
       const cleaned = sanitizeName(safe);
       if (!cleaned) return;
       (details as Record<string, unknown>)[field] = cleaned;
@@ -1303,9 +1319,6 @@ const getMailerLiteKey = () =>
 
 const mailerLiteKeyFingerprint = (key: string) => (key ? key.slice(-6) : '');
 
-const looksLikePlaceholder = (value: string) =>
-  /\{\{|\}\}|%7B%7B|%7D%7D|<[^>]*>|\[[^\]]*\]/i.test(value);
-
 const normalizeNameSource = (source: string | undefined): 'instagram_full_name' | 'instagram_handle_titlecase' | 'email_local' | 'manual' | 'unknown' => {
   switch (source) {
     case 'instagram_full_name':
@@ -1332,9 +1345,9 @@ const mailerliteUpsert = async (input: MailerLiteUpsertInput): Promise<MailerLit
     return undefined;
   }
 
-  const email = safetyString(input.email);
+  const email = sanitizeEmailCandidate(input.email);
   if (!email) {
-    console.warn('MailerLite sync skipped: no email detected');
+    console.warn('MailerLite sync skipped: no valid email detected');
     return undefined;
   }
 
