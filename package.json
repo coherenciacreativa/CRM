@@ -15,6 +15,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
+    "smoke:shadow": "node --loader ts-node/esm scripts/shadow-readiness-smoke.ts",
     "cronjob:setup": "node scripts/setup-cronjob.mjs",
     "fix:names": "node scripts/fix-ml-names.mjs",
     "ml:cleanup-lastname": "node scripts/cleanup-ml-lastname.mjs",
