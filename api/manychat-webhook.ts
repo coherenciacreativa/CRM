@@ -12,7 +12,18 @@ import { bestName } from '../lib/names.js';
 import { parseFullName } from '../lib/names/parseFullName.js';
 import { getDmText, makeDedupeKey } from '../lib/utils/payload.js';
 import { resolveMlGroups } from '../lib/config/ml-groups.js';
-import { sbInsert, sbPatch, sbReady, sbSelect } from '../lib/utils/sb.js';
+import { getCrmIngestionFlags, isFlowAllowed } from '../lib/config/crm-ingestion.js';
+import {
+  buildCanonicalIngestionEventV1,
+  buildContractNormalizedPayload,
+  type CanonicalIngestionEventV1,
+} from '../lib/manychat/ingestion-contract-v1.js';
+import { resolveWebhookIdentity } from '../lib/manychat/webhook-identity.js';
+import type {
+  ContactIdentityResolutionStatus,
+  IdentityMatchReason,
+} from '../lib/crm/contact-identity-resolver.js';
+import { sbInsert, sbPatch, sbReady } from '../lib/utils/sb.js';
 
 console.log('[manychat-webhook] module loaded');
 
@@ -1148,18 +1159,6 @@ const pruneOptionalColumns = (payload: Record<string, unknown>, errorMessage: st
   return mutated;
 };
 
-const fetchContactByColumn = async (column: string, value: string | undefined | null) => {
-  const safe = safetyString(value);
-  if (!safe) return null;
-  const result = await sbSelect(
-    `contacts?select=*&${column}=eq.${encodeURIComponent(safe)}&limit=1`,
-  );
-  if (!result.ok || !Array.isArray(result.json) || !result.json.length) {
-    return null;
-  }
-  return result.json[0] as Record<string, unknown>;
-};
-
 const insertContact = async (record: Record<string, unknown>) => {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     throw new Error('Missing Supabase credentials');
@@ -1224,22 +1223,6 @@ const patchContactByEmail = async (email: string | undefined, patch: Record<stri
     console.warn('patchContactByEmail failed', error);
   }
 };
-
-const fetchContactByEmail = async (email: string | undefined) => {
-  return fetchContactByColumn('email', email);
-};
-
-const fetchContactByManychatId = async (manychatId: string | undefined | null) =>
-  fetchContactByColumn('manychat_contact_id', manychatId);
-
-const fetchContactByIgUserId = async (igUserId: string | undefined | null) =>
-  fetchContactByColumn('ig_user_id', igUserId);
-
-const fetchContactByInstagramUsername = async (username: string | undefined | null) =>
-  fetchContactByColumn('instagram_username', username);
-
-const fetchContactByIgUsername = async (username: string | undefined | null) =>
-  fetchContactByColumn('ig_username', username);
 
 const insertInteraction = async (
   contactId: string,
@@ -1490,6 +1473,8 @@ export type PipelineResult = {
   event: string | null;
   resolvedEmail?: string;
   matchedSources: string[];
+  identityResolutionStatus?: ContactIdentityResolutionStatus;
+  identityMatchReason?: IdentityMatchReason | null;
   mailerlite?: MailerLiteSyncResult;
   finalName?: string | null;
   finalNameSource?: string;
@@ -1625,6 +1610,8 @@ export const executePipeline = async (
   }
 
   let contactRow: Record<string, unknown> | null = null;
+  let identityResolutionStatus: ContactIdentityResolutionStatus = 'none';
+  let identityMatchReason: IdentityMatchReason | null = null;
   if (dryRun) {
     contactRow = { id: 'dry-contact', ...record };
   } else {
@@ -1640,52 +1627,20 @@ export const executePipeline = async (
         throw contactError;
       }
 
-      const igUserIdValue = safetyString(record.ig_user_id);
-      const instagramUsernameValue = safetyString((record as Record<string, unknown>).instagram_username);
-      const igUsernameValue = safetyString((record as Record<string, unknown>).ig_username);
-      const manychatIdValue = manychatContactId;
-      const emailValue = safetyString(record.email);
+      const identityResolution = await resolveWebhookIdentity(record);
+      identityResolutionStatus = identityResolution.status;
+      identityMatchReason = identityResolution.matchReason;
 
-      type MatchStrategy =
-        | 'ig_user_id'
-        | 'instagram_username'
-        | 'ig_username'
-        | 'manychat_contact_id'
-        | 'email'
-        | 'unknown';
-
-      const lookupOrder: Array<{ finder: () => Promise<Record<string, unknown> | null>; reason: MatchStrategy }> = [];
-
-      if (igUserIdValue) {
-        lookupOrder.push({ finder: () => fetchContactByIgUserId(igUserIdValue), reason: 'ig_user_id' });
-      }
-      if (instagramUsernameValue) {
-        lookupOrder.push({ finder: () => fetchContactByInstagramUsername(instagramUsernameValue), reason: 'instagram_username' });
-      }
-      if (igUsernameValue) {
-        lookupOrder.push({ finder: () => fetchContactByIgUsername(igUsernameValue), reason: 'ig_username' });
-      }
-      if (manychatIdValue) {
-        lookupOrder.push({ finder: () => fetchContactByManychatId(manychatIdValue), reason: 'manychat_contact_id' });
-      }
-      if (emailValue) {
-        lookupOrder.push({ finder: () => fetchContactByEmail(emailValue), reason: 'email' });
-      }
-
-      let existingContact: Record<string, unknown> | null = null;
-      let matchedBy: MatchStrategy = 'unknown';
-      for (const { finder, reason } of lookupOrder) {
-        existingContact = await finder();
-        if (existingContact) {
-          matchedBy = reason;
-          break;
-        }
-      }
-
-      if (!existingContact) {
+      if (identityResolution.status !== 'matched' || !identityResolution.contact) {
+        console.warn('contact.identity_resolution_unmatched', {
+          status: identityResolution.status,
+          looked_up: identityResolution.lookedUp,
+          conflicts: identityResolution.conflictReasons,
+        });
         throw contactError;
       }
 
+      const existingContact = identityResolution.contact;
       contactRow = existingContact;
 
       const existingName = safetyString((existingContact as Record<string, unknown>).name);
@@ -1732,7 +1687,8 @@ export const executePipeline = async (
 
           if (!patchResponse.ok) {
             console.warn('Failed to patch contact after duplicate match', {
-              matched_by: matchedBy,
+              identity_status: identityResolution.status,
+              matched_by: identityResolution.matchReason,
               response: patchResponse,
             });
           } else {
@@ -1874,6 +1830,8 @@ export const executePipeline = async (
     parsed: parsedLead.matched,
     name_source: finalNameSource,
     final_name: finalName,
+    identity_resolution_status: identityResolutionStatus,
+    match_reason: identityMatchReason,
   });
 
   return {
@@ -1882,6 +1840,8 @@ export const executePipeline = async (
     event: eventName,
     resolvedEmail: resolvedEmail ?? undefined,
     matchedSources: parsedLead.matched,
+    identityResolutionStatus,
+    identityMatchReason,
     mailerlite: mailerliteResult,
     finalName: finalName ?? null,
     finalNameSource,
@@ -1889,6 +1849,40 @@ export const executePipeline = async (
     contactPatch: contactPatchPlan,
     mailerlitePlan,
   };
+};
+
+type CrmIngestionRouteMode = 'legacy' | 'shadow' | 'crm';
+
+const resolveIngestionRouteMode = (input: {
+  enabled: boolean;
+  directFallback: boolean;
+  shadowOnly: boolean;
+  flowAllowed: boolean;
+}): CrmIngestionRouteMode => {
+  if (!input.enabled || input.directFallback) return 'legacy';
+  if (input.shadowOnly) return 'shadow';
+  if (!input.flowAllowed) return 'legacy';
+  return 'crm';
+};
+
+const executePipelineFromContract = async (
+  payload: ManyChatPayload,
+  contract: CanonicalIngestionEventV1,
+  emailGuess: EmailGuess | null,
+  context: {
+    dmText?: string;
+    igProfileName?: string;
+    igUsername?: string;
+    dryRun?: boolean;
+    simulate?: boolean;
+  },
+): Promise<PipelineResult> => {
+  const normalizedPayload = buildContractNormalizedPayload(payload, contract) as ManyChatPayload;
+  const normalizedContext = {
+    ...context,
+    dmText: contract.message_text,
+  };
+  return executePipeline(normalizedPayload, emailGuess, normalizedContext);
 };
 
 const validateSecret = (req: VercelRequest): boolean => {
@@ -1970,6 +1964,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : undefined) ??
       '';
 
+    const contractBuild = buildCanonicalIngestionEventV1(typedPayload);
+    const contract = contractBuild.contract;
+
     const rawContactId =
       safetyString(typedPayload.contact?.id) ??
       fallbackString(typedPayload, 'contact_id') ??
@@ -1984,21 +1981,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return rawId ? rawId.replace(/^user:/i, '') : undefined;
           })()
         : undefined);
-    const contactId = rawContactId || null;
+    const contactId = rawContactId || contract.contact_id || null;
 
     const messageId =
       safetyString((typedPayload as Record<string, unknown>).message_id) ??
       fallbackString(typedPayload, 'message_id') ??
       fallbackString(typedPayload, 'last_received_message_id') ??
+      contract.message_id ??
       null;
 
     const dedupeKey = makeDedupeKey('instagram', contactId ?? undefined, dmText || undefined);
+
+    const ingestionFlags = getCrmIngestionFlags();
+    const flowAllowed = isFlowAllowed(contract.flow_id, contract.flow_name, ingestionFlags.allowlist);
+    const routeMode = resolveIngestionRouteMode({
+      enabled: ingestionFlags.enabled,
+      directFallback: ingestionFlags.directFallback,
+      shadowOnly: ingestionFlags.shadowOnly,
+      flowAllowed,
+    });
+
+    if (contractBuild.requiredMissing.length) {
+      console.warn('crm_ingestion.contract_missing_required', {
+        missing: contractBuild.requiredMissing,
+        flow_id: contract.flow_id,
+        flow_name: contract.flow_name,
+        contact_id: contract.contact_id,
+      });
+    }
+
+    if (routeMode === 'shadow') {
+      console.log('crm_ingestion.shadow_compare', {
+        dedupe_legacy: dedupeKey,
+        dedupe_contract: contract.dedupe_key,
+        flow_id: contract.flow_id,
+        flow_name: contract.flow_name,
+        trigger_type: contract.trigger_type,
+        contract_version: contract.version,
+      });
+    }
+
+    if (routeMode === 'crm') {
+      console.log('crm_ingestion.crm_route', {
+        flow_id: contract.flow_id,
+        flow_name: contract.flow_name,
+        trigger_type: contract.trigger_type,
+        dedupe_key: contract.dedupe_key,
+      });
+    }
+
     const eventRow = {
       provider,
       contact_id: contactId,
       message_id: messageId,
       dedupe_key: dedupeKey,
-      message_text: dmText || null,
+      message_text: dmText || contract.message_text || null,
       extracted_email: emailGuess?.email ?? null,
       extraction_confidence: emailGuess?.confidence ?? null,
       raw_payload: typedPayload,
@@ -2021,13 +2058,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let mlDebugPayload: { groups?: string[]; key_fp?: string; body?: unknown; plan?: MailerLiteUpsertInput | null } | undefined;
 
     try {
-      pipelineResult = await executePipeline(typedPayload, emailGuess, {
-        dmText,
-        igProfileName: igProfileNameTop,
-        igUsername: igUsernameTop,
-        dryRun: dryFlag,
-        simulate: simulateFlag,
-      });
+      if (routeMode === 'crm') {
+        pipelineResult = await executePipelineFromContract(typedPayload, contract, emailGuess, {
+          dmText,
+          igProfileName: igProfileNameTop,
+          igUsername: igUsernameTop,
+          dryRun: dryFlag,
+          simulate: simulateFlag,
+        });
+      } else {
+        pipelineResult = await executePipeline(typedPayload, emailGuess, {
+          dmText,
+          igProfileName: igProfileNameTop,
+          igUsername: igUsernameTop,
+          dryRun: dryFlag,
+          simulate: simulateFlag,
+        });
+      }
     } catch (error) {
       finalStatus = 'FAILED';
       pipelineError = error as Error;
@@ -2111,8 +2158,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (simulateFlag) {
       return res.status(200).json({
         dry: dryFlag,
+        route_mode: routeMode,
+        flow_allowed: flowAllowed,
+        contract_version: contract.version,
+        contract_dedupe_key: contract.dedupe_key,
         finalName: pipelineResult?.finalName ?? null,
         name_source: pipelineResult?.finalNameSource ?? 'unknown',
+        match_reason: pipelineResult?.identityMatchReason ?? null,
+        identity_resolution_status: pipelineResult?.identityResolutionStatus ?? null,
         would_write: pipelineResult?.contactPatch ?? pipelineResult?.contactRecord ?? null,
         mailerlite_plan: pipelineResult?.mailerlitePlan ?? null,
       });
@@ -2122,10 +2175,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: true,
       saved: true,
       status: finalStatus,
+      route_mode: routeMode,
       email: pipelineResult?.resolvedEmail ?? emailGuess?.email ?? null,
       contact_id: pipelineResult?.contactId ?? null,
       manychat_contact_id: pipelineResult?.manychatContactId ?? contactId,
       event: pipelineResult?.event ?? typedPayload.event ?? null,
+      match_reason: pipelineResult?.identityMatchReason ?? null,
+      identity_resolution_status: pipelineResult?.identityResolutionStatus ?? null,
       error: errorMessage,
     };
 

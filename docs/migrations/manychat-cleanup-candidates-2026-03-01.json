@@ -1,0 +1,91 @@
+{
+  "generated_at": "2026-03-01",
+  "scope": "ManyChat debt cleanup candidates (non-destructive manifest only)",
+  "policy": {
+    "destructive_actions_allowed": false,
+    "notes": [
+      "This file is a planning manifest only. Do not delete or hard-disable flows from this document.",
+      "Use archive/trash actions only after owner confirmation and post-cutover stability.",
+      "Keep rollback-compatible variants until cutover completion sign-off."
+    ]
+  },
+  "candidates": [
+    {
+      "flow_id": "content20250930140219_013526",
+      "name": "To CRM copy 2",
+      "status": "LIVE",
+      "proposed_action": "migrate",
+      "safety_notes": "Primary cutover flow. Keep active through shadow/promotion and preserve rollback path."
+    },
+    {
+      "flow_id": "content20260213192513_254711",
+      "name": "To CRM copy 3 con flow de audio",
+      "status": "STOPPED",
+      "proposed_action": "migrate",
+      "safety_notes": "Use as controlled fallback variant after v1 contract stability is confirmed."
+    },
+    {
+      "flow_id": "content20250914162443_862288",
+      "name": "To CRM",
+      "status": "STOPPED",
+      "proposed_action": "archive",
+      "safety_notes": "Legacy reference flow; keep until parity checks and rollback drills are completed."
+    },
+    {
+      "flow_id": "content20250927105825_268133",
+      "name": "To CRM copy",
+      "status": "STOPPED",
+      "proposed_action": "archive",
+      "safety_notes": "Superseded by newer variants; retain metadata for historical traceability."
+    },
+    {
+      "flow_id": "content20251001232041_100556",
+      "name": "Buffer — Accumulate DMs (40s window)",
+      "status": "STOPPED",
+      "proposed_action": "keep",
+      "safety_notes": "Potential anti-duplication strategy reference for burst DM handling; do not remove yet."
+    },
+    {
+      "flow_id": "content20260213190526_085875",
+      "name": "Untitled",
+      "status": "STOPPED",
+      "proposed_action": "trash-ready",
+      "safety_notes": "Low-volume probable test flow; require owner confirmation before any trash action."
+    },
+    {
+      "flow_id": "content20251002002555_695141",
+      "name": "Message contains a, e, i, o, u, @, ., -, 0, 1, 2, 3, 4, 5...",
+      "status": "STOPPED",
+      "proposed_action": "archive",
+      "safety_notes": "Broad trigger with high false-positive risk; archive first, never delete without replay validation."
+    },
+    {
+      "flow_id": "content20250913194041_396402",
+      "name": "Instagram Default Reply",
+      "status": "STOPPED",
+      "proposed_action": "archive",
+      "safety_notes": "Only archive after CRM fallback messaging is verified in production-like checks."
+    },
+    {
+      "flow_id": "content20250507192623_661504",
+      "name": "Notify when \"quiero\"",
+      "status": "STOPPED",
+      "proposed_action": "trash-ready",
+      "safety_notes": "Campaign-specific legacy flow; safe candidate only after campaign owner approval."
+    },
+    {
+      "flow_id": "content20250430193940_912151",
+      "name": "Register comments on one reel",
+      "status": "STOPPED",
+      "proposed_action": "trash-ready",
+      "safety_notes": "Single-asset historical experiment; preserve export/screenshot before final disposal."
+    },
+    {
+      "flow_id": "content20251013163002_607385",
+      "name": "Say hi to new followers",
+      "status": "LIVE",
+      "proposed_action": "keep",
+      "safety_notes": "Business-critical engagement flow; out of this cutover wave and should remain untouched."
+    }
+  ]
+}
