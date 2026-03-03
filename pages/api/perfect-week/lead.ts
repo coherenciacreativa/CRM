@@ -13,11 +13,17 @@ type ApiResponse =
   | { ok: false; error: string; message: string };
 
 const MAILERLITE_ENDPOINT = 'https://connect.mailerlite.com/api/subscribers';
-const DEFAULT_ONBOARDING_GROUP = '153400728188094209';
+const DEFAULT_TRIGGER_GROUP = '153400728188094209'; // leads_instagram.csv
 
 const isNumericGroupId = (value: string) => /^\d{5,}$/.test(value);
 
 const normalizeText = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+
+const splitGroupIds = (value: string) =>
+  value
+    .split(',')
+    .map((item) => normalizeText(item))
+    .filter(Boolean);
 
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -27,21 +33,25 @@ const getMailerLiteKey = () =>
   process.env.MAILERLITE_API_KEY || process.env.MAILERLITE_TOKEN || process.env.ML_API_KEY || '';
 
 const resolveGroups = () => {
-  const onboarding =
-    normalizeText(process.env.PERFECT_WEEK_ONBOARDING_GROUP_ID) ||
-    normalizeText(process.env.MAILERLITE_ONBOARDING_GROUP_ID) ||
-    DEFAULT_ONBOARDING_GROUP;
+  const triggerGroup =
+    normalizeText(process.env.PERFECT_WEEK_TRIGGER_GROUP_ID) ||
+    normalizeText(process.env.MAILERLITE_TRIGGER_GROUP_ID) ||
+    DEFAULT_TRIGGER_GROUP;
+
+  const kickoffFromPerfectWeek = normalizeText(process.env.PERFECT_WEEK_ONBOARDING_GROUP_ID);
+  const kickoffFromMailerLiteGroups = splitGroupIds(normalizeText(process.env.MAILERLITE_GROUP_IDS || ''))[1] || '';
+  const kickoffGroup = kickoffFromPerfectWeek || kickoffFromMailerLiteGroups;
 
   const perfectWeek = normalizeText(process.env.PERFECT_WEEK_GROUP_ID);
 
-  const groups = [onboarding, perfectWeek].filter(Boolean);
+  const groups = [triggerGroup, kickoffGroup, perfectWeek].filter(Boolean);
   const deduped = Array.from(new Set(groups));
 
   if (!deduped.every(isNumericGroupId)) {
     throw new Error('group_ids_invalid');
   }
 
-  return { onboarding, perfectWeek, all: deduped };
+  return { triggerGroup, kickoffGroup, perfectWeek, all: deduped };
 };
 
 async function postToMailerLite(payload: Record<string, unknown>, key: string) {
