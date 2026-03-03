@@ -243,3 +243,28 @@ Release log highlights (2025-Q3)
 - Expanded location/name heuristics para quitar conectores finales, interpretar etiquetas con colon (e.g. “País y ciudad: Colombia, Medellín”) y normalizar nombres/ciudades con alias LATAM.
 - Added simulation scripts and Supabase replay strategy for debugging ManyChat automations without affecting production data.
 - Introduced `/search` UI + serverless endpoints para consultar rápidamente contactos y detalles cruzados con MailerLite.
+
+Perfect Week quick launch
+-------------------------
+
+- Landing: `/perfect-week`
+- Privacidad: `/perfect-week/privacy`
+- Captura API: `POST /api/perfect-week/lead`
+
+Configurar entorno (local + Vercel):
+
+- `PERFECT_WEEK_GROUP_ID` (obligatorio)
+- `PERFECT_WEEK_ONBOARDING_GROUP_ID` (default `153400728188094209`)
+- `PERFECT_WEEK_GROUP_NAME` (para bootstrap del grupo)
+- `PERFECT_WEEK_FORM_SOURCE` (default `Perfect Week`)
+- `PERFECT_WEEK_SENDER_NAME` (default `Alejandro Gómez`)
+
+Bootstrap del grupo dedicado (una sola vez):
+
+```bash
+node scripts/create-perfect-week-group.mjs
+```
+
+Luego copiar el `id` retornado a `PERFECT_WEEK_GROUP_ID`.
+
+Guía breve: `docs/perfect-week.md`
