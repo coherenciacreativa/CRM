@@ -172,7 +172,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const firstTry = await postToMailerLite(basePayload, key);
 
     if (firstTry.response.ok) {
-      return res.status(200).json({ ok: true, message: '¡Listo! Ya estás dentro de Perfect Week.' });
+      return res.status(200).json({ ok: true, message: '¡Listo! Ya estás dentro de Perfect Week ✅' });
     }
 
     // Fallback if custom fields are not available in this MailerLite account.
@@ -186,7 +186,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
       const retry = await postToMailerLite(fallbackPayload, key);
       if (retry.response.ok || retry.response.status === 409) {
-        return res.status(200).json({ ok: true, message: '¡Listo! Ya estás dentro de Perfect Week.' });
+        return res.status(200).json({ ok: true, message: '¡Listo! Ya estás dentro de Perfect Week ✅' });
       }
     }
 
