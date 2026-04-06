@@ -254,7 +254,10 @@ Perfect Week quick launch
 Configurar entorno (local + Vercel):
 
 - `PERFECT_WEEK_GROUP_ID` (obligatorio)
-- `PERFECT_WEEK_ONBOARDING_GROUP_ID` (default `153400728188094209`)
+- `PERFECT_WEEK_EMAIL0_GROUP_ID` (grupo que dispara Email 0)
+- `PERFECT_WEEK_ONBOARDING_GROUP_ID` (grupo de arranque de Notes de Alejandro)
+- `PERFECT_WEEK_HANDOFF_DELAY_HOURS` (default `24`)
+- `PERFECT_WEEK_HANDOFF_CRON_SECRET` (opcional para tests manuales)
 - `PERFECT_WEEK_GROUP_NAME` (para bootstrap del grupo)
 - `PERFECT_WEEK_FORM_SOURCE` (default `Perfect Week`)
 - `PERFECT_WEEK_SENDER_NAME` (default `Alejandro Gómez`)
@@ -266,5 +269,10 @@ node scripts/create-perfect-week-group.mjs
 ```
 
 Luego copiar el `id` retornado a `PERFECT_WEEK_GROUP_ID`.
+
+Flujo actual:
+- `/api/perfect-week/lead` agrega al lead a Perfect Week + grupo Email 0.
+- Scheduler externo (recomendado cron-job.org, hourly) invoca `/api/perfect-week/handoff` para mover al lead al grupo onboarding tras ~24h.
+- La automation de **Email 0** se configura en MailerLite UI (paso único).
 
 Guía breve: `docs/perfect-week.md`

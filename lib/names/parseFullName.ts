@@ -53,6 +53,27 @@ const COMMON_GIVEN = new Set([
   'valentina',
 ]);
 
+const NON_NAME_WORDS = new Set([
+  'no',
+  'nop',
+  'quiero',
+  'prefiero',
+  'decir',
+  'decirlo',
+  'digo',
+  'compartir',
+  'responder',
+  'ahora',
+  'luego',
+  'despues',
+  'después',
+  'gracias',
+  'ninguno',
+  'ninguna',
+  'ningun',
+  'ningún',
+]);
+
 export function normalizeName(raw: string): string {
   return (raw ?? '')
     .toString()
@@ -62,9 +83,58 @@ export function normalizeName(raw: string): string {
     .replace(/[^\p{L}\p{M}\s\-']/gu, '');
 }
 
-export function parseFullName(raw: string): ParsedName {
+const INTRO_PATTERNS = [
+  /\b(?:me\s+llamo|mi\s+nombre\s+es|mi\s+nombre)\s+(.+)$/i,
+  /\b(?:yo\s+soy|soy)\s+(.+)$/i,
+];
+
+const LEADING_GREETING_RE =
+  /^(?:hola|buenas|buenos\s+d[ií]as|buen\s+d[ií]a|buenas\s+tardes|buenas\s+noches|hello|hi|hey)\b\s*/i;
+
+const TRAILING_SMALL_TALK_RE =
+  /\b(?:mucho\s+gusto|encantad[oa]|gracias(?:\s+.+)?|saludos?)\b.*$/i;
+
+function preprocessCandidate(raw: string): string {
   const cleaned = normalizeName(raw);
-  if (!cleaned) {
+  if (!cleaned) return '';
+
+  let candidate = cleaned.replace(LEADING_GREETING_RE, '').trim();
+
+  for (const pattern of INTRO_PATTERNS) {
+    const match = candidate.match(pattern);
+    if (match?.[1]) {
+      candidate = normalizeName(match[1]);
+      break;
+    }
+  }
+
+  candidate = candidate.replace(TRAILING_SMALL_TALK_RE, '').trim();
+  candidate = normalizeName(candidate);
+
+  return candidate || cleaned;
+}
+
+function looksLikeNonName(candidate: string): boolean {
+  const normalized = normalizeName(candidate).toLowerCase();
+  if (!normalized) return true;
+
+  if (/^(?:n\/?a|none|null|no)$/i.test(normalized)) return true;
+
+  const words = normalized.split(' ').filter(Boolean);
+  if (!words.length) return true;
+
+  const nonNameHits = words.filter((word) => NON_NAME_WORDS.has(word)).length;
+  if (nonNameHits >= 2) return true;
+
+  // Si viene una frase larga y contiene verbos/conectores conversacionales, mejor no asumir nombre.
+  if (words.length >= 3 && nonNameHits >= 1) return true;
+
+  return false;
+}
+
+export function parseFullName(raw: string): ParsedName {
+  const cleaned = preprocessCandidate(raw);
+  if (!cleaned || looksLikeNonName(cleaned)) {
     return { hasSurname: false, firstName: '', lastName: '', normalized: '' };
   }
 

@@ -28,4 +28,44 @@ describe('parseFullName', () => {
       normalized: 'Juan de la Cruz',
     });
   });
+
+  it('handles conversational first-name replies', () => {
+    const parsed = parseFullName('Hola 😊 me llamo Camila');
+    expect(parsed).toEqual({
+      hasSurname: false,
+      firstName: 'Camila',
+      lastName: '',
+      normalized: 'Camila',
+    });
+  });
+
+  it('handles conversational full-name replies', () => {
+    const parsed = parseFullName('Hola, mi nombre es Camila López');
+    expect(parsed).toEqual({
+      hasSurname: true,
+      firstName: 'Camila',
+      lastName: 'López',
+      normalized: 'Camila López',
+    });
+  });
+
+  it('rejects conversational non-name phrases', () => {
+    const parsed = parseFullName('hola no quiero decirlo');
+    expect(parsed).toEqual({
+      hasSurname: false,
+      firstName: '',
+      lastName: '',
+      normalized: '',
+    });
+  });
+
+  it('rejects refusal/placeholder style replies', () => {
+    const parsed = parseFullName('prefiero no compartir');
+    expect(parsed).toEqual({
+      hasSurname: false,
+      firstName: '',
+      lastName: '',
+      normalized: '',
+    });
+  });
 });

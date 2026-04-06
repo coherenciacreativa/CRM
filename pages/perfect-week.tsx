@@ -83,15 +83,25 @@ export default function PerfectWeekPage() {
           </a>
         </div>
 
-        <h1 style={styles.title}>Diseña una semana con claridad, foco y bienestar real.</h1>
+        <h1 style={styles.title}>Activa tu Pack de Profundización de Perfect Week.</h1>
         <p style={styles.description}>
-          Únete a Perfect Week y recibe una guía práctica para organizar tu energía, tus prioridades y tu agenda sin perder tu
-          centro.
+          La guía ya la tienes. Aquí desbloqueas la siguiente capa de implementación: recursos prácticos para sostener resultados
+          en el día a día.
         </p>
 
-        <p style={styles.microTrust}>
-          Enfoque humano + método práctico + acompañamiento real para sostener resultados.
+        <p style={styles.microTrust}>Incluye plantilla editable + checklist semanal + recordatorios copy/paste.</p>
+        <p style={styles.guideHint}>
+          ¿Prefieres volver a la guía completa?{' '}
+          <a href="/perfect-week/guia" style={styles.link}>
+            Abrir guía Perfect Week
+          </a>
         </p>
+
+        <ul style={styles.benefits}>
+          <li>Plantilla editable para plan semanal</li>
+          <li>Checklist de implementación (60 min + revisiones)</li>
+          <li>Recordatorios listos para copiar y pegar</li>
+        </ul>
 
         <form onSubmit={onSubmit} style={styles.form}>
           <label style={styles.label}>
@@ -163,7 +173,7 @@ export default function PerfectWeekPage() {
           />
 
           <button type="submit" style={styles.button} disabled={submit.loading}>
-            {submit.loading ? 'Enviando...' : 'Quiero unirme a Perfect Week'}
+            {submit.loading ? 'Activando...' : 'Quiero activar mi Pack de Profundización'}
           </button>
         </form>
 
@@ -174,7 +184,14 @@ export default function PerfectWeekPage() {
               <p style={styles.successCopy}>
                 Revisa tu correo en los próximos <strong>3–5 minutos</strong>. Si no aparece, revisa Promociones/Spam.
               </p>
-              <p style={styles.successCopy}>Te llegará el recurso inicial y luego la secuencia de onboarding.</p>
+              <p style={styles.successCopy}>Te llegará el Email 0 con acceso al Pack de Profundización y luego la secuencia.</p>
+              <p style={styles.successCopy}>
+                Si quieres entrar de una vez, abre aquí:{' '}
+                <a href="/perfect-week/profundizacion.html" target="_blank" rel="noreferrer" style={styles.link}>
+                  Pack de Profundización
+                </a>
+                .
+              </p>
               <a href={JUANA_WHATSAPP_URL} target="_blank" rel="noreferrer" style={styles.successCta}>
                 Hablar con Juana por WhatsApp
               </a>
@@ -239,9 +256,21 @@ const styles: Record<string, CSSProperties> = {
     fontSize: '16px',
   },
   microTrust: {
-    margin: '0 0 22px',
+    margin: '0 0 8px',
     color: '#4c6962',
     fontSize: '13px',
+  },
+  guideHint: {
+    margin: '0 0 8px',
+    color: '#35554f',
+    fontSize: '13px',
+  },
+  benefits: {
+    margin: '0 0 18px 18px',
+    color: '#264640',
+    lineHeight: 1.6,
+    fontSize: '14px',
+    padding: 0,
   },
   form: {
     display: 'grid',

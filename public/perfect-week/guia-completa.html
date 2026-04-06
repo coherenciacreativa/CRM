@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perfect Week · Coherencia Creativa</title>
+  <style>
+    :root{
+      --ink:#07333F;
+      --ink-2:#0f4a57;
+      --teal:#2B9AA2;
+      --aqua:#58B7B2;
+      --seafoam:#A7D6CB;
+      --sand:#E9D8B8;
+      --paper:#F8FBFA;
+      --muted:#5a6e75;
+      --line:#d7e5e2;
+    }
+    @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--ink);
+      background:white;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      line-height:1.5;
+      font-size:11.5pt;
+    }
+    .page{page-break-after:always; padding-bottom:6mm;}
+    .page:last-child{page-break-after:auto}
+    .header{
+      display:flex;justify-content:space-between;align-items:center;
+      border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:22px;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand img{width:36px;height:36px;object-fit:contain}
+    .brand h1{font-size:11pt;letter-spacing:.12em;text-transform:uppercase;margin:0;color:var(--ink)}
+    .subtitle{font-size:9pt;color:var(--muted)}
+    h2{font-size:24pt;line-height:1.15;margin:0 0 10px;color:var(--ink)}
+    h3{font-size:15pt;line-height:1.25;margin:18px 0 8px;color:var(--ink-2)}
+    h4{font-size:12pt;margin:12px 0 6px;color:var(--ink-2)}
+    p{margin:8px 0}
+    .lead{font-size:13pt;color:#183f48;max-width:90%}
+    .pill{
+      display:inline-block;background:linear-gradient(90deg,var(--seafoam),#dff0ec);
+      color:#133640;padding:6px 10px;border-radius:999px;font-size:9.5pt;font-weight:600;margin-right:6px;margin-top:6px
+    }
+    .hero{
+      background:linear-gradient(130deg, #f5fbfa 0%, #edf7f5 55%, #f6f1e8 100%);
+      border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-top:10px;
+    }
+    .quote{
+      border-left:3px solid var(--teal);padding:8px 12px;color:#21474f;background:#f4fbf9;border-radius:0 8px 8px 0;
+      margin:12px 0;
+    }
+    ul{margin:8px 0 8px 22px;padding:0}
+    li{margin:4px 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{
+      border:1px solid var(--line);border-radius:12px;padding:12px;background:#fcfefe;
+    }
+    .step{
+      border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;background:white;margin-bottom:10px;
+    }
+    .step b{color:var(--ink-2)}
+    .table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-top:8px}
+    .table th,.table td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+    .table th{background:#eef8f6;color:#15424d}
+    .footer{
+      margin-top:14px;border-top:1px solid var(--line);padding-top:7px;
+      font-size:8.7pt;color:#6a8087;display:flex;justify-content:space-between
+    }
+    .cta{
+      background:linear-gradient(150deg,#07333F 0%,#124856 45%,#2B9AA2 100%);
+      color:#f4fcfb;border-radius:16px;padding:18px 18px 14px;
+    }
+    .cta h3,.cta h4{color:#f4fcfb}
+    .cta a{color:#d6f8f3;text-decoration:none;font-weight:700}
+    .small{font-size:9pt;color:#5e757b}
+    .checklist li::marker{content:"✓  "; color:var(--teal);font-weight:700}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:9.7pt;background:#f5f9f8;padding:1px 4px;border-radius:5px}
+
+    @media screen and (min-width: 961px){
+      .page{max-width:920px; margin:0 auto; padding-left:10px; padding-right:10px;}
+    }
+
+    @media (max-width: 768px){
+      body{font-size:15px; line-height:1.62;}
+      .page{page-break-after:auto; padding:0 14px 18px;}
+      .header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+        margin-bottom:14px;
+      }
+      .brand{gap:8px}
+      .brand img{width:28px;height:28px}
+      .brand h1{font-size:10pt;letter-spacing:.08em}
+      h2{font-size:1.9rem; line-height:1.2; margin:0 0 8px}
+      h3{font-size:1.28rem; margin:14px 0 6px}
+      h4{font-size:1.08rem; margin:10px 0 6px}
+      p{margin:7px 0}
+      .lead{font-size:1.05rem; max-width:100%}
+      .hero{padding:14px 14px; margin-top:8px}
+      .quote{padding:8px 10px}
+      ul,ol{margin:8px 0 8px 18px; padding:0}
+      .grid2{grid-template-columns:1fr; gap:10px}
+      .card{padding:10px}
+      .step{padding:10px 10px 9px; margin-bottom:8px}
+      .table{display:block; overflow-x:auto; white-space:nowrap; font-size:0.94rem; -webkit-overflow-scrolling:touch}
+      .table th,.table td{white-space:nowrap; padding:6px 7px}
+      .footer{font-size:0.8rem; flex-direction:column; align-items:flex-start; gap:3px}
+      .cta{padding:14px 12px 12px; border-radius:12px}
+      .cta a{display:inline-block; margin-top:4px}
+      .small{font-size:0.82rem}
+    }
+  </style>
+</head>
+<body>
+
+<section class="page">
+  <div class="header">
+    <div class="brand">
+      <img src="assets/logo-coherencia.png" alt="Coherencia Creativa" />
+      <div>
+        <h1>Coherencia Creativa</h1>
+        <div class="subtitle">Guía práctica · Perfect Week</div>
+      </div>
+    </div>
+    <div class="small">Versión rediseñada · Marzo 2026</div>
+  </div>
+
+  <div class="hero">
+    <h2>Tu Perfect Week</h2>
+    <p class="lead">Una forma simple de recuperar foco, reducir fatiga de decisiones y hacer que lo importante sí pase — sin convertir tu vida en una agenda rígida.</p>
+    <span class="pill">Implementación en 60 minutos</span>
+    <div class="quote">
+      La baja energía no siempre es falta de disciplina. Muchas veces es fatiga mental acumulada. Diseñar tu semana devuelve energía cognitiva para lo que sí importa.
+    </div>
+  </div>
+
+  <h3>¿Qué vas a lograr con esta guía?</h3>
+  <ul>
+    <li>Pasar de improvisación constante a una estructura realista.</li>
+    <li>Definir 1–3 resultados semanales que mueven la aguja.</li>
+    <li>Crear un sistema mínimo sostenible (Daily Reset + Weekly Review).</li>
+    <li>Tener una plantilla reutilizable para no empezar de cero cada semana.</li>
+  </ul>
+
+  <div class="footer">
+    <span>coherenciacreativa.com</span>
+    <span>Página 1</span>
+  </div>
+</section>
+
+<section class="page">
+  <div class="header">
+    <div class="brand"><img src="assets/logo-coherencia.png" alt="logo" /><h1>Coherencia Creativa</h1></div>
+    <div class="small">Antes de empezar</div>
+  </div>
+
+  <h3>Principio clave</h3>
+  <p><b>Perfect Week no es perfección: es un prototipo.</b> El objetivo no es cumplir al 100%, sino bajar fricción mental y tomar mejores decisiones bajo presión real.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Materiales mínimos</h4>
+      <ul>
+        <li>Calendario (Apple, Google u Outlook).</li>
+        <li>Lista de tareas simple (Reminders, To Do, papel).</li>
+        <li>Temporizador.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Regla de oro</h4>
+      <p>Si todo es prioridad, nada lo es. La elegancia está en elegir pocas piezas, claras y repetibles.</p>
+    </div>
+  </div>
+
+  <h3>Marco mental (rápido y útil)</h3>
+  <ul>
+    <li><b>Energía mental:</b> menos decisiones en caliente = más energía para ejecutar.</li>
+    <li><b>Big rocks primero:</b> agenda primero lo importante, luego lo urgente.</li>
+    <li><b>Diseño por defaults:</b> cuando repites una estructura, bajas desgaste.</li>
+  </ul>
+
+  <div class="quote">Tu calendario no es una cárcel. Es un sistema de protección de atención.</div>
+
+  <h4>Plantilla de intención semanal</h4>
+  <ul>
+    <li>Roles clave (2–5): salud, familia, trabajo, estudio, comunidad.</li>
+    <li>Big rocks (1–3): si esto sucede, la semana ya valió.</li>
+  </ul>
+
+  <div class="footer"><span>coherenciacreativa.com</span><span>Página 2</span></div>
+</section>
+
+<section class="page">
+  <div class="header">
+    <div class="brand"><img src="assets/logo-coherencia.png" alt="logo" /><h1>Coherencia Creativa</h1></div>
+    <div class="small">Método</div>
+  </div>
+
+  <h3>El método en 7 pasos (60 minutos)</h3>
+
+  <div class="step"><b>1) Define tu norte (10 min).</b> Escribe 1–3 resultados semanales. Todo lo demás es soporte.</div>
+  <div class="step"><b>2) Bloquea lo fijo (10 min).</b> Compromisos no negociables primero: trabajo, clases, citas, familia, traslados.</div>
+  <div class="step"><b>3) Diseña anclas diarias (10 min).</b> Elige 2–4 bloques estabilizadores (foco, movimiento, cierre).</div>
+  <div class="step"><b>4) Asigna tema por día (10 min).</b> Menos cambio de contexto, más continuidad de energía.</div>
+  <div class="step"><b>5) Ordena por energía (10 min).</b> Difícil en horas altas; liviano en horas bajas.</div>
+  <div class="step"><b>6) Crea buffers y Plan B (5 min).</b> Sin aire en agenda, cualquier imprevisto rompe el sistema.</div>
+  <div class="step"><b>7) Define ritual de revisión (5 min).</b> Daily Reset (10 min) + Weekly Review (30 min).</div>
+
+  <div class="footer"><span>coherenciacreativa.com</span><span>Página 3</span></div>
+</section>
+
+<section class="page">
+  <div class="header">
+    <div class="brand"><img src="assets/logo-coherencia.png" alt="logo" /><h1>Coherencia Creativa</h1></div>
+    <div class="small">Implementación práctica</div>
+  </div>
+
+  <h3>Cómo pasarlo al calendario (sin enredarte)</h3>
+  <ol>
+    <li>Crea un calendario separado: <span class="mono">Perfect Week</span>.</li>
+    <li>Agrega anclas diarias primero.</li>
+    <li>Añade lo fijo y luego bloques flexibles.</li>
+    <li>Usa recordatorios 5–10 min antes de transiciones.</li>
+    <li>Máximo 4 colores (claridad > decoración).</li>
+  </ol>
+
+  <h4>Estructura recomendada (ajústala a tu realidad)</h4>
+  <table class="table">
+    <thead>
+      <tr><th>Bloque</th><th>Duración</th><th>Intención</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Foco profundo</td><td>60–120 min</td><td>Trabajo que produce avance real</td></tr>
+      <tr><td>Administración ligera</td><td>20–40 min</td><td>Mensajes, logística, pendientes</td></tr>
+      <tr><td>Movimiento</td><td>30–60 min</td><td>Energía, ánimo, claridad</td></tr>
+      <tr><td>Creatividad / estudio</td><td>45–90 min</td><td>Aprender, escribir, diseñar</td></tr>
+      <tr><td>Cierre diario</td><td>10 min</td><td>Preparar mañana y bajar fricción</td></tr>
+    </tbody>
+  </table>
+
+  <div class="quote">Menos opciones por día = menos desgaste de voluntad.</div>
+
+  <div class="footer"><span>coherenciacreativa.com</span><span>Página 4</span></div>
+</section>
+
+<section class="page">
+  <div class="header">
+    <div class="brand"><img src="assets/logo-coherencia.png" alt="logo" /><h1>Coherencia Creativa</h1></div>
+    <div class="small">Sostenibilidad</div>
+  </div>
+
+  <h3>Cómo sostenerlo sin drama</h3>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Daily Reset (10 min)</h4>
+      <ul class="checklist">
+        <li>Revisa calendario de mañana.</li>
+        <li>Elige 1 tarea clave.</li>
+        <li>Define micro-acción de arranque.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Weekly Review (30 min)</h4>
+      <ul class="checklist">
+        <li>Qué te dio energía / qué te drenó.</li>
+        <li>Qué bloque ajustar.</li>
+        <li>Un solo cambio para la próxima semana.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Reglas que ahorran energía (elige 3–5)</h3>
+  <ul>
+    <li>Primera ancla antes de mensajes.</li>
+    <li>Correo/DM en 1–2 ventanas definidas.</li>
+    <li>Si un bloque cae, se reubica en buffer (sin culpa).</li>
+    <li>Decisiones repetidas se vuelven plantilla.</li>
+    <li>Cierre diario obligatorio de 10 minutos.</li>
+  </ul>
+
+  <h3>Problemas comunes y ajuste rápido</h3>
+  <ul>
+    <li><b>“Mi semana cambia mucho”</b> → anclas + buffers como estructura mínima.</li>
+    <li><b>“No cumplo el calendario”</b> → ajusta duración y transiciones, no autoestima.</li>
+    <li><b>“Me siento culpable”</b> → esto es laboratorio, no tribunal.</li>
+  </ul>
+
+  <div class="footer"><span>coherenciacreativa.com</span><span>Página 5</span></div>
+</section>
+
+<section class="page">
+  <div class="header">
+    <div class="brand"><img src="assets/logo-coherencia.png" alt="logo" /><h1>Coherencia Creativa</h1></div>
+    <div class="small">Plantilla editable</div>
+  </div>
+
+  <h3>Plantilla rápida de tu semana</h3>
+
+  <h4>A) Mis 3 resultados de esta semana</h4>
+  <ol>
+    <li>_____________________________________</li>
+    <li>_____________________________________</li>
+    <li>_____________________________________</li>
+  </ol>
+
+  <h4>B) Mis anclas diarias (2–4)</h4>
+  <ol>
+    <li>_____________________________________</li>
+    <li>_____________________________________</li>
+    <li>_____________________________________</li>
+    <li>_____________________________________</li>
+  </ol>
+
+  <h4>C) Regla anti-sirenas (mi Odiseo interior)</h4>
+  <p>Cuando aparezca la distracción recurrente, voy a: _____________________________________</p>
+
+  <h4>D) Mi plan B cuando se cae un bloque</h4>
+  <p>Si cae el bloque de ________, lo reubico en ________ dentro de las próximas 24h.</p>
+
+  <h4>E) Guion de cierre diario (2 líneas)</h4>
+  <p>Lo más importante de mañana es: _____________________________________</p>
+  <p>Mi micro-acción de arranque será: _____________________________________</p>
+
+  <div class="footer"><span>coherenciacreativa.com</span><span>Página 6</span></div>
+</section>
+
+<section class="page">
+  <div class="header">
+    <div class="brand"><img src="assets/logo-coherencia.png" alt="logo" /><h1>Coherencia Creativa</h1></div>
+    <div class="small">Siguiente paso</div>
+  </div>
+
+  <div class="cta">
+    <h3>¿Quieres que lo aterricemos contigo en 1:1?</h3>
+    <p>Mantenemos <b>pocos cupos semanales</b> para acompañamiento personalizado.
+    Si quieres apoyo para diseñar tu semana según tu realidad (trabajo, familia, energía y prioridades), agenda con Juana:</p>
+
+    <p><b>WhatsApp agenda directa:</b><br/>
+    <a href="https://wa.me/5491158172581?text=Hola%20Juana%2C%20vengo%20de%20la%20gu%C3%ADa%20Perfect%20Week%20de%20Coherencia%20Creativa%20y%20quiero%20agendar%20una%20consulta.">wa.me/5491158172581</a></p>
+
+    <h4>Opcional (sin fricción): activa el Pack de Profundización</h4>
+    <p>Si quieres desbloquear <b>plantilla editable + checklist semanal + recordatorios copy/paste</b>,
+    activa el acceso aquí:<br/>
+    <a href="https://crm-manychat-webhook.vercel.app/perfect-week">crm-manychat-webhook.vercel.app/perfect-week</a><br/><span style="font-size:9.3pt;opacity:.9">(te llega por email y no repite la guía)</span></p>
+  </div>
+
+  <p class="small" style="margin-top:14px">Nota: este material es educativo e informativo; no constituye asesoramiento médico, legal o financiero.</p>
+
+  <div class="footer"><span>coherenciacreativa.com</span><span>Página 7</span></div>
+</section>
+
+</body>
+</html>

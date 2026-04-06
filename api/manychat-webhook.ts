@@ -809,6 +809,32 @@ const customPhone = findCustomField(contact.custom_fields, [
   const payloadFirstName = readPayloadValue('first_name');
   const payloadLastName = readPayloadValue('last_name');
 
+  const looksConversationalName = (value?: string): boolean => {
+    if (!value) return false;
+    const text = value.trim().toLowerCase();
+    if (!text) return false;
+    if (/\b(me\s+llamo|mi\s+nombre\s+es|mi\s+nombre|hola|buenas|soy|yo\s+soy)\b/i.test(text)) return true;
+    return text.split(/\s+/).length >= 3;
+  };
+
+  const shouldPreferGuessFirst = (current?: string, guess?: string): boolean => {
+    const currentSafe = safetyString(current);
+    const guessSafe = safetyString(guess);
+    if (!guessSafe) return false;
+    if (!currentSafe) return true;
+    if (looksConversationalName(currentSafe) && !looksConversationalName(guessSafe)) return true;
+    return false;
+  };
+
+  const shouldPreferGuessLast = (current?: string, guess?: string): boolean => {
+    const currentSafe = safetyString(current);
+    const guessSafe = safetyString(guess);
+    if (!guessSafe) return false;
+    if (!currentSafe) return true;
+    if (looksConversationalName(currentSafe) && !looksConversationalName(guessSafe)) return true;
+    return false;
+  };
+
   let resolvedFirstName =
     safetyString(contact.first_name) ??
     payloadFirstName ??
@@ -821,7 +847,10 @@ const customPhone = findCustomField(contact.custom_fields, [
     undefined;
 
   if (!resolvedFirstName && guessFirstName) resolvedFirstName = guessFirstName;
+  if (shouldPreferGuessFirst(resolvedFirstName, guessFirstName)) resolvedFirstName = guessFirstName;
+
   if (!resolvedLastName && guessLastName) resolvedLastName = guessLastName;
+  if (shouldPreferGuessLast(resolvedLastName, guessLastName)) resolvedLastName = guessLastName;
 
   const nameRawFirstReplyFromCustom = findCustomField(contact.custom_fields, ['name_raw_first_reply']);
   const fullContactCustom =
@@ -834,11 +863,13 @@ const customPhone = findCustomField(contact.custom_fields, [
     nameRawFirstReplyFromCustom ??
     nameRawFirstReplyFull;
 
-  if ((!resolvedFirstName || !resolvedLastName) && nameRawFirstReply) {
+  if (nameRawFirstReply) {
     const parsed = parseFullName(nameRawFirstReply);
-    if (parsed.hasSurname) {
-      if (!resolvedFirstName && parsed.firstName) resolvedFirstName = parsed.firstName;
-      if (!resolvedLastName && parsed.lastName) resolvedLastName = parsed.lastName;
+    if (parsed.firstName && shouldPreferGuessFirst(resolvedFirstName, parsed.firstName)) {
+      resolvedFirstName = parsed.firstName;
+    }
+    if (parsed.hasSurname && parsed.lastName && shouldPreferGuessLast(resolvedLastName, parsed.lastName)) {
+      resolvedLastName = parsed.lastName;
     }
   }
 
