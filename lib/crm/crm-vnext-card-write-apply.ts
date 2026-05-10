@@ -293,6 +293,11 @@ const scoringFromOperations = (
   };
 };
 
+const onlyIdentityCandidate = (values: string[]): string | null => {
+  const cleaned = unique(values.map((value) => cleanString(value)).filter((value): value is string => Boolean(value)));
+  return cleaned.length === 1 ? cleaned[0] : null;
+};
+
 const mergedCardForPreview = (
   preview: CrmCardApplyPreviewItem,
   generatedAt: string,
@@ -303,12 +308,23 @@ const mergedCardForPreview = (
 
   const existingEvidence = currentFullCard.evidence;
   const operationEvidence = evidenceFromOperations(preview.operations, generatedAt);
+  const confirmedEmail = onlyIdentityCandidate(preview.identityResolution.evidenceDecisionSummary.confirmedSubjectEmails);
+  const phoneCandidate = onlyIdentityCandidate(preview.identityResolution.phoneCandidates);
+  const instagramCandidate = onlyIdentityCandidate(preview.identityResolution.instagramHandles);
+  const displayNameCandidate = preview.identityResolution.fullNameCandidates[0] ?? null;
 
   return buildPersonCardVNext({
     personId: preview.targetPersonId,
-    displayName: currentFullCard.displayName,
+    displayName: currentFullCard.displayName ?? displayNameCandidate,
     now: generatedAt,
-    identities: currentFullCard.identities,
+    identities: {
+      email: currentFullCard.identities.email ?? confirmedEmail,
+      instagramHandle: currentFullCard.identities.instagramHandle ?? instagramCandidate,
+      instagramUserId: currentFullCard.identities.instagramUserId,
+      phone: currentFullCard.identities.phone ?? phoneCandidate,
+      city: currentFullCard.identities.city,
+      country: currentFullCard.identities.country,
+    },
     channels: {
       emailStatus: currentFullCard.channels.email.status,
       instagramStatus: currentFullCard.channels.instagram.status,

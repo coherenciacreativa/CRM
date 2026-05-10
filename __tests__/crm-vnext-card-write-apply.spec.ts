@@ -6,6 +6,7 @@ import {
   applyCrmVNextCardWritePlanToStore,
   buildCrmVNextCardWriteApply,
 } from "../lib/crm/crm-vnext-card-write-apply";
+import { buildPersonCardVNext } from "../lib/crm/person-card-vnext";
 import type { CrmDeepLocalSource } from "../lib/crm/crm-vnext-deep-local-stitching";
 import type { CrmStoredEvidenceReviewDecision } from "../lib/crm/crm-vnext-evidence-review-decisions";
 
@@ -145,6 +146,110 @@ describe("buildCrmVNextCardWriteApply", () => {
       "approved_by_required_for_commit",
       "explicit_approval_item_selection_or_apply_all_ready_required_for_commit",
     ]));
+  });
+
+  test("enriches an existing sparse card with confirmed identity evidence", async () => {
+    const evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[] = [{
+      schemaVersion: "crm-vnext-stored-evidence-review-decision-2026-05-10",
+      decisionRecordId: "evidence_decision_gulnara_email_confirmed",
+      decisionBatchId: "evidence_decision_batch_test",
+      decidedAt: NOW,
+      approvedBy: "Alejandro",
+      sourcePacketGeneratedAt: NOW,
+      itemId: "evidence_review_gulnara",
+      questionId: "evidence_question_gulnara_email",
+      questionType: "email_ownership",
+      targetPersonId: "ig:gulnarapaola",
+      subject: {
+        label: "Gulnara Paola Castaño Reyes",
+        rawName: "Gulnara Paola Castaño Reyes",
+        instagramHandle: "gulnarapaola",
+        proposedDisplayName: null,
+      },
+      candidateEmail: "gulnacast@gmail.com",
+      selectedOptionId: "confirm_email_for_subject",
+      selectedOptionLabel: "Confirm gulnacast@gmail.com as Gulnara Paola Castaño Reyes's email",
+      notes: null,
+      relatedPersonName: null,
+      evidenceSourceIds: ["mantis_evidence:gulnarapaola:mailerlite_export:2"],
+      effect: {
+        primaryEmailAssignmentAllowedAfterSeparateCardWriteApproval: true,
+        keepEmailUnassigned: false,
+        createsRelatedPersonCandidate: false,
+        needsMoreEvidence: false,
+        ignoredCandidate: false,
+        cardWriteStillRequiresApproval: true,
+      },
+      safety: {
+        cardMutationExecuted: false,
+        factStoreWriteExecuted: false,
+        outboundExecuted: false,
+      },
+    }];
+    const existingCard = buildPersonCardVNext({
+      personId: "ig:gulnarapaola",
+      now: NOW,
+      identities: {
+        instagramHandle: "gulnarapaola",
+      },
+      evidence: [],
+    });
+    const evidenceSources: CrmDeepLocalSource[] = [
+      {
+        sourceKind: "lead_capture_export",
+        sourceId: "mantis_evidence:gulnarapaola:lead_capture_export:1",
+        text: "Handle: @gulnarapaola\nConfidence: high\nFinding: Conversación activa; inbound explícito.",
+      },
+      {
+        sourceKind: "mailerlite_export",
+        sourceId: "mantis_evidence:gulnarapaola:mailerlite_export:2",
+        text: [
+          "Handle: @gulnarapaola",
+          "Name: Gulnara Paola Castaño Reyes",
+          "Email: gulnacast@gmail.com",
+          "Phone: +57 300 4477735",
+          "Groups: Asistentes a retiro Junio 2024",
+        ].join("\n"),
+      },
+      {
+        sourceKind: "retreat_table",
+        sourceId: "mantis_evidence:gulnarapaola:retreat_table:3",
+        text: "Gulnara Paola Castaño Reyes, gulnacast@gmail.com, +57 300 4477735, approved.",
+      },
+    ];
+
+    const report = buildCrmVNextCardWriteApply({
+      text: "CRM: @gulnarapaola se llama Gulnara Paola Castaño Reyes, y preguntó o manifestó interés por el retiro.",
+      sourceKind: "instagram_signal",
+      reporter: "Mantis",
+      channel: "codex",
+      now: NOW,
+      cards: [existingCard],
+      mailerBridgeRows: [],
+      localSources: evidenceSources,
+      sourceCoverage: {
+        roots: 0,
+        filesScanned: 0,
+        filesSkipped: 0,
+        sourcesLoaded: evidenceSources.length,
+        connectedEvidenceSources: evidenceSources.length,
+      },
+      evidenceReviewDecisions,
+      applyAllReady: true,
+      approvedBy: "Alejandro",
+      commit: false,
+    });
+
+    expect(report.planItems[0]).toMatchObject({
+      status: "ready_to_commit",
+      recommendedAction: "enrich_existing_card",
+    });
+    expect(report.planItems[0].proposedCard?.displayName).toBe("Gulnara Paola Castaño Reyes");
+    expect(report.planItems[0].proposedCard?.identities).toMatchObject({
+      email: "gulnacast@gmail.com",
+      instagramHandle: "gulnarapaola",
+      phone: "+573004477735",
+    });
   });
 });
 
