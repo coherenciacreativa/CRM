@@ -180,7 +180,14 @@ def _resolve_subscriber_from_args(args: argparse.Namespace) -> dict | None:
 def cmd_people_find(args: argparse.Namespace) -> int:
     tokens = (args.tokens or "").split()
     try:
-        matches = ppl.search_candidates(tokens=tokens, email=args.email, limit=args.limit, max_pages=args.max_pages, use_search=args.use_search)
+        matches = ppl.search_candidates(
+            tokens=tokens,
+            email=args.email,
+            limit=args.limit,
+            max_pages=args.max_pages,
+            use_search=args.use_search,
+            match_any=args.match_any,
+        )
     except MailerLiteError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 2
@@ -197,6 +204,8 @@ def cmd_people_find(args: argparse.Namespace) -> int:
             "city": fields.get("city") or it.get("city"),
             "phone": fields.get("phone"),
         }
+        if args.show_fields:
+            entry["fields"] = fields
         if args.show_groups:
             try:
                 gresp = api_get(f"/subscribers/{it.get('id')}/groups")
@@ -441,8 +450,10 @@ def build_parser() -> argparse.ArgumentParser:
     pfind.add_argument("--tokens", help="Space-separated tokens to match across name/email/city")
     pfind.add_argument("--email", help="Exact email to match")
     pfind.add_argument("--limit", type=int, default=100, help="Page size while scanning")
-    pfind.add_argument("--max-pages", type=int, default=10, help="Max pages to scan if needed")
+    pfind.add_argument("--max-pages", type=int, default=10, help="Max cursor pages to scan if needed")
     pfind.add_argument("--use-search", action="store_true", help="Use API-side search first")
+    pfind.add_argument("--match-any", action="store_true", help="Match any supplied token while scanning locally")
+    pfind.add_argument("--show-fields", action="store_true", help="Include subscriber custom fields in read-only output")
     pfind.add_argument("--show-groups", action="store_true", help="Include group names for each match")
     pfind.set_defaults(func=cmd_people_find)
 

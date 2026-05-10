@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import unicodedata
+import urllib.parse
 from typing import Any, Dict, Iterable, List, Optional
 
 from .client import get as api_get, post as api_post, delete as api_delete, put as api_put, MailerLiteError
@@ -16,13 +17,16 @@ def _norm(s: Optional[str]) -> str:
 def _collect_text(item: dict) -> str:
     fields = item.get("fields") or {}
     parts: List[str] = []
-    for k in ("name", "first_name", "last_name", "company", "country", "city"):
+    for k in ("name", "first_name", "last_name", "company", "country", "city", "phone", "notes", "note"):
         v = fields.get(k)
         if isinstance(v, str):
             parts.append(v)
     # top-level fallbacks
-    for k in ("name", "first_name", "last_name", "city"):
+    for k in ("name", "first_name", "last_name", "city", "phone", "status", "notes", "note"):
         v = item.get(k)
+        if isinstance(v, str):
+            parts.append(v)
+    for v in fields.values():
         if isinstance(v, str):
             parts.append(v)
     # email always included
@@ -43,6 +47,59 @@ def _extract_items(resp: Any) -> List[dict]:
     return []
 
 
+def _extract_next_cursor(resp: Any) -> Optional[str]:
+    if not isinstance(resp, dict):
+        return None
+    for container in (resp, resp.get("meta") if isinstance(resp.get("meta"), dict) else None):
+        if not isinstance(container, dict):
+            continue
+        for key in ("next_cursor", "nextCursor"):
+            value = container.get(key)
+            if isinstance(value, str) and value:
+                return value
+        links = container.get("links")
+        if isinstance(links, dict):
+            next_link = links.get("next")
+            if isinstance(next_link, str) and next_link:
+                parsed = urllib.parse.urlparse(next_link)
+                query = urllib.parse.parse_qs(parsed.query)
+                for key in ("cursor", "next_cursor", "page[cursor]"):
+                    values = query.get(key)
+                    if values and values[0]:
+                        return values[0]
+    return None
+
+
+def _subscriber_pages(
+    *,
+    params: Dict[str, Any],
+    max_pages: int,
+    delay_s: float,
+) -> Iterable[List[dict]]:
+    cursor: Optional[str] = None
+    page = 1
+    while page <= max_pages:
+        request_params = dict(params)
+        if cursor:
+            request_params["cursor"] = cursor
+        try:
+            resp = api_get("/subscribers", params=request_params)
+        except MailerLiteError as e:
+            if getattr(e, "status", 0) == 429:
+                time.sleep(delay_s * 2)
+                continue
+            raise
+        items = _extract_items(resp)
+        if not items:
+            break
+        yield items
+        cursor = _extract_next_cursor(resp)
+        if not cursor:
+            break
+        page += 1
+        time.sleep(delay_s)
+
+
 def search_candidates(
     *,
     tokens: Iterable[str] | None = None,
@@ -50,6 +107,7 @@ def search_candidates(
     limit: int = 100,
     max_pages: int = 10,
     use_search: bool = True,
+    match_any: bool = False,
     delay_s: float = 0.15,
 ) -> List[dict]:
     tokens_n = [_norm(t) for t in (tokens or []) if t]
@@ -65,6 +123,8 @@ def search_candidates(
             e = _norm(item.get("email"))
             if e != email_n:
                 return False
+        if match_any and tokens_n:
+            return any(t and t in txt for t in tokens_n)
         for t in tokens_n:
             if t and t not in txt:
                 return False
@@ -80,17 +140,18 @@ def search_candidates(
             attempt = 0
             while True:
                 try:
-                    page = 1
-                    # Only the first page for targeted search
-                    resp = api_get("/subscribers", params={"limit": limit, "page": page, "search": q})
-                    items = _extract_items(resp)
-                    for it in items:
-                        sid = str(it.get("id"))
-                        if sid in seen:
-                            continue
-                        if accept(it):
-                            results.append(it)
-                        seen.add(sid)
+                    for items in _subscriber_pages(
+                        params={"limit": limit, "search": q},
+                        max_pages=max_pages,
+                        delay_s=delay_s,
+                    ):
+                        for it in items:
+                            sid = str(it.get("id"))
+                            if sid in seen:
+                                continue
+                            if accept(it):
+                                results.append(it)
+                            seen.add(sid)
                     break
                 except MailerLiteError as e:
                     if getattr(e, "status", 0) == 429 and attempt < 3:
@@ -103,19 +164,12 @@ def search_candidates(
         if results:
             return results
 
-    # Phase 2: paginate through subscribers
-    page = 1
-    while page <= max_pages:
-        try:
-            resp = api_get("/subscribers", params={"limit": limit, "page": page})
-        except MailerLiteError as e:
-            if getattr(e, "status", 0) == 429:
-                time.sleep(delay_s * 2)
-                continue
-            raise
-        items = _extract_items(resp)
-        if not items:
-            break
+    # Phase 2: cursor-paginate through subscribers and filter locally.
+    for items in _subscriber_pages(
+        params={"limit": limit},
+        max_pages=max_pages,
+        delay_s=delay_s,
+    ):
         for it in items:
             sid = str(it.get("id"))
             if sid in seen:
@@ -123,10 +177,6 @@ def search_candidates(
             if accept(it):
                 results.append(it)
             seen.add(sid)
-        if len(items) < limit:
-            break
-        page += 1
-        time.sleep(delay_s)
     return results
 
 

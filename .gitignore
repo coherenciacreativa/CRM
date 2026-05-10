@@ -12,3 +12,4 @@ mlite_campaigns_sent.json
 out
 node_modules
 .env*.local
+.crm-vnext/
