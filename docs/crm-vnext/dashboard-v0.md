@@ -123,6 +123,7 @@ Multi-service card proposal:
 - Card apply preview is available through `POST /api/crm-vnext/card-apply-preview`.
 - Card apply preview can also be run locally with `npm run crm:vnext:card-apply-preview -- --text <text>`.
 - Card write apply can commit approved local writes into `.crm-vnext/person-card-store/person-cards-vnext.json`.
+- Card merge review resolver can commit explicitly approved staged merges into the same local vNext store, with a separate backup/ledger and restricted-service acknowledgement when needed.
 - Dashboard and internal read APIs prefer that vNext store after a committed local write.
 
 ## Local Preview
@@ -135,6 +136,6 @@ If port `3000` is occupied, use the alternate port chosen by Next.
 
 ## Next Build Step
 
-Resolve staged merge-review records like Juan Jose, then run the next controlled contact batch through the same approval/write path.
+Dry-run the staged merge-review queue, resolve Juan Jose only with explicit approval, then run the next controlled contact batch through the same approval/write path.
 
 Track OpenClaw/gog Gmail/Contacts OAuth stability separately in `gmail-openclaw-auth-stability-backlog.md`; it matters for Mantis autonomy, but should not block the CRM evidence contract.

@@ -18,6 +18,8 @@ It is intentionally narrow:
 
 It never sends outbound messages, writes Fact Store, calls live APIs, changes credentials, or touches ManyChat/Instagram/MailerLite state.
 
+Staged merge-review items are intentionally handed to `card-merge-review-resolver`, which has its own explicit approval and restricted-service acknowledgement boundary.
+
 ## Route
 
 `POST /api/crm-vnext/card-write-apply`
@@ -91,6 +93,16 @@ Not allowed:
 - live Gmail/Drive/MailerLite/Instagram/ManyChat/WhatsApp call,
 - credential read/refresh,
 - write without approval.
+
+## Merge Review Follow-Up
+
+When this command stages a merge instead of upserting a card, inspect the queue with:
+
+```bash
+npm run crm:vnext:card-merge-review-resolver
+```
+
+Do not resolve a merge until Alejandro has approved the selected `reviewId`. If the staged review contains therapy or other restricted service context, the resolver commit must include `--ack-restricted-service`.
 
 ## Eliana Pattern
 

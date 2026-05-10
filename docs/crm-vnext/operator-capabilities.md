@@ -45,14 +45,15 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 21. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
 22. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
 23. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
-24. Review stored facts with `GET /api/crm-vnext/identity-review`.
-25. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-26. Read `GET /api/crm-vnext/community-daily-brief`.
-27. If needed, read `GET /api/crm-vnext/community-queues`.
-28. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-29. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-30. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-31. Ask for approval if the next move would touch an external channel.
+24. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+25. Review stored facts with `GET /api/crm-vnext/identity-review`.
+26. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+27. Read `GET /api/crm-vnext/community-daily-brief`.
+28. If needed, read `GET /api/crm-vnext/community-queues`.
+29. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+30. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+31. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+32. Ask for approval if the next move would touch an external channel.
 
 ## Response Shape
 
@@ -82,7 +83,7 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, card write apply, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -97,7 +98,8 @@ Local commands currently include activation run, identity stitching research, Gm
 - No MailerLite mutation. The MailerLite evidence helper API does not call live MailerLite; the optional CLI route can use an existing read-only connector, cursor-paginate subscribers, filter locally, and report auth blockers without exposing credentials.
 - No Google Drive mutation. The Google Drive evidence helper API only converts supplied read-only rows and keeps family/companion email ambiguity under review.
 - No person-card mutation from evidence approvals. The evidence approval application may write only the local evidence decision ledger with explicit commit and approver, then rerun preview packets.
-- Card Write Apply is the only current person-card write lane. It is dry-run by default and may commit only local vNext card-store/ledger files after `approvedBy`, explicit item selection/all-ready, and backup. It does not merge automatically or touch outbound/live sources.
+- Card Write Apply may commit approved create/enrich items and may stage merge-review items. It is dry-run by default and may commit only local vNext card-store/ledger files after `approvedBy`, explicit item selection/all-ready, and backup. It does not merge automatically or touch outbound/live sources.
+- Card Merge Review Resolver may resolve staged merge-review items only after explicit review selection, `approvedBy`, backup, and restricted-service acknowledgement when applicable. It writes only the local vNext card store and merge-review ledger.
 - No outbound messages.
 - No record mutation.
 

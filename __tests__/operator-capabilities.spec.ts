@@ -41,6 +41,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "stitch_batch_review",
       "card_write_approval_packet",
       "card_write_apply",
+      "card_merge_review_resolver",
       "identity_review",
       "card_rebuild_diff",
       "community_insights",
@@ -89,6 +90,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:stitch-batch-review -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-write-approval-packet -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-write-apply -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
+      "npm run crm:vnext:card-merge-review-resolver -- --review-id <reviewId>",
       "npm run crm:vnext:identity-review",
       "npm run crm:vnext:card-rebuild-diff",
       "npm run crm:vnext:readiness",
@@ -104,10 +106,12 @@ describe("buildCrmVNextOperatorCapabilities", () => {
     expect(capabilities.apiEndpoints.every((endpoint) => ["GET", "POST"].includes(endpoint.method))).toBe(true);
     expect(capabilities.apiEndpoints.filter((endpoint) => !endpoint.readOnly).map((endpoint) => endpoint.id)).toEqual([
       "card_write_apply",
+      "card_merge_review_resolver",
     ]);
     expect(capabilities.apiEndpoints.every((endpoint) => endpoint.writesFiles === false || endpoint.writesFiles === "only_with_commit")).toBe(true);
     expect(capabilities.apiEndpoints.filter((endpoint) => endpoint.mutatesRecords !== false).map((endpoint) => endpoint.id)).toEqual([
       "card_write_apply",
+      "card_merge_review_resolver",
     ]);
     expect(capabilities.apiEndpoints.every((endpoint) => endpoint.outbound === false)).toBe(true);
     expect(capabilities.browserRoutes.every((route) => route.readOnly && route.outbound === false)).toBe(true);
