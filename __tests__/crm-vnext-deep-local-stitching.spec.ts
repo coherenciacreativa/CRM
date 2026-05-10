@@ -308,6 +308,32 @@ describe("CRM vNext deep local stitching", () => {
     expect(report.clues[0].hits.flatMap((hit) => hit.identitySignals.instagramHandles)).toEqual([]);
   });
 
+  test("does not borrow emails from multi-person daily memory lines", () => {
+    const report = buildCrmVNextDeepLocalStitching({
+      text: "CRM: @lavivirozo se llama Viviana Rozo Maldonado, y preguntó por el retiro.",
+      sourceKind: "instagram_signal",
+      reporter: "Mantis",
+      channel: "codex",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      maxHitsPerClue: 3,
+      localSources: [
+        {
+          sourceId: "memory:2026-05-10.md",
+          sourceKind: "daily_memory",
+          text: "Alejandro confirmó ownership de @gulnarapaola/Gulnara + gulnacast@gmail.com y @lavivirozo/Viviana + viviana.rozo@kaplan.com.",
+        },
+      ],
+      sourceCoverage: { filesScanned: 1, filesSkipped: 0, roots: 1 },
+    });
+
+    expect(report.summary.cluesWithHits).toBe(1);
+    expect(report.clues[0].identitySummary.emails).toEqual([]);
+    expect(report.clues[0].hits[0].identitySignals.emails).toEqual([]);
+    expect(report.clues[0].hits[0].identitySignals.instagramHandles).toEqual(["lavivirozo"]);
+  });
+
   test("does not extract emails from structured rows owned by another person", () => {
     const report = buildCrmVNextDeepLocalStitching({
       text: "CRM: Amalia de Bedud es estudiante de yoga hace más de 10 años y ha asistido a múltiples retiros.",

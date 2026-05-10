@@ -681,6 +681,7 @@ const extractEmails = (
   sourceKind: CrmDeepLocalSourceKind,
 ): string[] => {
   const matches = snippet.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
+  if (sourceKind === 'daily_memory' && matches.length !== 1) return [];
   return unique(matches
     .map((email) => email.toLowerCase())
     .filter((email) => !/\b(no-reply|noreply|notification|notificaciones?|zoom)\b/.test(email))
