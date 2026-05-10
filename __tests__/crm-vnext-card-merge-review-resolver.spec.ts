@@ -279,6 +279,79 @@ describe("CRM vNext card merge review resolver", () => {
     });
   });
 
+  test("uses supplied read-only evidence packets to preview missing contact fields before merge", () => {
+    const store = storeFixture();
+    store.cards[0] = buildPersonCardVNext({
+      personId: "email:juanjotru@gmail.com",
+      now: NOW,
+      identities: {
+        email: "juanjotru@gmail.com",
+      },
+      channels: {
+        emailStatus: "known",
+      },
+      evidence: [{ source: "mailer-engagement-snapshot", observedAt: NOW }],
+    });
+    const stage = store.mergeReviewQueue[0].operations[0].value as { proposedCardDraft: PersonCardVNext };
+    stage.proposedCardDraft = buildPersonCardVNext({
+      personId: "email:juanjotru@gmail.com",
+      displayName: "Juan Jose Trujillo",
+      now: NOW,
+      identities: {
+        email: "juanjotru@gmail.com",
+      },
+      scoring: {
+        participation: {
+          yogaClasses90d: 1,
+          retreatsAttended: 1,
+        },
+        purchases: {
+          purchaseCount: 1,
+          activeClient: true,
+        },
+      },
+      evidence: [{ source: "alejandro:conversation", observedAt: NOW }],
+    });
+
+    const report = buildCrmVNextCardMergeReviewResolver({
+      store,
+      reviewIds: ["merge_review_juan"],
+      evidenceSources: [
+        {
+          sourceKind: "mailerlite_export",
+          sourceId: "mailerlite:subscriber:152595767566009988",
+          title: "Juan Jose Trujillo",
+          email: "juanjotru@gmail.com",
+          snippet: "Name: Juan Jose Trujillo\nPhone: +573136579879\nCity: Medellin\nStatus: active",
+        },
+      ],
+      now: NOW,
+    });
+
+    expect(report.summary).toMatchObject({
+      supplementalEvidenceSources: 1,
+      supplementalEvidenceMatched: 1,
+      supplementalFieldsApplied: 4,
+    });
+    expect(report.reviewItems[0].supplementalEvidence).toMatchObject({
+      matchedSources: 1,
+      sourceIds: ["mailerlite:subscriber:152595767566009988"],
+      fieldsApplied: ["email", "phone", "city", "emailStatus"],
+    });
+    expect(report.reviewItems[0].proposedResolvedCard).toMatchObject({
+      identities: {
+        email: "juanjotru@gmail.com",
+        phone: "+573136579879",
+        city: "Medellin",
+      },
+      channels: {
+        email: {
+          status: "active",
+        },
+      },
+    });
+  });
+
   test("keeps missing target cards blocked", () => {
     const store = storeFixture();
     store.cards = [];

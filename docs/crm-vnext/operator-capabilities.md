@@ -99,7 +99,7 @@ Local commands currently include activation run, identity stitching research, Gm
 - No Google Drive mutation. The Google Drive evidence helper API only converts supplied read-only rows and keeps family/companion email ambiguity under review.
 - No person-card mutation from evidence approvals. The evidence approval application may write only the local evidence decision ledger with explicit commit and approver, then rerun preview packets.
 - Card Write Apply may commit approved create/enrich items and may stage merge-review items. It is dry-run by default and may commit only local vNext card-store/ledger files after `approvedBy`, explicit item selection/all-ready, and backup. It does not merge automatically or touch outbound/live sources.
-- Card Merge Review Resolver may resolve staged merge-review items only after explicit review selection, `approvedBy`, backup, and restricted-service acknowledgement when applicable. It writes only the local vNext card store and merge-review ledger.
+- Card Merge Review Resolver may resolve staged merge-review items only after explicit review selection, `approvedBy`, backup, and restricted-service acknowledgement when applicable. It can consume supplied read-only `evidenceSources` before resolving so MailerLite/Gmail/Drive findings fill missing contact fields without live API calls. It writes only the local vNext card store and merge-review ledger.
 - No outbound messages.
 - No record mutation.
 

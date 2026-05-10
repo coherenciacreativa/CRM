@@ -516,6 +516,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     notes: [
       "Dry-run by default.",
       "Commit requires approvedBy plus explicit reviewIds or resolveAllReady=true.",
+      "Can consume supplied read-only evidenceSources before resolving, such as MailerLite subscriber packets from Mantis.",
       "Restricted service context also requires ackRestrictedService=true.",
       "Creates backups before writing the vNext card store.",
       "Writes only local vNext card-store and merge-review ledger files.",
@@ -1087,6 +1088,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     notes: [
       "Dry-run by default.",
       "Use --write --approved-by <name> plus --review-id <id> or --resolve-all-ready after explicit approval.",
+      "Use --evidence-file <json> when Mantis has read-only MailerLite/Gmail/Drive/contact evidence that should fill missing fields before resolving.",
       "Use --ack-restricted-service when the merge includes therapy or other restricted service context.",
       "Creates backups before committed local merge resolutions.",
       "Writes only the local vNext card store and merge-review ledger.",

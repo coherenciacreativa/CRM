@@ -39,6 +39,14 @@ npm run crm:vnext:card-merge-review-resolver -- \
   --review-id <reviewId>
 ```
 
+Preview one review with supplemental read-only evidence, such as a MailerLite subscriber packet supplied by Mantis:
+
+```bash
+npm run crm:vnext:card-merge-review-resolver -- \
+  --review-id <reviewId> \
+  --evidence-file ./selected-mailerlite-evidence.json
+```
+
 Commit one approved review:
 
 ```bash
@@ -58,6 +66,8 @@ npm run crm:vnext:card-merge-review-resolver -- \
   --ack-restricted-service
 ```
 
+The same `--evidence-file` can be included in a committed command after human approval. The resolver matches supplemental evidence by stable identity, currently exact email/target email or exact Instagram handle. Matching evidence can fill missing card fields such as phone, city, country, email status, and Instagram handle before the final local card-store write.
+
 ## Write Targets
 
 Default committed local files:
@@ -74,6 +84,7 @@ Allowed:
 
 - inspect staged merge-review items,
 - preview the exact proposed resolved card,
+- preview extra contact fields from supplied read-only evidence packets,
 - resolve explicitly approved local merge-review items,
 - remove resolved reviews from the local queue,
 - append local ledger entries,
@@ -89,6 +100,28 @@ Not allowed:
 - write without approval,
 - restricted service merge without explicit acknowledgement.
 
+## Supplemental Evidence Contract
+
+The resolver accepts either a JSON array or an object containing `evidenceSources`.
+
+Expected evidence packet shape:
+
+```json
+{
+  "evidenceSources": [
+    {
+      "sourceKind": "mailerlite_export",
+      "sourceId": "mailerlite:subscriber:152595767566009988",
+      "title": "Juan Jose Trujillo",
+      "email": "juanjotru@gmail.com",
+      "snippet": "Name: Juan Jose Trujillo\nPhone: +573136579879\nCity: Medellin\nStatus: active"
+    }
+  ]
+}
+```
+
+The API does not call MailerLite, Gmail, Drive, Instagram, ManyChat, WhatsApp, or Telegram. Mantis/Codex may gather selected read-only evidence through the appropriate helper or connector and then pass the packet in.
+
 ## Juan Jose Pattern
 
 Juan Jose Trujillo is the first intended real use case:
@@ -100,3 +133,5 @@ Juan Jose Trujillo is the first intended real use case:
 - this resolver can preview the final enriched card and requires restricted-service acknowledgement before committing it.
 
 This keeps the important multi-service relationship intact while preserving the human review boundary around therapy consultation context.
+
+Recommended next move for Juan Jose: refresh the MailerLite subscriber evidence packet with the phone/city Mantis already found, dry-run the resolver with `--evidence-file`, then decide whether to commit with `--ack-restricted-service`.

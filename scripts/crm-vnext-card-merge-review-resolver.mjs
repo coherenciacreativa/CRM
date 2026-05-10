@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const DEFAULT_API_URL = 'http://localhost:3000/api/crm-vnext/card-merge-review-resolver';
@@ -14,6 +15,7 @@ Options:
   --merge-review-ledger-path <path>
                                   Local merge-review resolver ledger JSONL path
   --backup-dir <path>             Local backup directory for committed writes
+  --evidence-file <json>          Supplemental evidenceSources JSON from a read-only helper/export
   --approved-by <name>            Required with --write
   --ack-restricted-service        Required to commit a merge with restricted service context
   --write                         Commit resolved merge items to the local vNext card store after backup
@@ -30,6 +32,7 @@ const parseArgs = (argv) => {
     cardStorePath: null,
     mergeReviewLedgerPath: null,
     backupDir: null,
+    evidenceFile: null,
     approvedBy: null,
     ackRestrictedService: false,
     write: false,
@@ -49,6 +52,7 @@ const parseArgs = (argv) => {
     else if (arg === '--card-store-path') options.cardStorePath = argv[++index];
     else if (arg === '--merge-review-ledger-path') options.mergeReviewLedgerPath = argv[++index];
     else if (arg === '--backup-dir') options.backupDir = argv[++index];
+    else if (arg === '--evidence-file') options.evidenceFile = argv[++index];
     else if (arg === '--approved-by') options.approvedBy = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
   }
@@ -81,6 +85,7 @@ const compactReviewItem = (item) => ({
   operationIds: item.operationIds,
   approvalScopes: item.approvalScopes,
   restrictedService: item.restrictedService,
+  supplementalEvidence: item.supplementalEvidence,
   commitBlockers: item.commitBlockers,
 });
 
@@ -105,12 +110,16 @@ const runResolver = async (options) => {
   if (options.cardStorePath) apiUrl.searchParams.set('cardStorePath', resolve(options.cardStorePath));
   if (options.mergeReviewLedgerPath) apiUrl.searchParams.set('mergeReviewLedgerPath', resolve(options.mergeReviewLedgerPath));
   if (options.backupDir) apiUrl.searchParams.set('backupDir', resolve(options.backupDir));
+  const evidenceSources = options.evidenceFile
+    ? await evidenceSourcesFromFile(options.evidenceFile)
+    : [];
 
   const response = await fetch(apiUrl.toString(), {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({
       reviewIds: options.reviewIds,
+      evidenceSources,
       resolveAllReady: options.resolveAllReady,
       approvedBy: options.approvedBy,
       ackRestrictedService: options.ackRestrictedService,
@@ -123,6 +132,15 @@ const runResolver = async (options) => {
     throw new Error(payload.error ?? `card_merge_review_resolver_api_failed:${response.status}`);
   }
   return payload;
+};
+
+const evidenceSourcesFromFile = async (filePath) => {
+  const parsed = JSON.parse(await readFile(resolve(filePath), 'utf8'));
+  if (Array.isArray(parsed)) return parsed;
+  if (Array.isArray(parsed?.evidenceSources)) return parsed.evidenceSources;
+  if (Array.isArray(parsed?.helper?.evidenceSources)) return parsed.helper.evidenceSources;
+  if (Array.isArray(parsed?.report?.evidenceSources)) return parsed.report.evidenceSources;
+  throw new Error('evidence_file_must_contain_array_or_evidenceSources');
 };
 
 const main = async () => {

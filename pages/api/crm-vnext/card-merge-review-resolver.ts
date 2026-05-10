@@ -148,6 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const approvedBy = cleanString(body.approvedBy);
     const resolver = buildCrmVNextCardMergeReviewResolver({
       store,
+      evidenceSources: Array.isArray(body.evidenceSources) ? body.evidenceSources : [],
       reviewIds: cleanStringArray(body.reviewIds ?? body.reviewId),
       resolveAllReady: cleanBoolean(body.resolveAllReady),
       approvedBy,

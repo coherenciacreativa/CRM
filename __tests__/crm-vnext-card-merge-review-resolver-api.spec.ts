@@ -218,6 +218,15 @@ describe("/api/crm-vnext/card-merge-review-resolver", () => {
         approvedBy: "Alejandro",
         ackRestrictedService: true,
         commit: true,
+        evidenceSources: [
+          {
+            sourceKind: "mailerlite_export",
+            sourceId: "mailerlite:subscriber:152595767566009988",
+            title: "Juan Jose Trujillo",
+            email: "juanjotru@gmail.com",
+            snippet: "Name: Juan Jose Trujillo\nCity: Medellin\nStatus: active",
+          },
+        ],
       },
       headers: {},
     } as MockReq, committed as never);
@@ -246,6 +255,9 @@ describe("/api/crm-vnext/card-merge-review-resolver", () => {
     expect(store.cards[0]).toMatchObject({
       personId: "email:juanjotru@gmail.com",
       displayName: "Juan Jose Trujillo",
+      identities: {
+        city: "Medellin",
+      },
       products: {
         yogaClasses90d: 1,
         retreatsAttended: 1,
