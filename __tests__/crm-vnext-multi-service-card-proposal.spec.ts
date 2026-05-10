@@ -83,6 +83,36 @@ describe("CRM vNext multi-service card proposal", () => {
     expect(proposal.privacyApprovalRequired).toBe(false);
   });
 
+  test("does not let weak name-only candidates override a reported stable email", () => {
+    const report = buildCrmVNextMultiServiceCardProposal({
+      text: "CRM: Adriana Bernal es estudiante de yoga y su email confirmado es adrianabv86@hotmail.com.",
+      sourceKind: "alejandro_conversation",
+      reporter: "Alejandro",
+      channel: "codex",
+      now: NOW,
+      cards: [
+        buildPersonCardVNext({
+          personId: "email:a_cuellara@hotmail.com",
+          displayName: "Adriana Cuellar",
+          identities: { email: "a_cuellara@hotmail.com" },
+          now: NOW,
+        }),
+      ],
+      mailerBridgeRows: [],
+    });
+
+    const proposal = report.proposals[0];
+    expect(proposal.target).toMatchObject({
+      type: "new_card_from_stable_identity",
+      personId: "email:adrianabv86@hotmail.com",
+      displayName: "Adriana Bernal",
+      identities: {
+        email: "adrianabv86@hotmail.com",
+      },
+    });
+    expect(proposal.recommendation.reason).toContain("stable identity");
+  });
+
   test("can enrich an exact existing card without requiring identity approval", () => {
     const report = buildCrmVNextMultiServiceCardProposal({
       text: "CRM: @ana_yoga es estudiante de yoga.",

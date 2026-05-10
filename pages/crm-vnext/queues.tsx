@@ -6,14 +6,15 @@ import {
   type CommunityQueueResult,
 } from '../../lib/crm/community-queues';
 import {
-  loadLegacyPersonCardsV1AsPersonCards,
-  type PersonCardsVNextSourceResult,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../lib/crm/community-insights-source';
 
 type QueuesPageProps =
   | {
       enabled: true;
-      source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       queues: CommunityQueueResult[];
     }
   | {
@@ -80,15 +81,11 @@ export const getServerSideProps: GetServerSideProps<QueuesPageProps> = async (co
   }
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards();
+    const payload = await loadPersonCardsVNext();
     return {
       props: {
         enabled: true,
-        source: {
-          kind: payload.source.kind,
-          generatedAt: payload.source.generatedAt,
-          cards: payload.source.cards,
-        },
+        source: publicPersonCardsVNextSource(payload.source),
         queues: buildCommunityQueues(payload.cards),
       },
     };

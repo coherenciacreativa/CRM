@@ -79,6 +79,37 @@ describe("CRM vNext identity stitching research", () => {
     expect(report.clues[0].relationshipSignals.map((signal) => signal.code)).toContain("relationship_context");
   });
 
+  test("keeps a reported stable email as target instead of promoting weak name-only candidates", () => {
+    const report = buildCrmVNextIdentityStitchingResearch({
+      text: "CRM: Adriana Bernal es estudiante de yoga y su email confirmado es adrianabv86@hotmail.com.",
+      sourceKind: "alejandro_conversation",
+      reporter: "Alejandro",
+      channel: "codex",
+      now: NOW,
+      cards: [
+        buildPersonCardVNext({
+          personId: "email:a_cuellara@hotmail.com",
+          displayName: "Adriana Cuellar",
+          identities: { email: "a_cuellara@hotmail.com" },
+          now: NOW,
+        }),
+      ],
+      mailerBridgeRows: [],
+    });
+
+    expect(report.clues[0].person).toMatchObject({
+      rawName: "Adriana Bernal",
+      email: "adrianabv86@hotmail.com",
+      personIdHint: "email:adrianabv86@hotmail.com",
+    });
+    expect(report.clues[0].candidates[0]).toMatchObject({
+      personId: "email:a_cuellara@hotmail.com",
+      confidence: "weak",
+    });
+    expect(report.clues[0].recommendation.action).toBe("create_new_card_candidate");
+    expect(report.clues[0].recommendation.reason).toContain("stable identity");
+  });
+
   test("treats known surname spelling variants as reviewable MailerLite evidence", () => {
     const report = buildCrmVNextIdentityStitchingResearch({
       text: "CRM: Amalia de Bedud es estudiante de yoga hace más de 10 años y ha asistido a múltiples retiros.",

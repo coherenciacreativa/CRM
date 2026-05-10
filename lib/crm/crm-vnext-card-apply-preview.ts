@@ -319,7 +319,25 @@ const evidenceDecisionMatches = (
   if (storedDecision.targetPersonId && decision.target.personId) {
     return storedDecision.targetPersonId === decision.target.personId;
   }
-  return !storedDecision.targetPersonId;
+  return !storedDecision.targetPersonId && storedDecisionSubjectMatches(storedDecision, decision);
+};
+
+const storedDecisionSubjectMatches = (
+  storedDecision: CrmStoredEvidenceReviewDecision,
+  decision: CrmCardWriteMergeDecision,
+): boolean => {
+  const storedHandle = normalizedHandle(storedDecision.subject.instagramHandle);
+  const decisionHandle = normalizedHandle(decision.personHint.instagramHandle ?? decision.target.identities.instagramHandle);
+  if (storedHandle && decisionHandle && storedHandle === decisionHandle) return true;
+
+  const decisionName = cleanPublicText(decision.personHint.rawName ?? decision.target.displayName ?? '');
+  const storedNames = [
+    storedDecision.subject.rawName,
+    storedDecision.subject.proposedDisplayName,
+    storedDecision.subject.label,
+  ].filter((value): value is string => Boolean(cleanPublicText(value ?? '')));
+  if (!decisionName || !storedNames.length) return false;
+  return storedNames.some((name) => crmVNextNameCompatible(decisionName, name));
 };
 
 const latestEvidenceDecisionForEmail = (
@@ -331,6 +349,14 @@ const latestEvidenceDecisionForEmail = (
     .filter((storedDecision) => evidenceDecisionMatches(storedDecision, decision, email))
     .sort((a, b) => b.decidedAt.localeCompare(a.decidedAt))[0] ?? null;
 
+const latestAnyEvidenceDecisionForEmail = (
+  email: string,
+  evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[],
+): CrmStoredEvidenceReviewDecision | null =>
+  evidenceReviewDecisions
+    .filter((storedDecision) => normalizeEmail(storedDecision.candidateEmail) === normalizeEmail(email))
+    .sort((a, b) => b.decidedAt.localeCompare(a.decidedAt))[0] ?? null;
+
 const evidenceDecisionSummaryFor = (
   decision: CrmCardWriteMergeDecision,
   emailCandidates: string[],
@@ -339,9 +365,12 @@ const evidenceDecisionSummaryFor = (
   const summary = emptyEvidenceDecisionSummary();
   for (const email of unique(emailCandidates.map(normalizeEmail).filter(Boolean))) {
     const storedDecision = latestEvidenceDecisionForEmail(decision, email, evidenceReviewDecisions);
-    if (!storedDecision) continue;
-    summary.appliedDecisionRecordIds.push(storedDecision.decisionRecordId);
-    if (storedDecision.effect.primaryEmailAssignmentAllowedAfterSeparateCardWriteApproval) {
+    const anyDecision = storedDecision ?? latestAnyEvidenceDecisionForEmail(email, evidenceReviewDecisions);
+    if (!anyDecision) continue;
+    summary.appliedDecisionRecordIds.push(anyDecision.decisionRecordId);
+    if (!storedDecision) {
+      summary.relatedPersonCandidateEmails.push(email);
+    } else if (storedDecision.effect.primaryEmailAssignmentAllowedAfterSeparateCardWriteApproval) {
       summary.confirmedSubjectEmails.push(email);
     } else if (storedDecision.effect.keepEmailUnassigned) {
       summary.keptUnassignedEmails.push(email);

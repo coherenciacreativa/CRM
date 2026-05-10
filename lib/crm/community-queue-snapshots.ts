@@ -2,14 +2,18 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { CommunityQueueId, CommunityQueueSummary } from './community-queues';
 import type { CommunityQueuePreviousSnapshot } from './community-queue-status';
-import type { PersonCardsVNextSourceResult } from './community-insights-source';
+import {
+  publicPersonCardsVNextSource,
+  type PersonCardsVNextSourceResult,
+  type PublicPersonCardsVNextSource,
+} from './community-insights-source';
 
 export const COMMUNITY_QUEUE_SNAPSHOT_SCHEMA_VERSION = 'community-queue-snapshot-2026-05-09' as const;
 
 export type CommunityQueueSnapshot = {
   schemaVersion: typeof COMMUNITY_QUEUE_SNAPSHOT_SCHEMA_VERSION;
   generatedAt: string;
-  source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+  source: PublicPersonCardsVNextSource;
   queues: Array<{
     id: CommunityQueueId;
     matched: number;
@@ -36,11 +40,7 @@ export const buildCommunityQueueSnapshot = (
 ): CommunityQueueSnapshot => ({
   schemaVersion: COMMUNITY_QUEUE_SNAPSHOT_SCHEMA_VERSION,
   generatedAt: isoNow(options.now),
-  source: {
-    kind: source.kind,
-    generatedAt: source.generatedAt,
-    cards: source.cards,
-  },
+  source: publicPersonCardsVNextSource(source),
   queues: queues.map((queue) => ({
     id: queue.id,
     matched: queue.counts.matched,
@@ -81,11 +81,19 @@ export const parseCommunityQueueSnapshot = (jsonText: string): CommunityQueueSna
   return {
     schemaVersion: COMMUNITY_QUEUE_SNAPSHOT_SCHEMA_VERSION,
     generatedAt: snapshot.generatedAt,
-    source: {
-      kind: snapshot.source.kind,
-      generatedAt: snapshot.source.generatedAt ?? null,
-      cards: cleanNumber(snapshot.source.cards),
-    },
+    source:
+      snapshot.source.kind === 'vnext-person-card-store'
+        ? {
+            kind: snapshot.source.kind,
+            generatedAt: snapshot.source.generatedAt ?? null,
+            cards: cleanNumber(snapshot.source.cards),
+            base: snapshot.source.base ?? null,
+          }
+        : {
+            kind: 'legacy-person-cards-v1',
+            generatedAt: snapshot.source.generatedAt ?? null,
+            cards: cleanNumber(snapshot.source.cards),
+          },
     queues: snapshot.queues.map((queue) => ({
       id: queue.id,
       matched: cleanNumber(queue.matched),

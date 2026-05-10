@@ -18,7 +18,9 @@ Status: Implemented local SSR page
 
 Provide the first internal dashboard surface for Alejandro and Mantis using the local vNext contracts already built:
 
-`Person Cards V1 artifact -> legacy adapter -> Person Card vNext -> Community Insights -> dashboard`
+`vNext card store when present -> Person Card vNext -> Community Insights -> dashboard`
+
+If the local vNext card store is absent, the dashboard falls back to the legacy Person Cards V1 artifact through the adapter.
 
 ## Current Sections
 
@@ -86,7 +88,7 @@ Multi-service card proposal:
 ## Safety
 
 - Local server-side rendering.
-- Reads the local Person Cards V1 artifact.
+- Reads the local vNext card store when available; falls back to the local Person Cards V1 artifact.
 - No ManyChat calls.
 - No Instagram calls.
 - No MailerLite calls.
@@ -96,11 +98,11 @@ Multi-service card proposal:
 - Queue views are read-only lists; they do not send, sync, enrich, or mutate contact records.
 - Queue counts and status are also available through `GET /api/crm-vnext/community-queues` for Mantis/OpenClaw.
 - Queue snapshots can be persisted by explicit local jobs; the API does not write files by itself.
-- Readiness is available through `GET /api/crm-vnext/readiness` before running operator jobs.
+- Readiness is available through `GET /api/crm-vnext/readiness` before running operator jobs and reports the active read source.
 - Readiness can also be checked locally with `npm run crm:vnext:readiness`.
 - Daily operator briefs are available through `GET /api/crm-vnext/community-daily-brief` and `/crm-vnext/daily-brief`.
 - Daily operator briefs can also be exported locally with `npm run crm:vnext:daily-brief`.
-- Exact person-card reads are available through `GET /api/crm-vnext/person-card?personId=<personId>`.
+- Exact person-card reads are available through `GET /api/crm-vnext/person-card?personId=<personId>` and now prefer the vNext store when present.
 - The safe operator map is available through `GET /api/crm-vnext/operator-capabilities`.
 - No-send decision briefs are available through `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
 - No-send decision briefs can also be exported locally with `npm run crm:vnext:decision-brief -- --queue-id <queueId>`.
@@ -120,7 +122,8 @@ Multi-service card proposal:
 - The policy accepts Mantis Chrome/Gmail as a read-only evidence route when already authenticated, and recommends consulting MailerLite before final card creation/merge.
 - Card apply preview is available through `POST /api/crm-vnext/card-apply-preview`.
 - Card apply preview can also be run locally with `npm run crm:vnext:card-apply-preview -- --text <text>`.
-- Apply preview emits exact hypothetical operations with `executed=false`; it does not implement a write command.
+- Card write apply can commit approved local writes into `.crm-vnext/person-card-store/person-cards-vnext.json`.
+- Dashboard and internal read APIs prefer that vNext store after a committed local write.
 
 ## Local Preview
 
@@ -132,6 +135,6 @@ If port `3000` is occupied, use the alternate port chosen by Next.
 
 ## Next Build Step
 
-Review Card Apply Preview on a slightly larger real batch, then design Card Apply Staging v0 as a separate local staging ledger.
+Resolve staged merge-review records like Juan Jose, then run the next controlled contact batch through the same approval/write path.
 
 Track OpenClaw/gog Gmail/Contacts OAuth stability separately in `gmail-openclaw-auth-stability-backlog.md`; it matters for Mantis autonomy, but should not block the CRM evidence contract.

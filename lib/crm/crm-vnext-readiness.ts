@@ -9,9 +9,9 @@ import {
   type CommunityQueueStatusReport,
 } from './community-queue-status';
 import {
-  publicLegacyPersonCardsV1Source,
-  type LegacyPersonCardsV1Source,
-  type PublicLegacyPersonCardsV1Source,
+  publicPersonCardsVNextSource,
+  type PersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from './community-insights-source';
 import type { PersonCardVNext } from './person-card-vnext';
 
@@ -32,7 +32,7 @@ export type CrmVNextReadiness = {
   generatedAt: string;
   mode: 'read_only_readiness';
   status: CrmVNextReadinessLevel;
-  source: PublicLegacyPersonCardsV1Source;
+  source: PublicPersonCardsVNextSource;
   totals: {
     cards: number;
     emailPresent: number;
@@ -113,7 +113,7 @@ const safety = (): CrmVNextReadiness['safety'] => ({
 
 export const buildCrmVNextReadiness = (
   cards: PersonCardVNext[],
-  source: LegacyPersonCardsV1Source,
+  source: PersonCardsVNextSource,
   options: { now?: string | Date | null } = {},
 ): CrmVNextReadiness => {
   const generatedAt = isoNow(options.now);
@@ -173,7 +173,7 @@ export const buildCrmVNextReadiness = (
     generatedAt,
     mode: 'read_only_readiness',
     status: readinessStatus(checks),
-    source: publicLegacyPersonCardsV1Source(source),
+    source: publicPersonCardsVNextSource(source),
     totals: {
       cards: summary.totals.cards,
       emailPresent: summary.totals.emailPresent,

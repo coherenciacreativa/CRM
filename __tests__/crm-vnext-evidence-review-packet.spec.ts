@@ -55,6 +55,49 @@ const keepUnassignedDecision = {
   },
 };
 
+const confirmedEmailDecisionFor = (
+  email: string,
+  label: string,
+  rawName: string,
+  targetPersonId: string | null,
+) => ({
+  schemaVersion: "crm-vnext-stored-evidence-review-decision-2026-05-10" as const,
+  decisionRecordId: `decision-confirm-${email}`,
+  decisionBatchId: "batch-test",
+  decidedAt: "2026-05-10T12:30:00.000Z",
+  approvedBy: "Alejandro",
+  sourcePacketGeneratedAt: NOW,
+  itemId: "item-test",
+  questionId: "question-test",
+  questionType: "email_ownership" as const,
+  targetPersonId,
+  subject: {
+    label,
+    rawName,
+    instagramHandle: null,
+    proposedDisplayName: label,
+  },
+  candidateEmail: email,
+  selectedOptionId: "confirm_email_for_subject" as const,
+  selectedOptionLabel: `Confirm ${email} as ${label}'s email`,
+  notes: null,
+  relatedPersonName: null,
+  evidenceSourceIds: ["google-drive:family-row"],
+  effect: {
+    primaryEmailAssignmentAllowedAfterSeparateCardWriteApproval: true,
+    keepEmailUnassigned: false,
+    createsRelatedPersonCandidate: false,
+    needsMoreEvidence: false,
+    ignoredCandidate: false,
+    cardWriteStillRequiresApproval: true as const,
+  },
+  safety: {
+    cardMutationExecuted: false as const,
+    factStoreWriteExecuted: false as const,
+    outboundExecuted: false as const,
+  },
+});
+
 describe("CRM vNext evidence review packet", () => {
   test("turns ambiguous family email evidence into explicit review questions", () => {
     const report = buildCrmVNextEvidenceReviewPacket({
@@ -133,6 +176,49 @@ describe("CRM vNext evidence review packet", () => {
     expect(report.preview.previews[0].identityResolution.evidenceDecisionSummary.keptUnassignedEmails).toEqual([
       "mayaariana@hotmail.com",
     ]);
+  });
+
+  test("does not apply another person's confirmed email decision to the current subject", () => {
+    const report = buildCrmVNextEvidenceReviewPacket({
+      text: "CRM: Lina María Bernal es estudiante de yoga y su email confirmado es bernallinamaria592@gmail.com.",
+      sourceKind: "alejandro_conversation",
+      reporter: "Alejandro",
+      channel: "codex",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "google-drive:family-row",
+          sourceKind: "google_drive_export" as const,
+          text: [
+            "Name: Lina Maria Bernal Email: bernallinamaria592@gmail.com Context: yoga.",
+            "Name: Amalia De Bedout Email: amaliadbg@hotmail.com Context: family retreat table.",
+          ].join(" "),
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+      evidenceReviewDecisions: [
+        confirmedEmailDecisionFor(
+          "bernallinamaria592@gmail.com",
+          "Lina María Bernal",
+          "Lina María Bernal",
+          "email:bernallinamaria592@gmail.com",
+        ),
+        confirmedEmailDecisionFor(
+          "amaliadbg@hotmail.com",
+          "Amalia De Bedout",
+          "Amalia de Bedud",
+          null,
+        ),
+      ],
+    });
+
+    expect(report.summary.emailOwnershipQuestions).toBe(0);
+    expect(report.preview.previews[0].identityResolution.evidenceDecisionSummary).toMatchObject({
+      confirmedSubjectEmails: ["bernallinamaria592@gmail.com"],
+      relatedPersonCandidateEmails: ["amaliadbg@hotmail.com"],
+    });
   });
 
   test("asks for approval before assigning evidence-derived unique emails", () => {

@@ -19,16 +19,16 @@ import {
   authorizeCrmVNextInternalRead,
 } from '../../../lib/crm/crm-vnext-api-guard';
 import {
-  DEFAULT_LEGACY_PERSON_CARDS_V1_PATH,
-  loadLegacyPersonCardsV1AsPersonCards,
-  publicLegacyPersonCardsV1Source,
-  type PersonCardsVNextSourceResult,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../../lib/crm/community-insights-source';
+import { resolveCrmVNextReadSourceOptions } from '../../../lib/crm/crm-vnext-read-source-options';
 
 type ApiBody =
   | {
       ok: true;
-      source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       queues: CommunityQueueSummary[];
       status: CommunityQueueStatusReport;
       snapshot: {
@@ -50,23 +50,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const allowLocalQueryOverrides = allowCrmVNextLocalQueryOverrides(req);
-  const sourcePath =
-    typeof req.query.sourcePath === 'string' && allowLocalQueryOverrides
-      ? req.query.sourcePath
-      : process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH || DEFAULT_LEGACY_PERSON_CARDS_V1_PATH;
+  const sourceOptions = resolveCrmVNextReadSourceOptions(req);
   const previousSnapshotPath =
     typeof req.query.previousSnapshotPath === 'string' && allowLocalQueryOverrides
       ? req.query.previousSnapshotPath
       : process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH || null;
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards(sourcePath);
+    const payload = await loadPersonCardsVNext(sourceOptions);
     const queues = summarizeCommunityQueues(buildCommunityQueues(payload.cards));
     const previousSnapshot = previousSnapshotPath ? await readCommunityQueueSnapshot(previousSnapshotPath) : null;
     const generatedAt = new Date().toISOString();
     return res.status(200).json({
       ok: true,
-      source: publicLegacyPersonCardsV1Source(payload.source),
+      source: publicPersonCardsVNextSource(payload.source),
       queues,
       status: evaluateCommunityQueueStatus(queues, {
         now: generatedAt,

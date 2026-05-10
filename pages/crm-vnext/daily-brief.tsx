@@ -6,8 +6,9 @@ import {
   type CommunityDailyBrief,
 } from '../../lib/crm/community-daily-brief';
 import {
-  loadLegacyPersonCardsV1AsPersonCards,
-  type PersonCardsVNextSourceResult,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../lib/crm/community-insights-source';
 import {
   readCommunityQueueSnapshot,
@@ -17,7 +18,7 @@ import {
 type DailyBriefPageProps =
   | {
       enabled: true;
-      source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       snapshot: {
         previousLoaded: boolean;
         previousGeneratedAt: string | null;
@@ -90,7 +91,7 @@ export const getServerSideProps: GetServerSideProps<DailyBriefPageProps> = async
   }
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards();
+    const payload = await loadPersonCardsVNext();
     const previousSnapshot = process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH
       ? await readCommunityQueueSnapshot(process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH)
       : null;
@@ -98,11 +99,7 @@ export const getServerSideProps: GetServerSideProps<DailyBriefPageProps> = async
     return {
       props: {
         enabled: true,
-        source: {
-          kind: payload.source.kind,
-          generatedAt: payload.source.generatedAt,
-          cards: payload.source.cards,
-        },
+        source: publicPersonCardsVNextSource(payload.source),
         snapshot: {
           previousLoaded: Boolean(previousSnapshot),
           previousGeneratedAt: previousSnapshot?.generatedAt ?? null,

@@ -55,6 +55,25 @@ Default committed local files:
 
 The API response redacts local paths. The CLI can receive explicit paths for tests or controlled local runs.
 
+## Read Surfaces After Commit
+
+After a committed write, these internal surfaces prefer the local vNext card store when it exists:
+
+- `/crm-vnext`
+- `/crm-vnext/people`
+- `/crm-vnext/person/[personId]`
+- `/crm-vnext/queues`
+- `/crm-vnext/daily-brief`
+- `GET /api/crm-vnext/community-insights`
+- `GET /api/crm-vnext/community-queues`
+- `GET /api/crm-vnext/community-daily-brief`
+- `GET /api/crm-vnext/community-queue-brief`
+- `GET /api/crm-vnext/community-decision-brief`
+- `GET /api/crm-vnext/person-card`
+- `GET /api/crm-vnext/readiness`
+
+Explicit local test overrides can still force the legacy Person Cards V1 source.
+
 ## Safety Boundary
 
 Allowed:

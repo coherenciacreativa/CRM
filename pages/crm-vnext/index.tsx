@@ -2,8 +2,9 @@ import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import {
-  loadLegacyPersonCardsV1Insights,
-  type CommunityInsightsSourceResult,
+  loadPersonCardsVNextInsights,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../lib/crm/community-insights-source';
 import type {
   CommunityInsightsSummary,
@@ -13,7 +14,7 @@ import type {
 type DashboardProps =
   | {
       enabled: true;
-      source: Omit<CommunityInsightsSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       summary: CommunityInsightsSummary;
     }
   | {
@@ -113,15 +114,11 @@ export const getServerSideProps: GetServerSideProps<DashboardProps> = async (con
   }
 
   try {
-    const payload = await loadLegacyPersonCardsV1Insights(undefined, { topLimit: 12 });
+    const payload = await loadPersonCardsVNextInsights({ topLimit: 12 });
     return {
       props: {
         enabled: true,
-        source: {
-          kind: payload.source.kind,
-          generatedAt: payload.source.generatedAt,
-          cards: payload.source.cards,
-        },
+        source: publicPersonCardsVNextSource(payload.source),
         summary: payload.summary,
       },
     };

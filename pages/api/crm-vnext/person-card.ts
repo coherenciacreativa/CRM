@@ -1,19 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import {
-  DEFAULT_LEGACY_PERSON_CARDS_V1_PATH,
-  loadLegacyPersonCardV1ByPersonId,
-  type PersonCardVNextSourceResult,
+  loadPersonCardVNextByPersonId,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../../lib/crm/community-insights-source';
-import {
-  allowCrmVNextLocalQueryOverrides,
-  authorizeCrmVNextInternalRead,
-} from '../../../lib/crm/crm-vnext-api-guard';
+import { authorizeCrmVNextInternalRead } from '../../../lib/crm/crm-vnext-api-guard';
+import { resolveCrmVNextReadSourceOptions } from '../../../lib/crm/crm-vnext-read-source-options';
 import type { PersonCardVNext } from '../../../lib/crm/person-card-vnext';
 
 type ApiBody =
   | {
       ok: true;
-      source: Omit<PersonCardVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       card: PersonCardVNext;
     }
   | { ok: false; error: string };
@@ -40,24 +38,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(400).json({ ok: false, error: 'invalid_person_id' });
   }
 
-  const sourcePath =
-    typeof req.query.sourcePath === 'string' && allowCrmVNextLocalQueryOverrides(req)
-      ? req.query.sourcePath
-      : process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH || DEFAULT_LEGACY_PERSON_CARDS_V1_PATH;
+  const sourceOptions = resolveCrmVNextReadSourceOptions(req);
 
   try {
-    const payload = await loadLegacyPersonCardV1ByPersonId(personId, sourcePath);
+    const payload = await loadPersonCardVNextByPersonId(personId, sourceOptions);
     if (!payload.card) {
       return res.status(404).json({ ok: false, error: 'person_card_not_found' });
     }
 
     return res.status(200).json({
       ok: true,
-      source: {
-        kind: payload.source.kind,
-        generatedAt: payload.source.generatedAt,
-        cards: payload.source.cards,
-      },
+      source: publicPersonCardsVNextSource(payload.source),
       card: payload.card,
     });
   } catch (error) {

@@ -108,7 +108,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "Run before daily, queue, or decision brief jobs when Mantis needs an operational green light.",
-    notes: ["Does not return person rows.", "Local paths are redacted even when the source is unavailable."],
+    notes: [
+      "Does not return person rows.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "Local paths are redacted even when the source is unavailable.",
+    ],
   },
   {
     id: "source_ledger",
@@ -543,7 +547,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "Use for broad dashboard-level diagnostics before drilling into queues.",
-    notes: ["Internal only.", "Bounded person rows may appear in top-priority sections."],
+    notes: [
+      "Internal only.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "Bounded person rows may appear in top-priority sections.",
+    ],
   },
   {
     id: "community_queues",
@@ -556,7 +564,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "If status is watch or notify, inspect the matching queue brief.",
-    notes: ["Safe for frequent local monitor checks.", "The API does not write snapshots."],
+    notes: [
+      "Safe for frequent local monitor checks.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "The API does not write snapshots.",
+    ],
   },
   {
     id: "community_queue_brief",
@@ -569,7 +581,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "Use person-card for exact detail on one selected person before drafting a decision note.",
-    notes: ["Keep limits small.", "Planning signal only; no permission to contact anyone."],
+    notes: [
+      "Keep limits small.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "Planning signal only; no permission to contact anyone.",
+    ],
   },
   {
     id: "community_decision_brief",
@@ -582,7 +598,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "Use when a queue requires Alejandro's decision or a clear no-send approval boundary.",
-    notes: ["Bounded candidates only.", "No delivery, no outreach, no CRM mutation."],
+    notes: [
+      "Bounded candidates only.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "No delivery, no outreach, no CRM mutation.",
+    ],
   },
   {
     id: "community_daily_brief",
@@ -595,7 +615,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "Use this as the first daily CRM read.",
-    notes: ["Focus queues are bounded.", "Notify-level queues require human decision before outbound action."],
+    notes: [
+      "Focus queues are bounded.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "Notify-level queues require human decision before outbound action.",
+    ],
   },
   {
     id: "person_card",
@@ -608,7 +632,11 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     mutatesRecords: false,
     outbound: false,
     preferredNextStep: "Prepare an internal decision note if the card suggests human review or commercial follow-up.",
-    notes: ["Exact lookup only.", "nextAction is a planning signal, not send approval."],
+    notes: [
+      "Exact lookup only.",
+      "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
+      "nextAction is a planning signal, not send approval.",
+    ],
   },
 ];
 

@@ -12,14 +12,15 @@ import {
   type CommunityPersonSearchResult,
 } from '../../lib/crm/community-person-search';
 import {
-  loadLegacyPersonCardsV1AsPersonCards,
-  type PersonCardsVNextSourceResult,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../lib/crm/community-insights-source';
 
 type PeoplePageProps =
   | {
       enabled: true;
-      source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       result: CommunityPersonSearchResult;
     }
   | {
@@ -125,7 +126,7 @@ export const getServerSideProps: GetServerSideProps<PeoplePageProps> = async (co
   }
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards();
+    const payload = await loadPersonCardsVNext();
     const result = searchCommunityPersonCards(payload.cards, {
       query: firstValue(context.query.q),
       stage: enumValue(context.query.stage, STAGES),
@@ -140,11 +141,7 @@ export const getServerSideProps: GetServerSideProps<PeoplePageProps> = async (co
     return {
       props: {
         enabled: true,
-        source: {
-          kind: payload.source.kind,
-          generatedAt: payload.source.generatedAt,
-          cards: payload.source.cards,
-        },
+        source: publicPersonCardsVNextSource(payload.source),
         result,
       },
     };

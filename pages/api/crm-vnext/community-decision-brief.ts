@@ -8,19 +8,17 @@ import {
   type CommunityQueueId,
 } from '../../../lib/crm/community-queues';
 import {
-  DEFAULT_LEGACY_PERSON_CARDS_V1_PATH,
-  loadLegacyPersonCardsV1AsPersonCards,
-  type PersonCardsVNextSourceResult,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../../lib/crm/community-insights-source';
-import {
-  allowCrmVNextLocalQueryOverrides,
-  authorizeCrmVNextInternalRead,
-} from '../../../lib/crm/crm-vnext-api-guard';
+import { authorizeCrmVNextInternalRead } from '../../../lib/crm/crm-vnext-api-guard';
+import { resolveCrmVNextReadSourceOptions } from '../../../lib/crm/crm-vnext-read-source-options';
 
 type ApiBody =
   | {
       ok: true;
-      source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       brief: CommunityDecisionBrief;
     }
   | { ok: false; error: string };
@@ -55,21 +53,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(400).json({ ok: false, error: 'invalid_queue_id' });
   }
 
-  const sourcePath =
-    typeof req.query.sourcePath === 'string' && allowCrmVNextLocalQueryOverrides(req)
-      ? req.query.sourcePath
-      : process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH || DEFAULT_LEGACY_PERSON_CARDS_V1_PATH;
+  const sourceOptions = resolveCrmVNextReadSourceOptions(req);
   const limit = parsePositiveInt(req.query.limit, 5);
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards(sourcePath);
+    const payload = await loadPersonCardsVNext(sourceOptions);
     return res.status(200).json({
       ok: true,
-      source: {
-        kind: payload.source.kind,
-        generatedAt: payload.source.generatedAt,
-        cards: payload.source.cards,
-      },
+      source: publicPersonCardsVNextSource(payload.source),
       brief: buildCommunityDecisionBrief(payload.cards, queueId, { limit }),
     });
   } catch (error) {

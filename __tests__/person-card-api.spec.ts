@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, describe, expect, test } from "vitest";
 import handler from "../pages/api/crm-vnext/person-card.js";
+import { CRM_VNEXT_CARD_WRITE_STORE_SCHEMA_VERSION } from "../lib/crm/crm-vnext-card-write-apply.js";
+import { buildPersonCardVNext } from "../lib/crm/person-card-vnext.js";
 
 const NOW = "2026-05-08T12:00:00.000Z";
 
@@ -19,6 +21,7 @@ const originalEnv = {
   NODE_ENV: process.env.NODE_ENV,
   CRM_VNEXT_INSIGHTS_TOKEN: process.env.CRM_VNEXT_INSIGHTS_TOKEN,
   CRM_VNEXT_PERSON_CARDS_V1_PATH: process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH,
+  CRM_VNEXT_PERSON_CARD_STORE_PATH: process.env.CRM_VNEXT_PERSON_CARD_STORE_PATH,
 };
 
 const mockRes = () => {
@@ -43,6 +46,8 @@ afterEach(() => {
   else process.env.CRM_VNEXT_INSIGHTS_TOKEN = originalEnv.CRM_VNEXT_INSIGHTS_TOKEN;
   if (originalEnv.CRM_VNEXT_PERSON_CARDS_V1_PATH === undefined) delete process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH;
   else process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH = originalEnv.CRM_VNEXT_PERSON_CARDS_V1_PATH;
+  if (originalEnv.CRM_VNEXT_PERSON_CARD_STORE_PATH === undefined) delete process.env.CRM_VNEXT_PERSON_CARD_STORE_PATH;
+  else process.env.CRM_VNEXT_PERSON_CARD_STORE_PATH = originalEnv.CRM_VNEXT_PERSON_CARD_STORE_PATH;
 });
 
 describe("/api/crm-vnext/person-card", () => {
@@ -132,6 +137,58 @@ describe("/api/crm-vnext/person-card", () => {
 
       expect(res.statusCode).toBe(404);
       expect(res.body).toEqual({ ok: false, error: "person_card_not_found" });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("serves exact cards from the vNext local store without leaking store path", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-person-card-store-"));
+    const cardStorePath = join(dir, "person-cards-vnext.json");
+    const card = buildPersonCardVNext({
+      personId: "email:store@example.com",
+      displayName: "Store Reader",
+      now: NOW,
+      identities: { email: "store@example.com" },
+    });
+    await writeFile(
+      cardStorePath,
+      JSON.stringify({
+        schemaVersion: CRM_VNEXT_CARD_WRITE_STORE_SCHEMA_VERSION,
+        generatedAt: NOW,
+        base: {
+          kind: "vnext-card-store",
+          sourceKind: "legacy-person-cards-v1-derived",
+          cardsBeforeApply: 1,
+        },
+        cards: [card],
+        mergeReviewQueue: [],
+        provenance: [],
+      }),
+      "utf8",
+    );
+
+    try {
+      process.env.NODE_ENV = "test";
+      delete process.env.CRM_VNEXT_INSIGHTS_TOKEN;
+      const res = mockRes();
+
+      await handler(
+        {
+          method: "GET",
+          query: { cardStorePath, personId: "email:store@example.com" },
+          headers: {},
+        } as MockReq,
+        res as never,
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect((res.body as { source: { kind: string; cards: number } }).source).toMatchObject({
+        kind: "vnext-person-card-store",
+        cards: 1,
+      });
+      expect((res.body as { card: { displayName: string } }).card.displayName).toBe("Store Reader");
+      expect(JSON.stringify(res.body)).not.toContain(cardStorePath);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

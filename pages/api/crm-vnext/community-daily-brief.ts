@@ -4,9 +4,9 @@ import {
   type CommunityDailyBrief,
 } from '../../../lib/crm/community-daily-brief';
 import {
-  DEFAULT_LEGACY_PERSON_CARDS_V1_PATH,
-  loadLegacyPersonCardsV1AsPersonCards,
-  type PersonCardsVNextSourceResult,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../../lib/crm/community-insights-source';
 import {
   readCommunityQueueSnapshot,
@@ -16,11 +16,12 @@ import {
   allowCrmVNextLocalQueryOverrides,
   authorizeCrmVNextInternalRead,
 } from '../../../lib/crm/crm-vnext-api-guard';
+import { resolveCrmVNextReadSourceOptions } from '../../../lib/crm/crm-vnext-read-source-options';
 
 type ApiBody =
   | {
       ok: true;
-      source: Omit<PersonCardsVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       snapshot: {
         previousLoaded: boolean;
         previousGeneratedAt: string | null;
@@ -47,10 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const allowLocalQueryOverrides = allowCrmVNextLocalQueryOverrides(req);
-  const sourcePath =
-    typeof req.query.sourcePath === 'string' && allowLocalQueryOverrides
-      ? req.query.sourcePath
-      : process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH || DEFAULT_LEGACY_PERSON_CARDS_V1_PATH;
+  const sourceOptions = resolveCrmVNextReadSourceOptions(req);
   const previousSnapshotPath =
     typeof req.query.previousSnapshotPath === 'string' && allowLocalQueryOverrides
       ? req.query.previousSnapshotPath
@@ -59,16 +57,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const peoplePerQueue = parsePositiveInt(req.query.peoplePerQueue, 3, 10);
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards(sourcePath);
+    const payload = await loadPersonCardsVNext(sourceOptions);
     const previousSnapshot = previousSnapshotPath ? await readCommunityQueueSnapshot(previousSnapshotPath) : null;
 
     return res.status(200).json({
       ok: true,
-      source: {
-        kind: payload.source.kind,
-        generatedAt: payload.source.generatedAt,
-        cards: payload.source.cards,
-      },
+      source: publicPersonCardsVNextSource(payload.source),
       snapshot: {
         previousLoaded: Boolean(previousSnapshot),
         previousGeneratedAt: previousSnapshot?.generatedAt ?? null,

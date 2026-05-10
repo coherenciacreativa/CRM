@@ -7,15 +7,16 @@ import {
   type ScoringReason,
 } from '../../../lib/crm/community-scoring';
 import {
-  loadLegacyPersonCardV1ByPersonId,
-  type PersonCardVNextSourceResult,
+  loadPersonCardVNextByPersonId,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../../lib/crm/community-insights-source';
 import type { PersonCardVNext } from '../../../lib/crm/person-card-vnext';
 
 type PersonPageProps =
   | {
       enabled: true;
-      source: Omit<PersonCardVNextSourceResult['source'], 'path'>;
+      source: PublicPersonCardsVNextSource;
       card: PersonCardVNext;
     }
   | {
@@ -90,7 +91,7 @@ export const getServerSideProps: GetServerSideProps<PersonPageProps> = async (co
   if (!personId) return { notFound: true };
 
   try {
-    const payload = await loadLegacyPersonCardV1ByPersonId(personId);
+    const payload = await loadPersonCardVNextByPersonId(personId);
     if (!payload.card) {
       return {
         props: {
@@ -103,11 +104,7 @@ export const getServerSideProps: GetServerSideProps<PersonPageProps> = async (co
     return {
       props: {
         enabled: true,
-        source: {
-          kind: payload.source.kind,
-          generatedAt: payload.source.generatedAt,
-          cards: payload.source.cards,
-        },
+        source: publicPersonCardsVNextSource(payload.source),
         card: payload.card,
       },
     };

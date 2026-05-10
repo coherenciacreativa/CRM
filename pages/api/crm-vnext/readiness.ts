@@ -6,13 +6,12 @@ import {
   type CrmVNextReadinessUnavailable,
 } from '../../../lib/crm/crm-vnext-readiness';
 import {
-  DEFAULT_LEGACY_PERSON_CARDS_V1_PATH,
-  loadLegacyPersonCardsV1AsPersonCards,
+  loadPersonCardsVNext,
 } from '../../../lib/crm/community-insights-source';
 import {
-  allowCrmVNextLocalQueryOverrides,
   authorizeCrmVNextInternalRead,
 } from '../../../lib/crm/crm-vnext-api-guard';
+import { resolveCrmVNextReadSourceOptions } from '../../../lib/crm/crm-vnext-read-source-options';
 
 type ApiBody =
   | {
@@ -31,13 +30,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(auth.status).json({ ok: false, error: auth.error });
   }
 
-  const sourcePath =
-    typeof req.query.sourcePath === 'string' && allowCrmVNextLocalQueryOverrides(req)
-      ? req.query.sourcePath
-      : process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH || DEFAULT_LEGACY_PERSON_CARDS_V1_PATH;
+  const sourceOptions = resolveCrmVNextReadSourceOptions(req);
 
   try {
-    const payload = await loadLegacyPersonCardsV1AsPersonCards(sourcePath);
+    const payload = await loadPersonCardsVNext(sourceOptions);
     return res.status(200).json({
       ok: true,
       readiness: buildCrmVNextReadiness(payload.cards, payload.source),

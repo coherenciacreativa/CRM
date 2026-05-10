@@ -586,21 +586,28 @@ const recommendationFor = (
     };
   }
 
+  if (hasStableIdentity(person)) {
+    return {
+      action: 'create_new_card_candidate',
+      requiresHumanDecision: true,
+      reason: candidates.length
+        ? 'The report includes a stable identity; weaker name-only candidates remain review evidence but should not override the reported identifier.'
+        : 'The report includes a stable identity, but no existing local candidate was found.',
+      suggestedNextSteps: candidates.length
+        ? [
+          'Use the reported stable identifier as the card target.',
+          'Review weaker candidates separately before any future merge.',
+        ]
+        : ['Prepare a new-card proposal after Alejandro approves the creation policy.'],
+    };
+  }
+
   if (candidates.length) {
     return {
       action: 'review_possible_candidates',
       requiresHumanDecision: true,
       reason: 'Only weak or medium candidates were found; identity is not safe to stitch automatically.',
       suggestedNextSteps: ['Ask for an email, Instagram handle, phone, or human confirmation.'],
-    };
-  }
-
-  if (hasStableIdentity(person)) {
-    return {
-      action: 'create_new_card_candidate',
-      requiresHumanDecision: true,
-      reason: 'The report includes a stable identity, but no existing local candidate was found.',
-      suggestedNextSteps: ['Prepare a new-card proposal after Alejandro approves the creation policy.'],
     };
   }
 

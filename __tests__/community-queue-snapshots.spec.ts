@@ -69,6 +69,36 @@ describe('community queue snapshots', () => {
     expect(snapshot.source).not.toHaveProperty('path');
   });
 
+  test('keeps vNext store source metadata while redacting local paths', () => {
+    const snapshot = buildCommunityQueueSnapshot(
+      queues,
+      {
+        kind: 'vnext-person-card-store',
+        path: '/Users/example/.crm-vnext/person-card-store/person-cards-vnext.json',
+        generatedAt: NOW,
+        cards: 734,
+        base: {
+          kind: 'vnext-card-store',
+          sourceKind: 'legacy-person-cards-v1-derived',
+          cardsBeforeApply: 728,
+        },
+      },
+      { now: NOW },
+    );
+
+    expect(snapshot.source).toEqual({
+      kind: 'vnext-person-card-store',
+      generatedAt: NOW,
+      cards: 734,
+      base: {
+        kind: 'vnext-card-store',
+        sourceKind: 'legacy-person-cards-v1-derived',
+        cardsBeforeApply: 728,
+      },
+    });
+    expect(JSON.stringify(snapshot)).not.toContain('/Users/example');
+  });
+
   test('turns a snapshot into previous matched counts for status evaluation', () => {
     const snapshot = buildCommunityQueueSnapshot(
       queues,
