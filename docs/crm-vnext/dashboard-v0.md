@@ -136,6 +136,6 @@ If port `3000` is occupied, use the alternate port chosen by Next.
 
 ## Next Build Step
 
-Dry-run the staged merge-review queue, resolve Juan Jose only with explicit approval, then run the next controlled contact batch through the same approval/write path.
+Juan Jose's staged merge-review has been resolved locally with explicit restricted-service acknowledgement. Next: run the next controlled contact batch through the same evidence, approval, write, and dashboard-verification path.
 
 Track OpenClaw/gog Gmail/Contacts OAuth stability separately in `gmail-openclaw-auth-stability-backlog.md`; it matters for Mantis autonomy, but should not block the CRM evidence contract.
