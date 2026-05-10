@@ -693,6 +693,26 @@ const extractEmails = (
     .slice(0, 3);
 };
 
+const looksLikeDateOrTimestamp = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (
+    /\b(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])[-/.](?:0?[1-9]|[12]\d|3[01])(?:[T\s]+(?:[01]?\d|2[0-3])(?::?[0-5]\d){0,2})?\b/.test(trimmed)
+  ) {
+    return true;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  return /^(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?:[01]\d|2[0-3])?(?:[0-5]\d){0,2}$/.test(digits);
+};
+
+const normalizePhoneCandidate = (value: string): string | null => {
+  if (looksLikeDateOrTimestamp(value)) return null;
+  const phone = value.replace(/[^\d+]/g, '');
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 15) return null;
+  if (/^(\d)\1+$/.test(digits)) return null;
+  return phone;
+};
+
 const extractPhones = (
   snippet: string,
   sourceKind: CrmDeepLocalSourceKind,
@@ -705,13 +725,8 @@ const extractPhones = (
       if (match[1]) matches.push(match[1]);
     }
     return unique(matches
-      .map((phone) => phone.replace(/[^\d+]/g, ''))
-      .filter((phone) => {
-        const digits = phone.replace(/\D/g, '');
-        if (digits.length < 8 || digits.length > 15) return false;
-        if (/^(?:19|20)\d{6,}$/.test(digits)) return false;
-        return true;
-      }))
+      .map((phone) => normalizePhoneCandidate(phone))
+      .filter((phone): phone is string => Boolean(phone)))
       .slice(0, 3);
   }
 
@@ -724,13 +739,8 @@ const extractPhones = (
 
   const matches = snippet.match(/(?:\+?\d[\d\s().-]{7,}\d)/g) ?? [];
   return unique(matches
-    .map((phone) => phone.replace(/[^\d+]/g, ''))
-    .filter((phone) => {
-      const digits = phone.replace(/\D/g, '');
-      if (digits.length < 8 || digits.length > 15) return false;
-      if (/^(?:19|20)\d{6}$/.test(digits)) return false;
-      return true;
-    }))
+    .map((phone) => normalizePhoneCandidate(phone))
+    .filter((phone): phone is string => Boolean(phone)))
     .slice(0, 3);
 };
 

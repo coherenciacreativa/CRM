@@ -172,6 +172,35 @@ const extractFirst = (regex: RegExp, line: string): string | null => {
   return match?.[1] || match?.[0]?.trim() || null;
 };
 
+const looksLikeDateOrTimestamp = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (
+    /\b(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])[-/.](?:0?[1-9]|[12]\d|3[01])(?:[T\s]+(?:[01]?\d|2[0-3])(?::?[0-5]\d){0,2})?\b/.test(trimmed)
+  ) {
+    return true;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  return /^(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?:[01]\d|2[0-3])?(?:[0-5]\d){0,2}$/.test(digits);
+};
+
+const normalizePhoneCandidate = (value: string): string | null => {
+  if (looksLikeDateOrTimestamp(value)) return null;
+  const cleaned = value.replace(/[^\d+]/g, '');
+  const digits = cleaned.replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 15) return null;
+  if (/^(\d)\1+$/.test(digits)) return null;
+  return cleaned;
+};
+
+const extractPhone = (line: string): string | null => {
+  phoneRegex.lastIndex = 0;
+  for (const match of line.matchAll(phoneRegex)) {
+    const phone = normalizePhoneCandidate(match[0]);
+    if (phone) return phone;
+  }
+  return null;
+};
+
 const removeIdentityFragments = (value: string): string =>
   value
     .replace(emailRegex, '')
@@ -260,7 +289,7 @@ const aliasAfterHandle = (line: string): string | null => {
 const peopleFromLine = (line: string): CrmFactPersonHint[] => {
   const email = extractFirst(emailRegex, line)?.toLowerCase() ?? null;
   const instagramHandle = extractFirst(handleRegex, line)?.replace(/^@/, '').toLowerCase() ?? null;
-  const phone = extractFirst(phoneRegex, line) ?? null;
+  const phone = extractPhone(line);
   const handleAlias = instagramHandle ? aliasAfterHandle(line) : null;
 
   if (instagramHandle && handleAlias) {
@@ -364,7 +393,13 @@ const inferFactTypes = (line: string): CrmFactType[] => {
   ) {
     types.push('program_participation');
   }
-  if (/(interesad|pidio info|pidió info|quiere info|pregunto|preguntó|considerando)/i.test(normalized)) {
+  if (
+    /(interesad|pidio info|pidió info|quiere info|pregunto|preguntó|considerando)/i.test(normalized)
+    || (
+      normalized.includes('retiro')
+      && /(conversacion activa|conversación activa|seguimiento|primer mensaje|mensaje entrante|esperando respuesta|recibio la informacion|recibió la información|mantener la conversacion|mantener la conversación)/i.test(normalized)
+    )
+  ) {
     types.push('expressed_interest');
   }
   if (/(cliente|clienta|cliente activo|clienta activa|cliente recurrente|clienta recurrente|paciente)/i.test(normalized)) {
@@ -507,7 +542,7 @@ export const buildCrmFactIntakeDraft = (input: CrmFactIntakeInput): CrmFactIntak
           : factProgram === 'mentoria' ? 'mentorship'
             : factProgram === 'terapia' ? 'therapy'
               : factProgram === 'curso_meditacion' || factProgram === 'microintervenciones' ? 'digital_product'
-                : line.toLowerCase().includes('retiro') ? 'retreat'
+                : type === 'retreat_attendance' || (line.toLowerCase().includes('retiro') && (type === 'expressed_interest' || type === 'purchase')) ? 'retreat'
                   : null;
         const factId = `fact_${hashId([
           type,

@@ -83,6 +83,27 @@ describe("CRM vNext multi-service card proposal", () => {
     expect(proposal.privacyApprovalRequired).toBe(false);
   });
 
+  test("treats Instagram retreat conversations as interest, not attendance", () => {
+    const report = buildCrmVNextMultiServiceCardProposal({
+      text: "CRM: @luzestellariatizabal preguntó por la inversión del retiro.",
+      sourceKind: "instagram_signal",
+      reporter: "Juana",
+      channel: "telegram_crm",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+    });
+
+    const proposal = report.proposals[0];
+    expect(proposal.serviceRelationships).toHaveLength(1);
+    expect(proposal.serviceRelationships[0]).toMatchObject({
+      serviceKey: "retreats",
+      role: "prospect",
+      status: "interested",
+    });
+    expect(proposal.serviceRelationships[0].role).not.toBe("attendee");
+  });
+
   test("does not let weak name-only candidates override a reported stable email", () => {
     const report = buildCrmVNextMultiServiceCardProposal({
       text: "CRM: Adriana Bernal es estudiante de yoga y su email confirmado es adrianabv86@hotmail.com.",

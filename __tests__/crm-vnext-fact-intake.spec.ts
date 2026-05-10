@@ -54,6 +54,35 @@ describe("CRM vNext fact intake", () => {
     expect(draft.ambiguities.map((item) => item.code)).toContain("missing_person_hint");
   });
 
+  test("keeps Instagram retreat timestamps out of phone fields", () => {
+    const draft = buildCrmFactIntakeDraft({
+      text: [
+        "_Actualizado: 2026-05-10T19:01:20_",
+        "| Luz Estella Aristizabal | @luzestellariatizabal | Preguntó por la inversión del retiro. | Conversación activa | Alta | Sí, vale la pena | 2026-03-09 06:24 |",
+      ].join("\n"),
+      sourceKind: "instagram_signal",
+      reporter: "Juana",
+      channel: "telegram_crm",
+      observedAt: NOW,
+    });
+
+    const facts = draft.facts.filter((fact) => fact.person.instagramHandle === "luzestellariatizabal");
+    expect(facts).toHaveLength(1);
+    expect(facts[0]).toMatchObject({
+      type: "expressed_interest",
+      person: {
+        phone: null,
+        personIdHint: "ig:luzestellariatizabal",
+      },
+      subject: {
+        product: "retreat",
+        status: "interested",
+      },
+    });
+    expect(draft.summary.factTypes.retreat_attendance).toBe(0);
+    expect(draft.facts.some((fact) => fact.person.phone === "2026-05-10")).toBe(false);
+  });
+
   test("captures handle aliases and flags sensitive relationship context", () => {
     const draft = buildCrmFactIntakeDraft({
       text: [

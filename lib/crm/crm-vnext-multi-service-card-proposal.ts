@@ -295,11 +295,21 @@ const serviceFromFact = (fact: CrmFactEvent): CrmMultiServiceCardServiceRelation
     label = 'Yoga classes';
     role = 'student';
     status = 'active_or_reported_student';
-  } else if (fact.type === 'retreat_attendance' || product === 'retreat' || (fact.type === 'purchase' && evidence.includes('retiro'))) {
+  } else if (fact.type === 'retreat_attendance') {
     serviceKey = 'retreats';
     label = 'Retreats';
     role = 'attendee';
     status = 'historical_or_recurring_attendee';
+  } else if (product === 'retreat' && fact.type === 'expressed_interest') {
+    serviceKey = 'retreats';
+    label = 'Retreats';
+    role = 'prospect';
+    status = 'interested';
+  } else if (fact.type === 'purchase' && evidence.includes('retiro')) {
+    serviceKey = 'retreats';
+    label = 'Retreats';
+    role = 'buyer_or_attendee';
+    status = 'reported_purchase_or_registration';
   } else if (fact.type === 'community_event_attendance' || program === 'mi_encuentro_feliz') {
     serviceKey = 'happy_circle';
     label = 'Mi Encuentro Feliz';

@@ -389,4 +389,29 @@ describe("CRM vNext deep local stitching", () => {
     expect(report.clues[0].identitySummary.phones).not.toContain("1869907027");
     expect(report.clues[0].identitySummary.phones).not.toContain("20260217");
   });
+
+  test("does not extract retreat report timestamps as phones", () => {
+    const report = buildCrmVNextDeepLocalStitching({
+      text: "CRM: @luzestellariatizabal preguntó por la inversión del retiro.",
+      sourceKind: "instagram_signal",
+      reporter: "Juana",
+      channel: "telegram_crm",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      maxHitsPerClue: 3,
+      localSources: [
+        {
+          sourceId: "crm-juana:retiro:row-luz",
+          sourceKind: "retreat_table",
+          text: "Persona: Luz Estella Aristizabal Instagram: @luzestellariatizabal Ultima interaccion: 2026-03-09 06:24 Estado: Conversacion activa alrededor del retiro.",
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+    });
+
+    expect(report.summary.cluesWithHits).toBe(1);
+    expect(report.clues[0].identitySummary.phones).toEqual([]);
+    expect(report.clues[0].hits[0].identitySignals.phones).toEqual([]);
+  });
 });
