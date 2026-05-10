@@ -305,6 +305,101 @@ describe("CRM vNext evidence review packet", () => {
     });
   });
 
+  test("routes identity-bridge email candidates to human confirmation before assignment", () => {
+    const report = buildCrmVNextEvidenceReviewPacket({
+      text: "CRM: @cielo_gom_g es Cielo Gom G y tiene un candidato de identity bridge pendiente.",
+      sourceKind: "instagram_signal",
+      reporter: "Mantis",
+      channel: "codex",
+      now: NOW,
+      cards: [
+        buildPersonCardVNext({
+          personId: "ig:cielo_gom_g",
+          displayName: "Cielo Gom G",
+          identities: { instagramHandle: "cielo_gom_g" },
+          now: NOW,
+        }),
+      ],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "mailerlite:cielo-gomez",
+          sourceKind: "mailerlite_export" as const,
+          text: [
+            "Handle: @cielo_gom_g",
+            "Name: Cielo Gom G",
+            "Email: cielotago@gmail.com",
+            "Phone: +573143011712",
+            "City: Bogotá",
+            "Country: Colombia",
+            "Finding: active subscriber Cielo Gomez from Instagram lead capture.",
+            "Identity bridge review required before assigning contact fields.",
+          ].join(" "),
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+    });
+
+    expect(report.summary).toMatchObject({
+      reviewItems: 1,
+      emailOwnershipQuestions: 1,
+      ambiguousEmailCandidates: 1,
+      operationsExecuted: 0,
+      cardMutationReady: false,
+    });
+    const item = report.reviewItems[0];
+    expect(item.subject.instagramHandle).toBe("cielo_gom_g");
+    expect(item.candidateUpdates.email).toBeNull();
+    expect(item.ambiguousEmailCandidates[0]).toMatchObject({
+      email: "cielotago@gmail.com",
+      reviewReasons: expect.arrayContaining([
+        "identity_bridge_signal",
+        "not_assigned_to_subject",
+      ]),
+    });
+    expect(item.decisionQuestions[0]).toMatchObject({
+      candidateEmail: "cielotago@gmail.com",
+      recommendedOptionId: "confirm_email_for_subject",
+    });
+    expect(item.decisionQuestions[0].prompt).toContain("identity bridge");
+  });
+
+  test("skips email candidates explicitly marked as rejected collisions by Mantis", () => {
+    const report = buildCrmVNextEvidenceReviewPacket({
+      text: "CRM: @anachbrown es Ana Ch; colisiones no asignables registradas por Mantis: 1.",
+      sourceKind: "instagram_signal",
+      reporter: "Mantis",
+      channel: "codex",
+      now: NOW,
+      cards: [
+        buildPersonCardVNext({
+          personId: "ig:anachbrown",
+          displayName: "Ana Ch",
+          identities: { instagramHandle: "anachbrown" },
+          now: NOW,
+        }),
+      ],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "memory:mailer-bridge:diana-chavarro",
+          sourceKind: "crm_memory_fabric" as const,
+          text: "Ana Ch possible row dchavarror@gmail.com Diana Chavarro Contact Import.",
+        },
+        {
+          sourceId: "mantis:rejected-collision:anachbrown",
+          sourceKind: "local_fixture" as const,
+          text: "Contact key: @anachbrown. Do not assign email dchavarror@gmail.com to this contact. This is collision evidence only.",
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 2 },
+    });
+
+    expect(report.summary.reviewItems).toBe(0);
+    expect(report.summary.emailOwnershipQuestions).toBe(0);
+    expect(report.reviewItems).toEqual([]);
+  });
+
   test("stays empty when there is no ambiguous email ownership to review", () => {
     const report = buildCrmVNextEvidenceReviewPacket({
       text: "CRM: @ana_yoga es estudiante de yoga.",

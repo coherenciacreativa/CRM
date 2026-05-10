@@ -212,4 +212,110 @@ describe("CRM vNext Mantis evidence import script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("converts Mantis enrichment reports with identity-bridge candidates and rejected collisions", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-enrichment-"));
+    try {
+      const reportPath = join(dir, "mantis-enrichment-report.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schemaVersion: "mantis.crm_vnext.enrichment.v1",
+        contacts: {
+          "@cielo_gom_g": {
+            crmVnextKey: "ig:cielo_gom_g",
+            inputHandle: "@cielo_gom_g",
+            identity: {
+              confirmed: {
+                instagramHandle: "cielo_gom_g",
+                displayName: "Cielo Gom G",
+                email: null,
+              },
+              candidates: [
+                {
+                  field: "email",
+                  value: "cielotago@gmail.com",
+                  status: "review_only_candidate_primary_pending_bridge",
+                  why: "MailerLite row lacks exact handle but local memory bridges Cielo Gomez to @cielo_gom_g.",
+                },
+              ],
+              doNotPromote: [],
+            },
+            confirmedFacts: ["Instagram handle @cielo_gom_g exists as local CRM vNext card."],
+            communityRelationship: {
+              type: "instagram_retreat_lead",
+              recommendedNextAction: "send to Codex as identity_bridge_candidate",
+            },
+            retreatProgramEvidence: { status: "confirmed_interest_not_attendance" },
+            evidenceSources: [
+              {
+                kind: "mailerLite_cursor_scan",
+                source: "/Users/example/private/mailerlite.json",
+                finding: "Active subscriber Cielo Gomez: cielotago@gmail.com, +573143011712, Bogotá/Colombia, leads_instagram.csv + onboarding complete. No exact @cielo_gom_g field.",
+              },
+            ],
+          },
+          "@luzestellariatizabal": {
+            crmVnextKey: "ig:luzestellariatizabal",
+            inputHandle: "@luzestellariatizabal",
+            identity: {
+              confirmed: {
+                instagramHandle: "luzestellariatizabal",
+                displayName: "Luz Estella Aristizabal",
+                fullName: "Luz Estella Aristizabal",
+              },
+              candidates: [],
+              doNotPromote: [
+                {
+                  field: "email",
+                  value: "arquitectura.kmga@gmail.com",
+                  why: "Surname-only collision for Katy Giraldo Aristizabal.",
+                },
+              ],
+            },
+            confirmedFacts: ["Full/display name Luz Estella Aristizabal confirmed by Juana IG report."],
+            evidenceSources: [],
+          },
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+        "--min-confidence",
+        "high",
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const text = await readFile(textPath, "utf8");
+      expect(packet.summary).toMatchObject({
+        results: 2,
+        selectedResults: 2,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(packet.summary.evidenceSources).toBeGreaterThanOrEqual(3);
+      expect(text).toContain("@cielo_gom_g");
+      expect(text).toContain("identity bridge");
+      expect(text).not.toContain("cielotago@gmail.com");
+
+      const cieloMailer = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "mailerlite_export" && source.text.includes("cielotago@gmail.com")
+      );
+      expect(cieloMailer.text).toContain("Identity bridge review required");
+
+      const rejectedCollision = packet.evidenceSources.find((source: { text: string }) =>
+        source.text.includes("Do not assign email arquitectura.kmga@gmail.com")
+      );
+      expect(rejectedCollision.text).toContain("collision evidence only");
+      expect(JSON.stringify(packet)).not.toContain("/Users/example");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

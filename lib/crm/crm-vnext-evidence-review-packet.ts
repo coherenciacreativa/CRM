@@ -48,6 +48,7 @@ export type CrmEvidenceReviewEmailCandidate = {
   snippets: string[];
   reviewReasons: Array<
     | 'family_or_companion_signal'
+    | 'identity_bridge_signal'
     | 'evidence_derived_identity_candidate'
     | 'weak_candidate_replacement'
     | 'multiple_email_candidates'
@@ -159,6 +160,8 @@ const normalizeEmail = (value: string | null | undefined): string => (value ?? '
 
 const unique = <T>(values: T[]): T[] => Array.from(new Set(values));
 
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const countSourceKinds = (
   hits: CrmDeepLocalStitchingHit[],
 ): Partial<Record<CrmDeepLocalSourceKind, number>> => {
@@ -198,6 +201,9 @@ const reviewReasonsForEmail = (
   const reasons: CrmEvidenceReviewEmailCandidate['reviewReasons'] = [];
   if (hits.some((hit) => hit.contextSignals.includes('family_email_review_required'))) {
     reasons.push('family_or_companion_signal');
+  }
+  if (hits.some((hit) => hit.contextSignals.includes('identity_bridge_review_required'))) {
+    reasons.push('identity_bridge_signal');
   }
   if (
     (
@@ -242,13 +248,30 @@ const emailAlreadyDecided = (
   return decidedEmails.includes(normalizeEmail(email));
 };
 
+const emailExplicitlyRejectedByEvidence = (
+  stitchingClue: CrmDeepLocalStitchingClue | null,
+  email: string,
+): boolean => {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return false;
+  const emailPattern = new RegExp(escapeRegExp(normalizedEmail), 'i');
+  return (stitchingClue?.hits ?? []).some((hit) => {
+    if (!emailPattern.test(hit.snippet)) return false;
+    const normalizedSnippet = normalize(hit.snippet);
+    return /\b(do not assign|dont assign|don't assign|no asign|colision|colisión|collision evidence only|rejected collision)\b/.test(normalizedSnippet);
+  });
+};
+
 const emailCandidatesFor = (
   preview: CrmCardApplyPreviewItem,
   stitchingClue: CrmDeepLocalStitchingClue | null,
   decision: CrmCardWriteMergeDecision | null,
 ): CrmEvidenceReviewEmailCandidate[] =>
   preview.identityResolution.emailCandidates
-    .filter((email) => !emailAlreadyDecided(preview, email))
+    .filter((email) =>
+      !emailAlreadyDecided(preview, email)
+      && !emailExplicitlyRejectedByEvidence(stitchingClue, email)
+    )
     .map((email) => {
       const hits = hitsForEmail(stitchingClue, email);
       const reviewReasons = reviewReasonsForEmail(preview, email, hits, decision);
@@ -346,8 +369,10 @@ const decisionQuestionForEmail = (
   hasRelatedPeople: boolean,
 ): CrmEvidenceReviewQuestion => {
   const familySignal = emailCandidate.reviewReasons.includes('family_or_companion_signal');
+  const identityBridgeSignal = emailCandidate.reviewReasons.includes('identity_bridge_signal');
   const evidenceDerivedSignal = emailCandidate.reviewReasons.includes('evidence_derived_identity_candidate')
-    || emailCandidate.reviewReasons.includes('weak_candidate_replacement');
+    || emailCandidate.reviewReasons.includes('weak_candidate_replacement')
+    || identityBridgeSignal;
   const recommendedOptionId: CrmEvidenceReviewDecisionOptionId = familySignal
     ? 'keep_email_unassigned_family_or_companion'
     : evidenceDerivedSignal
@@ -392,7 +417,9 @@ const decisionQuestionForEmail = (
     questionId: `evidence_question_${hashId([itemId, emailCandidate.email])}`,
     type: 'email_ownership',
     priority: familySignal || evidenceDerivedSignal ? 'high' : 'medium',
-    prompt: `Does ${emailCandidate.email} belong to ${subjectLabel}, or should it stay as family/companion evidence?`,
+    prompt: identityBridgeSignal
+      ? `Does ${emailCandidate.email} belong to ${subjectLabel} through this identity bridge, or should it remain unassigned?`
+      : `Does ${emailCandidate.email} belong to ${subjectLabel}, or should it stay as family/companion evidence?`,
     candidateEmail: emailCandidate.email,
     recommendedOptionId,
     requiredBefore: ['primary_email_assignment', 'card_write', 'merge_decision'],

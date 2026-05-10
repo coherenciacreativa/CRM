@@ -152,12 +152,12 @@ const evidenceTextFor = (result, source, sourceKind) => {
   includeIdentity && cleanString(result.country)
     ? `Country: ${cleanString(result.country)}`
     : null,
+  cleanString(result.confidence) ? `Confidence: ${cleanString(result.confidence)}` : null,
+  cleanString(source?.finding) ? `Finding: ${cleanString(source.finding)}` : null,
   includeIdentity && Array.isArray(result.mailer_groups) && result.mailer_groups.length
     ? `Groups: ${result.mailer_groups.join('; ')}`
     : null,
-  cleanString(result.confidence) ? `Confidence: ${cleanString(result.confidence)}` : null,
-  cleanString(source?.finding) ? `Finding: ${cleanString(source.finding)}` : null,
-].filter(Boolean).join('\n');
+].filter(Boolean).join(' | ');
 };
 
 const evidenceSourcesForResult = (result) => {
@@ -275,7 +275,88 @@ const evidenceSourcesForContact = (contactKey, contact) => {
   });
 };
 
+const confirmedIdentityFor = (contact) =>
+  contact?.identity && typeof contact.identity === 'object' && !Array.isArray(contact.identity)
+    ? contact.identity.confirmed ?? {}
+    : {};
+
+const hasBridgePendingIdentity = (contact) =>
+  Array.isArray(contact?.identity?.candidates)
+  && contact.identity.candidates.some((candidate) =>
+    /pending_bridge|review_only|identity_bridge/i.test(cleanString(candidate?.status) ?? '')
+    || /bridge|handle/i.test(cleanString(candidate?.why) ?? '')
+  );
+
+const evidenceSourcesForEnrichmentContact = (contactKey, contact) => {
+  const bridgePending = hasBridgePendingIdentity(contact);
+  const existingSources = Array.isArray(contact?.evidenceSources) ? contact.evidenceSources : [];
+  const evidenceSources = existingSources.map((source) => {
+    const finding = cleanString(source?.finding);
+    const bridgePrefix = bridgePending && /email|phone|subscriber|mailerlite|lead capture/i.test(finding ?? '')
+      ? 'Identity bridge review required before assigning contact fields. '
+      : '';
+    return {
+      kind: cleanString(source?.kind ?? source?.source),
+      source: cleanString(source?.source),
+      finding: `${bridgePrefix}${finding ?? ''}`.trim(),
+    };
+  });
+
+  if (Array.isArray(contact?.identity?.doNotPromote)) {
+    for (const rejected of contact.identity.doNotPromote) {
+      const field = cleanString(rejected?.field) ?? 'field';
+      const value = cleanString(rejected?.value) ?? 'unknown';
+      const why = cleanString(rejected?.why);
+      evidenceSources.push({
+        kind: 'local_fixture',
+        source: 'mantis_enrichment_rejected_collision',
+        finding: [
+          `Contact key: ${contactKey}`,
+          `Do not assign ${field} ${value} to this contact.`,
+          why ? `Why: ${why}` : null,
+          'This is collision evidence only.',
+        ].filter(Boolean).join(' '),
+      });
+    }
+  }
+
+  if (Array.isArray(contact?.reviewOnlyCandidates)) {
+    for (const candidate of contact.reviewOnlyCandidates) {
+      const finding = cleanString(candidate);
+      if (!finding) continue;
+      evidenceSources.push({
+        kind: bridgePending && /@|email|gmail|hotmail|phone|\+\d|\d{8,}/i.test(finding)
+          ? 'mailerlite_export'
+          : 'local_fixture',
+        source: 'mantis_enrichment_review_only_candidate',
+        finding: [
+          `Contact key: ${contactKey}`,
+          bridgePending ? 'Identity bridge review required before assigning contact fields.' : 'Review-only candidate.',
+          finding,
+        ].join(' '),
+      });
+    }
+  }
+
+  if (Array.isArray(contact?.confirmedFacts)) {
+    for (const fact of contact.confirmedFacts) {
+      const finding = cleanString(fact);
+      if (!finding) continue;
+      evidenceSources.push({
+        kind: 'local_fixture',
+        source: 'mantis_enrichment_confirmed_fact',
+        finding: `Contact key: ${contactKey}. ${finding}`,
+      });
+    }
+  }
+
+  return evidenceSources;
+};
+
 const fullNameForContact = (contactKey, contact) => {
+  const confirmed = confirmedIdentityFor(contact);
+  const confirmedName = firstClean(confirmed.fullName, confirmed.displayName);
+  if (confirmedName) return confirmedName;
   const resolved = contact?.resolvedAnchors ?? {};
   if (Array.isArray(resolved.nameCandidates) && resolved.nameCandidates.length) {
     return firstClean(...resolved.nameCandidates);
@@ -289,7 +370,39 @@ const fullNameForContact = (contactKey, contact) => {
   return cleanString(contactKey)?.replace(/_/g, ' ') ?? null;
 };
 
+const contactKeyHandle = (contactKey) => {
+  const value = cleanString(contactKey);
+  if (!value) return null;
+  if (value.startsWith('@')) return normalizeHandle(value);
+  if (value.startsWith('ig:')) return normalizeHandle(value.slice(3));
+  return null;
+};
+
 const contactFactText = (contactKey, contact, result) => {
+  if (contact?.identity && typeof contact.identity === 'object') {
+    const bridgePending = hasBridgePendingIdentity(contact);
+    const confirmedFacts = Array.isArray(contact.confirmedFacts)
+      ? contact.confirmedFacts.map(cleanString).filter(Boolean)
+      : [];
+    const rejected = Array.isArray(contact?.identity?.doNotPromote)
+      ? contact.identity.doNotPromote
+        .map((item) => [cleanString(item?.field), cleanString(item?.value)].filter(Boolean).join(' '))
+        .filter(Boolean)
+      : [];
+    const parts = [
+      bridgePending ? 'tiene candidatos de identity bridge que requieren aprobación antes de asignar email/teléfono' : null,
+      rejected.length ? `colisiones no asignables registradas por Mantis: ${rejected.length}` : null,
+      confirmedFacts.length ? `hechos confirmados: ${confirmedFacts.join('; ')}` : null,
+      cleanString(contact?.communityRelationship?.type) ? `relación: ${cleanString(contact.communityRelationship.type)}` : null,
+      cleanString(contact?.retreatProgramEvidence?.status) ? `estado retiro: ${cleanString(contact.retreatProgramEvidence.status)}` : null,
+    ].filter(Boolean);
+    const subject = result.handle ?? result.candidate_name ?? contactKey;
+    const intro = result.handle && result.candidate_name
+      ? `CRM: ${result.handle} es ${result.candidate_name}.`
+      : `CRM: ${subject}.`;
+    return `${intro} ${parts.join('; ')}.`;
+  }
+
   const resolved = contact?.resolvedAnchors ?? {};
   const facts = [
     result.handle ? `handle ${result.handle}` : null,
@@ -315,6 +428,44 @@ const contactFactText = (contactKey, contact, result) => {
 };
 
 const normalizedResultForContact = ([contactKey, contact]) => {
+  if (contact?.identity && typeof contact.identity === 'object') {
+    const confirmed = confirmedIdentityFor(contact);
+    const handle = normalizeHandle(confirmed.instagramHandle)
+      ?? normalizeHandle(contact?.inputHandle)
+      ?? contactKeyHandle(contact?.crmVnextKey)
+      ?? contactKeyHandle(contactKey);
+    const candidateName = fullNameForContact(contactKey, contact);
+    const candidateEmail = firstClean(confirmed.email);
+    const candidatePhone = firstClean(confirmed.phone);
+    const city = firstClean(confirmed.city);
+    const country = firstClean(confirmed.country);
+    const result = {
+      resultKey: contactKey,
+      contactKey,
+      handle: handle ? `@${handle}` : null,
+      candidate_name: candidateName,
+      candidate_email: candidateEmail?.toLowerCase() ?? null,
+      candidate_phone: candidatePhone,
+      city,
+      country,
+      mailer_groups: [
+        cleanString(contact?.retreatProgramEvidence?.status),
+        cleanString(contact?.communityRelationship?.type),
+      ].filter(Boolean),
+      confidence: Array.isArray(contact?.confirmedFacts) && contact.confirmedFacts.length ? 'high' : 'medium',
+      recommended_next_step: cleanString(contact?.communityRelationship?.recommendedNextAction)
+        ?? cleanString(contact?.recommendedNextStep),
+      blockers: Array.isArray(contact?.blockers)
+        ? contact.blockers.map((blocker) => cleanString(blocker?.exactBlocker ?? blocker)).filter(Boolean)
+        : [],
+      evidenceSources: evidenceSourcesForEnrichmentContact(contactKey, contact),
+    };
+    return {
+      ...result,
+      factText: contactFactText(contactKey, contact, result),
+    };
+  }
+
   const resolved = contact?.resolvedAnchors ?? {};
   const handle = normalizeHandle(resolved.instagramHandle) ?? normalizeHandle(
     Array.isArray(contact?.inputAnchors)

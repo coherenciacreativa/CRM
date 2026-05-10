@@ -601,6 +601,9 @@ const contextSignalsFor = (
   if (/\b(email ownership review required|family_email_review_required|family or companion|familiar|acompanante|acompañante)\b/.test(normalized)) {
     signals.push('family_email_review_required');
   }
+  if (/\b(identity bridge review required|identity_bridge_review_required|pending bridge|bridge pending|handle bridge|puente de identidad|puente pendiente)\b/.test(normalized)) {
+    signals.push('identity_bridge_review_required');
+  }
   if (
     sourceKind === 'gmail_export'
     || /\b(subject|from|to|gmail|inbox|sent|thread|correo|email)\b/.test(normalized)
@@ -685,6 +688,7 @@ const extractEmails = (
   return unique(matches
     .map((email) => email.toLowerCase())
     .filter((email) => !/\b(no-reply|noreply|notification|notificaciones?|zoom)\b/.test(email))
+    .filter((email) => !/@(?:example\.com|example\.org|example\.net)$/i.test(email))
     .filter((email) => {
       if (['contacts_export', 'contacts_app_export', 'mailerlite_export', 'google_drive_export', 'lead_capture_export', 'retreat_table', 'local_csv'].includes(sourceKind)) return true;
       const index = snippet.toLowerCase().indexOf(email.toLowerCase());

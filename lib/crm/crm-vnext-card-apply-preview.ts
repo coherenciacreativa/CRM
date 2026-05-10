@@ -421,6 +421,10 @@ const identityHintsFromStitching = (
     hit.contextSignals.includes('family_email_review_required')
     && hit.identitySignals.emails.some((email) => !latestEvidenceDecisionForEmail(decision, email, evidenceReviewDecisions)),
   );
+  const identityBridgeRequiredWithoutDecision = emailHits.some((hit) =>
+    hit.contextSignals.includes('identity_bridge_review_required')
+    && hit.identitySignals.emails.some((email) => !latestEvidenceDecisionForEmail(decision, email, evidenceReviewDecisions)),
+  );
   const assignableEmails = emails.filter((email) => !blockedEmails.has(normalizeEmail(email)));
   const phones = unique(relevantHits.flatMap((hit) => hit.identitySignals.phones));
   const handles = unique(instagramHandlesFromRelevantHits(decision, relevantHits));
@@ -430,7 +434,7 @@ const identityHintsFromStitching = (
     displayName: fullNameCandidates[0] ?? null,
     email: confirmedSubjectEmails.length === 1
       ? confirmedSubjectEmails[0]
-      : assignableEmails.length === 1 && !familyReviewRequiredWithoutDecision
+      : assignableEmails.length === 1 && !familyReviewRequiredWithoutDecision && !identityBridgeRequiredWithoutDecision
         ? assignableEmails[0]
         : null,
     phone: phones[0] ?? null,

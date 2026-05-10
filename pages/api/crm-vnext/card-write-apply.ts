@@ -56,6 +56,7 @@ type ApiBody =
         };
         localSearch: {
           includeExpandedSources: boolean;
+          connectedEvidenceOnly: boolean;
           roots: number;
           filesScanned: number;
           filesSkipped: number;
@@ -212,7 +213,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       body.includeExpandedSources
       ?? (Array.isArray(req.query.includeExpandedSources) ? req.query.includeExpandedSources[0] : req.query.includeExpandedSources),
     );
-    const localRoots = localRootPath
+    const connectedEvidenceOnly = cleanBoolean(
+      body.connectedEvidenceOnly
+      ?? (Array.isArray(req.query.connectedEvidenceOnly) ? req.query.connectedEvidenceOnly[0] : req.query.connectedEvidenceOnly),
+    );
+    const localRoots = connectedEvidenceOnly
+      ? []
+      : localRootPath
       ? [localRootPath]
       : includeExpandedSources
         ? DEFAULT_CRM_VNEXT_EXPANDED_LOCAL_EVIDENCE_ROOTS
@@ -302,6 +309,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         },
         localSearch: {
           includeExpandedSources,
+          connectedEvidenceOnly,
           roots: localSourceLoad.roots,
           filesScanned: localSourceLoad.filesScanned,
           filesSkipped: localSourceLoad.filesSkipped,

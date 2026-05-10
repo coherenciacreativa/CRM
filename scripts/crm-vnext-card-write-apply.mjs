@@ -17,6 +17,8 @@ Options:
   --channel <channel>           Channel name, e.g. codex
   --include-expanded-sources
                                 Also search read-only local CSVs, retreat tables, downloads, and contact exports
+  --connected-evidence-only
+                                Use only supplied --evidence-file sources, skipping default local memory search
   --evidence-file <path>        JSON file with connected evidenceSources from read-only searches
   --decision-ledger-path <path> Local evidence-review decisions JSONL ledger to apply before write
   --approval-item-id <id>       Approval item to apply. May be repeated
@@ -41,6 +43,7 @@ const parseArgs = (argv) => {
     reporter: null,
     channel: null,
     includeExpandedSources: false,
+    connectedEvidenceOnly: false,
     evidenceFile: null,
     decisionLedgerPath: null,
     approvalItemIds: [],
@@ -60,6 +63,7 @@ const parseArgs = (argv) => {
     else if (arg === '--write') options.write = true;
     else if (arg === '--fail-on-blocked') options.failOnBlocked = true;
     else if (arg === '--include-expanded-sources') options.includeExpandedSources = true;
+    else if (arg === '--connected-evidence-only') options.connectedEvidenceOnly = true;
     else if (arg === '--apply-all-ready') options.applyAllReady = true;
     else if (arg === '--api-url') options.apiUrl = argv[++index];
     else if (arg === '--text') options.text = argv[++index];
@@ -166,6 +170,7 @@ const runApply = async (options) => {
       reporter: options.reporter,
       channel: options.channel,
       includeExpandedSources: options.includeExpandedSources,
+      connectedEvidenceOnly: options.connectedEvidenceOnly,
       evidenceSources,
       approvalItemIds: options.approvalItemIds,
       applyAllReady: options.applyAllReady,
