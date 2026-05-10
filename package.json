@@ -44,6 +44,7 @@
     "crm:vnext:card-write-approval-packet": "node scripts/crm-vnext-card-write-approval-packet.mjs",
     "crm:vnext:card-write-apply": "node scripts/crm-vnext-card-write-apply.mjs",
     "crm:vnext:batch-operating-loop": "node scripts/crm-vnext-batch-operating-loop.mjs",
+    "crm:vnext:engagement-signal-preview": "node scripts/crm-vnext-engagement-signal-preview.mjs",
     "crm:vnext:card-merge-review-resolver": "node scripts/crm-vnext-card-merge-review-resolver.mjs",
     "cronjob:setup": "node scripts/setup-cronjob.mjs",
     "fix:names": "node scripts/fix-ml-names.mjs",
