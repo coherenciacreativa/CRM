@@ -8,7 +8,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       now: "2026-05-09T12:00:00.000Z",
     });
 
-    expect(capabilities.schemaVersion).toBe("crm-vnext-operator-capabilities-2026-05-10");
+    expect(capabilities.schemaVersion).toBe("crm-vnext-operator-capabilities-2026-05-11");
     expect(capabilities.generatedAt).toBe("2026-05-09T12:00:00.000Z");
     expect(capabilities.mode).toBe("read_only_operator_capabilities");
     expect(capabilities.operatingModel).toEqual({
@@ -40,6 +40,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "evidence_approval_application",
       "stitch_batch_review",
       "card_write_approval_packet",
+      "batch_operating_loop",
       "card_write_apply",
       "card_merge_review_resolver",
       "identity_review",
@@ -89,6 +90,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:evidence-approval-application -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text> --select-email <email=option>",
       "npm run crm:vnext:stitch-batch-review -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-write-approval-packet -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
+      "npm run crm:vnext:batch-operating-loop -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-write-apply -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-merge-review-resolver -- --review-id <reviewId>",
       "npm run crm:vnext:identity-review",
