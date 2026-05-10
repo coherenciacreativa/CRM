@@ -232,7 +232,7 @@ const cleanPersonNameCandidate = (value: string): string | null => {
     || /^hij[ao]\s+de\b/i.test(cleaned)
     || /^(vive|trabaja|asiste|entra|ha|han|tiene|tienen)\b/i.test(cleaned)
     || /^(nueva\s+york|medellin|medellín|cundinamarca|el\s+rosal)$/i.test(cleaned)
-    || /\b(estudiante|alumn|asistente|clases?|retiros?|paciente|cliente|programa|producto)\b/i.test(normalized)
+    || /\b(estudiante|alumn|asistente|clases?|retiros?|paciente|cliente|programa|producto|emails?|correos?)\b/i.test(normalized)
   ) {
     return null;
   }
@@ -276,8 +276,8 @@ const isPlausibleAlias = (value: string | null): boolean => {
   ) {
     return false;
   }
-  const words = value.split(/\s+/).filter(Boolean);
-  return words.length >= 1 && words.length <= 4 && words.every((word) => /[a-záéíóúñ]/i.test(word));
+  const words = value.replace(/\s*\/\s*/g, ' ').split(/\s+/).filter(Boolean);
+  return words.length >= 1 && words.length <= 6 && words.every((word) => /[a-záéíóúñ]/i.test(word));
 };
 
 const aliasAfterHandle = (line: string): string | null => {
@@ -286,7 +286,15 @@ const aliasAfterHandle = (line: string): string | null => {
   return isPlausibleAlias(alias) ? alias : null;
 };
 
+const isReviewOnlyEmailContextLine = (line: string): boolean => {
+  const normalized = normalize(line);
+  return /\b(emails?|correos?)\b/i.test(normalized)
+    && /\b(review[-\s]?only|no\s+(?:deben|debe)\s+asignarse|no\s+asignar|familia|acompanante|acompañante|ariana|sin\s+confirmacion|sin\s+confirmación)\b/i.test(normalized);
+};
+
 const peopleFromLine = (line: string): CrmFactPersonHint[] => {
+  if (isReviewOnlyEmailContextLine(line)) return [];
+
   const email = extractFirst(emailRegex, line)?.toLowerCase() ?? null;
   const instagramHandle = extractFirst(handleRegex, line)?.replace(/^@/, '').toLowerCase() ?? null;
   const phone = extractPhone(line);

@@ -61,6 +61,13 @@ const cleanString = (value) => {
 
 const normalizeHandle = (value) => cleanString(value)?.replace(/^@+/, '').toLowerCase() ?? null;
 
+const normalizeKey = (value) => cleanString(value)
+  ?.toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]+/g, '_')
+  .replace(/^_+|_+$/g, '') ?? null;
+
 const selectedHandleSet = (value) => {
   if (!value) return null;
   const handles = value
@@ -75,13 +82,28 @@ const confidenceAtLeast = (value, minConfidence) =>
 
 const sourceKindForEvidence = (source) => {
   const kind = cleanString(source?.kind)?.toLowerCase() ?? '';
+  const sourceLabel = cleanString(source?.source)?.toLowerCase() ?? '';
   const path = cleanString(source?.path)?.toLowerCase() ?? '';
   const finding = cleanString(source?.finding)?.toLowerCase() ?? '';
-  const text = `${kind} ${path} ${finding}`;
+  const text = `${kind} ${sourceLabel} ${path} ${finding}`;
 
   if (kind.includes('negative')) return null;
+  if (kind === 'mailerlite_export') return 'mailerlite_export';
+  if (kind === 'contacts_app_export') return 'contacts_app_export';
+  if (kind === 'google_drive_export') return 'google_drive_export';
+  if (kind === 'retreat_table') return 'retreat_table';
+  if (kind === 'lead_capture_export') return 'lead_capture_export';
+  if (kind === 'gmail_export') return 'gmail_export';
+  if (kind === 'local_fixture') return 'local_fixture';
+  if (kind === 'downloaded_file') return 'downloaded_file';
   if (text.includes('mailerlite') || text.includes('subscribed') || text.includes('grupo') || text.includes('opened')) {
     return 'mailerlite_export';
+  }
+  if (text.includes('contacts sqlite') || text.includes('macos contacts') || text.includes('contacts app')) {
+    return 'contacts_app_export';
+  }
+  if (text.includes('google drive') || text.includes('drive/sheets') || text.includes('drive-derived')) {
+    return text.includes('retiro') || text.includes('retreat') ? 'retreat_table' : 'google_drive_export';
   }
   if (text.includes('registrationreport') || text.includes('approved') || text.includes('asistentes a retiro')) {
     return 'retreat_table';
@@ -140,6 +162,8 @@ const evidenceTextFor = (result, source, sourceKind) => {
 
 const evidenceSourcesForResult = (result) => {
   const handle = normalizeHandle(result.handle);
+  const resultKey = normalizeKey(result.resultKey ?? result.contactKey ?? result.candidate_name);
+  const subjectKey = handle ?? resultKey ?? 'unknown';
   const sources = Array.isArray(result.evidenceSources) ? result.evidenceSources : [];
   return sources.flatMap((source, index) => {
     const sourceKind = sourceKindForEvidence(source);
@@ -148,8 +172,8 @@ const evidenceSourcesForResult = (result) => {
     if (!text) return [];
     return [{
       sourceKind,
-      sourceId: `mantis_evidence:${handle ?? 'unknown'}:${sourceKind}:${index + 1}`,
-      title: `Mantis evidence for ${result.handle ?? handle ?? 'unknown'}`,
+      sourceId: `mantis_evidence:${subjectKey}:${sourceKind}:${index + 1}`,
+      title: `Mantis evidence for ${result.handle ?? result.candidate_name ?? subjectKey}`,
       handle: handle ? `@${handle}` : null,
       email: cleanString(result.candidate_email)?.toLowerCase() ?? null,
       text,
@@ -158,6 +182,8 @@ const evidenceSourcesForResult = (result) => {
 };
 
 const factLineForResult = (result) => {
+  const customFactText = cleanString(result.factText);
+  if (customFactText) return customFactText;
   const handle = result.handle ?? (normalizeHandle(result.handle) ? `@${normalizeHandle(result.handle)}` : null);
   const name = cleanString(result.candidate_name);
   const subject = [handle, name ? `se llama ${name}` : null].filter(Boolean).join(' ');
@@ -180,14 +206,161 @@ const publicResultFor = (result) => ({
     ? result.evidenceSources
       .filter((source) => sourceKindForEvidence(source))
       .map((source) => ({
-        kind: cleanString(source.kind),
+        kind: cleanString(source.kind ?? source.source),
         finding: cleanString(source.finding),
       }))
     : [],
 });
 
+const firstClean = (...values) => values.map(cleanString).find(Boolean) ?? null;
+
+const flattenEvidenceValue = (value) => {
+  if (value === null || value === undefined) return [];
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    const cleaned = cleanString(String(value));
+    return cleaned ? [cleaned] : [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => flattenEvidenceValue(item)).slice(0, 18);
+  }
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .flatMap(([key, nested]) => flattenEvidenceValue(nested).map((item) => `${key}: ${item}`))
+      .slice(0, 18);
+  }
+  return [];
+};
+
+const findingForMatch = (match) => {
+  const parts = [
+    cleanString(match?.source) ? `Source: ${cleanString(match.source)}` : null,
+    cleanString(match?.strength) ? `Strength: ${cleanString(match.strength)}` : null,
+    cleanString(match?.whyItMatters) ? `Why: ${cleanString(match.whyItMatters)}` : null,
+    cleanString(match?.classification) ? `Classification: ${cleanString(match.classification)}` : null,
+    ...flattenEvidenceValue(match?.evidence).slice(0, 18),
+  ].filter(Boolean);
+  return parts.join(' | ');
+};
+
+const sourceKindHintForMatch = (match) => {
+  const text = `${cleanString(match?.source) ?? ''} ${cleanString(match?.sourceId) ?? ''}`.toLowerCase();
+  if (text.includes('mailerlite')) return 'mailerlite_export';
+  if (text.includes('contacts')) return 'contacts_app_export';
+  if (text.includes('drive') || text.includes('sheets')) return text.includes('retreat') || text.includes('retiro')
+    ? 'retreat_table'
+    : 'google_drive_export';
+  if (text.includes('gmail')) return 'gmail_export';
+  if (text.includes('lead_capture') || text.includes('instagram')) return 'lead_capture_export';
+  if (text.includes('decision') || text.includes('person-card') || text.includes('crm vnext')) return 'local_fixture';
+  return 'local_fixture';
+};
+
+const evidenceSourcesForContact = (contactKey, contact) => {
+  const strongMatches = Array.isArray(contact?.strongMatches) ? contact.strongMatches : [];
+  const weakMatches = Array.isArray(contact?.weakMatches) ? contact.weakMatches : [];
+  return [
+    ...strongMatches.map((match) => ({ ...match, _bucket: 'strong' })),
+    ...weakMatches.map((match) => ({ ...match, _bucket: 'weak_review_only' })),
+  ].flatMap((match) => {
+    const finding = findingForMatch(match);
+    if (!finding) return [];
+    return [{
+      kind: sourceKindHintForMatch(match),
+      finding: [
+        `Contact key: ${contactKey}`,
+        `Bucket: ${match._bucket}`,
+        finding,
+      ].join(' | '),
+    }];
+  });
+};
+
+const fullNameForContact = (contactKey, contact) => {
+  const resolved = contact?.resolvedAnchors ?? {};
+  if (Array.isArray(resolved.nameCandidates) && resolved.nameCandidates.length) {
+    return firstClean(...resolved.nameCandidates);
+  }
+  const inputAnchors = Array.isArray(contact?.inputAnchors) ? contact.inputAnchors : [];
+  const namedAnchor = inputAnchors.find((anchor) => {
+    const value = cleanString(anchor);
+    return value && !value.startsWith('@') && !value.includes('@') && !/\d/.test(value);
+  });
+  if (namedAnchor) return cleanString(namedAnchor);
+  return cleanString(contactKey)?.replace(/_/g, ' ') ?? null;
+};
+
+const contactFactText = (contactKey, contact, result) => {
+  const resolved = contact?.resolvedAnchors ?? {};
+  const facts = [
+    result.handle ? `handle ${result.handle}` : null,
+    result.candidate_name ? `se llama ${result.candidate_name}` : null,
+    result.candidate_email ? `email confirmado ${result.candidate_email}` : null,
+    result.candidate_phone ? `teléfono ${result.candidate_phone}` : null,
+    Array.isArray(resolved.secondaryEmails) && resolved.secondaryEmails.length
+      ? `correos secundarios/históricos: ${resolved.secondaryEmails.map((item) => item.email ?? item).filter(Boolean).join(', ')}`
+      : null,
+    Array.isArray(resolved.familyOrCompanionEmailsReviewOnly) && resolved.familyOrCompanionEmailsReviewOnly.length
+      ? `emails de familia/acompañante review-only, no asignar como email primario: ${resolved.familyOrCompanionEmailsReviewOnly.join(', ')}`
+      : null,
+    Array.isArray(resolved.retreatOrClassEvidence) && resolved.retreatOrClassEvidence.length
+      ? `evidencia de comunidad/programas: ${resolved.retreatOrClassEvidence.join('; ')}`
+      : null,
+    Array.isArray(resolved.retreatLeadEvidence) && resolved.retreatLeadEvidence.length
+      ? `evidencia de interés en retiros: ${resolved.retreatLeadEvidence.join('; ')}`
+      : null,
+    cleanString(contact?.recommendation) ? `recomendación Mantis: ${cleanString(contact.recommendation)}` : null,
+  ].filter(Boolean);
+  const subject = result.handle ?? result.candidate_name ?? contactKey;
+  return `CRM: ${subject} — ${facts.join('; ')}.`;
+};
+
+const normalizedResultForContact = ([contactKey, contact]) => {
+  const resolved = contact?.resolvedAnchors ?? {};
+  const handle = normalizeHandle(resolved.instagramHandle) ?? normalizeHandle(
+    Array.isArray(contact?.inputAnchors)
+      ? contact.inputAnchors.find((anchor) => cleanString(anchor)?.startsWith('@'))
+      : null
+  );
+  const candidateEmail = firstClean(resolved.primaryEmail, resolved.email, resolved.ownedEmail);
+  const candidatePhone = firstClean(resolved.phone);
+  const candidateName = fullNameForContact(contactKey, contact);
+  const groups = [
+    ...(Array.isArray(resolved.retreatOrClassEvidence) ? resolved.retreatOrClassEvidence : []),
+    ...(Array.isArray(resolved.retreatLeadEvidence) ? resolved.retreatLeadEvidence : []),
+  ].map(cleanString).filter(Boolean);
+  const strongMatches = Array.isArray(contact?.strongMatches) ? contact.strongMatches : [];
+  const recommendation = cleanString(contact?.recommendation);
+  const result = {
+    resultKey: contactKey,
+    contactKey,
+    handle: handle ? `@${handle}` : null,
+    candidate_name: candidateName,
+    candidate_email: candidateEmail?.toLowerCase() ?? null,
+    candidate_phone: candidatePhone,
+    city: null,
+    country: null,
+    mailer_groups: groups,
+    confidence: strongMatches.length ? 'high' : 'medium',
+    recommended_next_step: recommendation,
+    blockers: recommendation === 'needs_human_decision' ? ['needs_human_decision_before_card_write'] : [],
+    evidenceSources: evidenceSourcesForContact(contactKey, contact),
+  };
+  return {
+    ...result,
+    factText: contactFactText(contactKey, contact, result),
+  };
+};
+
+const normalizedResultsForReport = (report) => {
+  if (Array.isArray(report?.results)) return report.results;
+  if (report?.contacts && typeof report.contacts === 'object' && !Array.isArray(report.contacts)) {
+    return Object.entries(report.contacts).map(normalizedResultForContact);
+  }
+  return [];
+};
+
 const buildImportPacket = (report, options) => {
-  const results = Array.isArray(report?.results) ? report.results : [];
+  const results = normalizedResultsForReport(report);
   const handleSet = selectedHandleSet(options.handles);
   const selectedResults = results.filter((result) => {
     const handle = normalizeHandle(result.handle);

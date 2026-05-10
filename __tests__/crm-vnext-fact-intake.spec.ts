@@ -210,4 +210,22 @@ describe("CRM vNext fact intake", () => {
     expect(people).not.toContain("que");
     expect(people).not.toContain("Es hija de Amalia");
   });
+
+  test("does not turn family-email review notes into person subjects", () => {
+    const draft = buildCrmFactIntakeDraft({
+      text: [
+        "CRM: @mayuyis2626 es Gladys Mayerli Garcia Ortegon / Mayerli Garcia, telefono 3115381341, estudiante de yoga y asistente a retiros con familia.",
+        "Los emails mayariana@hotmail.com y mayaariana@hotmail.com son familia/Ariana review-only y no deben asignarse como email primario de Mayerli sin confirmacion explicita.",
+      ].join(" "),
+      sourceKind: "manual_import",
+      reporter: "Mantis",
+      channel: "codex",
+      observedAt: NOW,
+    });
+
+    const people = Array.from(new Set(draft.facts.map((fact) => fact.person.rawName))).sort();
+    expect(people).toEqual(["Gladys Mayerli Garcia Ortegon / Mayerli Garcia"]);
+    expect(people).not.toContain("emails y");
+    expect(draft.facts.every((fact) => fact.person.instagramHandle === "mayuyis2626")).toBe(true);
+  });
 });

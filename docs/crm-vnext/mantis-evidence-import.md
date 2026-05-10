@@ -23,6 +23,13 @@ npm run crm:vnext:mantis-evidence-import -- \
   --text-out tmp/crm-vnext/juana_ig_retreat_actionable_import.txt
 ```
 
+The importer accepts both Mantis evidence hunt shapes:
+
+- legacy `results[]` reports keyed by Instagram handle,
+- contact-keyed CRM vNext reports with `contacts.{contact_key}` and `strongMatches` / `weakMatches`.
+
+For contact-keyed reports, the importer converts each contact into safe CRM fact text plus connected evidence packets. It preserves review-only family/companion emails as evidence context instead of treating them as primary identity approval.
+
 The generated JSON can be passed as `--evidence-file` to:
 
 - Evidence Approval Workbench,
