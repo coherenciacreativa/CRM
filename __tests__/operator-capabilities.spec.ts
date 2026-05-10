@@ -139,6 +139,8 @@ describe("buildCrmVNextOperatorCapabilities", () => {
     expect(capabilities.guardrails.map((guardrail) => guardrail.code)).toContain("do_not_touch_manychat_live");
     expect(capabilities.escalationTriggers.map((trigger) => trigger.code)).toContain("credential_or_permission_refresh");
     expect(capabilities.escalationTriggers.every((trigger) => trigger.alertAlejandro === true)).toBe(true);
+    expect(serialized).toContain("docs/crm-vnext/mantis-natural-batch-protocol.md");
+    expect(serialized).toContain("contact-keyed evidence JSON");
     expect(serialized).not.toContain("/Users/");
     expect(serialized).not.toContain(".openclaw");
     expect(serialized).not.toContain("CRM_VNEXT_INSIGHTS_TOKEN");

@@ -12,6 +12,10 @@ Mantis Evidence Import turns a Mantis read-only investigation report into the tw
 
 This is the bridge from natural operator work to the guarded card pipeline.
 
+For natural-language Mantis requests such as "probemos otro batch", use
+[`mantis-natural-batch-protocol.md`](./mantis-natural-batch-protocol.md) as the
+canonical evidence-hunt contract before running this importer.
+
 ## CLI
 
 ```bash

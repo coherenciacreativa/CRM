@@ -495,6 +495,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     preferredNextStep: "Use when Mantis needs one natural-language batch command instead of manually chaining all approval layers.",
     notes: [
       "Combines Evidence Approval Workbench, Card Write Approval Packet, and Card Write Apply dry-run.",
+      "For natural Mantis requests, first follow docs/crm-vnext/mantis-natural-batch-protocol.md to produce contact-keyed evidence JSON.",
       "Creates a blocked identity queue with recommended read-only search lanes and copy-ready prompts for Mantis.",
       "Reads the local vNext card store when present; falls back to legacy Person Cards V1.",
       "Does not mutate cards, write Fact Store, call live APIs, send outbound messages, or touch credentials.",
@@ -1109,6 +1110,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     notes: [
       "Default mode writes nothing; --out may save the compact local report.",
       "Use when Alejandro says natural things like 'probemos un batch nuevo'.",
+      "If Mantis is doing the hunt, ask her to follow docs/crm-vnext/mantis-natural-batch-protocol.md and save contact-keyed JSON under Documents/Mantis-Reports.",
       "Returns operator prompts for blocked identity cases so Mantis can search Contacts, MailerLite, Gmail, Drive, lead-capture traces, and exports read-only.",
       "This command never mutates cards, writes Fact Store, sends outbound, calls live APIs, or touches credentials.",
       "Use --fail-on-open-work when automation should stop if evidence or identity queues remain open.",
@@ -1456,7 +1458,7 @@ export const buildCrmVNextOperatorCapabilities = (
       {
         step: 21,
         id: "batch_operating_loop",
-        action: "Run one standard batch loop that routes evidence questions, identity blockers, ready approvals, and dry-run write preview.",
+        action: "Run one standard batch loop; for natural Mantis requests, first produce contact-keyed evidence JSON using docs/crm-vnext/mantis-natural-batch-protocol.md.",
         use: "/api/crm-vnext/batch-operating-loop",
         stopCondition: "This is still read-only; resolve evidence or identity queues before any local write approval.",
       },

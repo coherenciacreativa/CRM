@@ -18,6 +18,10 @@ It does not replace the lower-level CRM vNext layers. It composes them into one 
 - approval-ready card-write candidates,
 - dry-run local write preview.
 
+When the request starts with Mantis in natural language, first use
+[`mantis-natural-batch-protocol.md`](./mantis-natural-batch-protocol.md) so
+Mantis can produce the contact-keyed evidence JSON that this loop consumes.
+
 ## Local Command
 
 ```bash
