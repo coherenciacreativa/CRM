@@ -163,7 +163,7 @@ const splitLines = (text: string): string[] =>
     .filter(Boolean);
 
 const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-const handleRegex = /(?:^|\s)@([a-z0-9._]{2,30})\b/gi;
+const handleRegex = /(?:^|[^a-z0-9._])@([a-z0-9._]{2,30})\b/gi;
 const phoneRegex = /(?:\+?\d[\d\s().-]{6,}\d)/g;
 
 const extractFirst = (regex: RegExp, line: string): string | null => {
@@ -228,9 +228,11 @@ const cleanPersonNameCandidate = (value: string): string | null => {
   if (
     !cleaned
     || /^(que|tambien|también|tenemos|esta|está)$/i.test(cleaned)
+    || /^(no|todavia\s+no|todavía\s+no)$/i.test(cleaned)
     || /^es\s+hij[ao]\s+de\b/i.test(cleaned)
     || /^hij[ao]\s+de\b/i.test(cleaned)
-    || /^(vive|trabaja|asiste|entra|ha|han|tiene|tienen)\b/i.test(cleaned)
+    || /^(vive|trabaja|asiste|entra|ha|han|tiene|tienen|con\s+mucha|su\s+engagement|report[oó]|respond[ií]o|lleg[oó]|estuvo)\b/i.test(cleaned)
+    || /\b(ve\s+(?:mis\s+)?stories|engagement)\b/i.test(normalized)
     || /^(nueva\s+york|medellin|medellín|cundinamarca|el\s+rosal)$/i.test(cleaned)
     || /\b(estudiante|alumn|asistente|clases?|retiros?|paciente|cliente|programa|producto|emails?|correos?)\b/i.test(normalized)
   ) {
@@ -286,6 +288,13 @@ const aliasAfterHandle = (line: string): string | null => {
   return isPlausibleAlias(alias) ? alias : null;
 };
 
+const nameBeforeParenthesizedHandle = (line: string, instagramHandle: string | null): string | null => {
+  if (!instagramHandle) return null;
+  const match = line.match(new RegExp(`^(.{2,90}?)\\s*\\(\\s*@${instagramHandle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\)`, 'i'));
+  const candidate = cleanPersonNameCandidate(match?.[1] ?? '');
+  return isPlausibleAlias(candidate) ? candidate : null;
+};
+
 const isReviewOnlyEmailContextLine = (line: string): boolean => {
   const normalized = normalize(line);
   return /\b(emails?|correos?)\b/i.test(normalized)
@@ -299,10 +308,11 @@ const peopleFromLine = (line: string): CrmFactPersonHint[] => {
   const instagramHandle = extractFirst(handleRegex, line)?.replace(/^@/, '').toLowerCase() ?? null;
   const phone = extractPhone(line);
   const handleAlias = instagramHandle ? aliasAfterHandle(line) : null;
+  const parenthesizedName = instagramHandle ? nameBeforeParenthesizedHandle(line, instagramHandle) : null;
 
-  if (instagramHandle && handleAlias) {
+  if (instagramHandle && (handleAlias || parenthesizedName)) {
     return [{
-      rawName: handleAlias,
+      rawName: handleAlias ?? parenthesizedName,
       email,
       instagramHandle,
       phone,
@@ -346,6 +356,7 @@ const programFromLine = (line: string): string | null => {
   ) return 'terapia';
   if (normalized.includes('meditacion') || normalized.includes('meditación')) return 'curso_meditacion';
   if (normalized.includes('microintervencion') || normalized.includes('microintervención')) return 'microintervenciones';
+  if (normalized.includes('producto digital') || /\btrial\b/.test(normalized)) return 'producto_digital';
   return null;
 };
 
@@ -382,14 +393,16 @@ const eventNameFromLine = (line: string): string | null => {
 const inferFactTypes = (line: string): CrmFactType[] => {
   const normalized = normalize(line);
   const types: CrmFactType[] = [];
+  const negativeAttendance = /\b(?:no|nunca)\s+(?:ha\s+)?(?:asist|particip|vino|entra)|\bpero\s+no\s+(?:asist|particip|vino|entro)/i.test(normalized);
+  const negativeProgramState = /\b(?:no|nunca|todavia\s+no|todavía\s+no)\b.{0,40}\b(?:estudiante|alumn|asist|particip|entra|clases?|encuentro feliz|yoga)\b/i.test(normalized);
 
-  if (/(email|correo|telefono|teléfono|celular|whatsapp|ciudad|pais|país|instagram|handle)/i.test(line)) {
+  if (/(email|correo|telefono|teléfono|celular|whatsapp|ciudad|pais|país|instagram|handle|\bvive\s+en\b)/i.test(line)) {
     types.push('identity_update');
   }
-  if (normalized.includes('retiro') && /(asist|vino|vinieron|particip)/i.test(normalized)) {
+  if (normalized.includes('retiro') && !negativeAttendance && /(asist|vino|vinieron|particip)/i.test(normalized)) {
     types.push('retreat_attendance');
   }
-  if (normalized.includes('encuentro feliz') && /(asist|vino|vinieron|particip)/i.test(normalized)) {
+  if (normalized.includes('encuentro feliz') && !negativeAttendance && !negativeProgramState && /(asist|vino|vinieron|particip)/i.test(normalized)) {
     types.push('community_event_attendance');
   }
   if (
@@ -398,6 +411,7 @@ const inferFactTypes = (line: string): CrmFactType[] => {
       || /\b(?:mis\s+)?clases\b/.test(normalized)
     )
     && /(estudiante|alumn|asistente|clase|programa|grupo|entra|asiste|empezo|empezaron|particip)/i.test(normalized)
+    && !negativeProgramState
   ) {
     types.push('program_participation');
   }
@@ -464,7 +478,7 @@ const scoringHintsFor = (
   if (type === 'purchase') {
     if (program === 'mentoria') return { purchases: { purchaseCount: 1, mentorshipSessions: 1, activeClient: true } };
     if (program === 'terapia') return { purchases: { purchaseCount: 1, therapySessions: 1, activeClient: true } };
-    if (program === 'curso_meditacion' || program === 'microintervenciones') {
+    if (program === 'curso_meditacion' || program === 'microintervenciones' || program === 'producto_digital') {
       return { purchases: { purchaseCount: 1, digitalProductsPurchased: 1 } };
     }
     if (program === 'retiro') return { purchases: { purchaseCount: 1, retreatsPurchased: 1 } };
@@ -507,9 +521,12 @@ export const buildCrmFactIntakeDraft = (input: CrmFactIntakeInput): CrmFactIntak
   const lines = splitLines(text);
   const facts: CrmFactEvent[] = [];
   const ambiguities: CrmFactIntakeDraft['ambiguities'] = [];
+  let activePeople: CrmFactPersonHint[] = [];
 
   for (const line of lines) {
-    const people = peopleFromLine(line);
+    const directPeople = peopleFromLine(line);
+    const people = directPeople.length ? directPeople : activePeople;
+    if (directPeople.length) activePeople = directPeople;
     const types = inferFactTypes(line);
     const program = programFromLine(line);
     const eventName = eventNameFromLine(line);
@@ -548,8 +565,8 @@ export const buildCrmFactIntakeDraft = (input: CrmFactIntakeInput): CrmFactIntak
         const factProgram = programForFactType(type, line, program);
         const product = factProgram === 'yoga' ? 'yoga_classes'
           : factProgram === 'mentoria' ? 'mentorship'
-            : factProgram === 'terapia' ? 'therapy'
-              : factProgram === 'curso_meditacion' || factProgram === 'microintervenciones' ? 'digital_product'
+              : factProgram === 'terapia' ? 'therapy'
+                : factProgram === 'curso_meditacion' || factProgram === 'microintervenciones' || factProgram === 'producto_digital' ? 'digital_product'
                 : type === 'retreat_attendance' || (line.toLowerCase().includes('retiro') && (type === 'expressed_interest' || type === 'purchase')) ? 'retreat'
                   : null;
         const factId = `fact_${hashId([

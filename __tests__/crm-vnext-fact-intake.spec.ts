@@ -228,4 +228,35 @@ describe("CRM vNext fact intake", () => {
     expect(people).not.toContain("emails y");
     expect(draft.facts.every((fact) => fact.person.instagramHandle === "mayuyis2626")).toBe(true);
   });
+
+  test("keeps a human enrichment answer attached to the named contact and treats negative participation as notes", () => {
+    const draft = buildCrmFactIntakeDraft({
+      text: "CRM: Cielo Gómez (@cielo_gom_g) llegó por Instagram. Respondió positivamente a una etapa temprana de uno de mis productos digitales y lo compró en precio barato, probablemente un trial de algunos días. Reportó que le gustó mucho. Con mucha frecuencia ve mis stories y es bien activa en stories. Estuvo interesada en asistir al retiro anterior, pero no asistió. Su engagement grande empezó en 2025 y ha seguido en 2026. Vive en Bogotá, Colombia. No ha participado todavía en Encuentro Feliz. Todavía no es estudiante de yoga.",
+      sourceKind: "alejandro_conversation",
+      reporter: "Alejandro",
+      channel: "codex",
+      observedAt: NOW,
+    });
+
+    expect(draft.summary.linesParsed).toBe(9);
+    expect(draft.summary.people).toBe(1);
+    expect(draft.facts.length).toBeGreaterThanOrEqual(8);
+    expect(draft.facts.every((fact) => fact.person.rawName === "Cielo Gómez")).toBe(true);
+    expect(draft.facts.every((fact) => fact.person.instagramHandle === "cielo_gom_g")).toBe(true);
+    expect(draft.summary.factTypes.purchase).toBe(1);
+    expect(draft.summary.factTypes.expressed_interest).toBe(1);
+    expect(draft.summary.factTypes.retreat_attendance).toBe(0);
+    expect(draft.summary.factTypes.community_event_attendance).toBe(0);
+    expect(draft.summary.factTypes.program_participation).toBe(0);
+
+    const purchase = draft.facts.find((fact) => fact.type === "purchase");
+    expect(purchase?.subject.product).toBe("digital_product");
+    expect(purchase?.suggestedCardPatch.scoringHints.purchases?.digitalProductsPurchased).toBe(1);
+
+    const retreatInterest = draft.facts.find((fact) => fact.type === "expressed_interest");
+    expect(retreatInterest?.subject.product).toBe("retreat");
+    expect(retreatInterest?.subject.status).toBe("interested");
+
+    expect(draft.ambiguities.map((item) => item.code)).not.toContain("missing_person_hint");
+  });
 });
