@@ -556,7 +556,6 @@ export const buildCrmFactIntakeDraft = (input: CrmFactIntakeInput): CrmFactIntak
           type,
           person.personIdHint ?? person.rawName ?? '',
           line,
-          generatedAt,
           sourceKind,
         ])}`;
         const requiresHumanReview = reviewNeeded(sourceKind, type, person);

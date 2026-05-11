@@ -1,7 +1,7 @@
 # CRM vNext - Gmail/OpenClaw Auth Stability Backlog
 
 Date: 2026-05-10
-Status: Backlog, not blocking current CRM build
+Status: Partially repaired on 2026-05-11, still not blocking current CRM build
 
 ## Context
 
@@ -19,16 +19,39 @@ for both Gmail and Contacts read attempts.
 
 This is an infrastructure/auth reliability issue, not a CRM data-model issue.
 
+2026-05-11 update:
+
+- `gog` was reauthorized for `saludoalsol@gmail.com` with a narrower read-only service set:
+  - Gmail readonly,
+  - Drive readonly,
+  - Docs readonly,
+  - Sheets readonly,
+  - Contacts/People readonly,
+  - OIDC profile/email.
+- `gog auth list --check` reports the refresh token as valid.
+- Gmail read/search probe succeeds.
+- Initial Drive and Contacts probes then failed for a different reason: Google API `403 accessNotConfigured`.
+  - Drive API was disabled for OAuth project `807471998270`.
+  - People API was disabled for OAuth project `807471998270`.
+- Alejandro enabled the required Google APIs from the Cloud Console.
+- Final read-only probes passed:
+  - Gmail search,
+  - Drive search,
+  - Contacts list,
+  - Docs metadata,
+  - Sheets metadata.
+
 Likely causes to verify later:
 
 - Google OAuth app may be in Testing mode, where offline refresh tokens can expire after 7 days.
-- The current `gog` token has broad scopes, including Gmail/Contacts/Drive/Calendar/Sheets and write-capable Gmail scopes.
+- Some required APIs may be disabled in the OAuth project, even after the user token itself is valid.
+- Historical `gog` token had broad scopes, including Gmail/Contacts/Drive/Calendar/Sheets and write-capable Gmail scopes; the 2026-05-11 reauth narrowed this for CRM evidence work.
 - The local token store/keyring may not be refreshing or persisting the expected refresh token cleanly.
 - Codex Gmail and OpenClaw/gog use separate OAuth clients/token stores, so one can work while the other is broken.
 
 ## Recommended Future Fix
 
-Do not build CRM runtime directly on a fragile OpenClaw Gmail token.
+Do not build CRM runtime directly on an unmonitored OpenClaw Gmail token.
 
 Preferred route:
 
@@ -40,6 +63,18 @@ Preferred route:
 3. Move the OAuth app out of Testing mode or complete the relevant verification path if required.
 4. Store refresh tokens in a durable keyring/token store and add a non-destructive health check.
 5. If health check returns `invalid_grant`, alert Alejandro via Telegram with exact reauth action and keep CRM working via connected evidence packets/fallback.
+
+Current operating command, if reauth is needed again:
+
+```bash
+gog auth add saludoalsol@gmail.com \
+  --services gmail,drive,docs,sheets,contacts,people \
+  --readonly \
+  --drive-scope readonly \
+  --force-consent
+```
+
+Current smoke probes should verify token validity plus read-only access for Gmail, Drive, Contacts, Docs, and Sheets without printing personal content.
 
 ## Near-Term Policy
 

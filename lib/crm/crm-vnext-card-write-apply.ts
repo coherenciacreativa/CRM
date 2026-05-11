@@ -298,10 +298,27 @@ const onlyIdentityCandidate = (values: string[]): string | null => {
   return cleaned.length === 1 ? cleaned[0] : null;
 };
 
+const displayNameFromApprovalSubject = (
+  subject: CrmCardWriteApprovalPacketItem['subject'],
+): string | null => {
+  const candidates = [
+    subject.proposedDisplayName,
+    subject.rawName,
+    subject.label,
+  ];
+  for (const candidate of candidates) {
+    const cleaned = cleanString(candidate);
+    if (!cleaned || cleaned.includes(':')) continue;
+    if (cleaned.split(/\s+/).filter(Boolean).length >= 2) return cleaned;
+  }
+  return null;
+};
+
 const mergedCardForPreview = (
   preview: CrmCardApplyPreviewItem,
   generatedAt: string,
   currentFullCard: PersonCardVNext | null,
+  approvalSubject: CrmCardWriteApprovalPacketItem['subject'],
 ): PersonCardVNext | null => {
   if (preview.proposedCardDraft) return preview.proposedCardDraft;
   if (!preview.currentCard.exists || !preview.targetPersonId || !currentFullCard) return null;
@@ -312,10 +329,11 @@ const mergedCardForPreview = (
   const phoneCandidate = onlyIdentityCandidate(preview.identityResolution.phoneCandidates);
   const instagramCandidate = onlyIdentityCandidate(preview.identityResolution.instagramHandles);
   const displayNameCandidate = preview.identityResolution.fullNameCandidates[0] ?? null;
+  const subjectDisplayName = displayNameFromApprovalSubject(approvalSubject);
 
   return buildPersonCardVNext({
     personId: preview.targetPersonId,
-    displayName: currentFullCard.displayName ?? displayNameCandidate,
+    displayName: currentFullCard.displayName ?? displayNameCandidate ?? subjectDisplayName,
     now: generatedAt,
     identities: {
       email: currentFullCard.identities.email ?? confirmedEmail,
@@ -387,7 +405,7 @@ const planItemFor = (
 ): CrmCardWriteApplyPlanItem => {
   const mutationKind = mutationKindFor(approvalItem, preview);
   const proposedCard = preview && mutationKind === 'upsert_vnext_card'
-    ? mergedCardForPreview(preview, generatedAt, currentFullCard)
+    ? mergedCardForPreview(preview, generatedAt, currentFullCard, approvalItem.subject)
     : null;
   const status = statusForPlanItem(approvalItem, preview, mutationKind, proposedCard);
   const commitBlockers = [

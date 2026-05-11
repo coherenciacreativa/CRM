@@ -251,6 +251,120 @@ describe("buildCrmVNextCardWriteApply", () => {
       phone: "+573004477735",
     });
   });
+
+  test("uses the approved subject name when enriching an existing card with no display name", () => {
+    const evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[] = [{
+      schemaVersion: "crm-vnext-stored-evidence-review-decision-2026-05-10",
+      decisionRecordId: "evidence_decision_cielo_email_confirmed",
+      decisionBatchId: "evidence_decision_batch_test",
+      decidedAt: NOW,
+      approvedBy: "Alejandro",
+      sourcePacketGeneratedAt: NOW,
+      itemId: "evidence_review_cielo",
+      questionId: "evidence_question_cielo_email",
+      questionType: "email_ownership",
+      targetPersonId: "ig:cielo_gom_g",
+      subject: {
+        label: "Cielo Gomez",
+        rawName: "Cielo Gomez",
+        instagramHandle: "cielo_gom_g",
+        proposedDisplayName: null,
+      },
+      candidateEmail: "cielotago@gmail.com",
+      selectedOptionId: "confirm_email_for_subject",
+      selectedOptionLabel: "Confirm cielotago@gmail.com as Cielo Gomez's email",
+      notes: null,
+      relatedPersonName: null,
+      evidenceSourceIds: ["mantis_evidence:cielo_gom_g:mailerlite_export:4"],
+      effect: {
+        primaryEmailAssignmentAllowedAfterSeparateCardWriteApproval: true,
+        keepEmailUnassigned: false,
+        createsRelatedPersonCandidate: false,
+        needsMoreEvidence: false,
+        ignoredCandidate: false,
+        cardWriteStillRequiresApproval: true,
+      },
+      safety: {
+        cardMutationExecuted: false,
+        factStoreWriteExecuted: false,
+        outboundExecuted: false,
+      },
+    }];
+    const existingCard = buildPersonCardVNext({
+      personId: "ig:cielo_gom_g",
+      now: NOW,
+      identities: {
+        instagramHandle: "cielo_gom_g",
+      },
+      evidence: [],
+    });
+    const evidenceSources: CrmDeepLocalSource[] = [{
+      sourceKind: "mailerlite_export",
+      sourceId: "mantis_evidence:cielo_gom_g:mailerlite_export:4",
+      text: [
+        "Handle: @cielo_gom_g",
+        "Name: Cielo Gom G",
+        "Finding: Identity bridge review required. Active subscriber Cielo Gomez: cielotago@gmail.com, +573143011712, Bogota/Colombia.",
+      ].join("\n"),
+    }];
+
+    const report = buildCrmVNextCardWriteApply({
+      text: "CRM: @cielo_gom_g es Cielo Gomez.",
+      sourceKind: "alejandro_conversation",
+      reporter: "Alejandro",
+      channel: "codex",
+      now: NOW,
+      cards: [existingCard],
+      mailerBridgeRows: [],
+      localSources: evidenceSources,
+      sourceCoverage: {
+        roots: 0,
+        filesScanned: 0,
+        filesSkipped: 0,
+        sourcesLoaded: evidenceSources.length,
+        connectedEvidenceSources: evidenceSources.length,
+      },
+      evidenceReviewDecisions,
+      applyAllReady: true,
+      approvedBy: "Alejandro",
+      commit: false,
+    });
+
+    expect(report.planItems[0]).toMatchObject({
+      status: "ready_to_commit",
+      targetPersonId: "ig:cielo_gom_g",
+      recommendedAction: "enrich_existing_card",
+    });
+    expect(report.planItems[0].proposedCard?.displayName).toBe("Cielo Gomez");
+    expect(report.planItems[0].proposedCard?.identities).toMatchObject({
+      email: "cielotago@gmail.com",
+      instagramHandle: "cielo_gom_g",
+      phone: "+573143011712",
+    });
+  });
+
+  test("keeps approval item ids stable across repeated previews of the same input", async () => {
+    const evidenceReviewDecisions = await confirmedEmailDecision();
+    const first = buildCrmVNextCardWriteApply({
+      ...baseInput,
+      evidenceReviewDecisions,
+      now: "2026-05-10T12:00:00.000Z",
+      applyAllReady: true,
+      approvedBy: "Alejandro",
+      commit: false,
+    });
+    const second = buildCrmVNextCardWriteApply({
+      ...baseInput,
+      evidenceReviewDecisions,
+      now: "2026-05-10T12:05:00.000Z",
+      applyAllReady: true,
+      approvedBy: "Alejandro",
+      commit: false,
+    });
+
+    expect(first.planItems[0].approvalItemId).toBe(second.planItems[0].approvalItemId);
+    expect(first.planItems[0].applyItemId).toBe(second.planItems[0].applyItemId);
+  });
 });
 
 describe("applyCrmVNextCardWritePlanToStore", () => {
