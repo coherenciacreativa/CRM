@@ -318,4 +318,107 @@ describe("CRM vNext Mantis evidence import script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("converts Google-backed enrichment schema with review-only family email and do-not-promote kinds", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-google-enrichment-"));
+    try {
+      const reportPath = join(dir, "mantis-google-enrichment-report.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schemaVersion: "mantis.crm_vnext.enrichment.v1",
+        contacts: {
+          "@mayuyis2626": {
+            crmVnextKey: "ig:mayuyis2626",
+            inputHandle: "@mayuyis2626",
+            identity: {
+              confirmed: {
+                instagramHandle: "mayuyis2626",
+                fullName: "Gladys Mayerli García Ortegón",
+                phone: "3115381341",
+                city: "Bogotá",
+                country: "Colombia",
+              },
+              candidatesReviewOnly: [
+                {
+                  field: "email",
+                  value: "mayaariana@hotmail.com",
+                  confidence: "medium",
+                  status: "review_only_family_shared_or_companion",
+                  why: "Email appears in a family cluster and may belong to Ariana.",
+                  sources: ["Google Drive retreat table"],
+                },
+              ],
+              doNotPromote: [
+                {
+                  kind: "email",
+                  value: "mayaariana@hotmail.com",
+                  why: "Do not assign family/shared email as Mayerli primary email without approval.",
+                },
+              ],
+            },
+            evidence: [
+              {
+                source: "Gmail / Zoom <no-reply@zoom.us>",
+                status: "confirmed",
+                confidence: "high",
+                finding: "Zoom registration confirms Gladys Mayerli García Ortegón with phone 3115381341.",
+              },
+            ],
+            programAndRelationshipEvidence: {
+              status: "confirmed",
+              relationshipTypes: ["yoga_student", "retreat_attendee"],
+              finding: "Multiple retreat/class records point to Mayerli as a long-term community member.",
+            },
+            emailPhoneOwnership: {
+              rationale: "Phone appears tied to Mayerli; email remains family/shared review-only.",
+            },
+          },
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+        "--min-confidence",
+        "high",
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const text = await readFile(textPath, "utf8");
+      expect(packet.summary).toMatchObject({
+        results: 1,
+        selectedResults: 1,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(packet.summary.evidenceSources).toBeGreaterThanOrEqual(4);
+      expect(text).toContain("@mayuyis2626");
+      expect(text).toContain("relación: yoga_student + retreat_attendee");
+      expect(text).toContain("identity bridge");
+      expect(JSON.stringify(packet)).not.toContain("/Users/example");
+
+      const gmailEvidence = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "gmail_export" && source.text.includes("Zoom registration")
+      );
+      expect(gmailEvidence.text).toContain("Phone: 3115381341");
+
+      const reviewOnlyEmail = packet.evidenceSources.find((source: { text: string }) =>
+        source.text.includes("mayaariana@hotmail.com") && source.text.includes("Field: email")
+      );
+      expect(reviewOnlyEmail.text).toContain("Identity bridge review required");
+
+      const rejectedCollision = packet.evidenceSources.find((source: { text: string }) =>
+        source.text.includes("Do not assign email mayaariana@hotmail.com")
+      );
+      expect(rejectedCollision.text).toContain("collision evidence only");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

@@ -99,6 +99,9 @@ const sourceKindForEvidence = (source) => {
   if (text.includes('mailerlite') || text.includes('subscribed') || text.includes('grupo') || text.includes('opened')) {
     return 'mailerlite_export';
   }
+  if (text.includes('gmail') || text.includes('zoom <no-reply@zoom.us>')) {
+    return 'gmail_export';
+  }
   if (text.includes('contacts sqlite') || text.includes('macos contacts') || text.includes('contacts app')) {
     return 'contacts_app_export';
   }
@@ -281,15 +284,21 @@ const confirmedIdentityFor = (contact) =>
     : {};
 
 const hasBridgePendingIdentity = (contact) =>
-  Array.isArray(contact?.identity?.candidates)
-  && contact.identity.candidates.some((candidate) =>
+  [
+    ...(Array.isArray(contact?.identity?.candidates) ? contact.identity.candidates : []),
+    ...(Array.isArray(contact?.identity?.candidatesReviewOnly) ? contact.identity.candidatesReviewOnly : []),
+  ].some((candidate) =>
     /pending_bridge|review_only|identity_bridge/i.test(cleanString(candidate?.status) ?? '')
     || /bridge|handle/i.test(cleanString(candidate?.why) ?? '')
+    || /family|shared|companion/i.test(cleanString(candidate?.status) ?? '')
   );
 
 const evidenceSourcesForEnrichmentContact = (contactKey, contact) => {
   const bridgePending = hasBridgePendingIdentity(contact);
-  const existingSources = Array.isArray(contact?.evidenceSources) ? contact.evidenceSources : [];
+  const existingSources = [
+    ...(Array.isArray(contact?.evidenceSources) ? contact.evidenceSources : []),
+    ...(Array.isArray(contact?.evidence) ? contact.evidence : []),
+  ];
   const evidenceSources = existingSources.map((source) => {
     const finding = cleanString(source?.finding);
     const bridgePrefix = bridgePending && /email|phone|subscriber|mailerlite|lead capture/i.test(finding ?? '')
@@ -304,7 +313,7 @@ const evidenceSourcesForEnrichmentContact = (contactKey, contact) => {
 
   if (Array.isArray(contact?.identity?.doNotPromote)) {
     for (const rejected of contact.identity.doNotPromote) {
-      const field = cleanString(rejected?.field) ?? 'field';
+      const field = cleanString(rejected?.field ?? rejected?.kind) ?? 'field';
       const value = cleanString(rejected?.value) ?? 'unknown';
       const why = cleanString(rejected?.why);
       evidenceSources.push({
@@ -320,22 +329,37 @@ const evidenceSourcesForEnrichmentContact = (contactKey, contact) => {
     }
   }
 
-  if (Array.isArray(contact?.reviewOnlyCandidates)) {
-    for (const candidate of contact.reviewOnlyCandidates) {
-      const finding = cleanString(candidate);
-      if (!finding) continue;
-      evidenceSources.push({
-        kind: bridgePending && /@|email|gmail|hotmail|phone|\+\d|\d{8,}/i.test(finding)
-          ? 'mailerlite_export'
-          : 'local_fixture',
-        source: 'mantis_enrichment_review_only_candidate',
-        finding: [
-          `Contact key: ${contactKey}`,
-          bridgePending ? 'Identity bridge review required before assigning contact fields.' : 'Review-only candidate.',
-          finding,
-        ].join(' '),
-      });
-    }
+  const reviewOnlyCandidates = [
+    ...(Array.isArray(contact?.reviewOnlyCandidates) ? contact.reviewOnlyCandidates : []),
+    ...(Array.isArray(contact?.identity?.candidatesReviewOnly) ? contact.identity.candidatesReviewOnly : []),
+    ...(Array.isArray(contact?.identity?.candidates) ? contact.identity.candidates : []),
+  ];
+  for (const candidate of reviewOnlyCandidates) {
+    const candidateText = typeof candidate === 'object' && candidate
+      ? [
+        cleanString(candidate.field) ? `Field: ${cleanString(candidate.field)}` : null,
+        cleanString(candidate.value) ? `Value: ${cleanString(candidate.value)}` : null,
+        cleanString(candidate.confidence) ? `Confidence: ${cleanString(candidate.confidence)}` : null,
+        cleanString(candidate.status) ? `Status: ${cleanString(candidate.status)}` : null,
+        cleanString(candidate.why) ? `Why: ${cleanString(candidate.why)}` : null,
+        Array.isArray(candidate.sources) && candidate.sources.length
+          ? `Sources: ${candidate.sources.map(cleanString).filter(Boolean).join('; ')}`
+          : null,
+      ].filter(Boolean).join(' | ')
+      : cleanString(candidate);
+    const finding = cleanString(candidateText);
+    if (!finding) continue;
+    evidenceSources.push({
+      kind: bridgePending && /@|email|gmail|hotmail|phone|\+\d|\d{8,}/i.test(finding)
+        ? 'mailerlite_export'
+        : 'local_fixture',
+      source: 'mantis_enrichment_review_only_candidate',
+      finding: [
+        `Contact key: ${contactKey}`,
+        bridgePending ? 'Identity bridge review required before assigning contact fields.' : 'Review-only candidate.',
+        finding,
+      ].join(' '),
+    });
   }
 
   if (Array.isArray(contact?.confirmedFacts)) {
@@ -350,7 +374,41 @@ const evidenceSourcesForEnrichmentContact = (contactKey, contact) => {
     }
   }
 
+  for (const fact of [
+    cleanString(contact?.programAndRelationshipEvidence?.finding),
+    cleanString(contact?.retreatProgramEvidence?.finding),
+    cleanString(contact?.emailPhoneOwnership?.rationale),
+  ].filter(Boolean)) {
+    evidenceSources.push({
+      kind: 'local_fixture',
+      source: 'mantis_enrichment_confirmed_context',
+      finding: `Contact key: ${contactKey}. ${fact}`,
+    });
+  }
+
   return evidenceSources;
+};
+
+const confidenceForEnrichmentContact = (contact) => {
+  if (Array.isArray(contact?.confirmedFacts) && contact.confirmedFacts.length) return 'high';
+  const evidence = [
+    ...(Array.isArray(contact?.evidenceSources) ? contact.evidenceSources : []),
+    ...(Array.isArray(contact?.evidence) ? contact.evidence : []),
+  ];
+  if (evidence.some((source) =>
+    /confirmed/i.test(cleanString(source?.status) ?? '')
+    && confidenceAtLeast(source?.confidence, 'high')
+  )) return 'high';
+
+  const confirmed = confirmedIdentityFor(contact);
+  if (firstClean(
+    confirmed.instagramHandle,
+    confirmed.fullName,
+    confirmed.displayName,
+    confirmed.phone,
+    confirmed.email
+  )) return 'medium';
+  return 'low';
 };
 
 const fullNameForContact = (contactKey, contact) => {
@@ -386,7 +444,7 @@ const contactFactText = (contactKey, contact, result) => {
       : [];
     const rejected = Array.isArray(contact?.identity?.doNotPromote)
       ? contact.identity.doNotPromote
-        .map((item) => [cleanString(item?.field), cleanString(item?.value)].filter(Boolean).join(' '))
+        .map((item) => [cleanString(item?.field ?? item?.kind), cleanString(item?.value)].filter(Boolean).join(' '))
         .filter(Boolean)
       : [];
     const parts = [
@@ -394,7 +452,11 @@ const contactFactText = (contactKey, contact, result) => {
       rejected.length ? `colisiones no asignables registradas por Mantis: ${rejected.length}` : null,
       confirmedFacts.length ? `hechos confirmados: ${confirmedFacts.join('; ')}` : null,
       cleanString(contact?.communityRelationship?.type) ? `relación: ${cleanString(contact.communityRelationship.type)}` : null,
+      Array.isArray(contact?.programAndRelationshipEvidence?.relationshipTypes) && contact.programAndRelationshipEvidence.relationshipTypes.length
+        ? `relación: ${contact.programAndRelationshipEvidence.relationshipTypes.map(cleanString).filter(Boolean).join(' + ')}`
+        : null,
       cleanString(contact?.retreatProgramEvidence?.status) ? `estado retiro: ${cleanString(contact.retreatProgramEvidence.status)}` : null,
+      cleanString(contact?.programAndRelationshipEvidence?.status) ? `estado programa: ${cleanString(contact.programAndRelationshipEvidence.status)}` : null,
     ].filter(Boolean);
     const subject = result.handle ?? result.candidate_name ?? contactKey;
     const intro = result.handle && result.candidate_name
@@ -451,10 +513,14 @@ const normalizedResultForContact = ([contactKey, contact]) => {
       mailer_groups: [
         cleanString(contact?.retreatProgramEvidence?.status),
         cleanString(contact?.communityRelationship?.type),
+        ...(Array.isArray(contact?.programAndRelationshipEvidence?.relationshipTypes)
+          ? contact.programAndRelationshipEvidence.relationshipTypes.map(cleanString).filter(Boolean)
+          : []),
       ].filter(Boolean),
-      confidence: Array.isArray(contact?.confirmedFacts) && contact.confirmedFacts.length ? 'high' : 'medium',
+      confidence: confidenceForEnrichmentContact(contact),
       recommended_next_step: cleanString(contact?.communityRelationship?.recommendedNextAction)
-        ?? cleanString(contact?.recommendedNextStep),
+        ?? cleanString(contact?.recommendedNextStep)
+        ?? cleanString(contact?.recommendedNextAction),
       blockers: Array.isArray(contact?.blockers)
         ? contact.blockers.map((blocker) => cleanString(blocker?.exactBlocker ?? blocker)).filter(Boolean)
         : [],

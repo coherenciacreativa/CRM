@@ -303,8 +303,8 @@ describe("buildCrmVNextCardWriteApply", () => {
       sourceId: "mantis_evidence:cielo_gom_g:mailerlite_export:4",
       text: [
         "Handle: @cielo_gom_g",
-        "Name: Cielo Gom G",
-        "Finding: Identity bridge review required. Active subscriber Cielo Gomez: cielotago@gmail.com, +573143011712, Bogota/Colombia.",
+        "Name: Cielo Gomez",
+        "Finding: Active subscriber Cielo Gomez: cielotago@gmail.com, +573143011712. City: Bogotá | Country: Colombia.",
       ].join("\n"),
     }];
 
@@ -340,6 +340,8 @@ describe("buildCrmVNextCardWriteApply", () => {
       email: "cielotago@gmail.com",
       instagramHandle: "cielo_gom_g",
       phone: "+573143011712",
+      city: "Bogotá",
+      country: "Colombia",
     });
   });
 

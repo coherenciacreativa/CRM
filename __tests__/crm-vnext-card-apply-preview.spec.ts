@@ -18,6 +18,8 @@ const mayerliDriveEvidence = {
     "Name: Gladys Mayerli Garcia Ortegon",
     "Email: mayaariana@hotmail.com",
     "Phone: 3115381341",
+    "City: Bogotá",
+    "Country: Colombia",
     "Context: Retiro familiar; Ariana comparte este correo.",
     "Email ownership review required: email may belong to a family member or companion.",
   ].join(" "),
@@ -165,7 +167,11 @@ describe("CRM vNext card apply preview", () => {
     expect(preview.proposedCardDraft?.displayName).toBe("Gladys Mayerli Garcia Ortegon");
     expect(preview.proposedCardDraft?.identities.email).toBeNull();
     expect(preview.proposedCardDraft?.identities.phone).toBe("3115381341");
+    expect(preview.proposedCardDraft?.identities.city).toBe("Bogotá");
+    expect(preview.proposedCardDraft?.identities.country).toBe("Colombia");
     expect(preview.identityResolution.emailCandidates).toEqual(["mayaariana@hotmail.com"]);
+    expect(preview.identityResolution.cityCandidates).toEqual(["Bogotá"]);
+    expect(preview.identityResolution.countryCandidates).toEqual(["Colombia"]);
     expect(preview.identityResolution.missingContactFields).toContain("email");
     expect(preview.identityResolution.evidenceSourceKinds).toMatchObject({ retreat_table: 1 });
   });

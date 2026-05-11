@@ -57,6 +57,8 @@ export type CrmCardApplyPreviewItem = {
     emailCandidates: string[];
     phoneCandidates: string[];
     instagramHandles: string[];
+    cityCandidates: string[];
+    countryCandidates: string[];
     missingContactFields: Array<'email' | 'phone' | 'instagramHandle'>;
     evidenceSourceKinds: CrmDeepLocalStitchingClue['identitySummary']['sourceKindsWithIdentitySignals'];
     evidenceDecisionSummary: {
@@ -177,6 +179,28 @@ const structuredOwnerNameCandidates = (snippet: string): string[] => {
   return unique(candidates);
 };
 
+const structuredFieldCandidates = (snippet: string, labels: string[]): string[] => {
+  const labelPattern = labels.map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const pattern = new RegExp(`\\b(?:${labelPattern})\\s*:\\s*([^|;\\n\\r]+?)(?=\\s*(?:\\||;|$))`, 'gi');
+  const candidates: string[] = [];
+  for (const match of snippet.matchAll(pattern)) {
+    const cleaned = cleanPublicText(match[1] ?? '')
+      .replace(/\b(?:Email|Phone|City|Country|Context|Confidence|Finding|Groups|Source)\b.*$/i, '')
+      .replace(/[<>"'()[\]{}]+/g, ' ')
+      .replace(/[.,]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (cleaned && cleaned.length <= 80) candidates.push(cleaned);
+  }
+  return unique(candidates);
+};
+
+const structuredCitiesFromHits = (hits: CrmDeepLocalStitchingClue['hits']): string[] =>
+  unique(hits.flatMap((hit) => structuredFieldCandidates(hit.snippet, ['City', 'Ciudad'])));
+
+const structuredCountriesFromHits = (hits: CrmDeepLocalStitchingClue['hits']): string[] =>
+  unique(hits.flatMap((hit) => structuredFieldCandidates(hit.snippet, ['Country', 'País', 'Pais'])));
+
 const structuredIdentityHitNamesDifferentPerson = (
   hit: CrmDeepLocalStitchingClue['hits'][number],
   rawNameTerm: string,
@@ -222,6 +246,40 @@ const relevantHitsForDecision = (
     if (rawNameTerm && crmVNextNameCompatible(rawNameTerm, hit.snippet)) return true;
     return false;
   });
+};
+
+const evidenceReviewDecisionAppliesToDecision = (
+  storedDecision: CrmStoredEvidenceReviewDecision,
+  decision: CrmCardWriteMergeDecision,
+): boolean => {
+  if (storedDecision.targetPersonId && decision.target.personId) {
+    return storedDecision.targetPersonId === decision.target.personId;
+  }
+  return storedDecisionSubjectMatches(storedDecision, decision);
+};
+
+const evidenceDecisionSourceIdsForDecision = (
+  decision: CrmCardWriteMergeDecision,
+  evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[],
+): Set<string> =>
+  new Set(evidenceReviewDecisions
+    .filter((storedDecision) => evidenceReviewDecisionAppliesToDecision(storedDecision, decision))
+    .flatMap((storedDecision) => storedDecision.evidenceSourceIds)
+    .filter((sourceId): sourceId is string => Boolean(cleanPublicText(sourceId ?? ''))));
+
+const relevantHitsWithEvidenceDecisions = (
+  decision: CrmCardWriteMergeDecision,
+  stitchingClue: CrmDeepLocalStitchingClue | null,
+  evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[] = [],
+): CrmDeepLocalStitchingClue['hits'] => {
+  const directHits = relevantHitsForDecision(decision, stitchingClue);
+  const evidenceSourceIds = evidenceDecisionSourceIdsForDecision(decision, evidenceReviewDecisions);
+  if (!evidenceSourceIds.size) return directHits;
+  const byId = new Map(directHits.map((hit) => [hit.hitId, hit]));
+  for (const hit of stitchingClue?.hits ?? []) {
+    if (evidenceSourceIds.has(hit.sourceId)) byId.set(hit.hitId, hit);
+  }
+  return Array.from(byId.values());
 };
 
 const sourceKindsForHits = (
@@ -401,9 +459,11 @@ const identityHintsFromStitching = (
   email: string | null;
   phone: string | null;
   instagramHandle: string | null;
+  city: string | null;
+  country: string | null;
 } => {
   const rawNameTerm = normalize(decision.personHint.rawName);
-  const relevantHits = relevantHitsForDecision(decision, stitchingClue);
+  const relevantHits = relevantHitsWithEvidenceDecisions(decision, stitchingClue, evidenceReviewDecisions);
   const fullNameCandidates = unique(relevantHits
     .flatMap((hit) => hit.identitySignals.fullNameCandidates)
     .filter((candidate) => nameCompatibleWithRawHint(candidate, rawNameTerm)))
@@ -428,6 +488,8 @@ const identityHintsFromStitching = (
   const assignableEmails = emails.filter((email) => !blockedEmails.has(normalizeEmail(email)));
   const phones = unique(relevantHits.flatMap((hit) => hit.identitySignals.phones));
   const handles = unique(instagramHandlesFromRelevantHits(decision, relevantHits));
+  const cities = structuredCitiesFromHits(relevantHits);
+  const countries = structuredCountriesFromHits(relevantHits);
   const confirmedSubjectEmails = evidenceDecisionSummary.confirmedSubjectEmails;
 
   return {
@@ -439,6 +501,8 @@ const identityHintsFromStitching = (
         : null,
     phone: phones[0] ?? null,
     instagramHandle: handles[0] ?? null,
+    city: cities.length === 1 ? cities[0] : null,
+    country: countries.length === 1 ? countries[0] : null,
   };
 };
 
@@ -459,7 +523,7 @@ const identityResolutionFor = (
   evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[] = [],
 ): CrmCardApplyPreviewItem['identityResolution'] => {
   const hints = identityHintsFromStitching(decision, stitchingClue, evidenceReviewDecisions);
-  const relevantHits = relevantHitsForDecision(decision, stitchingClue);
+  const relevantHits = relevantHitsWithEvidenceDecisions(decision, stitchingClue, evidenceReviewDecisions);
   const emailCandidates = unique([
     decision.target.identities.email,
     hints.email,
@@ -477,6 +541,16 @@ const identityResolutionFor = (
   ]
     .filter((value): value is string => Boolean(cleanPublicText(value ?? '')))
     .map((handle) => handle.replace(/^@+/, '').toLowerCase()));
+  const cityCandidates = unique([
+    decision.target.identities.city,
+    hints.city,
+    ...structuredCitiesFromHits(relevantHits),
+  ].filter((value): value is string => Boolean(cleanPublicText(value ?? ''))));
+  const countryCandidates = unique([
+    decision.target.identities.country,
+    hints.country,
+    ...structuredCountriesFromHits(relevantHits),
+  ].filter((value): value is string => Boolean(cleanPublicText(value ?? ''))));
   const fullNameCandidates = unique([
     hints.displayName,
     ...(stitchingClue?.identitySummary.fullNameCandidates ?? []),
@@ -494,6 +568,8 @@ const identityResolutionFor = (
     emailCandidates,
     phoneCandidates,
     instagramHandles,
+    cityCandidates,
+    countryCandidates,
     missingContactFields: ([
       hasAssignableEmail ? null : 'email',
       phoneCandidates.length ? null : 'phone',
@@ -546,8 +622,8 @@ const draftCardFor = (
       email: decision.target.identities.email ?? identityHints.email,
       instagramHandle: decision.target.identities.instagramHandle ?? identityHints.instagramHandle,
       phone: decision.target.identities.phone ?? identityHints.phone,
-      city: decision.target.identities.city,
-      country: decision.target.identities.country,
+      city: decision.target.identities.city ?? identityHints.city,
+      country: decision.target.identities.country ?? identityHints.country,
     },
     scoring: scoringForServices(proposal),
     evidence: evidenceForDraft(decision, proposal, stitchingClue, generatedAt),

@@ -328,6 +328,8 @@ const mergedCardForPreview = (
   const confirmedEmail = onlyIdentityCandidate(preview.identityResolution.evidenceDecisionSummary.confirmedSubjectEmails);
   const phoneCandidate = onlyIdentityCandidate(preview.identityResolution.phoneCandidates);
   const instagramCandidate = onlyIdentityCandidate(preview.identityResolution.instagramHandles);
+  const cityCandidate = onlyIdentityCandidate(preview.identityResolution.cityCandidates);
+  const countryCandidate = onlyIdentityCandidate(preview.identityResolution.countryCandidates);
   const displayNameCandidate = preview.identityResolution.fullNameCandidates[0] ?? null;
   const subjectDisplayName = displayNameFromApprovalSubject(approvalSubject);
 
@@ -340,8 +342,8 @@ const mergedCardForPreview = (
       instagramHandle: currentFullCard.identities.instagramHandle ?? instagramCandidate,
       instagramUserId: currentFullCard.identities.instagramUserId,
       phone: currentFullCard.identities.phone ?? phoneCandidate,
-      city: currentFullCard.identities.city,
-      country: currentFullCard.identities.country,
+      city: currentFullCard.identities.city ?? cityCandidate,
+      country: currentFullCard.identities.country ?? countryCandidate,
     },
     channels: {
       emailStatus: currentFullCard.channels.email.status,
