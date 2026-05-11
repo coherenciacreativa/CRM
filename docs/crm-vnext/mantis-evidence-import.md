@@ -31,8 +31,11 @@ The importer accepts both Mantis evidence hunt shapes:
 
 - legacy `results[]` reports keyed by Instagram handle,
 - contact-keyed CRM vNext reports with `contacts.{contact_key}` and `strongMatches` / `weakMatches`.
+- single-subject email ownership hunts with `subject`, `matches_confirmados`, `candidates_review_only`, `rejected_collisions`, `negative_findings`, and `recomendacion_final`.
 
 For contact-keyed reports, the importer converts each contact into safe CRM fact text plus connected evidence packets. It preserves review-only family/companion emails as evidence context instead of treating them as primary identity approval.
+
+For email ownership hunts, the importer can now preserve a negative conclusion such as `keep_family_email_unassigned`: confirmed phone/identity evidence stays usable, family/shared email candidates remain review-only, rejected family-member emails become collision evidence, and the generated text explicitly says that no primary email is safe to assign. This is useful when Mantis searches Gmail, Drive, Contacts, MailerLite, and local reports and concludes that the clean next action is to ask the person directly.
 
 The generated JSON can be passed as `--evidence-file` to:
 

@@ -436,6 +436,245 @@ const contactKeyHandle = (contactKey) => {
   return null;
 };
 
+const evidenceKindFromSourceName = (sourceName) => {
+  const text = cleanString(sourceName)?.toLowerCase() ?? '';
+  if (text.includes('mailerlite')) return 'mailerlite_export';
+  if (text.includes('contacts') || text.includes('addressbook')) return 'contacts_app_export';
+  if (text.includes('gmail') || text.includes('zoom')) return 'gmail_export';
+  if (text.includes('drive') || text.includes('sheets')) {
+    return text.includes('retiro') || text.includes('retreat') ? 'retreat_table' : 'google_drive_export';
+  }
+  if (text.includes('crm') || text.includes('memory') || text.includes('reports')) return 'local_fixture';
+  return 'local_fixture';
+};
+
+const sourceObjectToFinding = (source, prefix = null) => {
+  const sourceName = cleanString(source?.source);
+  const finding = cleanString(source?.finding);
+  const confidence = cleanString(source?.confidence);
+  const status = cleanString(source?.status);
+  const sensitivity = cleanString(source?.sensitivity);
+  const fields = source?.fields && typeof source.fields === 'object'
+    ? flattenEvidenceValue(source.fields).slice(0, 10)
+    : [];
+  return [
+    prefix,
+    sourceName ? `Source: ${sourceName}` : null,
+    finding ? `Finding: ${finding}` : null,
+    confidence ? `Confidence: ${confidence}` : null,
+    status ? `Status: ${status}` : null,
+    sensitivity && sensitivity !== 'normal' ? `Sensitivity: ${sensitivity}` : null,
+    ...fields,
+  ].filter(Boolean).join(' | ');
+};
+
+const emailOwnershipSourcesForReport = (report) => {
+  const subject = report?.subject ?? {};
+  const contactKey = cleanString(subject.crmVnextKey)
+    ?? (normalizeHandle(subject.instagramHandle) ? `ig:${normalizeHandle(subject.instagramHandle)}` : 'unknown');
+  const sources = [];
+
+  const contacts = Array.isArray(report?.matches_confirmados?.contacts)
+    ? report.matches_confirmados.contacts
+    : [];
+  for (const contact of contacts) {
+    const evidence = Array.isArray(contact?.evidence) ? contact.evidence : [];
+    for (const item of evidence) {
+      const finding = sourceObjectToFinding(item, [
+        `Contact key: ${contactKey}`,
+        'Confirmed contact point.',
+        cleanString(contact?.type) && cleanString(contact?.value)
+          ? `${cleanString(contact.type)} ${cleanString(contact.value)}`
+          : null,
+        cleanString(contact?.normalizedValue) ? `Normalized: ${cleanString(contact.normalizedValue)}` : null,
+        cleanString(contact?.owner) ? `Owner: ${cleanString(contact.owner)}` : null,
+      ].filter(Boolean).join(' '));
+      if (!finding) continue;
+      sources.push({
+        kind: evidenceKindFromSourceName(item?.source),
+        source: cleanString(item?.source),
+        finding,
+      });
+    }
+  }
+
+  const identityMatches = Array.isArray(report?.matches_confirmados?.identity_context_matches)
+    ? report.matches_confirmados.identity_context_matches
+    : [];
+  for (const item of identityMatches) {
+    const finding = sourceObjectToFinding(item, [
+      `Contact key: ${contactKey}`,
+      'Identity context only; do not infer email ownership from this evidence.',
+    ].join(' '));
+    if (!finding) continue;
+    sources.push({
+      kind: evidenceKindFromSourceName(item?.source),
+      source: cleanString(item?.source),
+      finding,
+    });
+  }
+
+  const reviewOnly = Array.isArray(report?.candidates_review_only)
+    ? report.candidates_review_only
+    : [];
+  for (const candidate of reviewOnly) {
+    const candidateValue = cleanString(candidate?.candidate);
+    const candidateEvidence = Array.isArray(candidate?.evidence) ? candidate.evidence : [];
+    const base = [
+      `Contact key: ${contactKey}`,
+      'Review-only email ownership candidate; do not assign as primary email.',
+      candidateValue ? `Candidate: ${candidateValue.toLowerCase()}` : null,
+      cleanString(candidate?.status) ? `Status: ${cleanString(candidate.status)}` : null,
+      candidate?.doNotPromoteAsPrimaryEmail ? 'Do not promote as primary email.' : null,
+      cleanString(candidate?.why) ? `Why: ${cleanString(candidate.why)}` : null,
+      cleanString(candidate?.recommendedCRMHandling)
+        ? `Recommended CRM handling: ${cleanString(candidate.recommendedCRMHandling)}`
+        : null,
+      ...flattenEvidenceValue(candidate?.confidence).slice(0, 6),
+    ].filter(Boolean).join(' ');
+    sources.push({
+      kind: 'mailerlite_export',
+      source: 'mantis_email_ownership_review_only_candidate',
+      finding: base,
+    });
+    for (const item of candidateEvidence) {
+      const finding = sourceObjectToFinding(item, base);
+      if (!finding) continue;
+      sources.push({
+        kind: evidenceKindFromSourceName(item?.source),
+        source: cleanString(item?.source),
+        finding,
+      });
+    }
+  }
+
+  const rejected = Array.isArray(report?.rejected_collisions)
+    ? report.rejected_collisions
+    : [];
+  for (const collision of rejected) {
+    const candidateValue = cleanString(collision?.candidate);
+    const base = [
+      `Contact key: ${contactKey}`,
+      'Rejected collision; do not assign to this contact.',
+      candidateValue ? `Candidate: ${candidateValue}` : null,
+      cleanString(collision?.type) ? `Type: ${cleanString(collision.type)}` : null,
+      cleanString(collision?.status) ? `Status: ${cleanString(collision.status)}` : null,
+      cleanString(collision?.confidence) ? `Confidence: ${cleanString(collision.confidence)}` : null,
+      cleanString(collision?.why) ? `Why: ${cleanString(collision.why)}` : null,
+      ...flattenEvidenceValue(collision?.examples).slice(0, 5),
+    ].filter(Boolean).join(' ');
+    sources.push({
+      kind: 'local_fixture',
+      source: 'mantis_email_ownership_rejected_collision',
+      finding: base,
+    });
+    const collisionEvidence = Array.isArray(collision?.evidence) ? collision.evidence : [];
+    for (const item of collisionEvidence) {
+      const finding = sourceObjectToFinding(item, base);
+      if (!finding) continue;
+      sources.push({
+        kind: evidenceKindFromSourceName(item?.source),
+        source: cleanString(item?.source),
+        finding,
+      });
+    }
+  }
+
+  const negativeFindings = Array.isArray(report?.negative_findings) ? report.negative_findings : [];
+  for (const finding of negativeFindings.map(cleanString).filter(Boolean)) {
+    sources.push({
+      kind: 'local_fixture',
+      source: 'mantis_email_ownership_negative_finding',
+      finding: `Contact key: ${contactKey}. Negative finding: ${finding}`,
+    });
+  }
+
+  if (report?.recomendacion_final && typeof report.recomendacion_final === 'object') {
+    const recommendation = report.recomendacion_final;
+    sources.push({
+      kind: 'local_fixture',
+      source: 'mantis_email_ownership_final_recommendation',
+      finding: [
+        `Contact key: ${contactKey}.`,
+        cleanString(recommendation.decision) ? `Decision: ${cleanString(recommendation.decision)}` : null,
+        typeof recommendation.safeEmailFound === 'boolean'
+          ? `Safe email found: ${recommendation.safeEmailFound}`
+          : null,
+        cleanString(recommendation.crmWriteReadiness)
+          ? `CRM write readiness: ${cleanString(recommendation.crmWriteReadiness)}`
+          : null,
+        cleanString(recommendation.secondaryAction)
+          ? `Secondary action: ${cleanString(recommendation.secondaryAction)}`
+          : null,
+        cleanString(recommendation.why) ? `Why: ${cleanString(recommendation.why)}` : null,
+      ].filter(Boolean).join(' '),
+    });
+  }
+
+  return sources;
+};
+
+const normalizedResultForEmailOwnershipReport = (report) => {
+  const subject = report?.subject ?? {};
+  const context = subject.acceptedIdentityContext ?? {};
+  const handle = normalizeHandle(subject.instagramHandle)
+    ?? contactKeyHandle(subject.crmVnextKey);
+  const location = cleanString(context.location);
+  const [city, country] = location
+    ? location.split(',').map((item) => cleanString(item))
+    : [null, null];
+  const confirmedContacts = Array.isArray(report?.matches_confirmados?.contacts)
+    ? report.matches_confirmados.contacts
+    : [];
+  const confirmedPhone = firstClean(
+    ...confirmedContacts
+      .filter((item) => cleanString(item?.type)?.toLowerCase() === 'phone')
+      .flatMap((item) => [item.normalizedValue, item.value]),
+    context.phone
+  );
+  const reviewOnlyEmails = Array.isArray(report?.candidates_review_only)
+    ? report.candidates_review_only
+      .map((candidate) => cleanString(candidate?.candidate)?.toLowerCase())
+      .filter(Boolean)
+    : [];
+  const recommendation = report?.recomendacion_final ?? {};
+  const result = {
+    resultKey: cleanString(subject.crmVnextKey) ?? (handle ? `ig:${handle}` : 'email_ownership_report'),
+    contactKey: cleanString(subject.crmVnextKey) ?? (handle ? `ig:${handle}` : 'email_ownership_report'),
+    handle: handle ? `@${handle}` : null,
+    candidate_name: cleanString(context.name),
+    candidate_email: null,
+    candidate_phone: confirmedPhone,
+    city: city ?? null,
+    country: country ?? null,
+    mailer_groups: [
+      ...flattenEvidenceValue(context.relationshipContext).slice(0, 8),
+      ...flattenEvidenceValue(context.familyContext).slice(0, 8),
+    ],
+    confidence: confirmedPhone || context.name || handle ? 'high' : 'medium',
+    recommended_next_step: cleanString(recommendation.decision)
+      ?? cleanString(recommendation.secondaryAction),
+    blockers: recommendation.safeEmailFound === false
+      ? ['no_safe_primary_email_found']
+      : [],
+    evidenceSources: emailOwnershipSourcesForReport(report),
+  };
+  const noSafeEmail = recommendation.safeEmailFound === false
+    || /not_ready_for_email_write|insufficient/i.test(cleanString(recommendation.crmWriteReadiness) ?? '');
+  return {
+    ...result,
+    factText: [
+      `CRM: ${result.handle ?? result.candidate_name ?? result.contactKey}${result.candidate_name ? ` es ${result.candidate_name}` : ''}.`,
+      result.candidate_phone ? `Teléfono confirmado ${result.candidate_phone}.` : null,
+      noSafeEmail ? 'No hay email primario seguro para asignar.' : null,
+      reviewOnlyEmails.length
+        ? `Emails review-only/familiares no asignables como primarios: ${reviewOnlyEmails.join(', ')}.`
+        : null,
+      result.recommended_next_step ? `Recomendación Mantis: ${result.recommended_next_step}.` : null,
+    ].filter(Boolean).join(' '),
+  };
+};
+
 const contactFactText = (contactKey, contact, result) => {
   if (contact?.identity && typeof contact.identity === 'object') {
     const bridgePending = hasBridgePendingIdentity(contact);
@@ -572,6 +811,16 @@ const normalizedResultsForReport = (report) => {
   if (Array.isArray(report?.results)) return report.results;
   if (report?.contacts && typeof report.contacts === 'object' && !Array.isArray(report.contacts)) {
     return Object.entries(report.contacts).map(normalizedResultForContact);
+  }
+  if (
+    report?.subject
+    && (
+      report?.candidates_review_only
+      || report?.matches_confirmados
+      || report?.recomendacion_final
+    )
+  ) {
+    return [normalizedResultForEmailOwnershipReport(report)];
   }
   return [];
 };

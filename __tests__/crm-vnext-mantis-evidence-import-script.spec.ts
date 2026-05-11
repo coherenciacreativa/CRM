@@ -421,4 +421,147 @@ describe("CRM vNext Mantis evidence import script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("converts email ownership hunts into no-primary-email evidence", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-email-ownership-"));
+    try {
+      const reportPath = join(dir, "mantis-email-ownership-report.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schemaVersion: "mantis.crm_vnext.email_ownership_hunt.v1",
+        subject: {
+          crmVnextKey: "ig:mayuyis2626",
+          instagramHandle: "@mayuyis2626",
+          acceptedIdentityContext: {
+            name: "Mayerli / Gladys Mayerli Garcia Ortegon",
+            phone: "3115381341",
+            location: "Bogota, Colombia",
+            familyContext: ["Fidel/esposo", "Ariana/hija"],
+            relationshipContext: ["retiros desde hace 4-5 anos", "yoga virtual actual"],
+          },
+        },
+        matches_confirmados: {
+          emails: [],
+          contacts: [
+            {
+              type: "phone",
+              value: "3115381341",
+              normalizedValue: "+573115381341",
+              owner: "Mayerli / Gladys Mayerli Garcia Ortegon",
+              confidence: "high",
+              evidence: [
+                {
+                  source: "macOS Contacts SQLite",
+                  finding: "Contact record has phone and no email fields.",
+                  confidence: "high",
+                  status: "evidence",
+                  fields: { phone: "+573115381341", emailPresent: false },
+                },
+              ],
+            },
+          ],
+          identity_context_matches: [
+            {
+              source: "Gmail/Zoom",
+              finding: "Zoom notification confirms Yoga Colombia attendance.",
+              confidence: "high",
+              status: "evidence",
+              fields: { emailCandidate: false },
+            },
+          ],
+        },
+        candidates_review_only: [
+          {
+            candidate: "mayaariana@hotmail.com",
+            type: "email",
+            status: "family_or_shared_email_review_only",
+            confidence: {
+              as_family_contact_email: "high",
+              as_mayerli_owned_primary_email: "low_to_medium",
+            },
+            doNotPromoteAsPrimaryEmail: true,
+            why: "MailerLite points this email to Ariana; retreat sheets show family/shared use.",
+            evidence: [
+              {
+                source: "MailerLite",
+                finding: "Subscriber is Ariana Catalina, active/subscribed.",
+                confidence: "high",
+                status: "evidence",
+                fields: { subscriberName: "Ariana Catalina" },
+              },
+            ],
+            recommendedCRMHandling: "keep_unassigned_family_or_companion_email_until_human_confirms_owner",
+          },
+        ],
+        rejected_collisions: [
+          {
+            candidate: "ftorres@uniandes.edu.co",
+            type: "email",
+            status: "rejected_family_member_not_mayerli",
+            confidence: "high",
+            why: "Owned by Fidel, not Mayerli.",
+          },
+        ],
+        negative_findings: [
+          "MailerLite has no safe Mayerli-owned email.",
+          "Contacts confirms phone but no email.",
+        ],
+        recomendacion_final: {
+          decision: "keep_family_email_unassigned",
+          safeEmailFound: false,
+          secondaryAction: "ask_mayerli_directly_if_primary_email_is_needed",
+          crmWriteReadiness: "not_ready_for_email_write",
+          why: "No email crosses ownership threshold.",
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+        "--handles",
+        "@mayuyis2626",
+        "--min-confidence",
+        "high",
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const text = await readFile(textPath, "utf8");
+      expect(packet.summary).toMatchObject({
+        results: 1,
+        selectedResults: 1,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(packet.summary.evidenceSources).toBeGreaterThanOrEqual(6);
+      expect(text).toContain("@mayuyis2626");
+      expect(text).toContain("No hay email primario seguro");
+      expect(text).toContain("mayaariana@hotmail.com");
+
+      expect(packet.selectedResults[0]).toMatchObject({
+        handle: "@mayuyis2626",
+        candidate_email: null,
+        candidate_phone: "+573115381341",
+        recommended_next_step: "keep_family_email_unassigned",
+        blockers: ["no_safe_primary_email_found"],
+      });
+
+      const reviewOnlyEmail = packet.evidenceSources.find((source: { text: string }) =>
+        source.text.includes("mayaariana@hotmail.com")
+      );
+      expect(reviewOnlyEmail.text).toContain("do not assign as primary email");
+
+      const finalRecommendation = packet.evidenceSources.find((source: { text: string }) =>
+        source.text.includes("Decision: keep_family_email_unassigned")
+      );
+      expect(finalRecommendation.text).toContain("Safe email found: false");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });
