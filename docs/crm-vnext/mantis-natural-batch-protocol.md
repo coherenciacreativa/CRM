@@ -158,6 +158,18 @@ npm run crm:vnext:batch-operating-loop -- \
 
 If the loop returns evidence questions, Mantis asks Alejandro only those focused questions. If it returns blocked identity work, Mantis uses the suggested read-only search lanes and produces a follow-up evidence report. If it returns approval-ready items, Alejandro must still explicitly approve any local card write.
 
+After a batch has been applied or reviewed, Mantis/Codex can generate a person-by-person human enrichment sheet:
+
+```bash
+npm run crm:vnext:human-enrichment-questions -- \
+  --batch-loop-file tmp/crm-vnext/<slug>_loop.json \
+  --person-id ig:cielo_gom_g \
+  --out tmp/crm-vnext/<slug>_human_questions.json \
+  --markdown-out tmp/crm-vnext/<slug>_human_questions.md
+```
+
+Use this when Alejandro wants to add remembered context that sources may never know: how the person arrived, programs attended, current role, client status, relationship nuance, or a next-step intuition. These answers are still input for Fact Intake / future approved card writes; they are not permission for outbound or automatic mutation.
+
 ## Good Batch Sizes
 
 - 1 contact for a difficult identity case such as a missing email/phone with many possible candidates.

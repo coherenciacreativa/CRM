@@ -1131,6 +1131,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "human_enrichment_questions",
+    command: "npm run crm:vnext:human-enrichment-questions -- --batch-loop-file <json> --person-id <personId>",
+    purpose: "Generate person-by-person prompts so Alejandro can add remembered context after a batch.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Default run prints a read-only summary; --out and --markdown-out may save local question packets.",
+      "Use after a Mantis batch loop, card apply, or any moment where Alejandro says he knows more about a contact.",
+      "Answers should go through Fact Intake or a later approved card-write batch; this command itself never mutates cards.",
+      "This command never calls live APIs, touches credentials, writes Fact Store, or sends outbound.",
+    ],
+  },
+  {
     id: "card_write_apply",
     command: "npm run crm:vnext:card-write-apply -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
     purpose: "Preview or commit selected approval-ready items into the local CRM vNext card store.",
