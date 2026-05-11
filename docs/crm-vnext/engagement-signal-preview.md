@@ -63,6 +63,8 @@ Supported `sourceKind` values:
 - `manual_engagement_snapshot`
 - `unknown`
 
+Manual snapshots are allowed as a bridge from Alejandro/Mantis reports to future scoring, but they should be treated as bounded, source-labeled evidence. For example, "Cielo frequently watches stories" can raise relationship engagement modestly until Instagram event data confirms the pattern. Manual reports about purchases, service relationships, or identity can carry more confidence after review because Alejandro is the source of truth for his own programs.
+
 ## Output
 
 The preview returns:
@@ -100,3 +102,5 @@ A warmer score means "review internally first." It is never permission to send a
 ## Operator Rule
 
 Use this after identity stitching is stable enough that engagement signals can be matched to cards. If a signal is unmatched, route it back through identity stitching or the batch operating loop before using it for prioritization.
+
+Approved Fact Store entries should eventually be converted into this same preview lane through a future Fact-to-Scoring adapter, so conversational facts and automated signals share one inspectable scoring policy.

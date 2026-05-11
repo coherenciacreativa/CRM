@@ -53,6 +53,15 @@ Near-term signal backlog:
 
 These should become scoring inputs, not manual anecdotes. Keep scoring multidimensional: commercial warmth, community depth, relationship engagement, product fit, and data confidence.
 
+Conversational Fact-to-Scoring backlog:
+
+- Approved human reports in Fact Store should be eligible for later scoring deltas, but not all facts should weigh the same.
+- Structured facts such as purchase, product interest, retreat interest, city/country, and service relationship can increase commercial warmth, product fit, data confidence, or community context after reviewed card application.
+- Anecdotal engagement facts such as "frequently sees stories" should count as lower-weight manual engagement until verified by automated Instagram/MailerLite/Gmail signals.
+- Negative participation facts such as "not a yoga student" or "has not attended Encuentro Feliz" should prevent false classification rather than automatically cool the person.
+- Future scoring should use source-weighting and recency decay: API/event data weighs more for engagement; Alejandro/Mantis human reports weigh strongly for identity, service relationship, and qualitative context.
+- A warmer score remains an internal prioritization signal only; it never authorizes outbound contact without the separate approval guardrails.
+
 ## Workstream C: MailerLite Refresh Path
 
 Deliverables:

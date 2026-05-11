@@ -74,3 +74,17 @@ npm run crm:vnext:activation-run -- --text "CRM: @ana_yoga es estudiante de yoga
 ```
 
 It chains Fact Intake, optional Fact Store append, Identity Review, and Card Rebuild Diff in one report.
+
+## Future Scoring Use
+
+Fact Store facts can later feed CRM warmth only through a reviewed scoring adapter. They should not silently rewrite heat scores at append time.
+
+Design posture:
+
+- identity and contact facts increase data confidence after card review;
+- purchase, trial, product interest, and retreat interest can increase commercial warmth and product fit;
+- attendance and service relationships can increase community depth or customer context;
+- manual anecdotes about Instagram/email engagement can inform relationship engagement, but with lower weight and faster decay than verified API/event metrics;
+- explicit negative facts prevent false program classification instead of acting as punishment.
+
+This keeps Alejandro's conversational memory useful without letting one anecdote overpower real longitudinal signals.
