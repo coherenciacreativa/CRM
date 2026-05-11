@@ -23,7 +23,10 @@ It does not write anything.
 ```bash
 npm run crm:vnext:card-write-approval-packet -- --text "CRM: Juan Jose... @mayuyis2626 es Mayerli..."
 npm run crm:vnext:card-write-approval-packet -- --include-expanded-sources --evidence-file ./evidence.json --decision-ledger-path ./.crm-vnext/evidence-review-decisions/decisions.jsonl --text "<batch>"
+npm run crm:vnext:card-write-approval-packet -- --connected-evidence-only --evidence-file ./lead_capture_evidence.json --text "<batch>"
 ```
+
+By default, the API/CLI prefer the local vNext card store when it exists and fall back to legacy Person Cards V1 only when forced with source-path overrides. This matters for contacts that have already been materialized locally: they should be proposed as `enrich_existing_card`, not as duplicate new cards.
 
 ## What It Produces
 
@@ -70,6 +73,8 @@ It does not mean:
 `blocked_open_evidence_questions` means Mantis should resolve Evidence Review Packet questions first.
 
 `blocked_needs_more_identity` means Mantis should gather a stable email, handle, phone, or strong evidence before returning to approval.
+
+If an email candidate is already present on the existing vNext card, the packet should not ask Alejandro to re-confirm ownership of that same email. Existing-card identity is treated as already assigned provenance; new evidence-derived emails still require the normal review/decision path.
 
 ## Mayerli / Ariana Behavior
 

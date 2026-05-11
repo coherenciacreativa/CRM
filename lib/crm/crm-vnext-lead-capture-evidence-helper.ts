@@ -671,8 +671,10 @@ const evidenceSourceForRecord = (
       tags.length ? `Tags/groups: ${tags.join(', ')}` : null,
     ].filter(Boolean).join('\n')),
     text: cleanPublicText([
-      `Matched clue: ${personLabel(plan.person) ?? plan.clueId}`,
-      message ? `Message: ${message}` : null,
+      `Matched clue: ${normalizeHandle(plan.person.instagramHandle)
+        ? `@${normalizeHandle(plan.person.instagramHandle)}`
+        : plan.clueId}`,
+      message ? `Captured message: ${message}` : null,
       cleanString(record.notes) ? `Notes: ${record.notes}` : null,
     ].filter(Boolean).join('\n')),
   };

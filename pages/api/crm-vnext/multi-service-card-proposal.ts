@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import {
-  DEFAULT_LEGACY_PERSON_CARDS_V1_PATH,
-  loadLegacyPersonCardsV1AsPersonCards,
-  publicLegacyPersonCardsV1Source,
-  type PublicLegacyPersonCardsV1Source,
+  loadPersonCardsVNext,
+  publicPersonCardsVNextSource,
+  type PublicPersonCardsVNextSource,
 } from '../../../lib/crm/community-insights-source';
 import type { CrmFactSourceKind } from '../../../lib/crm/crm-vnext-fact-intake';
 import {
@@ -18,12 +17,13 @@ import {
   allowCrmVNextLocalQueryOverrides,
   authorizeCrmVNextInternalRead,
 } from '../../../lib/crm/crm-vnext-api-guard';
+import { resolveCrmVNextReadSourceOptions } from '../../../lib/crm/crm-vnext-read-source-options';
 
 type ApiBody =
   | {
       ok: true;
       source: {
-        personCards: PublicLegacyPersonCardsV1Source;
+        personCards: PublicPersonCardsVNextSource;
         mailerBridge: {
           kind: 'mailer-bridge-candidates-enriched';
           rows: number;
@@ -82,13 +82,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(400).json({ ok: false, error: 'multi_service_card_proposal_text_required' });
     }
 
-    const sourcePath =
-      queryPathOverride(req, 'sourcePath', process.env.CRM_VNEXT_PERSON_CARDS_V1_PATH || DEFAULT_LEGACY_PERSON_CARDS_V1_PATH)
-      ?? DEFAULT_LEGACY_PERSON_CARDS_V1_PATH;
+    const sourceOptions = resolveCrmVNextReadSourceOptions(req);
     const mailerBridgePath =
       queryPathOverride(req, 'mailerBridgePath', process.env.CRM_VNEXT_MAILER_BRIDGE_ENRICHED_PATH || DEFAULT_MAILER_BRIDGE_ENRICHED_PATH)
       ?? DEFAULT_MAILER_BRIDGE_ENRICHED_PATH;
-    const cardsPayload = await loadLegacyPersonCardsV1AsPersonCards(sourcePath);
+    const cardsPayload = await loadPersonCardsVNext(sourceOptions);
     const mailerBridgeRows = await loadMailerBridgeCandidates(mailerBridgePath);
 
     const proposal = buildCrmVNextMultiServiceCardProposal({
@@ -104,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(200).json({
       ok: true,
       source: {
-        personCards: publicLegacyPersonCardsV1Source(cardsPayload.source),
+        personCards: publicPersonCardsVNextSource(cardsPayload.source),
         mailerBridge: {
           kind: 'mailer-bridge-candidates-enriched',
           rows: mailerBridgeRows.length,

@@ -262,6 +262,18 @@ const emailExplicitlyRejectedByEvidence = (
   });
 };
 
+const emailAlreadyAssignedToSubject = (
+  preview: CrmCardApplyPreviewItem,
+  email: string,
+): boolean => {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return false;
+  const assignedEmails = preview.currentCard.exists
+    ? [preview.currentCard.identities.email].map(normalizeEmail)
+    : [];
+  return assignedEmails.includes(normalizedEmail);
+};
+
 const emailCandidatesFor = (
   preview: CrmCardApplyPreviewItem,
   stitchingClue: CrmDeepLocalStitchingClue | null,
@@ -270,6 +282,7 @@ const emailCandidatesFor = (
   preview.identityResolution.emailCandidates
     .filter((email) =>
       !emailAlreadyDecided(preview, email)
+      && !emailAlreadyAssignedToSubject(preview, email)
       && !emailExplicitlyRejectedByEvidence(stitchingClue, email)
     )
     .map((email) => {

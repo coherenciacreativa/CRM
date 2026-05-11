@@ -74,6 +74,11 @@ export type CrmCardApplyPreviewItem = {
     exists: boolean;
     personId: string | null;
     displayName: string | null;
+    identities: {
+      email: string | null;
+      phone: string | null;
+      instagramHandle: string | null;
+    };
     evidenceCount: number | null;
   };
   proposedCardDraft: PersonCardVNext | null;
@@ -857,6 +862,11 @@ export const buildCrmVNextCardApplyPreview = (
           exists: false,
           personId: null,
           displayName: null,
+          identities: {
+            email: null,
+            phone: null,
+            instagramHandle: null,
+          },
           evidenceCount: null,
         },
         proposedCardDraft: null,
@@ -892,6 +902,11 @@ export const buildCrmVNextCardApplyPreview = (
         exists: Boolean(currentCard),
         personId: currentCard?.personId ?? null,
         displayName: currentCard?.displayName ?? null,
+        identities: {
+          email: currentCard?.identities.email ?? null,
+          phone: currentCard?.identities.phone ?? null,
+          instagramHandle: currentCard?.identities.instagramHandle ?? null,
+        },
         evidenceCount: currentCard?.evidence.length ?? null,
       },
       proposedCardDraft,

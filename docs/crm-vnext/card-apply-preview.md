@@ -25,7 +25,10 @@ npm run crm:vnext:card-apply-preview -- --text "CRM: @mayuyis2626 es Mayerli, es
 npm run crm:vnext:card-apply-preview -- --include-expanded-sources --text "CRM: @mayuyis2626 es Mayerli."
 npm run crm:vnext:card-apply-preview -- --evidence-file ./gmail-contact-drive-evidence.json --text "CRM: @mayuyis2626 es Mayerli."
 npm run crm:vnext:card-apply-preview -- --decision-ledger-path ./.crm-vnext/evidence-review-decisions/decisions.jsonl --evidence-file ./evidence.json --text "CRM: @mayuyis2626 es Mayerli."
+npm run crm:vnext:card-apply-preview -- --connected-evidence-only --evidence-file ./lead_capture_evidence.json --text "<batch>"
 ```
+
+By default, the API/CLI prefer `.crm-vnext/person-card-store/person-cards-vnext.json` when present and fall back to legacy Person Cards V1 only when forced. This prevents the preview from proposing duplicate cards for contacts already materialized in vNext.
 
 ## What It Produces
 
@@ -34,7 +37,7 @@ Each preview item includes:
 - policy decision id,
 - target person id,
 - identity resolution summary,
-- current card summary if one exists,
+- current card summary and safe identity summary if one exists,
 - proposed card draft when relevant,
 - blocked approvals,
 - exact operations,

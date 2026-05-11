@@ -13,7 +13,7 @@ This helper exists for cases like `@cadavid_eli`: Alejandro knows the data was c
 ## Surfaces
 
 - API: `POST /api/crm-vnext/lead-capture-evidence-helper`
-- CLI: `npm run crm:vnext:lead-capture-evidence -- --text <text>`
+- CLI: `npm run crm:vnext:lead-capture-evidence -- --text <text> --out tmp/crm-vnext/lead_capture_evidence.json`
 - Core: `lib/crm/crm-vnext-lead-capture-evidence-helper.ts`
 
 ## Inputs
@@ -86,3 +86,14 @@ Prohibited:
 3. Supply selected rows back to the helper as `leadCaptureSearchResults`.
 4. Feed resulting `evidenceSources` into Deep Local Stitching, Card Write/Merge Policy, and the approval packet chain.
 5. Stop before any write or outbound action unless Alejandro explicitly approves the exact scope.
+
+## Eliana / Instagram Onboarding Proof
+
+The Eliana `@cadavid_eli` run is the model case for this lane:
+
+- read-only selected rows from ManyChat cache, old CRM webhook/interactions, and WhatsApp/class automation logs produced 4 `lead_capture_export` evidence packets;
+- Card Apply Preview recognized the existing vNext card `email:eli.cadavid@hotmail.com`;
+- the planned action became `enrich_existing_card`, not `create_card_candidate`;
+- the approval packet no longer re-asks email ownership when the same email is already assigned on the existing vNext card.
+
+This is the pattern Mantis should use later for Instagram-origin leads captured by ManyChat, Vercel proxies, CRM webhook traces, MailerLite, or WhatsApp automation logs.

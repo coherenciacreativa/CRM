@@ -188,6 +188,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     outbound: false,
     preferredNextStep: "Use when Activation Run produces unmatched or name-only clues before asking Alejandro for identifiers.",
     notes: [
+      "Prefers the local vNext person-card store when present; falls back to legacy Person Cards V1 only when forced.",
       "Does not call live MailerLite APIs.",
       "Does not mutate person cards or Fact Store.",
       "Restricted service context is flagged for human review.",
@@ -324,6 +325,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     outbound: false,
     preferredNextStep: "Use after identity stitching research to prepare a reviewed card create/merge/enrichment proposal.",
     notes: [
+      "Prefers the local vNext person-card store when present; falls back to legacy Person Cards V1 only when forced.",
       "Does not write person cards or Fact Store.",
       "Preserves yoga, retreats, therapy, mentorship, digital products, and community events as parallel relationships.",
       "Restricted service context is flagged and cannot drive outbound without review.",
@@ -342,6 +344,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     outbound: false,
     preferredNextStep: "Use after multi-service proposal and evidence review before any future card-write implementation.",
     notes: [
+      "Prefers the local vNext person-card store when present; falls back to legacy Person Cards V1 only when forced.",
       "Does not mutate person cards or Fact Store.",
       "Encodes that automatic writes and automatic merges remain prohibited.",
       "Accepts Gmail/contact evidence packets and consults local MailerLite bridge rows.",
@@ -362,6 +365,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     outbound: false,
     preferredNextStep: "Use after card write/merge policy to inspect the exact operations that a future approved apply command would need.",
     notes: [
+      "Prefers the local vNext person-card store when present; falls back to legacy Person Cards V1 only when forced.",
       "Does not mutate person cards or Fact Store.",
       "Does not implement a write command.",
       "Can show fuller identity candidates from evidence in proposed drafts while keeping them review-only.",
@@ -476,10 +480,12 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     outbound: false,
     preferredNextStep: "Use after Stitch Batch Review when a contact has no open evidence questions and needs explicit write approval.",
     notes: [
+      "Prefers the local vNext person-card store when present; falls back to legacy Person Cards V1 only when forced.",
       "Separates approval-ready items from evidence-blocked or identity-blocked items.",
       "Lists the exact approval scopes: card write policy, identity match, merge policy, restricted service context, and no-outbound boundary.",
       "Does not mutate cards, write Fact Store, call live APIs, or send outbound messages.",
       "Approval here prepares a future reviewed write path; it still executes zero operations.",
+      "Does not re-ask ownership for an email already assigned on the existing vNext card.",
     ],
   },
   {
@@ -979,6 +985,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     outbound: false,
     notes: [
       "Read-only proposal builder.",
+      "Prefers the local vNext person-card store when present.",
       "Does not mutate person cards or Fact Store.",
       "Use --fail-on-approval when an automation should stop on identity or privacy approvals.",
     ],
@@ -992,7 +999,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     outbound: false,
     notes: [
       "Read-only policy evaluator.",
-      "Uses local person cards, local MailerLite bridge rows, local evidence, and supplied evidence packets.",
+      "Uses the local vNext card store when present, plus local MailerLite bridge rows, local evidence, and supplied evidence packets.",
       "Documents Gmail browser and MailerLite read-only consultation rules for Mantis.",
       "This command never mutates cards, writes Fact Store, sends outbound, or calls live Gmail/MailerLite APIs.",
     ],
@@ -1006,6 +1013,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     outbound: false,
     notes: [
       "Read-only operation preview.",
+      "Prefers the local vNext person-card store when present.",
       "Uses review-only identity signals from evidence to enrich proposed drafts when the clue was sparse.",
       "Pass --decision-ledger-path when Mantis should apply already-approved evidence decisions.",
       "Every operation has executed=false.",
@@ -1094,6 +1102,8 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     outbound: false,
     notes: [
       "Read-only approval packet builder.",
+      "Prefers the local vNext person-card store when present.",
+      "Use --connected-evidence-only when a curated evidence packet should skip default local memory search.",
       "Use after stitch-batch-review when at least one item has no open evidence questions.",
       "Shows approval scopes and checklist per contact.",
       "This command never mutates cards, writes Fact Store, sends outbound, or calls live APIs.",

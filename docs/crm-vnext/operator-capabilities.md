@@ -57,6 +57,16 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 33. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
 34. Ask for approval if the next move would touch an external channel.
 
+## Read Source Rule
+
+For card proposal, stitching, policy, preview, and approval surfaces, prefer the local vNext person-card store when it exists:
+
+```text
+.crm-vnext/person-card-store/person-cards-vnext.json
+```
+
+Legacy Person Cards V1 remains available as fallback or an explicit override, but Mantis should not use a legacy-only view for write/merge decisions unless debugging. Otherwise contacts that already exist in vNext can look like new cards and create duplicate-work pressure.
+
 ## Response Shape
 
 ```json

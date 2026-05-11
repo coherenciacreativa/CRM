@@ -17,6 +17,8 @@ Options:
   --channel <channel>      Channel name, e.g. codex
   --include-expanded-sources
                            Also search read-only local CSVs, retreat tables, downloads, and contact exports
+  --connected-evidence-only
+                           Use only supplied --evidence-file sources, skipping default local memory search
   --evidence-file <path>   JSON file with connected evidenceSources from read-only searches
   --decision-ledger-path <path>
                            Local evidence-review decisions JSONL ledger to apply before approval
@@ -34,6 +36,7 @@ const parseArgs = (argv) => {
     reporter: null,
     channel: null,
     includeExpandedSources: false,
+    connectedEvidenceOnly: false,
     evidenceFile: null,
     decisionLedgerPath: null,
     failOnBlocked: false,
@@ -45,6 +48,7 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--fail-on-blocked') options.failOnBlocked = true;
     else if (arg === '--include-expanded-sources') options.includeExpandedSources = true;
+    else if (arg === '--connected-evidence-only') options.connectedEvidenceOnly = true;
     else if (arg === '--api-url') options.apiUrl = argv[++index];
     else if (arg === '--text') options.text = argv[++index];
     else if (arg === '--text-file') options.textFile = argv[++index];
@@ -103,6 +107,7 @@ const runPacket = async (options) => {
       reporter: options.reporter,
       channel: options.channel,
       includeExpandedSources: options.includeExpandedSources,
+      connectedEvidenceOnly: options.connectedEvidenceOnly,
       evidenceSources,
     }),
   });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 
 const DEFAULT_API_URL = 'http://localhost:3000/api/crm-vnext/lead-capture-evidence-helper';
 
@@ -17,6 +17,7 @@ Options:
   --channel <channel>         Channel name, e.g. codex
   --search-results-file <path>
                               JSON ManyChat/webhook/Vercel/proxy/WhatsApp/MailerLite capture results from a read-only export
+  --out <path>                 Write compact helper JSON output to this path
   --fail-on-auth-block        Exit non-zero when a read-only connector/export is blocked
   --help                      Show this help
 
@@ -31,6 +32,7 @@ const parseArgs = (argv) => {
     reporter: null,
     channel: null,
     searchResultsFile: null,
+    out: null,
     failOnAuthBlock: false,
     help: false,
   };
@@ -46,6 +48,7 @@ const parseArgs = (argv) => {
     else if (arg === '--reporter') options.reporter = argv[++index];
     else if (arg === '--channel') options.channel = argv[++index];
     else if (arg === '--search-results-file') options.searchResultsFile = argv[++index];
+    else if (arg === '--out') options.out = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
   }
 
@@ -129,7 +132,17 @@ const main = async () => {
     leadCaptureSearchResults: suppliedResults,
   });
 
-  console.log(JSON.stringify(compactPayload(payload), null, 2));
+  const compact = compactPayload(payload);
+  if (options.out) {
+    const outPath = resolve(options.out);
+    await mkdir(dirname(outPath), { recursive: true });
+    await writeFile(outPath, `${JSON.stringify(compact, null, 2)}\n`, 'utf8');
+  }
+
+  console.log(JSON.stringify({
+    ...compact,
+    out: options.out ? resolve(options.out) : null,
+  }, null, 2));
 
   if (options.failOnAuthBlock && payload.helper.summary.authBlocked) {
     process.exitCode = 2;

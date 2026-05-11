@@ -226,9 +226,9 @@ const itemFor = (
     subject: subjectFor(preview, decision, reviewItem),
     identity: {
       displayName: cleanString(proposedCard?.displayName ?? preview.currentCard.displayName),
-      email: cleanString(proposedCard?.identities.email),
-      phone: cleanString(proposedCard?.identities.phone),
-      instagramHandle: cleanString(proposedCard?.identities.instagramHandle),
+      email: cleanString(proposedCard?.identities.email ?? preview.currentCard.identities.email),
+      phone: cleanString(proposedCard?.identities.phone ?? preview.currentCard.identities.phone),
+      instagramHandle: cleanString(proposedCard?.identities.instagramHandle ?? preview.currentCard.identities.instagramHandle),
       missingContactFields: preview.identityResolution.missingContactFields,
       fullNameCandidates: preview.identityResolution.fullNameCandidates,
       emailCandidates: preview.identityResolution.emailCandidates,

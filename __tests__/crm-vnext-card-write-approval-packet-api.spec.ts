@@ -54,8 +54,25 @@ const makeFixture = async () => {
   const mailerBridgePath = join(dir, "mailer-ig-bridge.candidates.enriched.csv");
   const localRootPath = join(dir, "memory");
   const decisionLedgerPath = join(dir, "evidence-review-decisions.jsonl");
+  const cardStorePath = join(dir, "person-cards-vnext.json");
   await mkdir(localRootPath, { recursive: true });
   await writeFile(sourcePath, JSON.stringify({ generatedAt: NOW, cards: [] }), "utf8");
+  await writeFile(
+    cardStorePath,
+    JSON.stringify({
+      schemaVersion: "crm-vnext-person-card-store-2026-05-10",
+      generatedAt: NOW,
+      base: {
+        kind: "vnext-card-store",
+        sourceKind: "legacy-person-cards-v1-derived",
+        cardsBeforeApply: 0,
+      },
+      cards: [],
+      mergeReviewQueue: [],
+      provenance: [],
+    }),
+    "utf8",
+  );
   await writeFile(
     mailerBridgePath,
     "email,firstName,lastName,company,labels,source,language,notes,igHandle,confidence,updatedAt,status\n",
@@ -63,7 +80,7 @@ const makeFixture = async () => {
   );
   await writeFile(join(localRootPath, "WORKLOG.md"), "No private path here.", "utf8");
   await writeFile(decisionLedgerPath, "", "utf8");
-  return { dir, sourcePath, mailerBridgePath, localRootPath, decisionLedgerPath };
+  return { dir, sourcePath, cardStorePath, mailerBridgePath, localRootPath, decisionLedgerPath };
 };
 
 describe("/api/crm-vnext/card-write-approval-packet", () => {
@@ -136,6 +153,137 @@ describe("/api/crm-vnext/card-write-approval-packet", () => {
     expect(serialized).not.toContain(sourcePath);
     expect(serialized).not.toContain(mailerBridgePath);
     expect(serialized).not.toContain(localRootPath);
+  });
+
+  test("uses the vNext card store to enrich existing cards without re-asking existing email ownership", async () => {
+    const { dir, sourcePath, cardStorePath, mailerBridgePath, localRootPath, decisionLedgerPath } = await makeFixture();
+    process.env.NODE_ENV = "test";
+    delete process.env.CRM_VNEXT_INSIGHTS_TOKEN;
+    await writeFile(
+      cardStorePath,
+      JSON.stringify({
+        schemaVersion: "crm-vnext-person-card-store-2026-05-10",
+        generatedAt: NOW,
+        base: {
+          kind: "vnext-card-store",
+          sourceKind: "previous-vnext-card-store",
+          cardsBeforeApply: 1,
+        },
+        cards: [
+          {
+            schemaVersion: "person-card-vnext-2026-05-08",
+            personId: "email:eli.cadavid@hotmail.com",
+            displayName: "Eliana Cadavid",
+            identities: {
+              email: "eli.cadavid@hotmail.com",
+              instagramHandle: "cadavid_eli",
+              instagramUserId: null,
+              phone: "+573104954266",
+              city: null,
+              country: null,
+            },
+            channels: {
+              email: { present: true, status: null },
+              instagram: { present: true, status: null },
+              whatsapp: { present: false, status: null },
+              telegram: { present: false, status: null },
+            },
+            products: {
+              yogaClasses90d: 1,
+              happyCircle90d: 1,
+              retreatsAttended: 0,
+              totalSpend: 0,
+              purchaseCount: 0,
+              activeClient: false,
+            },
+            scoring: {
+              stage: "SEMILLA",
+              priorityScore: 11,
+              commercialWarmth: 3,
+              communityDepth: 8,
+              relationshipEngagement: 5,
+              dataConfidence: 80,
+              productFit: {
+                yoga: 21,
+                mentorship: 0,
+                therapy: 0,
+                digitalProducts: 0,
+                retreats: 0,
+              },
+              nextBestAction: "keep_warming",
+              reasons: [],
+              risks: [],
+            },
+            evidence: [],
+            nextAction: {
+              code: "keep_warming",
+              requiresHumanReview: false,
+              reason: "Test fixture.",
+            },
+            updatedAt: NOW,
+          },
+        ],
+        mergeReviewQueue: [],
+        provenance: [],
+      }),
+      "utf8",
+    );
+
+    const res = mockRes();
+    await handler({
+      method: "POST",
+      query: { sourcePath, cardStorePath, mailerBridgePath, localRootPath, decisionLedgerPath },
+      body: {
+        text: "CRM: @cadavid_eli se llama Eliana Cadavid, asiste a Encuentro Feliz y a clases de yoga.",
+        sourceKind: "alejandro_conversation",
+        connectedEvidenceOnly: true,
+        evidenceSources: [
+          {
+            sourceKind: "lead_capture_export",
+            sourceId: "manychat-cache:cadavid_eli",
+            text: "Matched clue: @cadavid_eli. Name: Eliana Cadavid. Email: eli.cadavid@hotmail.com. Phone: +573104954266.",
+          },
+        ],
+      },
+      headers: {},
+    } as MockReq, res as never);
+
+    expect(res.statusCode).toBe(200);
+    const payload = res.body as {
+      source: { personCards: { kind: string } };
+      packet: {
+        summary: { readyForHumanApproval: number; blockedOpenEvidenceQuestions: number; openEvidenceQuestions: number };
+        approvalItems: Array<{
+          status: string;
+          recommendedAction: string;
+          targetPersonId: string;
+          identitySummary: { email: string; instagramHandle: string; phone: string };
+          openQuestions: unknown[];
+        }>;
+      };
+    };
+    expect(payload.source.personCards.kind).toBe("vnext-person-card-store");
+    expect(payload.packet.summary).toMatchObject({
+      readyForHumanApproval: 1,
+      blockedOpenEvidenceQuestions: 0,
+      openEvidenceQuestions: 0,
+    });
+    expect(payload.packet.approvalItems[0]).toMatchObject({
+      status: "ready_for_human_approval",
+      recommendedAction: "enrich_existing_card",
+      targetPersonId: "email:eli.cadavid@hotmail.com",
+      identitySummary: {
+        email: "eli.cadavid@hotmail.com",
+        instagramHandle: "cadavid_eli",
+        phone: "+573104954266",
+      },
+      openQuestions: [],
+    });
+
+    const serialized = JSON.stringify(res.body);
+    expect(serialized).not.toContain(dir);
+    expect(serialized).not.toContain(sourcePath);
+    expect(serialized).not.toContain(cardStorePath);
   });
 
   test("rejects missing text and non-POST methods", async () => {
