@@ -97,3 +97,14 @@ The Eliana `@cadavid_eli` run is the model case for this lane:
 - the approval packet no longer re-asks email ownership when the same email is already assigned on the existing vNext card.
 
 This is the pattern Mantis should use later for Instagram-origin leads captured by ManyChat, Vercel proxies, CRM webhook traces, MailerLite, or WhatsApp automation logs.
+
+## Instagram Onboarding Mini-Batches
+
+The 2026-05-12 mini-batch proved the lane can operate beyond a single contact:
+
+- selected MailerLite/onboarding rows were supplied as read-only `leadCaptureRecords`;
+- the helper emitted five `lead_capture_export` evidence packets;
+- the Batch Operating Loop produced five approval-ready, dry-run-only card previews;
+- structured `Name`, `City`, `Country`, phone, and unique Instagram handle fields were preserved into the proposed card drafts when the evidence supported them.
+
+This is now the preferred local pattern for small Instagram/onboarding batches before any card write.

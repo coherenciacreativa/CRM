@@ -207,6 +207,90 @@ describe("CRM vNext card apply preview", () => {
     expect(report.policy.decisions[0].evidenceAssessment.sourceSignals).toContain("evidence_derived_identity_candidate");
   });
 
+  test("keeps structured lead-capture names and location for email-only onboarding leads", () => {
+    const report = buildCrmVNextCardApplyPreview({
+      text: "CRM: Katy Giraldo Aristizabal aparece como lead de Instagram/onboarding con email arquitectura.kmga@gmail.com.",
+      sourceKind: "manual_import",
+      reporter: "Codex",
+      channel: "codex",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "lead-capture:mailerlite_form:katy",
+          sourceKind: "lead_capture_export" as const,
+          text: [
+            "Title: mailerlite_form / Orgánico exitoso en 2025 / Instagram onboarding / Katy Giraldo Aristizabal",
+            "Email: arquitectura.kmga@gmail.com",
+            "Observed at: 2026-05-11T00:38:35.072Z",
+            "Snippet: Source: mailerlite_form Flow: Orgánico exitoso en 2025 / Instagram onboarding Contact ID: mailerlite-instagram-onboarding-katy-giraldo-aristizabal extra-pipeline-context extra-pipeline-context extra-pipeline-context extra-pipeline-context extra-pipeline-context",
+            "Name: Katy Giraldo Aristizabal",
+            "City: Medellín",
+            "Country: Colombia",
+            "Tags/groups: leads_instagram.csv, Onboarding complete",
+          ].join(" "),
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+    });
+
+    const preview = report.previews[0];
+    expect(preview.status).toBe("deferred_review_packet");
+    expect(preview.targetPersonId).toBe("email:arquitectura.kmga@gmail.com");
+    expect(preview.proposedCardDraft?.displayName).toBe("Katy Giraldo Aristizabal");
+    expect(preview.proposedCardDraft?.identities).toMatchObject({
+      email: "arquitectura.kmga@gmail.com",
+      city: "Medellín",
+      country: "Colombia",
+    });
+    expect(preview.identityResolution.fullNameCandidates).toEqual(["Katy Giraldo Aristizabal"]);
+    expect(preview.identityResolution.cityCandidates).toEqual(["Medellín"]);
+    expect(preview.identityResolution.countryCandidates).toEqual(["Colombia"]);
+  });
+
+  test("extracts a unique Instagram handle from lead-capture evidence for an email-only lead", () => {
+    const report = buildCrmVNextCardApplyPreview({
+      text: "CRM: Angélica Castro aparece como lead de Instagram/onboarding con email ultravioletastyle@gmail.com y teléfono +573016347540.",
+      sourceKind: "manual_import",
+      reporter: "Codex",
+      channel: "codex",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "lead-capture:mailerlite_form:angelica",
+          sourceKind: "lead_capture_export" as const,
+          text: [
+            "Title: mailerlite_form / Orgánico exitoso en 2025 / Instagram onboarding / Angélica Castro / @angelica_alma_cele",
+            "Email: ultravioletastyle@gmail.com",
+            "Handle: angelica_alma_cele",
+            "Snippet: Source: mailerlite_form Flow: Orgánico exitoso en 2025 / Instagram onboarding",
+            "Name: Angélica Castro",
+            "Instagram: @angelica_alma_cele",
+            "Phone: +573016347540",
+            "City: Bogotá",
+            "Country: Colombia",
+          ].join(" "),
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+    });
+
+    const preview = report.previews[0];
+    expect(preview.proposedCardDraft?.displayName).toBe("Angélica Castro");
+    expect(preview.proposedCardDraft?.identities).toMatchObject({
+      email: "ultravioletastyle@gmail.com",
+      instagramHandle: "angelica_alma_cele",
+      phone: "+573016347540",
+      city: "Bogotá",
+      country: "Colombia",
+    });
+    expect(preview.identityResolution.instagramHandles).toEqual(["angelica_alma_cele"]);
+    expect(preview.identityResolution.missingContactFields).not.toContain("instagramHandle");
+  });
+
   test("applies stored keep-unassigned evidence decisions to the preview", () => {
     const report = buildCrmVNextCardApplyPreview({
       text: "CRM: @mayuyis2626 es Mayerli, estudiante de las clases de yoga, ha asistido a varios retiros con su familia.",

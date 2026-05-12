@@ -766,6 +766,7 @@ const handleAliasesSubject = (
 const extractInstagramHandles = (
   clue: CrmIdentityStitchingClue,
   snippet: string,
+  sourceKind: CrmDeepLocalSourceKind,
 ): string[] => {
   const handles: string[] = [];
   const pattern = /@[a-zA-Z0-9._]{2,30}/g;
@@ -775,16 +776,25 @@ const extractInstagramHandles = (
     if (before && /[A-Za-z0-9._%+-]/.test(before)) continue;
     handles.push(match[0].replace(/^@+/, '').toLowerCase());
   }
+  const labeledHandlePattern = /\b(?:Instagram|Handle)\s*:\s*@?([a-zA-Z0-9._]{2,30})/gi;
+  for (const match of snippet.matchAll(labeledHandlePattern)) {
+    if (match[1]) handles.push(match[1].toLowerCase());
+  }
   const clueHandle = normalize(clue.person.instagramHandle?.replace(/^@+/, '') ?? null);
   if (clueHandle) return unique(handles.filter((handle) => normalize(handle) === clueHandle)).slice(0, 3);
-  return unique(handles.filter((handle) => handleAliasesSubject(clue, snippet, handle))).slice(0, 3);
+  const rawName = cleanString(clue.person.rawName);
+  if (rawName) return unique(handles.filter((handle) => handleAliasesSubject(clue, snippet, handle))).slice(0, 3);
+  if (['contacts_export', 'contacts_app_export', 'mailerlite_export', 'lead_capture_export', 'local_csv'].includes(sourceKind)) {
+    return unique(handles).slice(0, 3);
+  }
+  return [];
 };
 
 const structuredOwnerNameCandidates = (snippet: string): string[] => {
   const patterns = [
-    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Email|Phone|City|Country|Context)\s*:|<|$)/gi,
+    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context)\s*:|<|$)/gi,
     /\bFrom\s*:\s*([^<\n\r]+?)(?=<|\s+Subject\s*:|$)/gi,
-    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Email|Phone|City|Country|Context)\s*:|<|$)/gi,
+    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context)\s*:|<|$)/gi,
   ];
   const candidates: string[] = [];
   for (const pattern of patterns) {
@@ -834,7 +844,7 @@ const identitySignalsFor = (
     fullNameCandidates: extractFullNameCandidates(clue, snippet),
     emails: extractEmails(clue, snippet, sourceKind),
     phones: extractPhones(snippet, sourceKind),
-    instagramHandles: extractInstagramHandles(clue, snippet),
+    instagramHandles: extractInstagramHandles(clue, snippet, sourceKind),
   };
 };
 
@@ -978,9 +988,18 @@ const lineMatches = (
   return matches;
 };
 
-const cleanSnippet = (value: string): string =>
-  cleanPublicText(value)
-    .slice(0, 320);
+const cleanSnippet = (value: string, sourceKind: CrmDeepLocalSourceKind): string => {
+  const maxLength = [
+    'contacts_export',
+    'contacts_app_export',
+    'mailerlite_export',
+    'google_drive_export',
+    'lead_capture_export',
+    'retreat_table',
+    'local_csv',
+  ].includes(sourceKind) ? 900 : 320;
+  return cleanPublicText(value).slice(0, maxLength);
+};
 
 const hitSort = (a: CrmDeepLocalStitchingHit, b: CrmDeepLocalStitchingHit): number =>
   b.score - a.score || a.sourceId.localeCompare(b.sourceId) || (a.lineNumber ?? 0) - (b.lineNumber ?? 0);
@@ -999,7 +1018,7 @@ const hitsForClue = (
     for (const match of matches.slice(0, 3)) {
       const matchedCodes = unique(match.terms.map((term) => term.code));
       const maxTermWeight = Math.max(...match.terms.map((term) => term.weight));
-      const snippet = cleanSnippet(match.line);
+      const snippet = cleanSnippet(match.line, source.sourceKind);
       const contextSignals = contextSignalsFor(clue, snippet, source.sourceKind);
       const identitySignals = identitySignalsFor(clue, snippet, source.sourceKind);
       if (identitySignalsHaveValues(identitySignals)) {

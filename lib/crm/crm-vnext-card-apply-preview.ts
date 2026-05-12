@@ -166,9 +166,9 @@ const nameCompatibleWithRawHint = (
 
 const structuredOwnerNameCandidates = (snippet: string): string[] => {
   const patterns = [
-    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Email|Phone|City|Country|Context)\s*:|<|$)/gi,
+    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context)\s*:|<|$)/gi,
     /\bFrom\s*:\s*([^<\n\r]+?)(?=<|\s+Subject\s*:|$)/gi,
-    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Email|Phone|City|Country|Context)\s*:|<|$)/gi,
+    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context)\s*:|<|$)/gi,
   ];
   const candidates: string[] = [];
   for (const pattern of patterns) {
@@ -186,11 +186,34 @@ const structuredOwnerNameCandidates = (snippet: string): string[] => {
 
 const structuredFieldCandidates = (snippet: string, labels: string[]): string[] => {
   const labelPattern = labels.map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const pattern = new RegExp(`\\b(?:${labelPattern})\\s*:\\s*([^|;\\n\\r]+?)(?=\\s*(?:\\||;|$))`, 'gi');
+  const boundaryLabels = [
+    'Source',
+    'Flow',
+    'Flow ID',
+    'Contact ID',
+    'Name',
+    'Instagram',
+    'Handle',
+    'Email',
+    'Phone',
+    'City',
+    'Ciudad',
+    'Country',
+    'País',
+    'Pais',
+    'Tags/groups',
+    'Tags',
+    'Groups',
+    'Context',
+    'Confidence',
+    'Finding',
+    'Observed at',
+  ].map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const pattern = new RegExp(`\\b(?:${labelPattern})\\s*:\\s*([^|;\\n\\r]+?)(?=\\s+(?:${boundaryLabels})\\s*:|\\s*(?:\\||;|$))`, 'gi');
   const candidates: string[] = [];
   for (const match of snippet.matchAll(pattern)) {
     const cleaned = cleanPublicText(match[1] ?? '')
-      .replace(/\b(?:Email|Phone|City|Country|Context|Confidence|Finding|Groups|Source)\b.*$/i, '')
+      .replace(/\b(?:Email|Phone|City|Country|Context|Confidence|Finding|Groups|Tags|Source)\b.*$/i, '')
       .replace(/[<>"'()[\]{}]+/g, ' ')
       .replace(/[.,]+$/g, '')
       .replace(/\s+/g, ' ')
@@ -205,6 +228,19 @@ const structuredCitiesFromHits = (hits: CrmDeepLocalStitchingClue['hits']): stri
 
 const structuredCountriesFromHits = (hits: CrmDeepLocalStitchingClue['hits']): string[] =>
   unique(hits.flatMap((hit) => structuredFieldCandidates(hit.snippet, ['Country', 'País', 'Pais'])));
+
+const fullNameCandidatesFromRelevantHits = (
+  hits: CrmDeepLocalStitchingClue['hits'],
+  rawNameTerm: string,
+): string[] =>
+  unique(hits
+    .flatMap((hit) => [
+      ...hit.identitySignals.fullNameCandidates,
+      ...structuredOwnerNameCandidates(hit.snippet),
+    ])
+    .filter((candidate) => wordCount(candidate) >= 2)
+    .filter((candidate) => !rawNameTerm || nameCompatibleWithRawHint(candidate, rawNameTerm)))
+    .sort((a, b) => wordCount(b) - wordCount(a) || b.length - a.length);
 
 const structuredIdentityHitNamesDifferentPerson = (
   hit: CrmDeepLocalStitchingClue['hits'][number],
@@ -308,10 +344,9 @@ const instagramHandlesFromRelevantHits = (
   hits: CrmDeepLocalStitchingClue['hits'],
 ): string[] => {
   const handleHints = handleHintsForDecision(decision);
-  if (!handleHints.size) return [];
-  return hits
-    .flatMap((hit) => hit.identitySignals.instagramHandles)
-    .filter((handle) => handleHints.has(normalizedHandle(handle)));
+  const handles = unique(hits.flatMap((hit) => hit.identitySignals.instagramHandles));
+  if (!handleHints.size) return handles.length === 1 ? handles : [];
+  return handles.filter((handle) => handleHints.has(normalizedHandle(handle)));
 };
 
 const evidenceFromProposal = (
@@ -469,10 +504,7 @@ const identityHintsFromStitching = (
 } => {
   const rawNameTerm = normalize(decision.personHint.rawName);
   const relevantHits = relevantHitsWithEvidenceDecisions(decision, stitchingClue, evidenceReviewDecisions);
-  const fullNameCandidates = unique(relevantHits
-    .flatMap((hit) => hit.identitySignals.fullNameCandidates)
-    .filter((candidate) => nameCompatibleWithRawHint(candidate, rawNameTerm)))
-    .sort((a, b) => wordCount(b) - wordCount(a) || b.length - a.length);
+  const fullNameCandidates = fullNameCandidatesFromRelevantHits(relevantHits, rawNameTerm);
   const emailHits = relevantHits.filter((hit) => hit.identitySignals.emails.length);
   const emails = unique(emailHits.flatMap((hit) => hit.identitySignals.emails));
   const evidenceDecisionSummary = evidenceDecisionSummaryFor(decision, emails, evidenceReviewDecisions);
@@ -558,12 +590,16 @@ const identityResolutionFor = (
   ].filter((value): value is string => Boolean(cleanPublicText(value ?? ''))));
   const fullNameCandidates = unique([
     hints.displayName,
+    ...fullNameCandidatesFromRelevantHits(relevantHits, normalize(decision.personHint.rawName ?? decision.target.displayName)),
     ...(stitchingClue?.identitySummary.fullNameCandidates ?? []),
     decision.target.displayName,
   ].filter((value): value is string =>
     Boolean(cleanPublicText(value ?? ''))
     && wordCount(value) >= 2
-    && nameCompatibleWithRawHint(value, normalize(decision.personHint.rawName ?? decision.target.displayName)),
+    && (
+      !normalize(decision.personHint.rawName ?? decision.target.displayName)
+      || nameCompatibleWithRawHint(value, normalize(decision.personHint.rawName ?? decision.target.displayName))
+    ),
   ));
   const hasAssignableEmail = Boolean(decision.target.identities.email || hints.email);
   const evidenceDecisionSummary = evidenceDecisionSummaryFor(decision, emailCandidates, evidenceReviewDecisions);
