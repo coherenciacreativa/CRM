@@ -291,6 +291,45 @@ describe("CRM vNext card apply preview", () => {
     expect(preview.identityResolution.missingContactFields).not.toContain("instagramHandle");
   });
 
+  test("uses Instagram DM UI search bridge evidence as a card handle candidate", () => {
+    const report = buildCrmVNextCardApplyPreview({
+      text: "CRM: Rocío Martínez Jaime tiene email r_mart803@hotmail.com y queremos completar su Instagram desde evidencia UI read-only.",
+      sourceKind: "manual_import",
+      reporter: "Mantis",
+      channel: "telegram_crm",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "instagram-dm-ui:rocio-martinez-jaime",
+          sourceKind: "instagram_dm_ui_export" as const,
+          text: [
+            "Source: Instagram DM UI search bridge",
+            "Search term: r_mart803@hotmail.com",
+            "Email: r_mart803@hotmail.com",
+            "Name: Rocío Martínez Jaime",
+            "Thread display name: Mart Marya",
+            "Instagram: @maryamtzj.",
+            "Handle: @maryamtzj.",
+            "Review note: read-only UI observation; no outbound message sent.",
+          ].join(" "),
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+    });
+
+    const preview = report.previews[0];
+    expect(preview.status).toBe("deferred_review_packet");
+    expect(preview.proposedCardDraft?.displayName).toBe("Rocío Martínez Jaime");
+    expect(preview.proposedCardDraft?.identities).toMatchObject({
+      email: "r_mart803@hotmail.com",
+      instagramHandle: "maryamtzj",
+    });
+    expect(preview.identityResolution.instagramHandles).toEqual(["maryamtzj"]);
+    expect(preview.identityResolution.missingContactFields).not.toContain("instagramHandle");
+  });
+
   test("applies stored keep-unassigned evidence decisions to the preview", () => {
     const report = buildCrmVNextCardApplyPreview({
       text: "CRM: @mayuyis2626 es Mayerli, estudiante de las clases de yoga, ha asistido a varios retiros con su familia.",

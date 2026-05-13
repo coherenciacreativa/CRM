@@ -66,19 +66,19 @@ describe("CRM vNext Instagram DM UI evidence script", () => {
       {
         sourceKind: "instagram_dm_ui_export",
         sourceId: "instagram-dm-ui:rocio",
-        title: "Instagram DM UI bridge: r_mart803@hotmail.com -> @rocio_yoga_mx",
+        title: "Instagram DM UI bridge: r_mart803@hotmail.com -> @maryamtzj",
         subject: "Rocío Martínez Jaime",
         email: "r_mart803@hotmail.com",
-        handle: "rocio_yoga_mx",
+        handle: "maryamtzj",
         observedAt: "2026-05-14T12:00:00.000Z",
         text: [
           "Source: Instagram DM UI search bridge",
           "Search term: r_mart803@hotmail.com",
           "Email: r_mart803@hotmail.com",
           "Name: Rocío Martínez Jaime",
-          "Thread display name: Rocío Martínez Jaime",
-          "Instagram: @rocio_yoga_mx",
-          "Handle: @rocio_yoga_mx",
+          "Thread display name: Mart Marya",
+          "Instagram: @maryamtzj.",
+          "Handle: @maryamtzj.",
           "Review note: read-only UI observation; no outbound message sent.",
         ].join("\n"),
       },
@@ -99,7 +99,7 @@ describe("CRM vNext Instagram DM UI evidence script", () => {
     expect(report.summary.cluesWithHits).toBe(1);
     expect(report.clues[0].identitySummary).toMatchObject({
       emails: ["r_mart803@hotmail.com"],
-      instagramHandles: ["rocio_yoga_mx"],
+      instagramHandles: ["maryamtzj"],
     });
     expect(report.clues[0].hits[0].contextSignals).toEqual(expect.arrayContaining([
       "instagram_dm_ui_bridge_context",

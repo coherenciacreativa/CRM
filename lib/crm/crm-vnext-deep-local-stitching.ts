@@ -285,6 +285,15 @@ const normalize = (value: string | null | undefined): string =>
     .toLowerCase()
     .trim();
 
+const cleanInstagramHandleCandidate = (value: string | null | undefined): string | null => {
+  const cleaned = cleanString(value)
+    ?.replace(/^@+/, '')
+    .replace(/[/?#].*$/, '')
+    .replace(/\.+$/g, '')
+    .toLowerCase();
+  return cleaned && /^[a-z0-9._]{2,30}$/.test(cleaned) ? cleaned : null;
+};
+
 const hashId = (parts: Array<string | null | undefined>): string =>
   createHash('sha256')
     .update(parts.filter(Boolean).join('|'))
@@ -644,7 +653,7 @@ const hasClueIdentityTerm = (clue: CrmIdentityStitchingClue, value: string): boo
 
 const cleanNameCandidate = (value: string): string | null => {
   const cleaned = value
-    .replace(/\b(?:Logo|Subject|Snippet|Title|From|To|Hi|Hola|Name|Email|Phone|City|Country|File|Sheet|Row|Context)\b/gi, ' ')
+    .replace(/\b(?:Logo|Subject|Snippet|Title|From|To|Hi|Hola|Name|Email|Phone|City|Country|File|Sheet|Row|Context|Thread|Display|Observed|Instagram|Handle|Profile|URL)\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .replace(/[.,;:()[\]{}]+$/g, '')
@@ -802,13 +811,15 @@ const extractInstagramHandles = (
     const start = match.index ?? 0;
     const before = start > 0 ? snippet[start - 1] : '';
     if (before && /[A-Za-z0-9._%+-]/.test(before)) continue;
-    handles.push(match[0].replace(/^@+/, '').toLowerCase());
+    const handle = cleanInstagramHandleCandidate(match[0]);
+    if (handle) handles.push(handle);
   }
   const labeledHandlePattern = /\b(?:Instagram|Handle)\s*:\s*@?([a-zA-Z0-9._]{2,30})/gi;
   for (const match of snippet.matchAll(labeledHandlePattern)) {
-    if (match[1]) handles.push(match[1].toLowerCase());
+    const handle = cleanInstagramHandleCandidate(match[1]);
+    if (handle) handles.push(handle);
   }
-  const clueHandle = normalize(clue.person.instagramHandle?.replace(/^@+/, '') ?? null);
+  const clueHandle = normalize(cleanInstagramHandleCandidate(clue.person.instagramHandle));
   if (clueHandle) return unique(handles.filter((handle) => normalize(handle) === clueHandle)).slice(0, 3);
   const rawName = cleanString(clue.person.rawName);
   if (rawName) {
@@ -827,9 +838,9 @@ const extractInstagramHandles = (
 
 const structuredOwnerNameCandidates = (snippet: string): string[] => {
   const patterns = [
-    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context)\s*:|<|$)/gi,
+    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
     /\bFrom\s*:\s*([^<\n\r]+?)(?=<|\s+Subject\s*:|$)/gi,
-    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context)\s*:|<|$)/gi,
+    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
   ];
   const candidates: string[] = [];
   for (const pattern of patterns) {
@@ -966,8 +977,8 @@ const identitySummaryFor = (
     clue.person.instagramHandle,
     ...hits.flatMap((hit) => hit.identitySignals.instagramHandles),
   ]
-    .filter((value): value is string => Boolean(cleanString(value)))
-    .map((handle) => handle.replace(/^@+/, '').toLowerCase()));
+    .map((handle) => cleanInstagramHandleCandidate(handle))
+    .filter((value): value is string => Boolean(value)));
   const presentFields: CrmDeepLocalIdentityField[] = [];
   if (fullNameCandidates.length || (cleanString(clue.person.rawName) && wordCount(clue.person.rawName) >= 2)) presentFields.push('fullName');
   if (emails.length) presentFields.push('email');
