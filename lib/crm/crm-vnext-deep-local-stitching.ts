@@ -40,6 +40,7 @@ export type CrmDeepLocalSourceKind =
   | 'mailerlite_export'
   | 'google_drive_export'
   | 'lead_capture_export'
+  | 'instagram_dm_ui_export'
   | 'downloaded_file'
   | 'local_fixture';
 
@@ -246,6 +247,7 @@ const CONNECTED_EVIDENCE_SOURCE_KINDS = new Set<CrmDeepLocalSourceKind>([
   'mailerlite_export',
   'google_drive_export',
   'lead_capture_export',
+  'instagram_dm_ui_export',
   'contacts_export',
   'retreat_table',
   'local_csv',
@@ -594,9 +596,16 @@ const contextSignalsFor = (
   }
   if (
     sourceKind === 'lead_capture_export'
+    || sourceKind === 'instagram_dm_ui_export'
     || /\b(manychat|webhook|vercel|lead capture|instagram dm|last text input|flow|automation|whatsapp)\b/.test(normalized)
   ) {
     signals.push('lead_capture_context');
+  }
+  if (
+    sourceKind === 'instagram_dm_ui_export'
+    || /\b(instagram dm ui|dm search|thread search|message search|inbox search)\b/.test(normalized)
+  ) {
+    signals.push('instagram_dm_ui_bridge_context');
   }
   if (/\b(email ownership review required|family_email_review_required|family or companion|familiar|acompanante|acompañante)\b/.test(normalized)) {
     signals.push('family_email_review_required');
@@ -690,7 +699,7 @@ const extractEmails = (
     .filter((email) => !/\b(no-reply|noreply|notification|notificaciones?|zoom)\b/.test(email))
     .filter((email) => !/@(?:example\.com|example\.org|example\.net)$/i.test(email))
     .filter((email) => {
-      if (['contacts_export', 'contacts_app_export', 'mailerlite_export', 'google_drive_export', 'lead_capture_export', 'retreat_table', 'local_csv'].includes(sourceKind)) return true;
+      if (['contacts_export', 'contacts_app_export', 'mailerlite_export', 'google_drive_export', 'lead_capture_export', 'instagram_dm_ui_export', 'retreat_table', 'local_csv'].includes(sourceKind)) return true;
       const index = snippet.toLowerCase().indexOf(email.toLowerCase());
       const window = index >= 0 ? snippet.slice(Math.max(0, index - 90), index + email.length + 90) : snippet;
       return hasClueIdentityTerm(clue, window);
@@ -723,7 +732,7 @@ const extractPhones = (
   sourceKind: CrmDeepLocalSourceKind,
 ): string[] => {
   const normalized = normalize(snippet);
-  if (sourceKind === 'lead_capture_export') {
+  if (sourceKind === 'lead_capture_export' || sourceKind === 'instagram_dm_ui_export') {
     const matches: string[] = [];
     const labeledPattern = /\b(?:phone|telefono|teléfono|whatsapp|celular|movil|móvil)\b\s*[:=]\s*([+\d][+\d\s().-]{7,}\d)/gi;
     for (const match of snippet.matchAll(labeledPattern)) {
@@ -736,7 +745,7 @@ const extractPhones = (
   }
 
   if (
-    !['contacts_export', 'contacts_app_export', 'mailerlite_export', 'google_drive_export', 'lead_capture_export', 'retreat_table', 'local_csv'].includes(sourceKind)
+    !['contacts_export', 'contacts_app_export', 'mailerlite_export', 'google_drive_export', 'lead_capture_export', 'instagram_dm_ui_export', 'retreat_table', 'local_csv'].includes(sourceKind)
     && !/\b(phone|telefono|teléfono|whatsapp|celular|movil|móvil)\b/.test(normalized)
   ) {
     return [];
@@ -763,6 +772,25 @@ const handleAliasesSubject = (
   return Boolean(alias && crmVNextNameCompatible(rawName, alias));
 };
 
+const structuredOwnerMatchesRawName = (
+  clue: CrmIdentityStitchingClue,
+  snippet: string,
+): boolean => {
+  const rawName = cleanString(clue.person.rawName);
+  if (!rawName) return false;
+  const patterns = [
+    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context|Thread display name|Profile URL|Observed)\s*:|<|$)/gi,
+    /\bThread display name\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of snippet.matchAll(pattern)) {
+      const owner = cleanPublicText(match[1] ?? '');
+      if (owner && crmVNextNameCompatible(rawName, owner)) return true;
+    }
+  }
+  return false;
+};
+
 const extractInstagramHandles = (
   clue: CrmIdentityStitchingClue,
   snippet: string,
@@ -783,8 +811,15 @@ const extractInstagramHandles = (
   const clueHandle = normalize(clue.person.instagramHandle?.replace(/^@+/, '') ?? null);
   if (clueHandle) return unique(handles.filter((handle) => normalize(handle) === clueHandle)).slice(0, 3);
   const rawName = cleanString(clue.person.rawName);
-  if (rawName) return unique(handles.filter((handle) => handleAliasesSubject(clue, snippet, handle))).slice(0, 3);
-  if (['contacts_export', 'contacts_app_export', 'mailerlite_export', 'lead_capture_export', 'local_csv'].includes(sourceKind)) {
+  if (rawName) {
+    const aliasedHandles = unique(handles.filter((handle) => handleAliasesSubject(clue, snippet, handle))).slice(0, 3);
+    if (aliasedHandles.length) return aliasedHandles;
+    if (sourceKind === 'instagram_dm_ui_export' && structuredOwnerMatchesRawName(clue, snippet)) {
+      return unique(handles).slice(0, 3);
+    }
+    return [];
+  }
+  if (['contacts_export', 'contacts_app_export', 'mailerlite_export', 'lead_capture_export', 'instagram_dm_ui_export', 'local_csv'].includes(sourceKind)) {
     return unique(handles).slice(0, 3);
   }
   return [];
@@ -962,6 +997,7 @@ const sourceBonus = (sourceKind: CrmDeepLocalSourceKind): number => {
   if (sourceKind === 'mailerlite_export') return 12;
   if (sourceKind === 'google_drive_export') return 10;
   if (sourceKind === 'lead_capture_export') return 13;
+  if (sourceKind === 'instagram_dm_ui_export') return 14;
   if (sourceKind === 'gmail_export') return 10;
   if (sourceKind === 'retreat_table') return 12;
   if (sourceKind === 'local_csv') return 6;
@@ -995,6 +1031,7 @@ const cleanSnippet = (value: string, sourceKind: CrmDeepLocalSourceKind): string
     'mailerlite_export',
     'google_drive_export',
     'lead_capture_export',
+    'instagram_dm_ui_export',
     'retreat_table',
     'local_csv',
   ].includes(sourceKind) ? 900 : 320;

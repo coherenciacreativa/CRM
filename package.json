@@ -31,6 +31,7 @@
     "crm:vnext:mailerlite-evidence": "node scripts/crm-vnext-mailerlite-evidence.mjs",
     "crm:vnext:google-drive-evidence": "node scripts/crm-vnext-google-drive-evidence.mjs",
     "crm:vnext:lead-capture-evidence": "node scripts/crm-vnext-lead-capture-evidence.mjs",
+    "crm:vnext:instagram-dm-ui-evidence": "node scripts/crm-vnext-instagram-dm-ui-evidence.mjs",
     "crm:vnext:mantis-evidence-import": "node scripts/crm-vnext-mantis-evidence-import.mjs",
     "crm:vnext:deep-local-stitching": "node scripts/crm-vnext-deep-local-stitching.mjs",
     "crm:vnext:multi-service-card-proposal": "node scripts/crm-vnext-multi-service-card-proposal.mjs",

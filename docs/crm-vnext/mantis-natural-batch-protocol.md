@@ -179,6 +179,24 @@ npm run crm:vnext:human-enrichment-questions -- \
 
 Use this when Alejandro wants to add remembered context that sources may never know: how the person arrived, programs attended, current role, client status, relationship nuance, or a next-step intuition. These answers are still input for Fact Intake / future approved card writes; they are not permission for outbound or automatic mutation.
 
+## Instagram DM UI Bridge Fallback
+
+When a partial card has a confirmed email or phone but no Instagram handle, Mantis can try a read-only UI bridge:
+
+1. Search the known email/phone inside Instagram Messages UI.
+2. If a thread appears, record only minimal bridge evidence.
+3. Convert that observation into evidenceSources:
+
+```bash
+npm run crm:vnext:instagram-dm-ui-evidence -- \
+  --observations-file ./ig-dm-ui-observations.json \
+  --out tmp/crm-vnext/<slug>_ig_dm_ui_evidence.json
+```
+
+4. Feed that evidence packet into Deep Local Stitching / Card Apply Preview before any card write.
+
+This is for Rocio-style cases where an email entered through onboarding, Custom GPT, Vercel proxy, MailerLite, or a similar route, but the Instagram handle is still missing. The UI search itself must remain read-only: no sends, likes, reactions, follows, permission changes, or credential work.
+
 ## Good Batch Sizes
 
 - 1 contact for a difficult identity case such as a missing email/phone with many possible candidates.

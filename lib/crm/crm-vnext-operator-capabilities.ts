@@ -962,6 +962,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "instagram_dm_ui_evidence",
+    command: "npm run crm:vnext:instagram-dm-ui-evidence -- --observations-file <json>",
+    purpose: "Convert read-only Instagram DM UI search observations into email-to-handle bridge evidence packets.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Use when a known email or phone found in CRM/MailerLite/proxy evidence can be searched in Instagram Messages UI.",
+      "This command does not open Instagram or call live APIs; it converts supplied human/Mantis UI observations into instagram_dm_ui_export evidenceSources.",
+      "No send, like, react, follow, unfollow, permission, credential, ManyChat LIVE, card, or Fact Store mutation is allowed.",
+      "Feed the resulting evidenceSources into Deep Local Stitching, Card Apply Preview, or a later approval packet.",
+    ],
+  },
+  {
     id: "deep_local_stitching",
     command: "npm run crm:vnext:deep-local-stitching -- --include-expanded-sources --evidence-file <json> --text <text>",
     purpose: "Search configured local evidence sources before creating a new card.",
