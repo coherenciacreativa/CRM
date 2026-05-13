@@ -58,7 +58,12 @@ const normalizeHandle = (value) => {
   const cleaned = cleanString(value);
   if (!cleaned) return null;
   const instagramUrl = cleaned.match(/instagram\.com\/([a-zA-Z0-9._]{2,30})/i)?.[1];
-  const handle = (instagramUrl ?? cleaned).replace(/^@+/, '').replace(/[/?#].*$/, '').trim().toLowerCase();
+  const handle = (instagramUrl ?? cleaned)
+    .replace(/^@+/, '')
+    .replace(/[/?#].*$/, '')
+    .replace(/\.+$/g, '')
+    .trim()
+    .toLowerCase();
   return /^[a-z0-9._]{2,30}$/.test(handle) ? handle : null;
 };
 
@@ -93,6 +98,16 @@ const field = (record, keys) => {
   return null;
 };
 
+const cleanList = (value) => {
+  if (Array.isArray(value)) {
+    const items = value
+      .map((item) => cleanString(item))
+      .filter(Boolean);
+    return items.length ? items.join('; ') : null;
+  }
+  return cleanString(value);
+};
+
 const bridgeEvidenceFor = (raw, index, generatedAt) => {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const observation = raw;
@@ -119,6 +134,12 @@ const bridgeEvidenceFor = (raw, index, generatedAt) => {
   const observedAt = isoNow(field(observation, ['observedAt', 'createdAt', 'timestamp']) ?? generatedAt);
   const confidence = cleanString(field(observation, ['confidence'])) ?? (email && handle ? 'strong' : 'review');
   const snippet = cleanString(field(observation, ['snippet', 'messageSnippet', 'evidenceSnippet', 'notes', 'context']));
+  const city = cleanString(field(observation, ['city', 'matchedCity', 'threadCity']));
+  const country = cleanString(field(observation, ['country', 'matchedCountry', 'threadCountry']));
+  const preferences = cleanList(field(observation, ['preferences', 'preferenceSignals', 'interests', 'interestSignals']));
+  const tone = cleanString(field(observation, ['tone', 'toneNotes', 'communicationTone']));
+  const threadContext = cleanString(field(observation, ['threadContext', 'conversationContext', 'contextSummary', 'context']));
+  const threadContextLine = threadContext && threadContext !== snippet ? threadContext : null;
 
   if (!email || !handle) return null;
 
@@ -134,6 +155,11 @@ const bridgeEvidenceFor = (raw, index, generatedAt) => {
     `Instagram: @${handle}`,
     `Handle: @${handle}`,
     profileUrl ? `Profile URL: ${profileUrl}` : null,
+    city ? `City: ${city}` : null,
+    country ? `Country: ${country}` : null,
+    preferences ? `Preferences: ${preferences}` : null,
+    tone ? `Tone: ${tone}` : null,
+    threadContextLine ? `Thread context: ${threadContextLine}` : null,
     `Observed by: ${observedBy}`,
     `Observed at: ${observedAt}`,
     `Confidence: ${confidence}`,
@@ -152,6 +178,11 @@ const bridgeEvidenceFor = (raw, index, generatedAt) => {
     snippet: [
       `Instagram DM UI search matched ${email} to @${handle}.`,
       displayName ? `Thread display name: ${displayName}.` : null,
+      city ? `City: ${city}.` : null,
+      country ? `Country: ${country}.` : null,
+      preferences ? `Preferences: ${preferences}.` : null,
+      tone ? `Tone: ${tone}.` : null,
+      threadContextLine,
       snippet,
       `Observed by: ${observedBy}.`,
     ].filter(Boolean).join(' '),

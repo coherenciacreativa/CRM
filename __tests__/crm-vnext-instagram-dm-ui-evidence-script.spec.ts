@@ -23,8 +23,13 @@ describe("CRM vNext Instagram DM UI evidence script", () => {
             searchTerm: "r_mart803@hotmail.com",
             subjectName: "Rocío Martínez Jaime",
             subjectEmail: "r_mart803@hotmail.com",
-            matchedInstagramHandle: "rocio_yoga_mx",
+            matchedInstagramHandle: "rocio_yoga_mx.",
             matchedDisplayName: "Rocío Martínez Jaime",
+            city: "Ciudad de México",
+            country: "México",
+            preferences: ["retiros", "meditación"],
+            tone: "cálida y curiosa",
+            threadContext: "Pidió recibir correos y respondió con interés al saludo inicial.",
             observedBy: "Alejandro",
             observedAt: "2026-05-14T12:00:00.000Z",
             confidence: "strong",
@@ -55,6 +60,10 @@ describe("CRM vNext Instagram DM UI evidence script", () => {
         handle: "rocio_yoga_mx",
       });
       expect(report.evidenceSources[0].text).toContain("Instagram: @rocio_yoga_mx");
+      expect(report.evidenceSources[0].text).toContain("City: Ciudad de México");
+      expect(report.evidenceSources[0].text).toContain("Country: México");
+      expect(report.evidenceSources[0].text).toContain("Preferences: retiros; meditación");
+      expect(report.evidenceSources[0].text).toContain("Tone: cálida y curiosa");
       expect(JSON.stringify(report)).not.toContain("/Users/");
     } finally {
       await rm(dir, { recursive: true, force: true });

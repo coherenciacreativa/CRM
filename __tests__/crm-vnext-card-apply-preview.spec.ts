@@ -312,6 +312,10 @@ describe("CRM vNext card apply preview", () => {
             "Thread display name: Mart Marya",
             "Instagram: @maryamtzj.",
             "Handle: @maryamtzj.",
+            "City: Ciudad de México",
+            "Country: México",
+            "Preferences: retiros; meditación",
+            "Tone: cálida y curiosa",
             "Review note: read-only UI observation; no outbound message sent.",
           ].join(" "),
         },
@@ -325,6 +329,8 @@ describe("CRM vNext card apply preview", () => {
     expect(preview.proposedCardDraft?.identities).toMatchObject({
       email: "r_mart803@hotmail.com",
       instagramHandle: "maryamtzj",
+      city: "Ciudad de México",
+      country: "México",
     });
     expect(preview.identityResolution.instagramHandles).toEqual(["maryamtzj"]);
     expect(preview.identityResolution.missingContactFields).not.toContain("instagramHandle");

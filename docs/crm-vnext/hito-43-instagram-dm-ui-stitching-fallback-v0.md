@@ -22,10 +22,12 @@ Rocio Martinez Jaime is the model case: the CRM already had her email from onboa
 
 1. Start from a confirmed email/phone on a partial card.
 2. Search that value in Instagram Messages UI.
-3. If a thread appears, record only minimal bridge evidence:
+3. If a thread appears, record only minimal selected evidence:
    - searched value,
    - matched handle,
    - display name,
+   - city/country when explicitly visible,
+   - compact preferences/tone/context when useful,
    - observer,
    - observed time,
    - short non-sensitive note.
@@ -47,3 +49,4 @@ Actual UI search must remain read-only: no sends, likes, reactions, follows, per
 
 If Instagram asks for login, checkpoint, CAPTCHA, permissions, or anything state-changing, stop and ask Alejandro.
 
+Do not copy full conversations into CRM evidence. The intended artifact is a small evidence packet that preserves provenance and promotes only clear identity/location fields automatically; richer tone/preferences/context remain compact review context unless Alejandro approves a card/fact write.
