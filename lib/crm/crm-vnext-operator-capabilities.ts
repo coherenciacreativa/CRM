@@ -976,6 +976,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "ig_origin_batch_prompt",
+    command: "npm run crm:vnext:ig-origin-batch-prompt -- --latest-writes <n> --limit <n>",
+    purpose: "Prepare a copy-ready Mantis prompt for Instagram/onboarding batches with compact DM thread-context instructions.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Reads only the local vNext card store and card-write ledger.",
+      "Prioritizes likely Instagram/onboarding contacts with missing handle, phone, city, country, or low context.",
+      "Use --markdown-out to save a copy-ready prompt for the CRM Telegram group with Mantis.",
+      "This command does not inspect Instagram, call live APIs, mutate cards, write Fact Store, touch credentials, or send outbound.",
+    ],
+  },
+  {
     id: "deep_local_stitching",
     command: "npm run crm:vnext:deep-local-stitching -- --include-expanded-sources --evidence-file <json> --text <text>",
     purpose: "Search configured local evidence sources before creating a new card.",

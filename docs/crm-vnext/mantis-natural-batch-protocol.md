@@ -179,6 +179,27 @@ npm run crm:vnext:human-enrichment-questions -- \
 
 Use this when Alejandro wants to add remembered context that sources may never know: how the person arrived, programs attended, current role, client status, relationship nuance, or a next-step intuition. These answers are still input for Fact Intake / future approved card writes; they are not permission for outbound or automatic mutation.
 
+## IG-Origin Batch Prompt
+
+When Alejandro says something natural like "probemos un batch de los que llegaron por Instagram" or when recent writes need more thread context, Mantis/Codex can generate a bounded prompt instead of hand-writing one:
+
+```bash
+npm run crm:vnext:ig-origin-batch-prompt -- \
+  --latest-writes 8 \
+  --limit 8 \
+  --out tmp/crm-vnext/<slug>_ig_origin_batch_prompt.json \
+  --markdown-out ~/Documents/Mantis-Reports/<slug>_ig_origin_batch_prompt.md
+```
+
+The packet prioritizes likely Instagram/onboarding contacts, missing identity fields, recent writes, and low-context cards. The Markdown output is copy-ready for the CRM Telegram group with Mantis. It asks for:
+
+- lead-capture / ManyChat / proxy / Vercel / MailerLite / local evidence,
+- Instagram Messages UI bridge when a known email/phone may reveal the handle,
+- compact thread context such as city, country, interest, preferences, tone, origin, and next-step cues,
+- no full conversation export and no live mutation.
+
+Mantis still returns a normal contact-keyed evidence hunt JSON under `~/Documents/Mantis-Reports/`, then the usual import and batch operating loop continue.
+
 ## Instagram DM UI Bridge Fallback
 
 When a partial card has a confirmed email or phone but no Instagram handle, Mantis can try a read-only UI bridge:

@@ -82,6 +82,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:google-drive-evidence -- --text <text>",
       "npm run crm:vnext:lead-capture-evidence -- --text <text>",
       "npm run crm:vnext:instagram-dm-ui-evidence -- --observations-file <json>",
+      "npm run crm:vnext:ig-origin-batch-prompt -- --latest-writes <n> --limit <n>",
       "npm run crm:vnext:deep-local-stitching -- --include-expanded-sources --evidence-file <json> --text <text>",
       "npm run crm:vnext:multi-service-card-proposal -- --text <text>",
       "npm run crm:vnext:card-write-merge-policy -- --include-expanded-sources --evidence-file <json> --text <text>",
