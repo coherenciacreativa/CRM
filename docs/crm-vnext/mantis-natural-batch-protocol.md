@@ -168,6 +168,15 @@ npm run crm:vnext:human-enrichment-questions -- \
   --markdown-out tmp/crm-vnext/<slug>_human_questions.md
 ```
 
+If the batch was already committed to the local vNext card store, Mantis can avoid manually collecting person IDs and ask for the latest local writes:
+
+```bash
+npm run crm:vnext:human-enrichment-questions -- \
+  --latest-writes 5 \
+  --out tmp/crm-vnext/<slug>_latest_writes_human_questions.json \
+  --markdown-out tmp/crm-vnext/<slug>_latest_writes_human_questions.md
+```
+
 Use this when Alejandro wants to add remembered context that sources may never know: how the person arrived, programs attended, current role, client status, relationship nuance, or a next-step intuition. These answers are still input for Fact Intake / future approved card writes; they are not permission for outbound or automatic mutation.
 
 ## Good Batch Sizes

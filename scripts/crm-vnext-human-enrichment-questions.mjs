@@ -4,6 +4,7 @@ import { basename, dirname, resolve } from 'node:path';
 
 const SCHEMA_VERSION = 'crm-vnext-human-enrichment-questions-2026-05-11';
 const DEFAULT_CARD_STORE_PATH = '.crm-vnext/person-card-store/person-cards-vnext.json';
+const DEFAULT_CARD_WRITE_LEDGER_PATH = '.crm-vnext/card-write-apply/ledger.jsonl';
 
 const usage = `Usage:
   node scripts/crm-vnext-human-enrichment-questions.mjs [options]
@@ -11,6 +12,11 @@ const usage = `Usage:
 Options:
   --batch-loop-file <path>    Optional crm:vnext:batch-operating-loop JSON to seed people from a batch
   --card-store-path <path>    Local vNext card store path. Defaults to ${DEFAULT_CARD_STORE_PATH}
+  --card-write-ledger-path <path>
+                              Local card-write ledger JSONL path. Defaults to ${DEFAULT_CARD_WRITE_LEDGER_PATH}
+  --from-card-write-ledger    Include recently committed local card writes as people to enrich
+  --latest-writes <n>         Include the latest n unique upserted card writes. Implies --from-card-write-ledger
+  --since <iso-date>          Include local card writes committed at/after this ISO date. Implies --from-card-write-ledger
   --person-id <id[,id]>       Include exact personId(s), e.g. ig:cielo_gom_g. May be repeated
   --out <path>                Write question packet JSON to this path
   --markdown-out <path>       Write a human-readable Markdown interview sheet
@@ -24,6 +30,10 @@ const parseArgs = (argv) => {
   const options = {
     batchLoopFile: null,
     cardStorePath: DEFAULT_CARD_STORE_PATH,
+    cardWriteLedgerPath: DEFAULT_CARD_WRITE_LEDGER_PATH,
+    fromCardWriteLedger: false,
+    latestWrites: null,
+    since: null,
     personIds: [],
     out: null,
     markdownOut: null,
@@ -36,6 +46,16 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--batch-loop-file') options.batchLoopFile = argv[++index];
     else if (arg === '--card-store-path') options.cardStorePath = argv[++index];
+    else if (arg === '--card-write-ledger-path') options.cardWriteLedgerPath = argv[++index];
+    else if (arg === '--from-card-write-ledger') options.fromCardWriteLedger = true;
+    else if (arg === '--latest-writes') {
+      options.latestWrites = Number(argv[++index]);
+      options.fromCardWriteLedger = true;
+    }
+    else if (arg === '--since') {
+      options.since = argv[++index];
+      options.fromCardWriteLedger = true;
+    }
     else if (arg === '--person-id') options.personIds.push(...argv[++index].split(','));
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -45,6 +65,12 @@ const parseArgs = (argv) => {
 
   if (options.limit !== null && (!Number.isInteger(options.limit) || options.limit < 1)) {
     throw new Error('invalid_limit');
+  }
+  if (options.latestWrites !== null && (!Number.isInteger(options.latestWrites) || options.latestWrites < 1)) {
+    throw new Error('invalid_latest_writes');
+  }
+  if (options.since !== null && Number.isNaN(Date.parse(options.since))) {
+    throw new Error('invalid_since');
   }
   return options;
 };
@@ -62,6 +88,29 @@ const cleanString = (value) => {
 const unique = (values) => Array.from(new Set(values.filter(Boolean)));
 
 const readJson = async (filePath) => JSON.parse(await readFile(resolve(filePath), 'utf8'));
+
+const readJsonl = async (filePath) => {
+  const raw = await readFile(resolve(filePath), 'utf8');
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+};
+
+const personIdsFromCardWriteLedger = (entries, options) => {
+  const sinceTime = options.since ? Date.parse(options.since) : null;
+  const selected = [];
+  for (const entry of [...entries].reverse()) {
+    if (!entry || entry.mutationKind !== 'upsert_vnext_card') continue;
+    if (sinceTime !== null && Date.parse(entry.committedAt ?? '') < sinceTime) continue;
+    const personId = cleanString(entry.cardPersonId) ?? cleanString(entry.targetPersonId);
+    if (!personId || selected.includes(personId)) continue;
+    selected.push(personId);
+    if (options.latestWrites !== null && selected.length >= options.latestWrites) break;
+  }
+  return selected;
+};
 
 const personIdsFromBatchLoop = (loop) => unique([
   ...(Array.isArray(loop?.readyApprovalItems) ? loop.readyApprovalItems.map((item) => item.targetPersonId) : []),
@@ -223,10 +272,11 @@ const questionFor = (personId, card, batchStatus, index) => {
   };
 };
 
-const buildPacket = ({ cards, batchLoop, personIds, now }) => {
+const buildPacket = ({ cards, batchLoop, ledgerPersonIds = [], personIds = [], now, source = {} }) => {
   const cardsById = new Map(cards.map((card) => [card.personId, card]));
   const selectedPersonIds = unique([
     ...personIdsFromBatchLoop(batchLoop),
+    ...ledgerPersonIds,
     ...personIds.map(cleanString),
   ]);
   const questions = selectedPersonIds.map((personId, index) =>
@@ -240,6 +290,9 @@ const buildPacket = ({ cards, batchLoop, personIds, now }) => {
     source: {
       selectedPeople: selectedPersonIds.length,
       batchLoopFile: batchLoop?._sourceFile ? basename(batchLoop._sourceFile) : null,
+      cardWriteLedgerLoaded: Boolean(source.cardWriteLedgerLoaded),
+      cardWriteLedgerRows: source.cardWriteLedgerRows ?? 0,
+      cardWriteLedgerPeopleSelected: ledgerPersonIds.length,
       cardStoreLoaded: true,
       localPathsRedacted: true,
     },
@@ -319,11 +372,22 @@ const main = async () => {
   const batchLoop = options.batchLoopFile
     ? { ...(await readJson(options.batchLoopFile)), _sourceFile: resolve(options.batchLoopFile) }
     : null;
+  const cardWriteLedgerEntries = options.fromCardWriteLedger
+    ? await readJsonl(options.cardWriteLedgerPath)
+    : [];
+  const ledgerPersonIds = options.fromCardWriteLedger
+    ? personIdsFromCardWriteLedger(cardWriteLedgerEntries, options)
+    : [];
   const personIds = options.limit ? options.personIds.slice(0, options.limit) : options.personIds;
   const packet = buildPacket({
     cards: Array.isArray(cardStore?.cards) ? cardStore.cards : [],
     batchLoop,
+    ledgerPersonIds,
     personIds,
+    source: {
+      cardWriteLedgerLoaded: options.fromCardWriteLedger,
+      cardWriteLedgerRows: cardWriteLedgerEntries.length,
+    },
   });
 
   const limitedPacket = options.limit

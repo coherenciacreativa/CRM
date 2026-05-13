@@ -23,6 +23,17 @@ npm run crm:vnext:human-enrichment-questions -- \
 
 Use `--person-id` repeatedly or comma-separated when Alejandro wants to add a person outside the current batch, such as a recently written card.
 
+After approved local writes, the command can seed itself directly from the card-write ledger:
+
+```bash
+npm run crm:vnext:human-enrichment-questions -- \
+  --latest-writes 5 \
+  --out tmp/crm-vnext/latest_writes_human_questions.json \
+  --markdown-out tmp/crm-vnext/latest_writes_human_questions.md
+```
+
+Use this when Alejandro says something like "preguntame por los ultimos contactos que escribimos" or when Mantis needs to close the loop after `card-write-apply`. The ledger path defaults to `.crm-vnext/card-write-apply/ledger.jsonl`, and only committed `upsert_vnext_card` entries are included; staged merge reviews remain outside this question sheet until resolved.
+
 ## When To Use
 
 Use after:

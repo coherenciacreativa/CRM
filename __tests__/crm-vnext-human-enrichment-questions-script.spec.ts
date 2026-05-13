@@ -121,4 +121,138 @@ describe("CRM vNext human enrichment questions script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("can seed questions from the latest committed card-write ledger entries", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-human-enrichment-ledger-"));
+    try {
+      const cardStorePath = join(dir, "cards.json");
+      const ledgerPath = join(dir, "ledger.jsonl");
+      const outPath = join(dir, "questions.json");
+      const markdownPath = join(dir, "questions.md");
+
+      await writeFile(cardStorePath, JSON.stringify({
+        schemaVersion: "crm-vnext-person-card-store-2026-05-10",
+        cards: [
+          {
+            personId: "email:katy@example.com",
+            displayName: "Katy Giraldo Aristizabal",
+            identities: {
+              email: "katy@example.com",
+              instagramHandle: null,
+              instagramUserId: null,
+              phone: null,
+              city: "Medellín",
+              country: "Colombia",
+            },
+            products: {
+              yogaClasses90d: 0,
+              happyCircle90d: 0,
+              retreatsAttended: 0,
+              totalSpend: 0,
+              purchaseCount: 0,
+              activeClient: false,
+            },
+            evidence: [{ source: "lead-capture" }],
+          },
+          {
+            personId: "email:edwin@example.com",
+            displayName: "Edwin Velasquez",
+            identities: {
+              email: "edwin@example.com",
+              instagramHandle: null,
+              instagramUserId: null,
+              phone: "+573108010473",
+              city: "Bogotá",
+              country: "Colombia",
+            },
+            products: {
+              yogaClasses90d: 0,
+              happyCircle90d: 0,
+              retreatsAttended: 0,
+              totalSpend: 0,
+              purchaseCount: 0,
+              activeClient: false,
+            },
+            evidence: [{ source: "lead-capture" }],
+          },
+          {
+            personId: "ig:oldmerge",
+            displayName: "Old Merge",
+            identities: {
+              email: null,
+              instagramHandle: "oldmerge",
+              instagramUserId: null,
+              phone: null,
+              city: null,
+              country: null,
+            },
+            products: {},
+            evidence: [],
+          },
+        ],
+      }), "utf8");
+
+      await writeFile(ledgerPath, [
+        JSON.stringify({
+          committedAt: "2026-05-10T10:00:00.000Z",
+          mutationKind: "upsert_vnext_card",
+          cardPersonId: "ig:oldmerge",
+          targetPersonId: "ig:oldmerge",
+        }),
+        JSON.stringify({
+          committedAt: "2026-05-11T10:00:00.000Z",
+          mutationKind: "stage_merge_review",
+          cardPersonId: null,
+          targetPersonId: "email:merge@example.com",
+        }),
+        JSON.stringify({
+          committedAt: "2026-05-12T10:00:00.000Z",
+          mutationKind: "upsert_vnext_card",
+          cardPersonId: "email:edwin@example.com",
+          targetPersonId: "email:edwin@example.com",
+        }),
+        JSON.stringify({
+          committedAt: "2026-05-12T10:01:00.000Z",
+          mutationKind: "upsert_vnext_card",
+          cardPersonId: "email:katy@example.com",
+          targetPersonId: "email:katy@example.com",
+        }),
+      ].join("\n"), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-human-enrichment-questions.mjs",
+        "--card-store-path",
+        cardStorePath,
+        "--card-write-ledger-path",
+        ledgerPath,
+        "--latest-writes",
+        "2",
+        "--out",
+        outPath,
+        "--markdown-out",
+        markdownPath,
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const markdown = await readFile(markdownPath, "utf8");
+      expect(packet.source).toMatchObject({
+        cardWriteLedgerLoaded: true,
+        cardWriteLedgerRows: 4,
+        cardWriteLedgerPeopleSelected: 2,
+      });
+      expect(packet.questions.map((question: { personId: string }) => question.personId)).toEqual([
+        "email:katy@example.com",
+        "email:edwin@example.com",
+      ]);
+      expect(packet.summary).toMatchObject({
+        questions: 2,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(markdown).toContain("## 1. Katy Giraldo Aristizabal");
+      expect(JSON.stringify(packet)).not.toContain("/Users/");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

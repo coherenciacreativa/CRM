@@ -46,11 +46,21 @@ Previewed candidates:
 - Rocio Martinez Jaime — `r_mart803@hotmail.com`, Mexico.
 - Angelica Castro — `ultravioletastyle@gmail.com`, `@angelica_alma_cele`, `+573016347540`, Bogota/Colombia.
 
-All five are still `review_deferred_write`: Alejandro must explicitly approve any local card write.
+Initial result: all five were `review_deferred_write`, requiring Alejandro to explicitly approve any local card write.
+
+Post-approval status:
+
+- Alejandro approved the five local writes.
+- `crm:vnext:card-write-apply --apply-all-ready --write --approved-by Alejandro` committed the five cards locally.
+- The local vNext store reached 741 cards.
+- Five local card-write ledger entries were recorded.
+- Backups were created before commit.
 
 ## Safety
 
-No writes were executed.
+Initial mini-batch dry-run executed no writes.
+
+The later approved local write touched only the vNext card store and card-write ledger.
 
 No Fact Store write, no outbound message, no live Gmail/Drive/MailerLite/Instagram/ManyChat/WhatsApp/Telegram call, no credential read, and no ManyChat LIVE change.
 
@@ -65,4 +75,3 @@ Mantis should gather selected read-only rows, save a contact-keyed report or lea
 1. `crm:vnext:lead-capture-evidence`
 2. `crm:vnext:batch-operating-loop`
 3. human approval before `crm:vnext:card-write-apply --write`
-
