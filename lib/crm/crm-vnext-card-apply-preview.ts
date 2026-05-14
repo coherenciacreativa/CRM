@@ -166,9 +166,9 @@ const nameCompatibleWithRawHint = (
 
 const structuredOwnerNameCandidates = (snippet: string): string[] => {
   const patterns = [
-    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
+    /\bName\s*:\s*([^|<\n\r]+?)(?=\s*\||\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
     /\bFrom\s*:\s*([^<\n\r]+?)(?=<|\s+Subject\s*:|$)/gi,
-    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
+    /\b(?:Contact|Subscriber)\s*:\s*([^|<\n\r]+?)(?=\s*\||\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
   ];
   const candidates: string[] = [];
   for (const pattern of patterns) {

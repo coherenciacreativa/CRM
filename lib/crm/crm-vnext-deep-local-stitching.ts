@@ -291,7 +291,9 @@ const cleanInstagramHandleCandidate = (value: string | null | undefined): string
     .replace(/[/?#].*$/, '')
     .replace(/\.+$/g, '')
     .toLowerCase();
-  return cleaned && /^[a-z0-9._]{2,30}$/.test(cleaned) ? cleaned : null;
+  if (!cleaned || !/^[a-z0-9._]{2,30}$/.test(cleaned)) return null;
+  if (/^\d+$/.test(cleaned)) return null;
+  return cleaned;
 };
 
 const hashId = (parts: Array<string | null | undefined>): string =>
@@ -788,8 +790,8 @@ const structuredOwnerMatchesRawName = (
   const rawName = cleanString(clue.person.rawName);
   if (!rawName) return false;
   const patterns = [
-    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context|Thread display name|Profile URL|Observed)\s*:|<|$)/gi,
-    /\bThread display name\s*:\s*([^<\n\r]+?)(?=\s+(?:Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
+    /\bName\s*:\s*([^|<\n\r]+?)(?=\s*\||\s+(?:Instagram|Handle|Email|Phone|City|Country|Context|Thread display name|Profile URL|Observed)\s*:|<|$)/gi,
+    /\bThread display name\s*:\s*([^|<\n\r]+?)(?=\s*\||\s+(?:Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
   ];
   for (const pattern of patterns) {
     for (const match of snippet.matchAll(pattern)) {
@@ -838,9 +840,9 @@ const extractInstagramHandles = (
 
 const structuredOwnerNameCandidates = (snippet: string): string[] => {
   const patterns = [
-    /\bName\s*:\s*([^<\n\r]+?)(?=\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
+    /\bName\s*:\s*([^|<\n\r]+?)(?=\s*\||\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
     /\bFrom\s*:\s*([^<\n\r]+?)(?=<|\s+Subject\s*:|$)/gi,
-    /\b(?:Contact|Subscriber)\s*:\s*([^<\n\r]+?)(?=\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
+    /\b(?:Contact|Subscriber)\s*:\s*([^|<\n\r]+?)(?=\s*\||\s+(?:Thread display name|Instagram|Handle|Email|Phone|City|Country|Context|Profile URL|Observed)\s*:|<|$)/gi,
   ];
   const candidates: string[] = [];
   for (const pattern of patterns) {

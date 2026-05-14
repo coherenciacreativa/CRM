@@ -336,6 +336,52 @@ describe("CRM vNext card apply preview", () => {
     expect(preview.identityResolution.missingContactFields).not.toContain("instagramHandle");
   });
 
+  test("does not infer numeric Instagram handles from IG UI provenance timestamps", () => {
+    const report = buildCrmVNextCardApplyPreview({
+      text: "CRM: Edwin Velasquez tiene email edwclaros1998@gmail.com y telefono +573108010473; IG UI encontro email pero no handle.",
+      sourceKind: "manual_import",
+      reporter: "Mantis",
+      channel: "telegram_crm",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      localSources: [
+        {
+          sourceId: "mantis_evidence:email_edwclaros1998_gmail_com:instagram_dm_ui_export:4",
+          sourceKind: "instagram_dm_ui_export" as const,
+          text: [
+            "Name: Edwin Velasquez",
+            "Email: edwclaros1998@gmail.com",
+            "Phone: +573108010473",
+            "City: Bogotá",
+            "Country: Colombia",
+            "Confidence: high",
+            "Finding: Contact key: email:edwclaros1998@gmail.com",
+            "Record sourceId: instagram-dm-ui:edwin:email-hit-no-handle:2026-05-13T23:02:02Z",
+            "Source system: instagram_dm_ui_search",
+            "Search term: edwclaros1998@gmail.com",
+            "Matched display name: Instagram User",
+            "Confidence: review",
+            "Finding: Email appeared in search; handle not recoverable from visible UI.",
+          ].join(" | "),
+        },
+      ],
+      sourceCoverage: { filesScanned: 0, filesSkipped: 0, roots: 0, connectedEvidenceSources: 1 },
+    });
+
+    const preview = report.previews[0];
+    expect(preview.proposedCardDraft?.displayName).toBe("Edwin Velasquez");
+    expect(preview.proposedCardDraft?.identities).toMatchObject({
+      email: "edwclaros1998@gmail.com",
+      phone: "+573108010473",
+      city: "Bogotá",
+      country: "Colombia",
+    });
+    expect(preview.proposedCardDraft?.identities.instagramHandle ?? null).toBeNull();
+    expect(preview.identityResolution.instagramHandles).toEqual([]);
+    expect(preview.identityResolution.missingContactFields).toContain("instagramHandle");
+  });
+
   test("applies stored keep-unassigned evidence decisions to the preview", () => {
     const report = buildCrmVNextCardApplyPreview({
       text: "CRM: @mayuyis2626 es Mayerli, estudiante de las clases de yoga, ha asistido a varios retiros con su familia.",

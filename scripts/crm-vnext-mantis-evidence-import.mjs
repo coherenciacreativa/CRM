@@ -93,6 +93,7 @@ const sourceKindForEvidence = (source) => {
   if (kind === 'google_drive_export') return 'google_drive_export';
   if (kind === 'retreat_table') return 'retreat_table';
   if (kind === 'lead_capture_export') return 'lead_capture_export';
+  if (kind === 'instagram_dm_ui_export') return 'instagram_dm_ui_export';
   if (kind === 'gmail_export') return 'gmail_export';
   if (kind === 'local_fixture') return 'local_fixture';
   if (kind === 'downloaded_file') return 'downloaded_file';
@@ -112,6 +113,7 @@ const sourceKindForEvidence = (source) => {
     return 'retreat_table';
   }
   if (kind === 'local_csv_xlsx') return 'local_csv';
+  if (kind === 'instagram_dm_ui_search' || text.includes('instagram messages ui')) return 'instagram_dm_ui_export';
   if (kind === 'juana_report' || text.includes('dm') || text.includes('inbound') || text.includes('instagram')) {
     return 'lead_capture_export';
   }
@@ -131,6 +133,7 @@ const sourceSupportsIdentityFields = (source, sourceKind) => {
     'local_csv',
     'google_drive_export',
     'gmail_export',
+    'instagram_dm_ui_export',
   ].includes(sourceKind)
     || kind === 'local_csv_xlsx'
     || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(finding);
@@ -237,8 +240,16 @@ const flattenEvidenceValue = (value) => {
 const findingForMatch = (match) => {
   const parts = [
     cleanString(match?.source) ? `Source: ${cleanString(match.source)}` : null,
+    cleanString(match?.type) ? `Type: ${cleanString(match.type)}` : null,
     cleanString(match?.strength) ? `Strength: ${cleanString(match.strength)}` : null,
+    cleanString(match?.confidence) ? `Confidence: ${cleanString(match.confidence)}` : null,
     cleanString(match?.whyItMatters) ? `Why: ${cleanString(match.whyItMatters)}` : null,
+    cleanString(match?.searchTerm) ? `Search term: ${cleanString(match.searchTerm)}` : null,
+    cleanString(match?.matchedDisplayName) ? `Matched display name: ${cleanString(match.matchedDisplayName)}` : null,
+    cleanString(match?.matchedInstagramHandle) ? `Matched Instagram: @${normalizeHandle(match.matchedInstagramHandle)}` : null,
+    cleanString(match?.candidate) ? `Candidate: ${cleanString(match.candidate)}` : null,
+    cleanString(match?.reason) ? `Reason: ${cleanString(match.reason)}` : null,
+    cleanString(match?.finding) ? `Finding: ${cleanString(match.finding)}` : null,
     cleanString(match?.classification) ? `Classification: ${cleanString(match.classification)}` : null,
     ...flattenEvidenceValue(match?.evidence).slice(0, 18),
   ].filter(Boolean);
@@ -246,7 +257,13 @@ const findingForMatch = (match) => {
 };
 
 const sourceKindHintForMatch = (match) => {
-  const text = `${cleanString(match?.source) ?? ''} ${cleanString(match?.sourceId) ?? ''}`.toLowerCase();
+  const text = [
+    cleanString(match?.type),
+    cleanString(match?.source),
+    cleanString(match?.sourceId),
+    cleanString(match?.finding),
+  ].filter(Boolean).join(' ').toLowerCase();
+  if (text.includes('instagram_dm_ui') || text.includes('instagram messages ui')) return 'instagram_dm_ui_export';
   if (text.includes('mailerlite')) return 'mailerlite_export';
   if (text.includes('contacts')) return 'contacts_app_export';
   if (text.includes('drive') || text.includes('sheets')) return text.includes('retreat') || text.includes('retiro')
@@ -258,10 +275,40 @@ const sourceKindHintForMatch = (match) => {
   return 'local_fixture';
 };
 
+const sourceKindHintForEvidenceRecord = (record) => {
+  const text = [
+    cleanString(record?.sourceSystem),
+    cleanString(record?.source),
+    cleanString(record?.sourceId),
+    cleanString(record?.finding),
+  ].filter(Boolean).join(' ').toLowerCase();
+  if (text.includes('instagram_dm_ui') || text.includes('instagram messages ui')) return 'instagram_dm_ui_export';
+  if (text.includes('lead-capture') || text.includes('lead_capture') || text.includes('mailerlite_form') || text.includes('onboarding')) {
+    return 'lead_capture_export';
+  }
+  if (text.includes('mailerlite')) return 'mailerlite_export';
+  if (text.includes('gmail')) return 'gmail_export';
+  if (text.includes('drive') || text.includes('sheets')) return text.includes('retiro') || text.includes('retreat')
+    ? 'retreat_table'
+    : 'google_drive_export';
+  if (text.includes('contacts')) return 'contacts_app_export';
+  return 'local_fixture';
+};
+
+const findingForEvidenceRecord = (record) => [
+  cleanString(record?.sourceSystem) ? `Source system: ${cleanString(record.sourceSystem)}` : null,
+  cleanString(record?.searchTerm) ? `Search term: ${cleanString(record.searchTerm)}` : null,
+  cleanString(record?.matchedDisplayName) ? `Matched display name: ${cleanString(record.matchedDisplayName)}` : null,
+  cleanString(record?.matchedInstagramHandle) ? `Matched Instagram: @${normalizeHandle(record.matchedInstagramHandle)}` : null,
+  cleanString(record?.confidence) ? `Confidence: ${cleanString(record.confidence)}` : null,
+  cleanString(record?.finding) ? `Finding: ${cleanString(record.finding)}` : null,
+  ...flattenEvidenceValue(record?.attributes).slice(0, 12),
+].filter(Boolean).join(' | ');
+
 const evidenceSourcesForContact = (contactKey, contact) => {
   const strongMatches = Array.isArray(contact?.strongMatches) ? contact.strongMatches : [];
   const weakMatches = Array.isArray(contact?.weakMatches) ? contact.weakMatches : [];
-  return [
+  const matchSources = [
     ...strongMatches.map((match) => ({ ...match, _bucket: 'strong' })),
     ...weakMatches.map((match) => ({ ...match, _bucket: 'weak_review_only' })),
   ].flatMap((match) => {
@@ -276,6 +323,20 @@ const evidenceSourcesForContact = (contactKey, contact) => {
       ].join(' | '),
     }];
   });
+  const evidenceRecordSources = (Array.isArray(contact?.evidenceRecords) ? contact.evidenceRecords : [])
+    .flatMap((record, index) => {
+      const finding = findingForEvidenceRecord(record);
+      if (!finding) return [];
+      return [{
+        kind: sourceKindHintForEvidenceRecord(record),
+        finding: [
+          `Contact key: ${contactKey}`,
+          cleanString(record?.sourceId) ? `Record sourceId: ${cleanString(record.sourceId)}` : `Record index: ${index + 1}`,
+          finding,
+        ].join(' | '),
+      }];
+    });
+  return [...matchSources, ...evidenceRecordSources];
 };
 
 const confirmedIdentityFor = (contact) =>
@@ -779,7 +840,9 @@ const normalizedResultForContact = ([contactKey, contact]) => {
   );
   const candidateEmail = firstClean(resolved.primaryEmail, resolved.email, resolved.ownedEmail);
   const candidatePhone = firstClean(resolved.phone);
-  const candidateName = fullNameForContact(contactKey, contact);
+  const candidateName = firstClean(resolved.displayName, resolved.displayNameCandidate, resolved.fullName, fullNameForContact(contactKey, contact));
+  const city = firstClean(resolved.city, resolved.cityCandidate, resolved.cityCandidateFromBio);
+  const country = firstClean(resolved.country, resolved.countryCandidate, resolved.countryCandidateFromBio);
   const groups = [
     ...(Array.isArray(resolved.retreatOrClassEvidence) ? resolved.retreatOrClassEvidence : []),
     ...(Array.isArray(resolved.retreatLeadEvidence) ? resolved.retreatLeadEvidence : []),
@@ -793,8 +856,8 @@ const normalizedResultForContact = ([contactKey, contact]) => {
     candidate_name: candidateName,
     candidate_email: candidateEmail?.toLowerCase() ?? null,
     candidate_phone: candidatePhone,
-    city: null,
-    country: null,
+    city,
+    country,
     mailer_groups: groups,
     confidence: strongMatches.length ? 'high' : 'medium',
     recommended_next_step: recommendation,

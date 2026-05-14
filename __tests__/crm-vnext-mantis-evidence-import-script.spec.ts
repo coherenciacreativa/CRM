@@ -213,6 +213,94 @@ describe("CRM vNext Mantis evidence import script", () => {
     }
   });
 
+  test("preserves IG-origin evidence records from contact-keyed reports", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-ig-origin-"));
+    try {
+      const reportPath = join(dir, "mantis-ig-origin-report.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schemaVersion: "mantis.crm_vnext.evidence_hunt.v1",
+        mode: "read_only_evidence_hunt",
+        contacts: {
+          "email:martha.otremba@icloud.com": {
+            inputAnchors: ["Martha Otremba", "martha.otremba@icloud.com", "@marthaotremba"],
+            strongMatches: [
+              {
+                type: "instagram_dm_ui_email_to_handle_bridge",
+                confidence: "strong",
+                source: "Instagram Messages UI",
+                searchTerm: "martha.otremba@icloud.com",
+                matchedDisplayName: "Martha Otremba",
+                matchedInstagramHandle: "marthaotremba",
+                finding: "Email appeared in IG Messages search; visible thread/account shows marthaotremba / Martha Otremba.",
+              },
+            ],
+            resolvedAnchors: {
+              displayName: "Martha Otremba",
+              email: "martha.otremba@icloud.com",
+              instagramHandle: "marthaotremba",
+              country: "Alemania",
+            },
+            evidenceRecords: [
+              {
+                sourceId: "instagram-dm-ui:martha",
+                sourceSystem: "instagram_dm_ui_search",
+                confidence: "strong",
+                searchTerm: "martha.otremba@icloud.com",
+                matchedDisplayName: "Martha Otremba",
+                matchedInstagramHandle: "marthaotremba",
+                finding: "Email -> IG handle bridge visible in IG Messages UI.",
+              },
+              {
+                sourceId: "lead-capture:martha",
+                sourceSystem: "mailerlite_form_snapshot",
+                confidence: "strong",
+                finding: "Onboarding IG-origin: vínculo previo con Kamadhenu; experiencia maravillosa e inolvidable; correo actualizado.",
+                attributes: {
+                  flowName: "Orgánico exitoso en 2025 / Instagram onboarding",
+                  country: "Alemania",
+                },
+              },
+            ],
+            recommendation: "ready_for_batch_loop",
+          },
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+        "--min-confidence",
+        "high",
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const igEvidence = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "instagram_dm_ui_export" && source.text.includes("Email -> IG handle bridge")
+      );
+      expect(igEvidence.text).toContain("Matched Instagram: @marthaotremba");
+
+      const leadCapture = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "lead_capture_export" && source.text.includes("vínculo previo con Kamadhenu")
+      );
+      expect(leadCapture.text).toContain("flowName: Orgánico exitoso en 2025 / Instagram onboarding");
+      expect(packet.selectedResults[0]).toMatchObject({
+        candidate_name: "Martha Otremba",
+        candidate_email: "martha.otremba@icloud.com",
+        country: "Alemania",
+      });
+      expect(JSON.stringify(packet)).not.toContain("/Users/");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("converts Mantis enrichment reports with identity-bridge candidates and rejected collisions", async () => {
     const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-enrichment-"));
     try {
