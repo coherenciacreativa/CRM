@@ -67,7 +67,17 @@ Use this when Alejandro says something like:
 
 > Tengo el email, busquemos si aparece en mensajes de Instagram para encontrar el usuario.
 
-Mantis should perform the UI search only when Chrome/Instagram is already authenticated and only as observation. If Instagram prompts for login, permissions, checkpoint, CAPTCHA, or any risky action, stop and ask Alejandro.
+Mantis should perform the UI search only when Chrome/Instagram is already authenticated and only as observation.
+
+If Instagram prompts for login, password, profile confirmation, permissions, checkpoint, CAPTCHA, or any risky action, Mantis should not treat the source as merely "skipped". She should:
+
+1. stop before entering credentials or clicking through the prompt,
+2. mark the contact/source as `blocked_by_instagram_ui_auth`,
+3. preserve the search intent and candidate anchors,
+4. ask Alejandro for help with the exact unblock action: open/authenticate Instagram in the browser, then rerun this specific UI search,
+5. continue the batch with other read-only sources only after recording the blocker.
+
+This route has high stitching value. A login prompt is a human-auth checkpoint, not a reason to forget the Instagram UI lane.
 
 If a bridge is found, save a concise observation JSON in `~/Documents/Mantis-Reports`, run this command, then pass the resulting evidence packet into the normal CRM vNext stitching/approval flow.
 

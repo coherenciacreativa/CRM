@@ -225,6 +225,8 @@ npm run crm:vnext:instagram-dm-ui-evidence -- \
 
 This is for Rocio-style cases where an email entered through onboarding, Custom GPT, Vercel proxy, MailerLite, or a similar route, but the Instagram handle is still missing. The UI search itself must remain read-only: no sends, likes, reactions, follows, permission changes, or credential work.
 
+If Instagram Messages UI asks for login, password, profile confirmation, permissions, checkpoint, CAPTCHA, or any risky action, Mantis must not silently downgrade the lane to a normal skip. She should record `blocked_by_instagram_ui_auth`, preserve the exact contact/search anchors, and ask Alejandro to authenticate/open Instagram in the browser so the same search can be rerun. The batch may continue with other read-only sources, but the Instagram UI route should remain an explicit follow-up because it can recover email-to-handle bridges that no API currently provides.
+
 ## Good Batch Sizes
 
 - 1 contact for a difficult identity case such as a missing email/phone with many possible candidates.
