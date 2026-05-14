@@ -971,6 +971,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     notes: [
       "Use when a known email or phone found in CRM/MailerLite/proxy evidence can be searched in Instagram Messages UI.",
       "This command does not open Instagram or call live APIs; it converts supplied human/Mantis UI observations into instagram_dm_ui_export evidenceSources.",
+      "When city/country appear as self-location phrases in the thread, pass city/country plus a short locationText/locationEvidence phrase; do not treat event locations as the person's city.",
       "No send, like, react, follow, unfollow, permission, credential, ManyChat LIVE, card, or Fact Store mutation is allowed.",
       "Feed the resulting evidenceSources into Deep Local Stitching, Card Apply Preview, or a later approval packet.",
     ],
@@ -985,6 +986,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     notes: [
       "Reads only the local vNext card store and card-write ledger.",
       "Prioritizes likely Instagram/onboarding contacts with missing handle, phone, city, country, or low context.",
+      "Prompts Mantis to capture city/country from explicit DM self-location clues while keeping retreat/event locations as context only.",
       "Use --markdown-out to save a copy-ready prompt for the CRM Telegram group with Mantis.",
       "This command does not inspect Instagram, call live APIs, mutate cards, write Fact Store, touch credentials, or send outbound.",
     ],

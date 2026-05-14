@@ -81,10 +81,25 @@ const confidenceAtLeast = (value, minConfidence) =>
   (CONFIDENCE_ORDER[cleanString(value)?.toLowerCase() ?? 'none'] ?? 0) >= CONFIDENCE_ORDER[minConfidence];
 
 const sourceKindForEvidence = (source) => {
+  const explicitSourceKind = cleanString(source?.sourceKind)?.toLowerCase() ?? '';
+  if ([
+    'mailerlite_export',
+    'contacts_app_export',
+    'contacts_export',
+    'google_drive_export',
+    'retreat_table',
+    'lead_capture_export',
+    'instagram_dm_ui_export',
+    'gmail_export',
+    'local_fixture',
+    'downloaded_file',
+    'local_csv',
+  ].includes(explicitSourceKind)) return explicitSourceKind;
+
   const kind = cleanString(source?.kind)?.toLowerCase() ?? '';
   const sourceLabel = cleanString(source?.source)?.toLowerCase() ?? '';
   const path = cleanString(source?.path)?.toLowerCase() ?? '';
-  const finding = cleanString(source?.finding)?.toLowerCase() ?? '';
+  const finding = cleanString(source?.finding ?? source?.text ?? source?.snippet)?.toLowerCase() ?? '';
   const text = `${kind} ${sourceLabel} ${path} ${finding}`;
 
   if (kind.includes('negative')) return null;
@@ -124,7 +139,7 @@ const sourceKindForEvidence = (source) => {
 
 const sourceSupportsIdentityFields = (source, sourceKind) => {
   const kind = cleanString(source?.kind)?.toLowerCase() ?? '';
-  const finding = cleanString(source?.finding)?.toLowerCase() ?? '';
+  const finding = cleanString(source?.finding ?? source?.text ?? source?.snippet)?.toLowerCase() ?? '';
   return [
     'mailerlite_export',
     'retreat_table',
@@ -141,6 +156,7 @@ const sourceSupportsIdentityFields = (source, sourceKind) => {
 
 const evidenceTextFor = (result, source, sourceKind) => {
   const includeIdentity = sourceSupportsIdentityFields(source, sourceKind);
+  const sourceFinding = cleanString(source?.finding ?? source?.text ?? source?.snippet);
   return [
   cleanString(result.handle) ? `Handle: ${cleanString(result.handle)}` : null,
   includeIdentity && cleanString(result.candidate_name)
@@ -159,7 +175,7 @@ const evidenceTextFor = (result, source, sourceKind) => {
     ? `Country: ${cleanString(result.country)}`
     : null,
   cleanString(result.confidence) ? `Confidence: ${cleanString(result.confidence)}` : null,
-  cleanString(source?.finding) ? `Finding: ${cleanString(source.finding)}` : null,
+  sourceFinding ? `Finding: ${sourceFinding}` : null,
   includeIdentity && Array.isArray(result.mailer_groups) && result.mailer_groups.length
     ? `Groups: ${result.mailer_groups.join('; ')}`
     : null,
@@ -212,8 +228,8 @@ const publicResultFor = (result) => ({
     ? result.evidenceSources
       .filter((source) => sourceKindForEvidence(source))
       .map((source) => ({
-        kind: cleanString(source.kind ?? source.source),
-        finding: cleanString(source.finding),
+        kind: cleanString(source.kind ?? source.sourceKind ?? source.source),
+        finding: cleanString(source.finding ?? source.text ?? source.snippet),
       }))
     : [],
 });
@@ -736,6 +752,137 @@ const normalizedResultForEmailOwnershipReport = (report) => {
   };
 };
 
+const cleanEmail = (value) => cleanString(value)?.toLowerCase() ?? null;
+
+const normalizedConfidenceForInstagramUiContact = (contact) => {
+  const text = [
+    cleanString(contact?.confidence),
+    cleanString(contact?.status),
+  ].filter(Boolean).join(' ').toLowerCase();
+  if (/high|strong|found/.test(text) && !/review_only|without_handle|no_handle/.test(text)) return 'high';
+  if (/review_only|without_handle|no_handle|not_found/.test(text)) return 'low';
+  if (cleanString(contact?.matchedInstagramHandle)) return 'medium';
+  return 'low';
+};
+
+const threadContextPartsFor = (contact) => {
+  const threadContext = contact?.threadContext && typeof contact.threadContext === 'object'
+    ? contact.threadContext
+    : {};
+  return {
+    compact: cleanString(threadContext.compact ?? contact?.threadContext),
+    preferences: [
+      ...(Array.isArray(threadContext.preferences) ? threadContext.preferences : []),
+      ...(Array.isArray(contact?.preferences) ? contact.preferences : []),
+    ].map(cleanString).filter(Boolean),
+    tone: cleanString(threadContext.tone ?? contact?.tone),
+    productInterest: cleanString(threadContext.productInterest ?? contact?.productInterest),
+    nextStepCue: cleanString(threadContext.nextStepCue ?? contact?.nextStepCue),
+  };
+};
+
+const evidenceSourcesForInstagramUiContact = (contactKey, contact) => {
+  const existingSources = Array.isArray(contact?.evidenceSources) ? contact.evidenceSources : [];
+  const mapped = existingSources.map((source) => ({
+    ...source,
+    sourceKind: cleanString(source?.sourceKind) ?? 'instagram_dm_ui_export',
+    kind: cleanString(source?.kind ?? source?.sourceKind) ?? 'instagram_dm_ui_export',
+    finding: cleanString(source?.finding ?? source?.text ?? source?.snippet),
+  }));
+  const thread = threadContextPartsFor(contact);
+  const contextFinding = [
+    `Contact key: ${contactKey}`,
+    cleanString(contact?.status) ? `Status: ${cleanString(contact.status)}` : null,
+    cleanString(contact?.matchedInstagramHandle) ? `Matched Instagram: @${normalizeHandle(contact.matchedInstagramHandle)}` : null,
+    cleanString(contact?.matchedDisplayName) ? `Matched display name: ${cleanString(contact.matchedDisplayName)}` : null,
+    cleanString(contact?.city) ? `City: ${cleanString(contact.city)}` : null,
+    cleanString(contact?.country) ? `Country: ${cleanString(contact.country)}` : null,
+    cleanString(contact?.locationEvidence ?? contact?.locationText) ? `Location evidence: ${cleanString(contact.locationEvidence ?? contact.locationText)}` : null,
+    thread.compact ? `Thread context: ${thread.compact}` : null,
+    thread.preferences.length ? `Preferences: ${thread.preferences.join('; ')}` : null,
+    thread.tone ? `Tone: ${thread.tone}` : null,
+    thread.productInterest ? `Product interest: ${thread.productInterest}` : null,
+    thread.nextStepCue ? `Next step cue: ${thread.nextStepCue}` : null,
+  ].filter(Boolean).join(' | ');
+  if (contextFinding) {
+    mapped.push({
+      sourceKind: 'instagram_dm_ui_export',
+      kind: 'instagram_dm_ui_export',
+      source: 'mantis_instagram_ui_auth_rerun_context',
+      finding: contextFinding,
+    });
+  }
+  for (const candidate of Array.isArray(contact?.discardedCandidates) ? contact.discardedCandidates : []) {
+    const finding = [
+      `Contact key: ${contactKey}`,
+      'Discarded Instagram UI candidate; do not assign.',
+      cleanString(candidate?.candidate) ? `Candidate: ${cleanString(candidate.candidate)}` : null,
+      cleanString(candidate?.reason) ? `Reason: ${cleanString(candidate.reason)}` : null,
+    ].filter(Boolean).join(' ');
+    if (finding) {
+      mapped.push({
+        sourceKind: 'local_fixture',
+        kind: 'local_fixture',
+        source: 'mantis_instagram_ui_discarded_candidate',
+        finding,
+      });
+    }
+  }
+  return mapped;
+};
+
+const normalizedResultForInstagramUiContact = ([contactKey, contact]) => {
+  const handle = normalizeHandle(contact?.matchedInstagramHandle) ?? contactKeyHandle(contactKey);
+  const thread = threadContextPartsFor(contact);
+  const candidateName = firstClean(contact?.matchedDisplayName, fullNameForContact(contactKey, contact));
+  const candidateEmail = cleanEmail(contact?.subjectEmail);
+  const candidatePhone = firstClean(contact?.subjectPhone);
+  const city = firstClean(contact?.city);
+  const country = firstClean(contact?.country);
+  const reviewOnly = /review_only|without_handle|no_handle/i.test([
+    cleanString(contact?.status),
+    cleanString(contact?.confidence),
+  ].filter(Boolean).join(' '));
+  const noHandle = !handle;
+  const result = {
+    resultKey: contactKey,
+    contactKey,
+    handle: handle ? `@${handle}` : null,
+    candidate_name: candidateName,
+    candidate_email: candidateEmail,
+    candidate_phone: candidatePhone,
+    city,
+    country,
+    mailer_groups: [
+      thread.productInterest,
+      ...thread.preferences,
+    ].filter(Boolean),
+    confidence: normalizedConfidenceForInstagramUiContact(contact),
+    recommended_next_step: thread.nextStepCue ?? cleanString(contact?.recommendation),
+    blockers: [
+      reviewOnly || noHandle ? 'instagram_ui_no_recoverable_handle' : null,
+      cleanString(contact?.emailOwnershipStatus) === 'not_found_in_instagram_ui'
+        ? 'instagram_ui_no_email_ownership_evidence'
+        : null,
+    ].filter(Boolean),
+    evidenceSources: evidenceSourcesForInstagramUiContact(contactKey, contact),
+  };
+  const subject = result.handle ?? result.candidate_email ?? result.candidate_name ?? contactKey;
+  return {
+    ...result,
+    factText: [
+      `CRM: ${subject}${result.candidate_name && result.handle ? ` es ${result.candidate_name}` : ''}.`,
+      result.candidate_email ? `Email visible/puente ${result.candidate_email}.` : null,
+      result.candidate_phone ? `Teléfono visible/puente ${result.candidate_phone}.` : null,
+      result.city ? `Ciudad ${result.city}.` : null,
+      result.country ? `País ${result.country}.` : null,
+      thread.productInterest ? `Interés: ${thread.productInterest}.` : null,
+      thread.compact ? `Contexto IG UI: ${thread.compact}` : null,
+      reviewOnly || noHandle ? 'Mantener review-only: no hay handle recuperable seguro.' : null,
+    ].filter(Boolean).join(' '),
+  };
+};
+
 const contactFactText = (contactKey, contact, result) => {
   if (contact?.identity && typeof contact.identity === 'object') {
     const bridgePending = hasBridgePendingIdentity(contact);
@@ -872,6 +1019,13 @@ const normalizedResultForContact = ([contactKey, contact]) => {
 
 const normalizedResultsForReport = (report) => {
   if (Array.isArray(report?.results)) return report.results;
+  if (report?.schemaVersion === 'mantis.crm_vnext.instagram_ui_auth_rerun.v1'
+    && report?.contacts
+    && typeof report.contacts === 'object'
+    && !Array.isArray(report.contacts)
+  ) {
+    return Object.entries(report.contacts).map(normalizedResultForInstagramUiContact);
+  }
   if (report?.contacts && typeof report.contacts === 'object' && !Array.isArray(report.contacts)) {
     return Object.entries(report.contacts).map(normalizedResultForContact);
   }

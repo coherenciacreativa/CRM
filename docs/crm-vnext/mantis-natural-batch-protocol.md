@@ -196,6 +196,7 @@ The packet prioritizes likely Instagram/onboarding contacts, missing identity fi
 - lead-capture / ManyChat / proxy / Vercel / MailerLite / local evidence,
 - Instagram Messages UI bridge when a known email/phone may reveal the handle,
 - compact thread context such as city, country, interest, preferences, tone, origin, and next-step cues,
+- explicit location clues inside the DM narrative, for example "soy de...", "vivo en...", "estoy en...", "resido en...", or "dijo que es de..."; when such a clue appears, Mantis should emit `city`/`country` plus a short `locationEvidence` or `locationText` phrase,
 - no full conversation export and no live mutation.
 
 Selection hygiene:
@@ -212,7 +213,7 @@ Mantis still returns a normal contact-keyed evidence hunt JSON under `~/Document
 When a partial card has a confirmed email or phone but no Instagram handle, Mantis can try a read-only UI bridge:
 
 1. Search the known email/phone inside Instagram Messages UI.
-2. If a thread appears, record only minimal bridge evidence.
+2. If a thread appears, record only minimal bridge evidence. While reviewing the compact visible context, actively look for country/city clues in the conversation body, not only in profile-like fields.
 3. Convert that observation into evidenceSources:
 
 ```bash
@@ -224,6 +225,8 @@ npm run crm:vnext:instagram-dm-ui-evidence -- \
 4. Feed that evidence packet into Deep Local Stitching / Card Apply Preview before any card write.
 
 This is for Rocio-style cases where an email entered through onboarding, Custom GPT, Vercel proxy, MailerLite, or a similar route, but the Instagram handle is still missing. The UI search itself must remain read-only: no sends, likes, reactions, follows, permission changes, or credential work.
+
+Location capture rule: if the person self-locates in the thread, preserve it as structured evidence. Good examples: `city: Iquique`, `country: Chile`, `locationEvidence: "dijo que es de Iquique, en el norte de Chile"`. Do not promote event locations as contact locations: "el retiro es en Subachoque" is retreat context, not the contact's city, unless the person clearly says they live/are from there.
 
 If Instagram Messages UI asks for login, password, profile confirmation, permissions, checkpoint, CAPTCHA, or any risky action, Mantis must not silently downgrade the lane to a normal skip. She should record `blocked_by_instagram_ui_auth`, preserve the exact contact/search anchors, and ask Alejandro to authenticate/open Instagram in the browser so the same search can be rerun. The batch may continue with other read-only sources, but the Instagram UI route should remain an explicit follow-up because it can recover email-to-handle bridges that no API currently provides.
 

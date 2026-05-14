@@ -26,7 +26,8 @@ Rocio Martinez Jaime is the model case: the CRM already had her email from onboa
    - searched value,
    - matched handle,
    - display name,
-   - city/country when explicitly visible,
+   - city/country when explicitly visible, including self-location clues inside the chat such as "soy de...", "vivo en...", "estoy en...", "resido en...", or "dijo que es de...",
+   - a short `locationEvidence`/`locationText` phrase when the location comes from the message body,
    - compact preferences/tone/context when useful,
    - observer,
    - observed time,
@@ -50,3 +51,5 @@ Actual UI search must remain read-only: no sends, likes, reactions, follows, per
 If Instagram asks for login, checkpoint, CAPTCHA, permissions, or anything state-changing, stop and ask Alejandro.
 
 Do not copy full conversations into CRM evidence. The intended artifact is a small evidence packet that preserves provenance and promotes only clear identity/location fields automatically; richer tone/preferences/context remain compact review context unless Alejandro approves a card/fact write.
+
+When a thread mentions a place, distinguish the contact's location from an event/program location. A phrase such as "dijo que es de Iquique, en el norte de Chile" can become `city: Iquique`, `country: Chile`; a phrase such as "el retiro seria en Subachoque" should remain retreat context, not the person's city.

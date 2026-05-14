@@ -70,6 +70,79 @@ describe("CRM vNext Instagram DM UI evidence script", () => {
     }
   });
 
+  test("extracts self-reported location from compact Instagram thread context", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-ig-dm-ui-location-"));
+    try {
+      const observationsPath = join(dir, "observations.json");
+      const outPath = join(dir, "ig-dm-ui-evidence.json");
+      await writeFile(observationsPath, JSON.stringify({
+        observations: [
+          {
+            searchTerm: "gabriel@example.com",
+            subjectEmail: "gabriel@example.com",
+            matchedInstagramHandle: "gabrielrojas_r",
+            matchedDisplayName: "Gabriel Rojas Rojas",
+            threadContext: "En el hilo visible Gabriel dijo que es de Iquique, en el norte de Chile. Tambien manifesto interes por retiros.",
+            observedBy: "Mantis",
+            observedAt: "2026-05-14T13:00:00.000Z",
+            confidence: "strong",
+          },
+        ],
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-instagram-dm-ui-evidence.mjs",
+        "--observations-file",
+        observationsPath,
+        "--out",
+        outPath,
+      ], { cwd: process.cwd() });
+
+      const report = JSON.parse(await readFile(outPath, "utf8"));
+      expect(report.evidenceSources[0].text).toContain("City: Iquique");
+      expect(report.evidenceSources[0].text).toContain("Country: Chile");
+      expect(report.evidenceSources[0].text).toContain("Location evidence: Iquique, en el norte de Chile");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("does not treat event locations as the contact's city", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-ig-dm-ui-event-location-"));
+    try {
+      const observationsPath = join(dir, "observations.json");
+      const outPath = join(dir, "ig-dm-ui-evidence.json");
+      await writeFile(observationsPath, JSON.stringify({
+        observations: [
+          {
+            searchTerm: "cielo@example.com",
+            subjectEmail: "cielo@example.com",
+            matchedInstagramHandle: "cielo_gom_g",
+            matchedDisplayName: "Cielo Gomez",
+            threadContext: "Pregunto donde seria el retiro; la respuesta explico que el retiro seria en Subachoque y tambien habia opcion virtual.",
+            observedBy: "Mantis",
+            observedAt: "2026-05-14T13:05:00.000Z",
+            confidence: "strong",
+          },
+        ],
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-instagram-dm-ui-evidence.mjs",
+        "--observations-file",
+        observationsPath,
+        "--out",
+        outPath,
+      ], { cwd: process.cwd() });
+
+      const report = JSON.parse(await readFile(outPath, "utf8"));
+      expect(report.evidenceSources[0].text).not.toContain("City: Subachoque");
+      expect(report.evidenceSources[0].text).not.toContain("Country: Colombia");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("feeds Instagram DM UI bridge evidence into deep local stitching", async () => {
     const connectedSources = normalizeCrmVNextConnectedEvidenceSources([
       {

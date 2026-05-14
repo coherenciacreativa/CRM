@@ -225,7 +225,7 @@ const searchTasksFor = (card) => {
   if (phone && !handle) tasks.push(`Buscar el telefono ${phone} y variantes normalizadas dentro de Instagram Messages UI.`);
   if (handle) tasks.push(`Inspeccionar el hilo de @${handle} en modo read-only, solo si ya esta accesible, para contexto compacto.`);
   tasks.push('Buscar la misma persona en lead-capture, ManyChat/proxy/Vercel, MailerLite y reportes locales si aplica.');
-  tasks.push('Capturar solo datos compactos: ciudad, pais, interes, preferencias, tono, origen y siguiente paso; no copiar conversaciones completas.');
+  tasks.push('Capturar solo datos compactos: ciudad, pais, interes, preferencias, tono, origen y siguiente paso; si la ciudad/pais aparece como frase dentro del chat ("soy de...", "vivo en...", "dijo que es de..."), guardarla como city/country con locationEvidence breve; no copiar conversaciones completas.');
   return tasks;
 };
 
@@ -293,7 +293,7 @@ const buildPrompt = (packet) => {
     '',
     'Fuentes sugeridas: person-card-store local, lead-capture/ManyChat/proxy/Vercel/WhatsApp automation logs, MailerLite con cursor pagination + filtrado local, Gmail/Drive/Contacts si estan autenticados, Mantis-Reports/local memory, e Instagram Messages UI solo como observacion read-only.',
     '',
-    'Si encuentras un puente por Instagram Messages UI, guarda observaciones compatibles con crm:vnext:instagram-dm-ui-evidence: searchTerm, subjectName, subjectEmail/phone, matchedInstagramHandle, matchedDisplayName, city, country, preferences, tone, threadContext, observedBy, observedAt, confidence, snippet.',
+    'Si encuentras un puente por Instagram Messages UI, guarda observaciones compatibles con crm:vnext:instagram-dm-ui-evidence: searchTerm, subjectName, subjectEmail/phone, matchedInstagramHandle, matchedDisplayName, city, country, locationText/locationEvidence, preferences, tone, threadContext, observedBy, observedAt, confidence, snippet. Captura ciudad/pais tambien cuando aparezcan en frases del hilo como "soy de...", "vivo en...", "estoy en...", "resido en..." o "dijo que es de..."; no confundas ubicacion de retiro/evento con ciudad de la persona.',
     '',
     'Entrega un JSON contact-keyed en ~/Documents/Mantis-Reports con schemaVersion mantis.crm_vnext.evidence_hunt.v1, resumen corto, sourcesConsulted, blockers exactos, contacts, strongMatches, weakMatches, discardedCandidates, resolvedAnchors y recommendation. Cero mutaciones.',
   ].join('\n');

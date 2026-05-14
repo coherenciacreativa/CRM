@@ -652,4 +652,105 @@ describe("CRM vNext Mantis evidence import script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("converts Instagram UI auth rerun reports without losing thread context", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-ig-ui-"));
+    try {
+      const reportPath = join(dir, "mantis-ig-ui-rerun.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schemaVersion: "mantis.crm_vnext.instagram_ui_auth_rerun.v1",
+        mode: "read_only_strict",
+        operationsExecuted: 0,
+        contacts: {
+          "ig:cielo_gom_g": {
+            status: "found",
+            matchedInstagramHandle: "cielo_gom_g",
+            matchedDisplayName: "Cielo Gomez",
+            subjectEmail: "cielotago@gmail.com",
+            city: "Bogotá",
+            country: "Colombia",
+            threadContext: {
+              compact: "Exact handle opened the Cielo thread; visible context shows interest in the retreat.",
+              preferences: ["retreat location"],
+              tone: "interested and receptive",
+              productInterest: "retreat / live virtual alternative",
+              nextStepCue: "Recommend modality based on available time.",
+            },
+            confidence: "high_for_handle_email_city_country_from_ui",
+            evidenceSources: [
+              {
+                sourceKind: "instagram_dm_ui_export",
+                sourceId: "instagram-ui-auth-rerun:cielo",
+                title: "Instagram UI exact thread for Cielo",
+                text: "Exact handle search opened Cielo Gomez / @cielo_gom_g. Email: cielotago@gmail.com. City: Bogotá. Country: Colombia.",
+              },
+            ],
+          },
+          "email:edwclaros1998@gmail.com": {
+            status: "review_only",
+            matchedInstagramHandle: null,
+            matchedDisplayName: "Instagram User",
+            subjectEmail: "edwclaros1998@gmail.com",
+            threadContext: {
+              compact: "Email search returned a Messages result labeled Instagram User with no usable thread header or handle.",
+              nextStepCue: "Do not create or merge an IG handle from this UI hit.",
+            },
+            confidence: "review_only_email_hit_without_handle",
+            evidenceSources: [
+              {
+                sourceKind: "instagram_dm_ui_export",
+                sourceId: "instagram-ui-auth-rerun:edwin",
+                title: "Instagram UI email hit for Edwin without handle",
+                text: "Search term edwclaros1998@gmail.com returned a Messages result with display Instagram User. No handle/profile was recoverable.",
+              },
+            ],
+          },
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+        "--min-confidence",
+        "low",
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const text = await readFile(textPath, "utf8");
+      expect(packet.summary).toMatchObject({
+        results: 2,
+        selectedResults: 2,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(packet.summary.evidenceSources).toBeGreaterThanOrEqual(4);
+      expect(text).toContain("@cielo_gom_g");
+      expect(text).toContain("Ciudad Bogotá");
+      expect(text).toContain("edwclaros1998@gmail.com");
+      expect(text).toContain("Mantener review-only");
+      expect(packet.selectedResults[0]).toMatchObject({
+        handle: "@cielo_gom_g",
+        candidate_email: "cielotago@gmail.com",
+        city: "Bogotá",
+        country: "Colombia",
+      });
+      const edwin = packet.selectedResults.find((result: { candidate_email: string }) =>
+        result.candidate_email === "edwclaros1998@gmail.com"
+      );
+      expect(edwin.blockers).toContain("instagram_ui_no_recoverable_handle");
+      const igEvidence = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "instagram_dm_ui_export" && source.text.includes("Exact handle search opened Cielo")
+      );
+      expect(igEvidence.text).toContain("City: Bogotá");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 
 const SCHEMA_VERSION = 'crm-vnext-instagram-dm-ui-evidence-2026-05-14';
+const require = createRequire(import.meta.url);
+const LATAM_CITIES = require('../data/latam_cities.min.json');
 
 const usage = `Usage:
   node scripts/crm-vnext-instagram-dm-ui-evidence.mjs --observations-file <path> [options]
@@ -108,6 +111,138 @@ const cleanList = (value) => {
   return cleanString(value);
 };
 
+const strip = (value) =>
+  cleanString(value)
+    ?.normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim() ?? '';
+
+const COUNTRY_LABELS = new Map([
+  ['argentina', 'Argentina'],
+  ['bolivia', 'Bolivia'],
+  ['brasil', 'Brasil'],
+  ['brazil', 'Brasil'],
+  ['chile', 'Chile'],
+  ['colombia', 'Colombia'],
+  ['costa rica', 'Costa Rica'],
+  ['cuba', 'Cuba'],
+  ['ecuador', 'Ecuador'],
+  ['el salvador', 'El Salvador'],
+  ['guatemala', 'Guatemala'],
+  ['haiti', 'Haití'],
+  ['honduras', 'Honduras'],
+  ['mexico', 'México'],
+  ['nicaragua', 'Nicaragua'],
+  ['panama', 'Panamá'],
+  ['paraguay', 'Paraguay'],
+  ['peru', 'Perú'],
+  ['uruguay', 'Uruguay'],
+  ['venezuela', 'Venezuela'],
+  ['estados unidos', 'Estados Unidos'],
+  ['united states', 'Estados Unidos'],
+  ['usa', 'Estados Unidos'],
+  ['eeuu', 'Estados Unidos'],
+  ['canada', 'Canadá'],
+]);
+
+const CITY_INDEX = LATAM_CITIES.flatMap((entry) => {
+  const keys = [entry.city, ...(Array.isArray(entry.syn) ? entry.syn : [])]
+    .map((value) => strip(value))
+    .filter(Boolean);
+  return keys.map((key) => ({
+    key,
+    city: entry.city,
+    country: entry.country ?? null,
+  }));
+}).sort((a, b) => b.key.length - a.key.length);
+
+const boundaryPatternFor = (key) =>
+  new RegExp(`(^|[^a-z0-9])${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`, 'i');
+
+const findCountryInText = (text) => {
+  const normalized = strip(text);
+  if (!normalized) return null;
+  for (const [key, label] of COUNTRY_LABELS.entries()) {
+    if (boundaryPatternFor(key).test(normalized)) return label;
+  }
+  return null;
+};
+
+const findCityInText = (text) => {
+  const normalized = strip(text);
+  if (!normalized) return null;
+  for (const entry of CITY_INDEX) {
+    if (boundaryPatternFor(entry.key).test(normalized)) {
+      return { city: entry.city, country: entry.country };
+    }
+  }
+  return null;
+};
+
+const trimLocationPhrase = (value) =>
+  cleanString(value)
+    ?.replace(/\b(?:pero|aunque|porque|entonces|para|cuando)\b.*$/i, '')
+    .replace(/\b(?:pregunt[oó]|pregunta|pid[ií]o|pide)\b.*$/i, '')
+    .replace(/[.!?]+$/g, '')
+    .trim() ?? null;
+
+const selfLocationPhraseFrom = (text) => {
+  const value = cleanString(text);
+  if (!value) return null;
+  const patterns = [
+    /\b(?:soy|somos)\s+de\s+([^.;\n]+)(?=[.;\n]|$)/i,
+    /\b(?:vivo|vive|resido|reside|radico|radica|estoy|esta|está)\s+(?:actualmente\s+)?(?:en|en\s+la\s+ciudad\s+de|en\s+el\s+norte\s+de)\s+([^.;\n]+)(?=[.;\n]|$)/i,
+    /\b(?:me|se)\s+encuentro\s+en\s+([^.;\n]+)(?=[.;\n]|$)/i,
+    /\b(?:dijo|dice|conto|contó|cuenta|menciono|mencionó|menciona)\s+que\s+(?:es|esta|está|vive|reside)\s+(?:en|de)\s+([^.;\n]+)(?=[.;\n]|$)/i,
+  ];
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+    const phrase = trimLocationPhrase(match?.[1]);
+    if (phrase) return phrase;
+  }
+  return null;
+};
+
+const inferLocationFromText = (text, { requireSelfLocation = true } = {}) => {
+  const sourceText = requireSelfLocation ? selfLocationPhraseFrom(text) : cleanString(text);
+  if (!sourceText) return null;
+  const cityHit = findCityInText(sourceText);
+  const countryHit = findCountryInText(sourceText);
+  if (!cityHit && !countryHit) return null;
+  return {
+    city: cityHit?.city ?? null,
+    country: cityHit?.country ?? countryHit ?? null,
+    sourceText,
+  };
+};
+
+const locationFromObservation = (observation, snippet, threadContext) => {
+  const explicitCity = cleanString(field(observation, ['city', 'matchedCity', 'threadCity']));
+  const explicitCountry = cleanString(field(observation, ['country', 'matchedCountry', 'threadCountry']));
+  if (explicitCity || explicitCountry) {
+    return {
+      city: explicitCity,
+      country: explicitCountry,
+      sourceText: cleanString(field(observation, ['locationEvidence', 'locationSnippet', 'locationText'])),
+    };
+  }
+
+  const dedicatedLocationText = cleanString(field(observation, [
+    'locationText',
+    'locationEvidence',
+    'visibleLocationText',
+    'locationSnippet',
+    'threadLocation',
+    'location',
+  ]));
+  const fromDedicated = inferLocationFromText(dedicatedLocationText, { requireSelfLocation: false });
+  if (fromDedicated) return fromDedicated;
+
+  return inferLocationFromText(threadContext, { requireSelfLocation: true })
+    ?? inferLocationFromText(snippet, { requireSelfLocation: true });
+};
+
 const bridgeEvidenceFor = (raw, index, generatedAt) => {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const observation = raw;
@@ -134,12 +269,14 @@ const bridgeEvidenceFor = (raw, index, generatedAt) => {
   const observedAt = isoNow(field(observation, ['observedAt', 'createdAt', 'timestamp']) ?? generatedAt);
   const confidence = cleanString(field(observation, ['confidence'])) ?? (email && handle ? 'strong' : 'review');
   const snippet = cleanString(field(observation, ['snippet', 'messageSnippet', 'evidenceSnippet', 'notes', 'context']));
-  const city = cleanString(field(observation, ['city', 'matchedCity', 'threadCity']));
-  const country = cleanString(field(observation, ['country', 'matchedCountry', 'threadCountry']));
   const preferences = cleanList(field(observation, ['preferences', 'preferenceSignals', 'interests', 'interestSignals']));
   const tone = cleanString(field(observation, ['tone', 'toneNotes', 'communicationTone']));
   const threadContext = cleanString(field(observation, ['threadContext', 'conversationContext', 'contextSummary', 'context']));
   const threadContextLine = threadContext && threadContext !== snippet ? threadContext : null;
+  const location = locationFromObservation(observation, snippet, threadContext);
+  const city = location?.city ?? null;
+  const country = location?.country ?? null;
+  const locationEvidence = location?.sourceText ?? null;
 
   if (!email || !handle) return null;
 
@@ -157,6 +294,7 @@ const bridgeEvidenceFor = (raw, index, generatedAt) => {
     profileUrl ? `Profile URL: ${profileUrl}` : null,
     city ? `City: ${city}` : null,
     country ? `Country: ${country}` : null,
+    locationEvidence ? `Location evidence: ${locationEvidence}` : null,
     preferences ? `Preferences: ${preferences}` : null,
     tone ? `Tone: ${tone}` : null,
     threadContextLine ? `Thread context: ${threadContextLine}` : null,
@@ -180,6 +318,7 @@ const bridgeEvidenceFor = (raw, index, generatedAt) => {
       displayName ? `Thread display name: ${displayName}.` : null,
       city ? `City: ${city}.` : null,
       country ? `Country: ${country}.` : null,
+      locationEvidence ? `Location evidence: ${locationEvidence}.` : null,
       preferences ? `Preferences: ${preferences}.` : null,
       tone ? `Tone: ${tone}.` : null,
       threadContextLine,
