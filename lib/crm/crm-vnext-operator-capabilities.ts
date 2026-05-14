@@ -1004,6 +1004,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "context_fact_apply",
+    command: "npm run crm:vnext:context-fact-apply -- --proposal-file <json> --proposal-id <id>",
+    purpose: "Append explicitly approved context/fact proposals to existing local card evidence with backup and ledger.",
+    defaultMode: "dry_run",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Dry-run by default.",
+      "Committed writes require --write, --approved-by, and explicit --proposal-id values or --apply-all-ready.",
+      "Writes only local card evidence plus a local context-fact ledger after backup.",
+      "Never creates cards, mutates identity/scoring/product/channel fields, writes Fact Store, calls live APIs, touches credentials, or sends outbound.",
+    ],
+  },
+  {
     id: "deep_local_stitching",
     command: "npm run crm:vnext:deep-local-stitching -- --include-expanded-sources --evidence-file <json> --text <text>",
     purpose: "Search configured local evidence sources before creating a new card.",

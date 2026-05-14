@@ -35,6 +35,7 @@
     "crm:vnext:ig-origin-batch-prompt": "node scripts/crm-vnext-ig-origin-batch-prompt.mjs",
     "crm:vnext:mantis-evidence-import": "node scripts/crm-vnext-mantis-evidence-import.mjs",
     "crm:vnext:context-fact-proposals": "node scripts/crm-vnext-context-fact-proposals.mjs",
+    "crm:vnext:context-fact-apply": "node scripts/crm-vnext-context-fact-apply.mjs",
     "crm:vnext:deep-local-stitching": "node scripts/crm-vnext-deep-local-stitching.mjs",
     "crm:vnext:multi-service-card-proposal": "node scripts/crm-vnext-multi-service-card-proposal.mjs",
     "crm:vnext:card-write-merge-policy": "node scripts/crm-vnext-card-write-merge-policy.mjs",
