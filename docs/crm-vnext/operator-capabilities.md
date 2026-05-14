@@ -34,28 +34,29 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 10. Plan MailerLite evidence and convert read-only subscriber results with `POST /api/crm-vnext/mailerlite-evidence-helper`.
 11. Plan Google Drive/Docs/Sheets evidence and convert supplied read-only rows with `POST /api/crm-vnext/google-drive-evidence-helper`.
 12. Plan lead-capture evidence from ManyChat/CRM webhook/Vercel/WhatsApp traces with `POST /api/crm-vnext/lead-capture-evidence-helper`.
-13. Search safe local and connected evidence with `POST /api/crm-vnext/deep-local-stitching`.
-14. Build a multi-service card proposal with `POST /api/crm-vnext/multi-service-card-proposal`.
-15. Evaluate create/enrich/merge/defer policy with `POST /api/crm-vnext/card-write-merge-policy`.
-16. Preview exact hypothetical card operations with `POST /api/crm-vnext/card-apply-preview`, including already-approved evidence decisions when a ledger is supplied.
-17. Prepare focused evidence questions with `POST /api/crm-vnext/evidence-review-packet`, skipping questions already resolved in the decision ledger.
-18. Queue unresolved evidence questions with `POST /api/crm-vnext/evidence-approval-workbench`.
-19. Store Alejandro-approved evidence answers with `POST /api/crm-vnext/evidence-review-decisions`.
-20. Apply approved evidence decisions and rerun before/after approval packets with `POST /api/crm-vnext/evidence-approval-application`.
-21. Run one standard batch loop with `POST /api/crm-vnext/batch-operating-loop`.
-22. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
-23. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
-24. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
-25. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
-26. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-27. Review stored facts with `GET /api/crm-vnext/identity-review`.
-28. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-29. Read `GET /api/crm-vnext/community-daily-brief`.
-30. If needed, read `GET /api/crm-vnext/community-queues`.
-31. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-32. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-33. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-34. Ask for approval if the next move would touch an external channel.
+13. Convert rich supplied evidence into context/fact promotion proposals with `npm run crm:vnext:context-fact-proposals -- --evidence-file <json>`.
+14. Search safe local and connected evidence with `POST /api/crm-vnext/deep-local-stitching`.
+15. Build a multi-service card proposal with `POST /api/crm-vnext/multi-service-card-proposal`.
+16. Evaluate create/enrich/merge/defer policy with `POST /api/crm-vnext/card-write-merge-policy`.
+17. Preview exact hypothetical card operations with `POST /api/crm-vnext/card-apply-preview`, including already-approved evidence decisions when a ledger is supplied.
+18. Prepare focused evidence questions with `POST /api/crm-vnext/evidence-review-packet`, skipping questions already resolved in the decision ledger.
+19. Queue unresolved evidence questions with `POST /api/crm-vnext/evidence-approval-workbench`.
+20. Store Alejandro-approved evidence answers with `POST /api/crm-vnext/evidence-review-decisions`.
+21. Apply approved evidence decisions and rerun before/after approval packets with `POST /api/crm-vnext/evidence-approval-application`.
+22. Run one standard batch loop with `POST /api/crm-vnext/batch-operating-loop`.
+23. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
+24. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
+25. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
+26. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
+27. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+28. Review stored facts with `GET /api/crm-vnext/identity-review`.
+29. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+30. Read `GET /api/crm-vnext/community-daily-brief`.
+31. If needed, read `GET /api/crm-vnext/community-queues`.
+32. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+33. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+34. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+35. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -95,7 +96,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, engagement signal preview, human enrichment questions, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, engagement signal preview, human enrichment questions, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -115,6 +116,7 @@ Local commands currently include activation run, identity stitching research, Gm
 - Engagement Signal Preview is read-only and consumes supplied MailerLite/Gmail/Instagram/manual engagement snapshots to show scoring deltas and internal queues. It does not call live APIs, mutate cards, change MailerLite, or authorize outbound follow-up.
 - Human Enrichment Questions is read-only and creates person-by-person prompts after a batch so Alejandro can add remembered context. Answers still need Fact Intake or a later approved local write before they become CRM state.
 - IG-Origin Batch Prompt is read-only and prepares copy-ready Mantis prompts for Instagram/onboarding contacts, including DM UI bridge and compact thread-context instructions. It does not inspect Instagram or call live APIs by itself.
+- Context Fact Proposals is read-only and turns rich `evidenceSources` into reviewed card-memory candidates. It separates `promote_to_card_evidence` from identity gaps, weak collisions, duplicates, and sensitive review-only context. It does not mutate cards or Fact Store.
 - Conversational Fact-to-Scoring is an explicit backlog lane: approved Fact Store entries may later feed score previews through source-weighted, recency-aware rules, but Fact Store append itself must not silently change heat scores.
 - Card Write Apply may commit approved create/enrich items and may stage merge-review items. It is dry-run by default and may commit only local vNext card-store/ledger files after `approvedBy`, explicit item selection/all-ready, and backup. It does not merge automatically or touch outbound/live sources.
 - Card Merge Review Resolver may resolve staged merge-review items only after explicit review selection, `approvedBy`, backup, and restricted-service acknowledgement when applicable. It can consume supplied read-only `evidenceSources` before resolving so MailerLite/Gmail/Drive findings fill missing contact fields without live API calls. It writes only the local vNext card store and merge-review ledger.

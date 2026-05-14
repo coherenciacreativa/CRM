@@ -990,6 +990,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "context_fact_proposals",
+    command: "npm run crm:vnext:context-fact-proposals -- --evidence-file <json>",
+    purpose: "Convert rich Mantis evidenceSources into reviewed context/fact promotion proposals before any card evidence write.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Reads supplied evidenceSources plus the local vNext card store.",
+      "Separates promote_to_card_evidence items from identity gaps, weak collisions, and sensitive review-only context.",
+      "Use --markdown-out to create a human review sheet for Alejandro/Mantis.",
+      "This command never mutates cards, writes Fact Store, calls live APIs, touches credentials, or sends outbound.",
+    ],
+  },
+  {
     id: "deep_local_stitching",
     command: "npm run crm:vnext:deep-local-stitching -- --include-expanded-sources --evidence-file <json> --text <text>",
     purpose: "Search configured local evidence sources before creating a new card.",
