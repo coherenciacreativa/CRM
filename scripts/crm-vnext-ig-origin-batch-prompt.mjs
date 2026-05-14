@@ -5,6 +5,20 @@ import { dirname, resolve } from 'node:path';
 const SCHEMA_VERSION = 'crm-vnext-ig-origin-batch-prompt-2026-05-14';
 const DEFAULT_CARD_STORE_PATH = '.crm-vnext/person-card-store/person-cards-vnext.json';
 const DEFAULT_CARD_WRITE_LEDGER_PATH = '.crm-vnext/card-write-apply/ledger.jsonl';
+const OWNED_OR_INTERNAL_HANDLES = new Set([
+  'alejandro_gomez_bernal',
+  'alejandrogomezbernal',
+  'saludoalsol',
+  'coherenciacreativa',
+  'coherencia_creativa',
+  'notasdealejandro',
+  'notas_de_alejandro',
+]);
+const GENERIC_IG_SIGNAL_SOURCES = new Set([
+  'lead-state',
+  'ig-ui-signals-state',
+  'ig-api-inbox-snapshot',
+]);
 
 const usage = `Usage:
   node scripts/crm-vnext-ig-origin-batch-prompt.mjs [options]
@@ -100,6 +114,42 @@ const evidenceText = (card) =>
     .map((item) => `${cleanString(item.source) ?? ''} ${cleanString(item.note) ?? ''}`)
     .join(' ');
 
+const hasOwnedOrInternalHandle = (card) => {
+  const handle = normalizeHandle(card?.identities?.instagramHandle);
+  return Boolean(handle && OWNED_OR_INTERNAL_HANDLES.has(handle));
+};
+
+const hasRichEvidence = (card) => {
+  const text = evidenceText(card).toLowerCase();
+  if (/\b(manychat|lead_capture|lead-capture|lead capture|onboarding|vercel|proxy|webhook|mailerlite|gmail|drive|contacts|retreat|retiro|yoga|encuentro|juana|mantis|instagram_dm_ui|crm-vnext|daily_memory)\b/i.test(text)) {
+    return true;
+  }
+  return (card?.evidence ?? []).some((item) => {
+    const source = cleanString(item?.source);
+    const note = cleanString(item?.note);
+    return Boolean(source && !GENERIC_IG_SIGNAL_SOURCES.has(source) && note && note.length >= 24);
+  });
+};
+
+const isGenericIgOnlySignal = (card) => {
+  const handle = normalizeHandle(card?.identities?.instagramHandle);
+  if (!handle) return false;
+  if (
+    cleanString(card?.displayName)
+    || cleanString(card?.identities?.email)
+    || cleanString(card?.identities?.phone)
+    || cleanString(card?.identities?.city)
+    || cleanString(card?.identities?.country)
+  ) {
+    return false;
+  }
+  const evidence = Array.isArray(card?.evidence) ? card.evidence : [];
+  if (evidence.length > 1) return false;
+  const onlySource = cleanString(evidence[0]?.source);
+  const onlyNote = cleanString(evidence[0]?.note);
+  return Boolean(!onlyNote && (!onlySource || GENERIC_IG_SIGNAL_SOURCES.has(onlySource)));
+};
+
 const isIgOrigin = (card) => {
   const text = evidenceText(card).toLowerCase();
   return Boolean(
@@ -136,11 +186,26 @@ const anchorsFor = (card) => unique([
   normalizeHandle(card?.identities?.instagramHandle) ? `@${normalizeHandle(card.identities.instagramHandle)}` : null,
 ]);
 
+const isFallbackEligible = (card) => {
+  if (!isIgOrigin(card)) return false;
+  if (hasOwnedOrInternalHandle(card)) return false;
+  if (isGenericIgOnlySignal(card)) return false;
+  return Boolean(
+    hasRichEvidence(card)
+    || cleanString(card?.displayName)
+    || cleanString(card?.identities?.email)
+    || cleanString(card?.identities?.phone)
+  );
+};
+
 const priorityFor = (card, recentIndex) => {
   const missing = missingFieldsFor(card);
   let score = 0;
   if (isIgOrigin(card)) score += 50;
   else score -= 40;
+  if (hasRichEvidence(card)) score += 18;
+  if (isGenericIgOnlySignal(card)) score -= 80;
+  if (hasOwnedOrInternalHandle(card)) score -= 100;
   if (recentIndex >= 0) score += Math.max(0, 24 - recentIndex * 2);
   if (missing.includes('instagramHandle')) score += 24;
   if (missing.includes('phone')) score += 8;
@@ -194,6 +259,11 @@ const contactPacketFor = (card, recentIndex) => ({
     country: cleanString(card?.identities?.country),
     evidenceCount: card?.evidence?.length ?? 0,
     nextAction: cleanString(card?.nextAction?.code),
+  },
+  selectionSignals: {
+    richEvidence: hasRichEvidence(card),
+    genericIgOnlySignal: isGenericIgOnlySignal(card),
+    ownedOrInternalHandle: hasOwnedOrInternalHandle(card),
   },
   missingFields: missingFieldsFor(card),
   inputAnchors: anchorsFor(card),
@@ -269,15 +339,30 @@ const buildPacket = ({ cards, ledgerEntries, options, now }) => {
   const explicitIds = options.personIds.map(cleanString).filter(Boolean);
   const seededIds = unique([...explicitIds, ...latestIds]);
   const seededCards = seededIds.map((id) => cardsById.get(id)).filter(Boolean);
+  const seededIdSet = new Set(seededIds);
   const fallbackCards = cards
-    .filter((card) => isIgOrigin(card))
+    .filter((card) => isFallbackEligible(card))
+    .filter((card) => !seededIdSet.has(cleanString(card.personId)))
     .sort((a, b) => priorityFor(b, -1) - priorityFor(a, -1));
-  const candidates = unique([...seededCards, ...fallbackCards].map((card) => cleanString(card.personId)))
-    .map((id) => cardsById.get(id))
-    .filter(Boolean)
+  const excludedFallbackCards = cards.filter((card) =>
+    isIgOrigin(card)
+    && !isFallbackEligible(card)
+    && !explicitIds.includes(cleanString(card.personId))
+    && !latestIds.includes(cleanString(card.personId))
+  );
+  const seededPackets = seededCards
+    .filter((card) => {
+      const personId = cleanString(card.personId);
+      if (explicitIds.includes(personId)) return true;
+      if (hasOwnedOrInternalHandle(card)) return false;
+      return isIgOrigin(card) && !isGenericIgOnlySignal(card);
+    })
     .map((card) => contactPacketFor(card, latestIds.indexOf(cleanString(card.personId))))
+    .sort((a, b) => b.priorityScore - a.priorityScore || a.subject.localeCompare(b.subject));
+  const fallbackPackets = fallbackCards
+    .map((card) => contactPacketFor(card, -1))
     .sort((a, b) => b.priorityScore - a.priorityScore || a.subject.localeCompare(b.subject))
-    .slice(0, options.limit);
+  const candidates = [...seededPackets, ...fallbackPackets].slice(0, options.limit);
   const basePacket = {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: now,
@@ -287,6 +372,7 @@ const buildPacket = ({ cards, ledgerEntries, options, now }) => {
       contactsSelected: candidates.length,
       latestWriteSeeds: latestIds.length,
       explicitSeeds: explicitIds.length,
+      excludedLowSignalFallbacks: excludedFallbackCards.length,
       operationsExecuted: 0,
       cardMutationReady: false,
     },

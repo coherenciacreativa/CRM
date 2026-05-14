@@ -198,6 +198,13 @@ The packet prioritizes likely Instagram/onboarding contacts, missing identity fi
 - compact thread context such as city, country, interest, preferences, tone, origin, and next-step cues,
 - no full conversation export and no live mutation.
 
+Selection hygiene:
+
+- Explicit `--person-id` contacts stay ahead of fallback candidates.
+- Generic IG-only signals such as a bare `lead-state`, `ig-ui-signals-state`, or `ig-api-inbox-snapshot` card with no note, name, email, phone, city, or country should not become an automatic batch candidate.
+- Owned/internal handles such as Alejandro's own accounts should not enter fallback batches.
+- Low-signal IG handles can still be investigated when Alejandro names them explicitly, but they should not crowd out stronger evidence candidates.
+
 Mantis still returns a normal contact-keyed evidence hunt JSON under `~/Documents/Mantis-Reports/`, then the usual import and batch operating loop continue.
 
 ## Instagram DM UI Bridge Fallback
