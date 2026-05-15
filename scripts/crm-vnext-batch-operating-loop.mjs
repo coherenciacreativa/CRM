@@ -112,6 +112,7 @@ const compactLoop = (loop, source) => ({
   operatorRunbook: loop.operatorRunbook,
   evidenceQuestionQueue: loop.evidenceQuestionQueue.map(compactEvidenceQueueItem),
   blockedIdentityQueue: loop.blockedIdentityQueue,
+  noMaterialDeltaQueue: loop.noMaterialDeltaQueue ?? [],
   readyApprovalItems: loop.readyApprovalItems,
   readyWritePreview: loop.readyWritePreview,
   componentSummaries: loop.componentSummaries,

@@ -115,6 +115,7 @@ const personIdsFromCardWriteLedger = (entries, options) => {
 const personIdsFromBatchLoop = (loop) => unique([
   ...(Array.isArray(loop?.readyApprovalItems) ? loop.readyApprovalItems.map((item) => item.targetPersonId) : []),
   ...(Array.isArray(loop?.blockedIdentityQueue) ? loop.blockedIdentityQueue.map((item) => item.targetPersonId) : []),
+  ...(Array.isArray(loop?.noMaterialDeltaQueue) ? loop.noMaterialDeltaQueue.map((item) => item.targetPersonId) : []),
   ...(Array.isArray(loop?.readyWritePreview?.planItems) ? loop.readyWritePreview.planItems.map((item) => item.targetPersonId) : []),
 ]);
 

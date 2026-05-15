@@ -250,4 +250,153 @@ describe("buildCrmVNextBatchOperatingLoop", () => {
     expect(loop.blockedIdentityQueue[0].operatorPrompt).toContain("No mutar CRM");
     expect(JSON.stringify(loop)).not.toContain("/Users/");
   });
+
+  test("does not ask for card-write approval when the dry-run found no material delta", () => {
+    const approvalItem = {
+      approvalItemId: "approval-noop",
+      batchItemId: "batch-noop",
+      status: "ready_for_human_approval",
+      targetPersonId: "ig:angiemontero16",
+      subject: {
+        label: "angiemontero16",
+        proposedDisplayName: null,
+        rawName: null,
+        instagramHandle: "angiemontero16",
+      },
+      recommendedAction: "enrich_existing_card",
+      requestedDecision: {
+        prompt: "Approve no-op enrichment?",
+        approveOptionId: "approve_for_future_card_write_path",
+        holdOptionId: "keep_in_review",
+        rejectOptionId: "reject_candidate",
+      },
+      identitySummary: {
+        displayName: null,
+        email: null,
+        phone: null,
+        instagramHandle: "angiemontero16",
+        missingContactFields: [],
+        fullNameCandidates: [],
+        emailCandidates: [],
+        phoneCandidates: [],
+        evidenceDecisionSummary: {
+          confirmedSubjectEmails: [],
+          keptUnassignedEmails: [],
+          relatedPersonCandidateEmails: [],
+          needsMoreEvidenceEmails: [],
+          ignoredEmails: [],
+          appliedDecisionRecordIds: [],
+        },
+      },
+      proposedServices: [],
+      relationshipContexts: [],
+      openQuestions: [],
+      approvalScopes: ["card_write_policy"],
+      approvalChecklist: ["Confirm target."],
+      blockers: [],
+      nextEvidenceActions: [],
+      operationsPreviewed: 1,
+      operationsExecuted: 0,
+      safeApprovalBoundary: "No outbound.",
+    };
+
+    const loop = buildCrmVNextBatchOperatingLoop({
+      text: "CRM: @angiemontero16.",
+      sourceKind: "manual_import",
+      reporter: "Mantis",
+      channel: "codex",
+      now: NOW,
+      cards: [],
+      mailerBridgeRows: [],
+      localSources: [],
+      sourceCoverage: {
+        roots: 0,
+        filesScanned: 0,
+        filesSkipped: 0,
+        sourcesLoaded: 0,
+        connectedEvidenceSources: 0,
+      },
+      workbench: {
+        summary: {
+          reviewItems: 0,
+          queueItems: 0,
+          highPriority: 0,
+          recommendedConfirmEmailForSubject: 0,
+          recommendedKeepUnassigned: 0,
+          recommendedMoreEvidence: 0,
+          readyForHumanApproval: 0,
+          blockedOpenEvidenceQuestions: 0,
+          operationsPreviewed: 0,
+          operationsExecuted: 0,
+          cardMutationReady: false,
+        },
+        queueItems: [],
+      } as never,
+      approvalPacket: {
+        summary: {
+          items: 1,
+          readyForHumanApproval: 1,
+          blockedOpenEvidenceQuestions: 0,
+          blockedNeedsMoreIdentity: 0,
+          openEvidenceQuestions: 0,
+          approvalScopesRequested: 1,
+          restrictedServiceApprovalItems: 0,
+          operationsPreviewed: 1,
+          operationsExecuted: 0,
+          cardMutationReady: false,
+        },
+        approvalItems: [approvalItem],
+      } as never,
+      applyDryRun: {
+        mode: "dry_run_card_write_apply",
+        summary: {
+          approvalItems: 1,
+          readyApprovalItems: 1,
+          selectedItems: 1,
+          commitEligibleItems: 0,
+          blockedItems: 1,
+          cardsToUpsert: 0,
+          mergeReviewsToStage: 0,
+          operationsPlanned: 1,
+          operationsExecuted: 0,
+          committed: false,
+          commitBlocked: false,
+          commitBlockers: ["blocked_no_material_card_delta"],
+        },
+        planItems: [{
+          applyItemId: "apply-noop",
+          status: "blocked_no_material_card_delta",
+          approvalItemId: "approval-noop",
+          batchItemId: "batch-noop",
+          previewId: "preview-noop",
+          targetPersonId: "ig:angiemontero16",
+          subject: approvalItem.subject,
+          recommendedAction: "enrich_existing_card",
+          mutationKind: "upsert_vnext_card",
+          proposedCard: null,
+          operations: [],
+          approvalScopes: ["card_write_policy"],
+          blockers: [],
+          commitBlockers: ["blocked_no_material_card_delta"],
+          provenance: null,
+        }],
+      } as never,
+    });
+
+    expect(loop.summary).toMatchObject({
+      readyForCardWriteApproval: 0,
+      noMaterialDeltaItems: 1,
+      readyWritePlanItems: 0,
+      operationsPlannedForDryRun: 1,
+      operationsExecuted: 0,
+      cardMutationReady: false,
+    });
+    expect(loop.readyApprovalItems).toEqual([]);
+    expect(loop.noMaterialDeltaQueue[0]).toMatchObject({
+      targetPersonId: "ig:angiemontero16",
+      approvalItemId: "approval-noop",
+      safeNextStep: expect.stringContaining("No card write is useful yet"),
+    });
+    expect(loop.readyWritePreview.summary.commitBlockers).toEqual(["blocked_no_material_card_delta"]);
+  });
 });

@@ -107,6 +107,15 @@ export type CrmBatchOperatingLoopReadyWritePreviewItem = {
   commitBlockers: string[];
 };
 
+export type CrmBatchOperatingLoopNoMaterialDeltaItem = {
+  applyItemId: string;
+  approvalItemId: string;
+  targetPersonId: string | null;
+  subjectLabel: string;
+  recommendedAction: CrmCardWriteApplyPlanItem['recommendedAction'];
+  safeNextStep: string;
+};
+
 export type CrmBatchOperatingLoopReport = {
   schemaVersion: typeof CRM_VNEXT_BATCH_OPERATING_LOOP_SCHEMA_VERSION;
   generatedAt: string;
@@ -116,6 +125,7 @@ export type CrmBatchOperatingLoopReport = {
     evidenceQuestionQueueItems: number;
     readyForCardWriteApproval: number;
     blockedIdentityItems: number;
+    noMaterialDeltaItems: number;
     readyWritePlanItems: number;
     operationsPreviewed: number;
     operationsPlannedForDryRun: number;
@@ -130,6 +140,7 @@ export type CrmBatchOperatingLoopReport = {
   evidenceQuestionQueue: CrmEvidenceApprovalWorkbenchQueueItem[];
   readyApprovalItems: CrmBatchOperatingLoopReadyApprovalItem[];
   blockedIdentityQueue: CrmBatchOperatingLoopBlockedIdentityItem[];
+  noMaterialDeltaQueue: CrmBatchOperatingLoopNoMaterialDeltaItem[];
   readyWritePreview: {
     mode: CrmCardWriteApplyReport['mode'];
     summary: CrmCardWriteApplyReport['summary'];
@@ -362,6 +373,17 @@ const compactReadyWritePlanItem = (
   commitBlockers: item.commitBlockers,
 });
 
+const compactNoMaterialDeltaItem = (
+  item: CrmCardWriteApplyPlanItem,
+): CrmBatchOperatingLoopNoMaterialDeltaItem => ({
+  applyItemId: item.applyItemId,
+  approvalItemId: item.approvalItemId,
+  targetPersonId: item.targetPersonId,
+  subjectLabel: item.subject.label,
+  recommendedAction: item.recommendedAction,
+  safeNextStep: 'No card write is useful yet. Ask Alejandro for human context, run a more specific evidence hunt, or produce context-fact proposals before reattempting approval.',
+});
+
 const safety = (): CrmBatchOperatingLoopReport['safety'] => ({
   readOnly: true,
   outboundProhibited: true,
@@ -413,8 +435,14 @@ export const buildCrmVNextBatchOperatingLoop = (
     applyAllReady: true,
     commit: false,
   } as CrmCardWriteApplyInput);
+  const readyWriteApprovalItemIds = new Set(
+    applyDryRun.planItems
+      .filter((item) => item.status === 'ready_to_commit')
+      .map((item) => item.approvalItemId),
+  );
   const readyApprovalItems = approvalPacket.approvalItems
     .filter((item) => item.status === 'ready_for_human_approval')
+    .filter((item) => readyWriteApprovalItemIds.has(item.approvalItemId))
     .map(compactReadyApprovalItem);
   const blockedIdentityQueue = approvalPacket.approvalItems
     .filter((item) => item.status === 'blocked_needs_more_identity')
@@ -425,6 +453,9 @@ export const buildCrmVNextBatchOperatingLoop = (
   const readyWritePlanItems = applyDryRun.planItems
     .filter((item) => item.status === 'ready_to_commit')
     .map(compactReadyWritePlanItem);
+  const noMaterialDeltaQueue = applyDryRun.planItems
+    .filter((item) => item.status === 'blocked_no_material_card_delta')
+    .map(compactNoMaterialDeltaItem);
 
   return {
     schemaVersion: CRM_VNEXT_BATCH_OPERATING_LOOP_SCHEMA_VERSION,
@@ -435,6 +466,7 @@ export const buildCrmVNextBatchOperatingLoop = (
       evidenceQuestionQueueItems: workbench.summary.queueItems,
       readyForCardWriteApproval: readyApprovalItems.length,
       blockedIdentityItems: blockedIdentityQueue.length,
+      noMaterialDeltaItems: noMaterialDeltaQueue.length,
       readyWritePlanItems: readyWritePlanItems.length,
       operationsPreviewed: approvalPacket.summary.operationsPreviewed,
       operationsPlannedForDryRun: applyDryRun.summary.operationsPlanned,
@@ -458,6 +490,7 @@ export const buildCrmVNextBatchOperatingLoop = (
     evidenceQuestionQueue: workbench.queueItems,
     readyApprovalItems,
     blockedIdentityQueue,
+    noMaterialDeltaQueue,
     readyWritePreview: {
       mode: applyDryRun.mode,
       summary: applyDryRun.summary,

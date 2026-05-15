@@ -59,11 +59,17 @@ Contacts that need more identity evidence before card-write approval. Each item 
 
 `readyApprovalItems`
 
-Items ready for explicit human card-write approval.
+Items ready for explicit human card-write approval and also eligible in the dry-run write preview. If the approval packet says an item is human-approval-ready but the write preview blocks it as a no-op, the loop does not ask Alejandro to approve it.
+
+`noMaterialDeltaQueue`
+
+Contacts whose evidence was structurally understood but whose proposed card write would not materially change the current card. These are good candidates for a human enrichment question or a deeper read-only search, not for immediate approval.
 
 `readyWritePreview`
 
 Dry-run plan only. It shows what would be eligible after approval, but it never writes.
+
+No-op card writes are filtered out by the `card-write-apply` delta gate and appear in `noMaterialDeltaQueue` plus the dry-run summary as `blocked_no_material_card_delta`.
 
 ## Safety
 

@@ -148,6 +148,49 @@ describe("buildCrmVNextCardWriteApply", () => {
     ]));
   });
 
+  test("blocks no-op card writes when the proposed card has no material delta", () => {
+    const existingCard = buildPersonCardVNext({
+      personId: "ig:angiemontero16",
+      identities: { instagramHandle: "angiemontero16" },
+      now: NOW,
+    });
+
+    const report = buildCrmVNextCardWriteApply({
+      text: "CRM: @angiemontero16.",
+      sourceKind: "manual_import",
+      reporter: "Mantis",
+      channel: "codex",
+      now: NOW,
+      cards: [existingCard],
+      mailerBridgeRows: [],
+      localSources: [],
+      sourceCoverage: {
+        roots: 0,
+        filesScanned: 0,
+        filesSkipped: 0,
+        sourcesLoaded: 0,
+        connectedEvidenceSources: 0,
+      },
+      applyAllReady: true,
+      approvedBy: "Alejandro",
+      commit: false,
+    });
+
+    expect(report.summary).toMatchObject({
+      readyApprovalItems: 1,
+      selectedItems: 1,
+      commitEligibleItems: 0,
+      blockedItems: 1,
+      cardsToUpsert: 0,
+      commitBlockers: ["blocked_no_material_card_delta"],
+    });
+    expect(report.planItems[0]).toMatchObject({
+      status: "blocked_no_material_card_delta",
+      targetPersonId: "ig:angiemontero16",
+      commitBlockers: ["blocked_no_material_card_delta"],
+    });
+  });
+
   test("enriches an existing sparse card with confirmed identity evidence", async () => {
     const evidenceReviewDecisions: CrmStoredEvidenceReviewDecision[] = [{
       schemaVersion: "crm-vnext-stored-evidence-review-decision-2026-05-10",

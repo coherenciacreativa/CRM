@@ -35,7 +35,8 @@ export type CrmCardWriteApplyPlanItemStatus =
   | 'ready_to_commit'
   | 'blocked_not_ready_for_approval'
   | 'blocked_missing_card_draft'
-  | 'blocked_unsupported_action';
+  | 'blocked_unsupported_action'
+  | 'blocked_no_material_card_delta';
 
 export type CrmCardWriteApplyInput = CrmStitchBatchReviewInput & {
   packet?: CrmCardWriteApprovalPacketReport | null;
@@ -359,15 +360,92 @@ const mergedCardForPreview = (
   });
 };
 
+const normalizedComparableString = (value: string | null | undefined): string | null =>
+  cleanString(value)?.toLowerCase() ?? null;
+
+const hasIdentityDelta = (
+  currentCard: PersonCardVNext,
+  proposedCard: PersonCardVNext,
+): boolean => {
+  const keys: Array<keyof PersonCardVNext['identities']> = [
+    'email',
+    'instagramHandle',
+    'instagramUserId',
+    'phone',
+    'city',
+    'country',
+  ];
+  return keys.some((key) => {
+    const incoming = normalizedComparableString(proposedCard.identities[key]);
+    if (!incoming) return false;
+    return incoming !== normalizedComparableString(currentCard.identities[key]);
+  });
+};
+
+const hasChannelDelta = (
+  currentCard: PersonCardVNext,
+  proposedCard: PersonCardVNext,
+): boolean => {
+  const channels: Array<keyof PersonCardVNext['channels']> = ['email', 'instagram', 'whatsapp', 'telegram'];
+  return channels.some((channel) => {
+    const incoming = proposedCard.channels[channel];
+    const current = currentCard.channels[channel];
+    if (incoming.present && !current.present) return true;
+    const incomingStatus = normalizedComparableString(incoming.status);
+    if (!incomingStatus) return false;
+    return incomingStatus !== normalizedComparableString(current.status);
+  });
+};
+
+const hasProductDelta = (
+  currentCard: PersonCardVNext,
+  proposedCard: PersonCardVNext,
+): boolean => (
+  proposedCard.products.yogaClasses90d > currentCard.products.yogaClasses90d
+  || proposedCard.products.happyCircle90d > currentCard.products.happyCircle90d
+  || proposedCard.products.retreatsAttended > currentCard.products.retreatsAttended
+  || proposedCard.products.totalSpend > currentCard.products.totalSpend
+  || proposedCard.products.purchaseCount > currentCard.products.purchaseCount
+  || (proposedCard.products.activeClient && !currentCard.products.activeClient)
+);
+
+const hasEvidenceDelta = (
+  currentCard: PersonCardVNext,
+  proposedCard: PersonCardVNext,
+): boolean => {
+  const currentEvidence = new Set(currentCard.evidence.map((item) => JSON.stringify(item)));
+  return proposedCard.evidence.some((item) => !currentEvidence.has(JSON.stringify(item)));
+};
+
+const hasMaterialCardDelta = (
+  currentCard: PersonCardVNext | null,
+  proposedCard: PersonCardVNext | null,
+): boolean => {
+  if (!proposedCard) return false;
+  if (!currentCard) return true;
+  if (normalizedComparableString(proposedCard.displayName)
+    && normalizedComparableString(proposedCard.displayName) !== normalizedComparableString(currentCard.displayName)) {
+    return true;
+  }
+  return (
+    hasIdentityDelta(currentCard, proposedCard)
+    || hasChannelDelta(currentCard, proposedCard)
+    || hasProductDelta(currentCard, proposedCard)
+    || hasEvidenceDelta(currentCard, proposedCard)
+  );
+};
+
 const statusForPlanItem = (
   approvalItem: CrmCardWriteApprovalPacketItem,
   preview: CrmCardApplyPreviewItem | null,
   mutationKind: CrmCardWriteApplyMutationKind | null,
   proposedCard: PersonCardVNext | null,
+  materialCardDelta: boolean,
 ): CrmCardWriteApplyPlanItemStatus => {
   if (approvalItem.status !== 'ready_for_human_approval') return 'blocked_not_ready_for_approval';
   if (!mutationKind) return 'blocked_unsupported_action';
   if (mutationKind === 'upsert_vnext_card' && !proposedCard) return 'blocked_missing_card_draft';
+  if (mutationKind === 'upsert_vnext_card' && !materialCardDelta) return 'blocked_no_material_card_delta';
   return 'ready_to_commit';
 };
 
@@ -409,7 +487,8 @@ const planItemFor = (
   const proposedCard = preview && mutationKind === 'upsert_vnext_card'
     ? mergedCardForPreview(preview, generatedAt, currentFullCard, approvalItem.subject)
     : null;
-  const status = statusForPlanItem(approvalItem, preview, mutationKind, proposedCard);
+  const materialCardDelta = mutationKind === 'stage_merge_review' ? true : hasMaterialCardDelta(currentFullCard, proposedCard);
+  const status = statusForPlanItem(approvalItem, preview, mutationKind, proposedCard, materialCardDelta);
   const commitBlockers = [
     status !== 'ready_to_commit' ? status : null,
     ...(approvalItem.openQuestions.length ? ['open_evidence_questions'] : []),

@@ -10,6 +10,7 @@ Status: Implemented as a guarded local write path
 It is intentionally narrow:
 
 - it only applies items that are already `ready_for_human_approval`,
+- it blocks no-op upserts when the proposed card would not materially change the existing local card,
 - committed writes require `approvedBy`,
 - committed writes require either explicit `approvalItemIds` or `applyAllReady=true`,
 - committed writes create backups first,
@@ -19,6 +20,20 @@ It is intentionally narrow:
 It never sends outbound messages, writes Fact Store, calls live APIs, changes credentials, or touches ManyChat/Instagram/MailerLite state.
 
 Staged merge-review items are intentionally handed to `card-merge-review-resolver`, which has its own explicit approval and restricted-service acknowledgement boundary.
+
+## Delta Gate
+
+`card-write-apply` compares each proposed upsert against the current local vNext card before marking it `ready_to_commit`.
+
+An item is blocked as `blocked_no_material_card_delta` when it would not add or change:
+
+- display name,
+- identity fields,
+- channel presence/status,
+- product/client participation fields,
+- card evidence.
+
+This prevents Mantis/Codex from asking Alejandro to approve writes that merely restate an already-known handle or email. In that case, the better next step is a richer evidence hunt, context-fact proposal, or human enrichment question rather than a redundant card write.
 
 ## Route
 
