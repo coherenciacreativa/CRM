@@ -287,6 +287,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
       "The API does not call live ManyChat, Instagram, MailerLite, WhatsApp, or Vercel and does not read credentials.",
       "Never edit, pause, resume, or test ManyChat LIVE from this flow.",
       "Use for Eliana-style cases where an Instagram handle should connect to email/phone captured earlier.",
+      "If the batch loop marks a contact source_recovery_required, run this lane before asking Alejandro for missing email or phone.",
     ],
   },
   {
@@ -994,6 +995,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
       "Use --search-results-file to pass Mantis/OpenClaw exports or selected webhook/proxy rows into CRM.",
       "This command never edits ManyChat LIVE, calls Instagram, mutates MailerLite, mutates cards, writes Fact Store, or sends outbound messages.",
       "Use before accepting new-card creation for Instagram-origin people whose email/phone should exist in capture traces.",
+      "Use before asking Alejandro when an Instagram/onboarding contact is missing email or phone and the batch loop returns source_recovery_required.",
     ],
   },
   {
@@ -1005,6 +1007,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     outbound: false,
     notes: [
       "Use when a known email or phone found in CRM/MailerLite/proxy evidence can be searched in Instagram Messages UI.",
+      "Also use when an Instagram/onboarding contact is missing email or phone and the batch loop requests official-flow source recovery.",
       "This command does not open Instagram or call live APIs; it converts supplied human/Mantis UI observations into instagram_dm_ui_export evidenceSources.",
       "When city/country appear as self-location phrases in the thread, pass city/country plus a short locationText/locationEvidence phrase; do not treat event locations as the person's city.",
       "No send, like, react, follow, unfollow, permission, credential, ManyChat LIVE, card, or Fact Store mutation is allowed.",
@@ -1551,7 +1554,7 @@ export const buildCrmVNextOperatorCapabilities = (
       {
         step: 12,
         id: "lead_capture_evidence_helper",
-        action: "When Instagram-origin contacts should have captured email/phone evidence, collect read-only lead_capture_export packets from ManyChat/webhook/proxy/WhatsApp traces.",
+        action: "When Instagram-origin contacts should have captured email/phone evidence, collect read-only lead_capture_export packets from ManyChat/webhook/proxy/WhatsApp traces before asking Alejandro.",
         use: "/api/crm-vnext/lead-capture-evidence-helper",
         stopCondition: "If live ManyChat, Instagram, MailerLite, WhatsApp, or credential access is needed, stop and ask for explicit approval.",
       },

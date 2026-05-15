@@ -26,17 +26,24 @@ export type CrmBatchOperatingLoopSearchLane =
   | 'google_drive_retreat_tables'
   | 'lead_capture_traces'
   | 'instagram_manychat_archive'
+  | 'official_flow_source_recovery'
+  | 'instagram_messages_ui'
+  | 'manychat_read_export'
+  | 'vercel_proxy_traces'
   | 'local_csv_exports'
   | 'human_identity_clarification';
 
 export type CrmBatchOperatingLoopQueuePriority = 'high' | 'medium' | 'low';
+export type CrmBatchOperatingLoopBlockedIdentityStatus =
+  | 'blocked_needs_more_identity'
+  | 'source_recovery_required';
 
 export type CrmBatchOperatingLoopBlockedIdentityItem = {
   queueItemId: string;
   priority: CrmBatchOperatingLoopQueuePriority;
   approvalItemId: string;
   batchItemId: string;
-  status: 'blocked_needs_more_identity';
+  status: CrmBatchOperatingLoopBlockedIdentityStatus;
   targetPersonId: string | null;
   subject: CrmCardWriteApprovalPacketItem['subject'];
   recommendedAction: CrmCardWriteApprovalPacketItem['recommendedAction'];
@@ -57,6 +64,9 @@ export type CrmBatchOperatingLoopBlockedIdentityItem = {
   blockers: string[];
   nextEvidenceActions: string[];
   recommendedSearchLanes: CrmBatchOperatingLoopSearchLane[];
+  sourceRecoveryRequired: boolean;
+  sourceRecoveryReason: string | null;
+  humanClarificationAllowedAfterRecovery: boolean;
   operatorPrompt: string;
   safeNextStep: string;
 };
@@ -202,10 +212,49 @@ const unique = <T>(values: T[]): T[] => Array.from(new Set(values));
 
 const priorityRank = { high: 0, medium: 1, low: 2 } as const;
 
+const hasMissingContactField = (
+  item: CrmCardWriteApprovalPacketItem,
+  field: 'email' | 'phone' | 'instagramHandle',
+): boolean => new Set(item.identitySummary.missingContactFields).has(field);
+
+const hasInstagramAnchor = (item: CrmCardWriteApprovalPacketItem): boolean =>
+  Boolean(item.subject.instagramHandle || item.identitySummary.instagramHandle);
+
+const searchableItemText = (item: CrmCardWriteApprovalPacketItem): string =>
+  [
+    item.targetPersonId,
+    item.subject.label,
+    item.subject.rawName,
+    item.subject.proposedDisplayName,
+    item.subject.instagramHandle,
+    item.identitySummary.displayName,
+    item.identitySummary.instagramHandle,
+    item.identitySummary.fullNameCandidates.join(' '),
+    item.identitySummary.emailCandidates.join(' '),
+    item.identitySummary.phoneCandidates.join(' '),
+    item.blockers.join(' '),
+    item.nextEvidenceActions.join(' '),
+    JSON.stringify(item.proposedServices),
+    JSON.stringify(item.relationshipContexts),
+  ].filter(Boolean).join(' ');
+
+const hasOfficialFlowSignal = (item: CrmCardWriteApprovalPacketItem): boolean => {
+  if (hasInstagramAnchor(item)) return true;
+  return /\b(instagram|ig[:\s@]|manychat|lead[-_ ]?capture|lead capture|onboarding|vercel|proxy|webhook|custom gpt|flujo oficial|bienvenida|saludo|mailer\s?lite)\b/i
+    .test(searchableItemText(item));
+};
+
+const officialFlowSourceRecoveryRequired = (
+  item: CrmCardWriteApprovalPacketItem,
+): boolean =>
+  (hasMissingContactField(item, 'email') || hasMissingContactField(item, 'phone'))
+  && hasOfficialFlowSignal(item);
+
 const priorityForBlockedItem = (
   item: CrmCardWriteApprovalPacketItem,
 ): CrmBatchOperatingLoopQueuePriority => {
   const missing = new Set(item.identitySummary.missingContactFields);
+  if (officialFlowSourceRecoveryRequired(item)) return 'high';
   if (
     item.proposedServices.length > 0
     && (missing.has('email') || missing.has('phone'))
@@ -221,6 +270,20 @@ const searchLanesForBlockedItem = (
 ): CrmBatchOperatingLoopSearchLane[] => {
   const missing = new Set(item.identitySummary.missingContactFields);
   const lanes: CrmBatchOperatingLoopSearchLane[] = [];
+  const needsSourceRecovery = officialFlowSourceRecoveryRequired(item);
+
+  if (needsSourceRecovery) {
+    lanes.push(
+      'official_flow_source_recovery',
+      'instagram_messages_ui',
+      'lead_capture_traces',
+      'instagram_manychat_archive',
+      'manychat_read_export',
+      'vercel_proxy_traces',
+      'mailerlite_cursor_scan',
+      'gmail_search',
+    );
+  }
 
   if (missing.has('email')) {
     lanes.push(
@@ -258,7 +321,7 @@ const searchLanesForBlockedItem = (
     );
   }
 
-  if (item.subject.instagramHandle || item.identitySummary.instagramHandle) {
+  if (hasInstagramAnchor(item)) {
     lanes.push('lead_capture_traces', 'instagram_manychat_archive');
   }
 
@@ -269,6 +332,7 @@ const promptForBlockedItem = (
   item: CrmCardWriteApprovalPacketItem,
   lanes: CrmBatchOperatingLoopSearchLane[],
 ): string => {
+  const needsSourceRecovery = officialFlowSourceRecoveryRequired(item);
   const subject = cleanString(item.subject.label)
     ?? cleanString(item.identitySummary.displayName)
     ?? cleanString(item.targetPersonId)
@@ -290,6 +354,21 @@ const promptForBlockedItem = (
     anchors ? `Anclas conocidas: ${anchors}.` : null,
     `Falta confirmar: ${missing}.`,
     `Carriles sugeridos: ${lanes.join(', ')}.`,
+    needsSourceRecovery
+      ? 'Regla official-flow source recovery: no preguntes a Alejandro todavía por email/teléfono; primero agota las fuentes del flujo oficial Instagram/onboarding.'
+      : null,
+    needsSourceRecovery
+      ? 'Busca IG Messages UI, ManyChat/export local, Vercel/proxy/webhook traces, MailerLite cursor scan, lead-capture ledgers, reportes locales y Gmail/Drive si ayudan.'
+      : null,
+    needsSourceRecovery
+      ? 'En IG Messages captura también ciudad, país, preferencias, origen, tono y contexto útil cuando aparezcan como texto explícito; conserva solo snippets mínimos.'
+      : null,
+    needsSourceRecovery
+      ? 'Si login, Relay, permiso, checkpoint o auth bloquea una fuente, guarda awaiting_human_unblock con anchors pendientes y pide desbloqueo; no cierres el batch como completo.'
+      : null,
+    needsSourceRecovery
+      ? 'El JSON debe incluir searchedSources, discardedCandidates, remainingGaps y why_previous_batch_missed_this por contacto.'
+      : null,
     'Devuelve evidenceSources JSON compatibles con CRM vNext, con sourceKind/sourceId/text o snippet.',
     'No mutar CRM, ManyChat LIVE, MailerLite, Gmail, Drive, Contacts, Instagram, WhatsApp, Telegram ni credenciales. No enviar mensajes.',
   ].filter(Boolean).join(' '));
@@ -300,13 +379,14 @@ const blockedIdentityQueueItemFor = (
 ): CrmBatchOperatingLoopBlockedIdentityItem => {
   const lanes = searchLanesForBlockedItem(item);
   const priority = priorityForBlockedItem(item);
+  const needsSourceRecovery = officialFlowSourceRecoveryRequired(item);
 
   return {
     queueItemId: `blocked_identity_queue_${hashId([item.approvalItemId, item.targetPersonId, item.subject.label])}`,
     priority,
     approvalItemId: item.approvalItemId,
     batchItemId: item.batchItemId,
-    status: 'blocked_needs_more_identity',
+    status: needsSourceRecovery ? 'source_recovery_required' : 'blocked_needs_more_identity',
     targetPersonId: item.targetPersonId,
     subject: item.subject,
     recommendedAction: item.recommendedAction,
@@ -330,8 +410,15 @@ const blockedIdentityQueueItemFor = (
     ]),
     nextEvidenceActions: item.nextEvidenceActions,
     recommendedSearchLanes: lanes,
+    sourceRecoveryRequired: needsSourceRecovery,
+    sourceRecoveryReason: needsSourceRecovery
+      ? 'Missing email/phone on an Instagram/onboarding-like contact should be recovered from official-flow sources before asking Alejandro.'
+      : null,
+    humanClarificationAllowedAfterRecovery: true,
     operatorPrompt: promptForBlockedItem(item, lanes),
-    safeNextStep: 'Gather read-only evidence, rerun the batch operating loop, and ask Alejandro only for unresolved identity decisions.',
+    safeNextStep: needsSourceRecovery
+      ? 'Run official-flow source recovery read-only, rerun the batch operating loop, and ask Alejandro only after those lanes are exhausted or blocked.'
+      : 'Gather read-only evidence, rerun the batch operating loop, and ask Alejandro only for unresolved identity decisions.',
   };
 };
 
@@ -477,6 +564,7 @@ export const buildCrmVNextBatchOperatingLoop = (
       purpose: 'Turn a fresh CRM evidence batch into the next safe operator action without leaving read-only mode.',
       sequence: [
         'Resolve evidenceQuestionQueue first when it has items; store decisions only after Alejandro confirms.',
+        'When blockedIdentityQueue.status is source_recovery_required, exhaust official-flow sources before asking Alejandro for missing email or phone.',
         'Send each blockedIdentityQueue.operatorPrompt to Mantis or run the named helper lanes in read-only mode.',
         'When readyApprovalItems exist, ask Alejandro for explicit card-write approval before any commit.',
         'Use readyWritePreview only as a dry-run plan; it never authorizes mutation by itself.',

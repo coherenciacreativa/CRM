@@ -117,7 +117,7 @@ describe("buildCrmVNextBatchOperatingLoop", () => {
     expect(JSON.stringify(loop)).not.toContain("/Users/");
   });
 
-  test("builds a blocked identity queue with Mantis search prompts", () => {
+  test("routes Instagram-origin gaps into official-flow source recovery before asking Alejandro", () => {
     const loop = buildCrmVNextBatchOperatingLoop({
       text: "CRM: @lavivirozo preguntó por el retiro y falta más identidad estable.",
       sourceKind: "instagram_signal",
@@ -238,16 +238,26 @@ describe("buildCrmVNextBatchOperatingLoop", () => {
       cardMutationReady: false,
     });
     expect(loop.blockedIdentityQueue[0]).toMatchObject({
-      status: "blocked_needs_more_identity",
+      status: "source_recovery_required",
+      priority: "high",
+      sourceRecoveryRequired: true,
+      humanClarificationAllowedAfterRecovery: true,
       recommendedSearchLanes: expect.arrayContaining([
+        "official_flow_source_recovery",
+        "instagram_messages_ui",
         "mailerlite_cursor_scan",
         "gmail_search",
         "google_drive_retreat_tables",
         "lead_capture_traces",
+        "manychat_read_export",
+        "vercel_proxy_traces",
       ]),
     });
     expect(loop.blockedIdentityQueue[0].operatorPrompt).toContain("Mantis: busca en modo read-only");
+    expect(loop.blockedIdentityQueue[0].operatorPrompt).toContain("no preguntes a Alejandro todavía");
+    expect(loop.blockedIdentityQueue[0].operatorPrompt).toContain("why_previous_batch_missed_this");
     expect(loop.blockedIdentityQueue[0].operatorPrompt).toContain("No mutar CRM");
+    expect(loop.blockedIdentityQueue[0].safeNextStep).toContain("official-flow source recovery");
     expect(JSON.stringify(loop)).not.toContain("/Users/");
   });
 

@@ -74,6 +74,33 @@ This is not "use every source for every contact." It is a second-pass rule:
 
 If Instagram UI is deferred to a complement batch, save that as an explicit next step, not as a silent skip.
 
+## Official-Flow Source Recovery Rule
+
+When a contact has an Instagram/onboarding anchor and is missing email or phone, treat the gap as `source_recovery_required`, not as a normal question for Alejandro.
+
+This covers Eliana/Ana-style cases where the person likely:
+
+- followed Alejandro on Instagram,
+- received the welcome/saludo flow,
+- gave email or phone in Instagram DM, ManyChat, a Custom GPT, Vercel/proxy/webhook, or a MailerLite insertion route,
+- later became visible in MailerLite, WhatsApp automation, class-delivery traces, local reports, or CRM memory.
+
+Required behavior:
+
+1. Do not ask Alejandro for the email/phone yet.
+2. Search official-flow sources read-only first:
+   - Instagram Messages UI, including searching by known email/phone/name/handle when useful;
+   - ManyChat read-only exports or cached flow records;
+   - Vercel/proxy/webhook traces and lead-capture ledgers;
+   - MailerLite cursor pagination plus local filtering;
+   - local Mantis/Juana reports, downloads, CSVs, Gmail/Drive/Contacts when relevant.
+3. In Instagram Messages UI, capture compact thread context when visible: city, country, preferences, origin, tone, explicit interest, and useful next-step cues. Do not export full conversations.
+4. If a lane is blocked by login, Relay, permission, checkpoint, CAPTCHA, stale token, or connector auth, return `awaiting_human_unblock` with the pending anchors and exact unblock action. Do not close the batch as complete just because auth blocked the lane.
+5. The contact-keyed JSON should include `searchedSources`, `discardedCandidates`, `remainingGaps`, and `why_previous_batch_missed_this` so Codex can improve the operator loop instead of rediscovering the same failure.
+6. Ask Alejandro only after the official-flow lanes are exhausted, contradicted, or blocked and a concrete human decision remains.
+
+This rule is for source recovery only. It does not authorize ManyChat LIVE changes, Instagram messages, MailerLite mutations, Google edits, card writes, Fact Store writes, or outbound contact.
+
 ## Human-Unblock Retry Rule
 
 When a high-value source is blocked by a human-action screen, Mantis should not treat the job as finished.
