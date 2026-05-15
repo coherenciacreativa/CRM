@@ -57,6 +57,10 @@ Per row, the adapter accepts flexible field names such as:
 - `status`, `subscriberStatus`, `email_subscriber_status`
 - `opens30d`, `opens_30d`, `open_count`, `total_opens`
 - `clicks30d`, `clicks_30d`, `click_count`, `total_clicks`
+- `opens90d`, `opens_90d`, `clicks90d`, `clicks_90d`
+- `aggregate.opens_count`, `aggregate.clicks_count`, `aggregate.sent`
+- `aggregate.open_rate`, `aggregate.click_rate`
+- `subscribedAt`, `subscribed_at`, `aggregate.subscribedAt`
 - `last_open_at`, `opened_at`, `last_click_at`, `clicked_at`
 - `groups`, `tags`, `segments`
 - nested campaign arrays like `campaignActivity`, `campaigns`, `recentCampaigns`, or `events`
@@ -71,6 +75,14 @@ The output is `{ signals: [...] }` plus a compact summary. Signals use:
 - `mailerlite_campaign_activity` for campaign/event activity.
 
 Rows without a match identity are skipped into `skippedRecords`; they should go back to identity stitching rather than scoring.
+
+For scoring policy, the adapter preserves three different email layers:
+
+- 30-day opens/clicks: recent heat,
+- 90-day opens/clicks: medium-term attention,
+- lifetime counters/rates/subscribed date: long-term email relationship depth.
+
+CRM vNext should not treat lifetime depth as immediate permission to contact someone. It is a relationship/history signal first.
 
 ## Safety
 

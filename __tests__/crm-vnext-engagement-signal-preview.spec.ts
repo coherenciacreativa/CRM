@@ -28,8 +28,14 @@ describe('buildCrmVNextEngagementSignalPreview', () => {
           observedAt: '2026-05-11T10:00:00.000Z',
           opens30d: 12,
           clicks30d: 3,
+          opens90d: 20,
+          lifetimeOpens: 42,
+          lifetimeClicks: 4,
+          lifetimeSent: 50,
+          openRate: 84,
           lastOpenAt: '2026-05-11T09:00:00.000Z',
           lastClickAt: '2026-05-10T09:00:00.000Z',
+          subscribedAt: '2025-08-30T09:00:00.000Z',
           subscriberStatus: 'active',
         },
         {
@@ -62,6 +68,14 @@ describe('buildCrmVNextEngagementSignalPreview', () => {
     expect(item.after.priorityScore).toBeGreaterThan(item.before.priorityScore);
     expect(item.after.relationshipEngagement).toBeGreaterThan(item.before.relationshipEngagement);
     expect(item.newReasonCodes).toEqual(expect.arrayContaining(['email_reads', 'email_clicks', 'email_replies']));
+    expect(item.aggregatedSignals.email).toMatchObject({
+      opens90d: 20,
+      lifetimeOpens: 42,
+      lifetimeClicks: 4,
+      lifetimeSent: 50,
+      openRate: 84,
+      subscribedAt: '2025-08-30T09:00:00.000Z',
+    });
     expect(item.recommendedQueue).toBe('email_nurture_candidate');
     expect(item.operationsExecuted).toBe(0);
     expect(JSON.stringify(report)).not.toContain('/Users/');

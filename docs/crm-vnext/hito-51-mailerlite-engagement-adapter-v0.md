@@ -18,6 +18,12 @@ It feeds the existing scoring preview:
 npm run crm:vnext:engagement-signal-preview -- --signals-file <json>
 ```
 
+The adapter preserves MailerLite engagement in three layers:
+
+- 30d activity for recent heat,
+- 90d activity for medium-term attention,
+- lifetime counters/rates/subscription age for historical relationship depth.
+
 ## Why It Matters
 
 This closes the first MailerLite-to-heat-score lane without putting MailerLite credentials inside CRM vNext.
@@ -27,6 +33,8 @@ Mantis can gather activity read-only through the healthy MailerLite route, expor
 ```text
 Who got warmer, colder, suppressed, or needs review based on recent email behavior?
 ```
+
+It also lets the CRM recognize someone like Juan José as historically email-deep without incorrectly treating that as a fresh sales signal.
 
 ## Safety
 

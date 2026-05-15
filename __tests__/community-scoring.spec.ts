@@ -56,6 +56,39 @@ describe('community scoring vNext', () => {
     );
   });
 
+  test('treats lifetime email depth as relationship history, not immediate sales heat', () => {
+    const card = scoreCommunityContact({
+      now: NOW,
+      identity: {
+        hasEmail: true,
+        trustedMatchCount: 1,
+        sourceCount: 4,
+      },
+      email: {
+        opens30d: 0,
+        clicks30d: 0,
+        opens90d: 9,
+        clicks90d: 0,
+        lifetimeOpens: 44,
+        lifetimeClicks: 1,
+        lifetimeSent: 44,
+        openRate: 100,
+        lastOpenAt: '2026-04-05T12:00:00.000Z',
+        lastClickAt: '2025-08-13T12:00:00.000Z',
+        subscribedAt: '2025-04-24T12:00:00.000Z',
+        subscriberStatus: 'active',
+      },
+    });
+
+    expect(card.relationshipEngagement).toBeGreaterThanOrEqual(40);
+    expect(card.communityDepth).toBeGreaterThanOrEqual(40);
+    expect(card.commercialWarmth).toBeLessThan(10);
+    expect(card.nextBestAction).toBe('keep_warming');
+    expect(card.reasons.map((reason) => reason.code)).toEqual(
+      expect.arrayContaining(['email_reads_90d', 'email_historical_depth', 'email_historical_clicks']),
+    );
+  });
+
   test('scores omnichannel customers with recent purchase history as Cosecha', () => {
     const card = scoreCommunityContact({
       now: NOW,

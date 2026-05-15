@@ -18,9 +18,17 @@ export type CommunityScoringInput = {
     opens30d?: number;
     clicks30d?: number;
     replies30d?: number;
+    opens90d?: number;
+    clicks90d?: number;
+    lifetimeOpens?: number;
+    lifetimeClicks?: number;
+    lifetimeSent?: number;
+    openRate?: number;
+    clickRate?: number;
     lastOpenAt?: string | Date | null;
     lastClickAt?: string | Date | null;
     lastReplyAt?: string | Date | null;
+    subscribedAt?: string | Date | null;
     subscriberStatus?: 'active' | 'unsubscribed' | 'bounced' | 'complained' | 'unknown' | string | null;
   };
   instagram?: {
@@ -176,6 +184,12 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   const opens = count(email.opens30d);
   const clicks = count(email.clicks30d);
   const replies = count(email.replies30d);
+  const opens90d = count(email.opens90d);
+  const clicks90d = count(email.clicks90d);
+  const lifetimeOpens = count(email.lifetimeOpens);
+  const lifetimeClicks = count(email.lifetimeClicks);
+  const lifetimeSent = count(email.lifetimeSent);
+  const openRate = count(email.openRate);
   const inboundDms = count(instagram.inboundDm30d);
   const comments = count(instagram.comments30d);
   const likes = count(instagram.likes30d);
@@ -186,7 +200,18 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   const purchaseCount = count(purchases.purchaseCount);
   const totalSpend = count(purchases.totalSpend);
 
-  const emailScore = clampScore(
+  const subscriberAge = daysSince(email.subscribedAt, now);
+  const subscriberAgeScore = subscriberAge == null
+    ? 0
+    : subscriberAge >= 180
+      ? 8
+      : subscriberAge >= 90
+        ? 5
+        : subscriberAge >= 30
+          ? 2
+          : 0;
+
+  const emailRecentScore = clampScore(
     Math.min(opens * 4, 20)
       + Math.min(clicks * 12, 24)
       + Math.min(replies * 18, 30)
@@ -203,6 +228,17 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
         { days: 45, points: 8 },
       ]),
   );
+
+  const emailDepthScore = clampScore(
+    Math.min(opens90d * 2, 24)
+      + Math.min(clicks90d * 8, 16)
+      + Math.min(lifetimeOpens * 0.8, 28)
+      + Math.min(lifetimeClicks * 6, 16)
+      + (lifetimeSent >= 5 && openRate >= 50 ? Math.min((openRate - 40) * 0.3, 15) : 0)
+      + subscriberAgeScore,
+  );
+
+  const emailRelationshipScore = clampScore(Math.max(emailRecentScore, emailDepthScore * 0.75));
 
   const instagramScore = clampScore(
     Math.min(inboundDms * 12, 36)
@@ -243,6 +279,10 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   if (opens >= 3) addReason(reasons, 'email_reads', 'Reads email repeatedly', 'positive');
   if (clicks > 0) addReason(reasons, 'email_clicks', 'Clicks email links', 'positive');
   if (replies > 0) addReason(reasons, 'email_replies', 'Replies by email', 'positive');
+  if (opens90d >= 3) addReason(reasons, 'email_reads_90d', 'Reads email over the medium term', 'positive');
+  if (clicks90d > 0) addReason(reasons, 'email_clicks_90d', 'Clicks email links over the medium term', 'positive');
+  if (lifetimeOpens >= 10) addReason(reasons, 'email_historical_depth', 'Has long-term email reading history', 'positive');
+  if (lifetimeClicks > 0) addReason(reasons, 'email_historical_clicks', 'Has historical email click signal', 'positive');
   if (inboundDms > 0) addReason(reasons, 'ig_dm', 'Has inbound Instagram DMs', 'positive');
   if (comments > 0) addReason(reasons, 'ig_comments', 'Comments on Instagram', 'positive');
   if (yogaClasses + happyCircle + retreatsAttended > 0) {
@@ -270,7 +310,7 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
       + (identity.hasCountry ? 8 : 0)
       + Math.min(count(identity.trustedMatchCount) * 12, 24)
       + Math.min(count(identity.sourceCount) * 7, 21)
-      + (emailScore > 0 ? 8 : 0)
+      + (emailRelationshipScore > 0 ? 8 : 0)
       + (instagramScore > 0 ? 8 : 0)
       + (participationScore > 0 ? 6 : 0)
       + (purchaseScore > 0 ? 8 : 0),
@@ -281,12 +321,12 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   }
 
   const relationshipEngagement = weightedAvailableScore([
-    { score: emailScore, weight: 0.35, available: Boolean(identity.hasEmail || emailScore > 0) },
+    { score: emailRelationshipScore, weight: 0.35, available: Boolean(identity.hasEmail || emailRelationshipScore > 0) },
     { score: instagramScore, weight: 0.35, available: Boolean(identity.hasInstagram || instagramScore > 0) },
     { score: participationScore, weight: 0.3, available: participationScore > 0 },
   ]);
   const communityDepth = weightedAvailableScore([
-    { score: emailScore, weight: 0.2, available: Boolean(identity.hasEmail || emailScore > 0) },
+    { score: emailRelationshipScore, weight: 0.2, available: Boolean(identity.hasEmail || emailRelationshipScore > 0) },
     { score: instagramScore, weight: 0.18, available: Boolean(identity.hasInstagram || instagramScore > 0) },
     { score: participationScore, weight: 0.34, available: participationScore > 0 },
     { score: purchaseScore, weight: 0.28, available: purchaseScore > 0 },
@@ -294,7 +334,7 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
 
   const suppressionPenalty = isSuppressed ? 18 : 0;
   const commercialWarmth = clampScore(
-    emailScore * 0.24
+    emailRecentScore * 0.24
       + instagramScore * 0.25
       + participationScore * 0.18
       + purchaseScore * 0.33
@@ -316,6 +356,9 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
       count(purchases.digitalProductsPurchased) * 24
         + clicks * 8
         + opens * 2
+        + clicks90d * 4
+        + opens90d
+        + lifetimeClicks * 2
         + (includesAny(tags, ['curso', 'meditacion', 'digital']) ? 16 : 0),
     ),
     retreats: clampScore(
@@ -342,9 +385,9 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
     nextBestAction = 'ask_for_email';
   } else if (commercialWarmth >= 70) {
     nextBestAction = 'human_follow_up';
-  } else if (relationshipEngagement >= 40 && identity.hasEmail) {
+  } else if (relationshipEngagement >= 40 && identity.hasEmail && (emailRecentScore >= 20 || replies > 0 || clicks > 0)) {
     nextBestAction = 'nurture_by_email';
-  } else if (communityDepth >= 45) {
+  } else if (communityDepth >= 45 && (participationScore > 0 || instagramScore > 0)) {
     nextBestAction = 'invite_to_community_space';
   }
 

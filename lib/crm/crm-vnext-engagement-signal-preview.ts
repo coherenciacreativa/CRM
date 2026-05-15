@@ -34,9 +34,17 @@ export type CrmEngagementSignalInput = {
   opens30d?: number | string | null;
   clicks30d?: number | string | null;
   replies30d?: number | string | null;
+  opens90d?: number | string | null;
+  clicks90d?: number | string | null;
+  lifetimeOpens?: number | string | null;
+  lifetimeClicks?: number | string | null;
+  lifetimeSent?: number | string | null;
+  openRate?: number | string | null;
+  clickRate?: number | string | null;
   lastOpenAt?: string | Date | null;
   lastClickAt?: string | Date | null;
   lastReplyAt?: string | Date | null;
+  subscribedAt?: string | Date | null;
   subscriberStatus?: string | null;
   inboundDm30d?: number | string | null;
   comments30d?: number | string | null;
@@ -279,9 +287,17 @@ const normalizeSignal = (
       opens30d: cleanNumber(emailActivity.opens30d ?? signal.opens30d),
       clicks30d: cleanNumber(emailActivity.clicks30d ?? signal.clicks30d),
       replies30d: cleanNumber(emailActivity.replies30d ?? signal.replies30d),
+      opens90d: cleanNumber(emailActivity.opens90d ?? signal.opens90d),
+      clicks90d: cleanNumber(emailActivity.clicks90d ?? signal.clicks90d),
+      lifetimeOpens: cleanNumber(emailActivity.lifetimeOpens ?? signal.lifetimeOpens),
+      lifetimeClicks: cleanNumber(emailActivity.lifetimeClicks ?? signal.lifetimeClicks),
+      lifetimeSent: cleanNumber(emailActivity.lifetimeSent ?? signal.lifetimeSent),
+      openRate: cleanNumber(emailActivity.openRate ?? signal.openRate),
+      clickRate: cleanNumber(emailActivity.clickRate ?? signal.clickRate),
       lastOpenAt: emailActivity.lastOpenAt ?? signal.lastOpenAt ?? null,
       lastClickAt: emailActivity.lastClickAt ?? signal.lastClickAt ?? null,
       lastReplyAt: emailActivity.lastReplyAt ?? signal.lastReplyAt ?? null,
+      subscribedAt: emailActivity.subscribedAt ?? signal.subscribedAt ?? null,
       subscriberStatus: cleanString(emailActivity.subscriberStatus ?? signal.subscriberStatus),
     },
     instagramActivity: {
@@ -336,9 +352,17 @@ const aggregateSignals = (
       opens30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.opens30d), 0),
       clicks30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.clicks30d), 0),
       replies30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.replies30d), 0),
+      opens90d: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.opens90d), 0),
+      clicks90d: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.clicks90d), 0),
+      lifetimeOpens: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.lifetimeOpens), 0),
+      lifetimeClicks: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.lifetimeClicks), 0),
+      lifetimeSent: usable.reduce((sum, signal) => sum + cleanNumber(signal.emailActivity.lifetimeSent), 0),
+      openRate: usable.reduce((max, signal) => Math.max(max, cleanNumber(signal.emailActivity.openRate)), 0),
+      clickRate: usable.reduce((max, signal) => Math.max(max, cleanNumber(signal.emailActivity.clickRate)), 0),
       lastOpenAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.emailActivity.lastOpenAt), null),
       lastClickAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.emailActivity.lastClickAt), null),
       lastReplyAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.emailActivity.lastReplyAt), null),
+      subscribedAt: usable.reduce<string | Date | null>((current, signal) => current ?? signal.emailActivity.subscribedAt ?? null, null),
       subscriberStatus: mergeSubscriberStatus(usable.map((signal) => signal.emailActivity.subscriberStatus)),
     },
     instagram: {

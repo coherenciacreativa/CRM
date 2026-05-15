@@ -56,8 +56,12 @@ The input can be a JSON array or `{ "signals": [...] }`.
       "email": "reader@example.com",
       "observedAt": "2026-05-11T10:00:00.000Z",
       "opens30d": 12,
+      "opens90d": 20,
+      "lifetimeOpens": 42,
       "clicks30d": 3,
+      "lifetimeClicks": 4,
       "lastOpenAt": "2026-05-11T09:00:00.000Z",
+      "subscribedAt": "2025-08-30T09:00:00.000Z",
       "subscriberStatus": "active"
     }
   ]
@@ -74,6 +78,14 @@ Supported `sourceKind` values:
 - `unknown`
 
 Manual snapshots are allowed as a bridge from Alejandro/Mantis reports to future scoring, but they should be treated as bounded, source-labeled evidence. For example, "Cielo frequently watches stories" can raise relationship engagement modestly until Instagram event data confirms the pattern. Manual reports about purchases, service relationships, or identity can carry more confidence after review because Alejandro is the source of truth for his own programs.
+
+MailerLite email scoring separates:
+
+- `opens30d` / `clicks30d`: current heat,
+- `opens90d` / `clicks90d`: medium-term attention,
+- `lifetimeOpens` / `lifetimeClicks` / `lifetimeSent` / `openRate` / `subscribedAt`: relationship depth and confidence.
+
+Historical depth can increase community depth and relationship engagement, but it should not by itself trigger commercial follow-up.
 
 ## Output
 
