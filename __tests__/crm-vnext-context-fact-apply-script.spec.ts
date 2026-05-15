@@ -17,6 +17,7 @@ describe("CRM vNext context fact apply script", () => {
       const proposalPath = join(dir, "context-proposals.json");
       const ledgerPath = join(dir, "ledger.jsonl");
       const backupDir = join(dir, "backups");
+      const lockPath = join(dir, "context-fact-apply.lock");
       const outPath = join(dir, "apply-report.json");
 
       const martha = buildPersonCardVNext({
@@ -122,6 +123,29 @@ describe("CRM vNext context fact apply script", () => {
         committed: false,
       });
 
+      await writeFile(lockPath, "locked by test\n", "utf8");
+      await expect(execFileAsync("node", [
+        "scripts/crm-vnext-context-fact-apply.mjs",
+        "--proposal-file",
+        proposalPath,
+        "--proposal-id",
+        "context_fact_martha_kamadhenu",
+        "--card-store-path",
+        cardStorePath,
+        "--ledger-path",
+        ledgerPath,
+        "--backup-dir",
+        backupDir,
+        "--lock-path",
+        lockPath,
+        "--approved-by",
+        "Alejandro",
+        "--write",
+      ], { cwd: process.cwd() })).rejects.toMatchObject({
+        stderr: expect.stringContaining("context_fact_apply_write_lock_active"),
+      });
+      await rm(lockPath, { force: true });
+
       await execFileAsync("node", [
         "scripts/crm-vnext-context-fact-apply.mjs",
         "--proposal-file",
@@ -134,6 +158,8 @@ describe("CRM vNext context fact apply script", () => {
         ledgerPath,
         "--backup-dir",
         backupDir,
+        "--lock-path",
+        lockPath,
         "--approved-by",
         "Alejandro",
         "--write",
@@ -170,6 +196,8 @@ describe("CRM vNext context fact apply script", () => {
         ledgerPath,
         "--backup-dir",
         backupDir,
+        "--lock-path",
+        lockPath,
         "--approved-by",
         "Alejandro",
         "--write",
@@ -185,4 +213,3 @@ describe("CRM vNext context fact apply script", () => {
     }
   });
 });
-

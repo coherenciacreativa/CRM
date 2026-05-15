@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { appendFile, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, copyFile, mkdir, open, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 
 const SCHEMA_VERSION = 'crm-vnext-context-fact-apply-2026-05-14';
@@ -8,6 +8,7 @@ const LEDGER_ENTRY_SCHEMA_VERSION = 'crm-vnext-context-fact-apply-ledger-entry-2
 const DEFAULT_CARD_STORE_PATH = '.crm-vnext/person-card-store/person-cards-vnext.json';
 const DEFAULT_LEDGER_PATH = '.crm-vnext/context-fact-apply/ledger.jsonl';
 const DEFAULT_BACKUP_DIR = '.crm-vnext/backups/context-fact-apply';
+const DEFAULT_LOCK_PATH = '.crm-vnext/context-fact-apply/write.lock';
 
 const usage = `Usage:
   node scripts/crm-vnext-context-fact-apply.mjs --proposal-file <path> [options]
@@ -19,6 +20,7 @@ Options:
   --card-store-path <path>   Local vNext card store. Defaults to ${DEFAULT_CARD_STORE_PATH}
   --ledger-path <path>       Local context-fact apply ledger JSONL. Defaults to ${DEFAULT_LEDGER_PATH}
   --backup-dir <path>        Backup directory. Defaults to ${DEFAULT_BACKUP_DIR}
+  --lock-path <path>         Write lock path. Defaults to ${DEFAULT_LOCK_PATH}
   --approved-by <name>       Required with --write
   --write                    Commit selected proposals to local card evidence after backup
   --out <path>               Write apply report JSON
@@ -35,6 +37,7 @@ const parseArgs = (argv) => {
     cardStorePath: DEFAULT_CARD_STORE_PATH,
     ledgerPath: DEFAULT_LEDGER_PATH,
     backupDir: DEFAULT_BACKUP_DIR,
+    lockPath: DEFAULT_LOCK_PATH,
     approvedBy: null,
     write: false,
     out: null,
@@ -53,6 +56,7 @@ const parseArgs = (argv) => {
     else if (arg === '--card-store-path') options.cardStorePath = argv[++index];
     else if (arg === '--ledger-path') options.ledgerPath = argv[++index];
     else if (arg === '--backup-dir') options.backupDir = argv[++index];
+    else if (arg === '--lock-path') options.lockPath = argv[++index];
     else if (arg === '--approved-by') options.approvedBy = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -156,6 +160,31 @@ const backupIfExists = async (filePath, backupDir, label, generatedAt) => {
   );
   await copyFile(filePath, backupPath);
   return backupPath;
+};
+
+const acquireWriteLock = async (lockPath, generatedAt) => {
+  const resolvedLockPath = resolve(lockPath);
+  await mkdir(dirname(resolvedLockPath), { recursive: true });
+  let handle = null;
+  try {
+    handle = await open(resolvedLockPath, 'wx');
+    await handle.writeFile(`${JSON.stringify({
+      pid: process.pid,
+      createdAt: generatedAt,
+      purpose: 'crm-vnext-context-fact-apply-local-write',
+    })}\n`, 'utf8');
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw new Error(`context_fact_apply_write_lock_active:${resolvedLockPath}`);
+    }
+    throw error;
+  } finally {
+    if (handle) await handle.close();
+  }
+
+  return async () => {
+    await rm(resolvedLockPath, { force: true });
+  };
 };
 
 const compactProposal = (proposal) => ({
@@ -314,6 +343,7 @@ const buildReport = ({ packet, cards, options, generatedAt }) => {
       cardStoreWritten: false,
       backupCreated: false,
       backupPath: null,
+      writeLockAcquired: false,
       ledgerWritten: false,
       ledgerEntries: 0,
     },
@@ -386,31 +416,47 @@ const run = async (options) => {
   const generatedAt = new Date().toISOString();
   const packet = await readProposalPacket(options.proposalFile);
   const { store, cards } = await readCardStore(options.cardStorePath);
-  const report = buildReport({ packet, cards, options, generatedAt });
+  let report = buildReport({ packet, cards, options, generatedAt });
 
   if (report.committed) {
-    const cardStorePath = resolve(options.cardStorePath);
-    const backupDir = resolve(options.backupDir);
-    const backupPath = await backupIfExists(cardStorePath, backupDir, 'store', report.generatedAt);
-    const applied = applyReportToStore({
-      store,
-      report,
-      approvedBy: cleanString(options.approvedBy),
-    });
-    await mkdir(dirname(cardStorePath), { recursive: true });
-    await writeFile(cardStorePath, `${JSON.stringify(applied.store, null, 2)}\n`, 'utf8');
-    if (applied.ledgerEntries.length) {
-      const ledgerPath = resolve(options.ledgerPath);
-      await mkdir(dirname(ledgerPath), { recursive: true });
-      await appendFile(ledgerPath, `${applied.ledgerEntries.map((entry) => JSON.stringify(entry)).join('\n')}\n`, 'utf8');
+    const releaseLock = await acquireWriteLock(options.lockPath, generatedAt);
+    try {
+      const fresh = await readCardStore(options.cardStorePath);
+      report = buildReport({
+        packet,
+        cards: fresh.cards,
+        options,
+        generatedAt,
+      });
+      report.write.writeLockAcquired = true;
+      if (!report.committed) return report;
+
+      const cardStorePath = resolve(options.cardStorePath);
+      const backupDir = resolve(options.backupDir);
+      const backupPath = await backupIfExists(cardStorePath, backupDir, 'store', report.generatedAt);
+      const applied = applyReportToStore({
+        store: fresh.store,
+        report,
+        approvedBy: cleanString(options.approvedBy),
+      });
+      await mkdir(dirname(cardStorePath), { recursive: true });
+      await writeFile(cardStorePath, `${JSON.stringify(applied.store, null, 2)}\n`, 'utf8');
+      if (applied.ledgerEntries.length) {
+        const ledgerPath = resolve(options.ledgerPath);
+        await mkdir(dirname(ledgerPath), { recursive: true });
+        await appendFile(ledgerPath, `${applied.ledgerEntries.map((entry) => JSON.stringify(entry)).join('\n')}\n`, 'utf8');
+      }
+      report.write = {
+        cardStoreWritten: true,
+        backupCreated: Boolean(backupPath),
+        backupPath,
+        writeLockAcquired: true,
+        ledgerWritten: applied.ledgerEntries.length > 0,
+        ledgerEntries: applied.ledgerEntries.length,
+      };
+    } finally {
+      await releaseLock();
     }
-    report.write = {
-      cardStoreWritten: true,
-      backupCreated: Boolean(backupPath),
-      backupPath,
-      ledgerWritten: applied.ledgerEntries.length > 0,
-      ledgerEntries: applied.ledgerEntries.length,
-    };
   }
 
   return report;
@@ -461,4 +507,3 @@ main().catch((error) => {
   console.error(`crm-vnext context fact apply failed: ${error.message}`);
   process.exitCode = 1;
 });
-
