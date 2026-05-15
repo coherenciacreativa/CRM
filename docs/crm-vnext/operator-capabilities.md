@@ -49,15 +49,17 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 25. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
 26. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
 27. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
-28. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-29. Review stored facts with `GET /api/crm-vnext/identity-review`.
-30. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-31. Read `GET /api/crm-vnext/community-daily-brief`.
-32. If needed, read `GET /api/crm-vnext/community-queues`.
-33. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-34. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-35. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-36. Ask for approval if the next move would touch an external channel.
+28. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
+29. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
+30. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+31. Review stored facts with `GET /api/crm-vnext/identity-review`.
+32. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+33. Read `GET /api/crm-vnext/community-daily-brief`.
+34. If needed, read `GET /api/crm-vnext/community-queues`.
+35. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+36. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+37. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+38. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -97,7 +99,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, engagement signal preview, human enrichment questions, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, engagement signal preview, engagement snapshot ledger, human enrichment questions, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -115,6 +117,7 @@ Local commands currently include activation run, identity stitching research, Gm
 - Batch Operating Loop is read-only and is now the preferred natural-language operator surface for "probemos un batch nuevo": it returns evidence questions, blocked identity prompts, ready approval items, and dry-run write plans without mutating anything.
 - Mantis Natural Batch Protocol (`docs/crm-vnext/mantis-natural-batch-protocol.md`) is the canonical way for Mantis to turn natural CRM requests into contact-keyed evidence hunts before import and batch review.
 - Engagement Signal Preview is read-only and consumes supplied MailerLite/Gmail/Instagram/manual engagement snapshots to show scoring deltas and internal queues. It does not call live APIs, mutate cards, change MailerLite, or authorize outbound follow-up.
+- Engagement Snapshot Ledger can store approved read-only engagement previews as local JSONL movement history for the dashboard. It does not mutate cards, write Fact Store, call live APIs, touch credentials, or authorize outbound follow-up.
 - Human Enrichment Questions is read-only and creates person-by-person prompts after a batch so Alejandro can add remembered context. Answers still need Fact Intake or a later approved local write before they become CRM state.
 - IG-Origin Batch Prompt is read-only and prepares copy-ready Mantis prompts for Instagram/onboarding contacts, including DM UI bridge and compact thread-context instructions. It does not inspect Instagram or call live APIs by itself.
 - Context Fact Proposals is read-only and turns rich `evidenceSources` into reviewed card-memory candidates. It separates `promote_to_card_evidence` from identity gaps, weak collisions, duplicates, and sensitive review-only context. It does not mutate cards or Fact Store.

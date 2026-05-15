@@ -10,12 +10,18 @@ import type {
   CommunityInsightsSummary,
   CommunityPriorityPerson,
 } from '../../lib/crm/community-insights';
+import {
+  readCrmEngagementSnapshotLedger,
+} from '../../lib/crm/crm-vnext-engagement-snapshot-ledger';
+
+type EngagementSnapshotLedger = Awaited<ReturnType<typeof readCrmEngagementSnapshotLedger>>;
 
 type DashboardProps =
   | {
       enabled: true;
       source: PublicPersonCardsVNextSource;
       summary: CommunityInsightsSummary;
+      engagementLedger: EngagementSnapshotLedger;
     }
   | {
       enabled: false;
@@ -38,6 +44,11 @@ const labelAction = (value: string): string =>
 const primaryIdentity = (person: CommunityPriorityPerson): string => {
   if (person.displayName) return person.displayName;
   return person.personId;
+};
+
+const signed = (value: number): string => {
+  if (value > 0) return `+${value}`;
+  return String(value);
 };
 
 const stageOrder: Array<keyof CommunityInsightsSummary['lifecycle']> = [
@@ -114,12 +125,16 @@ export const getServerSideProps: GetServerSideProps<DashboardProps> = async (con
   }
 
   try {
-    const payload = await loadPersonCardsVNextInsights({ topLimit: 12 });
+    const [payload, engagementLedger] = await Promise.all([
+      loadPersonCardsVNextInsights({ topLimit: 12 }),
+      readCrmEngagementSnapshotLedger(undefined, { limit: 5, movementLimit: 8 }),
+    ]);
     return {
       props: {
         enabled: true,
         source: publicPersonCardsVNextSource(payload.source),
         summary: payload.summary,
+        engagementLedger,
       },
     };
   } catch (error) {
@@ -150,7 +165,7 @@ export default function CrmVNextDashboard(props: DashboardProps) {
     );
   }
 
-  const { summary, source } = props;
+  const { summary, source, engagementLedger } = props;
   const total = summary.totals.cards;
   const topActions = Object.entries(summary.nextActions)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -208,6 +223,65 @@ export default function CrmVNextDashboard(props: DashboardProps) {
           detail={pct(summary.totals.omnichannel, total)}
           tone="neutral"
         />
+      </section>
+
+      <section className="panel wide engagementPanel">
+        <div className="panelHeader">
+          <h2>Engagement Movement</h2>
+          <span>{engagementLedger.summary.snapshots} snapshots</span>
+        </div>
+        <div className="movementSummary" aria-label="Engagement snapshot totals">
+          <Metric
+            label="Signals"
+            value={numberFmt.format(engagementLedger.summary.totalSignals)}
+            detail={`${numberFmt.format(engagementLedger.summary.totalMatchedSignals)} matched`}
+            tone="neutral"
+          />
+          <Metric
+            label="Warmed"
+            value={numberFmt.format(engagementLedger.summary.totalWarmedCards)}
+            detail="preview history"
+            tone="good"
+          />
+          <Metric
+            label="Review"
+            value={numberFmt.format(engagementLedger.summary.totalHumanFollowUpReview)}
+            detail="human follow-up"
+            tone={engagementLedger.summary.totalHumanFollowUpReview ? 'warn' : 'neutral'}
+          />
+          <Metric
+            label="Latest"
+            value={engagementLedger.summary.latestCapturedAt ? 'saved' : 'empty'}
+            detail={engagementLedger.summary.latestCapturedAt || 'no snapshot yet'}
+            tone={engagementLedger.summary.latestCapturedAt ? 'strong' : 'neutral'}
+          />
+        </div>
+        {engagementLedger.latestMovements.length ? (
+          <div className="movementList">
+            {engagementLedger.latestMovements.slice(0, 6).map((movement) => (
+              <div className="movementRow" key={`${movement.snapshotRecordId}:${movement.movementItemId}`}>
+                <div>
+                  <Link className="personLink" href={`/crm-vnext/person/${encodeURIComponent(movement.personId || '')}`}>
+                    <span className="identity">{movement.displayName || movement.personId}</span>
+                  </Link>
+                  <small>
+                    {movement.match.sourceKinds.join(', ') || 'engagement'} · {labelAction(movement.recommendedQueue)}
+                  </small>
+                </div>
+                <div className={`deltaBox ${movement.delta.priorityScore > 0 ? 'up' : movement.delta.priorityScore < 0 ? 'down' : ''}`}>
+                  <b>{signed(movement.delta.priorityScore)}</b>
+                  <small>priority</small>
+                </div>
+                <div className="scorePair">
+                  <span>{movement.after.priorityScore}</span>
+                  <small>now</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="emptyNote">No saved engagement snapshots yet. Run the ledger command after a read-only engagement preview.</p>
+        )}
       </section>
 
       <section className="grid">
@@ -509,7 +583,8 @@ const styles = `
   }
 
   .gapList,
-  .avgGrid {
+  .avgGrid,
+  .movementSummary {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
@@ -517,6 +592,66 @@ const styles = `
 
   .avgGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .movementSummary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 12px;
+  }
+
+  .movementList {
+    display: grid;
+    gap: 8px;
+  }
+
+  .movementRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 96px 72px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid #eee8dd;
+  }
+
+  .movementRow:first-child {
+    border-top: 0;
+  }
+
+  .deltaBox,
+  .scorePair {
+    min-height: 54px;
+    border: 1px solid #ded8cc;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    background: #fffdfa;
+  }
+
+  .deltaBox b,
+  .scorePair span {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .deltaBox small,
+  .scorePair small,
+  .emptyNote {
+    color: #767b72;
+  }
+
+  .deltaBox.up {
+    border-color: #96b899;
+    background: #f1f7f0;
+  }
+
+  .deltaBox.down {
+    border-color: #d8ad72;
+    background: #fff8ec;
+  }
+
+  .emptyNote {
+    font-size: 14px;
   }
 
   .tableWrap {
@@ -593,7 +728,9 @@ const styles = `
     .metrics,
     .grid,
     .gapList,
-    .avgGrid {
+    .avgGrid,
+    .movementSummary,
+    .movementRow {
       grid-template-columns: 1fr;
     }
   }

@@ -43,6 +43,17 @@ npm run crm:vnext:mailerlite-engagement-signals -- \
 
 The adapter accepts supplied read-only MailerLite rows only; it does not call MailerLite or read credentials.
 
+After a useful preview, store the movement history locally:
+
+```bash
+npm run crm:vnext:engagement-snapshot-ledger -- \
+  --preview-file tmp/crm-vnext/engagement-signal-preview.json \
+  --write \
+  --approved-by Alejandro
+```
+
+That ledger powers the `Engagement Movement` panel in `/crm-vnext` and keeps history without mutating cards.
+
 ## Signal Shape
 
 The input can be a JSON array or `{ "signals": [...] }`.

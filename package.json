@@ -50,6 +50,7 @@
     "crm:vnext:batch-operating-loop": "node scripts/crm-vnext-batch-operating-loop.mjs",
     "crm:vnext:mailerlite-engagement-signals": "node scripts/crm-vnext-mailerlite-engagement-signals.mjs",
     "crm:vnext:engagement-signal-preview": "node scripts/crm-vnext-engagement-signal-preview.mjs",
+    "crm:vnext:engagement-snapshot-ledger": "node scripts/crm-vnext-engagement-snapshot-ledger.mjs",
     "crm:vnext:card-merge-review-resolver": "node scripts/crm-vnext-card-merge-review-resolver.mjs",
     "crm:vnext:human-enrichment-questions": "node scripts/crm-vnext-human-enrichment-questions.mjs",
     "cronjob:setup": "node scripts/setup-cronjob.mjs",
