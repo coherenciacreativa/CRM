@@ -101,6 +101,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:engagement-signal-preview -- --signals-file <json>",
       "npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json>",
       "npm run crm:vnext:human-enrichment-questions -- --batch-loop-file <json> --person-id <personId> | --latest-writes <n>",
+      "npm run crm:vnext:human-enrichment-response-evidence -- --answers-md <md> --questions-file <json>",
       "npm run crm:vnext:card-write-apply -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-merge-review-resolver -- --review-id <reviewId>",
       "npm run crm:vnext:identity-review",

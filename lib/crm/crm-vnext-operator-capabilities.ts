@@ -1266,6 +1266,21 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "human_enrichment_response_evidence",
+    command: "npm run crm:vnext:human-enrichment-response-evidence -- --answers-md <md> --questions-file <json>",
+    purpose: "Convert Alejandro's answered compact-review sheet into structured evidence sources plus operator tasks.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Default run prints a read-only summary; --out and --markdown-out may save local evidence/task packets.",
+      "Use after Alejandro answers a compact human-enrichment sheet.",
+      "Feed the resulting evidence JSON into crm:vnext:context-fact-proposals before any write path.",
+      "Operator tasks such as ManyChat/Vercel/MailerLite/Instagram follow-ups are not card evidence by themselves.",
+      "This command never calls live APIs, touches credentials, writes cards, writes Fact Store, or sends outbound.",
+    ],
+  },
+  {
     id: "card_write_apply",
     command: "npm run crm:vnext:card-write-apply -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
     purpose: "Preview or commit selected approval-ready items into the local CRM vNext card store.",
