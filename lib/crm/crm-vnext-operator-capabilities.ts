@@ -934,6 +934,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "mailerlite_engagement_signals",
+    command: "npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <json>",
+    purpose: "Convert supplied MailerLite subscriber/campaign engagement snapshots into scoring-preview signals.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Use after Mantis has gathered MailerLite subscriber status, opens, clicks, groups, and recent campaign activity through a read-only route.",
+      "The adapter accepts supplied JSON only; it does not call MailerLite and does not read credentials.",
+      "Pipe --out into crm:vnext:engagement-signal-preview to see score movement and review queues.",
+      "This command never mutates MailerLite subscribers, groups, tags, segments, campaigns, CRM cards, Fact Store, or outbound channels.",
+    ],
+  },
+  {
     id: "google_drive_evidence_helper",
     command: "npm run crm:vnext:google-drive-evidence -- --text <text>",
     purpose: "Plan and convert read-only Google Drive/Docs/Sheets rows into identity and retreat evidence packets.",

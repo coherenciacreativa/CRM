@@ -33,6 +33,16 @@ Optional:
 --fail-on-unmatched
 ```
 
+MailerLite snapshots should first be normalized through the local adapter:
+
+```bash
+npm run crm:vnext:mailerlite-engagement-signals -- \
+  --snapshot-file <mailerlite-engagement-snapshot.json> \
+  --out tmp/crm-vnext/mailerlite-engagement-signals.json
+```
+
+The adapter accepts supplied read-only MailerLite rows only; it does not call MailerLite or read credentials.
+
 ## Signal Shape
 
 The input can be a JSON array or `{ "signals": [...] }`.

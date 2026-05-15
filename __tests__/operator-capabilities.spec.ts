@@ -79,6 +79,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:gmail-evidence -- --text <text>",
       "npm run crm:vnext:contacts-evidence -- --use-macos-contacts-db --text <text>",
       "npm run crm:vnext:mailerlite-evidence -- --text <text>",
+      "npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <json>",
       "npm run crm:vnext:google-drive-evidence -- --text <text>",
       "npm run crm:vnext:lead-capture-evidence -- --text <text>",
       "npm run crm:vnext:instagram-dm-ui-evidence -- --observations-file <json>",
