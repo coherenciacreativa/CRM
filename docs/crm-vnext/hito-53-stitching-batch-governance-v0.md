@@ -44,6 +44,12 @@ Allowed skip reasons must be explicit:
 - `blocked_by_instagram_ui_auth`
 - `deferred_to_instagram_ui_complement`
 
+### Human-Unblock Retry Rule
+
+If Instagram UI blocks the complement with login, saved-profile selection, Relay/browser permission, checkpoint, CAPTCHA, or similar human-action screens, Mantis should pause and ask Alejandro for the exact unblock immediately.
+
+A report that only says "blocked" is not a completed complement. The expected state is `awaiting_human_unblock`, followed by a retry after Alejandro confirms "listo, reintenta".
+
 ## Safety
 
 No new mutation authority was added.
@@ -65,3 +71,4 @@ Mantis should now do two things better:
 
 1. Before escalating missing fields to Alejandro, check whether a known high-value lane can close the gap.
 2. When asked for another batch, keep opening new surface area in the community instead of only revisiting the same model cases.
+3. Treat auth/Relay/browser blockers as actionable human-unblock states, not as a reason to finish early.

@@ -74,6 +74,32 @@ This is not "use every source for every contact." It is a second-pass rule:
 
 If Instagram UI is deferred to a complement batch, save that as an explicit next step, not as a silent skip.
 
+## Human-Unblock Retry Rule
+
+When a high-value source is blocked by a human-action screen, Mantis should not treat the job as finished.
+
+For Instagram Messages UI, this includes:
+
+- "Log into Instagram" screens,
+- saved-profile selection screens,
+- Relay/browser permission prompts,
+- checkpoint, CAPTCHA, or profile-confirmation screens,
+- any prompt that would require credentials, cookies, permissions, or a human identity choice.
+
+Required behavior:
+
+1. Stop before clicking, typing, selecting a profile, granting permissions, or changing auth state.
+2. Save a small interim report with `status: awaiting_human_unblock`, the exact blocker, and the search anchors still pending.
+3. Send Alejandro a concise unblock request in the same trusted lane:
+   - what blocked,
+   - exact action needed from him,
+   - whether he should authenticate, select the saved profile, or allow Relay/browser access,
+   - the exact command phrase he can send back, such as "listo, reintenta".
+4. Do not close the task as "completed" merely because the blocker was documented.
+5. After Alejandro confirms the unblock, retry the same pending anchors before producing the final report.
+
+If the platform remains blocked after the retry, then Mantis may close with `blocked_after_human_unblock_attempt`, preserving the pending anchors and next safe action.
+
 ## Read-Only Search Lanes
 
 Preferred lanes, when available:
@@ -267,7 +293,7 @@ This is for Rocio-style cases where an email entered through onboarding, Custom 
 
 Location capture rule: if the person self-locates in the thread, preserve it as structured evidence. Good examples: `city: Iquique`, `country: Chile`, `locationEvidence: "dijo que es de Iquique, en el norte de Chile"`. Do not promote event locations as contact locations: "el retiro es en Subachoque" is retreat context, not the contact's city, unless the person clearly says they live/are from there.
 
-If Instagram Messages UI asks for login, password, profile confirmation, permissions, checkpoint, CAPTCHA, or any risky action, Mantis must not silently downgrade the lane to a normal skip. She should record `blocked_by_instagram_ui_auth`, preserve the exact contact/search anchors, and ask Alejandro to authenticate/open Instagram in the browser so the same search can be rerun. The batch may continue with other read-only sources, but the Instagram UI route should remain an explicit follow-up because it can recover email-to-handle bridges that no API currently provides.
+If Instagram Messages UI asks for login, password, saved-profile selection, Relay/browser permission, profile confirmation, permissions, checkpoint, CAPTCHA, or any risky action, Mantis must not silently downgrade the lane to a normal skip and must not close the complement as done. She should record `blocked_by_instagram_ui_auth`, preserve the exact contact/search anchors, send Alejandro an immediate unblock request, and wait for a confirmation such as "listo, reintenta" before rerunning the same searches. The batch may continue with other read-only sources, but the Instagram UI route should remain an explicit follow-up because it can recover email-to-handle bridges that no API currently provides.
 
 ## Good Batch Sizes
 

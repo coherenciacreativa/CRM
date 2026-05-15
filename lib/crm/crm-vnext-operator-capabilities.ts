@@ -505,6 +505,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
       "Natural 'otro batch' requests should usually be a mixed portfolio: mostly net-new discovery, with a smaller known-open-loop cleanup portion unless Alejandro names a known group.",
       "Creates a blocked identity queue with recommended read-only search lanes and copy-ready prompts for Mantis.",
       "If a contact remains ask_alejandro because email, phone, handle, city, country, or origin/context is missing, run a bounded Instagram Messages UI complement when there is a plausible search anchor, or record why that lane was skipped.",
+      "If Instagram UI is blocked by login, saved profile, Relay/browser permission, checkpoint, CAPTCHA, or similar human-action screens, send Alejandro an immediate unblock request and retry after he confirms; do not close the complement as complete just because the blocker was documented.",
       "Reads the local vNext card store when present; falls back to legacy Person Cards V1.",
       "Does not mutate cards, write Fact Store, call live APIs, send outbound messages, or touch credentials.",
     ],
@@ -1216,6 +1217,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
       "Use the Batch Portfolio Rule in that protocol so recurring known contacts do not crowd out net-new community discovery.",
       "Returns operator prompts for blocked identity cases so Mantis can search Contacts, MailerLite, Gmail, Drive, lead-capture traces, and exports read-only.",
       "Before asking Alejandro for missing identity/contact fields, run a second-pass high-value source complement such as Instagram Messages UI when it is already authenticated and the contact has a useful search anchor.",
+      "If that complement hits a login/saved-profile/Relay/checkpoint blocker, pause into awaiting_human_unblock and retry after Alejandro confirms instead of treating the documented blocker as final output.",
       "This command never mutates cards, writes Fact Store, sends outbound, calls live APIs, or touches credentials.",
       "Use --fail-on-open-work when automation should stop if evidence or identity queues remain open.",
     ],
@@ -1415,6 +1417,12 @@ const escalationTriggers: CrmVNextOperatorEscalationTrigger[] = [
     alertAlejandro: true,
     description: "Any API auth, credential, Keychain, OAuth, or platform permission prompt is a human unblock.",
     exactUnblockActionNeeded: "Ask Alejandro to authorize the exact credential or permission in person.",
+  },
+  {
+    code: "instagram_ui_human_unblock",
+    alertAlejandro: true,
+    description: "Instagram Messages UI login, saved-profile, Relay/browser permission, checkpoint, or CAPTCHA screens require a human unblock and retry.",
+    exactUnblockActionNeeded: "Ask Alejandro to authenticate/select the saved Instagram profile or allow Relay/browser access, then confirm with 'listo, reintenta'.",
   },
   {
     code: "notify_queue_present",
