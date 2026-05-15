@@ -753,4 +753,106 @@ describe("CRM vNext Mantis evidence import script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("converts Instagram UI complement retry reports with recovered handles and self-location", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-ig-ui-retry-"));
+    try {
+      const reportPath = join(dir, "mantis-ig-ui-retry.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schema: "mantis.crm_vnext.stitching_batch_instagram_ui_complement_retry.v1",
+        mode: "instagram_messages_ui_read_only_complement_retry",
+        contacts: {
+          "email:santiagobernal676@gmail.com": {
+            label: "Santiago Bernal",
+            searchedTerms: ["Santiago Bernal"],
+            result: "found",
+            threadDisplayName: "Santiago Bernal",
+            recoveredHandle: "santiagobernal676",
+            recoveredEmail: null,
+            recoveredPhone: null,
+            locationEvidence: null,
+            compactContext: "Instagram Messages search found an account result named Santiago Bernal with username santiagobernal676.",
+            confidence: "strong",
+            discardedCandidates: [],
+            recommendedActionAfterInstagramUi: "enrich_existing_card_with_instagramHandle_reviewed",
+            blockers: [],
+          },
+          "ig:gabrielrojas_r": {
+            label: "Gabriel Rojas Rojas",
+            searchedTerms: ["gabrielrojas_r", "Iquique"],
+            result: "found",
+            threadDisplayName: "Gabriel Rojas Rojas",
+            recoveredHandle: "gabrielrojas_r",
+            recoveredEmail: null,
+            recoveredPhone: null,
+            locationEvidence: {
+              city: "Iquique",
+              country: "Chile",
+              sourceText: "Yo soy de iquique ... de el norte de Chile",
+              confidence: "strong",
+            },
+            compactContext: "Exact handle opened Gabriel Rojas Rojas / gabrielrojas_r. Message search for Iquique surfaced a self-location line.",
+            confidence: "strong",
+            discardedCandidates: [{
+              label: "Other Iquique account search results",
+              reason: "unrelated public accounts",
+            }],
+            recommendedActionAfterInstagramUi: "enrich_existing_card_with_self_location_city_country",
+            blockers: [],
+          },
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const text = await readFile(textPath, "utf8");
+      expect(packet.summary).toMatchObject({
+        results: 2,
+        selectedResults: 2,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(text).toContain("@santiagobernal676");
+      expect(text).toContain("santiagobernal676@gmail.com");
+      expect(text).toContain("Ciudad Iquique");
+      expect(text).toContain("País Chile");
+
+      const santiago = packet.selectedResults.find((result: { handle: string }) =>
+        result.handle === "@santiagobernal676"
+      );
+      expect(santiago).toMatchObject({
+        candidate_name: "Santiago Bernal",
+        candidate_email: "santiagobernal676@gmail.com",
+        confidence: "high",
+      });
+
+      const gabriel = packet.selectedResults.find((result: { handle: string }) =>
+        result.handle === "@gabrielrojas_r"
+      );
+      expect(gabriel).toMatchObject({
+        city: "Iquique",
+        country: "Chile",
+        recommended_next_step: "enrich_existing_card_with_self_location_city_country",
+      });
+
+      const gabrielEvidence = packet.evidenceSources.find((source: { text: string }) =>
+        source.text.includes("Yo soy de iquique")
+      );
+      expect(gabrielEvidence.text).toContain("City: Iquique");
+      expect(gabrielEvidence.text).toContain("Country: Chile");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

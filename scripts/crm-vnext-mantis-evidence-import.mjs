@@ -757,7 +757,7 @@ const cleanEmail = (value) => cleanString(value)?.toLowerCase() ?? null;
 const normalizedConfidenceForInstagramUiContact = (contact) => {
   const text = [
     cleanString(contact?.confidence),
-    cleanString(contact?.status),
+    cleanString(contact?.status ?? contact?.result),
   ].filter(Boolean).join(' ').toLowerCase();
   if (/high|strong|found/.test(text) && !/review_only|without_handle|no_handle/.test(text)) return 'high';
   if (/review_only|without_handle|no_handle|not_found/.test(text)) return 'low';
@@ -770,7 +770,7 @@ const threadContextPartsFor = (contact) => {
     ? contact.threadContext
     : {};
   return {
-    compact: cleanString(threadContext.compact ?? contact?.threadContext),
+    compact: cleanString(threadContext.compact ?? contact?.threadContext ?? contact?.compactContext),
     preferences: [
       ...(Array.isArray(threadContext.preferences) ? threadContext.preferences : []),
       ...(Array.isArray(contact?.preferences) ? contact.preferences : []),
@@ -790,14 +790,17 @@ const evidenceSourcesForInstagramUiContact = (contactKey, contact) => {
     finding: cleanString(source?.finding ?? source?.text ?? source?.snippet),
   }));
   const thread = threadContextPartsFor(contact);
+  const locationText = cleanString(contact?.locationEvidence?.sourceText)
+    ?? cleanString(contact?.locationEvidence)
+    ?? cleanString(contact?.locationText);
   const contextFinding = [
     `Contact key: ${contactKey}`,
-    cleanString(contact?.status) ? `Status: ${cleanString(contact.status)}` : null,
-    cleanString(contact?.matchedInstagramHandle) ? `Matched Instagram: @${normalizeHandle(contact.matchedInstagramHandle)}` : null,
-    cleanString(contact?.matchedDisplayName) ? `Matched display name: ${cleanString(contact.matchedDisplayName)}` : null,
-    cleanString(contact?.city) ? `City: ${cleanString(contact.city)}` : null,
-    cleanString(contact?.country) ? `Country: ${cleanString(contact.country)}` : null,
-    cleanString(contact?.locationEvidence ?? contact?.locationText) ? `Location evidence: ${cleanString(contact.locationEvidence ?? contact.locationText)}` : null,
+    cleanString(contact?.status ?? contact?.result) ? `Status: ${cleanString(contact.status ?? contact.result)}` : null,
+    cleanString(contact?.matchedInstagramHandle ?? contact?.recoveredHandle) ? `Matched Instagram: @${normalizeHandle(contact.matchedInstagramHandle ?? contact.recoveredHandle)}` : null,
+    cleanString(contact?.matchedDisplayName ?? contact?.threadDisplayName) ? `Matched display name: ${cleanString(contact.matchedDisplayName ?? contact.threadDisplayName)}` : null,
+    cleanString(contact?.city ?? contact?.locationEvidence?.city) ? `City: ${cleanString(contact.city ?? contact.locationEvidence.city)}` : null,
+    cleanString(contact?.country ?? contact?.locationEvidence?.country) ? `Country: ${cleanString(contact.country ?? contact.locationEvidence.country)}` : null,
+    locationText ? `Location evidence: ${locationText}` : null,
     thread.compact ? `Thread context: ${thread.compact}` : null,
     thread.preferences.length ? `Preferences: ${thread.preferences.join('; ')}` : null,
     thread.tone ? `Tone: ${thread.tone}` : null,
@@ -816,7 +819,7 @@ const evidenceSourcesForInstagramUiContact = (contactKey, contact) => {
     const finding = [
       `Contact key: ${contactKey}`,
       'Discarded Instagram UI candidate; do not assign.',
-      cleanString(candidate?.candidate) ? `Candidate: ${cleanString(candidate.candidate)}` : null,
+      cleanString(candidate?.candidate ?? candidate?.label) ? `Candidate: ${cleanString(candidate.candidate ?? candidate.label)}` : null,
       cleanString(candidate?.reason) ? `Reason: ${cleanString(candidate.reason)}` : null,
     ].filter(Boolean).join(' ');
     if (finding) {
@@ -832,15 +835,16 @@ const evidenceSourcesForInstagramUiContact = (contactKey, contact) => {
 };
 
 const normalizedResultForInstagramUiContact = ([contactKey, contact]) => {
-  const handle = normalizeHandle(contact?.matchedInstagramHandle) ?? contactKeyHandle(contactKey);
+  const handle = normalizeHandle(contact?.matchedInstagramHandle ?? contact?.recoveredHandle) ?? contactKeyHandle(contactKey);
   const thread = threadContextPartsFor(contact);
-  const candidateName = firstClean(contact?.matchedDisplayName, fullNameForContact(contactKey, contact));
-  const candidateEmail = cleanEmail(contact?.subjectEmail);
-  const candidatePhone = firstClean(contact?.subjectPhone);
-  const city = firstClean(contact?.city);
-  const country = firstClean(contact?.country);
+  const candidateName = firstClean(contact?.matchedDisplayName, contact?.threadDisplayName, contact?.label, fullNameForContact(contactKey, contact));
+  const candidateEmail = cleanEmail(contact?.subjectEmail ?? contact?.recoveredEmail)
+    ?? (contactKey.startsWith('email:') ? cleanEmail(contactKey.replace(/^email:/, '')) : null);
+  const candidatePhone = firstClean(contact?.subjectPhone, contact?.recoveredPhone);
+  const city = firstClean(contact?.city, contact?.locationEvidence?.city);
+  const country = firstClean(contact?.country, contact?.locationEvidence?.country);
   const reviewOnly = /review_only|without_handle|no_handle/i.test([
-    cleanString(contact?.status),
+    cleanString(contact?.status ?? contact?.result),
     cleanString(contact?.confidence),
   ].filter(Boolean).join(' '));
   const noHandle = !handle;
@@ -858,7 +862,7 @@ const normalizedResultForInstagramUiContact = ([contactKey, contact]) => {
       ...thread.preferences,
     ].filter(Boolean),
     confidence: normalizedConfidenceForInstagramUiContact(contact),
-    recommended_next_step: thread.nextStepCue ?? cleanString(contact?.recommendation),
+    recommended_next_step: thread.nextStepCue ?? cleanString(contact?.recommendation ?? contact?.recommendedActionAfterInstagramUi),
     blockers: [
       reviewOnly || noHandle ? 'instagram_ui_no_recoverable_handle' : null,
       cleanString(contact?.emailOwnershipStatus) === 'not_found_in_instagram_ui'
@@ -1019,7 +1023,9 @@ const normalizedResultForContact = ([contactKey, contact]) => {
 
 const normalizedResultsForReport = (report) => {
   if (Array.isArray(report?.results)) return report.results;
-  if (report?.schemaVersion === 'mantis.crm_vnext.instagram_ui_auth_rerun.v1'
+  const reportSchema = cleanString(report?.schemaVersion ?? report?.schema);
+  if ((reportSchema === 'mantis.crm_vnext.instagram_ui_auth_rerun.v1'
+    || reportSchema === 'mantis.crm_vnext.stitching_batch_instagram_ui_complement_retry.v1')
     && report?.contacts
     && typeof report.contacts === 'object'
     && !Array.isArray(report.contacts)

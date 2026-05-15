@@ -32,6 +32,7 @@ The importer accepts both Mantis evidence hunt shapes:
 - legacy `results[]` reports keyed by Instagram handle,
 - contact-keyed CRM vNext reports with `contacts.{contact_key}` and `strongMatches` / `weakMatches`.
 - single-subject email ownership hunts with `subject`, `matches_confirmados`, `candidates_review_only`, `rejected_collisions`, `negative_findings`, and `recomendacion_final`.
+- Instagram Messages UI auth-rerun/complement-retry reports, including `recoveredHandle`, `threadDisplayName`, `compactContext`, discarded candidates, and explicit `locationEvidence` such as self-location city/country.
 
 For contact-keyed reports, the importer converts each contact into safe CRM fact text plus connected evidence packets. It preserves review-only family/companion emails as evidence context instead of treating them as primary identity approval.
 
