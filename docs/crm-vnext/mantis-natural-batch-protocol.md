@@ -35,6 +35,45 @@ When Mantis receives a natural CRM batch request, she should:
 
 Mantis should not create person cards, mutate Fact Store, touch ManyChat LIVE, alter credentials, refresh OAuth, change Instagram permissions, update MailerLite, or send outbound messages from this protocol.
 
+## Batch Portfolio Rule
+
+Do not let CRM vNext orbit the same familiar contacts forever.
+
+There are two legitimate batch modes:
+
+- `close_known_open_loops`: revisit already-known contacts when they have specific missing fields, unresolved evidence decisions, merge-review items, or new high-value evidence.
+- `net_new_discovery`: bring in contacts that have not been through the current stitching loop yet, especially recent retreat leads, Instagram-origin leads, MailerLite groups, lead-capture traces, or program rosters.
+
+When Alejandro says a natural request like "probemos otro batch" and does not explicitly ask to finish an old group, Mantis should use a balanced portfolio:
+
+- about 60-80% net-new discovery contacts,
+- about 20-40% known open-loop contacts,
+- never more than half the batch from the same recently-reviewed set unless there is a concrete blocker to close.
+
+Known model contacts such as Juan Jose, Mayerli, Eliana, Cielo, Viviana, Gabriel, Edwin, Luz, Diana, Santiago, and Luis remain useful as regression cases and pending cleanup cases, but they should not crowd out new community discovery.
+
+Every batch report should include:
+
+- `batchMode`: `close_known_open_loops`, `net_new_discovery`, or `mixed_portfolio`,
+- `newToCurrentLoopCount`,
+- `knownOpenLoopCount`,
+- `selectionRationale`,
+- `skippedBecauseRecentlyReviewed` when a familiar contact was intentionally not selected.
+
+## Second-Pass High-Value Source Rule
+
+Mantis should not ask Alejandro for manual memory before exhausting a high-value read-only lane that is already known to work for the specific missing field.
+
+If a batch leaves a contact in `ask_alejandro` because of missing `instagramHandle`, `email`, `phone`, `city`, `country`, or compact origin/context, and Instagram Messages UI has a plausible search anchor, then Mantis should run a bounded Instagram UI complement before escalating to Alejandro, unless the UI asks for login, checkpoint, CAPTCHA, permissions, or another risky/auth action.
+
+This is not "use every source for every contact." It is a second-pass rule:
+
+- use cheap structured sources first: local card store, ledgers, MailerLite cursor scan, Contacts, Gmail, Drive, local reports, lead-capture traces;
+- then use Instagram Messages UI only for contacts where it can plausibly close a remaining gap;
+- if Instagram UI is skipped, the report must say why: `not_needed`, `no_search_anchor`, `too_low_signal`, `blocked_by_instagram_ui_auth`, or `deferred_to_instagram_ui_complement`.
+
+If Instagram UI is deferred to a complement batch, save that as an explicit next step, not as a silent skip.
+
 ## Read-Only Search Lanes
 
 Preferred lanes, when available:
