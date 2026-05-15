@@ -168,6 +168,45 @@ describe("CRM vNext Mantis evidence import script", () => {
             },
             recommendation: "needs_human_decision",
           },
+          "email:r_mart803@hotmail.com": {
+            label: "Rocío Martínez Jaime / @maryamtzj",
+            anchors: {
+              instagramHandle: "maryamtzj",
+              email: "r_mart803@hotmail.com",
+            },
+            currentCard: {
+              displayName: "Rocío Martínez Jaime",
+              identities: {
+                email: "r_mart803@hotmail.com",
+                instagramHandle: "maryamtzj",
+                country: "México",
+              },
+            },
+            strongMatches: [
+              {
+                field: "email",
+                value: "r_mart803@hotmail.com",
+                source: "CRM vNext local card store",
+                confidence: "strong_current_card",
+              },
+              {
+                field: "instagramHandle",
+                value: "maryamtzj",
+                source: "CRM vNext local card store",
+                confidence: "strong_current_card",
+              },
+            ],
+            sourcesConsulted: {
+              instagramMessagesUi: {
+                results: {
+                  result: "not_found",
+                  compactContext: "Keep local onboarding evidence as the identity anchor.",
+                  recommended: "keep_local_email_handle_bridge",
+                },
+              },
+            },
+            recommendedAction: "keep_local_email_handle_bridge",
+          },
         },
       }), "utf8");
 
@@ -186,8 +225,8 @@ describe("CRM vNext Mantis evidence import script", () => {
       const packet = JSON.parse(await readFile(outPath, "utf8"));
       const text = await readFile(textPath, "utf8");
       expect(packet.summary).toMatchObject({
-        results: 2,
-        selectedResults: 2,
+        results: 3,
+        selectedResults: 3,
         operationsExecuted: 0,
         cardMutationReady: false,
       });
@@ -195,7 +234,20 @@ describe("CRM vNext Mantis evidence import script", () => {
       expect(text).toContain("Santiago Bernal");
       expect(text).toContain("email confirmado santiagobernal676@gmail.com");
       expect(text).toContain("emails de familia/acompañante review-only");
+      expect(text).toContain("email confirmado r_mart803@hotmail.com");
+      expect(text).not.toContain("email:r mart803@hotmail.com");
       expect(JSON.stringify(packet)).not.toContain("/Users/example");
+
+      const rocio = packet.selectedResults.find((result: { candidate_email: string }) =>
+        result.candidate_email === "r_mart803@hotmail.com"
+      );
+      expect(rocio).toMatchObject({
+        handle: "@maryamtzj",
+        candidate_name: "Rocío Martínez Jaime",
+        candidate_email: "r_mart803@hotmail.com",
+        country: "México",
+        recommended_next_step: "keep_local_email_handle_bridge",
+      });
 
       const santiagoMailerLite = packet.evidenceSources.find((source: { sourceId: string }) =>
         source.sourceId === "mantis_evidence:santiago_bernal:mailerlite_export:1"

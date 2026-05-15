@@ -36,6 +36,8 @@ The importer accepts both Mantis evidence hunt shapes:
 
 For contact-keyed reports, the importer converts each contact into safe CRM fact text plus connected evidence packets. It preserves review-only family/companion emails as evidence context instead of treating them as primary identity approval.
 
+Contact keys are identity material, not display labels. The importer therefore preserves exact `email:` keys, including underscores and punctuation, before turning them into fact text. For example, `email:r_mart803@hotmail.com` must stay `r_mart803@hotmail.com`; it must never degrade into a label such as `r mart803@hotmail.com` or a different email. `ig:` keys are handled the same way for handles. Human-readable labels like `Nombre / @handle` are cleaned for display, while the underlying email/handle stays exact.
+
 Contact-keyed reports can also include `evidenceRecords`. The importer preserves those records as connected evidence so useful operator context does not disappear after stitching. This is especially important for Instagram-origin batches where Mantis may find:
 
 - an Instagram Messages UI email-to-handle bridge,

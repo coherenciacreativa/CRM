@@ -488,10 +488,52 @@ const confidenceForEnrichmentContact = (contact) => {
   return 'low';
 };
 
+const contactKeyEmail = (contactKey) => {
+  const value = cleanString(contactKey);
+  if (!value?.toLowerCase().startsWith('email:')) return null;
+  const email = value.slice(6).trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+};
+
+const contactKeyHandle = (contactKey) => {
+  const value = cleanString(contactKey);
+  if (!value) return null;
+  if (value.startsWith('@')) return normalizeHandle(value);
+  if (value.startsWith('ig:')) return normalizeHandle(value.slice(3));
+  return null;
+};
+
+const safeLabelForContactKey = (contactKey) => {
+  const email = contactKeyEmail(contactKey);
+  if (email) return email;
+  const handle = contactKeyHandle(contactKey);
+  if (handle) return `@${handle}`;
+  return cleanString(contactKey)?.replace(/_/g, ' ') ?? null;
+};
+
+const contactNameLabel = (value) => {
+  const label = cleanString(value);
+  if (!label) return null;
+  const lower = label.toLowerCase();
+  if (lower.startsWith('email:') || lower.startsWith('ig:') || label.startsWith('@')) return null;
+  const withoutTrailingHandle = label.replace(/\s*\/\s*@[\w.]+$/u, '').trim();
+  if (withoutTrailingHandle && !withoutTrailingHandle.includes('@')) return withoutTrailingHandle;
+  return label.includes('@') ? null : label;
+};
+
 const fullNameForContact = (contactKey, contact) => {
   const confirmed = confirmedIdentityFor(contact);
   const confirmedName = firstClean(confirmed.fullName, confirmed.displayName);
   if (confirmedName) return confirmedName;
+  const labelName = firstClean(
+    contactNameLabel(contact?.label),
+    contactNameLabel(contact?.displayName),
+    contactNameLabel(contact?.name),
+    contactNameLabel(contact?.currentCard?.displayName),
+    contactNameLabel(contact?.anchors?.displayName),
+    contactNameLabel(contact?.anchors?.name),
+  );
+  if (labelName) return labelName;
   const resolved = contact?.resolvedAnchors ?? {};
   if (Array.isArray(resolved.nameCandidates) && resolved.nameCandidates.length) {
     return firstClean(...resolved.nameCandidates);
@@ -502,15 +544,7 @@ const fullNameForContact = (contactKey, contact) => {
     return value && !value.startsWith('@') && !value.includes('@') && !/\d/.test(value);
   });
   if (namedAnchor) return cleanString(namedAnchor);
-  return cleanString(contactKey)?.replace(/_/g, ' ') ?? null;
-};
-
-const contactKeyHandle = (contactKey) => {
-  const value = cleanString(contactKey);
-  if (!value) return null;
-  if (value.startsWith('@')) return normalizeHandle(value);
-  if (value.startsWith('ig:')) return normalizeHandle(value.slice(3));
-  return null;
+  return safeLabelForContactKey(contactKey);
 };
 
 const evidenceKindFromSourceName = (sourceName) => {
@@ -984,22 +1018,47 @@ const normalizedResultForContact = ([contactKey, contact]) => {
   }
 
   const resolved = contact?.resolvedAnchors ?? {};
-  const handle = normalizeHandle(resolved.instagramHandle) ?? normalizeHandle(
-    Array.isArray(contact?.inputAnchors)
-      ? contact.inputAnchors.find((anchor) => cleanString(anchor)?.startsWith('@'))
-      : null
+  const instagramUiResults = contact?.sourcesConsulted?.instagramMessagesUi?.results ?? {};
+  const handle = normalizeHandle(resolved.instagramHandle)
+    ?? normalizeHandle(contact?.anchors?.instagramHandle)
+    ?? normalizeHandle(contact?.currentCard?.identities?.instagramHandle)
+    ?? normalizeHandle(instagramUiResults?.recoveredHandle)
+    ?? normalizeHandle(
+      Array.isArray(contact?.inputAnchors)
+        ? contact.inputAnchors.find((anchor) => cleanString(anchor)?.startsWith('@'))
+        : null
+    )
+    ?? contactKeyHandle(contactKey);
+  const candidateEmail = firstClean(
+    resolved.primaryEmail,
+    resolved.email,
+    resolved.ownedEmail,
+    contact?.anchors?.email,
+    contact?.currentCard?.identities?.email,
+    contactKeyEmail(contactKey),
   );
-  const candidateEmail = firstClean(resolved.primaryEmail, resolved.email, resolved.ownedEmail);
-  const candidatePhone = firstClean(resolved.phone);
+  const candidatePhone = firstClean(resolved.phone, contact?.anchors?.phone, contact?.currentCard?.identities?.phone);
   const candidateName = firstClean(resolved.displayName, resolved.displayNameCandidate, resolved.fullName, fullNameForContact(contactKey, contact));
-  const city = firstClean(resolved.city, resolved.cityCandidate, resolved.cityCandidateFromBio);
-  const country = firstClean(resolved.country, resolved.countryCandidate, resolved.countryCandidateFromBio);
+  const city = firstClean(
+    resolved.city,
+    resolved.cityCandidate,
+    resolved.cityCandidateFromBio,
+    instagramUiResults?.locationEvidence?.city,
+    contact?.currentCard?.identities?.city,
+  );
+  const country = firstClean(
+    resolved.country,
+    resolved.countryCandidate,
+    resolved.countryCandidateFromBio,
+    instagramUiResults?.locationEvidence?.country,
+    contact?.currentCard?.identities?.country,
+  );
   const groups = [
     ...(Array.isArray(resolved.retreatOrClassEvidence) ? resolved.retreatOrClassEvidence : []),
     ...(Array.isArray(resolved.retreatLeadEvidence) ? resolved.retreatLeadEvidence : []),
   ].map(cleanString).filter(Boolean);
   const strongMatches = Array.isArray(contact?.strongMatches) ? contact.strongMatches : [];
-  const recommendation = cleanString(contact?.recommendation);
+  const recommendation = cleanString(contact?.recommendation ?? contact?.recommendedAction ?? instagramUiResults?.recommended);
   const result = {
     resultKey: contactKey,
     contactKey,
