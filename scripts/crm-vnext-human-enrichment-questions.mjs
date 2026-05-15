@@ -11,6 +11,7 @@ const usage = `Usage:
 
 Options:
   --batch-loop-file <path>    Optional crm:vnext:batch-operating-loop JSON to seed people from a batch
+  --questions-file <path>     Optional existing human-enrichment question packet to re-render
   --card-store-path <path>    Local vNext card store path. Defaults to ${DEFAULT_CARD_STORE_PATH}
   --card-write-ledger-path <path>
                               Local card-write ledger JSONL path. Defaults to ${DEFAULT_CARD_WRITE_LEDGER_PATH}
@@ -20,6 +21,9 @@ Options:
   --person-id <id[,id]>       Include exact personId(s), e.g. ig:cielo_gom_g. May be repeated
   --out <path>                Write question packet JSON to this path
   --markdown-out <path>       Write a human-readable Markdown interview sheet
+  --format <verbose|compact>  Markdown format. Defaults to verbose
+  --profile-screenshot-manifest <path>
+                              Optional JSON map of personId/handle/email to local profile screenshot paths
   --limit <n>                 Maximum people to include. Defaults to all selected people
   --help                      Show this help
 
@@ -29,6 +33,7 @@ after a batch. It never mutates cards, writes Fact Store, calls live APIs, touch
 const parseArgs = (argv) => {
   const options = {
     batchLoopFile: null,
+    questionsFile: null,
     cardStorePath: DEFAULT_CARD_STORE_PATH,
     cardWriteLedgerPath: DEFAULT_CARD_WRITE_LEDGER_PATH,
     fromCardWriteLedger: false,
@@ -37,6 +42,8 @@ const parseArgs = (argv) => {
     personIds: [],
     out: null,
     markdownOut: null,
+    format: 'verbose',
+    profileScreenshotManifest: null,
     limit: null,
     help: false,
   };
@@ -45,6 +52,7 @@ const parseArgs = (argv) => {
     const arg = argv[index];
     if (arg === '--help') options.help = true;
     else if (arg === '--batch-loop-file') options.batchLoopFile = argv[++index];
+    else if (arg === '--questions-file') options.questionsFile = argv[++index];
     else if (arg === '--card-store-path') options.cardStorePath = argv[++index];
     else if (arg === '--card-write-ledger-path') options.cardWriteLedgerPath = argv[++index];
     else if (arg === '--from-card-write-ledger') options.fromCardWriteLedger = true;
@@ -59,6 +67,8 @@ const parseArgs = (argv) => {
     else if (arg === '--person-id') options.personIds.push(...argv[++index].split(','));
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
+    else if (arg === '--format') options.format = argv[++index];
+    else if (arg === '--profile-screenshot-manifest') options.profileScreenshotManifest = argv[++index];
     else if (arg === '--limit') options.limit = Number(argv[++index]);
     else throw new Error(`unknown_arg:${arg}`);
   }
@@ -71,6 +81,9 @@ const parseArgs = (argv) => {
   }
   if (options.since !== null && Number.isNaN(Date.parse(options.since))) {
     throw new Error('invalid_since');
+  }
+  if (!['verbose', 'compact'].includes(options.format)) {
+    throw new Error('invalid_format');
   }
   return options;
 };
@@ -96,6 +109,37 @@ const readJsonl = async (filePath) => {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => JSON.parse(line));
+};
+
+const normalizeManifestEntry = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string') return { path: resolve(value), source: 'profile_screenshot_manifest' };
+  if (typeof value !== 'object') return null;
+  const rawPath = cleanString(value.path ?? value.filePath ?? value.file ?? value.imagePath);
+  if (!rawPath) return null;
+  return {
+    path: resolve(rawPath),
+    source: cleanString(value.source) ?? 'profile_screenshot_manifest',
+    capturedAt: cleanString(value.capturedAt ?? value.captured_at),
+  };
+};
+
+const readScreenshotManifest = async (filePath) => {
+  if (!filePath) return new Map();
+  const parsed = await readJson(filePath);
+  const entries = Array.isArray(parsed)
+    ? parsed.flatMap((item) => {
+      if (!item || typeof item !== 'object') return [];
+      const keys = [
+        cleanString(item.personId ?? item.person_id),
+        cleanString(item.instagramHandle ?? item.instagram_handle),
+        cleanString(item.email),
+      ].filter(Boolean);
+      const value = normalizeManifestEntry(item);
+      return value ? keys.map((key) => [key, value]) : [];
+    })
+    : Object.entries(parsed ?? {}).map(([key, value]) => [cleanString(key), normalizeManifestEntry(value)]);
+  return new Map(entries.filter(([key, value]) => key && value));
 };
 
 const personIdsFromCardWriteLedger = (entries, options) => {
@@ -217,6 +261,26 @@ const subjectFor = (personId, card) => {
   if (displayName) return displayName;
   if (handle) return `@${handle.replace(/^@+/, '')}`;
   return personId;
+};
+
+const screenshotLookupKeys = (question) => unique([
+  cleanString(question.personId),
+  cleanString(question.subject?.instagramHandle),
+  cleanString(question.subject?.instagramHandle)?.replace(/^@+/, ''),
+  cleanString(question.subject?.instagramHandle) ? `@${cleanString(question.subject.instagramHandle).replace(/^@+/, '')}` : null,
+  ...(question.known?.identity ?? [])
+    .map((line) => cleanString(line)?.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase())
+    .filter(Boolean),
+]);
+
+const screenshotForQuestion = (question, screenshotManifest) => {
+  for (const key of screenshotLookupKeys(question)) {
+    const exact = screenshotManifest.get(key);
+    if (exact) return exact;
+    const normalized = screenshotManifest.get(key.replace(/^@+/, ''));
+    if (normalized) return normalized;
+  }
+  return null;
 };
 
 const promptFor = (personId, card, missingFields) => {
@@ -350,6 +414,59 @@ const markdownFor = (packet) => [
   ]),
 ].join('\n');
 
+const compactKnownLines = (question) => {
+  const lines = [
+    ...question.known.identity,
+    ...question.known.programs,
+    question.known.evidenceCount ? `Fuentes/evidencias: ${question.known.evidenceCount}` : null,
+    question.known.nextAction ? `Next action actual: ${question.known.nextAction}` : null,
+  ].filter(Boolean);
+  return lines.length ? lines.slice(0, 8) : ['Sin datos seguros todavia'];
+};
+
+const compactMissingLines = (question) => {
+  const missing = question.missingFields?.filter((field) => field !== 'card_missing') ?? [];
+  if (!missing.length) return ['Contexto humano: relacion, historia, programas reales, siguiente paso'];
+  return unique([
+    ...missing,
+    'relacion/historia/programas',
+    'siguiente paso',
+  ]);
+};
+
+const compactInline = (values, fallback) => {
+  const cleaned = values.map(cleanString).filter(Boolean);
+  if (!cleaned.length) return fallback;
+  return cleaned.join(' | ');
+};
+
+const compactMarkdownFor = (packet, screenshotManifest = new Map()) => [
+  '# CRM vNext - Revision Compacta Para Alejandro',
+  '',
+  `Generado: ${packet.generatedAt}`,
+  `Contactos: ${packet.summary.questions}`,
+  '',
+  'Responde libremente debajo de cada persona. Una frase, una memoria o un audio transcrito sirve.',
+  '',
+  ...packet.questions.flatMap((question, index) => {
+    const screenshot = screenshotForQuestion(question, screenshotManifest);
+    return [
+      `## ${index + 1}. ${question.subject.label}`,
+      '',
+      screenshot?.path
+        ? `![Perfil IG - ${question.subject.label}](${screenshot.path})`
+        : 'Captura IG: pendiente',
+      '',
+      `Datos: ${compactInline(compactKnownLines(question), 'Sin datos seguros todavia')}`,
+      `Completar: ${compactInline(compactMissingLines(question), 'Contexto humano y siguiente paso')}`,
+      '',
+      'Respuesta libre:',
+      '> ',
+      '',
+    ];
+  }),
+].join('\n');
+
 const writeJson = async (filePath, value) => {
   const absolutePath = resolve(filePath);
   await mkdir(dirname(absolutePath), { recursive: true });
@@ -369,31 +486,37 @@ const main = async () => {
     return;
   }
 
-  const cardStore = await readJson(options.cardStorePath);
-  const batchLoop = options.batchLoopFile
-    ? { ...(await readJson(options.batchLoopFile)), _sourceFile: resolve(options.batchLoopFile) }
-    : null;
-  const cardWriteLedgerEntries = options.fromCardWriteLedger
-    ? await readJsonl(options.cardWriteLedgerPath)
-    : [];
-  const ledgerPersonIds = options.fromCardWriteLedger
-    ? personIdsFromCardWriteLedger(cardWriteLedgerEntries, options)
-    : [];
-  const personIds = options.limit ? options.personIds.slice(0, options.limit) : options.personIds;
-  const packet = buildPacket({
-    cards: Array.isArray(cardStore?.cards) ? cardStore.cards : [],
-    batchLoop,
-    ledgerPersonIds,
-    personIds,
-    source: {
-      cardWriteLedgerLoaded: options.fromCardWriteLedger,
-      cardWriteLedgerRows: cardWriteLedgerEntries.length,
-    },
-  });
+  const packet = options.questionsFile
+    ? await readJson(options.questionsFile)
+    : (() => null)();
+
+  const builtPacket = packet ?? await (async () => {
+    const cardStore = await readJson(options.cardStorePath);
+    const batchLoop = options.batchLoopFile
+      ? { ...(await readJson(options.batchLoopFile)), _sourceFile: resolve(options.batchLoopFile) }
+      : null;
+    const cardWriteLedgerEntries = options.fromCardWriteLedger
+      ? await readJsonl(options.cardWriteLedgerPath)
+      : [];
+    const ledgerPersonIds = options.fromCardWriteLedger
+      ? personIdsFromCardWriteLedger(cardWriteLedgerEntries, options)
+      : [];
+    const personIds = options.limit ? options.personIds.slice(0, options.limit) : options.personIds;
+    return buildPacket({
+      cards: Array.isArray(cardStore?.cards) ? cardStore.cards : [],
+      batchLoop,
+      ledgerPersonIds,
+      personIds,
+      source: {
+        cardWriteLedgerLoaded: options.fromCardWriteLedger,
+        cardWriteLedgerRows: cardWriteLedgerEntries.length,
+      },
+    });
+  })();
 
   const limitedPacket = options.limit
-    ? { ...packet, questions: packet.questions.slice(0, options.limit) }
-    : packet;
+    ? { ...builtPacket, questions: builtPacket.questions.slice(0, options.limit) }
+    : builtPacket;
   if (options.limit) {
     limitedPacket.summary = {
       questions: limitedPacket.questions.length,
@@ -405,15 +528,25 @@ const main = async () => {
     };
   }
 
+  const screenshotManifest = await readScreenshotManifest(options.profileScreenshotManifest);
   if (options.out) await writeJson(options.out, limitedPacket);
-  if (options.markdownOut) await writeText(options.markdownOut, markdownFor(limitedPacket));
+  if (options.markdownOut) {
+    await writeText(
+      options.markdownOut,
+      options.format === 'compact'
+        ? compactMarkdownFor(limitedPacket, screenshotManifest)
+        : markdownFor(limitedPacket),
+    );
+  }
   console.log(JSON.stringify({
     ok: true,
     mode: limitedPacket.mode,
     generatedAt: limitedPacket.generatedAt,
+    format: options.format,
     summary: limitedPacket.summary,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
+    profileScreenshotsLoaded: screenshotManifest.size,
     safety: limitedPacket.safety,
   }, null, 2));
 };

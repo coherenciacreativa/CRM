@@ -255,4 +255,91 @@ describe("CRM vNext human enrichment questions script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("can re-render an existing packet as a compact review sheet with profile screenshots", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-human-enrichment-compact-"));
+    try {
+      const packetPath = join(dir, "questions.json");
+      const manifestPath = join(dir, "screenshots.json");
+      const markdownPath = join(dir, "compact.md");
+      const screenshotPath = join(dir, "cielo-profile.png");
+
+      await writeFile(packetPath, JSON.stringify({
+        schemaVersion: "crm-vnext-human-enrichment-questions-2026-05-11",
+        generatedAt: "2026-05-15T12:00:00.000Z",
+        mode: "read_only_human_enrichment_questions",
+        summary: {
+          questions: 1,
+          highPriority: 0,
+          mediumPriority: 1,
+          lowPriority: 0,
+          operationsExecuted: 0,
+          cardMutationReady: false,
+        },
+        questions: [
+          {
+            questionId: "human_enrichment_01_ig_cielo_gom_g",
+            priority: "medium",
+            personId: "ig:cielo_gom_g",
+            subject: {
+              label: "Cielo Gómez (@cielo_gom_g)",
+              displayName: "Cielo Gómez",
+              instagramHandle: "cielo_gom_g",
+            },
+            batchStatus: { status: "manual_follow_up" },
+            known: {
+              identity: [
+                "Nombre: Cielo Gómez",
+                "Instagram: @cielo_gom_g",
+                "Email: cielotago@gmail.com",
+                "Ciudad: Bogotá",
+              ],
+              programs: ["Retiros: 1"],
+              evidenceCount: 4,
+              nextAction: "keep_warming",
+            },
+            missingFields: ["telefono"],
+            questionFocus: [],
+            prompt: "Sobre Cielo...",
+            suggestedAnswerFormat: "CRM: Cielo...",
+          },
+        ],
+        safety: {
+          readOnly: true,
+          outboundProhibited: true,
+          cardMutationProhibited: true,
+          factStoreWriteProhibited: true,
+          credentialReadProhibited: true,
+          liveApiCallsProhibited: true,
+        },
+      }), "utf8");
+      await writeFile(manifestPath, JSON.stringify({
+        "ig:cielo_gom_g": screenshotPath,
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-human-enrichment-questions.mjs",
+        "--questions-file",
+        packetPath,
+        "--format",
+        "compact",
+        "--profile-screenshot-manifest",
+        manifestPath,
+        "--markdown-out",
+        markdownPath,
+      ], { cwd: process.cwd() });
+
+      const markdown = await readFile(markdownPath, "utf8");
+      expect(markdown).toContain("# CRM vNext - Revision Compacta Para Alejandro");
+      expect(markdown).toContain("![Perfil IG - Cielo Gómez (@cielo_gom_g)]");
+      expect(markdown).toContain(screenshotPath);
+      expect(markdown).toContain("Datos: Nombre: Cielo Gómez");
+      expect(markdown).toContain("Email: cielotago@gmail.com");
+      expect(markdown).toContain("Completar: telefono");
+      expect(markdown).toContain("Respuesta libre:");
+      expect(markdown).not.toContain("Suggested answer format");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

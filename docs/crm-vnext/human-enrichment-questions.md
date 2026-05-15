@@ -34,6 +34,46 @@ npm run crm:vnext:human-enrichment-questions -- \
 
 Use this when Alejandro says something like "preguntame por los ultimos contactos que escribimos" or when Mantis needs to close the loop after `card-write-apply`. The ledger path defaults to `.crm-vnext/card-write-apply/ledger.jsonl`, and only committed `upsert_vnext_card` entries are included; staged merge reviews remain outside this question sheet until resolved.
 
+## Compact Review Mode
+
+When Alejandro needs to review several contacts quickly, use compact mode:
+
+```bash
+npm run crm:vnext:human-enrichment-questions -- \
+  --questions-file ~/Documents/Mantis-Reports/<existing-human-questions>.json \
+  --format compact \
+  --markdown-out ~/Documents/Mantis-Reports/<compact-review>.md
+```
+
+Compact mode keeps the heavy evidence JSON intact but renders a shorter sheet:
+
+- person name / handle,
+- optional Instagram profile screenshot,
+- a short "Tenemos" list,
+- a short "Completar si recuerdas" list,
+- one freestyle response box.
+
+If Mantis has captured read-only Instagram profile screenshots, pass a manifest:
+
+```bash
+--profile-screenshot-manifest ~/Documents/Mantis-Reports/<profile-screenshots-manifest>.json
+```
+
+Manifest values can be keyed by `personId`, handle, or email:
+
+```json
+{
+  "ig:cielo_gom_g": "/Users/alejandrogomez/Documents/Mantis-Reports/profile-screenshots/cielo_gom_g.png",
+  "@cadavid_eli": {
+    "path": "/Users/alejandrogomez/Documents/Mantis-Reports/profile-screenshots/cadavid_eli.png",
+    "source": "instagram_ui_profile_screenshot",
+    "capturedAt": "2026-05-15T12:00:00.000Z"
+  }
+}
+```
+
+Screenshot capture itself stays outside this command. Mantis may gather it through Instagram UI only in read-only mode; if Instagram asks for login, Relay, permissions, checkpoint, CAPTCHA, or any human action, Mantis must pause and ask Alejandro to unblock before retrying.
+
 ## When To Use
 
 Use after:
@@ -44,6 +84,8 @@ Use after:
 - or any moment where Alejandro says "I know more about this person."
 
 This is especially useful for contacts who already have a rough card but lack the human layer: how they arrived, which programs they actually belong to, whether they are a client, what they might need next, and what tone/context Mantis should remember.
+
+Use compact mode first when the goal is fast memory capture. Use verbose mode when auditing evidence or debugging a batch.
 
 ## Safety
 
