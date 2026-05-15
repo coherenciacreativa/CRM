@@ -136,4 +136,6 @@ A warmer score means "review internally first." It is never permission to send a
 
 Use this after identity stitching is stable enough that engagement signals can be matched to cards. If a signal is unmatched, route it back through identity stitching or the batch operating loop before using it for prioritization.
 
+MailerLite snapshots should first pass through `crm:vnext:mailerlite-engagement-signals`. Gmail newsletter-reply discoveries should first pass through `crm:vnext:gmail-reply-engagement-signals`; that adapter accepts metadata-only Mantis discoveries and rejects weak/false-positive rows before scoring preview.
+
 Approved Fact Store entries should eventually be converted into this same preview lane through a future Fact-to-Scoring adapter, so conversational facts and automated signals share one inspectable scoring policy.
