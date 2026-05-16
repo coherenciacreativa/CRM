@@ -921,6 +921,249 @@ const normalizedResultForInstagramUiContact = ([contactKey, contact]) => {
   };
 };
 
+const gmailReplyItemConfidence = (item) => {
+  const numeric = Number(item?.reviewCardConfidence);
+  if (Number.isFinite(numeric)) {
+    if (numeric >= 0.85) return 'high';
+    if (numeric >= 0.7) return 'medium';
+    return 'low';
+  }
+  const reasons = Array.isArray(item?.reviewCardConfidenceReasons)
+    ? item.reviewCardConfidenceReasons.map(cleanString).filter(Boolean).join(' ').toLowerCase()
+    : '';
+  const hasStrongReply = /strong_human_newsletter_reply|multiple_reply_signals/.test(reasons);
+  const hasSubscriber = Boolean(item?.mailerlite?.email ?? item?.dataFound?.mailerLiteStatus);
+  if (hasStrongReply && hasSubscriber) return 'high';
+  if (hasStrongReply) return 'medium';
+  return 'low';
+};
+
+const mailerLiteGroupsForGmailReplyItem = (item) => {
+  const explicit = Array.isArray(item?.dataFound?.mailerLiteTagsOrGroups)
+    ? item.dataFound.mailerLiteTagsOrGroups
+    : [];
+  const subscriberGroups = Array.isArray(item?.mailerlite?.groups)
+    ? item.mailerlite.groups.map((group) => group?.name ?? group)
+    : [];
+  return [...explicit, ...subscriberGroups]
+    .map(cleanString)
+    .filter(Boolean)
+    .filter((value, index, all) => all.indexOf(value) === index);
+};
+
+const gmailReplyThreadSnippet = (signal) => [
+  cleanString(signal?.observedAt) ? `Observed at: ${cleanString(signal.observedAt)}` : null,
+  cleanString(signal?.fromName) ? `From: ${cleanString(signal.fromName)}` : null,
+  cleanString(signal?.subject) ? `Subject: ${cleanString(signal.subject)}` : null,
+  cleanString(signal?.matchedNewsletterOrCampaign)
+    ? `Campaign: ${cleanString(signal.matchedNewsletterOrCampaign)}`
+    : null,
+  cleanString(signal?.replyConfidence) ? `Reply confidence: ${cleanString(signal.replyConfidence)}` : null,
+  cleanString(signal?.redactedSnippet) ? `Snippet: ${cleanString(signal.redactedSnippet)}` : null,
+  Array.isArray(signal?.reasonCodes) && signal.reasonCodes.length
+    ? `Reason codes: ${signal.reasonCodes.map(cleanString).filter(Boolean).join(', ')}`
+    : null,
+].filter(Boolean).join(' | ');
+
+const evidenceSourcesForGmailReplyItem = (item) => {
+  const sources = [];
+  const signals = Array.isArray(item?.replyContext?.signals) ? item.replyContext.signals : [];
+  signals.slice(0, 5).forEach((signal, index) => {
+    const finding = gmailReplyThreadSnippet(signal);
+    if (!finding) return;
+    sources.push({
+      kind: 'gmail_export',
+      source: 'gmail_reply_activity',
+      finding: [
+        `Reply signal ${index + 1} of ${signals.length}.`,
+        finding,
+      ].join(' '),
+    });
+  });
+
+  const mailerLite = item?.mailerlite && typeof item.mailerlite === 'object'
+    ? item.mailerlite
+    : null;
+  if (mailerLite || item?.dataFound?.mailerLiteStatus) {
+    const fields = mailerLite?.fields && typeof mailerLite.fields === 'object'
+      ? mailerLite.fields
+      : item?.dataFound?.mailerLiteFields ?? {};
+    const fieldBits = [
+      cleanString(fields?.name) ? `name: ${cleanString(fields.name)}` : null,
+      cleanString(fields?.city) ? `city: ${cleanString(fields.city)}` : null,
+      cleanString(fields?.country) ? `country: ${cleanString(fields.country)}` : null,
+      cleanString(fields?.phone) ? `phone: ${cleanString(fields.phone)}` : null,
+      cleanString(fields?.notas) ? `notas: ${cleanString(fields.notas)}` : null,
+    ].filter(Boolean);
+    sources.push({
+      kind: 'mailerlite_export',
+      source: 'mailerlite_cursor_scan',
+      finding: [
+        'Exact subscriber evidence for newsletter reply contact.',
+        cleanString(mailerLite?.status ?? item?.dataFound?.mailerLiteStatus)
+          ? `Status: ${cleanString(mailerLite?.status ?? item.dataFound.mailerLiteStatus)}`
+          : null,
+        Number.isFinite(Number(mailerLite?.opensCount))
+          ? `Opens: ${Number(mailerLite.opensCount)}`
+          : null,
+        Number.isFinite(Number(mailerLite?.clicksCount))
+          ? `Clicks: ${Number(mailerLite.clicksCount)}`
+          : null,
+        mailerLiteGroupsForGmailReplyItem(item).length
+          ? `Groups: ${mailerLiteGroupsForGmailReplyItem(item).join('; ')}`
+          : null,
+        fieldBits.length ? `Fields: ${fieldBits.join('; ')}` : null,
+      ].filter(Boolean).join(' | '),
+    });
+  }
+
+  const instagram = item?.instagramMessagesUi && typeof item.instagramMessagesUi === 'object'
+    ? item.instagramMessagesUi
+    : null;
+  if (instagram?.attempted) {
+    const instagramConfidence = cleanString(instagram.confidence);
+    const suppressAmbiguousResults = /low|ambiguous|name_only/i.test(instagramConfidence ?? '');
+    const querySummaries = Array.isArray(instagram.queries)
+      ? instagram.queries.slice(0, 5).map((query) => [
+        cleanString(query?.query) ? `Query: ${cleanString(query.query)}` : null,
+        !suppressAmbiguousResults && Array.isArray(query?.results) && query.results.length
+          ? `Results: ${query.results.map(cleanString).filter(Boolean).slice(0, 5).join(' || ')}`
+          : null,
+      ].filter(Boolean).join(' | ')).filter(Boolean)
+      : [];
+    sources.push({
+      kind: 'instagram_dm_ui_export',
+      source: 'instagram_messages_ui_search',
+      finding: [
+        instagramConfidence ? `Confidence: ${instagramConfidence}` : null,
+        instagram.openedConversation === false ? 'Conversation not opened.' : null,
+        instagram.sentMessage === false ? 'No message sent.' : null,
+        suppressAmbiguousResults ? 'Ambiguous Instagram UI results suppressed; do not assign returned names or handles from this search.' : null,
+        cleanString(instagram.notes) ? `Notes: ${cleanString(instagram.notes)}` : null,
+        querySummaries.length ? `Searches: ${querySummaries.join(' || ')}` : null,
+      ].filter(Boolean).join(' | '),
+    });
+  }
+
+  if (item?.engagementSignal && typeof item.engagementSignal === 'object') {
+    const signal = item.engagementSignal;
+    sources.push({
+      kind: 'local_fixture',
+      source: 'gmail_reply_engagement_signal',
+      finding: [
+        cleanString(signal.kind) ? `Kind: ${cleanString(signal.kind)}` : null,
+        cleanString(signal.strength) ? `Strength: ${cleanString(signal.strength)}` : null,
+        Number.isFinite(Number(signal.replyCount)) ? `Reply count: ${Number(signal.replyCount)}` : null,
+        cleanString(signal.lastReplyAt) ? `Last reply at: ${cleanString(signal.lastReplyAt)}` : null,
+        signal.shouldFeedFutureWarmth === true ? 'Should feed future warmth after identity approval.' : null,
+        cleanString(signal.reason) ? `Reason: ${cleanString(signal.reason)}` : null,
+      ].filter(Boolean).join(' | '),
+    });
+  }
+
+  const driveMatches = Array.isArray(item?.dataFound?.driveMetadataMatches)
+    ? item.dataFound.driveMetadataMatches
+    : Array.isArray(item?.googleDrive)
+      ? item.googleDrive
+      : [];
+  driveMatches.slice(0, 5).forEach((match) => {
+    const finding = [
+      'Drive metadata hit only; use as weak context, not identity ownership by itself.',
+      cleanString(match?.query) ? `Query: ${cleanString(match.query)}` : null,
+      cleanString(match?.name) ? `Name: ${cleanString(match.name)}` : null,
+      cleanString(match?.mimeType) ? `Mime type: ${cleanString(match.mimeType)}` : null,
+    ].filter(Boolean).join(' | ');
+    if (!finding) return;
+    sources.push({
+      kind: 'google_drive_export',
+      source: 'google_drive_metadata',
+      finding,
+    });
+  });
+
+  const discarded = Array.isArray(item?.discardedCandidates) ? item.discardedCandidates : [];
+  discarded.slice(0, 8).forEach((entry, index) => {
+    const candidate = entry?.candidate ?? {};
+    const finding = [
+      `Discarded CRM candidate ${index + 1}; do not merge from this evidence.`,
+      'Candidate identity suppressed to avoid accidental promotion.',
+      cleanString(entry?.reason) ? `Reason: ${cleanString(entry.reason)}` : null,
+      Array.isArray(candidate?.reasons) && candidate.reasons.length
+        ? `Candidate reasons: ${candidate.reasons.map(cleanString).filter(Boolean).join(', ')}`
+        : null,
+    ].filter(Boolean).join(' | ');
+    if (!finding) return;
+    sources.push({
+      kind: 'local_fixture',
+      source: 'mantis_gmail_reply_discarded_candidate',
+      finding,
+    });
+  });
+
+  return sources;
+};
+
+const gmailReplyItemFactText = (item, result) => {
+  const replyCount = Number(item?.engagementSignal?.replyCount ?? item?.newsletterReplyContext?.signalsCount);
+  const campaigns = Array.isArray(item?.newsletterReplyContext?.campaigns)
+    ? item.newsletterReplyContext.campaigns.map(cleanString).filter(Boolean)
+    : [];
+  const subject = result.handle ?? result.candidate_name ?? result.candidate_email ?? result.contactKey;
+  const intro = result.candidate_name && subject !== result.candidate_name
+    ? `${subject} es ${result.candidate_name}`
+    : result.candidate_name
+      ? `${subject} es contacto CRM`
+      : `${subject} es contacto CRM`;
+  return [
+    `CRM: ${intro}`,
+    result.candidate_email ? `email confirmado ${result.candidate_email}` : null,
+    result.candidate_phone ? `teléfono ${result.candidate_phone}` : null,
+    result.city ? `ciudad ${result.city}` : null,
+    result.country ? `país ${result.country}` : null,
+    result.handle ? `Instagram ${result.handle}` : null,
+    Number.isFinite(replyCount) ? `reply humano a newsletter ${replyCount} señal(es)` : null,
+    campaigns.length ? `campañas ${campaigns.slice(0, 4).join('; ')}` : null,
+    cleanString(item?.mailerLite?.status ?? item?.dataFound?.mailerLiteStatus)
+      ? `MailerLite ${cleanString(item?.mailerLite?.status ?? item.dataFound.mailerLiteStatus)}`
+      : null,
+    mailerLiteGroupsForGmailReplyItem(item).length
+      ? `grupos MailerLite ${mailerLiteGroupsForGmailReplyItem(item).join('; ')}`
+      : null,
+    cleanString(item?.suggestedAction) ? `recomendación Mantis ${cleanString(item.suggestedAction)}` : null,
+  ].filter(Boolean).join(', ') + '.';
+};
+
+const normalizedResultForGmailReplyItem = (item) => {
+  const email = cleanEmail(item?.email ?? item?.dataFound?.email ?? item?.mailerlite?.email);
+  const handle = normalizeHandle(item?.dataFound?.instagramHandle);
+  const candidateName = firstClean(
+    item?.nameDetected,
+    item?.mailerlite?.fields?.name,
+    item?.dataFound?.mailerLiteFields?.name
+  );
+  const result = {
+    resultKey: email ? `email:${email}` : normalizeKey(candidateName) ?? 'gmail_reply_unmatched',
+    contactKey: email ? `email:${email}` : normalizeKey(candidateName) ?? 'gmail_reply_unmatched',
+    handle: handle ? `@${handle}` : null,
+    candidate_name: candidateName,
+    candidate_email: email,
+    candidate_phone: firstClean(item?.dataFound?.phone, item?.mailerlite?.fields?.phone),
+    city: firstClean(item?.dataFound?.city, item?.mailerlite?.fields?.city),
+    country: firstClean(item?.dataFound?.country, item?.mailerlite?.fields?.country),
+    mailer_groups: mailerLiteGroupsForGmailReplyItem(item),
+    confidence: gmailReplyItemConfidence(item),
+    recommended_next_step: cleanString(item?.suggestedAction),
+    blockers: Array.isArray(item?.blockers)
+      ? item.blockers.map((blocker) => cleanString(blocker?.exactBlocker ?? blocker)).filter(Boolean)
+      : [],
+    evidenceSources: evidenceSourcesForGmailReplyItem(item),
+  };
+  return {
+    ...result,
+    factText: gmailReplyItemFactText(item, result),
+  };
+};
+
 const contactFactText = (contactKey, contact, result) => {
   if (contact?.identity && typeof contact.identity === 'object') {
     const bridgePending = hasBridgePendingIdentity(contact);
@@ -1090,6 +1333,12 @@ const normalizedResultsForReport = (report) => {
     && !Array.isArray(report.contacts)
   ) {
     return Object.entries(report.contacts).map(normalizedResultForInstagramUiContact);
+  }
+  if (
+    reportSchema === 'mantis.crm_vnext.gmail_reply_unmatched_stitching.v1'
+    && Array.isArray(report?.items)
+  ) {
+    return report.items.map(normalizedResultForGmailReplyItem);
   }
   if (report?.contacts && typeof report.contacts === 'object' && !Array.isArray(report.contacts)) {
     return Object.entries(report.contacts).map(normalizedResultForContact);

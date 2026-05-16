@@ -907,4 +907,196 @@ describe("CRM vNext Mantis evidence import script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("converts Gmail reply unmatched stitching reports into review-card evidence", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mantis-import-gmail-replies-"));
+    try {
+      const reportPath = join(dir, "mantis-gmail-replies.json");
+      const outPath = join(dir, "import.json");
+      const textPath = join(dir, "import.txt");
+      await writeFile(reportPath, JSON.stringify({
+        schema: "mantis.crm_vnext.gmail_reply_unmatched_stitching.v1",
+        mode: "read_only",
+        items: [
+          {
+            email: "nietomariacarolina@gmail.com",
+            nameDetected: "Maria Carolina Nieto",
+            suggestedAction: "create_review_card",
+            reviewCardConfidence: 0.85,
+            reviewCardConfidenceReasons: [
+              "stable_reply_email",
+              "strong_human_newsletter_reply",
+              "mailerlite_exact_subscriber_match",
+            ],
+            newsletterReplyContext: {
+              signalsCount: 1,
+              campaigns: ["La clave que facilita el trabajo"],
+            },
+            replyContext: {
+              signals: [
+                {
+                  observedAt: "2026-05-02T10:00:00.000Z",
+                  fromName: "Maria Carolina Nieto",
+                  subject: "Re: La clave que facilita el trabajo",
+                  matchedNewsletterOrCampaign: "La clave que facilita el trabajo",
+                  replyConfidence: "strong",
+                  redactedSnippet: "Holaaaa Ya he visto por Instagram que estas viajando.",
+                  reasonCodes: ["human_sender", "reply_subject_prefix"],
+                },
+              ],
+            },
+            engagementSignal: {
+              kind: "gmail_reply_activity",
+              shouldFeedFutureWarmth: true,
+              strength: "high",
+              replyCount: 1,
+              lastReplyAt: "2026-05-02T10:00:00.000Z",
+              reason: "Human newsletter reply.",
+            },
+            dataFound: {
+              email: "nietomariacarolina@gmail.com",
+              city: "Bogotá",
+              country: "Colombia",
+              instagramHandle: "nietomariacarolina",
+              mailerLiteTagsOrGroups: ["leads_instagram.csv", "Received second email"],
+              mailerLiteStatus: "active",
+              mailerLiteFields: {
+                name: "Maria Carolina Nieto",
+                city: "Bogotá",
+                country: "Colombia",
+              },
+              driveMetadataMatches: [
+                {
+                  query: "name",
+                  name: "Lista de Leads",
+                  mimeType: "application/vnd.google-apps.spreadsheet",
+                  webViewLink: "https://docs.google.com/private",
+                },
+              ],
+            },
+            mailerlite: {
+              email: "nietomariacarolina@gmail.com",
+              status: "active",
+              opensCount: 9,
+              clicksCount: 0,
+              fields: {
+                name: "Maria Carolina Nieto",
+                city: "Bogotá",
+                country: "Colombia",
+              },
+              groups: [
+                { id: "1", name: "leads_instagram.csv" },
+              ],
+            },
+            instagramMessagesUi: {
+              attempted: true,
+              openedConversation: false,
+              sentMessage: false,
+              confidence: "high_exact_email_prefix_handle_and_name",
+              notes: "Exact account result.",
+              queries: [
+                {
+                  query: "nietomariacarolina@gmail.com",
+                  results: ["Maria Carolina Nieto | nietomariacarolina"],
+                },
+              ],
+            },
+            discardedCandidates: [
+              {
+                candidate: { personId: "email:other@example.com", reasons: ["name_token_overlap"] },
+                reason: "name_token_overlap_insufficient_without_shared_email_or_handle",
+              },
+            ],
+            blockers: [],
+          },
+          {
+            email: "macarenasotozalazar@gmail.com",
+            nameDetected: "Macarena Soto",
+            suggestedAction: "create_review_card",
+            reviewCardConfidence: 0.72,
+            dataFound: {
+              email: "macarenasotozalazar@gmail.com",
+              instagramHandle: "macarenasotozalazar",
+            },
+            replyContext: {
+              signals: [{
+                observedAt: "2026-05-01T12:00:00.000Z",
+                subject: "Re: Volver a fluir",
+                replyConfidence: "strong",
+                redactedSnippet: "Me he tomado el tiempo sin prisa para leer.",
+              }],
+            },
+            instagramMessagesUi: {
+              attempted: true,
+              openedConversation: false,
+              sentMessage: false,
+              confidence: "high_exact_handle_from_email_prefix",
+              queries: [{ query: "macarenasotozalazar@gmail.com", results: ["Maca | macarenasotozalazar"] }],
+            },
+          },
+        ],
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-mantis-evidence-import.mjs",
+        "--report-file",
+        reportPath,
+        "--out",
+        outPath,
+        "--text-out",
+        textPath,
+        "--min-confidence",
+        "medium",
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+      const text = await readFile(textPath, "utf8");
+      expect(packet.summary).toMatchObject({
+        results: 2,
+        selectedResults: 2,
+        operationsExecuted: 0,
+        cardMutationReady: false,
+      });
+      expect(packet.summary.evidenceSources).toBeGreaterThanOrEqual(7);
+      expect(text).toContain("@nietomariacarolina es Maria Carolina Nieto");
+      expect(text).toContain("email confirmado nietomariacarolina@gmail.com");
+      expect(text).toContain("reply humano a newsletter 1 señal");
+      expect(text).toContain("@macarenasotozalazar es Macarena Soto");
+
+      const carolina = packet.selectedResults.find((result: { candidate_email: string }) =>
+        result.candidate_email === "nietomariacarolina@gmail.com"
+      );
+      expect(carolina).toMatchObject({
+        handle: "@nietomariacarolina",
+        candidate_name: "Maria Carolina Nieto",
+        city: "Bogotá",
+        country: "Colombia",
+        confidence: "high",
+      });
+
+      const macarena = packet.selectedResults.find((result: { candidate_email: string }) =>
+        result.candidate_email === "macarenasotozalazar@gmail.com"
+      );
+      expect(macarena).toMatchObject({
+        handle: "@macarenasotozalazar",
+        confidence: "medium",
+      });
+
+      const gmailEvidence = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "gmail_export" && source.text.includes("La clave que facilita el trabajo")
+      );
+      expect(gmailEvidence.text).toContain("Snippet: Holaaaa");
+
+      const instagramEvidence = packet.evidenceSources.find((source: { sourceKind: string; text: string }) =>
+        source.sourceKind === "instagram_dm_ui_export" && source.text.includes("nietomariacarolina")
+      );
+      expect(instagramEvidence.text).toContain("Conversation not opened");
+
+      expect(JSON.stringify(packet)).not.toContain("https://docs.google.com/private");
+      expect(JSON.stringify(packet)).not.toContain("other@example.com");
+      expect(JSON.stringify(packet)).not.toContain("/Users/");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

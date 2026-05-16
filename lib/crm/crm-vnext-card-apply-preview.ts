@@ -390,17 +390,41 @@ const evidenceFromStitching = (
   }));
 };
 
+const fallbackEvidenceFromDecision = (
+  decision: CrmCardWriteMergeDecision,
+  generatedAt: string,
+): PersonCardEvidence[] => {
+  const identityParts = [
+    decision.personHint.rawName ? `name ${decision.personHint.rawName}` : null,
+    decision.target.identities.email ? `email ${decision.target.identities.email}` : null,
+    decision.target.identities.instagramHandle ? `instagram @${decision.target.identities.instagramHandle}` : null,
+    decision.target.identities.phone ? `phone ${decision.target.identities.phone}` : null,
+  ].filter((value): value is string => Boolean(value));
+  if (!identityParts.length) return [];
+  return [{
+    source: 'crm-vnext-card-apply-preview:identity_hint',
+    observedAt: generatedAt,
+    note: cleanPublicText(`Review-card identity hint from supplied CRM evidence: ${identityParts.join(', ')}.`),
+  }];
+};
+
 const evidenceForDraft = (
   decision: CrmCardWriteMergeDecision,
   proposal: CrmMultiServiceCardProposal,
   stitchingClue: CrmDeepLocalStitchingClue | null,
   generatedAt: string,
-): PersonCardEvidence[] => unique([
-  ...evidenceFromProposal(proposal, generatedAt),
-  ...evidenceFromStitching(decision, stitchingClue, generatedAt),
-].map((evidence) => JSON.stringify(evidence)))
-  .map((item) => JSON.parse(item) as PersonCardEvidence)
-  .slice(0, 12);
+): PersonCardEvidence[] => {
+  const primaryEvidence = [
+    ...evidenceFromProposal(proposal, generatedAt),
+    ...evidenceFromStitching(decision, stitchingClue, generatedAt),
+  ];
+  return unique([
+    ...primaryEvidence,
+    ...(primaryEvidence.length ? [] : fallbackEvidenceFromDecision(decision, generatedAt)),
+  ].map((evidence) => JSON.stringify(evidence)))
+    .map((item) => JSON.parse(item) as PersonCardEvidence)
+    .slice(0, 12);
+};
 
 const emptyEvidenceDecisionSummary = (): CrmCardApplyPreviewItem['identityResolution']['evidenceDecisionSummary'] => ({
   confirmedSubjectEmails: [],
@@ -550,8 +574,12 @@ const displayNameForDraft = (
   decision: CrmCardWriteMergeDecision,
   stitchingClue: CrmDeepLocalStitchingClue | null,
 ): string | null => {
-  const hintedName = identityHintsFromStitching(decision, stitchingClue).displayName;
-  const targetName = decision.target.displayName;
+  const cleanDisplayName = (value: string | null | undefined): string | null =>
+    value ? cleanPublicText(value)
+      ?.replace(/\s*[|;:,-]+\s*$/g, '')
+      .trim() || null : null;
+  const hintedName = cleanDisplayName(identityHintsFromStitching(decision, stitchingClue).displayName);
+  const targetName = cleanDisplayName(decision.target.displayName);
   if (!hintedName) return targetName;
   if (!targetName || wordCount(targetName) < wordCount(hintedName)) return hintedName;
   return targetName;

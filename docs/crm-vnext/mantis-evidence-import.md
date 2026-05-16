@@ -33,6 +33,7 @@ The importer accepts both Mantis evidence hunt shapes:
 - contact-keyed CRM vNext reports with `contacts.{contact_key}` and `strongMatches` / `weakMatches`.
 - single-subject email ownership hunts with `subject`, `matches_confirmados`, `candidates_review_only`, `rejected_collisions`, `negative_findings`, and `recomendacion_final`.
 - Instagram Messages UI auth-rerun/complement-retry reports, including `recoveredHandle`, `threadDisplayName`, `compactContext`, discarded candidates, and explicit `locationEvidence` such as self-location city/country.
+- Gmail reply unmatched stitching reports with schema `mantis.crm_vnext.gmail_reply_unmatched_stitching.v1`, including reply metadata/snippets, MailerLite subscriber context, Instagram Messages UI search results, engagement signals, and discarded CRM candidates.
 
 For contact-keyed reports, the importer converts each contact into safe CRM fact text plus connected evidence packets. It preserves review-only family/companion emails as evidence context instead of treating them as primary identity approval.
 
@@ -47,6 +48,8 @@ Contact-keyed reports can also include `evidenceRecords`. The importer preserves
 - rejected or weak candidates that should stay review-only.
 
 The import remains read-only. Preserved context is not card-write approval by itself.
+
+For Gmail reply unmatched reports, the importer treats a human newsletter reply as high-value relationship evidence, not as automatic permission to write. It preserves the reply signal as `gmail_export` evidence, subscriber context as `mailerlite_export`, any Instagram Messages UI bridge as `instagram_dm_ui_export`, and the future warmth cue as local scoring context. Review-card confidence remains a selection hint only: the normal approval packet and `card-write-apply --write` gate are still required before local card creation.
 
 For email ownership hunts, the importer can now preserve a negative conclusion such as `keep_family_email_unassigned`: confirmed phone/identity evidence stays usable, family/shared email candidates remain review-only, rejected family-member emails become collision evidence, and the generated text explicitly says that no primary email is safe to assign. This is useful when Mantis searches Gmail, Drive, Contacts, MailerLite, and local reports and concludes that the clean next action is to ask the person directly.
 
