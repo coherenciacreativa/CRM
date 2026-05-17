@@ -275,16 +275,19 @@ const classifyStatement = (statement, sourceKind) => {
   if (/\b(onboarding|lead[-_ ]capture|saludo inicial|welcome|org[aá]nico exitoso|lleg[oó]|conoci[oó]|empez[oó] a seguir|agradeci[oó] el contacto)\b/.test(text)) {
     return 'origin_story';
   }
-  if (/\b(kamadhenu|vinculo|vínculo|relaci[oó]n|familia|amig[oa]|aliad[oa]|referencia)\b/.test(text)) {
+  if (/\b(kamadhenu|relationship context|vinculo|vínculo|relaci[oó]n|familia|amig[oa]|aliad[oa]|referencia|voluntari[oa]|companera|compañera|coherencia creativa)\b/.test(text)) {
     return 'relationship_context';
   }
   if (/\b(stories|story|react|reacciona|activa|engagement|coment[oó]|like|dm|mensaje)\b/.test(text)) {
     return 'engagement_context';
   }
+  if (/\b(life stage|age bracket|mayor de 50|jubilaci[oó]n|retiro laboral|profesional\/comunitario|mundo del arte)\b/.test(text)) {
+    return 'general_note';
+  }
   if (/\b(retiro|retreat|producto|curso|meditaci[oó]n|yoga|inversi[oó]n|compr[oó]|inter[eé]s|interesada|pregunt[oó])\b/.test(text)) {
     return 'product_interest';
   }
-  if (/\b(city|ciudad|country|pa[ií]s|bio includes|guatemala|colombia|m[eé]xico|alemania|medell[ií]n|bogot[aá])\b/.test(text)) {
+  if (/\b(city|ciudad|country|pa[ií]s|bio includes|guatemala|colombia|m[eé]xico|alemania|chile|c[uú]cuta|cucuteno|cucuteño|medell[ií]n|bogot[aá])\b/.test(text)) {
     return 'location_context';
   }
   if (/\b(tone|tono|preferences?|preferencias?|interests?|intereses?)\b/.test(text)) {

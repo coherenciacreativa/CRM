@@ -27,8 +27,11 @@ Compact markdown renders:
 - name / handle,
 - optional profile screenshot,
 - `Tenemos`,
+- short memory cues from existing evidence,
 - `Completar si recuerdas`,
 - `Respuesta libre`.
+
+Update 2026-05-17: compact sheets now include up to two short sanitized memory cues from existing evidence when available. This helps Alejandro recognize people from a newsletter reply or IG/onboarding clue without forcing him to inspect the full evidence packet.
 
 ## Screenshot Rule
 

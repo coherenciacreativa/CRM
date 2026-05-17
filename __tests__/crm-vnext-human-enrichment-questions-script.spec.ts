@@ -63,6 +63,23 @@ describe("CRM vNext human enrichment questions script", () => {
             evidence: [{ source: "test" }, { source: "test-2" }, { source: "test-3" }],
             nextAction: { code: "keep_warming" },
           },
+          {
+            personId: "email:reply@example.com",
+            displayName: "Reply Person",
+            identities: {
+              email: "reply@example.com",
+              instagramHandle: null,
+              instagramUserId: null,
+              phone: null,
+              city: null,
+              country: null,
+            },
+            products: {},
+            evidence: [{
+              source: "crm-vnext-deep-local-stitching:gmail_export",
+              note: "Reply signal 1 of 1 | From: Reply Person | Subject: Re: Una nota | Gracias Alejandro, esto me llegó justo hoy.",
+            }],
+          },
         ],
       }), "utf8");
 
@@ -91,7 +108,7 @@ describe("CRM vNext human enrichment questions script", () => {
         "--batch-loop-file",
         loopPath,
         "--person-id",
-        "ig:cielo_gom_g",
+        "ig:cielo_gom_g,email:reply@example.com",
         "--out",
         outPath,
         "--markdown-out",
@@ -101,7 +118,7 @@ describe("CRM vNext human enrichment questions script", () => {
       const packet = JSON.parse(await readFile(outPath, "utf8"));
       const markdown = await readFile(markdownPath, "utf8");
       expect(packet.summary).toMatchObject({
-        questions: 3,
+        questions: 4,
         highPriority: 1,
         operationsExecuted: 0,
         cardMutationReady: false,
@@ -110,11 +127,13 @@ describe("CRM vNext human enrichment questions script", () => {
         "ig:mayuyis2626",
         "ig:luzestellariatizabal",
         "ig:cielo_gom_g",
+        "email:reply@example.com",
       ]);
       expect(packet.questions[0].prompt).toContain("Que mas recuerdas");
       expect(packet.questions[0].known.identity).toContain("Telefono: 3115381341");
       expect(packet.questions[1].missingFields).toEqual(expect.arrayContaining(["card_missing"]));
       expect(packet.questions[2].subject.label).toBe("Cielo Gómez (@cielo_gom_g)");
+      expect(packet.questions[3].known.memoryCues[0]).toContain("Gracias Alejandro");
       expect(markdown).toContain("## 3. Cielo Gómez (@cielo_gom_g)");
       expect(JSON.stringify(packet)).not.toContain("/Users/");
     } finally {
@@ -295,6 +314,7 @@ describe("CRM vNext human enrichment questions script", () => {
                 "Ciudad: Bogotá",
               ],
               programs: ["Retiros: 1"],
+              memoryCues: ["Pista: Gracias Alejandro, esto me sirvio mucho."],
               evidenceCount: 4,
               nextAction: "keep_warming",
             },
@@ -335,6 +355,7 @@ describe("CRM vNext human enrichment questions script", () => {
       expect(markdown).toContain(screenshotPath);
       expect(markdown).toContain("Datos: Nombre: Cielo Gómez");
       expect(markdown).toContain("Email: cielotago@gmail.com");
+      expect(markdown).toContain("Pista: Gracias Alejandro");
       expect(markdown).toContain("Completar: telefono");
       expect(markdown).toContain("Respuesta libre:");
       expect(markdown).not.toContain("Suggested answer format");

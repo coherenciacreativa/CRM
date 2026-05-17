@@ -220,6 +220,59 @@ const knownProgramLines = (card) => {
   ].filter(Boolean);
 };
 
+const compactEvidenceCue = (note) => {
+  const text = cleanString(note);
+  if (!text) return null;
+  const explicitMessage = text.match(/\bMensaje:\s*([^|]{12,220})/i)?.[1];
+  if (explicitMessage) return `Mensaje: ${cleanString(explicitMessage)}`;
+  const snippet = text.match(/snippet includes [“"]([^”"]{8,180})[”"]/i)?.[1];
+  if (snippet) return `IG cue: ${cleanString(snippet)}`;
+  const notes = text.match(/\|\s*Notes:\s*([^|]{20,220})/i)?.[1];
+  if (notes) return `IG note: ${cleanString(notes)}`;
+  const finding = text.match(/\|\s*Finding:\s*([^|]{30,220})/i)?.[1];
+  if (finding) return `Evidence: ${cleanString(finding)}`;
+  const snippetMatch = text.match(/\|\s*([^|]{24,220})\s*\|?\s*$/);
+  const candidate = cleanString(snippetMatch?.[1]);
+  if (
+    candidate
+    && !/^review-card identity hint/i.test(candidate)
+    && !/^(groups|confidence|email|name|phone|city|country|from|subject)\s*:/i.test(candidate)
+  ) {
+    return candidate.length > 180 ? `${candidate.slice(0, 177).trim()}...` : candidate;
+  }
+  const subject = text.match(/\|\s*Subject:\s*([^|]{8,140})/i)?.[1];
+  if (subject) return `Reply subject: ${cleanString(subject)}`;
+  const campaign = text.match(/\bcampa[ñn]as?\s+([^|.]{8,180})/i)?.[1];
+  if (campaign) return `Email cue: ${cleanString(campaign)}`;
+  return null;
+};
+
+const memoryCueLines = (card) => {
+  if (!card || !Array.isArray(card.evidence)) return [];
+  const usableEvidence = card.evidence.filter((item) => {
+    const source = cleanString(item?.source)?.toLowerCase() ?? '';
+    const note = cleanString(item?.note)?.toLowerCase() ?? '';
+    return !source.includes('identity_hint')
+      && !note.startsWith('review-card identity hint')
+      && !note.includes('discarded crm candidate');
+  });
+  const preferred = usableEvidence.filter((item) => {
+    const source = cleanString(item?.source)?.toLowerCase() ?? '';
+    const note = cleanString(item?.note)?.toLowerCase() ?? '';
+    return source.includes('gmail')
+      || source.includes('instagram')
+      || note.includes('reply signal')
+      || note.includes('snippet')
+      || note.includes('mensaje');
+  });
+  const pool = preferred.length ? preferred : usableEvidence;
+  return unique(
+    pool
+      .map((item) => compactEvidenceCue(item?.note))
+      .filter(Boolean),
+  ).slice(0, 2).map((line) => `Pista: ${line}`);
+};
+
 const missingFieldLabels = (card, batchStatus) => {
   const missing = [];
   if (!card) return ['card_missing'];
@@ -316,6 +369,7 @@ const questionFor = (personId, card, batchStatus, index) => {
     known: {
       identity,
       programs,
+      memoryCues: memoryCueLines(card),
       evidenceCount: card?.evidence?.length ?? 0,
       nextAction: cleanString(card?.nextAction?.code),
     },
@@ -418,10 +472,11 @@ const compactKnownLines = (question) => {
   const lines = [
     ...question.known.identity,
     ...question.known.programs,
+    ...(question.known.memoryCues ?? []),
     question.known.evidenceCount ? `Fuentes/evidencias: ${question.known.evidenceCount}` : null,
     question.known.nextAction ? `Next action actual: ${question.known.nextAction}` : null,
   ].filter(Boolean);
-  return lines.length ? lines.slice(0, 8) : ['Sin datos seguros todavia'];
+  return lines.length ? lines.slice(0, 10) : ['Sin datos seguros todavia'];
 };
 
 const compactMissingLines = (question) => {

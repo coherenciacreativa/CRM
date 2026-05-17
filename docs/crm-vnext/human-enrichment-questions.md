@@ -50,8 +50,11 @@ Compact mode keeps the heavy evidence JSON intact but renders a shorter sheet:
 - person name / handle,
 - optional Instagram profile screenshot,
 - a short "Tenemos" list,
+- short memory cues from existing evidence when available, such as a sanitized reply snippet or IG/onboarding clue,
 - a short "Completar si recuerdas" list,
 - one freestyle response box.
+
+Use memory cues to help Alejandro recognize the person quickly. Keep them short and sanitized; this sheet should not become a long email or chat export.
 
 If Mantis has captured read-only Instagram profile screenshots, pass a manifest:
 
