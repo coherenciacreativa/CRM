@@ -311,6 +311,18 @@ Selection hygiene:
 
 Mantis still returns a normal contact-keyed evidence hunt JSON under `~/Documents/Mantis-Reports/`, then the usual import and batch operating loop continue.
 
+Before importing a Mantis evidence hunt as a completed batch, audit it against the original prompt:
+
+```bash
+npm run crm:vnext:mantis-batch-audit -- \
+  --expected-prompt-file ~/Documents/Mantis-Reports/<slug>_net_new_ig_origin_batch_prompt.json \
+  --report-file ~/Documents/Mantis-Reports/<mantis_evidence_hunt>.json \
+  --out ~/Documents/Mantis-Reports/<slug>_batch_audit.json \
+  --markdown-out ~/Documents/Mantis-Reports/<slug>_batch_audit.md
+```
+
+If the audit returns `partial_run` or `blocked_run`, use the generated retry prompt before continuing to import/review. This prevents a one-contact partial result from being treated as a five-contact batch.
+
 ## Instagram DM UI Bridge Fallback
 
 When a partial card has a confirmed email or phone but no Instagram handle, Mantis can try a read-only UI bridge:

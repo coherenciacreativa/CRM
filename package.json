@@ -33,6 +33,7 @@
     "crm:vnext:lead-capture-evidence": "node scripts/crm-vnext-lead-capture-evidence.mjs",
     "crm:vnext:instagram-dm-ui-evidence": "node scripts/crm-vnext-instagram-dm-ui-evidence.mjs",
     "crm:vnext:ig-origin-batch-prompt": "node scripts/crm-vnext-ig-origin-batch-prompt.mjs",
+    "crm:vnext:mantis-batch-audit": "node scripts/crm-vnext-mantis-batch-audit.mjs",
     "crm:vnext:mantis-evidence-import": "node scripts/crm-vnext-mantis-evidence-import.mjs",
     "crm:vnext:context-fact-proposals": "node scripts/crm-vnext-context-fact-proposals.mjs",
     "crm:vnext:context-fact-apply": "node scripts/crm-vnext-context-fact-apply.mjs",
