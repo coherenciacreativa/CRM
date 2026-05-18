@@ -293,4 +293,87 @@ describe("CRM vNext IG-origin batch prompt script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("can exclude recently touched fallback contacts while keeping older net-new candidates", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-ig-origin-prompt-recent-"));
+    try {
+      const cardStorePath = join(dir, "cards.json");
+      const ledgerPath = join(dir, "ledger.jsonl");
+      const contextLedgerPath = join(dir, "context-ledger.jsonl");
+      const outPath = join(dir, "packet.json");
+
+      await writeFile(cardStorePath, JSON.stringify({
+        cards: [
+          {
+            personId: "email:recent@example.com",
+            displayName: "Recent Contact",
+            identities: {
+              email: "recent@example.com",
+              instagramHandle: null,
+              phone: "+573001112233",
+            },
+            evidence: [
+              {
+                source: "crm-vnext-deep-local-stitching:lead_capture_export",
+                note: "Instagram onboarding via Vercel proxy.",
+              },
+            ],
+          },
+          {
+            personId: "email:older@example.com",
+            displayName: "Older Contact",
+            identities: {
+              email: "older@example.com",
+              instagramHandle: null,
+              phone: "+573004445566",
+            },
+            evidence: [
+              {
+                source: "crm-vnext-deep-local-stitching:lead_capture_export",
+                note: "Instagram onboarding via Vercel proxy.",
+              },
+            ],
+          },
+        ],
+      }), "utf8");
+
+      await writeFile(ledgerPath, [
+        JSON.stringify({
+          mutationKind: "upsert_vnext_card",
+          committedAt: "2026-05-17T00:00:00.000Z",
+          cardPersonId: "email:recent@example.com",
+        }),
+      ].join("\n"), "utf8");
+      await writeFile(contextLedgerPath, "", "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-ig-origin-batch-prompt.mjs",
+        "--card-store-path",
+        cardStorePath,
+        "--card-write-ledger-path",
+        ledgerPath,
+        "--context-fact-ledger-path",
+        contextLedgerPath,
+        "--exclude-recently-touched-days",
+        "7",
+        "--now",
+        "2026-05-18T00:00:00.000Z",
+        "--limit",
+        "5",
+        "--out",
+        outPath,
+      ], { cwd: process.cwd() });
+
+      const packet = JSON.parse(await readFile(outPath, "utf8"));
+
+      expect(packet.contacts.map((contact: { personId: string }) => contact.personId)).toEqual([
+        "email:older@example.com",
+      ]);
+      expect(packet.summary.excludedRecentlyTouchedFallbacks).toBe(1);
+      expect(packet.summary.recentTouchExclusionDays).toBe(7);
+      expect(packet.summary.recentTouchCutoff).toBe("2026-05-11T00:00:00.000Z");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 const SCHEMA_VERSION = 'crm-vnext-ig-origin-batch-prompt-2026-05-14';
 const DEFAULT_CARD_STORE_PATH = '.crm-vnext/person-card-store/person-cards-vnext.json';
 const DEFAULT_CARD_WRITE_LEDGER_PATH = '.crm-vnext/card-write-apply/ledger.jsonl';
+const DEFAULT_CONTEXT_FACT_LEDGER_PATH = '.crm-vnext/context-fact-apply/ledger.jsonl';
 const OWNED_OR_INTERNAL_HANDLES = new Set([
   'alejandro_gomez_bernal',
   'alejandrogomezbernal',
@@ -27,10 +28,15 @@ Options:
   --card-store-path <path>       Local vNext card store path. Defaults to ${DEFAULT_CARD_STORE_PATH}
   --card-write-ledger-path <path>
                                  Local card-write ledger JSONL path. Defaults to ${DEFAULT_CARD_WRITE_LEDGER_PATH}
+  --context-fact-ledger-path <path>
+                                 Local context-fact apply ledger JSONL path. Defaults to ${DEFAULT_CONTEXT_FACT_LEDGER_PATH} when recent-touch exclusion is enabled
+  --exclude-recently-touched-days <n>
+                                 Exclude fallback contacts touched in card-write/context-fact ledgers within n days
   --latest-writes <n>            Seed from the latest n unique committed upserted cards
   --person-id <id[,id]>          Include exact personId(s). May be repeated
   --limit <n>                    Maximum contacts to include. Defaults to 8
   --request <text>               Natural request to embed in the Mantis prompt
+  --now <iso>                    Override current time for deterministic reports/tests
   --out <path>                   Write JSON packet
   --markdown-out <path>          Write copy-ready Markdown prompt
   --help                         Show this help
@@ -41,10 +47,13 @@ const parseArgs = (argv) => {
   const options = {
     cardStorePath: DEFAULT_CARD_STORE_PATH,
     cardWriteLedgerPath: DEFAULT_CARD_WRITE_LEDGER_PATH,
+    contextFactLedgerPath: DEFAULT_CONTEXT_FACT_LEDGER_PATH,
+    excludeRecentlyTouchedDays: 0,
     latestWrites: null,
     personIds: [],
     limit: 8,
     request: 'Mantis, corre un batch CRM vNext IG-origin con contexto de hilo para estos contactos.',
+    now: null,
     out: null,
     markdownOut: null,
     help: false,
@@ -55,10 +64,13 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--card-store-path') options.cardStorePath = argv[++index];
     else if (arg === '--card-write-ledger-path') options.cardWriteLedgerPath = argv[++index];
+    else if (arg === '--context-fact-ledger-path') options.contextFactLedgerPath = argv[++index];
+    else if (arg === '--exclude-recently-touched-days') options.excludeRecentlyTouchedDays = Number(argv[++index]);
     else if (arg === '--latest-writes') options.latestWrites = Number(argv[++index]);
     else if (arg === '--person-id') options.personIds.push(...argv[++index].split(','));
     else if (arg === '--limit') options.limit = Number(argv[++index]);
     else if (arg === '--request') options.request = argv[++index];
+    else if (arg === '--now') options.now = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -68,6 +80,13 @@ const parseArgs = (argv) => {
   if (options.latestWrites !== null && (!Number.isInteger(options.latestWrites) || options.latestWrites < 1)) {
     throw new Error('invalid_latest_writes');
   }
+  if (
+    !Number.isFinite(options.excludeRecentlyTouchedDays)
+    || options.excludeRecentlyTouchedDays < 0
+  ) {
+    throw new Error('invalid_exclude_recently_touched_days');
+  }
+  if (options.now && Number.isNaN(new Date(options.now).getTime())) throw new Error('invalid_now');
   return options;
 };
 
@@ -84,7 +103,13 @@ const cleanString = (value) => {
 const readJson = async (filePath) => JSON.parse(await readFile(resolve(filePath), 'utf8'));
 
 const readJsonl = async (filePath) => {
-  const raw = await readFile(resolve(filePath), 'utf8');
+  if (!filePath) return [];
+  let raw = '';
+  try {
+    raw = await readFile(resolve(filePath), 'utf8');
+  } catch {
+    return [];
+  }
   return raw
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -105,6 +130,44 @@ const latestPersonIdsFromLedger = (entries, count) => {
     if (selected.length >= count) break;
   }
   return selected;
+};
+
+const ledgerPersonId = (entry) =>
+  cleanString(entry?.cardPersonId)
+  ?? cleanString(entry?.targetPersonId)
+  ?? cleanString(entry?.personId);
+
+const recentTouchedPersonIds = ({ cardWriteEntries, contextFactEntries, days, now }) => {
+  if (!days) {
+    return {
+      cutoffIso: null,
+      personIds: new Set(),
+      sources: {
+        cardWriteLedgerEntries: 0,
+        contextFactLedgerEntries: 0,
+      },
+    };
+  }
+  const nowDate = new Date(now);
+  const cutoffMs = nowDate.getTime() - days * 24 * 60 * 60 * 1000;
+  const personIds = new Set();
+  const includeEntry = (entry) => {
+    const committedAt = cleanString(entry?.committedAt);
+    const committedMs = committedAt ? new Date(committedAt).getTime() : Number.NaN;
+    if (Number.isNaN(committedMs) || committedMs < cutoffMs) return;
+    const personId = ledgerPersonId(entry);
+    if (personId) personIds.add(personId);
+  };
+  for (const entry of cardWriteEntries) includeEntry(entry);
+  for (const entry of contextFactEntries) includeEntry(entry);
+  return {
+    cutoffIso: new Date(cutoffMs).toISOString(),
+    personIds,
+    sources: {
+      cardWriteLedgerEntries: cardWriteEntries.length,
+      contextFactLedgerEntries: contextFactEntries.length,
+    },
+  };
 };
 
 const normalizeHandle = (value) => cleanString(value)?.replace(/^@+/, '').toLowerCase() ?? null;
@@ -333,17 +396,29 @@ const buildMarkdown = (packet) => [
   '',
 ].join('\n');
 
-const buildPacket = ({ cards, ledgerEntries, options, now }) => {
+const buildPacket = ({ cards, ledgerEntries, contextFactEntries, options, now }) => {
   const cardsById = new Map(cards.map((card) => [cleanString(card.personId), card]));
   const latestIds = latestPersonIdsFromLedger(ledgerEntries, options.latestWrites);
   const explicitIds = options.personIds.map(cleanString).filter(Boolean);
   const seededIds = unique([...explicitIds, ...latestIds]);
   const seededCards = seededIds.map((id) => cardsById.get(id)).filter(Boolean);
   const seededIdSet = new Set(seededIds);
+  const recentTouch = recentTouchedPersonIds({
+    cardWriteEntries: ledgerEntries,
+    contextFactEntries,
+    days: options.excludeRecentlyTouchedDays,
+    now,
+  });
   const fallbackCards = cards
     .filter((card) => isFallbackEligible(card))
     .filter((card) => !seededIdSet.has(cleanString(card.personId)))
+    .filter((card) => !recentTouch.personIds.has(cleanString(card.personId)))
     .sort((a, b) => priorityFor(b, -1) - priorityFor(a, -1));
+  const excludedRecentFallbackCards = cards.filter((card) =>
+    isFallbackEligible(card)
+    && !seededIdSet.has(cleanString(card.personId))
+    && recentTouch.personIds.has(cleanString(card.personId))
+  );
   const excludedFallbackCards = cards.filter((card) =>
     isIgOrigin(card)
     && !isFallbackEligible(card)
@@ -373,6 +448,10 @@ const buildPacket = ({ cards, ledgerEntries, options, now }) => {
       latestWriteSeeds: latestIds.length,
       explicitSeeds: explicitIds.length,
       excludedLowSignalFallbacks: excludedFallbackCards.length,
+      excludedRecentlyTouchedFallbacks: excludedRecentFallbackCards.length,
+      recentTouchExclusionDays: options.excludeRecentlyTouchedDays,
+      recentTouchCutoff: recentTouch.cutoffIso,
+      recentTouchSources: recentTouch.sources,
       operationsExecuted: 0,
       cardMutationReady: false,
     },
@@ -404,11 +483,14 @@ const main = async () => {
   const cardStore = await readJson(options.cardStorePath);
   const cards = Array.isArray(cardStore?.cards) ? cardStore.cards : [];
   const ledgerEntries = await readJsonl(options.cardWriteLedgerPath);
+  const contextFactEntries = await readJsonl(options.contextFactLedgerPath);
+  const now = options.now ? new Date(options.now).toISOString() : new Date().toISOString();
   const packet = buildPacket({
     cards,
     ledgerEntries,
+    contextFactEntries,
     options,
-    now: new Date().toISOString(),
+    now,
   });
 
   if (options.out) {

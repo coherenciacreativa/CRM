@@ -283,6 +283,16 @@ npm run crm:vnext:ig-origin-batch-prompt -- \
   --markdown-out ~/Documents/Mantis-Reports/<slug>_ig_origin_batch_prompt.md
 ```
 
+For a genuinely net-new batch, add recent-touch exclusion so Mantis does not keep circling the same cards just because some fields remain blank:
+
+```bash
+npm run crm:vnext:ig-origin-batch-prompt -- \
+  --exclude-recently-touched-days 7 \
+  --limit 8 \
+  --out tmp/crm-vnext/<slug>_net_new_ig_origin_batch_prompt.json \
+  --markdown-out ~/Documents/Mantis-Reports/<slug>_net_new_ig_origin_batch_prompt.md
+```
+
 The packet prioritizes likely Instagram/onboarding contacts, missing identity fields, recent writes, and low-context cards. The Markdown output is copy-ready for the CRM Telegram group with Mantis. It asks for:
 
 - lead-capture / ManyChat / proxy / Vercel / MailerLite / local evidence,
@@ -297,6 +307,7 @@ Selection hygiene:
 - Generic IG-only signals such as a bare `lead-state`, `ig-ui-signals-state`, or `ig-api-inbox-snapshot` card with no note, name, email, phone, city, or country should not become an automatic batch candidate.
 - Owned/internal handles such as Alejandro's own accounts should not enter fallback batches.
 - Low-signal IG handles can still be investigated when Alejandro names them explicitly, but they should not crowd out stronger evidence candidates.
+- For net-new exploration, recently touched fallback cards can be excluded with `--exclude-recently-touched-days`; explicit `--person-id` contacts and deliberate `--latest-writes` runs still take precedence.
 
 Mantis still returns a normal contact-keyed evidence hunt JSON under `~/Documents/Mantis-Reports/`, then the usual import and batch operating loop continue.
 

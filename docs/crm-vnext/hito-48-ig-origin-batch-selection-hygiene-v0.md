@@ -18,6 +18,19 @@ That is not the kind of batch Mantis should spend attention on. A batch should f
 - owned/internal handles are excluded from fallback batches,
 - richer evidence cards get a priority boost,
 - low-signal IG-only cards can still be included when explicitly requested.
+- optional recent-touch exclusion can now remove fallback contacts that were already touched in the card-write or context-fact ledgers within a configured window.
+
+For net-new batches, use:
+
+```bash
+npm run crm:vnext:ig-origin-batch-prompt -- \
+  --exclude-recently-touched-days 7 \
+  --limit 8 \
+  --out ~/Documents/Mantis-Reports/<slug>.json \
+  --markdown-out ~/Documents/Mantis-Reports/<slug>.md
+```
+
+Explicit `--person-id` and `--latest-writes` seeds still override this behavior; the exclusion is only for fallback auto-selection.
 
 ## Real Output
 
