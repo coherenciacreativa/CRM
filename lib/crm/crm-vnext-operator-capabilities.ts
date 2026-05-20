@@ -944,6 +944,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "mailerlite_healthcheck",
+    command: "npm run crm:vnext:mailerlite-healthcheck",
+    purpose: "Check the CRM MailerLite read-only evidence lane without printing subscriber rows or credentials.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Verifies credential presence, groups read, subscribers read, and cursor pagination.",
+      "Use --out and --markdown-out to write a local report under Documents/Mantis-Reports.",
+      "Use --fail-on-blocked when a source-recovery preflight should pause on 401, missing credentials, or rate limits.",
+      "Does not print subscriber emails, names, fields, groups, notes, tokens, or credentials and never mutates MailerLite.",
+    ],
+  },
+  {
     id: "contacts_evidence_helper",
     command: "npm run crm:vnext:contacts-evidence -- --use-macos-contacts-db --text <text>",
     purpose: "Plan and collect read-only Contacts evidence for missing phone, email, or handle fields.",

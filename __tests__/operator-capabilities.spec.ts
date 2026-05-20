@@ -79,6 +79,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:identity-stitching-research -- --text <text>",
       "npm run crm:vnext:gmail-evidence -- --text <text>",
       "npm run crm:vnext:gog-healthcheck",
+      "npm run crm:vnext:mailerlite-healthcheck",
       "npm run crm:vnext:contacts-evidence -- --use-macos-contacts-db --text <text>",
       "npm run crm:vnext:mailerlite-evidence -- --text <text>",
       "npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <json>",
