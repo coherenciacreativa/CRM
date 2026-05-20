@@ -1,7 +1,7 @@
 # CRM vNext - Gmail/OpenClaw Auth Stability Backlog
 
 Date: 2026-05-10
-Status: Repaired again on 2026-05-21 with local healthcheck tooling
+Status: Repaired again on 2026-05-21 with local healthcheck tooling and OAuth app production mode
 
 ## Context
 
@@ -61,10 +61,17 @@ This is an infrastructure/auth reliability issue, not a CRM data-model issue.
   - Docs metadata,
   - Drive spreadsheet search,
   - Sheets metadata.
+- Google Auth Platform for project `807471998270` showed publishing status `Testing`, user type `External`, with `saludoalsol@gmail.com` as a test user.
+- After explicit human approval, the app was moved to `In production` to remove the Testing-mode seven-day refresh-token pattern.
+- `Make internal` was visible but disabled in Google Cloud Console, so this remains an external OAuth app used as private local infrastructure.
+- Privacy policy for this CRM use: do not distribute the OAuth flow or client config; keep local credential files and refresh tokens private; use only for Alejandro's Mantis/OpenClaw/Codex CRM evidence work.
+- Post-publish healthcheck passed 8/8 checks with zero blockers:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_vnext_gog_healthcheck_after_publish_2026-05-21.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_vnext_gog_healthcheck_after_publish_2026-05-21.md`
 
 Likely causes to verify later:
 
-- Google OAuth app may be in Testing mode, where offline refresh tokens can expire after 7 days.
+- Google OAuth app may be in Testing mode, where offline refresh tokens can expire after 7 days. This was addressed on 2026-05-21 by moving the app to `In production`; watch whether the failure pattern stops.
 - Some required APIs may be disabled in the OAuth project, even after the user token itself is valid.
 - Historical `gog` token had broad scopes, including Gmail/Contacts/Drive/Calendar/Sheets and write-capable Gmail scopes; the 2026-05-11 reauth narrowed this for CRM evidence work.
 - The local token store/keyring may not be refreshing or persisting the expected refresh token cleanly.
@@ -75,6 +82,10 @@ Google's OAuth docs explicitly say refresh tokens can stop working because of us
 ## Recommended Future Fix
 
 Do not build CRM runtime directly on an unmonitored OpenClaw Gmail token.
+
+Operational runbook:
+
+- `docs/crm-vnext/gog-auth-stability-runbook.md`
 
 Preferred route:
 
