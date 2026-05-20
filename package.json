@@ -27,6 +27,7 @@
     "crm:vnext:activation-run": "node scripts/crm-vnext-activation-run.mjs",
     "crm:vnext:identity-stitching-research": "node scripts/crm-vnext-identity-stitching-research.mjs",
     "crm:vnext:gmail-evidence": "node scripts/crm-vnext-gmail-evidence.mjs",
+    "crm:vnext:gog-healthcheck": "node scripts/crm-vnext-gog-healthcheck.mjs",
     "crm:vnext:contacts-evidence": "node scripts/crm-vnext-contacts-evidence.mjs",
     "crm:vnext:mailerlite-evidence": "node scripts/crm-vnext-mailerlite-evidence.mjs",
     "crm:vnext:google-drive-evidence": "node scripts/crm-vnext-google-drive-evidence.mjs",

@@ -22,6 +22,8 @@ Mantis must search official-flow sources before escalating to Alejandro:
 - lead-capture ledgers, local reports, CSVs/downloads;
 - Gmail, Drive, and Contacts when they are useful and available.
 
+Before running the full recovery hunt, Mantis should run a source-health preflight for the official-flow lanes that matter for the named contacts. If MailerLite, gog/Google Workspace, Instagram Messages UI, or another required lane is blocked, the correct state is `awaiting_human_unblock` with pending anchors and exact unblock action. Mantis should not close a final degraded evidence report unless Alejandro explicitly authorizes a degraded run or the blocked lane is not needed for the batch.
+
 ## Operator Output
 
 The follow-up evidence hunt should be contact-keyed and include:

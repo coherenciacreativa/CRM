@@ -1,7 +1,7 @@
 # CRM vNext - Gmail/OpenClaw Auth Stability Backlog
 
 Date: 2026-05-10
-Status: Partially repaired on 2026-05-11, still not blocking current CRM build
+Status: Repaired again on 2026-05-21 with local healthcheck tooling
 
 ## Context
 
@@ -41,6 +41,27 @@ This is an infrastructure/auth reliability issue, not a CRM data-model issue.
   - Docs metadata,
   - Sheets metadata.
 
+2026-05-21 update:
+
+- `gog` token for `saludoalsol@gmail.com` failed again with `invalid_grant` during the Yoga Golden Cohort source-health preflight.
+- Reauthorized with the same read-only service set:
+  - Gmail readonly,
+  - Drive readonly,
+  - Docs readonly,
+  - Sheets readonly,
+  - Contacts/People readonly,
+  - OIDC profile/email.
+- Added `npm run crm:vnext:gog-healthcheck` as a reusable no-content smoke check for Mantis/OpenClaw Google Workspace evidence lanes.
+- Live smoke check passed after reauth:
+  - token exchange,
+  - People profile endpoint,
+  - Gmail thread search,
+  - Contacts list,
+  - Drive document search,
+  - Docs metadata,
+  - Drive spreadsheet search,
+  - Sheets metadata.
+
 Likely causes to verify later:
 
 - Google OAuth app may be in Testing mode, where offline refresh tokens can expire after 7 days.
@@ -48,6 +69,8 @@ Likely causes to verify later:
 - Historical `gog` token had broad scopes, including Gmail/Contacts/Drive/Calendar/Sheets and write-capable Gmail scopes; the 2026-05-11 reauth narrowed this for CRM evidence work.
 - The local token store/keyring may not be refreshing or persisting the expected refresh token cleanly.
 - Codex Gmail and OpenClaw/gog use separate OAuth clients/token stores, so one can work while the other is broken.
+
+Google's OAuth docs explicitly say refresh tokens can stop working because of user revocation, six months of inactivity, password changes when Gmail scopes are present, token limits, time-bound access/admin policies, or External + Testing OAuth consent screens that issue seven-day refresh tokens for non-profile scopes. Reference: https://developers.google.com/identity/protocols/oauth2#expiration
 
 ## Recommended Future Fix
 
@@ -75,6 +98,16 @@ gog auth add saludoalsol@gmail.com \
 ```
 
 Current smoke probes should verify token validity plus read-only access for Gmail, Drive, Contacts, Docs, and Sheets without printing personal content.
+
+Reusable healthcheck:
+
+```bash
+npm run crm:vnext:gog-healthcheck -- \
+  --account saludoalsol@gmail.com \
+  --out ~/Documents/Mantis-Reports/crm_vnext_gog_healthcheck_<date>.json \
+  --markdown-out ~/Documents/Mantis-Reports/crm_vnext_gog_healthcheck_<date>.md \
+  --fail-on-blocked
+```
 
 ## Near-Term Policy
 

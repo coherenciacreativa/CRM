@@ -503,6 +503,8 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     notes: [
       "Combines Evidence Approval Workbench, Card Write Approval Packet, and Card Write Apply dry-run.",
       "For natural Mantis requests, first follow docs/crm-vnext/mantis-natural-batch-protocol.md to produce contact-keyed evidence JSON.",
+      "Before serious stitching/source-recovery hunts, run the protocol's source-health preflight for needed high-value lanes such as MailerLite, gog/Google Workspace, and Instagram Messages UI.",
+      "If a required high-value lane is blocked, pause into awaiting_human_unblock with pending anchors and exact unblock action; do not close a degraded final report unless Alejandro explicitly approves proceeding degraded or the lane is not needed.",
       "Natural 'otro batch' requests should usually be a mixed portfolio: mostly net-new discovery, with a smaller known-open-loop cleanup portion unless Alejandro names a known group.",
       "Creates a blocked identity queue with recommended read-only search lanes and copy-ready prompts for Mantis.",
       "If a contact remains ask_alejandro because email, phone, handle, city, country, or origin/context is missing, run a bounded Instagram Messages UI complement when there is a plausible search anchor, or record why that lane was skipped.",
@@ -928,6 +930,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "gog_healthcheck",
+    command: "npm run crm:vnext:gog-healthcheck",
+    purpose: "Check Mantis/OpenClaw Google Workspace read-only evidence lanes without printing personal content.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Verifies token exchange plus People, Gmail, Contacts, Drive, Docs, and Sheets access.",
+      "Use --out and --markdown-out to write a local report under Documents/Mantis-Reports.",
+      "Use --fail-on-blocked when a source-recovery preflight should pause on invalid_grant, missing APIs, or insufficient scopes.",
+      "Does not print Gmail, Drive, Docs, Sheets, or Contacts content and never mutates Google data.",
+    ],
+  },
+  {
     id: "contacts_evidence_helper",
     command: "npm run crm:vnext:contacts-evidence -- --use-macos-contacts-db --text <text>",
     purpose: "Plan and collect read-only Contacts evidence for missing phone, email, or handle fields.",
@@ -1217,6 +1233,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
       "Default mode writes nothing; --out may save the compact local report.",
       "Use when Alejandro says natural things like 'probemos un batch nuevo'.",
       "If Mantis is doing the hunt, ask her to follow docs/crm-vnext/mantis-natural-batch-protocol.md and save contact-keyed JSON under Documents/Mantis-Reports.",
+      "The protocol now requires source-health preflight for needed high-value lanes before accepting a final source-recovery/stitching report.",
       "Use the Batch Portfolio Rule in that protocol so recurring known contacts do not crowd out net-new community discovery.",
       "Returns operator prompts for blocked identity cases so Mantis can search Contacts, MailerLite, Gmail, Drive, lead-capture traces, and exports read-only.",
       "Before asking Alejandro for missing identity/contact fields, run a second-pass high-value source complement such as Instagram Messages UI when it is already authenticated and the contact has a useful search anchor.",
@@ -1443,6 +1460,12 @@ const escalationTriggers: CrmVNextOperatorEscalationTrigger[] = [
     exactUnblockActionNeeded: "Ask Alejandro to authenticate/select the saved Instagram profile or allow Relay/browser access, then confirm with 'listo, reintenta'.",
   },
   {
+    code: "source_recovery_preflight_blocked",
+    alertAlejandro: true,
+    description: "A serious source-recovery or stitching batch depends on a high-value lane that is blocked, so a final degraded report would be misleading.",
+    exactUnblockActionNeeded: "Ask Alejandro to unlock the named source or explicitly approve a degraded run before closing the batch.",
+  },
+  {
     code: "notify_queue_present",
     alertAlejandro: true,
     description: "A notify-level CRM queue means the system should prepare a decision brief instead of taking action.",
@@ -1492,8 +1515,8 @@ export const buildCrmVNextOperatorCapabilities = (
         step: 3,
         id: "read_source_ledger",
         action: "Check which sources are fresh, stale, blocked, or coverage-limited.",
-        use: "/api/crm-vnext/source-ledger",
-        stopCondition: "If the next step needs credentials or live APIs, stop and request approval.",
+        use: "/api/crm-vnext/source-ledger plus docs/crm-vnext/mantis-natural-batch-protocol.md source-health preflight",
+        stopCondition: "If a required stitching/source-recovery lane is blocked, pause into awaiting_human_unblock instead of closing a degraded final report.",
       },
       {
         step: 4,

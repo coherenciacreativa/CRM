@@ -28,12 +28,57 @@ When Mantis receives a natural CRM batch request, she should:
    - if Alejandro names people, use those people;
    - if Alejandro gives a source, sample that source;
    - if Alejandro only says "probemos otro batch", select 3 to 10 useful candidates from recent CRM queues, retreat lists, lead-capture traces, Juana reports, Instagram-memory reports, MailerLite groups, or other local evidence.
-4. Search available sources read-only.
-5. If a source is blocked by auth, permissions, or stale credentials, record the blocker and keep going with the sources that are available.
-6. Save one contact-keyed JSON report under `~/Documents/Mantis-Reports/`.
-7. Reply to Alejandro/Codex with a concise summary, the saved file path, and the exact blockers if any.
+4. Run a source-health preflight for the high-value lanes the batch depends on.
+5. If a required high-value lane is blocked by auth, permissions, stale credentials, login, Relay, checkpoint, or connector failure, pause into `awaiting_human_unblock` before the final batch run. Ask Alejandro for the exact unblock action and keep the pending anchors. Do not close a degraded final report unless Alejandro explicitly says to proceed degraded or the blocked lane is not needed for this batch.
+6. Search available sources read-only after the preflight is green or explicitly waived.
+7. Save one contact-keyed JSON report under `~/Documents/Mantis-Reports/`.
+8. Reply to Alejandro/Codex with a concise summary, the saved file path, and the exact blockers if any.
 
 Mantis should not create person cards, mutate Fact Store, touch ManyChat LIVE, alter credentials, refresh OAuth, change Instagram permissions, update MailerLite, or send outbound messages from this protocol.
+
+## Source-Health Preflight Gate
+
+Before a serious stitching/source-recovery batch, Mantis should quickly classify source health for the lanes that materially affect the batch:
+
+- `mailerlite_cursor_scan`
+- `google_workspace_gog` for Gmail, Drive, Docs, Sheets, and Contacts
+- `instagram_messages_ui`
+- `local_card_store`
+- `local_reports_ledgers`
+- any specific source named by Alejandro, such as ClassBot evidence, retreat sheets, ManyChat/proxy traces, or Gmail replies
+
+The preflight is not a full evidence hunt. It is a short readiness check that answers:
+
+- is the source needed for this batch?
+- is it available now?
+- if blocked, what exact human action unlocks it?
+- which contact/search anchors would be lost if we proceed without it?
+
+If a needed high-value source is blocked, the expected state is:
+
+```json
+{
+  "status": "awaiting_human_unblock",
+  "blockedSources": [
+    {
+      "source": "instagram_messages_ui",
+      "reason": "login_required",
+      "unblockAction": "Open Instagram in the authenticated Chrome/Relay profile, select the saved profile if prompted, then reply: listo, reintenta.",
+      "pendingAnchors": ["@juana_og", "Sebastián Bernal", "bibivelandiar"]
+    }
+  ],
+  "degradedRunAllowed": false
+}
+```
+
+Mantis may continue degraded only when one of these is true:
+
+- Alejandro explicitly approves a degraded run;
+- the blocked source is low-value for the current contacts;
+- a local cached/exported equivalent provides enough evidence;
+- the run is explicitly labeled as an interim blocker report, not a final evidence hunt.
+
+This gate exists because a clean-looking report with MailerLite, gog, or Instagram UI unavailable can hide the most important evidence. The operator should spend Alejandro's attention on unblocking the source, not on reviewing avoidably incomplete questions.
 
 ## Batch Portfolio Rule
 

@@ -15,6 +15,14 @@ CRM vNext has enough stitching infrastructure that Mantis can now run real batch
 
 `docs/crm-vnext/mantis-natural-batch-protocol.md` now includes two new rules.
 
+### Source-Health Preflight Gate
+
+Before a serious stitching/source-recovery batch, Mantis should run a short source-health preflight for the high-value lanes the batch depends on: MailerLite cursor scan, gog/Google Workspace, Instagram Messages UI, local card store, local reports/ledgers, and any source Alejandro named.
+
+If a required lane is blocked by login, Relay, stale OAuth, connector auth, permission, checkpoint, CAPTCHA, or another human action, Mantis should pause into `awaiting_human_unblock` and ask Alejandro for the exact unblock action before closing a final batch report.
+
+Degraded final reports are allowed only when Alejandro explicitly approves proceeding degraded, the blocked lane is not needed for the batch, or a local cached/exported equivalent is enough.
+
 ### Batch Portfolio Rule
 
 Natural requests like "probemos otro batch" should not default to the same contacts already worked many times.
@@ -72,3 +80,4 @@ Mantis should now do two things better:
 1. Before escalating missing fields to Alejandro, check whether a known high-value lane can close the gap.
 2. When asked for another batch, keep opening new surface area in the community instead of only revisiting the same model cases.
 3. Treat auth/Relay/browser blockers as actionable human-unblock states, not as a reason to finish early.
+4. Run source-health preflight before expensive stitching work so an incomplete final report does not look more authoritative than it is.

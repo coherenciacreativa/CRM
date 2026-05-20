@@ -78,6 +78,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:activation-run -- --text <text>",
       "npm run crm:vnext:identity-stitching-research -- --text <text>",
       "npm run crm:vnext:gmail-evidence -- --text <text>",
+      "npm run crm:vnext:gog-healthcheck",
       "npm run crm:vnext:contacts-evidence -- --use-macos-contacts-db --text <text>",
       "npm run crm:vnext:mailerlite-evidence -- --text <text>",
       "npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <json>",
@@ -147,8 +148,10 @@ describe("buildCrmVNextOperatorCapabilities", () => {
 
     expect(capabilities.guardrails.map((guardrail) => guardrail.code)).toContain("do_not_touch_manychat_live");
     expect(capabilities.escalationTriggers.map((trigger) => trigger.code)).toContain("credential_or_permission_refresh");
+    expect(capabilities.escalationTriggers.map((trigger) => trigger.code)).toContain("source_recovery_preflight_blocked");
     expect(capabilities.escalationTriggers.every((trigger) => trigger.alertAlejandro === true)).toBe(true);
     expect(serialized).toContain("docs/crm-vnext/mantis-natural-batch-protocol.md");
+    expect(serialized).toContain("source-health preflight");
     expect(serialized).toContain("contact-keyed evidence JSON");
     expect(serialized).not.toContain("/Users/");
     expect(serialized).not.toContain(".openclaw");

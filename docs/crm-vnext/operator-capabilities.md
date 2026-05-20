@@ -25,41 +25,42 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 1. Read `GET /api/crm-vnext/operator-capabilities`.
 2. Read `GET /api/crm-vnext/readiness`.
 3. Read `GET /api/crm-vnext/source-ledger`.
-4. Preview new human/source reports with `POST /api/crm-vnext/fact-intake`.
-5. Store approved facts with `POST /api/crm-vnext/fact-store`.
-6. Run a safe full preview with `POST /api/crm-vnext/activation-run`.
-7. Research unmatched or name-only clues with `POST /api/crm-vnext/identity-stitching-research`.
-8. Plan Gmail evidence and convert supplied read-only results with `POST /api/crm-vnext/gmail-evidence-helper`.
-9. Plan Contacts evidence and convert read-only results with `POST /api/crm-vnext/contacts-evidence-helper`.
-10. Plan MailerLite evidence and convert read-only subscriber results with `POST /api/crm-vnext/mailerlite-evidence-helper`.
-11. Plan Google Drive/Docs/Sheets evidence and convert supplied read-only rows with `POST /api/crm-vnext/google-drive-evidence-helper`.
-12. Plan lead-capture evidence from ManyChat/CRM webhook/Vercel/WhatsApp traces with `POST /api/crm-vnext/lead-capture-evidence-helper`.
-13. Convert rich supplied evidence into context/fact promotion proposals with `npm run crm:vnext:context-fact-proposals -- --evidence-file <json>`.
-14. Apply explicitly approved context/fact proposals with `npm run crm:vnext:context-fact-apply -- --proposal-file <json> --proposal-id <id> --approved-by <name> --write`.
-15. Search safe local and connected evidence with `POST /api/crm-vnext/deep-local-stitching`.
-16. Build a multi-service card proposal with `POST /api/crm-vnext/multi-service-card-proposal`.
-17. Evaluate create/enrich/merge/defer policy with `POST /api/crm-vnext/card-write-merge-policy`.
-18. Preview exact hypothetical card operations with `POST /api/crm-vnext/card-apply-preview`, including already-approved evidence decisions when a ledger is supplied.
-19. Prepare focused evidence questions with `POST /api/crm-vnext/evidence-review-packet`, skipping questions already resolved in the decision ledger.
-20. Queue unresolved evidence questions with `POST /api/crm-vnext/evidence-approval-workbench`.
-21. Store Alejandro-approved evidence answers with `POST /api/crm-vnext/evidence-review-decisions`.
-22. Apply approved evidence decisions and rerun before/after approval packets with `POST /api/crm-vnext/evidence-approval-application`.
-23. Run one standard batch loop with `POST /api/crm-vnext/batch-operating-loop`.
-24. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
-25. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
-26. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
-27. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
-28. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
-29. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
-30. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-31. Review stored facts with `GET /api/crm-vnext/identity-review`.
-32. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-33. Read `GET /api/crm-vnext/community-daily-brief`.
-34. If needed, read `GET /api/crm-vnext/community-queues`.
-35. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-36. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-37. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-38. Ask for approval if the next move would touch an external channel.
+4. For stitching/source-recovery batches, run the Mantis Natural Batch Protocol source-health preflight before accepting a final evidence hunt.
+5. Preview new human/source reports with `POST /api/crm-vnext/fact-intake`.
+6. Store approved facts with `POST /api/crm-vnext/fact-store`.
+7. Run a safe full preview with `POST /api/crm-vnext/activation-run`.
+8. Research unmatched or name-only clues with `POST /api/crm-vnext/identity-stitching-research`.
+9. Plan Gmail evidence and convert supplied read-only results with `POST /api/crm-vnext/gmail-evidence-helper`.
+10. Plan Contacts evidence and convert read-only results with `POST /api/crm-vnext/contacts-evidence-helper`.
+11. Plan MailerLite evidence and convert read-only subscriber results with `POST /api/crm-vnext/mailerlite-evidence-helper`.
+12. Plan Google Drive/Docs/Sheets evidence and convert supplied read-only rows with `POST /api/crm-vnext/google-drive-evidence-helper`.
+13. Plan lead-capture evidence from ManyChat/CRM webhook/Vercel/WhatsApp traces with `POST /api/crm-vnext/lead-capture-evidence-helper`.
+14. Convert rich supplied evidence into context/fact promotion proposals with `npm run crm:vnext:context-fact-proposals -- --evidence-file <json>`.
+15. Apply explicitly approved context/fact proposals with `npm run crm:vnext:context-fact-apply -- --proposal-file <json> --proposal-id <id> --approved-by <name> --write`.
+16. Search safe local and connected evidence with `POST /api/crm-vnext/deep-local-stitching`.
+17. Build a multi-service card proposal with `POST /api/crm-vnext/multi-service-card-proposal`.
+18. Evaluate create/enrich/merge/defer policy with `POST /api/crm-vnext/card-write-merge-policy`.
+19. Preview exact hypothetical card operations with `POST /api/crm-vnext/card-apply-preview`, including already-approved evidence decisions when a ledger is supplied.
+20. Prepare focused evidence questions with `POST /api/crm-vnext/evidence-review-packet`, skipping questions already resolved in the decision ledger.
+21. Queue unresolved evidence questions with `POST /api/crm-vnext/evidence-approval-workbench`.
+22. Store Alejandro-approved evidence answers with `POST /api/crm-vnext/evidence-review-decisions`.
+23. Apply approved evidence decisions and rerun before/after approval packets with `POST /api/crm-vnext/evidence-approval-application`.
+24. Run one standard batch loop with `POST /api/crm-vnext/batch-operating-loop`.
+25. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
+26. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
+27. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
+28. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
+29. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
+30. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
+31. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+32. Review stored facts with `GET /api/crm-vnext/identity-review`.
+33. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+34. Read `GET /api/crm-vnext/community-daily-brief`.
+35. If needed, read `GET /api/crm-vnext/community-queues`.
+36. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+37. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+38. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+39. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -99,7 +100,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, engagement signal preview, engagement snapshot ledger, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, engagement signal preview, engagement snapshot ledger, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -112,11 +113,13 @@ Local commands currently include activation run, identity stitching research, Gm
 - No ManyChat calls.
 - No Instagram calls.
 - No MailerLite mutation. The MailerLite evidence helper API does not call live MailerLite; the optional CLI route can use an existing read-only connector, cursor-paginate subscribers, filter locally, and report auth blockers without exposing credentials.
+- gog Healthcheck is read-only and verifies token exchange plus People/Gmail/Contacts/Drive/Docs/Sheets access without printing personal content. Use `npm run crm:vnext:gog-healthcheck -- --fail-on-blocked` before source-recovery runs that depend on Google Workspace.
 - No Google Drive mutation. The Google Drive evidence helper API only converts supplied read-only rows and keeps family/companion email ambiguity under review.
 - No person-card mutation from evidence approvals. The evidence approval application may write only the local evidence decision ledger with explicit commit and approver, then rerun preview packets.
 - Batch Operating Loop is read-only and is now the preferred natural-language operator surface for "probemos un batch nuevo": it returns evidence questions, blocked identity prompts, ready approval items, and dry-run write plans without mutating anything.
 - Batch Operating Loop now marks Instagram/onboarding contacts with missing email or phone as `source_recovery_required`: Mantis should exhaust official-flow sources before asking Alejandro. The recovery lanes are Instagram Messages UI, ManyChat read-only exports, Vercel/proxy/webhook traces, MailerLite cursor scan, lead-capture ledgers, local reports, and Gmail/Drive/Contacts when relevant.
 - Mantis Natural Batch Protocol (`docs/crm-vnext/mantis-natural-batch-protocol.md`) is the canonical way for Mantis to turn natural CRM requests into contact-keyed evidence hunts before import and batch review. It now includes the Batch Portfolio Rule: natural "otro batch" requests should mix mostly net-new discovery with a smaller portion of known open-loop cleanup, unless Alejandro explicitly asks to finish a known group.
+- For serious stitching/source-recovery batches, the Mantis Natural Batch Protocol requires a source-health preflight for needed high-value lanes. If MailerLite, gog/Google Workspace, Instagram UI, or another required source is blocked, Mantis should pause into `awaiting_human_unblock` and ask Alejandro for the exact unblock before closing a final degraded report.
 - If a contact remains `ask_alejandro` because a missing field could plausibly be closed by Instagram Messages UI, Mantis should run a bounded read-only Instagram UI complement before asking Alejandro, or record the exact reason that lane was skipped.
 - If official-flow source recovery is active and a source is blocked by login, Relay, permissions, stale OAuth, checkpoint, or another human action, Mantis should return `awaiting_human_unblock` with pending search anchors and exact unblock instructions, then retry after confirmation instead of closing the task as complete.
 - If Instagram UI is blocked by login, saved-profile selection, Relay/browser permission, checkpoint, CAPTCHA, or similar human-action screens, Mantis should send an immediate unblock request and retry after Alejandro confirms. A blocker report alone is not a completed complement batch.
