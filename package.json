@@ -56,6 +56,7 @@
     "crm:vnext:card-merge-review-resolver": "node scripts/crm-vnext-card-merge-review-resolver.mjs",
     "crm:vnext:human-enrichment-questions": "node scripts/crm-vnext-human-enrichment-questions.mjs",
     "crm:vnext:human-enrichment-response-evidence": "node scripts/crm-vnext-human-enrichment-response-evidence.mjs",
+    "crm:vnext:classbot-yoga-evidence": "node scripts/crm-vnext-classbot-yoga-evidence.mjs",
     "cronjob:setup": "node scripts/setup-cronjob.mjs",
     "fix:names": "node scripts/fix-ml-names.mjs",
     "ml:cleanup-lastname": "node scripts/cleanup-ml-lastname.mjs",
