@@ -16,6 +16,17 @@ It is the first bridge from static stitched cards toward the living CRM layer:
 
 The endpoint does not fetch those sources itself. Mantis or another safe helper supplies read-only snapshots, and CRM vNext computes the before/after scoring impact.
 
+For ongoing operations, activity-shaped observations should first be normalized into the canonical Signal Event Ledger:
+
+```bash
+npm run crm:vnext:signal-event-ledger -- \
+  --events-file <signals-or-events.json> \
+  --write \
+  --approved-by Alejandro
+```
+
+Then selected events can be projected into this preview lane. That keeps "what happened" separate from "how the score might move."
+
 ## Local Command
 
 ```bash
