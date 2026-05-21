@@ -95,19 +95,50 @@ harder than Alejandro's real project load can safely support.
 
 ## Automatic Backup Policy
 
-Recommended cadence after v0 is verified:
+Active cadence after v0 verification:
 
 - Daily encrypted snapshot during a quiet local window.
 - Run immediately after large approved CRM write batches when practical.
 - Keep reports in `~/Documents/Mantis-Reports`.
+- User-facing noise policy: failure-only. Do not send a daily success report.
 - Alert Alejandro only on failure, missing Keychain access, missing iCloud path,
-  or restore-test mismatch.
+  insufficient disk space, or restore-test mismatch.
 
 Preferred implementation:
 
-- local `launchd` or a Codex local automation that runs the command,
-- no LLM needed for routine successful backups,
-- concise Telegram alert only when blocked or unhealthy.
+- a local/scheduled automation that runs the command,
+- low/no reasoning for routine execution,
+- concise alert only when blocked or unhealthy.
+
+Current Codex app automation:
+
+```text
+crm-vnext-encrypted-snapshot-backup
+```
+
+Schedule:
+
+```text
+Daily at 03:20 local scheduler time
+```
+
+Command:
+
+```bash
+npm run crm:vnext:snapshot -- --verify
+```
+
+Success behavior:
+
+- create encrypted local and iCloud snapshots,
+- create local reports,
+- do not produce a daily conversational report.
+
+Failure behavior:
+
+- notify Alejandro with the exact unblock action,
+- include the local report/log path,
+- never print secrets, decrypted archives, CRM personal content, or tokens.
 
 ## Safety
 
@@ -117,4 +148,3 @@ Preferred implementation:
 - Never treat a successful cloud copy as proof of recoverability unless the
   restore test also passes.
 - No outbound contact messages are involved.
-
