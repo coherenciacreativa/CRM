@@ -51,18 +51,19 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 27. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
 28. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
 29. Normalize activity-shaped observations into the canonical local Signal Event Ledger with `npm run crm:vnext:signal-event-ledger -- --events-file <json>`.
-30. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
-31. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
-32. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
-33. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-34. Review stored facts with `GET /api/crm-vnext/identity-review`.
-35. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-36. Read `GET /api/crm-vnext/community-daily-brief`.
-37. If needed, read `GET /api/crm-vnext/community-queues`.
-38. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-39. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-40. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-41. Ask for approval if the next move would touch an external channel.
+30. Project canonical signal events into previewable scoring inputs with `npm run crm:vnext:signal-event-projection -- --from-ledger`.
+31. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
+32. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
+33. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
+34. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+35. Review stored facts with `GET /api/crm-vnext/identity-review`.
+36. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+37. Read `GET /api/crm-vnext/community-daily-brief`.
+38. If needed, read `GET /api/crm-vnext/community-queues`.
+39. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+40. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+41. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+42. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -102,7 +103,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, engagement signal preview, engagement snapshot ledger, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -129,6 +130,7 @@ Local commands currently include activation run, identity stitching research, Gm
 - If Instagram UI is blocked by login, saved-profile selection, Relay/browser permission, checkpoint, CAPTCHA, or similar human-action screens, Mantis should send an immediate unblock request and retry after Alejandro confirms. A blocker report alone is not a completed complement batch.
 - MailerLite Engagement Signals and Gmail Reply Engagement Signals are read-only local adapters that convert supplied metadata snapshots into previewable scoring signals. They do not call live APIs, read credentials, export full email bodies, mutate Gmail/MailerLite, or authorize outbound follow-up.
 - Signal Event Ledger is the canonical append-only local shelf for activity-shaped source observations. It can store supplied MailerLite/Gmail/Instagram/ClassBot/manual events or aggregate engagement snapshots before scoring projection. It does not mutate person cards, write Fact Store, change scores, call live APIs, touch credentials, or authorize outbound follow-up.
+- Signal Event Projection is read-only and converts canonical events into `engagement-signal-preview` inputs. It is the preferred extensibility point for future sources such as Shopify, Bhakti WhatsApp, payment providers, and ClassBot. Restricted events are skipped by default unless a reviewed operator run explicitly includes them.
 - Engagement Signal Preview is read-only and consumes supplied MailerLite/Gmail/Instagram/manual engagement snapshots to show scoring deltas and internal queues. It does not call live APIs, mutate cards, change MailerLite/Gmail, or authorize outbound follow-up.
 - Engagement Snapshot Ledger can store approved read-only engagement previews as local JSONL movement history for the dashboard. It does not mutate cards, write Fact Store, call live APIs, touch credentials, or authorize outbound follow-up.
 - Human Enrichment Questions is read-only and creates person-by-person prompts after a batch so Alejandro can add remembered context. Use `--format compact` by default when Alejandro is reviewing many people: it keeps the evidence JSON intact but renders a short name/handle/data/screenshot/freestyle sheet. Answers still need Fact Intake or a later approved local write before they become CRM state.

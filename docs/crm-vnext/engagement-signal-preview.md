@@ -27,6 +27,14 @@ npm run crm:vnext:signal-event-ledger -- \
 
 Then selected events can be projected into this preview lane. That keeps "what happened" separate from "how the score might move."
 
+Projection command:
+
+```bash
+npm run crm:vnext:signal-event-projection -- \
+  --from-ledger \
+  --out tmp/crm-vnext/signal-event-projection.json
+```
+
 ## Local Command
 
 ```bash
@@ -94,8 +102,15 @@ Supported `sourceKind` values:
 
 - `mailerlite_campaign_activity`
 - `mailerlite_subscriber_activity`
+- `email_activity`
 - `gmail_reply_activity`
 - `instagram_activity`
+- `whatsapp_activity`
+- `bhakti_whatsapp_activity`
+- `classbot_activity`
+- `commerce_activity`
+- `shopify_activity`
+- `payment_activity`
 - `manual_engagement_snapshot`
 - `unknown`
 

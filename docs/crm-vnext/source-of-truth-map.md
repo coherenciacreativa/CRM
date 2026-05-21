@@ -34,6 +34,8 @@ Everything else has a defined supporting role. This prevents two CRMs from formi
 | Google Drive/Docs/Sheets | Retreat/program tables and historical context. | Evidence source, often requiring human review for shared/family emails. |
 | Contacts app | Phone/email/location bridge source. | Evidence source. |
 | ClassBot | Yoga cohort, phone/contact, attendance/recording-delivery clues. | Evidence/signals source. |
+| Shopify / payment providers | Future purchase/order source for digital products, retreats, yoga plans, mentorship, or other offers. | Signal source first; card/customer state only after reviewed projection/write policy. |
+| Bhakti WhatsApp / WhatsApp apps | Future delivery/interaction source for WhatsApp automations and on-demand products. | Signal source first; no outbound or automation mutation from CRM preview. |
 | Telegram/Mantis/human reports | Human reports from Alejandro, assistants, and operations. | Fact/evidence source after parsing and approval. |
 | ManyChat LIVE | Existing business-critical onboarding transport. | Keep alive. Do not mutate without explicit approval. |
 | Legacy Supabase CRM | Earlier production-oriented CRM attempt with contacts/interactions/webhooks. | Legacy source/import lane or future backend candidate, not current vNext authority. |
@@ -73,10 +75,11 @@ Mantis should use this order before a meaningful CRM batch:
 2. Check source health if live/high-value lanes are needed.
 3. Gather source evidence read-only.
 4. Normalize events into Signal Event Ledger when the data is activity-shaped.
-5. Use Fact Store for approved stable truths.
-6. Use card-write approval for identity/card updates.
-7. Use engagement preview/snapshot ledgers for score movement.
-8. Never send outbound or mutate external systems without explicit approval.
+5. Project canonical events into engagement preview inputs when the data should affect score movement.
+6. Use Fact Store for approved stable truths.
+7. Use card-write approval for identity/card updates.
+8. Use engagement preview/snapshot ledgers for score movement.
+9. Never send outbound or mutate external systems without explicit approval.
 
 ## Long-Term Direction
 

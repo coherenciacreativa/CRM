@@ -39,6 +39,12 @@ export type CommunityScoringInput = {
     follows?: boolean;
     lastInteractionAt?: string | Date | null;
   };
+  whatsapp?: {
+    inboundMessages30d?: number;
+    replies30d?: number;
+    automationDeliveries30d?: number;
+    lastInteractionAt?: string | Date | null;
+  };
   participation?: {
     yogaClasses90d?: number;
     happyCircle90d?: number;
@@ -177,6 +183,7 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
 
   const email = input.email ?? {};
   const instagram = input.instagram ?? {};
+  const whatsapp = input.whatsapp ?? {};
   const participation = input.participation ?? {};
   const purchases = input.purchases ?? {};
   const identity = input.identity ?? {};
@@ -194,6 +201,9 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   const comments = count(instagram.comments30d);
   const likes = count(instagram.likes30d);
   const storyViews = count(instagram.storyViews30d);
+  const whatsappInbound = count(whatsapp.inboundMessages30d);
+  const whatsappReplies = count(whatsapp.replies30d);
+  const whatsappDeliveries = count(whatsapp.automationDeliveries30d);
   const yogaClasses = count(participation.yogaClasses90d);
   const happyCircle = count(participation.happyCircle90d);
   const retreatsAttended = count(participation.retreatsAttended);
@@ -252,6 +262,16 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
       ]),
   );
 
+  const whatsappScore = clampScore(
+    Math.min(whatsappInbound * 8, 24)
+      + Math.min(whatsappReplies * 10, 24)
+      + Math.min(whatsappDeliveries * 3, 12)
+      + recencyScore(whatsapp.lastInteractionAt, now, [
+        { days: 7, points: 10 },
+        { days: 30, points: 5 },
+      ]),
+  );
+
   const participationScore = clampScore(
     Math.min(yogaClasses * 7, 28)
       + Math.min(happyCircle * 9, 27)
@@ -285,6 +305,12 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   if (lifetimeClicks > 0) addReason(reasons, 'email_historical_clicks', 'Has historical email click signal', 'positive');
   if (inboundDms > 0) addReason(reasons, 'ig_dm', 'Has inbound Instagram DMs', 'positive');
   if (comments > 0) addReason(reasons, 'ig_comments', 'Comments on Instagram', 'positive');
+  if (whatsappInbound + whatsappReplies > 0) {
+    addReason(reasons, 'whatsapp_engagement', 'Has WhatsApp interaction signal', 'positive');
+  }
+  if (whatsappDeliveries > 0) {
+    addReason(reasons, 'whatsapp_delivery', 'Receives WhatsApp delivery or automation', 'positive');
+  }
   if (yogaClasses + happyCircle + retreatsAttended > 0) {
     addReason(reasons, 'community_participation', 'Participates in community spaces', 'positive');
   }
@@ -312,6 +338,7 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
       + Math.min(count(identity.sourceCount) * 7, 21)
       + (emailRelationshipScore > 0 ? 8 : 0)
       + (instagramScore > 0 ? 8 : 0)
+      + (whatsappScore > 0 ? 5 : 0)
       + (participationScore > 0 ? 6 : 0)
       + (purchaseScore > 0 ? 8 : 0),
   );
@@ -323,11 +350,13 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   const relationshipEngagement = weightedAvailableScore([
     { score: emailRelationshipScore, weight: 0.35, available: Boolean(identity.hasEmail || emailRelationshipScore > 0) },
     { score: instagramScore, weight: 0.35, available: Boolean(identity.hasInstagram || instagramScore > 0) },
+    { score: whatsappScore, weight: 0.16, available: whatsappScore > 0 },
     { score: participationScore, weight: 0.3, available: participationScore > 0 },
   ]);
   const communityDepth = weightedAvailableScore([
     { score: emailRelationshipScore, weight: 0.2, available: Boolean(identity.hasEmail || emailRelationshipScore > 0) },
     { score: instagramScore, weight: 0.18, available: Boolean(identity.hasInstagram || instagramScore > 0) },
+    { score: whatsappScore, weight: 0.12, available: whatsappScore > 0 },
     { score: participationScore, weight: 0.34, available: participationScore > 0 },
     { score: purchaseScore, weight: 0.28, available: purchaseScore > 0 },
   ]);
@@ -336,8 +365,9 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   const commercialWarmth = clampScore(
     emailRecentScore * 0.24
       + instagramScore * 0.25
+      + whatsappScore * 0.08
       + participationScore * 0.18
-      + purchaseScore * 0.33
+      + purchaseScore * 0.25
       - suppressionPenalty,
   );
 
@@ -359,6 +389,8 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
         + clicks90d * 4
         + opens90d
         + lifetimeClicks * 2
+        + whatsappDeliveries * 4
+        + whatsappReplies * 6
         + (includesAny(tags, ['curso', 'meditacion', 'digital']) ? 16 : 0),
     ),
     retreats: clampScore(

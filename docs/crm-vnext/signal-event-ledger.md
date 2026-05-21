@@ -187,9 +187,10 @@ Recommended flow:
 1. Mantis gathers source evidence read-only.
 2. Source-specific adapters normalize when useful, for example MailerLite or Gmail reply engagement signals.
 3. `signal-event-ledger` stores the canonical observations.
-4. `engagement-signal-preview` projects selected events into scoring deltas.
-5. `engagement-snapshot-ledger` stores reviewed movement history.
-6. Future policy may promote selected state into cards, with explicit approval.
+4. `signal-event-projection` projects selected canonical events into engagement preview signals.
+5. `engagement-signal-preview` computes scoring deltas.
+6. `engagement-snapshot-ledger` stores reviewed movement history.
+7. Future policy may promote selected state into cards, with explicit approval.
 
 This means the ledger is not another card store. It is the event history below the card store.
 

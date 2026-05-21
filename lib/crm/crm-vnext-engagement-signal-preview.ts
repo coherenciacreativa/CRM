@@ -15,8 +15,15 @@ export const CRM_VNEXT_ENGAGEMENT_SIGNAL_PREVIEW_SCHEMA_VERSION =
 export type CrmEngagementSignalSourceKind =
   | 'mailerlite_campaign_activity'
   | 'mailerlite_subscriber_activity'
+  | 'email_activity'
   | 'gmail_reply_activity'
   | 'instagram_activity'
+  | 'whatsapp_activity'
+  | 'bhakti_whatsapp_activity'
+  | 'classbot_activity'
+  | 'commerce_activity'
+  | 'shopify_activity'
+  | 'payment_activity'
   | 'manual_engagement_snapshot'
   | 'unknown';
 
@@ -31,6 +38,9 @@ export type CrmEngagementSignalInput = {
   tags?: string[] | string | null;
   emailActivity?: CommunityScoringInput['email'] | null;
   instagramActivity?: CommunityScoringInput['instagram'] | null;
+  whatsappActivity?: CommunityScoringInput['whatsapp'] | null;
+  participationActivity?: CommunityScoringInput['participation'] | null;
+  purchaseActivity?: CommunityScoringInput['purchases'] | null;
   opens30d?: number | string | null;
   clicks30d?: number | string | null;
   replies30d?: number | string | null;
@@ -52,6 +62,22 @@ export type CrmEngagementSignalInput = {
   storyViews30d?: number | string | null;
   follows?: boolean | string | number | null;
   lastInteractionAt?: string | Date | null;
+  whatsappInboundMessages30d?: number | string | null;
+  whatsappReplies30d?: number | string | null;
+  whatsappAutomationDeliveries30d?: number | string | null;
+  lastWhatsappInteractionAt?: string | Date | null;
+  yogaClasses90d?: number | string | null;
+  happyCircle90d?: number | string | null;
+  retreatsAttended?: number | string | null;
+  lastAttendanceAt?: string | Date | null;
+  totalSpend?: number | string | null;
+  purchaseCount?: number | string | null;
+  activeClient?: boolean | string | number | null;
+  mentorshipSessions?: number | string | null;
+  therapySessions?: number | string | null;
+  digitalProductsPurchased?: number | string | null;
+  retreatsPurchased?: number | string | null;
+  lastPurchaseAt?: string | Date | null;
 };
 
 export type CrmEngagementSignalMatchMode =
@@ -71,6 +97,9 @@ export type CrmEngagementSignalNormalized = {
   observedAt: string;
   emailActivity: NonNullable<CommunityScoringInput['email']>;
   instagramActivity: NonNullable<CommunityScoringInput['instagram']>;
+  whatsappActivity: NonNullable<CommunityScoringInput['whatsapp']>;
+  participationActivity: NonNullable<CommunityScoringInput['participation']>;
+  purchaseActivity: NonNullable<CommunityScoringInput['purchases']>;
   tags: string[];
 };
 
@@ -114,6 +143,9 @@ export type CrmEngagementSignalPreviewItem = {
   aggregatedSignals: {
     email: NonNullable<CommunityScoringInput['email']>;
     instagram: NonNullable<CommunityScoringInput['instagram']>;
+    whatsapp: NonNullable<CommunityScoringInput['whatsapp']>;
+    participation: NonNullable<CommunityScoringInput['participation']>;
+    purchases: NonNullable<CommunityScoringInput['purchases']>;
     tags: string[];
   };
   operationsExecuted: 0;
@@ -235,8 +267,15 @@ const cleanSourceKind = (value: unknown): CrmEngagementSignalSourceKind => {
   const valid = new Set<CrmEngagementSignalSourceKind>([
     'mailerlite_campaign_activity',
     'mailerlite_subscriber_activity',
+    'email_activity',
     'gmail_reply_activity',
     'instagram_activity',
+    'whatsapp_activity',
+    'bhakti_whatsapp_activity',
+    'classbot_activity',
+    'commerce_activity',
+    'shopify_activity',
+    'payment_activity',
     'manual_engagement_snapshot',
     'unknown',
   ]);
@@ -271,8 +310,12 @@ const normalizeSignal = (
   const sourceId = sourceIdFor(signal, sourceKind);
   const emailActivity = signal.emailActivity ?? {};
   const instagramActivity = signal.instagramActivity ?? {};
+  const whatsappActivity = signal.whatsappActivity ?? {};
+  const participationActivity = signal.participationActivity ?? {};
+  const purchaseActivity = signal.purchaseActivity ?? {};
   const observedAt = isoNow(signal.observedAt ?? generatedAt);
   const follows = cleanBoolean(signal.follows ?? instagramActivity.follows);
+  const activeClient = cleanBoolean(signal.activeClient ?? purchaseActivity.activeClient);
 
   return {
     signalId: `engagement_signal_${hashId([sourceKind, sourceId, observedAt])}`,
@@ -308,6 +351,32 @@ const normalizeSignal = (
       follows,
       lastInteractionAt: instagramActivity.lastInteractionAt ?? signal.lastInteractionAt ?? null,
     },
+    whatsappActivity: {
+      inboundMessages30d: cleanNumber(whatsappActivity.inboundMessages30d ?? signal.whatsappInboundMessages30d),
+      replies30d: cleanNumber(whatsappActivity.replies30d ?? signal.whatsappReplies30d),
+      automationDeliveries30d: cleanNumber(
+        whatsappActivity.automationDeliveries30d ?? signal.whatsappAutomationDeliveries30d,
+      ),
+      lastInteractionAt: whatsappActivity.lastInteractionAt ?? signal.lastWhatsappInteractionAt ?? null,
+    },
+    participationActivity: {
+      yogaClasses90d: cleanNumber(participationActivity.yogaClasses90d ?? signal.yogaClasses90d),
+      happyCircle90d: cleanNumber(participationActivity.happyCircle90d ?? signal.happyCircle90d),
+      retreatsAttended: cleanNumber(participationActivity.retreatsAttended ?? signal.retreatsAttended),
+      lastAttendanceAt: participationActivity.lastAttendanceAt ?? signal.lastAttendanceAt ?? null,
+    },
+    purchaseActivity: {
+      totalSpend: cleanNumber(purchaseActivity.totalSpend ?? signal.totalSpend),
+      purchaseCount: cleanNumber(purchaseActivity.purchaseCount ?? signal.purchaseCount),
+      activeClient,
+      mentorshipSessions: cleanNumber(purchaseActivity.mentorshipSessions ?? signal.mentorshipSessions),
+      therapySessions: cleanNumber(purchaseActivity.therapySessions ?? signal.therapySessions),
+      digitalProductsPurchased: cleanNumber(
+        purchaseActivity.digitalProductsPurchased ?? signal.digitalProductsPurchased,
+      ),
+      retreatsPurchased: cleanNumber(purchaseActivity.retreatsPurchased ?? signal.retreatsPurchased),
+      lastPurchaseAt: purchaseActivity.lastPurchaseAt ?? signal.lastPurchaseAt ?? null,
+    },
     tags: cleanTags(signal.tags),
   };
 };
@@ -341,6 +410,9 @@ const mergeSubscriberStatus = (values: Array<string | null | undefined>): string
   return cleaned[0] ?? null;
 };
 
+const truthy = (values: Array<boolean | null | undefined>): boolean | undefined =>
+  values.some((value) => value === true) || undefined;
+
 const aggregateSignals = (
   signals: CrmEngagementSignalNormalized[],
   now: Date,
@@ -372,6 +444,28 @@ const aggregateSignals = (
       storyViews30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.instagramActivity.storyViews30d), 0),
       follows: usable.some((signal) => signal.instagramActivity.follows === true) || undefined,
       lastInteractionAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.instagramActivity.lastInteractionAt), null),
+    },
+    whatsapp: {
+      inboundMessages30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.whatsappActivity.inboundMessages30d), 0),
+      replies30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.whatsappActivity.replies30d), 0),
+      automationDeliveries30d: usable.reduce((sum, signal) => sum + cleanNumber(signal.whatsappActivity.automationDeliveries30d), 0),
+      lastInteractionAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.whatsappActivity.lastInteractionAt), null),
+    },
+    participation: {
+      yogaClasses90d: usable.reduce((sum, signal) => sum + cleanNumber(signal.participationActivity.yogaClasses90d), 0),
+      happyCircle90d: usable.reduce((sum, signal) => sum + cleanNumber(signal.participationActivity.happyCircle90d), 0),
+      retreatsAttended: usable.reduce((sum, signal) => sum + cleanNumber(signal.participationActivity.retreatsAttended), 0),
+      lastAttendanceAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.participationActivity.lastAttendanceAt), null),
+    },
+    purchases: {
+      totalSpend: usable.reduce((sum, signal) => sum + cleanNumber(signal.purchaseActivity.totalSpend), 0),
+      purchaseCount: usable.reduce((sum, signal) => sum + cleanNumber(signal.purchaseActivity.purchaseCount), 0),
+      activeClient: truthy(usable.map((signal) => signal.purchaseActivity.activeClient)),
+      mentorshipSessions: usable.reduce((sum, signal) => sum + cleanNumber(signal.purchaseActivity.mentorshipSessions), 0),
+      therapySessions: usable.reduce((sum, signal) => sum + cleanNumber(signal.purchaseActivity.therapySessions), 0),
+      digitalProductsPurchased: usable.reduce((sum, signal) => sum + cleanNumber(signal.purchaseActivity.digitalProductsPurchased), 0),
+      retreatsPurchased: usable.reduce((sum, signal) => sum + cleanNumber(signal.purchaseActivity.retreatsPurchased), 0),
+      lastPurchaseAt: usable.reduce<string | Date | null>((current, signal) => latestDate(current, signal.purchaseActivity.lastPurchaseAt), null),
     },
     tags: Array.from(new Set(usable.flatMap((signal) => signal.tags))),
   };
@@ -447,15 +541,22 @@ const mergedPreviewCard = (
         existingStage: card.scoring.stage,
         email: aggregatedSignals.email,
         instagram: aggregatedSignals.instagram,
+        whatsapp: aggregatedSignals.whatsapp,
         participation: {
-          yogaClasses90d: card.products.yogaClasses90d,
-          happyCircle90d: card.products.happyCircle90d,
-          retreatsAttended: card.products.retreatsAttended,
+          yogaClasses90d: Math.max(card.products.yogaClasses90d, cleanNumber(aggregatedSignals.participation.yogaClasses90d)),
+          happyCircle90d: Math.max(card.products.happyCircle90d, cleanNumber(aggregatedSignals.participation.happyCircle90d)),
+          retreatsAttended: Math.max(card.products.retreatsAttended, cleanNumber(aggregatedSignals.participation.retreatsAttended)),
+          lastAttendanceAt: aggregatedSignals.participation.lastAttendanceAt,
         },
         purchases: {
-          totalSpend: card.products.totalSpend,
-          purchaseCount: card.products.purchaseCount,
-          activeClient: card.products.activeClient,
+          totalSpend: Math.max(card.products.totalSpend, cleanNumber(aggregatedSignals.purchases.totalSpend)),
+          purchaseCount: Math.max(card.products.purchaseCount, cleanNumber(aggregatedSignals.purchases.purchaseCount)),
+          activeClient: card.products.activeClient || aggregatedSignals.purchases.activeClient === true,
+          mentorshipSessions: aggregatedSignals.purchases.mentorshipSessions,
+          therapySessions: aggregatedSignals.purchases.therapySessions,
+          digitalProductsPurchased: aggregatedSignals.purchases.digitalProductsPurchased,
+          retreatsPurchased: aggregatedSignals.purchases.retreatsPurchased,
+          lastPurchaseAt: aggregatedSignals.purchases.lastPurchaseAt,
         },
         tags: aggregatedSignals.tags,
       },
