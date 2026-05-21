@@ -39,6 +39,11 @@ const getLedgerPath = (req: NextApiRequest): string | null => {
   return cleanString(req.query.ledgerPath);
 };
 
+const getLocalPath = (req: NextApiRequest, key: string): string | null => {
+  if (!allowCrmVNextLocalQueryOverrides(req)) return null;
+  return cleanString(req.query[key]);
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ApiBody>) {
   if (req.method !== 'GET') {
     return res.status(405).json({ ok: false, error: 'method_not_allowed' });
@@ -57,12 +62,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       packet: await buildCrmVNextEngagementResolutionLoop({
         ...sourceOptions,
         ledgerPath: getLedgerPath(req),
+        factStorePath: getLocalPath(req, 'factStorePath'),
+        contextFactLedgerPath: getLocalPath(req, 'contextFactLedgerPath'),
         limit: cleanPositiveInt(req.query.limit, 5, 10),
         queueLimit: cleanPositiveInt(req.query.queueLimit, 40, 100),
         snapshotLimit: cleanPositiveInt(req.query.snapshotLimit, 5, 25),
         movementLimit: cleanPositiveInt(req.query.movementLimit, 100, 250),
         includeUnchanged: cleanBoolean(req.query.includeUnchanged),
         includeObservationOnly: cleanBoolean(req.query.includeObservationOnly),
+        includeContextCoveredQuestions: cleanBoolean(req.query.includeContextCoveredQuestions),
       }),
     });
   } catch (error) {
@@ -70,4 +78,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(500).json({ ok: false, error: 'engagement_resolution_loop_failed' });
   }
 }
-

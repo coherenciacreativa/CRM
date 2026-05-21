@@ -598,6 +598,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     preferredNextStep: "Use after the engagement decision brief when Mantis needs to ask Alejandro concise context questions and process answers through existing evidence/proposal lanes.",
     notes: [
       "Reads only local engagement snapshot history and local person cards through the decision brief.",
+      "Cross-checks local card evidence, Fact Store, and context-fact ledger to suppress broad questions for already-enriched contacts.",
       "Outputs human-enrichment-compatible questions, a Markdown response sheet, and next commands.",
       "Does not mutate cards, write Fact Store, call live APIs, touch credentials, or send outbound messages.",
       "Alejandro answers become evidence candidates only; writes still require separate approval.",
@@ -1400,6 +1401,7 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     outbound: false,
     notes: [
       "Default mode prints the read-only packet; --out and --markdown-out may save local reports.",
+      "Uses an anti-redundancy guard so context-covered contacts become internal signal-review items instead of broad questions.",
       "The Markdown is compatible with human-enrichment-response-evidence after Alejandro answers.",
       "Use this to close the loop from engagement warmth to structured human context without new parser work.",
       "This command never mutates cards, writes Fact Store, sends outbound, calls live APIs, or touches credentials.",

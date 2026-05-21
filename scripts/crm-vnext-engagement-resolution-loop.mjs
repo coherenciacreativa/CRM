@@ -15,11 +15,16 @@ Options:
   --ledger-path <path>             Optional engagement snapshot ledger path
   --card-store-path <path>         Optional local vNext card store path
   --legacy-path <path>             Optional legacy person-card path
+  --fact-store-path <path>         Optional local Fact Store JSONL path
+  --context-fact-ledger-path <path>
+                                  Optional context-fact apply ledger JSONL path
   --limit <n>                      Questions to include. Default 5, max 10
   --queue-limit <n>                Movement queue rows to inspect first. Default 40
   --snapshot-limit <n>             Snapshot records to read. Default 5
   --movement-limit <n>             Movement records to read. Default 100
   --include-observation-only       Include keep-observing rows in the upstream brief
+  --include-context-covered-questions
+                                  Include already-covered contacts as answer prompts anyway
   --out <path>                     Write JSON packet locally
   --markdown-out <path>            Write answer-ready Markdown locally
   --fail-on-empty                  Exit 2 if no questions are produced
@@ -38,11 +43,14 @@ const parseArgs = (argv) => {
     ledgerPath: null,
     cardStorePath: null,
     legacyPath: null,
+    factStorePath: null,
+    contextFactLedgerPath: null,
     limit: 5,
     queueLimit: 40,
     snapshotLimit: 5,
     movementLimit: 100,
     includeObservationOnly: false,
+    includeContextCoveredQuestions: false,
     out: null,
     markdownOut: null,
     failOnEmpty: false,
@@ -53,10 +61,13 @@ const parseArgs = (argv) => {
     const arg = argv[index];
     if (arg === '--help') options.help = true;
     else if (arg === '--include-observation-only') options.includeObservationOnly = true;
+    else if (arg === '--include-context-covered-questions') options.includeContextCoveredQuestions = true;
     else if (arg === '--fail-on-empty') options.failOnEmpty = true;
     else if (arg === '--ledger-path') options.ledgerPath = argv[++index];
     else if (arg === '--card-store-path') options.cardStorePath = argv[++index];
     else if (arg === '--legacy-path') options.legacyPath = argv[++index];
+    else if (arg === '--fact-store-path') options.factStorePath = argv[++index];
+    else if (arg === '--context-fact-ledger-path') options.contextFactLedgerPath = argv[++index];
     else if (arg === '--limit') options.limit = cleanInt(argv[++index], 5, 10);
     else if (arg === '--queue-limit') options.queueLimit = cleanInt(argv[++index], 40, 100);
     else if (arg === '--snapshot-limit') options.snapshotLimit = cleanInt(argv[++index], 5, 25);
@@ -118,4 +129,3 @@ main().catch((error) => {
   console.error(`crm-vnext engagement resolution loop failed: ${error.message}`);
   process.exitCode = 1;
 });
-

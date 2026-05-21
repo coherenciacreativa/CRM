@@ -14,6 +14,12 @@ New surfaces:
 - `lib/crm/crm-vnext-engagement-resolution-loop.ts`
 - `lib/crm/crm-vnext-engagement-resolution-loop-markdown.ts`
 
+Follow-up hardening:
+
+- The loop now reads local card evidence, Fact Store, and context-fact apply ledger.
+- Contacts with enough prior Alejandro/human context move to `contextCoveredItems`.
+- Broad questions are suppressed for already-enriched cards; Mantis gets an internal signal-review instruction instead.
+
 ## Why It Matters
 
 CRM vNext can now move from detected warmth to structured human context:
@@ -23,6 +29,8 @@ signal -> movement -> decision brief -> Alejandro question -> response evidence 
 ```
 
 This is the first small closed loop of the CRM dream: the system notices something, asks only the useful question, and routes the answer toward structured memory without sending anything or writing cards automatically.
+
+The hardening matters because the loop now avoids asking Alejandro to repeat context he already gave. Recent engagement still matters, but the question becomes narrower: inspect the new signal, then escalate only if it changes the relationship picture or requires a future approved follow-up.
 
 ## Safety
 
@@ -38,4 +46,3 @@ Read-only only:
 ## Validation
 
 Covered by `__tests__/crm-vnext-engagement-resolution-loop.spec.ts`.
-

@@ -132,7 +132,7 @@ describe('CRM vNext engagement resolution loop', () => {
         label: 'Reader Example (@reader)',
       },
       batchStatus: {
-        status: 'engagement_decision_candidate',
+        status: 'needs_alejandro_answer',
         recommendedAction: 'review_reply_context',
       },
     });
@@ -156,5 +156,50 @@ describe('CRM vNext engagement resolution loop', () => {
     expect(markdown).not.toContain('message draft');
     expect(markdown).not.toContain('/Users/');
   });
-});
 
+  test('suppresses broad questions when prior human context already covers the person', () => {
+    const packet = buildCrmVNextEngagementResolutionLoopFromBrief(brief(), {
+      now: NOW,
+      contextIndex: {
+        'ig:cielo_gom_g': {
+          personIds: ['ig:cielo_gom_g'],
+          humanContextEvidenceCount: 4,
+          cardEvidenceCount: 4,
+          factStoreCount: 0,
+          contextFactLedgerCount: 4,
+          latestHumanContextAt: '2026-05-18T00:00:00.000Z',
+          samples: [
+            'Relationship context: Cielo already has Alejandro-provided program and origin context.',
+          ],
+          sources: ['human_enrichment_response:cielo'],
+        },
+      },
+    });
+    const markdown = formatCrmVNextEngagementResolutionLoopMarkdown(packet);
+
+    expect(packet.summary).toMatchObject({
+      candidatesReviewed: 2,
+      questions: 1,
+      contextCovered: 1,
+      broadQuestionsSuppressed: 1,
+    });
+    expect(packet.questions.map((question) => question.subject.label)).toEqual([
+      'Reader Example (@reader)',
+    ]);
+    expect(packet.contextCoveredItems[0]).toMatchObject({
+      personId: 'ig:cielo_gom_g',
+      batchStatus: {
+        status: 'context_already_covered',
+        recommendedAction: 'internal_signal_review_no_broad_question',
+      },
+      redundancyReview: {
+        requiresAlejandroAnswer: false,
+        humanContextEvidenceCount: 4,
+      },
+    });
+    expect(markdown).toContain('## Resueltos internamente');
+    expect(markdown).toContain('### Cielo Gomez (@cielo_gom_g)');
+    expect(markdown).toContain('Preguntas amplias suprimidas: 1');
+    expect(markdown).not.toContain('Cuéntame, en lenguaje natural, qué recuerdas de Cielo Gomez');
+  });
+});
