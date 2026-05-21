@@ -753,7 +753,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     id: "community_daily_brief",
     method: "GET",
     path: "/api/crm-vnext/community-daily-brief",
-    purpose: "Compact daily operating brief with community totals, queue status, highlights, and safe next steps.",
+    purpose: "Compact daily operating brief with community totals, queue status, engagement actions, highlights, and safe next steps.",
     readOnly: true,
     returnsPersonRows: true,
     writesFiles: false,
@@ -762,6 +762,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     preferredNextStep: "Use this as the first daily CRM read.",
     notes: [
       "Focus queues are bounded.",
+      "Includes stored Engagement Movement Queue summaries when local movement history exists.",
       "Prefers the local vNext card store when present; falls back to legacy Person Cards V1.",
       "Notify-level queues require human decision before outbound action.",
     ],
@@ -797,7 +798,7 @@ const browserRoutes: CrmVNextOperatorBrowserRoute[] = [
   {
     id: "daily_brief",
     path: "/crm-vnext/daily-brief",
-    purpose: "Readable daily operating brief mirroring the daily brief API.",
+    purpose: "Readable daily operating brief mirroring the daily brief API, including engagement action summaries.",
     audience: ["alejandro", "mantis"],
     readOnly: true,
     outbound: false,

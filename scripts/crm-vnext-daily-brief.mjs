@@ -106,6 +106,16 @@ const identityFor = (person) =>
   person.identities?.instagramHandle ||
   person.personId;
 
+const formatEngagementAction = (action) =>
+  [
+    `- ${action.label}`,
+    `count ${action.count}`,
+    `category ${label(action.category)}`,
+    `review ${action.reviewRequired ? 'yes' : 'no'}`,
+    `outbound approval ${action.outboundApprovalRequired ? 'yes' : 'no'}`,
+    action.representativeReason ? `reason ${action.representativeReason}` : null,
+  ].filter(Boolean).join(' | ');
+
 const formatMarkdown = (payload) => {
   const brief = payload.brief;
   const source = payload.source;
@@ -142,8 +152,26 @@ const formatMarkdown = (payload) => {
       ? brief.nextSteps.map((step) => `- [${label(step.priority)} | ${label(step.owner)}] ${step.action} Approval: ${step.requiresApproval ? 'yes' : 'no'}.`)
       : ['- No next steps selected.']),
     '',
-    '## Focus Queues',
   ];
+
+  if (brief.engagement) {
+    lines.push(
+      '## Engagement Actions',
+      `- Movement rows: ${brief.engagement.totals.rows}`,
+      `- Unmatched rows: ${brief.engagement.totals.unmatchedRows}`,
+      `- Review rows: ${brief.engagement.totals.reviewRows}`,
+      `- Latest captured at: ${brief.engagement.source.latestCapturedAt ?? 'unknown'}`,
+      `- Operator note: ${brief.engagement.operatorNote}`,
+      '',
+      'Top actions:',
+      ...(brief.engagement.topActions.length
+        ? brief.engagement.topActions.map(formatEngagementAction)
+        : ['- No engagement actions available.']),
+      '',
+    );
+  }
+
+  lines.push('## Focus Queues');
 
   for (const focusQueue of brief.focusQueues) {
     lines.push(
@@ -235,6 +263,14 @@ const main = async () => {
       shown: queue.queue.counts.returned,
       status: queue.queue.status?.level ?? 'ok',
     })),
+    engagementActions: payload.brief.engagement
+      ? {
+          rows: payload.brief.engagement.totals.rows,
+          unmatchedRows: payload.brief.engagement.totals.unmatchedRows,
+          reviewRows: payload.brief.engagement.totals.reviewRows,
+          byAction: payload.brief.engagement.byAction,
+        }
+      : null,
     writes,
     markdownPreview: markdown.split('\n').slice(0, 12),
   }, null, 2));

@@ -12,7 +12,7 @@ The script reads the internal daily brief API and can write:
 - Markdown report,
 - raw JSON payload.
 
-It does not send messages and does not mutate CRM records.
+The report now includes stored engagement-movement action summaries when the local Engagement Snapshot Ledger has data. It does not send messages and does not mutate CRM records.
 
 ## Command
 
@@ -61,6 +61,7 @@ If `CRM_VNEXT_INSIGHTS_TOKEN` is configured, the script sends it as an internal 
 - No email or WhatsApp sends.
 - No ManyChat changes.
 - No MailerLite changes.
+- No live engagement-source calls; engagement actions come from stored local movement history.
 - No contact mutation.
 
 ## Mantis Operating Rule
@@ -68,3 +69,5 @@ If `CRM_VNEXT_INSIGHTS_TOKEN` is configured, the script sends it as an internal 
 Use the Markdown file as a local operating report.
 
 If the JSON result has `brief.queues.totals.notify > 0`, Mantis should prepare a concise decision note for Alejandro. Actual Telegram delivery remains a separate approved adapter.
+
+If the report includes `## Engagement Actions`, treat it as routing guidance only: reply-context reviews and identity stitching can proceed internally, but no outreach follows from the score movement by itself.

@@ -167,4 +167,89 @@ describe("buildCommunityDailyBrief", () => {
     expect(brief.focusQueues.length).toBeLessThanOrEqual(5);
     expect(brief.focusQueues.every((queue) => queue.people.length <= 10)).toBe(true);
   });
+
+  it("summarizes engagement movement actions without granting outbound permission", () => {
+    const brief = buildCommunityDailyBrief([], {
+      now: NOW,
+      engagementMovementQueue: {
+        source: {
+          latestCapturedAt: "2026-05-21T05:00:00.000Z",
+          totalSignals: 18,
+        },
+        summary: {
+          rows: 3,
+          unmatchedRows: 1,
+          reviewRows: 2,
+        },
+        rows: [
+          {
+            operatorAction: {
+              code: "review_reply_context",
+              label: "Review Reply Context",
+              category: "human_context",
+              reviewRequired: true,
+              outboundApprovalRequired: false,
+              reason: "Human reply needs context before asking Alejandro again.",
+            },
+          },
+          {
+            operatorAction: {
+              code: "keep_observing_email",
+              label: "Keep Observing Email",
+              category: "observe",
+              reviewRequired: false,
+              outboundApprovalRequired: false,
+              reason: "Passive opens do not imply outreach.",
+            },
+          },
+        ],
+        unmatchedRows: [
+          {
+            operatorAction: {
+              code: "stitch_identity",
+              label: "Stitch Identity",
+              category: "identity",
+              reviewRequired: true,
+              outboundApprovalRequired: false,
+              reason: "Resolve identity before using engagement.",
+            },
+          },
+        ],
+      },
+    });
+
+    expect(brief.engagement).toMatchObject({
+      mode: "read_only_engagement_actions_summary",
+      totals: {
+        rows: 3,
+        unmatchedRows: 1,
+        reviewRows: 2,
+        actionGroups: 3,
+      },
+      byAction: {
+        review_reply_context: 1,
+        keep_observing_email: 1,
+        stitch_identity: 1,
+      },
+    });
+    expect(brief.highlights).toContainEqual(
+      expect.objectContaining({
+        code: "engagement_actions",
+        level: "watch",
+      }),
+    );
+    expect(brief.nextSteps).toContainEqual(
+      expect.objectContaining({
+        code: "resolve_engagement_identity",
+        requiresApproval: false,
+      }),
+    );
+    expect(brief.nextSteps).toContainEqual(
+      expect.objectContaining({
+        code: "review_engagement_replies",
+        requiresApproval: false,
+      }),
+    );
+    expect(brief.safety.outboundProhibited).toBe(true);
+  });
 });

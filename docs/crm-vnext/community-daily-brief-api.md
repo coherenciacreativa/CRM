@@ -25,6 +25,7 @@ Give Mantis one compact daily operating brief for CRM vNext:
 - queue status totals,
 - highlights worth watching,
 - next-step recommendations,
+- stored engagement-movement action summary,
 - bounded focus queue briefs with selected person rows.
 
 This is a reading surface. It does not mutate CRM records and does not send messages.
@@ -70,6 +71,22 @@ This is a reading surface. It does not mutate CRM records and does not send mess
     },
     "highlights": [],
     "nextSteps": [],
+    "engagement": {
+      "mode": "read_only_engagement_actions_summary",
+      "totals": {
+        "rows": 13,
+        "unmatchedRows": 0,
+        "reviewRows": 3,
+        "actionGroups": 3,
+        "categories": 3
+      },
+      "byAction": {
+        "keep_observing_email": 4,
+        "review_reply_context": 3,
+        "keep_observing": 6
+      },
+      "topActions": []
+    },
     "focusQueues": [],
     "safety": {
       "outboundProhibited": true,
@@ -97,6 +114,7 @@ See `docs/crm-vnext/person-card-api.md`.
 - No ManyChat calls.
 - No Instagram calls.
 - No MailerLite calls.
+- Engagement action summary reads only stored local Engagement Snapshot Ledger history.
 - No outbound messages.
 - No record mutation.
 
@@ -105,5 +123,7 @@ See `docs/crm-vnext/person-card-api.md`.
 Use this endpoint as the first daily read before deciding what to inspect.
 
 If `queues.totals.notify > 0`, Mantis should prepare a decision brief for Alejandro. Actual Telegram delivery remains a separate approved adapter.
+
+If `brief.engagement.byAction.review_reply_context > 0`, Mantis should use the engagement resolution loop to inspect reply context before asking Alejandro broad memory questions again. If `brief.engagement.byAction.stitch_identity > 0` or `engagement.totals.unmatchedRows > 0`, stitching comes before using those engagement signals.
 
 Use `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>` to generate that no-send decision brief.

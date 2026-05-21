@@ -1,5 +1,6 @@
 import type {
   CommunityDailyBrief,
+  CommunityDailyBriefEngagementActionSummary,
   CommunityDailyBriefHighlight,
   CommunityDailyBriefNextStep,
 } from './community-daily-brief';
@@ -34,6 +35,16 @@ const formatHighlight = (highlight: CommunityDailyBriefHighlight): string =>
 
 const formatStep = (step: CommunityDailyBriefNextStep): string =>
   `- [${label(step.priority)} | ${label(step.owner)}] ${step.action} Approval: ${step.requiresApproval ? 'yes' : 'no'}.`;
+
+const formatEngagementAction = (action: CommunityDailyBriefEngagementActionSummary): string =>
+  [
+    `- ${action.label}`,
+    `count ${action.count}`,
+    `category ${label(action.category)}`,
+    `review ${action.reviewRequired ? 'yes' : 'no'}`,
+    `outbound approval ${action.outboundApprovalRequired ? 'yes' : 'no'}`,
+    action.representativeReason ? `reason ${action.representativeReason}` : null,
+  ].filter(Boolean).join(' | ');
 
 const formatPerson = (person: CommunityQueueBriefPerson): string =>
   [
@@ -89,8 +100,26 @@ export const formatCommunityDailyBriefMarkdown = (
     '## Next Steps',
     ...(brief.nextSteps.length ? brief.nextSteps.map(formatStep) : ['- No next steps selected.']),
     '',
-    '## Focus Queues',
   ];
+
+  if (brief.engagement) {
+    lines.push(
+      '## Engagement Actions',
+      `- Movement rows: ${brief.engagement.totals.rows}`,
+      `- Unmatched rows: ${brief.engagement.totals.unmatchedRows}`,
+      `- Review rows: ${brief.engagement.totals.reviewRows}`,
+      `- Latest captured at: ${brief.engagement.source.latestCapturedAt ?? 'unknown'}`,
+      `- Operator note: ${brief.engagement.operatorNote}`,
+      '',
+      'Top actions:',
+      ...(brief.engagement.topActions.length
+        ? brief.engagement.topActions.map(formatEngagementAction)
+        : ['- No engagement actions available.']),
+      '',
+    );
+  }
+
+  lines.push('## Focus Queues');
 
   for (const focusQueue of brief.focusQueues) {
     lines.push(

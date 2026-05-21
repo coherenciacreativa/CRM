@@ -12,6 +12,7 @@ import {
   readCommunityQueueSnapshot,
   snapshotToPreviousMatched,
 } from '../../../lib/crm/community-queue-snapshots';
+import { buildCrmVNextEngagementMovementQueue } from '../../../lib/crm/crm-vnext-engagement-movement-queue';
 import {
   allowCrmVNextLocalQueryOverrides,
   authorizeCrmVNextInternalRead,
@@ -57,8 +58,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const peoplePerQueue = parsePositiveInt(req.query.peoplePerQueue, 3, 10);
 
   try {
-    const payload = await loadPersonCardsVNext(sourceOptions);
-    const previousSnapshot = previousSnapshotPath ? await readCommunityQueueSnapshot(previousSnapshotPath) : null;
+    const [payload, previousSnapshot, engagementMovementQueue] = await Promise.all([
+      loadPersonCardsVNext(sourceOptions),
+      previousSnapshotPath ? readCommunityQueueSnapshot(previousSnapshotPath) : Promise.resolve(null),
+      buildCrmVNextEngagementMovementQueue({
+        ...sourceOptions,
+        limit: 25,
+        includeUnchanged: false,
+      }),
+    ]);
 
     return res.status(200).json({
       ok: true,
@@ -71,6 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         previousMatched: snapshotToPreviousMatched(previousSnapshot),
         focusQueueLimit,
         peoplePerQueue,
+        engagementMovementQueue,
       }),
     });
   } catch (error) {

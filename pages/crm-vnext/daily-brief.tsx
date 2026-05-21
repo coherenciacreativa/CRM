@@ -14,6 +14,7 @@ import {
   readCommunityQueueSnapshot,
   snapshotToPreviousMatched,
 } from '../../lib/crm/community-queue-snapshots';
+import { buildCrmVNextEngagementMovementQueue } from '../../lib/crm/crm-vnext-engagement-movement-queue';
 
 type DailyBriefPageProps =
   | {
@@ -91,10 +92,16 @@ export const getServerSideProps: GetServerSideProps<DailyBriefPageProps> = async
   }
 
   try {
-    const payload = await loadPersonCardsVNext();
-    const previousSnapshot = process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH
-      ? await readCommunityQueueSnapshot(process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH)
-      : null;
+    const [payload, previousSnapshot, engagementMovementQueue] = await Promise.all([
+      loadPersonCardsVNext(),
+      process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH
+        ? readCommunityQueueSnapshot(process.env.CRM_VNEXT_QUEUE_SNAPSHOT_PATH)
+        : Promise.resolve(null),
+      buildCrmVNextEngagementMovementQueue({
+        limit: 25,
+        includeUnchanged: false,
+      }),
+    ]);
 
     return {
       props: {
@@ -108,6 +115,7 @@ export const getServerSideProps: GetServerSideProps<DailyBriefPageProps> = async
           previousMatched: snapshotToPreviousMatched(previousSnapshot),
           focusQueueLimit: 3,
           peoplePerQueue: 3,
+          engagementMovementQueue,
         }),
       },
     };
@@ -200,6 +208,11 @@ export default function CrmVNextDailyBriefPage(props: DailyBriefPageProps) {
           value={`${brief.queues.totals.notify}/${brief.queues.totals.watch}/${brief.queues.totals.ok}`}
           detail="notify / watch / ok"
         />
+        <Metric
+          label="Actions"
+          value={brief.engagement ? numberFmt.format(brief.engagement.totals.rows) : 0}
+          detail={brief.engagement ? `${brief.engagement.totals.reviewRows} review rows` : 'movement queue not loaded'}
+        />
       </section>
 
       <section className="briefGrid">
@@ -240,6 +253,40 @@ export default function CrmVNextDailyBriefPage(props: DailyBriefPageProps) {
           </div>
         </article>
       </section>
+
+      {brief.engagement ? (
+        <section className="engagementSection">
+          <div className="sectionHeader">
+            <h2>Engagement Actions</h2>
+            <span>{numberFmt.format(brief.engagement.totals.reviewRows)} review rows</span>
+          </div>
+          <div className="actionGrid">
+            {brief.engagement.topActions.length ? brief.engagement.topActions.map((action) => (
+              <article className="actionCard" key={action.code}>
+                <div className="actionTop">
+                  <strong>{action.label}</strong>
+                  <span>{numberFmt.format(action.count)}</span>
+                </div>
+                <div className="actionMeta">
+                  <span>{labelText(action.category)}</span>
+                  <span>{action.reviewRequired ? 'Review' : 'Observe'}</span>
+                  <span>{action.outboundApprovalRequired ? 'Approval boundary' : 'No outbound implied'}</span>
+                </div>
+                {action.representativeReason ? <p>{action.representativeReason}</p> : null}
+              </article>
+            )) : (
+              <article className="actionCard">
+                <div className="actionTop">
+                  <strong>No engagement actions</strong>
+                  <span>0</span>
+                </div>
+                <p>No stored movement rows are ready for daily action routing.</p>
+              </article>
+            )}
+          </div>
+          <p className="operatorNote">{brief.engagement.operatorNote}</p>
+        </section>
+      ) : null}
 
       <section className="focusSection">
         <div className="sectionHeader">
@@ -315,6 +362,7 @@ const styles = `
   .hero,
   .metrics,
   .briefGrid,
+  .engagementSection,
   .focusSection,
   .safety {
     max-width: 1220px;
@@ -391,13 +439,14 @@ const styles = `
 
   .metrics {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
     margin-bottom: 18px;
   }
 
   .metric,
   .panel,
+  .actionCard,
   .queueCard,
   .safety {
     border: 1px solid #d7d0c2;
@@ -507,6 +556,66 @@ const styles = `
     align-content: start;
     gap: 8px;
     min-width: 128px;
+  }
+
+  .engagementSection {
+    margin-bottom: 24px;
+  }
+
+  .actionGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .actionCard {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .actionTop {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .actionTop strong {
+    overflow-wrap: anywhere;
+  }
+
+  .actionTop span {
+    min-width: 36px;
+    text-align: right;
+    color: #325c55;
+    font-size: 28px;
+    font-weight: 900;
+  }
+
+  .actionMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .actionMeta span {
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #eef1ec;
+    color: #40524d;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .actionCard p,
+  .operatorNote {
+    color: #53625f;
+    line-height: 1.45;
+  }
+
+  .operatorNote {
+    margin-top: 12px;
   }
 
   .focusSection {
@@ -623,6 +732,7 @@ const styles = `
     }
 
     .metrics,
+    .actionGrid,
     .queueGrid {
       grid-template-columns: 1fr;
     }

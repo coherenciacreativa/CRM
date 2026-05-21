@@ -24,6 +24,7 @@ export type CommunityDailyBriefOptions = {
   previousMatched?: CommunityQueuePreviousSnapshot;
   focusQueueLimit?: number | null;
   peoplePerQueue?: number | null;
+  engagementMovementQueue?: CommunityDailyBriefEngagementMovementQueueInput | null;
 };
 
 export type CommunityDailyBriefHighlight = {
@@ -41,6 +42,69 @@ export type CommunityDailyBriefNextStep = {
   requiresApproval: boolean;
 };
 
+export type CommunityDailyBriefEngagementActionSummary = {
+  code: string;
+  label: string;
+  category: string;
+  count: number;
+  reviewRequired: boolean;
+  outboundApprovalRequired: boolean;
+  representativeReason: string | null;
+};
+
+export type CommunityDailyBriefEngagementMovementSummary = {
+  mode: 'read_only_engagement_actions_summary';
+  source: {
+    rows: number;
+    unmatchedRows: number;
+    latestCapturedAt: string | null;
+    totalSignals: number | null;
+  };
+  totals: {
+    rows: number;
+    unmatchedRows: number;
+    reviewRows: number;
+    actionGroups: number;
+    categories: number;
+  };
+  byAction: Record<string, number>;
+  byCategory: Record<string, number>;
+  topActions: CommunityDailyBriefEngagementActionSummary[];
+  operatorNote: string;
+};
+
+export type CommunityDailyBriefEngagementMovementQueueInput = {
+  source?: {
+    latestCapturedAt?: string | null;
+    totalSignals?: number | null;
+  } | null;
+  summary?: {
+    rows?: number | null;
+    unmatchedRows?: number | null;
+    reviewRows?: number | null;
+  } | null;
+  rows?: Array<{
+    operatorAction?: {
+      code?: string | null;
+      label?: string | null;
+      category?: string | null;
+      reviewRequired?: boolean | null;
+      outboundApprovalRequired?: boolean | null;
+      reason?: string | null;
+    } | null;
+  }> | null;
+  unmatchedRows?: Array<{
+    operatorAction?: {
+      code?: string | null;
+      label?: string | null;
+      category?: string | null;
+      reviewRequired?: boolean | null;
+      outboundApprovalRequired?: boolean | null;
+      reason?: string | null;
+    } | null;
+  }> | null;
+};
+
 export type CommunityDailyBrief = {
   generatedAt: string;
   mode: 'read_only_daily_brief';
@@ -52,6 +116,7 @@ export type CommunityDailyBrief = {
   };
   highlights: CommunityDailyBriefHighlight[];
   nextSteps: CommunityDailyBriefNextStep[];
+  engagement: CommunityDailyBriefEngagementMovementSummary | null;
   focusQueues: CommunityQueueBrief[];
   safety: {
     outboundProhibited: true;
@@ -77,6 +142,28 @@ const pct = (value: number, total: number): number => {
   return Math.round((value / total) * 100);
 };
 
+const cleanNumber = (value: unknown, fallback = 0): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value.replace(/,/g, ''));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+};
+
+const cleanString = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+};
+
+const labelFromCode = (value: string): string =>
+  value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
 const chooseFocusQueueIds = (
   status: CommunityQueueStatusReport,
   summaries: CommunityQueueSummary[],
@@ -99,6 +186,7 @@ const chooseFocusQueueIds = (
 const buildHighlights = (
   summary: CommunityInsightsSummary,
   status: CommunityQueueStatusReport,
+  engagement: CommunityDailyBriefEngagementMovementSummary | null,
 ): CommunityDailyBriefHighlight[] => {
   const total = summary.totals.cards;
   const notifyQueues = status.statuses.filter((item) => item.level === 'notify');
@@ -153,12 +241,23 @@ const buildHighlights = (
     });
   }
 
+  if (engagement && engagement.totals.rows + engagement.totals.unmatchedRows > 0) {
+    const topAction = engagement.topActions[0];
+    highlights.push({
+      code: 'engagement_actions',
+      level: engagement.totals.reviewRows > 0 ? 'watch' : 'info',
+      title: 'Engagement actions',
+      detail: `${engagement.totals.rows} movement rows, ${engagement.totals.unmatchedRows} unmatched; top action ${topAction?.label ?? 'none'}.`,
+    });
+  }
+
   return highlights;
 };
 
 const buildNextSteps = (
   summary: CommunityInsightsSummary,
   status: CommunityQueueStatusReport,
+  engagement: CommunityDailyBriefEngagementMovementSummary | null,
 ): CommunityDailyBriefNextStep[] => {
   const steps: CommunityDailyBriefNextStep[] = [];
   const notifyQueues = status.statuses.filter((item) => item.shouldAlertAlejandro);
@@ -203,7 +302,107 @@ const buildNextSteps = (
     });
   }
 
+  if (engagement) {
+    if (engagement.byAction.stitch_identity || engagement.totals.unmatchedRows > 0) {
+      steps.push({
+        code: 'resolve_engagement_identity',
+        priority: 'high',
+        owner: 'mantis',
+        action: 'Run identity stitching for unmatched engagement before using those signals in cards or follow-up decisions.',
+        requiresApproval: false,
+      });
+    }
+
+    if (engagement.byAction.review_reply_context) {
+      steps.push({
+        code: 'review_engagement_replies',
+        priority: 'medium',
+        owner: 'mantis',
+        action: 'Use the engagement resolution loop to review newsletter replies and ask Alejandro only for context that is not already covered.',
+        requiresApproval: false,
+      });
+    }
+
+    if (engagement.byAction.care_or_retention) {
+      steps.push({
+        code: 'prepare_care_review',
+        priority: 'medium',
+        owner: 'mantis',
+        action: 'Prepare internal care/retention notes for active participants; any outbound message still needs explicit approval.',
+        requiresApproval: true,
+      });
+    }
+  }
+
   return steps;
+};
+
+export const summarizeEngagementMovementForDailyBrief = (
+  queue: CommunityDailyBriefEngagementMovementQueueInput | null | undefined,
+): CommunityDailyBriefEngagementMovementSummary | null => {
+  if (!queue) return null;
+  const rows = Array.isArray(queue.rows) ? queue.rows : [];
+  const unmatchedRows = Array.isArray(queue.unmatchedRows) ? queue.unmatchedRows : [];
+  const actionItems = [...rows, ...unmatchedRows]
+    .map((row) => row.operatorAction)
+    .filter((action): action is NonNullable<typeof action> => Boolean(action));
+
+  const byAction: Record<string, number> = {};
+  const byCategory: Record<string, number> = {};
+  const actionDetails = new Map<string, CommunityDailyBriefEngagementActionSummary>();
+
+  for (const action of actionItems) {
+    const code = cleanString(action.code) ?? 'unknown';
+    const category = cleanString(action.category) ?? 'unknown';
+    byAction[code] = (byAction[code] ?? 0) + 1;
+    byCategory[category] = (byCategory[category] ?? 0) + 1;
+
+    const previous = actionDetails.get(code);
+    actionDetails.set(code, {
+      code,
+      label: cleanString(action.label) ?? labelFromCode(code),
+      category,
+      count: byAction[code],
+      reviewRequired: Boolean(previous?.reviewRequired || action.reviewRequired),
+      outboundApprovalRequired: Boolean(previous?.outboundApprovalRequired || action.outboundApprovalRequired),
+      representativeReason: previous?.representativeReason ?? cleanString(action.reason),
+    });
+  }
+
+  const reviewRowsFromActions = actionItems.filter((action) => action.reviewRequired).length;
+  const sourceRows = cleanNumber(queue.summary?.rows, rows.length);
+  const sourceUnmatchedRows = cleanNumber(queue.summary?.unmatchedRows, unmatchedRows.length);
+
+  return {
+    mode: 'read_only_engagement_actions_summary',
+    source: {
+      rows: sourceRows,
+      unmatchedRows: sourceUnmatchedRows,
+      latestCapturedAt: cleanString(queue.source?.latestCapturedAt),
+      totalSignals: queue.source?.totalSignals === null || queue.source?.totalSignals === undefined
+        ? null
+        : cleanNumber(queue.source.totalSignals),
+    },
+    totals: {
+      rows: sourceRows,
+      unmatchedRows: sourceUnmatchedRows,
+      reviewRows: cleanNumber(queue.summary?.reviewRows, reviewRowsFromActions),
+      actionGroups: Object.keys(byAction).length,
+      categories: Object.keys(byCategory).length,
+    },
+    byAction,
+    byCategory,
+    topActions: [...actionDetails.values()]
+      .sort(
+        (left, right) =>
+          right.count - left.count
+          || Number(right.reviewRequired) - Number(left.reviewRequired)
+          || left.code.localeCompare(right.code),
+      )
+      .slice(0, 5),
+    operatorNote:
+      'Engagement actions are internal routing guidance only. They are not permission to contact anyone or mutate cards.',
+  };
 };
 
 export const buildCommunityDailyBrief = (
@@ -223,6 +422,7 @@ export const buildCommunityDailyBrief = (
     now: generatedAt,
     previousMatched: options.previousMatched,
   });
+  const engagement = summarizeEngagementMovementForDailyBrief(options.engagementMovementQueue);
   const focusQueueIds = chooseFocusQueueIds(queueStatus, queueSummaries, focusQueueLimit);
 
   return {
@@ -234,8 +434,9 @@ export const buildCommunityDailyBrief = (
       summaries: queueSummaries,
       status: queueStatus,
     },
-    highlights: buildHighlights(summary, queueStatus),
-    nextSteps: buildNextSteps(summary, queueStatus),
+    highlights: buildHighlights(summary, queueStatus, engagement),
+    nextSteps: buildNextSteps(summary, queueStatus, engagement),
+    engagement,
     focusQueues: focusQueueIds.map((queueId) =>
       buildCommunityQueueBrief(cards, queueId, {
         now: generatedAt,

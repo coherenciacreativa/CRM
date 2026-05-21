@@ -52,6 +52,29 @@ describe("formatCommunityDailyBriefMarkdown", () => {
         now: NOW,
         focusQueueLimit: 2,
         peoplePerQueue: 1,
+        engagementMovementQueue: {
+          source: {
+            latestCapturedAt: "2026-05-21T05:00:00.000Z",
+            totalSignals: 18,
+          },
+          summary: {
+            rows: 2,
+            unmatchedRows: 0,
+            reviewRows: 1,
+          },
+          rows: [
+            {
+              operatorAction: {
+                code: "review_reply_context",
+                label: "Review Reply Context",
+                category: "human_context",
+                reviewRequired: true,
+                outboundApprovalRequired: false,
+                reason: "Human reply needs context before asking Alejandro again.",
+              },
+            },
+          ],
+        },
       },
     );
 
@@ -70,6 +93,9 @@ describe("formatCommunityDailyBriefMarkdown", () => {
     expect(markdown).toContain("## Community");
     expect(markdown).toContain("- People: 2");
     expect(markdown).toContain("## Queue Status");
+    expect(markdown).toContain("## Engagement Actions");
+    expect(markdown).toContain("- Movement rows: 2");
+    expect(markdown).toContain("Review Reply Context");
     expect(markdown).toContain("## Focus Queues");
     expect(markdown).toContain("IG Reader");
     expect(markdown).toContain("No outbound messages.");
