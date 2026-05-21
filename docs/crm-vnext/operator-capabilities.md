@@ -63,11 +63,12 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 39. Review stored facts with `GET /api/crm-vnext/identity-review`.
 40. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
 41. Read `GET /api/crm-vnext/community-daily-brief` for community queues plus stored engagement action summaries.
-42. If needed, read `GET /api/crm-vnext/community-queues`.
-43. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-44. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-45. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-46. Ask for approval if the next move would touch an external channel.
+42. Convert that daily picture into an ordered Mantis task list with `GET /api/crm-vnext/daily-operator-handoff`.
+43. If needed, read `GET /api/crm-vnext/community-queues`.
+44. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+45. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+46. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+47. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -107,7 +108,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, engagement movement queue, engagement decision brief, engagement resolution loop with anti-redundancy guard, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, engagement movement queue, engagement decision brief, engagement resolution loop with anti-redundancy guard, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, daily operator handoff, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -139,7 +140,7 @@ Local commands currently include activation run, identity stitching research, Gm
 - Next Best Action Policy v0 (`docs/crm-vnext/next-best-action-policy-v0.md`) translates score movement into operator-safe actions such as stitching, reply review, care/retention, social context review, warm-contact review, or observation. It keeps ClassBot/yoga care separate from sales heat.
 - Engagement Signal Preview is read-only and consumes supplied MailerLite/Gmail/Instagram/manual engagement snapshots to show scoring deltas and internal queues. It does not call live APIs, mutate cards, change MailerLite/Gmail, or authorize outbound follow-up.
 - Engagement Snapshot Ledger can store approved read-only engagement previews as local JSONL movement history for the dashboard. It does not mutate cards, write Fact Store, call live APIs, touch credentials, or authorize outbound follow-up.
-- Engagement Movement Queue reads stored movement history as an operator queue for Mantis. It can recommend internal actions such as reviewing reply context, reviewing a warm contact, continuing observation, or routing unmatched signals to stitching. The Daily Brief now summarizes these stored actions so Mantis can see the next operational move in one place. It does not mutate cards, write Fact Store, call live APIs, touch credentials, or authorize outbound follow-up.
+- Engagement Movement Queue reads stored movement history as an operator queue for Mantis. It can recommend internal actions such as reviewing reply context, reviewing a warm contact, continuing observation, or routing unmatched signals to stitching. The Daily Brief now summarizes these stored actions, and Daily Operator Handoff turns the daily picture into an ordered no-send task list. Neither surface mutates cards, writes Fact Store, calls live APIs, touches credentials, or authorizes outbound follow-up.
 - Human Enrichment Questions is read-only and creates person-by-person prompts after a batch so Alejandro can add remembered context. Use `--format compact` by default when Alejandro is reviewing many people: it keeps the evidence JSON intact but renders a short name/handle/data/screenshot/freestyle sheet. Answers still need Fact Intake or a later approved local write before they become CRM state.
 - Human Enrichment Response Evidence is read-only and converts Alejandro's answered compact-review sheet into structured evidence sources plus operator tasks. It should run before `context-fact-proposals`; it does not write cards, Fact Store, or external systems.
 - IG-Origin Batch Prompt is read-only and prepares copy-ready Mantis prompts for Instagram/onboarding contacts, including DM UI bridge and compact thread-context instructions. It does not inspect Instagram or call live APIs by itself.

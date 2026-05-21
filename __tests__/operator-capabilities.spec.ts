@@ -55,6 +55,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "community_queue_brief",
       "community_decision_brief",
       "community_daily_brief",
+      "daily_operator_handoff",
       "person_card",
     ]);
     expect(capabilities.browserRoutes.map((route) => route.path)).toEqual([
@@ -119,6 +120,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:readiness",
       "npm run crm:vnext:queue-monitor",
       "npm run crm:vnext:daily-brief",
+      "npm run crm:vnext:daily-operator-handoff",
       "npm run crm:vnext:decision-brief -- --queue-id <queueId>",
     ]);
   });

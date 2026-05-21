@@ -15,7 +15,12 @@ Local export script:
 
 `npm run crm:vnext:daily-brief`
 
+Daily operator handoff:
+
+`GET /api/crm-vnext/daily-operator-handoff`
+
 See `docs/crm-vnext/community-daily-brief-export.md`.
+See `docs/crm-vnext/daily-operator-handoff.md`.
 
 ## Purpose
 
@@ -121,6 +126,8 @@ See `docs/crm-vnext/person-card-api.md`.
 ## Mantis Operating Rule
 
 Use this endpoint as the first daily read before deciding what to inspect.
+
+Use `GET /api/crm-vnext/daily-operator-handoff` when Mantis needs the Daily Brief translated into a compact ordered task list.
 
 If `queues.totals.notify > 0`, Mantis should prepare a decision brief for Alejandro. Actual Telegram delivery remains a separate approved adapter.
 
