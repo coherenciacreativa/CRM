@@ -189,6 +189,7 @@ export default function CrmVNextDashboard(props: DashboardProps) {
           <small>Snapshot: {source.generatedAt || 'unknown'}</small>
           <Link className="navLink" href="/crm-vnext/daily-brief">Daily Brief</Link>
           <Link className="navLink" href="/crm-vnext/queues">Mantis Queues</Link>
+          <Link className="navLink" href="/crm-vnext/engagement-movement">Engagement Movement</Link>
           <Link className="navLink" href="/crm-vnext/people">People Explorer</Link>
           <Link className="navLink" href="/crm-vnext/sources">Source Ledger</Link>
           <Link className="navLink" href="/crm-vnext/fact-intake">Fact Intake</Link>

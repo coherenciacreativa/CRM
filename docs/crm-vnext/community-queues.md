@@ -23,6 +23,12 @@ Daily operator brief API:
 
 `/api/crm-vnext/community-daily-brief`
 
+Engagement movement queue:
+
+`/crm-vnext/engagement-movement`
+
+`/api/crm-vnext/engagement-movement-queue`
+
 ## Current Queues
 
 - `IG without email`: Instagram-known people who should eventually be guided toward email capture.
@@ -30,6 +36,12 @@ Daily operator brief API:
 - `Human review required`: suppression/sensitive/direct follow-up cases that must not move automatically.
 - `Identity stitching`: email-known people missing Instagram identity.
 - `Commercial follow-up`: warm contacts that require human decision before any outreach.
+
+## Engagement Movement Queue
+
+The movement queue is not a saved person-card filter. It reads the approved `Engagement Snapshot Ledger` and shows recent score movement caused by engagement sources such as MailerLite and Gmail replies.
+
+Use it after storing engagement snapshots when Mantis needs to see who warmed, why, and whether the safe next step is observe, inspect a reply, review a warm contact, or route an unmatched signal back to stitching.
 
 ## Status Contract
 

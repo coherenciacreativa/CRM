@@ -131,6 +131,7 @@ export default function CrmVNextQueuesPage(props: QueuesPageProps) {
       <header className="hero">
         <div>
           <Link className="backLink" href="/crm-vnext">Back to dashboard</Link>
+          <Link className="backLink secondary" href="/crm-vnext/engagement-movement">Engagement Movement</Link>
           <p className="eyebrow">CRM vNext</p>
           <h1>Mantis Queues</h1>
         </div>
@@ -235,8 +236,12 @@ const styles = `
 
   .backLink {
     display: inline-block;
-    margin-bottom: 14px;
+    margin: 0 12px 14px 0;
     font-size: 14px;
+  }
+
+  .backLink.secondary {
+    color: #60745f;
   }
 
   .backLink:hover,

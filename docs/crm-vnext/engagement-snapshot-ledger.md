@@ -75,6 +75,16 @@ The panel is deliberately operational, not a final analytics product. It should 
 - did anything require human review,
 - are there unmatched signals that need stitching.
 
+For a more operator-ready view, use:
+
+```text
+/crm-vnext/engagement-movement
+GET /api/crm-vnext/engagement-movement-queue
+npm run crm:vnext:engagement-movement-queue
+```
+
+That queue deduplicates recent movement by person and recommends safe internal actions such as `review_reply_context`, `review_warm_contact`, `keep_observing_email`, or `stitch_identity`.
+
 ## Safety
 
 The ledger is local-only:
