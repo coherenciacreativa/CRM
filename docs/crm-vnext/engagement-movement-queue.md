@@ -76,3 +76,12 @@ A warmed score is internal prioritization evidence. It is not permission to cont
 ## Operator Rule
 
 Mantis should read this queue after approved engagement snapshots are stored. Rows with `review_reply_context` or `review_warm_contact` can become a decision brief, but any external message still requires explicit approval from Alejandro.
+
+Next surface:
+
+```text
+GET /api/crm-vnext/engagement-decision-brief
+npm run crm:vnext:engagement-decision-brief
+```
+
+This converts the movement queue into a shorter no-send decision brief for Mantis/Alejandro.
