@@ -563,7 +563,8 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     preferredNextStep: "Use after Engagement Snapshot Ledger has stored useful movement history and before any decision brief or outbound proposal.",
     notes: [
       "Reads only local engagement snapshot history and local person cards.",
-      "Deduplicates recent movement by person and recommends internal actions such as review_reply_context, review_warm_contact, keep_observing, or stitch_identity.",
+      "Deduplicates recent movement by person and recommends internal actions through docs/crm-vnext/next-best-action-policy-v0.md.",
+      "ClassBot/yoga movement should route to care_or_retention unless there is separate explicit commercial intent.",
       "Does not mutate cards, write Fact Store, call live APIs, touch credentials, or send outbound messages.",
       "A row in this queue is prioritization evidence only; any external follow-up still needs explicit approval.",
     ],

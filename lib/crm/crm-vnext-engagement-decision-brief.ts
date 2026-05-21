@@ -138,10 +138,17 @@ const decisionNeedFor = (row: LooseRecord): string => {
   switch (row.operatorAction?.code) {
     case 'stitch_identity':
       return 'identity_stitching_required';
-    case 'human_review':
+    case 'respect_suppression':
+    case 'restricted_human_review':
       return 'restricted_or_risk_review';
+    case 'complete_profile':
+      return 'profile_completion_required';
     case 'review_reply_context':
       return 'email_reply_context_review';
+    case 'care_or_retention':
+      return 'care_or_retention_review';
+    case 'review_social_context':
+      return 'social_context_review';
     case 'review_warm_contact':
       return 'warm_contact_review';
     case 'inspect_cooling':
@@ -158,10 +165,17 @@ const questionFor = (row: LooseRecord): string => {
   switch (row.operatorAction?.code) {
     case 'stitch_identity':
       return `What trusted evidence should Mantis use next to stitch ${name} before any card write?`;
-    case 'human_review':
+    case 'respect_suppression':
+    case 'restricted_human_review':
       return `What human review is needed for ${name} before this signal can influence CRM action?`;
+    case 'complete_profile':
+      return `What identity or profile field should Mantis complete for ${name} before interpreting this signal further?`;
     case 'review_reply_context':
       return `What should we understand from ${name}'s email reply before enriching the card or planning follow-up?`;
+    case 'care_or_retention':
+      return `Does ${name}'s participation signal suggest care, continuity, gratitude, or simply observation?`;
+    case 'review_social_context':
+      return `What should Mantis understand from ${name}'s Instagram/DM context before planning anything else?`;
     case 'review_warm_contact':
       return `Does ${name}'s new warmth deserve context review, more evidence gathering, or a future approved follow-up plan?`;
     case 'inspect_cooling':
@@ -177,8 +191,14 @@ const internalNextStepFor = (row: LooseRecord): string => {
   switch (row.operatorAction?.code) {
     case 'stitch_identity':
       return 'Run identity stitching before using this signal in any card or follow-up decision.';
+    case 'complete_profile':
+      return 'Complete missing identity/profile fields before treating this as a useful engagement decision.';
     case 'review_reply_context':
       return 'Inspect the reply context and ask Alejandro for relationship/program context if needed.';
+    case 'care_or_retention':
+      return 'Review continuity, attendance, delivery, or gratitude needs; do not frame this as an offer by default.';
+    case 'review_social_context':
+      return 'Inspect compact Instagram context such as DM intent, comments, location, or product interest without taking social action.';
     case 'review_warm_contact':
       return 'Review the person card and source context; prepare only an internal rationale if follow-up might matter.';
     case 'keep_observing_email':
@@ -194,8 +214,12 @@ const shouldIncludeRow = (row: LooseRecord, includeObservationOnly: boolean): bo
   if (includeObservationOnly) return true;
   return [
     'stitch_identity',
-    'human_review',
+    'complete_profile',
+    'respect_suppression',
+    'restricted_human_review',
     'review_reply_context',
+    'care_or_retention',
+    'review_social_context',
     'review_warm_contact',
     'inspect_cooling',
   ].includes(row.operatorAction?.code);
@@ -386,4 +410,3 @@ export const buildCrmVNextEngagementDecisionBrief = async (
   });
   return buildCrmVNextEngagementDecisionBriefFromQueue(queue, options);
 };
-

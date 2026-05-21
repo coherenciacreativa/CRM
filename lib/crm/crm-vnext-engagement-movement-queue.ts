@@ -1,5 +1,6 @@
 import { readCrmEngagementSnapshotLedger } from './crm-vnext-engagement-snapshot-ledger.js';
 import { loadPersonCardsVNext } from './community-insights-source';
+import { evaluateCommunityNextBestActionPolicy } from './community-next-best-action-policy';
 
 export const CRM_VNEXT_ENGAGEMENT_MOVEMENT_QUEUE_SCHEMA_VERSION =
   'crm-vnext-engagement-movement-queue-2026-05-21';
@@ -125,68 +126,31 @@ const instagramSignalSummary = (instagram: LooseSignalRecord = {}) => {
   };
 };
 
-const actionFor = ({ movement, card, sourceKinds, email, reasonCodes, riskCodes }) => {
-  if (!card) {
-    return {
-      code: 'stitch_identity',
-      label: 'Stitch identity',
-      reviewRequired: true,
-      reason: 'Movement exists but no current local card matched the movement identity.',
-    };
-  }
-
-  if (riskCodes.length || movement.recommendedQueue === 'respect_suppression') {
-    return {
-      code: 'human_review',
-      label: 'Human review',
-      reviewRequired: true,
-      reason: 'Risk or suppression signal is present; do not use for automatic outreach.',
-    };
-  }
-
-  if (email.replies30d > 0 || reasonCodes.includes('email_replies')) {
-    return {
-      code: 'review_reply_context',
-      label: 'Review reply context',
-      reviewRequired: false,
-      reason: 'A human email reply is a richer relationship signal than a passive open.',
-    };
-  }
-
-  if (cleanNumber(movement.delta?.priorityScore) >= 10) {
-    return {
-      code: 'review_warm_contact',
-      label: 'Review warm contact',
-      reviewRequired: false,
-      reason: 'Priority moved meaningfully in the latest engagement snapshot.',
-    };
-  }
-
-  if (movement.movement === 'cooled') {
-    return {
-      code: 'inspect_cooling',
-      label: 'Inspect cooling',
-      reviewRequired: false,
-      reason: 'The score moved down; check whether this reflects suppression, stale data, or a real cooling pattern.',
-    };
-  }
-
-  if (sourceFamily(sourceKinds) === 'mailerlite_engagement') {
-    return {
-      code: 'keep_observing_email',
-      label: 'Keep observing email',
-      reviewRequired: false,
-      reason: 'Email engagement exists, but it is not yet strong enough for a human decision.',
-    };
-  }
-
-  return {
-    code: 'keep_observing',
-    label: 'Keep observing',
-    reviewRequired: false,
-    reason: cleanString(movement.safeNextStep) || 'Keep collecting signals until a stronger pattern emerges.',
-  };
-};
+const actionFor = ({ movement, card, sourceKinds, email, reasonCodes, riskCodes }) =>
+  evaluateCommunityNextBestActionPolicy({
+    cardPresent: Boolean(card),
+    currentNextBestAction: card?.nextAction?.code ?? movement.after?.nextBestAction ?? null,
+    recommendedQueue: movement.recommendedQueue,
+    sourceFamilies: [sourceFamily(sourceKinds), ...sourceKinds],
+    reasonCodes,
+    riskCodes,
+    movement: movement.movement,
+    safeNextStep: movement.safeNextStep,
+    score: {
+      priorityScore: movement.after?.priorityScore,
+      commercialWarmth: movement.after?.commercialWarmth,
+      communityDepth: movement.after?.communityDepth,
+      relationshipEngagement: movement.after?.relationshipEngagement,
+      dataConfidence: movement.after?.dataConfidence,
+    },
+    delta: movement.delta,
+    signals: {
+      email,
+      instagram: movement.aggregatedSignals?.instagram,
+      participation: movement.aggregatedSignals?.participation,
+      purchases: movement.aggregatedSignals?.purchases,
+    },
+  });
 
 const compactCard = (card) => card
   ? {
@@ -277,12 +241,12 @@ const unmatchedRow = (snapshot, signal, index) => ({
   phone: cleanString(signal.phone),
   reason: cleanString(signal.reason) || 'unmatched_signal',
   safeNextStep: cleanString(signal.safeNextStep) || 'Run identity stitching before using this engagement signal.',
-  operatorAction: {
-    code: 'stitch_identity',
-    label: 'Stitch identity',
-    reviewRequired: true,
-    reason: 'Signal did not match a stable local person card.',
-  },
+  operatorAction: evaluateCommunityNextBestActionPolicy({
+    cardPresent: false,
+    needsIdentityStitching: true,
+    sourceFamilies: [signal.sourceKind],
+    safeNextStep: signal.safeNextStep,
+  }),
 });
 
 const countBy = (rows, key) =>

@@ -28,7 +28,7 @@ The page is local/read-only and shows:
 - warmed/review rows,
 - score delta per person,
 - email/Instagram signal summaries,
-- safe operator action per row,
+- safe operator action per row, using `docs/crm-vnext/next-best-action-policy-v0.md`,
 - unmatched signals that need stitching.
 
 ## API
@@ -75,7 +75,14 @@ A warmed score is internal prioritization evidence. It is not permission to cont
 
 ## Operator Rule
 
-Mantis should read this queue after approved engagement snapshots are stored. Rows with `review_reply_context` or `review_warm_contact` can become a decision brief, but any external message still requires explicit approval from Alejandro.
+Mantis should read this queue after approved engagement snapshots are stored. Rows with `review_reply_context`, `care_or_retention`, `review_social_context`, or `review_warm_contact` can become a decision brief, but any external message still requires explicit approval from Alejandro.
+
+Important interpretation:
+
+- ClassBot/yoga participation should normally mean care, retention, delivery, gratitude, or continuity.
+- Newsletter replies should normally mean reply-context review.
+- Passive MailerLite opens or light story views should normally remain observation.
+- A warmed score is not permission to contact anyone.
 
 Next surface:
 

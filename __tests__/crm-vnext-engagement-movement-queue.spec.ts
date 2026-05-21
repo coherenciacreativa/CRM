@@ -207,7 +207,7 @@ describe('CRM vNext engagement movement queue', () => {
   });
 
   test('does not expose source ids or local paths from movement history', () => {
-    const payload = ledger();
+    const payload: any = ledger();
     payload.latestMovements[0].match.sourceIds = ['/Users/alejandrogomez/private/source.json'];
 
     const queue = buildCrmVNextEngagementMovementQueueFromLedger(payload, cards(), {
@@ -216,5 +216,80 @@ describe('CRM vNext engagement movement queue', () => {
 
     expect(JSON.stringify(queue)).not.toContain('/Users/');
     expect(JSON.stringify(queue)).not.toContain('private/source.json');
+  });
+
+  test('routes ClassBot participation movement to care instead of automatic warm follow-up', () => {
+    const payload: any = ledger();
+    payload.snapshots[0].unmatchedSignals = [];
+    payload.latestMovements = [
+      {
+        snapshotRecordId: 'engagement_snapshot_test',
+        movementItemId: 'movement_yoga',
+        capturedAt: NOW,
+        personId: 'phone:+573001112233',
+        displayName: 'Yoga Student',
+        movement: 'warmer',
+        recommendedQueue: 'keep_observing',
+        match: {
+          sourceKinds: ['classbot_activity'],
+        },
+        before: {
+          stage: 'SEMILLA',
+          priorityScore: 12,
+        },
+        after: {
+          stage: 'GERMINADA',
+          priorityScore: 31,
+          commercialWarmth: 22,
+          communityDepth: 72,
+          relationshipEngagement: 45,
+          dataConfidence: 41,
+        },
+        delta: {
+          priorityScore: 19,
+          commercialWarmth: 8,
+          communityDepth: 40,
+          relationshipEngagement: 18,
+          dataConfidence: 6,
+        },
+        newReasonCodes: ['community_participation'],
+        newRiskCodes: [],
+        aggregatedSignals: {
+          email: {},
+          instagram: {},
+          participation: {
+            yogaClasses90d: 8,
+            lastAttendanceAt: NOW,
+          },
+          tags: ['yoga'],
+        },
+      },
+    ];
+
+    const queue = buildCrmVNextEngagementMovementQueueFromLedger(
+      payload,
+      [
+        ...cards(),
+        buildCard({
+          personId: 'phone:+573001112233',
+          displayName: 'Yoga Student',
+          identities: {
+            email: 'yoga@example.com',
+            phone: '+573001112233',
+            city: 'Medellin',
+            country: 'Colombia',
+          },
+          evidence: [{ source: 'classbot' }, { source: 'human_review' }],
+        }),
+      ],
+      { now: NOW },
+    );
+
+    expect(queue.rows[0].operatorAction).toMatchObject({
+      code: 'care_or_retention',
+      category: 'care',
+      reviewRequired: false,
+    });
+    expect(queue.rows[0].operatorAction.reason).toContain('not automatic sales heat');
   });
 });
