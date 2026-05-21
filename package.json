@@ -56,6 +56,7 @@
     "crm:vnext:gmail-reply-engagement-signals": "node scripts/crm-vnext-gmail-reply-engagement-signals.mjs",
     "crm:vnext:signal-event-ledger": "node scripts/crm-vnext-signal-event-ledger.mjs",
     "crm:vnext:signal-event-projection": "node scripts/crm-vnext-signal-event-projection.mjs",
+    "crm:vnext:signal-event-pipeline": "TS_NODE_TRANSPILE_ONLY=1 NODE_NO_WARNINGS=1 node --loader ts-node/esm --experimental-specifier-resolution=node scripts/crm-vnext-signal-event-pipeline.mts",
     "crm:vnext:engagement-signal-preview": "node scripts/crm-vnext-engagement-signal-preview.mjs",
     "crm:vnext:engagement-snapshot-ledger": "node scripts/crm-vnext-engagement-snapshot-ledger.mjs",
     "crm:vnext:card-merge-review-resolver": "node scripts/crm-vnext-card-merge-review-resolver.mjs",

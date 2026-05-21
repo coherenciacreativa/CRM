@@ -81,6 +81,14 @@ Mantis should use this order before a meaningful CRM batch:
 8. Use engagement preview/snapshot ledgers for score movement.
 9. Never send outbound or mutate external systems without explicit approval.
 
+For the common engagement path, prefer the one-command pipeline:
+
+```bash
+npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --gmail-reply-discovery-file <json>
+```
+
+That command still follows the same layer boundaries; it simply chains the safe local steps so Mantis does not have to stitch them together manually.
+
 ## Long-Term Direction
 
 The current local-first architecture is correct while the CRM is still learning how to stitch identities and score relationships safely.

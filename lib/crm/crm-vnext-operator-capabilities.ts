@@ -1257,6 +1257,23 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "signal_event_pipeline",
+    command: "npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --gmail-reply-discovery-file <json>",
+    purpose: "Run the standard local source-to-score loop: source snapshot -> Signal Event Ledger -> projection -> engagement preview -> optional movement history.",
+    defaultMode: "dry_run",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Default mode writes no ledgers; --out may save a compact local report.",
+      "Use this for first-pass CRM heat movement from real read-only snapshots without manually chaining separate commands.",
+      "Use --write-events --approved-by <name> to append normalized observations to the local Signal Event Ledger.",
+      "Use --write-snapshot --approved-by <name> to append the read-only preview to Engagement Snapshot Ledger.",
+      "Accepts MailerLite snapshots, Gmail reply discoveries, existing engagement signals, and canonical signal events.",
+      "Future Shopify, payment, Bhakti WhatsApp, ClassBot, and Instagram event sources should enter here as canonical signal events.",
+      "This command never mutates cards, writes Fact Store, sends outbound, calls live APIs, or touches credentials.",
+    ],
+  },
+  {
     id: "engagement_signal_preview",
     command: "npm run crm:vnext:engagement-signal-preview -- --signals-file <json>",
     purpose: "Preview how read-only MailerLite/Gmail/Instagram/manual engagement snapshots would move CRM warmth scores and internal queues.",

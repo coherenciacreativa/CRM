@@ -481,6 +481,27 @@ const scoreSummary = (score: CommunityScoreCard): CrmEngagementScoreSummary => (
   nextBestAction: score.nextBestAction,
 });
 
+const isSuppressionStatus = (status: string | null | undefined): boolean =>
+  Boolean(status && ['unsubscribed', 'bounced', 'complained'].includes(status.toLowerCase()));
+
+const floorNonSuppressionAfterScore = (
+  before: CrmEngagementScoreSummary,
+  rawAfter: CrmEngagementScoreSummary,
+  aggregatedSignals: CrmEngagementSignalPreviewItem['aggregatedSignals'],
+): CrmEngagementScoreSummary => {
+  if (isSuppressionStatus(aggregatedSignals.email.subscriberStatus)) return rawAfter;
+  const priorityScore = Math.max(before.priorityScore, rawAfter.priorityScore);
+  return {
+    stage: rawAfter.priorityScore >= before.priorityScore ? rawAfter.stage : before.stage,
+    priorityScore,
+    commercialWarmth: Math.max(before.commercialWarmth, rawAfter.commercialWarmth),
+    communityDepth: Math.max(before.communityDepth, rawAfter.communityDepth),
+    relationshipEngagement: Math.max(before.relationshipEngagement, rawAfter.relationshipEngagement),
+    dataConfidence: Math.max(before.dataConfidence, rawAfter.dataConfidence),
+    nextBestAction: rawAfter.priorityScore >= before.priorityScore ? rawAfter.nextBestAction : before.nextBestAction,
+  };
+};
+
 const cardIndexes = (cards: PersonCardVNext[]) => {
   const byPersonId = new Map<string, PersonCardVNext>();
   const byEmail = new Map<string, PersonCardVNext>();
@@ -676,7 +697,7 @@ export const buildCrmVNextEngagementSignalPreview = (
   const previewItems = Array.from(byCard.values()).map(({ card, matchedBy, signals: cardSignals }) => {
     const preview = mergedPreviewCard(card, cardSignals, generatedAt);
     const before = scoreSummary(card.scoring);
-    const after = scoreSummary(preview.card.scoring);
+    const after = floorNonSuppressionAfterScore(before, scoreSummary(preview.card.scoring), preview.aggregatedSignals);
     const delta = {
       priorityScore: after.priorityScore - before.priorityScore,
       commercialWarmth: after.commercialWarmth - before.commercialWarmth,

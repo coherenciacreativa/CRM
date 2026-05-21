@@ -100,6 +100,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:stitch-batch-review -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:card-write-approval-packet -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
       "npm run crm:vnext:batch-operating-loop -- --include-expanded-sources --evidence-file <json> --decision-ledger-path <jsonl> --text <text>",
+      "npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --gmail-reply-discovery-file <json>",
       "npm run crm:vnext:engagement-signal-preview -- --signals-file <json>",
       "npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json>",
       "npm run crm:vnext:human-enrichment-questions -- --batch-loop-file <json> --person-id <personId> | --latest-writes <n>",

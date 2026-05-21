@@ -114,6 +114,62 @@ describe('buildCrmVNextEngagementSignalPreview', () => {
     expect(report.previewItems[0].safeNextStep).toContain('Respect suppression');
   });
 
+  test('does not cool a rich card from a narrow non-suppression source batch', () => {
+    const card = buildPersonCardVNext({
+      personId: 'email:macarena@example.com',
+      displayName: 'Macarena',
+      now: NOW,
+      identities: { email: 'macarena@example.com', instagramHandle: 'macarena_ig', phone: '+56912345678' },
+      channels: { emailStatus: 'active' },
+      scoring: {
+        email: {
+          opens30d: 6,
+          opens90d: 12,
+          lifetimeOpens: 30,
+          subscriberStatus: 'active',
+        },
+        instagram: {
+          storyViews30d: 8,
+          comments30d: 1,
+          follows: true,
+        },
+        participation: {
+          yogaClasses90d: 2,
+          lastAttendanceAt: '2026-05-01T12:00:00.000Z',
+        },
+      },
+      evidence: [
+        { source: 'existing-card', observedAt: NOW },
+        { source: 'instagram', observedAt: NOW },
+        { source: 'classbot', observedAt: NOW },
+      ],
+    });
+
+    const report = buildCrmVNextEngagementSignalPreview({
+      now: NOW,
+      cards: [card],
+      signals: [
+        {
+          sourceKind: 'gmail_reply_activity',
+          sourceId: 'gmail-old-reply',
+          email: 'macarena@example.com',
+          observedAt: '2026-03-01T12:00:00.000Z',
+          replies30d: 0,
+          lastReplyAt: '2026-03-01T12:00:00.000Z',
+        },
+      ],
+    });
+
+    expect(report.summary.cooledCards).toBe(0);
+    expect(report.previewItems[0].movement).toBe('unchanged');
+    expect(report.previewItems[0].after.priorityScore).toBeGreaterThanOrEqual(
+      report.previewItems[0].before.priorityScore,
+    );
+    expect(report.previewItems[0].after.relationshipEngagement).toBeGreaterThanOrEqual(
+      report.previewItems[0].before.relationshipEngagement,
+    );
+  });
+
   test('keeps unmatched engagement signals in an identity-stitching queue', () => {
     const card = buildPersonCardVNext({
       personId: 'email:known@example.com',

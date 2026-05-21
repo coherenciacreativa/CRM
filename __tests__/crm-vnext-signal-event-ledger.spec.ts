@@ -34,6 +34,7 @@ const payload = () => ({
       opens30d: 2,
       clicks30d: 1,
       lifetimeOpens: 12,
+      lastOpenAt: '2026-05-20T10:30:00.000Z',
       subscriberStatus: 'active',
       tags: ['Bogota', 'Retiro interest'],
     },
@@ -89,6 +90,7 @@ describe('CRM vNext signal event ledger', () => {
         metrics: {
           opens30d: 2,
           clicks30d: 1,
+          lastOpenAt: '2026-05-20T10:30:00.000Z',
           subscriberStatus: 'active',
         },
       },

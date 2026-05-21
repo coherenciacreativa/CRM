@@ -52,18 +52,19 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 28. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
 29. Normalize activity-shaped observations into the canonical local Signal Event Ledger with `npm run crm:vnext:signal-event-ledger -- --events-file <json>`.
 30. Project canonical signal events into previewable scoring inputs with `npm run crm:vnext:signal-event-projection -- --from-ledger`.
-31. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
-32. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
-33. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
-34. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-35. Review stored facts with `GET /api/crm-vnext/identity-review`.
-36. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-37. Read `GET /api/crm-vnext/community-daily-brief`.
-38. If needed, read `GET /api/crm-vnext/community-queues`.
-39. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-40. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-41. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-42. Ask for approval if the next move would touch an external channel.
+31. For the standard source-to-score loop, run `npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --gmail-reply-discovery-file <json>`.
+32. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
+33. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
+34. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
+35. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+36. Review stored facts with `GET /api/crm-vnext/identity-review`.
+37. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+38. Read `GET /api/crm-vnext/community-daily-brief`.
+39. If needed, read `GET /api/crm-vnext/community-queues`.
+40. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+41. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+42. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+43. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
