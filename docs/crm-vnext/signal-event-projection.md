@@ -91,6 +91,10 @@ If a future source has a new kind of signal that does not fit current dimensions
 
 The projection does not compute final scores by itself.
 
+Scoring policy lives in `docs/crm-vnext/scoring-policy-v0.md` and
+`lib/crm/community-scoring-policy.ts`. New source adapters should map events into
+the existing dimensions there instead of inventing a parallel heat score.
+
 Flow:
 
 ```text

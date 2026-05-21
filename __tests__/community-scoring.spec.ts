@@ -89,6 +89,40 @@ describe('community scoring vNext', () => {
     );
   });
 
+  test('does not let ClassBot yoga attendance dominate commercial warmth by itself', () => {
+    const activeYogaStudent = scoreCommunityContact({
+      now: NOW,
+      identity: {
+        hasPhone: true,
+        trustedMatchCount: 1,
+        sourceCount: 1,
+      },
+      participation: {
+        yogaClasses90d: 8,
+        lastAttendanceAt: '2026-05-07T12:00:00.000Z',
+      },
+      tags: ['yoga'],
+    });
+    const thoughtfulEmailReply = scoreCommunityContact({
+      now: NOW,
+      identity: {
+        hasEmail: true,
+        trustedMatchCount: 1,
+        sourceCount: 1,
+      },
+      email: {
+        replies30d: 1,
+        lastReplyAt: '2026-05-07T12:00:00.000Z',
+        subscriberStatus: 'active',
+      },
+    });
+
+    expect(activeYogaStudent.communityDepth).toBeGreaterThan(thoughtfulEmailReply.communityDepth);
+    expect(activeYogaStudent.productFit.yoga).toBeGreaterThanOrEqual(90);
+    expect(activeYogaStudent.commercialWarmth).toBeLessThanOrEqual(thoughtfulEmailReply.commercialWarmth);
+    expect(thoughtfulEmailReply.relationshipEngagement).toBeGreaterThanOrEqual(30);
+  });
+
   test('scores omnichannel customers with recent purchase history as Cosecha', () => {
     const card = scoreCommunityContact({
       now: NOW,

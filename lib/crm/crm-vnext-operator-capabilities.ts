@@ -527,6 +527,7 @@ const apiEndpoints: CrmVNextOperatorCapabilityEndpoint[] = [
     notes: [
       "Accepts supplied engagement signals only; the API does not call live MailerLite, Gmail, Instagram, ManyChat, Drive, or Contacts.",
       "Returns before/after scoring deltas, new reason/risk codes, and internal recommended queues.",
+      "Use docs/crm-vnext/scoring-policy-v0.md to interpret whether movement is commercial warmth, community depth, relationship engagement, or data confidence.",
       "Does not mutate cards, write Fact Store, send outbound messages, or touch credentials.",
       "A warmed score is not permission to contact someone; it only prioritizes internal review.",
     ],

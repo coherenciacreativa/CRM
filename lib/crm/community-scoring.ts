@@ -1,3 +1,5 @@
+import { COMMUNITY_PRIORITY_SCORE_WEIGHTS } from './community-scoring-policy';
+
 export type CommunityLifecycleStage = 'SEMILLA' | 'GERMINADA' | 'FLORECIDA' | 'COSECHA';
 
 export type ProductFitKey = 'yoga' | 'mentorship' | 'therapy' | 'digitalProducts' | 'retreats';
@@ -403,7 +405,10 @@ export const scoreCommunityContact = (input: CommunityScoringInput): CommunitySc
   };
 
   const priorityScore = clampScore(
-    commercialWarmth * 0.42 + communityDepth * 0.3 + relationshipEngagement * 0.2 + dataConfidence * 0.08,
+    commercialWarmth * COMMUNITY_PRIORITY_SCORE_WEIGHTS.commercialWarmth
+      + communityDepth * COMMUNITY_PRIORITY_SCORE_WEIGHTS.communityDepth
+      + relationshipEngagement * COMMUNITY_PRIORITY_SCORE_WEIGHTS.relationshipEngagement
+      + dataConfidence * COMMUNITY_PRIORITY_SCORE_WEIGHTS.dataConfidence,
   );
 
   const stage = maxStage(stageFromScore(priorityScore), input.existingStage);
