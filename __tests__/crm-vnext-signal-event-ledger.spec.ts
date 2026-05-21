@@ -179,6 +179,31 @@ describe('CRM vNext signal event ledger', () => {
     expect(ledger.safety.outboundProhibited).toBe(true);
   });
 
+  test('resolves the default ledger path when a CLI passes null', async () => {
+    const ledgerPath = await tempLedger();
+    const previousEnv = process.env.CRM_VNEXT_SIGNAL_EVENT_LEDGER_PATH;
+    process.env.CRM_VNEXT_SIGNAL_EVENT_LEDGER_PATH = ledgerPath;
+
+    try {
+      await appendCrmSignalEventLedger({
+        payload: payload(),
+        commit: true,
+        approvedBy: 'Alejandro',
+        ledgerPath,
+        now: NOW,
+      });
+
+      const ledger = await readCrmSignalEventLedger(null, { now: NOW });
+      expect(ledger.summary.events).toBe(2);
+    } finally {
+      if (previousEnv === undefined) {
+        delete process.env.CRM_VNEXT_SIGNAL_EVENT_LEDGER_PATH;
+      } else {
+        process.env.CRM_VNEXT_SIGNAL_EVENT_LEDGER_PATH = previousEnv;
+      }
+    }
+  });
+
   test('requires an approver for committed writes', async () => {
     const ledgerPath = await tempLedger();
     await expect(appendCrmSignalEventLedger({
