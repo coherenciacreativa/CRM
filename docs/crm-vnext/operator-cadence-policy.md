@@ -17,6 +17,7 @@ Safe to run daily, preferably failure-only/noise-minimized:
 - source health checks for gog/Google Workspace, MailerLite, and Instagram UI readiness,
 - local readiness checks,
 - local Daily Brief or Daily Operator Handoff only when needed for operator planning,
+- `crm:vnext:signal-packet-inbox` to detect whether a saved source packet is new,
 - ingestion/pipeline only if a new approved source packet exists.
 
 The daily pulse should report only when:
@@ -70,7 +71,7 @@ The two lanes are different:
 
 When Alejandro asks "qué sigue hoy en CRM?", Mantis should:
 
-1. check whether new source packets exist;
+1. run `npm run crm:vnext:signal-packet-inbox` to check whether new source packets exist;
 2. check source health if a high-value source is expected;
 3. run decision loops only for new deltas;
 4. otherwise report "observe/no new CRM action" instead of generating fresh questions.

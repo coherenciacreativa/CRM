@@ -90,6 +90,14 @@ npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --g
 
 That command still follows the same layer boundaries; it simply chains the safe local steps so Mantis does not have to stitch them together manually.
 
+Before running that pipeline in a daily pulse, use:
+
+```bash
+npm run crm:vnext:signal-packet-inbox
+```
+
+That inbox is not a source of truth. It is a local planner that reads saved reports, identifies unprocessed signal input packets, and prevents redundant daily decision loops when no new packet exists.
+
 ## Long-Term Direction
 
 The current local-first architecture is correct while the CRM is still learning how to stitch identities and score relationships safely.
