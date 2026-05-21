@@ -1128,6 +1128,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "instagram_signal_events",
+    command: "npm run crm:vnext:instagram-signal-events -- --observations-file <json>",
+    purpose: "Convert supplied read-only Instagram observations into canonical Signal Event Ledger events for the shared scoring pipeline.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Use for DMs, comments, likes, story views, follows, or aggregate Instagram snapshots gathered by API, UI, ManyChat export, or manual review.",
+      "This command does not open Instagram, call live APIs, mutate cards, write Fact Store, touch credentials, or change scores.",
+      "Pipe --out into crm:vnext:signal-event-pipeline -- --events-file <json> to preview score movement.",
+      "Until Instagram API ingestion is stable, this is the bridge between Mantis UI/API observations and the canonical Signal Event Ledger.",
+    ],
+  },
+  {
     id: "ig_origin_batch_prompt",
     command: "npm run crm:vnext:ig-origin-batch-prompt -- --latest-writes <n> --limit <n>",
     purpose: "Prepare a copy-ready Mantis prompt for Instagram/onboarding batches with compact DM thread-context instructions.",

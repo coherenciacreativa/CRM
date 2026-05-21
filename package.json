@@ -36,6 +36,7 @@
     "crm:vnext:google-drive-evidence": "node scripts/crm-vnext-google-drive-evidence.mjs",
     "crm:vnext:lead-capture-evidence": "node scripts/crm-vnext-lead-capture-evidence.mjs",
     "crm:vnext:instagram-dm-ui-evidence": "node scripts/crm-vnext-instagram-dm-ui-evidence.mjs",
+    "crm:vnext:instagram-signal-events": "node scripts/crm-vnext-instagram-signal-events.mjs",
     "crm:vnext:ig-origin-batch-prompt": "node scripts/crm-vnext-ig-origin-batch-prompt.mjs",
     "crm:vnext:mantis-batch-audit": "node scripts/crm-vnext-mantis-batch-audit.mjs",
     "crm:vnext:mantis-evidence-import": "node scripts/crm-vnext-mantis-evidence-import.mjs",

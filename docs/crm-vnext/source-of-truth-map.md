@@ -63,6 +63,7 @@ Use the right layer for the right kind of truth:
 | "This person attended Tuesday class" | Signal Event Ledger. |
 | "This email belongs to this person" | Evidence review/card write approval. |
 | "This person opened 2 campaigns in 30 days" | Signal Event Ledger -> engagement preview. |
+| "This person viewed stories / sent DM / commented on Instagram" | `crm:vnext:instagram-signal-events` -> Signal Event Ledger -> engagement preview. |
 | "This person replied thoughtfully to a newsletter" | Signal Event Ledger, plus evidence if the snippet helps stitching/context. |
 | "This person is a therapy client/patient" | Restricted fact/evidence/card path with human-review boundaries. |
 | "This score moved warmer this week" | Engagement Snapshot Ledger. |

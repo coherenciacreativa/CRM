@@ -15,6 +15,8 @@ Turn the Daily Brief into a compact Mantis task list:
 
 This is a dispatcher, not a new scoring system. It consumes the existing Daily Brief, stored Engagement Movement Queue history, and the Engagement Resolution Loop anti-redundancy guard.
 
+Cadence note: while Instagram is the most active channel and full Instagram ingestion is not stable yet, use this handoff as a quiet operator pulse. Run the engagement decision/resolution loops when new signal packets arrive, not merely because a new day started.
+
 ## API
 
 ```text
@@ -71,3 +73,5 @@ que sigue hoy en CRM?
 Mantis should return the first one or two tasks in plain language, not the full technical packet, unless Alejandro asks for the report.
 
 If the handoff says `observe_only`, do not manufacture questions. Waiting is an active operator decision.
+
+For cadence details, see `docs/crm-vnext/operator-cadence-policy.md`.

@@ -39,6 +39,19 @@ npm run crm:vnext:signal-event-pipeline -- \
   --collector Mantis
 ```
 
+Dry-run supplied Instagram signal events:
+
+```bash
+npm run crm:vnext:instagram-signal-events -- \
+  --observations-file ~/Documents/Mantis-Reports/instagram_observations.json \
+  --out ~/Documents/Mantis-Reports/crm_vnext_instagram_signal_events.json
+
+npm run crm:vnext:signal-event-pipeline -- \
+  --events-file ~/Documents/Mantis-Reports/crm_vnext_instagram_signal_events.json \
+  --source-label "Instagram observations" \
+  --collector Mantis
+```
+
 Commit local event history and preview movement history after explicit approval:
 
 ```bash
@@ -58,7 +71,7 @@ npm run crm:vnext:signal-event-pipeline -- \
 | `--mailerlite-snapshot-file` | Converts supplied MailerLite subscriber/campaign engagement rows into email engagement events. |
 | `--gmail-reply-discovery-file` | Converts supplied Gmail newsletter reply metadata into email reply events. |
 | `--signals-file` | Accepts existing `engagement-signal-preview` signals. |
-| `--events-file` | Accepts already canonical signal events, including future Shopify, Bhakti WhatsApp, ClassBot, payment, or Instagram events. |
+| `--events-file` | Accepts already canonical signal events, including Instagram, Shopify, Bhakti WhatsApp, ClassBot, payment, or future app events. |
 
 Multiple source files can be supplied in one run.
 
@@ -104,6 +117,8 @@ or:
 ```
 
 This keeps Shopify, Bhakti WhatsApp, ClassBot, payments, Instagram, and future apps inside one scoring lane instead of creating parallel CRMs.
+
+For Instagram, prefer `crm:vnext:instagram-signal-events` as the local adapter before passing events into this pipeline. It keeps UI/API/ManyChat/manual Instagram observations in the same canonical lane without making live Instagram calls.
 
 ## Output
 

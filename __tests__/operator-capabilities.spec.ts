@@ -91,6 +91,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:google-drive-evidence -- --text <text>",
       "npm run crm:vnext:lead-capture-evidence -- --text <text>",
       "npm run crm:vnext:instagram-dm-ui-evidence -- --observations-file <json>",
+      "npm run crm:vnext:instagram-signal-events -- --observations-file <json>",
       "npm run crm:vnext:ig-origin-batch-prompt -- --latest-writes <n> --limit <n>",
       "npm run crm:vnext:context-fact-proposals -- --evidence-file <json>",
       "npm run crm:vnext:context-fact-apply -- --proposal-file <json> --proposal-id <id>",

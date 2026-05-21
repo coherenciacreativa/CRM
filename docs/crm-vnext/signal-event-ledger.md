@@ -185,7 +185,7 @@ The v0 can store both raw events and aggregate snapshots. Aggregate snapshots ar
 Recommended flow:
 
 1. Mantis gathers source evidence read-only.
-2. Source-specific adapters normalize when useful, for example MailerLite or Gmail reply engagement signals.
+2. Source-specific adapters normalize when useful, for example MailerLite, Gmail reply engagement signals, or Instagram observations through `crm:vnext:instagram-signal-events`.
 3. `signal-event-ledger` stores the canonical observations.
 4. `signal-event-projection` projects selected canonical events into engagement preview signals.
 5. `engagement-signal-preview` computes scoring deltas.
