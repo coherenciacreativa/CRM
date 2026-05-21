@@ -187,6 +187,7 @@ export default function CrmVNextDashboard(props: DashboardProps) {
         <div className="source">
           <span>{numberFmt.format(source.cards)} local cards</span>
           <small>Snapshot: {source.generatedAt || 'unknown'}</small>
+          <Link className="navLink" href="/crm-vnext/control-room">Control Room</Link>
           <Link className="navLink" href="/crm-vnext/daily-brief">Daily Brief</Link>
           <Link className="navLink" href="/crm-vnext/queues">Mantis Queues</Link>
           <Link className="navLink" href="/crm-vnext/engagement-movement">Engagement Movement</Link>

@@ -20,6 +20,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
     expect(capabilities.apiEndpoints.map((endpoint) => endpoint.id)).toEqual([
       "operator_capabilities",
       "readiness",
+      "control_room",
       "source_ledger",
       "fact_intake",
       "fact_store",
@@ -60,6 +61,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
     ]);
     expect(capabilities.browserRoutes.map((route) => route.path)).toEqual([
       "/crm-vnext",
+      "/crm-vnext/control-room",
       "/crm-vnext/daily-brief",
       "/crm-vnext/queues",
       "/crm-vnext/engagement-movement",
@@ -120,6 +122,7 @@ describe("buildCrmVNextOperatorCapabilities", () => {
       "npm run crm:vnext:identity-review",
       "npm run crm:vnext:card-rebuild-diff",
       "npm run crm:vnext:readiness",
+      "npm run crm:vnext:control-room",
       "npm run crm:vnext:queue-monitor",
       "npm run crm:vnext:daily-brief",
       "npm run crm:vnext:daily-operator-handoff",

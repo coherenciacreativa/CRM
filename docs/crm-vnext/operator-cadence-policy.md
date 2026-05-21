@@ -18,6 +18,7 @@ Safe to run daily, preferably failure-only/noise-minimized:
 - local readiness checks,
 - local Daily Brief or Daily Operator Handoff only when needed for operator planning,
 - `crm:vnext:signal-packet-inbox` to detect whether a saved source packet is new,
+- `crm:vnext:control-room` as the single daily operating read,
 - ingestion/pipeline only if a new approved source packet exists.
 
 The daily pulse should report only when:
@@ -71,9 +72,10 @@ The two lanes are different:
 
 When Alejandro asks "qué sigue hoy en CRM?", Mantis should:
 
-1. run `npm run crm:vnext:signal-packet-inbox` to check whether new source packets exist;
-2. check source health if a high-value source is expected;
-3. run decision loops only for new deltas;
-4. otherwise report "observe/no new CRM action" instead of generating fresh questions.
+1. run `npm run crm:vnext:control-room`;
+2. use `signal-packet-inbox` details inside the Control Room to check whether new source packets exist;
+3. check source health if a high-value source is expected;
+4. run decision loops only for new deltas or a concrete Control Room state that asks for them;
+5. otherwise report "observe/no new CRM action" instead of generating fresh questions.
 
 Waiting is valid operator behavior when the signal base has not changed.

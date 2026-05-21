@@ -93,10 +93,11 @@ That command still follows the same layer boundaries; it simply chains the safe 
 Before running that pipeline in a daily pulse, use:
 
 ```bash
+npm run crm:vnext:control-room
 npm run crm:vnext:signal-packet-inbox
 ```
 
-That inbox is not a source of truth. It is a local planner that reads saved reports, identifies unprocessed signal input packets, and prevents redundant daily decision loops when no new packet exists.
+Control Room is the daily operating surface; Signal Packet Inbox is the delta router inside it. Neither is a source of truth. They read saved reports, identify unprocessed signal input packets, and prevent redundant daily decision loops when no new packet exists.
 
 ## Long-Term Direction
 
