@@ -53,3 +53,11 @@ This is read-only/local:
 
 The brief can ask Alejandro for context. It is not approval to contact anyone.
 
+Next surface:
+
+```text
+GET /api/crm-vnext/engagement-resolution-loop
+npm run crm:vnext:engagement-resolution-loop
+```
+
+This turns brief candidates into an answer-ready question sheet and points Mantis to the existing `human-enrichment-response-evidence` parser.

@@ -61,6 +61,7 @@
     "crm:vnext:engagement-snapshot-ledger": "node scripts/crm-vnext-engagement-snapshot-ledger.mjs",
     "crm:vnext:engagement-movement-queue": "TS_NODE_TRANSPILE_ONLY=1 NODE_NO_WARNINGS=1 node --loader ts-node/esm --experimental-specifier-resolution=node scripts/crm-vnext-engagement-movement-queue.mjs",
     "crm:vnext:engagement-decision-brief": "TS_NODE_TRANSPILE_ONLY=1 NODE_NO_WARNINGS=1 node --loader ts-node/esm --experimental-specifier-resolution=node scripts/crm-vnext-engagement-decision-brief.mjs",
+    "crm:vnext:engagement-resolution-loop": "TS_NODE_TRANSPILE_ONLY=1 NODE_NO_WARNINGS=1 node --loader ts-node/esm --experimental-specifier-resolution=node scripts/crm-vnext-engagement-resolution-loop.mjs",
     "crm:vnext:card-merge-review-resolver": "node scripts/crm-vnext-card-merge-review-resolver.mjs",
     "crm:vnext:human-enrichment-questions": "node scripts/crm-vnext-human-enrichment-questions.mjs",
     "crm:vnext:human-enrichment-response-evidence": "node scripts/crm-vnext-human-enrichment-response-evidence.mjs",

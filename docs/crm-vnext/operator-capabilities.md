@@ -58,15 +58,16 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 34. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
 35. Turn stored movement into a Mantis-ready queue with `GET /api/crm-vnext/engagement-movement-queue`.
 36. Prepare a no-send engagement decision brief with `GET /api/crm-vnext/engagement-decision-brief`.
-37. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-38. Review stored facts with `GET /api/crm-vnext/identity-review`.
-39. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-40. Read `GET /api/crm-vnext/community-daily-brief`.
-41. If needed, read `GET /api/crm-vnext/community-queues`.
-42. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-43. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-44. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-45. Ask for approval if the next move would touch an external channel.
+37. Turn that engagement brief into answer-ready questions with `GET /api/crm-vnext/engagement-resolution-loop`.
+38. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+39. Review stored facts with `GET /api/crm-vnext/identity-review`.
+40. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+41. Read `GET /api/crm-vnext/community-daily-brief`.
+42. If needed, read `GET /api/crm-vnext/community-queues`.
+43. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+44. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+45. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+46. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -106,7 +107,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, engagement movement queue, engagement decision brief, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, engagement movement queue, engagement decision brief, engagement resolution loop, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
