@@ -62,6 +62,8 @@ The report is local-only, but it tells Mantis which source lanes to use in a sep
 
 If Instagram UI asks for login, Relay, checkpoint, saved-profile selection, or permission, Mantis must pause into `awaiting_human_unblock` and ask Alejandro for the exact unblock before closing a degraded final report.
 
+If Instagram UI returns a plausible candidate, Mantis should open the existing thread read-only before deciding the bridge. A top-search hit alone usually stays `review_only`; a thread can promote the result to `bridge_confirmed_review_before_write` when it shows the missing email, phone, handle, name, or self-location clearly enough.
+
 ## Mantis Rule
 
 Use this when the Control Room or strategic report shows that email+Instagram coverage is the bottleneck.

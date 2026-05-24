@@ -119,6 +119,32 @@ This is not "use every source for every contact." It is a second-pass rule:
 
 If Instagram UI is deferred to a complement batch, save that as an explicit next step, not as a silent skip.
 
+## Instagram Thread-Open Read-Only Rule
+
+For CRM stitching, searching Instagram Messages UI without opening a plausible thread is usually not enough to close or reject a bridge.
+
+When Instagram Messages UI returns a plausible candidate for a missing `email`, `phone`, `instagramHandle`, `city`, `country`, or origin/context gap, Mantis is explicitly allowed and expected to open that conversation in read-only mode.
+
+Opening a thread is not an outbound action when Mantis only reads visible content and does not click message controls, type, react, follow, unfollow, mark anything intentionally, or change settings.
+
+Required behavior:
+
+1. Search by the strongest available anchors: email, phone, exact handle, full name, display name, and known aliases.
+2. If a plausible thread appears, open it read-only and inspect only the compact visible context needed for CRM stitching.
+3. Capture selected evidence only:
+   - searched anchor,
+   - matched handle/display name,
+   - explicit email/phone/name bridge if visible,
+   - explicit self-location such as `vivo en`, `soy de`, `estoy en`, `resido en`,
+   - compact origin/context such as onboarding, retreat interest, class interest, newsletter opt-in, or next-step cue,
+   - short non-sensitive snippet or paraphrase,
+   - observer and observed time.
+4. Do not export full conversations.
+5. Do not treat a top-search result alone as `bridge_confirmed` unless the visible result itself shows the exact anchor and handle together.
+6. If the thread cannot be opened safely because Instagram asks for login, Relay, checkpoint, permission, CAPTCHA, or another human-action screen, return `awaiting_human_unblock` with the pending anchors.
+
+Reports should include `threadOpenedReadOnly: true|false` and `threadOpenDecisionReason` for every contact where Instagram UI was a relevant lane.
+
 ## Official-Flow Source Recovery Rule
 
 When a contact has an Instagram/onboarding anchor and is missing email or phone, treat the gap as `source_recovery_required`, not as a normal question for Alejandro.
@@ -139,7 +165,7 @@ Required behavior:
    - Vercel/proxy/webhook traces and lead-capture ledgers;
    - MailerLite cursor pagination plus local filtering;
    - local Mantis/Juana reports, downloads, CSVs, Gmail/Drive/Contacts when relevant.
-3. In Instagram Messages UI, capture compact thread context when visible: city, country, preferences, origin, tone, explicit interest, and useful next-step cues. Do not export full conversations.
+3. In Instagram Messages UI, open plausible candidate threads read-only and capture compact thread context when visible: city, country, preferences, origin, tone, explicit interest, and useful next-step cues. Do not export full conversations.
 4. If a lane is blocked by login, Relay, permission, checkpoint, CAPTCHA, stale token, or connector auth, return `awaiting_human_unblock` with the pending anchors and exact unblock action. Do not close the batch as complete just because auth blocked the lane.
 5. The contact-keyed JSON should include `searchedSources`, `discardedCandidates`, `remainingGaps`, and `why_previous_batch_missed_this` so Codex can improve the operator loop instead of rediscovering the same failure.
 6. Ask Alejandro only after the official-flow lanes are exhausted, contradicted, or blocked and a concrete human decision remains.

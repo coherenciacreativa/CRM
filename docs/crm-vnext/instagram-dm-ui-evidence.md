@@ -11,7 +11,7 @@ When the Instagram API cannot safely read DMs, Mantis or Codex can use a read-on
 
 1. Start from a confirmed email or phone.
 2. Search that value inside Instagram Messages UI.
-3. If a thread appears, record only selected evidence: email/phone searched, handle/display name found, observer, time, city/country when clearly stated, lightweight preference/tone notes when useful, and a short non-sensitive snippet.
+3. If a plausible thread appears, open it in read-only mode and record only selected evidence: email/phone searched, handle/display name found, observer, time, city/country when clearly stated, lightweight preference/tone notes when useful, and a short non-sensitive snippet.
 4. Convert that observation into `instagram_dm_ui_export` evidenceSources.
 5. Feed the evidence packet into Deep Local Stitching / Card Apply Preview before any card write.
 
@@ -68,6 +68,17 @@ Use this when Alejandro says something like:
 > Tengo el email, busquemos si aparece en mensajes de Instagram para encontrar el usuario.
 
 Mantis should perform the UI search only when Chrome/Instagram is already authenticated and only as observation.
+
+For source-recovery and Omnichannel Coverage Push work, a search-result row is normally just a lead. If a plausible result appears, Mantis should open the conversation read-only to verify whether the visible thread contains the missing bridge. This is allowed because reading an existing thread is not outbound and does not mutate Instagram state.
+
+Required per-contact fields when Instagram UI is a relevant lane:
+
+- `threadOpenedReadOnly`: `true` or `false`,
+- `threadOpenDecisionReason`,
+- `searchedAnchors`,
+- `matchedHandle` or `matchedDisplayName` when visible,
+- `bridgeEvidence` when the thread explicitly connects email/phone/name/handle,
+- `discardedCandidates` when a plausible search result is rejected.
 
 If Instagram prompts for login, password, profile confirmation, permissions, checkpoint, CAPTCHA, or any risky action, Mantis should not treat the source as merely "skipped". She should:
 
