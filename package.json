@@ -39,6 +39,7 @@
     "crm:vnext:instagram-dm-ui-evidence": "node scripts/crm-vnext-instagram-dm-ui-evidence.mjs",
     "crm:vnext:instagram-signal-events": "node scripts/crm-vnext-instagram-signal-events.mjs",
     "crm:vnext:signal-packet-inbox": "node scripts/crm-vnext-signal-packet-inbox.mjs",
+    "crm:vnext:omnichannel-coverage-push": "TS_NODE_TRANSPILE_ONLY=1 NODE_NO_WARNINGS=1 node --loader ts-node/esm --experimental-specifier-resolution=node scripts/crm-vnext-omnichannel-coverage-push.mjs",
     "crm:vnext:ig-origin-batch-prompt": "node scripts/crm-vnext-ig-origin-batch-prompt.mjs",
     "crm:vnext:mantis-batch-audit": "node scripts/crm-vnext-mantis-batch-audit.mjs",
     "crm:vnext:mantis-evidence-import": "node scripts/crm-vnext-mantis-evidence-import.mjs",

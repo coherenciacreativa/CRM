@@ -26,52 +26,53 @@ This is a navigation contract. It does not read person-card artifacts, does not 
 2. Read `GET /api/crm-vnext/readiness`.
 3. Read `GET /api/crm-vnext/control-room`, `/crm-vnext/control-room`, or `npm run crm:vnext:control-room` before deciding what to do next.
 4. Read `GET /api/crm-vnext/source-ledger`.
-5. Before and after meaningful approved card-store writes, create a verified encrypted snapshot with `npm run crm:vnext:snapshot -- --verify`.
-6. For stitching/source-recovery batches, run the Mantis Natural Batch Protocol source-health preflight before accepting a final evidence hunt.
-7. Preview new human/source reports with `POST /api/crm-vnext/fact-intake`.
-8. Store approved facts with `POST /api/crm-vnext/fact-store`.
-9. Run a safe full preview with `POST /api/crm-vnext/activation-run`.
-10. Research unmatched or name-only clues with `POST /api/crm-vnext/identity-stitching-research`.
-11. Plan Gmail evidence and convert supplied read-only results with `POST /api/crm-vnext/gmail-evidence-helper`.
-12. Plan Contacts evidence and convert read-only results with `POST /api/crm-vnext/contacts-evidence-helper`.
-13. Plan MailerLite evidence and convert read-only subscriber results with `POST /api/crm-vnext/mailerlite-evidence-helper`.
-14. Plan Google Drive/Docs/Sheets evidence and convert supplied read-only rows with `POST /api/crm-vnext/google-drive-evidence-helper`.
-15. Plan lead-capture evidence from ManyChat/CRM webhook/Vercel/WhatsApp traces with `POST /api/crm-vnext/lead-capture-evidence-helper`.
-16. Convert rich supplied evidence into context/fact promotion proposals with `npm run crm:vnext:context-fact-proposals -- --evidence-file <json>`.
-17. Apply explicitly approved context/fact proposals with `npm run crm:vnext:context-fact-apply -- --proposal-file <json> --proposal-id <id> --approved-by <name> --write`.
-18. Search safe local and connected evidence with `POST /api/crm-vnext/deep-local-stitching`.
-19. Build a multi-service card proposal with `POST /api/crm-vnext/multi-service-card-proposal`.
-20. Evaluate create/enrich/merge/defer policy with `POST /api/crm-vnext/card-write-merge-policy`.
-21. Preview exact hypothetical card operations with `POST /api/crm-vnext/card-apply-preview`, including already-approved evidence decisions when a ledger is supplied.
-22. Prepare focused evidence questions with `POST /api/crm-vnext/evidence-review-packet`, skipping questions already resolved in the decision ledger.
-23. Queue unresolved evidence questions with `POST /api/crm-vnext/evidence-approval-workbench`.
-24. Store Alejandro-approved evidence answers with `POST /api/crm-vnext/evidence-review-decisions`.
-25. Apply approved evidence decisions and rerun before/after approval packets with `POST /api/crm-vnext/evidence-approval-application`.
-26. Run one standard batch loop with `POST /api/crm-vnext/batch-operating-loop`.
-27. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
-28. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
-29. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
-30. Normalize activity-shaped observations into the canonical local Signal Event Ledger with `npm run crm:vnext:signal-event-ledger -- --events-file <json>`.
-31. Project canonical signal events into previewable scoring inputs with `npm run crm:vnext:signal-event-projection -- --from-ledger`.
-32. Convert supplied Instagram observations into canonical signal events with `npm run crm:vnext:instagram-signal-events -- --observations-file <json>`.
-33. Before daily engagement work, scan saved reports for unprocessed signal packets with `npm run crm:vnext:signal-packet-inbox`.
-34. For the standard source-to-score loop, run `npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --gmail-reply-discovery-file <json>` or pass Instagram events through `--events-file <json>`.
-35. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
-36. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
-37. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
-38. Turn stored movement into a Mantis-ready queue with `GET /api/crm-vnext/engagement-movement-queue`.
-39. Prepare a no-send engagement decision brief with `GET /api/crm-vnext/engagement-decision-brief`.
-40. Turn that engagement brief into answer-ready questions with `GET /api/crm-vnext/engagement-resolution-loop`; already-enriched contacts are suppressed into internal signal review.
-41. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
-42. Review stored facts with `GET /api/crm-vnext/identity-review`.
-43. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
-44. Read `GET /api/crm-vnext/community-daily-brief` for community queues plus stored engagement action summaries.
-45. Convert that daily picture into an ordered Mantis task list with `GET /api/crm-vnext/daily-operator-handoff`.
-46. If needed, read `GET /api/crm-vnext/community-queues`.
-47. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
-48. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
-49. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
-50. Ask for approval if the next move would touch an external channel.
+5. When Control Room/source coverage shows email+Instagram identity as the bottleneck, run `npm run crm:vnext:omnichannel-coverage-push`.
+6. Before and after meaningful approved card-store writes, create a verified encrypted snapshot with `npm run crm:vnext:snapshot -- --verify`.
+7. For stitching/source-recovery batches, run the Mantis Natural Batch Protocol source-health preflight before accepting a final evidence hunt.
+8. Preview new human/source reports with `POST /api/crm-vnext/fact-intake`.
+9. Store approved facts with `POST /api/crm-vnext/fact-store`.
+10. Run a safe full preview with `POST /api/crm-vnext/activation-run`.
+11. Research unmatched or name-only clues with `POST /api/crm-vnext/identity-stitching-research`.
+12. Plan Gmail evidence and convert supplied read-only results with `POST /api/crm-vnext/gmail-evidence-helper`.
+13. Plan Contacts evidence and convert read-only results with `POST /api/crm-vnext/contacts-evidence-helper`.
+14. Plan MailerLite evidence and convert read-only subscriber results with `POST /api/crm-vnext/mailerlite-evidence-helper`.
+15. Plan Google Drive/Docs/Sheets evidence and convert supplied read-only rows with `POST /api/crm-vnext/google-drive-evidence-helper`.
+16. Plan lead-capture evidence from ManyChat/CRM webhook/Vercel/WhatsApp traces with `POST /api/crm-vnext/lead-capture-evidence-helper`.
+17. Convert rich supplied evidence into context/fact promotion proposals with `npm run crm:vnext:context-fact-proposals -- --evidence-file <json>`.
+18. Apply explicitly approved context/fact proposals with `npm run crm:vnext:context-fact-apply -- --proposal-file <json> --proposal-id <id> --approved-by <name> --write`.
+19. Search safe local and connected evidence with `POST /api/crm-vnext/deep-local-stitching`.
+20. Build a multi-service card proposal with `POST /api/crm-vnext/multi-service-card-proposal`.
+21. Evaluate create/enrich/merge/defer policy with `POST /api/crm-vnext/card-write-merge-policy`.
+22. Preview exact hypothetical card operations with `POST /api/crm-vnext/card-apply-preview`, including already-approved evidence decisions when a ledger is supplied.
+23. Prepare focused evidence questions with `POST /api/crm-vnext/evidence-review-packet`, skipping questions already resolved in the decision ledger.
+24. Queue unresolved evidence questions with `POST /api/crm-vnext/evidence-approval-workbench`.
+25. Store Alejandro-approved evidence answers with `POST /api/crm-vnext/evidence-review-decisions`.
+26. Apply approved evidence decisions and rerun before/after approval packets with `POST /api/crm-vnext/evidence-approval-application`.
+27. Run one standard batch loop with `POST /api/crm-vnext/batch-operating-loop`.
+28. Review multiple stitching candidates with `POST /api/crm-vnext/stitch-batch-review`.
+29. Prepare explicit write approval items with `POST /api/crm-vnext/card-write-approval-packet`.
+30. Apply explicitly approved items with `POST /api/crm-vnext/card-write-apply`, backup, and provenance.
+31. Normalize activity-shaped observations into the canonical local Signal Event Ledger with `npm run crm:vnext:signal-event-ledger -- --events-file <json>`.
+32. Project canonical signal events into previewable scoring inputs with `npm run crm:vnext:signal-event-projection -- --from-ledger`.
+33. Convert supplied Instagram observations into canonical signal events with `npm run crm:vnext:instagram-signal-events -- --observations-file <json>`.
+34. Before daily engagement work, scan saved reports for unprocessed signal packets with `npm run crm:vnext:signal-packet-inbox`.
+35. For the standard source-to-score loop, run `npm run crm:vnext:signal-event-pipeline -- --mailerlite-snapshot-file <json> --gmail-reply-discovery-file <json>` or pass Instagram events through `--events-file <json>`.
+36. Preview supplied engagement signals with `POST /api/crm-vnext/engagement-signal-preview`.
+37. Store useful read-only engagement previews with `npm run crm:vnext:engagement-snapshot-ledger -- --preview-file <json> --write --approved-by <name>`.
+38. Read engagement movement history with `GET /api/crm-vnext/engagement-snapshots`.
+39. Turn stored movement into a Mantis-ready queue with `GET /api/crm-vnext/engagement-movement-queue`.
+40. Prepare a no-send engagement decision brief with `GET /api/crm-vnext/engagement-decision-brief`.
+41. Turn that engagement brief into answer-ready questions with `GET /api/crm-vnext/engagement-resolution-loop`; already-enriched contacts are suppressed into internal signal review.
+42. Resolve explicitly approved staged merges with `POST /api/crm-vnext/card-merge-review-resolver`.
+43. Review stored facts with `GET /api/crm-vnext/identity-review`.
+44. Preview exact card changes with `GET /api/crm-vnext/card-rebuild-diff`.
+45. Read `GET /api/crm-vnext/community-daily-brief` for community queues plus stored engagement action summaries.
+46. Convert that daily picture into an ordered Mantis task list with `GET /api/crm-vnext/daily-operator-handoff`.
+47. If needed, read `GET /api/crm-vnext/community-queues`.
+48. Inspect a bounded queue with `GET /api/crm-vnext/community-queue-brief?queueId=<queueId>&limit=<n>`.
+49. Prepare a no-send decision brief with `GET /api/crm-vnext/community-decision-brief?queueId=<queueId>&limit=<n>`.
+50. Inspect one exact person with `GET /api/crm-vnext/person-card?personId=<personId>`.
+51. Ask for approval if the next move would touch an external channel.
 
 ## Read Source Rule
 
@@ -111,7 +112,7 @@ Legacy Person Cards V1 remains available as fallback or an explicit override, bu
 
 The response excludes local filesystem paths and secret values.
 
-Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, Instagram signal events helper, signal packet inbox, Control Room, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, engagement movement queue, engagement decision brief, engagement resolution loop with anti-redundancy guard, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, daily operator handoff, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
+Local commands currently include activation run, identity stitching research, Gmail evidence helper, gog healthcheck, MailerLite healthcheck, encrypted snapshot backup, Contacts evidence helper, MailerLite evidence helper, Google Drive evidence helper, lead-capture evidence helper, Instagram DM UI evidence helper, Instagram signal events helper, signal packet inbox, Omnichannel Coverage Push, Control Room, IG-origin batch prompt, Mantis evidence import, context/fact proposals, context/fact apply, deep local stitching with optional expanded local evidence and connected evidence packets, multi-service card proposal, card write/merge policy, card apply preview, evidence review packet, evidence review decisions ledger, evidence approval workbench, evidence approval application, stitch batch review, card write approval packet, batch operating loop, MailerLite engagement signals, Gmail reply engagement signals, signal event ledger, signal event projection, engagement signal preview, engagement snapshot ledger, engagement movement queue, engagement decision brief, engagement resolution loop with anti-redundancy guard, human enrichment questions, human enrichment response evidence, card write apply, card merge review resolver, queue monitor, daily brief export, daily operator handoff, and decision brief export. `GET /api/crm-vnext/readiness` is the quick preflight before those commands.
 
 ## Safety
 
@@ -141,6 +142,7 @@ Local commands currently include activation run, identity stitching research, Gm
 - Signal Event Projection is read-only and converts canonical events into `engagement-signal-preview` inputs. It is the preferred extensibility point for future sources such as Shopify, Bhakti WhatsApp, payment providers, and ClassBot. Restricted events are skipped by default unless a reviewed operator run explicitly includes them.
 - Instagram Signal Events is the current bridge for the most active channel before full API ingestion exists. Mantis can supply read-only observations from Instagram UI, future API exports, ManyChat exports, or lead-capture traces; the helper only normalizes them into events for the shared ledger.
 - Signal Packet Inbox is the first daily delta check for engagement work. It scans saved local reports, finds unprocessed signal packets, suppresses packets already consumed by the pipeline, and reports active source blockers. If no candidate packet exists, Mantis should stay in observe mode instead of running decision/resolution loops.
+- Omnichannel Coverage Push is the first focused identity-coverage planner after Control Room when email+Instagram coverage is the bottleneck. It reads the vNext card store, prioritizes IG-known/email-missing and email-known/IG-missing cards, and generates a bounded Mantis prompt for read-only source recovery. It does not open live sources, call APIs, mutate cards, write Fact Store, touch credentials, or send outbound.
 - Control Room is the first daily operating surface. It composes readiness, source ledger, signal packet inbox, and daily operator handoff into one state: blocked, process signal delta, source unblock required, human decision required, operator review, or observe.
 - Scoring Policy v0 (`docs/crm-vnext/scoring-policy-v0.md`) is the interpretation layer for score movement. Mantis should separate commercial warmth, community depth, relationship engagement, and data confidence before recommending a next action.
 - Next Best Action Policy v0 (`docs/crm-vnext/next-best-action-policy-v0.md`) translates score movement into operator-safe actions such as stitching, reply review, care/retention, social context review, warm-contact review, or observation. It keeps ClassBot/yoga care separate from sales heat.

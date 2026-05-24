@@ -1181,6 +1181,21 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "omnichannel_coverage_push",
+    command: "npm run crm:vnext:omnichannel-coverage-push",
+    purpose: "Prioritize vNext cards where closing email<->Instagram gaps would raise useful omnichannel coverage.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Use after Control Room when the next high-leverage move is identity coverage rather than generic stitching.",
+      "Selects Instagram-known/email-missing and email-known/Instagram-missing candidates from the local vNext card store.",
+      "Produces a copy-ready Mantis prompt with bounded source lanes for MailerLite, Instagram Messages UI, lead-capture traces, Gmail, Drive, and Contacts.",
+      "Use --out and --markdown-out to save a local report under Documents/Mantis-Reports.",
+      "This command does not open live sources, call APIs, mutate cards, write Fact Store, touch credentials, or send outbound.",
+    ],
+  },
+  {
     id: "ig_origin_batch_prompt",
     command: "npm run crm:vnext:ig-origin-batch-prompt -- --latest-writes <n> --limit <n>",
     purpose: "Prepare a copy-ready Mantis prompt for Instagram/onboarding batches with compact DM thread-context instructions.",
@@ -1761,6 +1776,13 @@ export const buildCrmVNextOperatorCapabilities = (
         action: "Check which sources are fresh, stale, blocked, or coverage-limited.",
         use: "/api/crm-vnext/source-ledger plus docs/crm-vnext/mantis-natural-batch-protocol.md source-health preflight",
         stopCondition: "If a required stitching/source-recovery lane is blocked, pause into awaiting_human_unblock instead of closing a degraded final report.",
+      },
+      {
+        step: 5,
+        id: "omnichannel_coverage_push",
+        action: "When identity coverage is the bottleneck, prioritize the smallest set of email<->Instagram gaps that can raise omnichannel usefulness.",
+        use: "npm run crm:vnext:omnichannel-coverage-push",
+        stopCondition: "This is a planner only; Mantis must return read-only evidence packets and wait for approval before any card write.",
       },
       {
         step: 5,
