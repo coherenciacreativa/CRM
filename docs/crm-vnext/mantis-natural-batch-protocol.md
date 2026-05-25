@@ -182,7 +182,7 @@ Required behavior:
 1. Do not ask Alejandro for the email/phone yet.
 2. Search official-flow sources read-only first:
    - Instagram Messages UI, including searching by known email/phone/name/handle when useful;
-   - ManyChat read-only exports or cached flow records;
+   - ManyChat read-only exports, cached flow records, or exact-anchor UI filtering when API/export is blocked;
    - Vercel/proxy/webhook traces and lead-capture ledgers;
    - MailerLite cursor pagination plus local filtering;
    - local Mantis/Juana reports, downloads, CSVs, Gmail/Drive/Contacts when relevant.
@@ -192,6 +192,20 @@ Required behavior:
 6. Ask Alejandro only after the official-flow lanes are exhausted, contradicted, or blocked and a concrete human decision remains.
 
 This rule is for source recovery only. It does not authorize ManyChat LIVE changes, Instagram messages, MailerLite mutations, Google edits, card writes, Fact Store writes, or outbound contact.
+
+### ManyChat UI Exact-Anchor Rule
+
+If ManyChat API/export is blocked but the Contacts UI is accessible, Mantis may use it as a read-only source-recovery lane for small, high-value batches.
+
+The simple Contacts search is not enough for captured emails. Use `Filter -> + Condition -> Custom User Fields` and search exact anchors such as:
+
+- `email_from_buffer is <exact email>`;
+- `email_raw_from_first_dm is <exact email>`;
+- exact phone/handle fields when visible in the UI.
+
+If exactly one contact is returned, open it read-only and capture compact evidence such as ManyChat contact id, `Opted-In for Instagram`, `Opted In through`, relevant captured fields, and a short context snippet only if it materially explains origin. Do not click `Start Chat`, subscribe/unsubscribe, tag actions, automation controls, imports, exports, segment creation, or any action that could mutate ManyChat LIVE.
+
+Name-only or broad UI matches remain weak and should be discarded or labeled `weak_name_only_hit`. The point of this lane is to recover official onboarding bridges, not to create optimistic handle guesses.
 
 ## Human-Unblock Retry Rule
 

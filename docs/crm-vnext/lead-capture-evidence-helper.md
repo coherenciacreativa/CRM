@@ -79,6 +79,7 @@ Prohibited:
 1. Run the helper first with the human clue and no results to get source-specific lookup suggestions.
 2. Search read-only in the safest available route:
    - ManyChat API/export/browser for `Instagram username`, email, phone, custom fields, and contact id
+   - If ManyChat API/export is blocked but UI is accessible, use exact custom-field filters such as `email_from_buffer is <exact email>` and `email_raw_from_first_dm is <exact email>` before trying any name-only search.
    - CRM old webhook tables for `webhook_events`, `contacts`, `interactions`
    - Vercel/proxy logs or exports for the lead registration payload
    - MailerLite cursor pagination + local filtering, not `search`

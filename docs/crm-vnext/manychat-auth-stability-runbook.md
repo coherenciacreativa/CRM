@@ -80,7 +80,7 @@ Fallback source lanes remain valid:
 - Vercel proxy logs and `webhook_events`.
 - MailerLite notes/groups populated by the onboarding flow.
 - Instagram Messages UI read-only exact email/phone/handle search.
-- ManyChat UI read-only exact search for small, high-value batches when API/export is unavailable.
+- ManyChat UI read-only exact custom-field search for small, high-value batches when API/export is unavailable.
 - Manual ManyChat contact exports only if the UI/plan exposes an export path without upgrading.
 
 Strategic options:
@@ -88,6 +88,37 @@ Strategic options:
 1. Keep the stored Page key; if Pro/integrations are restored later, the CLI should become healthy without another local setup.
 2. Avoid depending on ManyChat as the long-term runtime middleman; keep treating it as historical evidence while CRM vNext owns new capture paths.
 3. Consider a short paid ManyChat data-recovery sprint only if API/export access would unlock enough high-confidence stitching volume to justify the cost.
+
+## Read-Only UI Recovery When API Is Blocked
+
+Observed on 2026-05-25:
+
+- The main Contacts search appears to search names/handles, not captured emails reliably.
+- Searching a known captured email in the main search returned no result.
+- Filtering by custom fields did recover the contact:
+  - `Filter -> + Condition -> Custom User Fields -> email_from_buffer is <exact email>`
+  - Result contact showed `Opted-In for Instagram` with the Instagram handle.
+  - The contact also exposed `email_raw_from_first_dm` and onboarding/debug fields.
+
+Use this only as exact-anchor recovery. Do not use ManyChat UI to browse broad contact lists or promote name-only candidates.
+
+Preferred UI sequence for email -> Instagram handle recovery:
+
+1. Start with an exact email known or suspected to have been captured through the Instagram welcome/onboarding flow.
+2. In Contacts, use `Filter`, not the simple search box.
+3. Try custom fields in this order:
+   - `email_from_buffer is <exact email>`
+   - `email_raw_from_first_dm is <exact email>`
+4. If exactly one contact appears, open it read-only.
+5. Capture only compact evidence:
+   - ManyChat contact id,
+   - `Opted-In for Instagram` handle,
+   - relevant captured email/phone fields,
+   - `Opted In through`,
+   - minimal message/context snippet if needed.
+6. Close the contact without clicking `Start Chat`, tag actions, automation controls, subscribe/unsubscribe, import, export, or segment actions.
+
+Known proof case: filtering `email_from_buffer` by Eliana's captured email recovered the ManyChat contact and exposed `Opted-In for Instagram: cadavid_eli`. This confirms the UI can recover some email-to-handle bridges even while API access is blocked by plan/capability.
 
 ## Safety Rules
 
