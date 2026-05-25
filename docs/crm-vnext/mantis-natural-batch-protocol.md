@@ -207,6 +207,27 @@ If exactly one contact is returned, open it read-only and capture compact eviden
 
 Name-only or broad UI matches remain weak and should be discarded or labeled `weak_name_only_hit`. The point of this lane is to recover official onboarding bridges, not to create optimistic handle guesses.
 
+### Source Result Exhaustion Rule
+
+Every source-recovery report should distinguish source failure from source limitation.
+
+Use these result classes when a source does not close a bridge:
+
+- `found_profile_no_requested_bridge`: the exact profile/thread/source record was opened read-only and the requested field was absent in the visible checked fields.
+- `not_found_limited_search`: the source was searched through a weak or constrained UI route, such as a name-oriented ManyChat search box used for an email/phone. This is not source exhaustion.
+- `not_found_exhaustive`: the exact-anchor method was appropriate for that source and no match appeared.
+- `blocked`: auth, login, Relay, checkpoint, CAPTCHA, permission, or token state prevented the check.
+
+For each contact, include `sourceResultStatus`, `sourceExhaustion`, `resultStrength`, and `retryPolicy`.
+
+Mantis should not ask Alejandro to review weak negatives as if they were final. A `not_found_limited_search` result should stay as a retry candidate for custom-field filter, API/export, Instagram thread search, MailerLite/Gmail/Drive/Contacts, or another stronger exact-anchor lane.
+
+Codex can persist these receipts with:
+
+```bash
+npm run crm:vnext:source-result-ledger -- --report-file <mantis-report.json>
+```
+
 ## Human-Unblock Retry Rule
 
 When a high-value source is blocked by a human-action screen, Mantis should not treat the job as finished.

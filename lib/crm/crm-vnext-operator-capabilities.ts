@@ -1139,6 +1139,20 @@ const localCommands: CrmVNextOperatorLocalCommand[] = [
     ],
   },
   {
+    id: "source_result_ledger",
+    command: "npm run crm:vnext:source-result-ledger -- --report-file <json>",
+    purpose: "Persist per-contact source-check receipts so weak searches are not confused with exhausted sources.",
+    defaultMode: "preview",
+    writesFiles: "only_with_explicit_flag",
+    outbound: false,
+    notes: [
+      "Use after a Mantis/Codex source-recovery report, especially when ManyChat UI, Instagram UI, or another constrained UI lane returned no bridge.",
+      "Distinguishes bridge_found, found_profile_no_requested_bridge, not_found_limited_search, not_found_exhaustive, and blocked.",
+      "A not_found_limited_search result should remain retryable through custom-field filter, API/export, or another exact-anchor lane; do not treat it as source exhaustion.",
+      "This command can append only to .crm-vnext/source-result-ledger/ledger.jsonl with --write; it never mutates person cards, Fact Store, live sources, scores, credentials, or outbound channels.",
+    ],
+  },
+  {
     id: "instagram_dm_ui_evidence",
     command: "npm run crm:vnext:instagram-dm-ui-evidence -- --observations-file <json>",
     purpose: "Convert read-only Instagram DM UI search observations into email-to-handle bridge evidence packets.",
