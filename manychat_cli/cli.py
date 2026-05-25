@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import sys
 from typing import Any, Dict, List
@@ -25,6 +26,16 @@ def cmd_auth_set(args: argparse.Namespace) -> int:
     key = args.api_key
     if not key:
         print("--api-key is required", file=sys.stderr)
+        return 1
+    set_api_key(key)
+    print("Stored ManyChat API key in Keychain (CRM-ManyChat)")
+    return 0
+
+
+def cmd_auth_set_interactive(_: argparse.Namespace) -> int:
+    key = getpass.getpass("ManyChat Page API key (input hidden): ").strip()
+    if not key:
+        print("No API key entered.", file=sys.stderr)
         return 1
     set_api_key(key)
     print("Stored ManyChat API key in Keychain (CRM-ManyChat)")
@@ -57,6 +68,25 @@ def cmd_auth_check(_: argparse.Namespace) -> int:
     }
     print(json.dumps(result, indent=2))
     return 0
+
+
+def cmd_auth_check_readonly(_: argparse.Namespace) -> int:
+    status, payload = page_get_info()
+    result = {
+        "page_api_status": status,
+        "ok": status == 200,
+        "mode": "read_only_page_info_check",
+        "hint": (
+            "Token appears Page-scoped and API is reachable"
+            if status == 200
+            else "Token missing, invalid, wrong scope, or API unavailable on current ManyChat plan"
+        ),
+    }
+    if status != 200:
+        result["error"] = payload.get("message") or payload.get("error") or payload.get("raw")
+    print(json.dumps(result, indent=2))
+    return 0 if status == 200 else 2
+
 
 def cmd_page_info(_: argparse.Namespace) -> int:
     status, payload = page_get_info()
@@ -124,10 +154,15 @@ def build_parser() -> argparse.ArgumentParser:
     pa_set.add_argument("--api-key", required=True, help="ManyChat API key value")
     pa_set.set_defaults(func=cmd_auth_set)
 
+    pa_set_interactive = suba.add_parser("set-interactive", help="Store API key in Keychain without echoing it")
+    pa_set_interactive.set_defaults(func=cmd_auth_set_interactive)
+
     pa_show = suba.add_parser("show", help="Show masked API key from Keychain/.env")
     pa_show.set_defaults(func=cmd_auth_show)
     pa_chk = suba.add_parser("check", help="Check whether token is Page- or Profile-scoped")
     pa_chk.set_defaults(func=cmd_auth_check)
+    pa_chk_ro = suba.add_parser("check-readonly", help="Read-only Page API connectivity check")
+    pa_chk_ro.set_defaults(func=cmd_auth_check_readonly)
 
     # page info (simple connectivity test)
     pp = sub.add_parser("page", help="Page endpoints")
