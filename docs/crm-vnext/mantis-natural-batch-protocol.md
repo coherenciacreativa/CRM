@@ -145,6 +145,27 @@ Required behavior:
 
 Reports should include `threadOpenedReadOnly: true|false` and `threadOpenDecisionReason` for every contact where Instagram UI was a relevant lane.
 
+## Instagram Name-Only Guard
+
+Name similarity is not identity stitching.
+
+For CRM vNext, a result found by typing a person's name into Instagram Messages UI is only a weak search hit unless another bridge is present. Mantis must not present name-only or similar-handle results as likely CRM matches. These results should be recorded as `weak_name_only_hit`, `ambiguous_name_only`, or `discarded_candidate`, and they should not create review burden for Alejandro unless there is a concrete reason to believe the person came through the Instagram/onboarding path.
+
+Promote an Instagram candidate only when at least one strong bridge exists:
+
+- exact email or phone appears in the thread, visible result, lead-capture trace, ManyChat/proxy/Vercel record, MailerLite field/group/note, Gmail signature, Contacts, Drive/Sheets row, or another official source;
+- the thread contains explicit self-identification or compact context that clearly connects the person to Alejandro's known relationship with them;
+- Alejandro or a trusted human explicitly confirms the handle;
+- the exact handle already exists in a high-confidence source, and Instagram UI only verifies that the account exists.
+
+Preferred search order for missing Instagram handles:
+
+1. Search exact email and phone in Instagram Messages UI when the contact likely came through Instagram, ManyChat, proxy, Vercel, MailerLite onboarding, or a custom GPT insertion route.
+2. Search exact known handle from official-flow traces when available.
+3. Search full name only as a last resort, and downgrade results to weak/no-write unless the opened thread exposes a real bridge.
+
+This guard exists to protect trust: a clean `not found yet` is better than a long list of optimistic lookalikes.
+
 ## Official-Flow Source Recovery Rule
 
 When a contact has an Instagram/onboarding anchor and is missing email or phone, treat the gap as `source_recovery_required`, not as a normal question for Alejandro.

@@ -152,6 +152,8 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
 
     expect(report.mantisPrompt).toContain('cursor pagination + filtrado local');
     expect(report.mantisPrompt).toContain('Instagram UI pide login');
+    expect(report.mantisPrompt).toContain('weak_name_only_hit');
+    expect(report.mantisPrompt).toContain('email/teléfono dentro de Instagram Messages UI');
     expect(report.safety).toMatchObject({
       localOnly: true,
       readOnly: true,

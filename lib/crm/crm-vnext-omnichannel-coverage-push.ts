@@ -347,6 +347,8 @@ const buildMantisPrompt = (
     'Reglas:',
     '- Usa cursor pagination + filtrado local para MailerLite; no confiar solo en search.',
     '- Si Instagram UI pide login, Relay, checkpoint o permiso, pausa en awaiting_human_unblock y pide desbloqueo antes de cerrar reporte final.',
+    '- En Instagram Messages UI, no eleves un resultado name-only o handle parecido a candidato plausible de stitching. Ese tipo de resultado debe quedar como weak_name_only_hit/no_write o descarte, salvo que el hilo o una fuente oficial muestre el email, teléfono, handle, nombre inequívoco, o contexto conversacional fuerte.',
+    '- Prioriza búsquedas por email/teléfono dentro de Instagram Messages UI para contactos con origen IG/ManyChat/proxy/Vercel/MailerLite. Si el correo o teléfono aparece dentro del hilo, abre el hilo read-only y captura el puente compacto.',
     '- Captura evidencia compacta: fuente, anchor buscado, candidato, confianza, descartes y por que se cierra o no el gap.',
     '- No escribas tarjetas, Fact Store, MailerLite, Gmail, Drive, Contacts, Instagram ni ManyChat.',
     '',

@@ -40,3 +40,11 @@ When Instagram UI is relevant, reports should include:
 Do not export full conversations. Capture compact evidence only: identity bridge, explicit self-location, onboarding/source context, product interest, preference, tone, or next-step cue.
 
 If Instagram asks for login, Relay, checkpoint, CAPTCHA, saved-profile selection, or another human-action screen, Mantis should pause in `awaiting_human_unblock` and retry after Alejandro confirms.
+
+## 2026-05-25 Hardening
+
+Opening a thread is useful only after the candidate deserves inspection. A name-only Instagram result, similar display name, mutual follow, or visually similar handle is not enough to call something a plausible bridge.
+
+New rule: Mantis must label those cases as `weak_name_only_hit`, `ambiguous_name_only`, or discarded evidence unless the thread or another official source exposes a stronger bridge such as exact email, phone, explicit self-identification, verified lead-capture/ManyChat/proxy/MailerLite evidence, or Alejandro's direct confirmation.
+
+The highest-leverage route for Alejandro's community is not broad name search. It is official-flow recovery: search the email or phone that a person gave in the Instagram welcome/onboarding conversation, then open the matched thread read-only and capture compact bridge/context evidence.

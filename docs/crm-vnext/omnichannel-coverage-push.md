@@ -62,7 +62,9 @@ The report is local-only, but it tells Mantis which source lanes to use in a sep
 
 If Instagram UI asks for login, Relay, checkpoint, saved-profile selection, or permission, Mantis must pause into `awaiting_human_unblock` and ask Alejandro for the exact unblock before closing a degraded final report.
 
-If Instagram UI returns a plausible candidate, Mantis should open the existing thread read-only before deciding the bridge. A top-search hit alone usually stays `review_only`; a thread can promote the result to `bridge_confirmed_review_before_write` when it shows the missing email, phone, handle, name, or self-location clearly enough.
+If Instagram UI returns a plausible candidate, Mantis should open the existing thread read-only before deciding the bridge. A top-search hit alone usually stays `review_only`; a thread can promote the result to `bridge_confirmed_review_before_write` when it shows the missing email, phone, handle, self-identification, or relationship/origin context clearly enough.
+
+Name-only Instagram search is intentionally low-trust. A similar display name, mutual follow, or similar handle should be recorded as `weak_name_only_hit` or discarded evidence, not as a candidate bridge, unless another source provides a strong anchor. For contacts that likely came through the Instagram welcome/onboarding flow, the preferred lane is to search exact email or phone inside Instagram Messages UI and recover the original thread where the person gave that data.
 
 ## Mantis Rule
 
