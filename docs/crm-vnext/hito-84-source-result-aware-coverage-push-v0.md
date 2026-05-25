@@ -34,6 +34,8 @@ If a prior ManyChat profile was opened and visibly had no captured email, Mantis
 
 If a prior ManyChat search was only a weak/free-UI search, Mantis should not bury the contact. The contact remains retryable through a stronger exact-anchor route such as custom-field filter, API/export if available, Instagram thread search, MailerLite/Gmail/Drive/Contacts, or another official-flow source.
 
+Clarification added after the first source-aware batch: `no ManyChat LIVE` means no ManyChat mutation or outbound. It does not mean "never read ManyChat UI." Read-only exact-anchor ManyChat UI lookup remains allowed when needed to recover historical onboarding evidence.
+
 ## Safety
 
 This remains a read-only planner. It does not mutate cards, Fact Store, scores, live APIs, credentials, ManyChat LIVE, Instagram, MailerLite, Google, WhatsApp, Telegram, or outbound channels.

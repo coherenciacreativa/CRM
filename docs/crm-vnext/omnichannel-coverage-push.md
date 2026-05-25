@@ -81,6 +81,8 @@ When source-result memory exists:
 - `not_found_limited_search` means the source was searched through a weak route. Do not bury the contact; retry only with a stronger exact-anchor lane.
 - `blocked` means the source did not really run and should pause into `awaiting_human_unblock`.
 
+Important wording for Mantis: `no ManyChat LIVE` means no mutation, send, tag, flow, subscription, import/export mutation, or settings change. It does not forbid read-only ManyChat UI exact-anchor lookup when the source-result memory says the prior search was limited.
+
 ## Mantis Rule
 
 Use this when the Control Room or strategic report shows that email+Instagram coverage is the bottleneck.

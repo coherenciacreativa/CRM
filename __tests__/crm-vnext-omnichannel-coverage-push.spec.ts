@@ -157,6 +157,8 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
     expect(report.mantisPrompt).toContain('weak_name_only_hit');
     expect(report.mantisPrompt).toContain('email/teléfono dentro de Instagram Messages UI');
     expect(report.mantisPrompt).toContain('bridge_found, found_profile_no_requested_bridge');
+    expect(report.mantisPrompt).toContain('no ManyChat LIVE');
+    expect(report.mantisPrompt).toContain('Sí puedes usar ManyChat UI en modo read-only exact-anchor');
     expect(report.safety).toMatchObject({
       localOnly: true,
       readOnly: true,
@@ -234,6 +236,7 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
       sourceExhaustion: 'not_exhausted',
     });
     expect(pilar?.sourceLanes[0]).toContain('previous source search was limited');
+    expect(pilar?.sourceLanes[0]).toContain('ManyChat UI read-only custom-field filter');
     expect(report.mantisPrompt).toContain('source-result memory');
   });
 

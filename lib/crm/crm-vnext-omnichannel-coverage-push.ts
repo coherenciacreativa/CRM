@@ -293,7 +293,7 @@ const sourceResultGuidanceFor = (
     guidance.push('Source-result ledger: exact source profile was already opened and visible checked fields did not contain the requested bridge. Do not repeat the same profile read; continue with other lanes or new export/API/custom-field evidence.');
   }
   if (history.some((entry) => entry.sourceResultStatus === 'not_found_limited_search')) {
-    guidance.push('Source-result ledger: previous source search was limited/not exhaustive. Retry only with a stronger exact-anchor route such as custom-field filter, API/export if available, or another official-flow source.');
+    guidance.push('Source-result ledger: previous source search was limited/not exhaustive. Retry only with a stronger exact-anchor route such as ManyChat UI read-only custom-field filter, API/export if available, Instagram thread search, or another official-flow source. "No ManyChat LIVE" means no mutations/sends/flow changes; it does not forbid read-only exact-anchor UI lookup.');
   }
   if (history.some((entry) => entry.sourceResultStatus === 'blocked')) {
     guidance.push('Source-result ledger: a previous source check was blocked. Pause into awaiting_human_unblock before treating this lane as complete.');
@@ -532,13 +532,14 @@ const buildMantisPrompt = (
   return [
     'Mantis, corre un Omnichannel Coverage Push read-only para CRM vNext.',
     '',
-    'Objetivo: buscar puentes email<->Instagram para estos candidatos priorizados sin writes, sin outbound, sin ManyChat LIVE y sin mutaciones externas.',
+    'Objetivo: buscar puentes email<->Instagram para estos candidatos priorizados sin writes, sin outbound, sin mutar ManyChat LIVE y sin mutaciones externas.',
     '',
     'Reglas:',
     '- Usa cursor pagination + filtrado local para MailerLite; no confiar solo en search.',
     '- Si Instagram UI pide login, Relay, checkpoint o permiso, pausa en awaiting_human_unblock y pide desbloqueo antes de cerrar reporte final.',
     '- En Instagram Messages UI, no eleves un resultado name-only o handle parecido a candidato plausible de stitching. Ese tipo de resultado debe quedar como weak_name_only_hit/no_write o descarte, salvo que el hilo o una fuente oficial muestre el email, teléfono, handle, nombre inequívoco, o contexto conversacional fuerte.',
     '- Prioriza búsquedas por email/teléfono dentro de Instagram Messages UI para contactos con origen IG/ManyChat/proxy/Vercel/MailerLite. Si el correo o teléfono aparece dentro del hilo, abre el hilo read-only y captura el puente compacto.',
+    '- Importante: "no ManyChat LIVE" significa no enviar, no editar, no pausar, no etiquetar, no activar flows y no mutar ManyChat. Sí puedes usar ManyChat UI en modo read-only exact-anchor cuando el source-result ledger diga not_found_limited_search o cuando una ruta de custom-field filter pueda cerrar el puente.',
     '- Captura evidencia compacta: fuente, anchor buscado, candidato, confianza, descartes y por que se cierra o no el gap.',
     '- Clasifica resultados por fuente: bridge_found, found_profile_no_requested_bridge, not_found_limited_search, not_found_exhaustive o blocked. No trates una busqueda limitada como fuente agotada.',
     '- No escribas tarjetas, Fact Store, MailerLite, Gmail, Drive, Contacts, Instagram ni ManyChat.',
@@ -659,7 +660,7 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
         'Do not write CRM cards from this report.',
         'Do not write Fact Store from this report.',
         'Do not send Instagram, WhatsApp, Telegram, email, or ManyChat messages.',
-        'Do not mutate ManyChat LIVE.',
+        'Do not mutate ManyChat LIVE. Read-only exact-anchor ManyChat UI lookup remains allowed when explicitly needed for source recovery.',
         'Do not call live Instagram, Gmail, Google, MailerLite, Shopify, payment, or WhatsApp APIs.',
         'Do not read, print, refresh, rotate, or mutate credentials.',
       ],

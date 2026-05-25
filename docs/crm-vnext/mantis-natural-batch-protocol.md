@@ -197,6 +197,8 @@ This rule is for source recovery only. It does not authorize ManyChat LIVE chang
 
 If ManyChat API/export is blocked but the Contacts UI is accessible, Mantis may use it as a read-only source-recovery lane for small, high-value batches.
 
+`No ManyChat LIVE` means no sends, flow edits, tags, subscriptions, automation changes, import/export mutations, or other live-state changes. It does not forbid read-only ManyChat UI exact-anchor lookup when the batch explicitly needs it.
+
 The simple Contacts search is not enough for captured emails. Use `Filter -> + Condition -> Custom User Fields` and search exact anchors such as:
 
 - `email_from_buffer is <exact email>`;
