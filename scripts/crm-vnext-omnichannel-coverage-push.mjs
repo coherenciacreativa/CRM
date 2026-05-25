@@ -18,6 +18,8 @@ Options:
   --limit <n>                    Total candidates to select. Default 40, max 80
   --ig-to-email-limit <n>        Candidate cap for Instagram-known/email-missing lane
   --email-to-ig-limit <n>        Candidate cap for email-known/Instagram-missing lane
+  --source-result-ledger-path <path>
+                                  Optional source-result ledger JSONL path
   --out <path>                   Write JSON report locally
   --markdown-out <path>          Write Markdown report locally
   --help                         Show this help
@@ -38,6 +40,7 @@ const parseArgs = (argv) => {
     limit: 40,
     igToEmailLimit: null,
     emailToInstagramLimit: null,
+    sourceResultLedgerPath: undefined,
     out: null,
     markdownOut: null,
     help: false,
@@ -52,6 +55,7 @@ const parseArgs = (argv) => {
     else if (arg === '--limit') options.limit = cleanInt(argv[++index], 40, 80);
     else if (arg === '--ig-to-email-limit') options.igToEmailLimit = cleanInt(argv[++index], 20, 80);
     else if (arg === '--email-to-ig-limit') options.emailToInstagramLimit = cleanInt(argv[++index], 20, 80);
+    else if (arg === '--source-result-ledger-path') options.sourceResultLedgerPath = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -101,6 +105,7 @@ const main = async () => {
       displayName: candidate.displayName,
       bridgePotential: candidate.bridgePotential,
       priorityScore: candidate.priorityScore,
+      sourceResultMemory: candidate.sourceResultHistory.map((entry) => entry.sourceResultStatus),
     })),
     writes,
     safety: {

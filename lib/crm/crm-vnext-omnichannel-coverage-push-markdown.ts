@@ -37,6 +37,13 @@ const formatCandidate = (candidate: CrmVNextOmnichannelCandidate): string[] => [
   'Source lanes:',
   ...candidate.sourceLanes.map((lane) => `- ${lane}`),
   '',
+  'Source result memory:',
+  ...(candidate.sourceResultHistory.length
+    ? candidate.sourceResultHistory.map((entry) =>
+      `- ${entry.sourceSystem ?? 'source'}: ${entry.sourceResultStatus} / ${entry.sourceExhaustion ?? 'unknown'}${entry.retryPolicy ? ` — ${entry.retryPolicy}` : ''}`
+    )
+    : ['- No prior source-result receipts for this candidate.']),
+  '',
   `Suggested Mantis action: ${candidate.suggestedMantisAction}`,
   '',
   'Evidence sources:',
@@ -67,6 +74,10 @@ export const formatCrmVNextOmnichannelCoveragePushMarkdown = (
   `- Selected email -> IG: ${report.summary.selectedEmailToInstagram}`,
   `- Max lift if selected gaps close: +${report.summary.maxOmnichannelLiftFromSelected}`,
   `- Projected omnichannel if all selected close: ${report.summary.projectedOmnichannelIfAllSelectedClose} (${report.summary.projectedOmnichannelCoveragePctIfAllSelectedClose}%)`,
+  `- Source-result ledger entries read: ${report.summary.sourceResultLedgerEntries}`,
+  `- Candidates with source-result memory: ${report.summary.sourceResultAwareCandidates}`,
+  `- Limited-search retry candidates: ${report.summary.sourceResultLimitedSearchRetryCandidates}`,
+  `- Profile-checked/no-bridge candidates: ${report.summary.sourceResultProfileCheckedNoBridgeCandidates}`,
   '',
   '## Source',
   '',

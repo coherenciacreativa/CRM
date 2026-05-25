@@ -30,6 +30,14 @@ npm run crm:vnext:omnichannel-coverage-push -- \
   --markdown-out ~/Documents/Mantis-Reports/crm_vnext_omnichannel_coverage_push_2026-05-24.md
 ```
 
+By default, the planner also reads:
+
+```text
+.crm-vnext/source-result-ledger/ledger.jsonl
+```
+
+That lets the next batch remember whether a prior source check was a strong negative, a weak/limited search, a blocker, or a bridge already found.
+
 ## What It Selects
 
 Two lanes:
@@ -47,6 +55,7 @@ Each candidate includes:
 - priority score and score breakdown,
 - reasons,
 - recommended read-only source lanes,
+- source-result memory from prior source checks,
 - copy-ready Mantis action.
 
 ## Source Lanes
@@ -65,6 +74,12 @@ If Instagram UI asks for login, Relay, checkpoint, saved-profile selection, or p
 If Instagram UI returns a plausible candidate, Mantis should open the existing thread read-only before deciding the bridge. A top-search hit alone usually stays `review_only`; a thread can promote the result to `bridge_confirmed_review_before_write` when it shows the missing email, phone, handle, self-identification, or relationship/origin context clearly enough.
 
 Name-only Instagram search is intentionally low-trust. A similar display name, mutual follow, or similar handle should be recorded as `weak_name_only_hit` or discarded evidence, not as a candidate bridge, unless another source provides a strong anchor. For contacts that likely came through the Instagram welcome/onboarding flow, the preferred lane is to search exact email or phone inside Instagram Messages UI and recover the original thread where the person gave that data.
+
+When source-result memory exists:
+
+- `found_profile_no_requested_bridge` means an exact source profile/thread was checked and the visible requested fields were absent. Do not repeat that same profile read unless new export/API/custom-field evidence appears.
+- `not_found_limited_search` means the source was searched through a weak route. Do not bury the contact; retry only with a stronger exact-anchor lane.
+- `blocked` means the source did not really run and should pause into `awaiting_human_unblock`.
 
 ## Mantis Rule
 

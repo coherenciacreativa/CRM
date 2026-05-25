@@ -115,7 +115,7 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
       emailToInstagramLimit: 1,
     });
 
-    expect(report.schemaVersion).toBe('crm-vnext-omnichannel-coverage-push-2026-05-24');
+    expect(report.schemaVersion).toBe('crm-vnext-omnichannel-coverage-push-2026-05-26');
     expect(report.mode).toBe('read_only_omnichannel_coverage_push');
     expect(report.generatedAt).toBe(NOW);
     expect(report.summary).toMatchObject({
@@ -131,6 +131,8 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
       maxOmnichannelLiftFromSelected: 2,
       projectedOmnichannelIfAllSelectedClose: 3,
       projectedOmnichannelCoveragePctIfAllSelectedClose: 60,
+      sourceResultLedgerEntries: 0,
+      sourceResultAwareCandidates: 0,
     });
 
     expect(report.candidates.map((candidate) => candidate.lane).sort()).toEqual([
@@ -154,6 +156,7 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
     expect(report.mantisPrompt).toContain('Instagram UI pide login');
     expect(report.mantisPrompt).toContain('weak_name_only_hit');
     expect(report.mantisPrompt).toContain('email/teléfono dentro de Instagram Messages UI');
+    expect(report.mantisPrompt).toContain('bridge_found, found_profile_no_requested_bridge');
     expect(report.safety).toMatchObject({
       localOnly: true,
       readOnly: true,
@@ -179,6 +182,59 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
     expect(markdown).toContain('Eliana Cadavid');
     expect(markdown).toContain('Pilar Quiñones');
     expect(markdown).toContain('No outbound messages.');
+  });
+
+  test('injects source-result memory into candidate guidance', () => {
+    const report = buildCrmVNextOmnichannelCoveragePushFromCards(cards(), {
+      now: NOW,
+      limit: 2,
+      igToEmailLimit: 1,
+      emailToInstagramLimit: 1,
+      sourceResults: [
+        {
+          ledgerEntryId: 'source_result_test_eliana',
+          recordedAt: NOW,
+          sourceSystem: 'ManyChat Contacts UI',
+          contactKey: 'ig:cadavid_eli',
+          sourceResultStatus: 'found_profile_no_requested_bridge',
+          resultStrength: 'negative_strong_for_visible_profile_fields',
+          sourceExhaustion: 'exhausted_for_visible_manychat_profile_fields',
+          retryPolicy: 'Do not repeat the same profile read.',
+        },
+        {
+          ledgerEntryId: 'source_result_test_pilar',
+          recordedAt: NOW,
+          sourceSystem: 'ManyChat Contacts UI',
+          contactKey: 'email:pilar@example.com',
+          sourceResultStatus: 'not_found_limited_search',
+          resultStrength: 'negative_weak_due_to_ui_capability',
+          sourceExhaustion: 'not_exhausted',
+          retryPolicy: 'Retry only with custom-field filter or export.',
+        },
+      ],
+    });
+
+    expect(report.summary).toMatchObject({
+      sourceResultLedgerEntries: 2,
+      sourceResultAwareCandidates: 2,
+      sourceResultLimitedSearchRetryCandidates: 1,
+      sourceResultProfileCheckedNoBridgeCandidates: 1,
+    });
+
+    const eliana = report.candidates.find((candidate) => candidate.personId === 'ig:eliana_cadavid');
+    expect(eliana?.sourceResultHistory[0]).toMatchObject({
+      sourceResultStatus: 'found_profile_no_requested_bridge',
+      sourceExhaustion: 'exhausted_for_visible_manychat_profile_fields',
+    });
+    expect(eliana?.suggestedMantisAction).toContain('Skip repeated profile-read work');
+
+    const pilar = report.candidates.find((candidate) => candidate.personId === 'email:pilar@example.com');
+    expect(pilar?.sourceResultHistory[0]).toMatchObject({
+      sourceResultStatus: 'not_found_limited_search',
+      sourceExhaustion: 'not_exhausted',
+    });
+    expect(pilar?.sourceLanes[0]).toContain('previous source search was limited');
+    expect(report.mantisPrompt).toContain('source-result memory');
   });
 
   test('handles an empty card store as observe-only planning', () => {

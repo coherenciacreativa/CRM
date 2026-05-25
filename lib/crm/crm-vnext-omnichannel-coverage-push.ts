@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import {
   loadPersonCardsVNext,
   publicPersonCardsVNextSource,
@@ -6,11 +7,46 @@ import {
 import type { PersonCardVNext } from './person-card-vnext';
 
 export const CRM_VNEXT_OMNICHANNEL_COVERAGE_PUSH_SCHEMA_VERSION =
-  'crm-vnext-omnichannel-coverage-push-2026-05-24' as const;
+  'crm-vnext-omnichannel-coverage-push-2026-05-26' as const;
+
+export const DEFAULT_CRM_VNEXT_SOURCE_RESULT_LEDGER_PATH =
+  '.crm-vnext/source-result-ledger/ledger.jsonl';
 
 export type CrmVNextOmnichannelCoverageLane =
   | 'ig_to_email'
   | 'email_to_instagram';
+
+export type CrmVNextSourceResultStatus =
+  | 'bridge_found'
+  | 'found_profile_no_requested_bridge'
+  | 'not_found_limited_search'
+  | 'not_found_exhaustive'
+  | 'blocked'
+  | 'unknown';
+
+export type CrmVNextSourceResultLedgerEntry = {
+  schemaVersion?: string;
+  ledgerEntryId?: string;
+  recordedAt?: string | null;
+  sourceSystem?: string | null;
+  contactKey?: string | null;
+  sourceResultStatus?: CrmVNextSourceResultStatus | string | null;
+  resultStrength?: string | null;
+  sourceExhaustion?: string | null;
+  operationalMeaning?: string | null;
+  retryPolicy?: string | null;
+};
+
+export type CrmVNextCandidateSourceResultHistory = {
+  ledgerEntryId: string | null;
+  recordedAt: string | null;
+  sourceSystem: string | null;
+  sourceResultStatus: CrmVNextSourceResultStatus;
+  resultStrength: string | null;
+  sourceExhaustion: string | null;
+  operationalMeaning: string | null;
+  retryPolicy: string | null;
+};
 
 export type CrmVNextOmnichannelCandidate = {
   rank: number;
@@ -36,6 +72,8 @@ export type CrmVNextOmnichannelCandidate = {
   };
   reasons: string[];
   sourceLanes: string[];
+  sourceResultHistory: CrmVNextCandidateSourceResultHistory[];
+  sourceResultGuidance: string[];
   suggestedMantisAction: string;
   evidenceSources: string[];
 };
@@ -59,6 +97,10 @@ export type CrmVNextOmnichannelCoveragePush = {
     maxOmnichannelLiftFromSelected: number;
     projectedOmnichannelIfAllSelectedClose: number;
     projectedOmnichannelCoveragePctIfAllSelectedClose: number;
+    sourceResultLedgerEntries: number;
+    sourceResultAwareCandidates: number;
+    sourceResultLimitedSearchRetryCandidates: number;
+    sourceResultProfileCheckedNoBridgeCandidates: number;
   };
   lanes: Array<{
     id: CrmVNextOmnichannelCoverageLane;
@@ -100,6 +142,8 @@ export type CrmVNextOmnichannelCoveragePushOptions = {
   limit?: number | null;
   igToEmailLimit?: number | null;
   emailToInstagramLimit?: number | null;
+  sourceResultLedgerPath?: string | null;
+  sourceResults?: CrmVNextSourceResultLedgerEntry[] | null;
 };
 
 const normalize = (value: string | null | undefined): string =>
@@ -131,6 +175,134 @@ const evidenceText = (card: PersonCardVNext): string =>
 
 const unique = (items: Array<string | null | undefined>): string[] =>
   Array.from(new Set(items.map((item) => item?.trim()).filter((item): item is string => Boolean(item))));
+
+const normalizeHandle = (value: string | null | undefined): string | null => {
+  const cleaned = value?.trim().replace(/^@+/, '').replace(/^ig:/i, '').toLowerCase();
+  return cleaned || null;
+};
+
+const normalizeEmail = (value: string | null | undefined): string | null => {
+  const cleaned = value?.trim().toLowerCase();
+  return cleaned && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleaned) ? cleaned : null;
+};
+
+const normalizePhone = (value: string | null | undefined): string | null => {
+  const digits = value?.replace(/[^\d]/g, '') ?? '';
+  return digits.length >= 7 ? digits : null;
+};
+
+const normalizeContactKey = (value: string | null | undefined): string | null => {
+  const cleaned = value?.trim().toLowerCase();
+  if (!cleaned) return null;
+  if (cleaned.startsWith('ig:')) {
+    const handle = normalizeHandle(cleaned.slice(3));
+    return handle ? `ig:${handle}` : null;
+  }
+  if (cleaned.startsWith('@')) {
+    const handle = normalizeHandle(cleaned);
+    return handle ? `ig:${handle}` : null;
+  }
+  if (cleaned.startsWith('email:')) {
+    const email = normalizeEmail(cleaned.slice(6));
+    return email ? `email:${email}` : null;
+  }
+  if (cleaned.includes('@')) {
+    const email = normalizeEmail(cleaned);
+    return email ? `email:${email}` : null;
+  }
+  if (cleaned.startsWith('phone:')) {
+    const phone = normalizePhone(cleaned.slice(6));
+    return phone ? `phone:${phone}` : null;
+  }
+  const phone = normalizePhone(cleaned);
+  if (phone && /^[+\d\s().-]+$/.test(cleaned)) return `phone:${phone}`;
+  return cleaned;
+};
+
+const candidateContactKeys = (card: PersonCardVNext): string[] =>
+  unique([
+    normalizeContactKey(card.personId),
+    card.identities.email ? normalizeContactKey(`email:${card.identities.email}`) : null,
+    card.identities.instagramHandle ? normalizeContactKey(`ig:${card.identities.instagramHandle}`) : null,
+    card.identities.phone ? normalizeContactKey(`phone:${card.identities.phone}`) : null,
+  ]);
+
+const sourceResultStatus = (value: string | null | undefined): CrmVNextSourceResultStatus => {
+  const status = value?.trim() as CrmVNextSourceResultStatus | undefined;
+  if ([
+    'bridge_found',
+    'found_profile_no_requested_bridge',
+    'not_found_limited_search',
+    'not_found_exhaustive',
+    'blocked',
+  ].includes(status ?? '')) return status as CrmVNextSourceResultStatus;
+  return 'unknown';
+};
+
+const parseDateMs = (value: string | null | undefined): number => {
+  if (!value) return 0;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const safeSourceResult = (
+  entry: CrmVNextSourceResultLedgerEntry,
+): CrmVNextCandidateSourceResultHistory => ({
+  ledgerEntryId: entry.ledgerEntryId ?? null,
+  recordedAt: entry.recordedAt ?? null,
+  sourceSystem: entry.sourceSystem ?? null,
+  sourceResultStatus: sourceResultStatus(entry.sourceResultStatus),
+  resultStrength: entry.resultStrength ?? null,
+  sourceExhaustion: entry.sourceExhaustion ?? null,
+  operationalMeaning: entry.operationalMeaning ?? null,
+  retryPolicy: entry.retryPolicy ?? null,
+});
+
+const sourceResultHistoryFor = (
+  card: PersonCardVNext,
+  entries: CrmVNextSourceResultLedgerEntry[],
+): CrmVNextCandidateSourceResultHistory[] => {
+  const keys = new Set(candidateContactKeys(card));
+  const seen = new Set<string>();
+  return entries
+    .filter((entry) => {
+      const key = normalizeContactKey(entry.contactKey ?? null);
+      return key ? keys.has(key) : false;
+    })
+    .sort((left, right) => parseDateMs(right.recordedAt ?? null) - parseDateMs(left.recordedAt ?? null))
+    .flatMap((entry) => {
+      const safe = safeSourceResult(entry);
+      const dedupeKey = safe.ledgerEntryId ?? [
+        safe.recordedAt,
+        safe.sourceSystem,
+        safe.sourceResultStatus,
+        safe.resultStrength,
+      ].join('|');
+      if (seen.has(dedupeKey)) return [];
+      seen.add(dedupeKey);
+      return [safe];
+    })
+    .slice(0, 5);
+};
+
+const sourceResultGuidanceFor = (
+  history: CrmVNextCandidateSourceResultHistory[],
+): string[] => {
+  const guidance: string[] = [];
+  if (history.some((entry) => entry.sourceResultStatus === 'found_profile_no_requested_bridge')) {
+    guidance.push('Source-result ledger: exact source profile was already opened and visible checked fields did not contain the requested bridge. Do not repeat the same profile read; continue with other lanes or new export/API/custom-field evidence.');
+  }
+  if (history.some((entry) => entry.sourceResultStatus === 'not_found_limited_search')) {
+    guidance.push('Source-result ledger: previous source search was limited/not exhaustive. Retry only with a stronger exact-anchor route such as custom-field filter, API/export if available, or another official-flow source.');
+  }
+  if (history.some((entry) => entry.sourceResultStatus === 'blocked')) {
+    guidance.push('Source-result ledger: a previous source check was blocked. Pause into awaiting_human_unblock before treating this lane as complete.');
+  }
+  if (history.some((entry) => entry.sourceResultStatus === 'bridge_found')) {
+    guidance.push('Source-result ledger: a prior source reported a bridge. Route through normal evidence import/card-write approval before rerunning discovery.');
+  }
+  return unique(guidance);
+};
 
 const hasAny = (text: string, terms: string[]): boolean =>
   terms.some((term) => text.includes(term));
@@ -235,10 +407,12 @@ const evidenceSources = (card: PersonCardVNext): string[] =>
 const sourceLanesFor = (
   lane: CrmVNextOmnichannelCoverageLane,
   card: PersonCardVNext | null | undefined,
+  sourceResultGuidance: string[] = [],
 ): string[] => {
   const text = card ? evidenceText(card) : '';
-  if (lane === 'ig_to_email') {
-    return unique([
+  const lanes = lane === 'ig_to_email'
+    ? [
+      ...sourceResultGuidance,
       'Instagram Messages UI read-only search by handle/name; capture compact thread context only.',
       hasAny(text, ['manychat', 'lead-capture', 'vercel', 'proxy', 'onboarding'])
         ? 'ManyChat / Vercel proxy / lead-capture traces read-only.'
@@ -246,24 +420,32 @@ const sourceLanesFor = (
       'MailerLite cursor scan + local filter by handle/display name; do not use subscriber search as sole source.',
       'Gmail / Drive / Contacts read-only only if the first lanes do not close the email bridge.',
       'Local Mantis-Reports and CRM ledgers before asking Alejandro.',
-    ]);
-  }
+    ]
+    : [
+      ...sourceResultGuidance,
+      'MailerLite subscriber fields/groups/source_of_subscriber read-only; cursor pagination + local filtering.',
+      'Instagram Messages UI read-only search by email/name/phone if available.',
+      hasAny(text, ['gmail', 'reply'])
+        ? 'Gmail reply metadata/snippet review for handle clues, without full-body export.'
+        : 'Gmail reply metadata/snippets only if the person has newsletter-reply evidence.',
+      'ManyChat / Vercel proxy / lead-capture traces when the email looks official-flow origin.',
+      'Contacts and Drive/Sheets read-only for phone/location/name bridges.',
+    ];
 
-  return unique([
-    'MailerLite subscriber fields/groups/source_of_subscriber read-only; cursor pagination + local filtering.',
-    'Instagram Messages UI read-only search by email/name/phone if available.',
-    hasAny(text, ['gmail', 'reply'])
-      ? 'Gmail reply metadata/snippet review for handle clues, without full-body export.'
-      : 'Gmail reply metadata/snippets only if the person has newsletter-reply evidence.',
-    'ManyChat / Vercel proxy / lead-capture traces when the email looks official-flow origin.',
-    'Contacts and Drive/Sheets read-only for phone/location/name bridges.',
-  ]);
+  return unique(lanes);
 };
 
 const candidateAction = (
   lane: CrmVNextOmnichannelCoverageLane,
   potential: CrmVNextOmnichannelCandidate['bridgePotential'],
+  sourceResultGuidance: string[] = [],
 ): string => {
+  if (sourceResultGuidance.some((item) => item.includes('previous source search was limited'))) {
+    return 'Run a stronger exact-anchor retry, not a repeat of the weak search; preserve result class in the source-result ledger.';
+  }
+  if (sourceResultGuidance.some((item) => item.includes('exact source profile was already opened'))) {
+    return 'Skip repeated profile-read work for that source and continue with other high-value lanes before asking Alejandro.';
+  }
   if (lane === 'ig_to_email') {
     if (potential === 'high') return 'Run source recovery for email bridge before asking Alejandro or planning capture outreach.';
     return 'Keep in source-recovery backlog; search local official-flow lanes before any outbound email request.';
@@ -275,9 +457,12 @@ const candidateAction = (
 const toCandidate = (
   card: PersonCardVNext,
   lane: CrmVNextOmnichannelCoverageLane,
+  sourceResults: CrmVNextSourceResultLedgerEntry[] = [],
 ): Omit<CrmVNextOmnichannelCandidate, 'rank'> => {
   const breakdown = scoreCandidate(card);
   const potential = bridgePotential(breakdown);
+  const sourceResultHistory = sourceResultHistoryFor(card, sourceResults);
+  const sourceResultGuidance = sourceResultGuidanceFor(sourceResultHistory);
   return {
     lane,
     personId: card.personId,
@@ -294,8 +479,10 @@ const toCandidate = (
     priorityScore: totalScore(breakdown),
     scoreBreakdown: breakdown,
     reasons: reasonLabels(card, lane, breakdown),
-    sourceLanes: sourceLanesFor(lane, card),
-    suggestedMantisAction: candidateAction(lane, potential),
+    sourceLanes: sourceLanesFor(lane, card, sourceResultGuidance),
+    sourceResultHistory,
+    sourceResultGuidance,
+    suggestedMantisAction: candidateAction(lane, potential, sourceResultGuidance),
     evidenceSources: evidenceSources(card),
   };
 };
@@ -335,7 +522,10 @@ const buildMantisPrompt = (
         candidate.identities.email,
         candidate.identities.phone,
       ].filter(Boolean).join(' / ');
-      return `- ${identity || candidate.personId}: ${candidate.gap}; source lanes: ${candidate.sourceLanes.slice(0, 3).join(' | ')}`;
+      const history = candidate.sourceResultGuidance.length
+        ? `; source-result memory: ${candidate.sourceResultGuidance.join(' ')}`
+        : '';
+      return `- ${identity || candidate.personId}: ${candidate.gap}; source lanes: ${candidate.sourceLanes.slice(0, 3).join(' | ')}${history}`;
     })
     .join('\n');
 
@@ -350,6 +540,7 @@ const buildMantisPrompt = (
     '- En Instagram Messages UI, no eleves un resultado name-only o handle parecido a candidato plausible de stitching. Ese tipo de resultado debe quedar como weak_name_only_hit/no_write o descarte, salvo que el hilo o una fuente oficial muestre el email, teléfono, handle, nombre inequívoco, o contexto conversacional fuerte.',
     '- Prioriza búsquedas por email/teléfono dentro de Instagram Messages UI para contactos con origen IG/ManyChat/proxy/Vercel/MailerLite. Si el correo o teléfono aparece dentro del hilo, abre el hilo read-only y captura el puente compacto.',
     '- Captura evidencia compacta: fuente, anchor buscado, candidato, confianza, descartes y por que se cierra o no el gap.',
+    '- Clasifica resultados por fuente: bridge_found, found_profile_no_requested_bridge, not_found_limited_search, not_found_exhaustive o blocked. No trates una busqueda limitada como fuente agotada.',
     '- No escribas tarjetas, Fact Store, MailerLite, Gmail, Drive, Contacts, Instagram ni ManyChat.',
     '',
     'Candidatos:',
@@ -368,13 +559,14 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
   const defaultPerLane = Math.max(1, Math.ceil(limit / 2));
   const igToEmailLimit = cleanLimit(options.igToEmailLimit, defaultPerLane, limit);
   const emailToInstagramLimit = cleanLimit(options.emailToInstagramLimit, limit - Math.min(defaultPerLane, limit - 1), limit);
+  const sourceResults = options.sourceResults ?? [];
 
   const igToEmailAll = laneMatched(cards, 'ig_to_email');
   const emailToInstagramAll = laneMatched(cards, 'email_to_instagram');
-  const igToEmail = rankCandidates(igToEmailAll.map((card) => toCandidate(card, 'ig_to_email')))
+  const igToEmail = rankCandidates(igToEmailAll.map((card) => toCandidate(card, 'ig_to_email', sourceResults)))
     .slice(0, Math.min(igToEmailLimit, limit));
   const remainingCandidateSlots = Math.max(0, limit - igToEmail.length);
-  const emailToInstagram = rankCandidates(emailToInstagramAll.map((card) => toCandidate(card, 'email_to_instagram')))
+  const emailToInstagram = rankCandidates(emailToInstagramAll.map((card) => toCandidate(card, 'email_to_instagram', sourceResults)))
     .slice(0, Math.min(emailToInstagramLimit, remainingCandidateSlots));
   const candidates = rankCandidates([...igToEmail, ...emailToInstagram]);
 
@@ -410,6 +602,14 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
       maxOmnichannelLiftFromSelected: maxLift,
       projectedOmnichannelIfAllSelectedClose: omnichannel + maxLift,
       projectedOmnichannelCoveragePctIfAllSelectedClose: pct(omnichannel + maxLift, cards.length),
+      sourceResultLedgerEntries: sourceResults.length,
+      sourceResultAwareCandidates: candidates.filter((candidate) => candidate.sourceResultHistory.length).length,
+      sourceResultLimitedSearchRetryCandidates: candidates.filter((candidate) =>
+        candidate.sourceResultHistory.some((entry) => entry.sourceResultStatus === 'not_found_limited_search'),
+      ).length,
+      sourceResultProfileCheckedNoBridgeCandidates: candidates.filter((candidate) =>
+        candidate.sourceResultHistory.some((entry) => entry.sourceResultStatus === 'found_profile_no_requested_bridge'),
+      ).length,
     },
     lanes: [
       {
@@ -467,6 +667,29 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
   };
 };
 
+export const readCrmVNextSourceResultLedger = async (
+  filePath: string | null | undefined = DEFAULT_CRM_VNEXT_SOURCE_RESULT_LEDGER_PATH,
+): Promise<CrmVNextSourceResultLedgerEntry[]> => {
+  if (!filePath) return [];
+  try {
+    const text = await readFile(filePath, 'utf8');
+    return text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .flatMap((line) => {
+        try {
+          const parsed = JSON.parse(line) as CrmVNextSourceResultLedgerEntry;
+          return parsed && typeof parsed === 'object' ? [parsed] : [];
+        } catch {
+          return [];
+        }
+      });
+  } catch {
+    return [];
+  }
+};
+
 export const buildCrmVNextOmnichannelCoveragePush = async (
   options: CrmVNextOmnichannelCoveragePushOptions = {},
 ): Promise<CrmVNextOmnichannelCoveragePush> => {
@@ -476,7 +699,11 @@ export const buildCrmVNextOmnichannelCoveragePush = async (
     preferStore: options.preferStore,
     now: options.now,
   });
-  const report = buildCrmVNextOmnichannelCoveragePushFromCards(sourceResult.cards, options);
+  const sourceResults = options.sourceResults ?? await readCrmVNextSourceResultLedger(options.sourceResultLedgerPath);
+  const report = buildCrmVNextOmnichannelCoveragePushFromCards(sourceResult.cards, {
+    ...options,
+    sourceResults,
+  });
   return {
     ...report,
     source: publicPersonCardsVNextSource(sourceResult.source),
