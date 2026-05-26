@@ -101,6 +101,7 @@ export type CrmVNextOmnichannelCoveragePush = {
     sourceResultAwareCandidates: number;
     sourceResultLimitedSearchRetryCandidates: number;
     sourceResultProfileCheckedNoBridgeCandidates: number;
+    sourceResultExhaustedCandidates: number;
   };
   lanes: Array<{
     id: CrmVNextOmnichannelCoverageLane;
@@ -289,6 +290,12 @@ const sourceResultGuidanceFor = (
   history: CrmVNextCandidateSourceResultHistory[],
 ): string[] => {
   const guidance: string[] = [];
+  if (history.some((entry) =>
+    entry.sourceSystem?.toLowerCase().includes('omnichannel source recovery')
+    && (entry.sourceExhaustion ?? '').startsWith('exhausted')
+  )) {
+    guidance.push('Source-result ledger: prior omnichannel exact-anchor recovery already completed without a trusted bridge. Do not include in an immediate rerun unless a new anchor, source, API/export, or human clue appears.');
+  }
   if (history.some((entry) => entry.sourceResultStatus === 'found_profile_no_requested_bridge')) {
     guidance.push('Source-result ledger: exact source profile was already opened and visible checked fields did not contain the requested bridge. Do not repeat the same profile read; continue with other lanes or new export/API/custom-field evidence.');
   }
@@ -440,6 +447,9 @@ const candidateAction = (
   potential: CrmVNextOmnichannelCandidate['bridgePotential'],
   sourceResultGuidance: string[] = [],
 ): string => {
+  if (sourceResultGuidance.some((item) => item.includes('prior omnichannel exact-anchor recovery already completed'))) {
+    return 'Do not rerun this candidate in the immediate source-recovery batch; move to human-memory, new-anchor, or future-source backlog.';
+  }
   if (sourceResultGuidance.some((item) => item.includes('previous source search was limited'))) {
     return 'Run a stronger exact-anchor retry, not a repeat of the weak search; preserve result class in the source-result ledger.';
   }
@@ -453,6 +463,19 @@ const candidateAction = (
   if (potential === 'high') return 'Run identity stitching search for Instagram bridge using email/name anchors.';
   return 'Keep in identity-stitching backlog; prefer source-rich cohorts before manual review.';
 };
+
+const hasExhaustedOmnichannelRecovery = (
+  candidate: Pick<CrmVNextOmnichannelCandidate, 'sourceResultHistory'>,
+): boolean =>
+  candidate.sourceResultHistory.some((entry) =>
+    entry.sourceSystem?.toLowerCase().includes('omnichannel source recovery')
+    && (entry.sourceExhaustion ?? '').startsWith('exhausted')
+  );
+
+const sourceResultSortPenalty = (
+  candidate: Pick<CrmVNextOmnichannelCandidate, 'sourceResultHistory'>,
+): number =>
+  hasExhaustedOmnichannelRecovery(candidate) ? 1000 : 0;
 
 const toCandidate = (
   card: PersonCardVNext,
@@ -492,7 +515,7 @@ const rankCandidates = (
 ): CrmVNextOmnichannelCandidate[] =>
   candidates
     .sort((a, b) =>
-      b.priorityScore - a.priorityScore
+      (b.priorityScore - sourceResultSortPenalty(b)) - (a.priorityScore - sourceResultSortPenalty(a))
       || b.scoreBreakdown.officialFlow - a.scoreBreakdown.officialFlow
       || b.scoreBreakdown.relationshipContext - a.scoreBreakdown.relationshipContext
       || a.personId.localeCompare(b.personId),
@@ -611,6 +634,7 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
       sourceResultProfileCheckedNoBridgeCandidates: candidates.filter((candidate) =>
         candidate.sourceResultHistory.some((entry) => entry.sourceResultStatus === 'found_profile_no_requested_bridge'),
       ).length,
+      sourceResultExhaustedCandidates: candidates.filter(hasExhaustedOmnichannelRecovery).length,
     },
     lanes: [
       {

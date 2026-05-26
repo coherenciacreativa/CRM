@@ -116,4 +116,103 @@ describe("CRM vNext source result ledger script", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  test("classifies source-result-aware omnichannel recovery reports", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-source-result-ledger-"));
+    try {
+      const reportPath = join(dir, "omnichannel-recovery.json");
+      const outPath = join(dir, "classification.json");
+
+      await writeFile(reportPath, JSON.stringify({
+        schemaVersion: "crm-vnext-omnichannel-source-recovery-2026-05-26",
+        generatedAt: "2026-05-26T00:38:57Z",
+        contacts: {
+          "ig:dmbc01": {
+            contactKey: "ig:dmbc01",
+            recommendedAction: "unresolved_high_value",
+            exactAnchorsSearched: [
+              { type: "instagramHandle", value: "dmbc01" },
+            ],
+            searchedSources: [
+              {
+                source: "manychat_ui_read_only_exact_anchor",
+                status: "completed",
+                anchors: ["dmbc01"],
+                metrics: { profilesOpened: 1 },
+              },
+              {
+                source: "instagram_messages_ui_read_only",
+                status: "completed",
+                anchors: ["dmbc01"],
+                metrics: { openedThreads: 1 },
+              },
+            ],
+            strongMatches: [],
+            weakCandidates: [
+              {
+                source: "manychat_ui_read_only_exact_anchor",
+                sourceKind: "manychat_profile_checked_no_requested_email_bridge",
+                reason: "Exact profile opened read-only, but visible fields had no email bridge.",
+              },
+            ],
+          },
+          "email:luis.e.lopera@gmail.com": {
+            contactKey: "email:luis.e.lopera@gmail.com",
+            recommendedAction: "unresolved_high_value",
+            exactAnchorsSearched: [
+              { type: "email", value: "luis.e.lopera@gmail.com" },
+              { type: "phone", value: "+573002681642", digits: "573002681642" },
+            ],
+            searchedSources: [
+              {
+                source: "manychat_ui_read_only_exact_anchor",
+                status: "completed",
+                anchors: ["luis.e.lopera@gmail.com", "573002681642"],
+                metrics: { profilesOpened: 0, foundRowsOrProfiles: 0 },
+              },
+              {
+                source: "instagram_messages_ui_read_only",
+                status: "completed",
+                anchors: ["luis.e.lopera@gmail.com", "573002681642"],
+                metrics: { openedThreads: 0 },
+              },
+            ],
+            strongMatches: [],
+            weakCandidates: [],
+          },
+        },
+      }), "utf8");
+
+      await execFileAsync("node", [
+        "scripts/crm-vnext-source-result-ledger.mjs",
+        "--report-file",
+        reportPath,
+        "--source-system",
+        "Omnichannel Source Recovery v2",
+        "--out",
+        outPath,
+      ], { cwd: process.cwd() });
+
+      const classification = JSON.parse(await readFile(outPath, "utf8"));
+      const diana = classification.entries.find((entry: { contactKey: string }) =>
+        entry.contactKey === "ig:dmbc01"
+      );
+      expect(diana).toMatchObject({
+        sourceResultStatus: "found_profile_no_requested_bridge",
+        resultStrength: "negative_strong_for_visible_profile_fields",
+        sourceExhaustion: "exhausted_for_visible_profile_or_thread_fields",
+      });
+
+      const luis = classification.entries.find((entry: { contactKey: string }) =>
+        entry.contactKey === "email:luis.e.lopera@gmail.com"
+      );
+      expect(luis).toMatchObject({
+        sourceResultStatus: "not_found_exhaustive",
+        resultStrength: "negative_strong_for_declared_exact_anchor_method",
+        sourceExhaustion: "exhausted_for_declared_exact_anchor_method",
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

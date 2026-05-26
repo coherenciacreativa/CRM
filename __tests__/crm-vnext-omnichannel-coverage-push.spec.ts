@@ -240,6 +240,63 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
     expect(report.mantisPrompt).toContain('source-result memory');
   });
 
+  test('deprioritizes candidates whose omnichannel exact-anchor recovery was already exhausted', () => {
+    const highPriorityButExhausted = buildCard({
+      personId: 'email:pilar@example.com',
+      displayName: 'Pilar Quiñones',
+      identities: {
+        email: 'pilar@example.com',
+        phone: '+573009998877',
+      },
+      scoring: {
+        email: {
+          subscriberStatus: 'active',
+          replies30d: 2,
+          opens90d: 10,
+          lifetimeOpens: 20,
+        },
+        tags: ['instagram onboarding', 'newsletter reply'],
+      },
+      evidence: [
+        { source: 'mailerlite_export', note: 'Subscriber active with onboarding note.' },
+        { source: 'gmail_reply_activity', note: 'Thoughtful newsletter reply.' },
+      ],
+    });
+    const lowerPriorityFresh = buildCard({
+      personId: 'email:steven@example.com',
+      displayName: 'Steven Cardona',
+      identities: {
+        email: 'steven@example.com',
+      },
+      evidence: [
+        { source: 'mailerlite_export', note: 'Subscriber active.' },
+      ],
+    });
+
+    const report = buildCrmVNextOmnichannelCoveragePushFromCards([
+      highPriorityButExhausted,
+      lowerPriorityFresh,
+    ], {
+      now: NOW,
+      limit: 1,
+      sourceResults: [
+        {
+          ledgerEntryId: 'source_result_test_pilar_exhausted',
+          recordedAt: NOW,
+          sourceSystem: 'Omnichannel Source Recovery v2',
+          contactKey: 'email:pilar@example.com',
+          sourceResultStatus: 'not_found_exhaustive',
+          resultStrength: 'negative_strong_for_declared_exact_anchor_method',
+          sourceExhaustion: 'exhausted_for_declared_exact_anchor_method',
+        },
+      ],
+    });
+
+    expect(report.candidates).toHaveLength(1);
+    expect(report.candidates[0].personId).toBe('email:steven@example.com');
+    expect(report.mantisPrompt).not.toContain('Pilar Quiñones');
+  });
+
   test('handles an empty card store as observe-only planning', () => {
     const report = buildCrmVNextOmnichannelCoveragePushFromCards([], {
       now: NOW,

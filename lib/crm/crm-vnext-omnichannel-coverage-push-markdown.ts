@@ -78,6 +78,7 @@ export const formatCrmVNextOmnichannelCoveragePushMarkdown = (
   `- Candidates with source-result memory: ${report.summary.sourceResultAwareCandidates}`,
   `- Limited-search retry candidates: ${report.summary.sourceResultLimitedSearchRetryCandidates}`,
   `- Profile-checked/no-bridge candidates: ${report.summary.sourceResultProfileCheckedNoBridgeCandidates}`,
+  `- Exhausted immediate-rerun candidates: ${report.summary.sourceResultExhaustedCandidates}`,
   '',
   '## Source',
   '',

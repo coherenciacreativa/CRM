@@ -124,7 +124,28 @@ const queriesForContact = (report, contactKey, contact) => {
   const reportQueries = Array.isArray(report?.queries_executed) ? report.queries_executed : [];
   const normalizedKey = normalizeAnchor(contactKey);
   const queryMatches = reportQueries.filter((query) => normalizeAnchor(query?.anchor) === normalizedKey);
-  return [...queryMatches, ...contactQueries].map((query) => ({
+  const exactAnchors = Array.isArray(contact?.exactAnchorsSearched)
+    ? contact.exactAnchorsSearched.map((anchor) => ({
+      method: `exact_anchor:${cleanString(anchor?.type) ?? 'unknown'}`,
+      anchor: cleanString(anchor?.value),
+      query: cleanString(anchor?.digits) ?? cleanString(anchor?.value),
+      result: null,
+      uiResult: null,
+    }))
+    : [];
+  const sourceQueries = Array.isArray(contact?.searchedSources)
+    ? contact.searchedSources.flatMap((source) => {
+      const anchors = Array.isArray(source?.anchors) ? source.anchors : [];
+      return anchors.map((anchor) => ({
+        method: cleanString(source?.source),
+        anchor: cleanString(anchor),
+        query: cleanString(anchor),
+        result: cleanString(source?.status),
+        uiResult: cleanString(source?.detail),
+      }));
+    })
+    : [];
+  return [...queryMatches, ...contactQueries, ...exactAnchors, ...sourceQueries].map((query) => ({
     method: cleanString(query?.method),
     anchor: cleanString(query?.anchor),
     query: cleanString(query?.query),
@@ -170,6 +191,41 @@ const isLimitedManyChatSearch = (contact, report) => {
   return text.includes('search by name') || text.includes('custom-field') || text.includes('custom field') || text.includes('upsell');
 };
 
+const allDeclaredSourcesCompleted = (contact) => {
+  const searchedSources = Array.isArray(contact?.searchedSources) ? contact.searchedSources : [];
+  return searchedSources.length > 0
+    && searchedSources.every((source) => normalizeStatus(source?.status) === 'completed');
+};
+
+const hasBlockedDeclaredSource = (contact) => {
+  const searchedSources = Array.isArray(contact?.searchedSources) ? contact.searchedSources : [];
+  return searchedSources.some((source) => {
+    const status = normalizeStatus(source?.status);
+    return status && /blocked|auth|login|token|required|unauth|checkpoint|permission|relay/.test(status);
+  });
+};
+
+const strongMatches = (contact) =>
+  Array.isArray(contact?.strongMatches) ? contact.strongMatches : [];
+
+const weakCandidates = (contact) =>
+  Array.isArray(contact?.weakCandidates) ? contact.weakCandidates : [];
+
+const hasNoRequestedBridgeEvidence = (contact) => {
+  const evidenceText = weakCandidates(contact)
+    .map((item) => [
+      cleanString(item?.sourceKind),
+      cleanString(item?.reason),
+      cleanString(item?.source),
+    ].filter(Boolean).join(' '))
+    .join(' ')
+    .toLowerCase();
+  return evidenceText.includes('no_requested_email_bridge')
+    || evidenceText.includes('no_requested_bridge')
+    || evidenceText.includes('profile_checked_no_requested')
+    || evidenceText.includes('thread_checked_no_requested');
+};
+
 const classifyContact = ({ report, contactKey, contact, sourceSystem, recordedAt, sourceReport, runLabel }) => {
   const status = normalizeStatus(contact?.status);
   const bridgeStatus = normalizeStatus(contact?.bridge_status);
@@ -180,12 +236,33 @@ const classifyContact = ({ report, contactKey, contact, sourceSystem, recordedAt
   let retryPolicy = 'Do not use this source result for automation until a human reviews the raw report shape.';
   let operationalMeaning = 'The source result shape was not recognized by the classifier.';
 
-  if (hasBridge(contact)) {
+  if (hasBridge(contact) || strongMatches(contact).length > 0 || normalizeStatus(contact?.recommendedAction) === 'ready_for_write_review') {
     sourceResultStatus = 'bridge_found';
     resultStrength = 'positive_bridge';
     sourceExhaustion = 'not_needed';
     retryPolicy = 'Route through normal evidence import and card-write approval; do not rerun the same source unless evidence conflicts.';
     operationalMeaning = 'This source found a usable identity bridge, pending normal approval gates.';
+  } else if (hasBlockedDeclaredSource(contact)) {
+    sourceResultStatus = 'blocked';
+    resultStrength = 'blocked_no_evidence';
+    sourceExhaustion = 'blocked_before_check';
+    retryPolicy = 'Pause into awaiting_human_unblock and retry the same anchors after the unblock; do not report as final source negative.';
+    operationalMeaning = 'At least one declared source lane was blocked before the source could be checked.';
+  } else if (hasNoRequestedBridgeEvidence(contact)) {
+    sourceResultStatus = 'found_profile_no_requested_bridge';
+    resultStrength = 'negative_strong_for_visible_profile_fields';
+    sourceExhaustion = 'exhausted_for_visible_profile_or_thread_fields';
+    retryPolicy = 'Do not repeat the same profile/thread read unless new fields, export/API access, or new anchors appear; continue with other lanes or human memory.';
+    operationalMeaning = 'A declared exact profile/thread was opened read-only, but visible fields/context did not contain the requested bridge.';
+  } else if (
+    normalizeStatus(contact?.recommendedAction) === 'unresolved_high_value'
+    && allDeclaredSourcesCompleted(contact)
+  ) {
+    sourceResultStatus = 'not_found_exhaustive';
+    resultStrength = 'negative_strong_for_declared_exact_anchor_method';
+    sourceExhaustion = 'exhausted_for_declared_exact_anchor_method';
+    retryPolicy = 'Do not repeat the same exact-anchor source-recovery batch unless a new anchor or source appears; next step is human memory, a new export/API capability, or a different cohort.';
+    operationalMeaning = 'All declared exact-anchor source lanes completed without a trusted bridge.';
   } else if (status === 'found' && bridgeStatus === 'no_email_bridge_in_current_ui' && hasExplicitNoEmailInVisibleFields(contact)) {
     sourceResultStatus = 'found_profile_no_requested_bridge';
     resultStrength = 'negative_strong_for_visible_profile_fields';
