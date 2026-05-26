@@ -102,6 +102,7 @@ export type CrmVNextOmnichannelCoveragePush = {
     sourceResultLimitedSearchRetryCandidates: number;
     sourceResultProfileCheckedNoBridgeCandidates: number;
     sourceResultExhaustedCandidates: number;
+    lowBridgePotentialBacklog: number;
   };
   lanes: Array<{
     id: CrmVNextOmnichannelCoverageLane;
@@ -143,6 +144,8 @@ export type CrmVNextOmnichannelCoveragePushOptions = {
   limit?: number | null;
   igToEmailLimit?: number | null;
   emailToInstagramLimit?: number | null;
+  includeLowBridgePotential?: boolean | null;
+  includeExhaustedSourceResults?: boolean | null;
   sourceResultLedgerPath?: string | null;
   sourceResults?: CrmVNextSourceResultLedgerEntry[] | null;
 };
@@ -477,6 +480,18 @@ const sourceResultSortPenalty = (
 ): number =>
   hasExhaustedOmnichannelRecovery(candidate) ? 1000 : 0;
 
+const selectableCandidate = (
+  candidate: Omit<CrmVNextOmnichannelCandidate, 'rank'>,
+  includeLowBridgePotential: boolean,
+  includeExhaustedSourceResults: boolean,
+): boolean =>
+  (includeExhaustedSourceResults || !hasExhaustedOmnichannelRecovery(candidate))
+  && (
+    includeLowBridgePotential
+    || candidate.bridgePotential !== 'low'
+    || candidate.sourceResultHistory.some((entry) => entry.sourceResultStatus === 'not_found_limited_search')
+  );
+
 const toCandidate = (
   card: PersonCardVNext,
   lane: CrmVNextOmnichannelCoverageLane,
@@ -584,13 +599,22 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
   const igToEmailLimit = cleanLimit(options.igToEmailLimit, defaultPerLane, limit);
   const emailToInstagramLimit = cleanLimit(options.emailToInstagramLimit, limit - Math.min(defaultPerLane, limit - 1), limit);
   const sourceResults = options.sourceResults ?? [];
+  const includeLowBridgePotential = options.includeLowBridgePotential === true;
+  const includeExhaustedSourceResults = options.includeExhaustedSourceResults === true;
 
   const igToEmailAll = laneMatched(cards, 'ig_to_email');
   const emailToInstagramAll = laneMatched(cards, 'email_to_instagram');
-  const igToEmail = rankCandidates(igToEmailAll.map((card) => toCandidate(card, 'ig_to_email', sourceResults)))
+  const igToEmailCandidatePool = igToEmailAll.map((card) => toCandidate(card, 'ig_to_email', sourceResults));
+  const emailToInstagramCandidatePool = emailToInstagramAll.map((card) => toCandidate(card, 'email_to_instagram', sourceResults));
+  const candidatePool = [...igToEmailCandidatePool, ...emailToInstagramCandidatePool];
+  const igToEmail = rankCandidates(igToEmailCandidatePool.filter((candidate) =>
+    selectableCandidate(candidate, includeLowBridgePotential, includeExhaustedSourceResults)
+  ))
     .slice(0, Math.min(igToEmailLimit, limit));
   const remainingCandidateSlots = Math.max(0, limit - igToEmail.length);
-  const emailToInstagram = rankCandidates(emailToInstagramAll.map((card) => toCandidate(card, 'email_to_instagram', sourceResults)))
+  const emailToInstagram = rankCandidates(emailToInstagramCandidatePool.filter((candidate) =>
+    selectableCandidate(candidate, includeLowBridgePotential, includeExhaustedSourceResults)
+  ))
     .slice(0, Math.min(emailToInstagramLimit, remainingCandidateSlots));
   const candidates = rankCandidates([...igToEmail, ...emailToInstagram]);
 
@@ -635,6 +659,7 @@ export const buildCrmVNextOmnichannelCoveragePushFromCards = (
         candidate.sourceResultHistory.some((entry) => entry.sourceResultStatus === 'found_profile_no_requested_bridge'),
       ).length,
       sourceResultExhaustedCandidates: candidates.filter(hasExhaustedOmnichannelRecovery).length,
+      lowBridgePotentialBacklog: candidatePool.filter((candidate) => candidate.bridgePotential === 'low').length,
     },
     lanes: [
       {

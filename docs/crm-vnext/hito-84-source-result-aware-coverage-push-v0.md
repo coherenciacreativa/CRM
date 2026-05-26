@@ -36,6 +36,8 @@ If a prior ManyChat search was only a weak/free-UI search, Mantis should not bur
 
 Clarification added after the first source-aware batch: `no ManyChat LIVE` means no ManyChat mutation or outbound. It does not mean "never read ManyChat UI." Read-only exact-anchor ManyChat UI lookup remains allowed when needed to recover historical onboarding evidence.
 
+Follow-up after the completed v2 source-recovery batch: the planner now prefers quality over filling slots. Low bridge-potential rows are left in backlog by default, and candidates whose omnichannel exact-anchor recovery is already exhausted are excluded from immediate reruns unless a new anchor/source/API-export lane appears. This prevents the next Mantis batch from drifting into repeated or low-yield work.
+
 ## Safety
 
 This remains a read-only planner. It does not mutate cards, Fact Store, scores, live APIs, credentials, ManyChat LIVE, Instagram, MailerLite, Google, WhatsApp, Telegram, or outbound channels.

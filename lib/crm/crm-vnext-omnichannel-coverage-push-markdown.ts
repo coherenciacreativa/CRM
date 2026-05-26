@@ -79,6 +79,7 @@ export const formatCrmVNextOmnichannelCoveragePushMarkdown = (
   `- Limited-search retry candidates: ${report.summary.sourceResultLimitedSearchRetryCandidates}`,
   `- Profile-checked/no-bridge candidates: ${report.summary.sourceResultProfileCheckedNoBridgeCandidates}`,
   `- Exhausted immediate-rerun candidates: ${report.summary.sourceResultExhaustedCandidates}`,
+  `- Low-potential backlog not selected by default: ${report.summary.lowBridgePotentialBacklog}`,
   '',
   '## Source',
   '',

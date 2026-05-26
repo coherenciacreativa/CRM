@@ -47,6 +47,13 @@ Two lanes:
 
 The second lane suppresses cards whose evidence already says the person does not have Instagram. Those cards can still be valid CRM contacts, but they should not consume source-recovery cycles looking for a bridge that Alejandro has already ruled out.
 
+By default, the planner also uses quality gates:
+
+- low bridge-potential candidates stay in backlog instead of filling batch slots;
+- candidates whose latest omnichannel exact-anchor recovery is exhausted stay out of the immediate rerun unless a new anchor, source, export/API lane, or human clue appears.
+
+This means a batch may contain fewer than the requested `--limit`. That is intentional. Empty slots are better than asking Mantis or Alejandro to repeat low-yield work.
+
 Each candidate includes:
 
 - current identity fields,
@@ -79,6 +86,7 @@ When source-result memory exists:
 
 - `found_profile_no_requested_bridge` means an exact source profile/thread was checked and the visible requested fields were absent. Do not repeat that same profile read unless new export/API/custom-field evidence appears.
 - `not_found_limited_search` means the source was searched through a weak route. Do not bury the contact; retry only with a stronger exact-anchor lane.
+- `not_found_exhaustive` from a completed omnichannel exact-anchor recovery means the same batch should not be rerun immediately. Move the contact to human-memory, new-source, or future-export backlog.
 - `blocked` means the source did not really run and should pause into `awaiting_human_unblock`.
 
 Important wording for Mantis: `no ManyChat LIVE` means no mutation, send, tag, flow, subscription, import/export mutation, or settings change. It does not forbid read-only ManyChat UI exact-anchor lookup when the source-result memory says the prior search was limited.

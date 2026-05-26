@@ -133,6 +133,7 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
       projectedOmnichannelCoveragePctIfAllSelectedClose: 60,
       sourceResultLedgerEntries: 0,
       sourceResultAwareCandidates: 0,
+      lowBridgePotentialBacklog: 0,
     });
 
     expect(report.candidates.map((candidate) => candidate.lane).sort()).toEqual([
@@ -268,8 +269,11 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
       identities: {
         email: 'steven@example.com',
       },
+      scoring: {
+        tags: ['instagram onboarding'],
+      },
       evidence: [
-        { source: 'mailerlite_export', note: 'Subscriber active.' },
+        { source: 'mailerlite_export', note: 'Subscriber active from Instagram onboarding.' },
       ],
     });
 
@@ -295,6 +299,78 @@ describe('CRM vNext Omnichannel Coverage Push', () => {
     expect(report.candidates).toHaveLength(1);
     expect(report.candidates[0].personId).toBe('email:steven@example.com');
     expect(report.mantisPrompt).not.toContain('Pilar Quiñones');
+  });
+
+  test('does not select exhausted source-recovery candidates for immediate rerun', () => {
+    const exhaustedOnly = buildCard({
+      personId: 'email:pilar@example.com',
+      displayName: 'Pilar Quiñones',
+      identities: {
+        email: 'pilar@example.com',
+        phone: '+573009998877',
+      },
+      scoring: {
+        email: {
+          subscriberStatus: 'active',
+          replies30d: 2,
+          opens90d: 10,
+          lifetimeOpens: 20,
+        },
+        tags: ['instagram onboarding', 'newsletter reply'],
+      },
+      evidence: [
+        { source: 'mailerlite_export', note: 'Subscriber active with onboarding note.' },
+        { source: 'gmail_reply_activity', note: 'Thoughtful newsletter reply.' },
+      ],
+    });
+
+    const report = buildCrmVNextOmnichannelCoveragePushFromCards([exhaustedOnly], {
+      now: NOW,
+      limit: 1,
+      sourceResults: [
+        {
+          ledgerEntryId: 'source_result_test_pilar_exhausted',
+          recordedAt: NOW,
+          sourceSystem: 'Omnichannel Source Recovery v2',
+          contactKey: 'email:pilar@example.com',
+          sourceResultStatus: 'not_found_exhaustive',
+          resultStrength: 'negative_strong_for_declared_exact_anchor_method',
+          sourceExhaustion: 'exhausted_for_declared_exact_anchor_method',
+        },
+      ],
+    });
+
+    expect(report.summary).toMatchObject({
+      missingInstagramWithEmail: 1,
+      selectedCandidates: 0,
+    });
+    expect(report.candidates).toEqual([]);
+  });
+
+  test('does not fill source-recovery batches with low-potential email-only rows by default', () => {
+    const report = buildCrmVNextOmnichannelCoveragePushFromCards([
+      buildCard({
+        personId: 'email:thin@example.com',
+        displayName: 'Thin Email Row',
+        identities: {
+          email: 'thin@example.com',
+        },
+        evidence: [
+          { source: 'mailer-engagement-snapshot', note: 'Minimal email-only row.' },
+        ],
+      }),
+    ], {
+      now: NOW,
+      limit: 5,
+    });
+
+    expect(report.summary).toMatchObject({
+      missingInstagramWithEmail: 1,
+      selectedCandidates: 0,
+      lowBridgePotentialBacklog: 1,
+    });
+    expect(report.candidates).toEqual([]);
+    expect(report.mantisPrompt).toContain('No candidates selected.');
   });
 
   test('handles an empty card store as observe-only planning', () => {
