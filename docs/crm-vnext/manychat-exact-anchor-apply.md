@@ -41,6 +41,7 @@ Allowed for local card write:
 - `ready_for_human_confirmation_with_handle_candidate` only with `--include-human-confirmed-candidates` after Alejandro explicitly approves.
 - Email and Instagram handle must both be present.
 - Existing email/handle collisions block the item.
+- Display names prefer explicit `derivedName`, corroborated Instagram UI names, then the ManyChat profile name. ManyChat `firstName` / `lastName` fields are fallback only because they can be split incorrectly and duplicate surnames.
 
 Blocked:
 

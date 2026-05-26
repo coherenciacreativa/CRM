@@ -242,11 +242,12 @@ const buildNewCard = ({ personId, displayName, generatedAt }) => ({
 const displayNameFor = (item) => {
   const evidence = item?.evidence ?? {};
   const joinedName = [cleanString(evidence.firstName), cleanString(evidence.lastName)].filter(Boolean).join(' ');
+  const manychatProfileName = cleanString(evidence.manychatProfileName);
   return cleanString(evidence.derivedName)
     ?? cleanString(evidence.instagramProfileSearchCorroboration?.candidateDisplayName)
     ?? cleanString(evidence.instagramUiExactSearch?.resultDisplayName)
+    ?? manychatProfileName
     ?? cleanString(joinedName)
-    ?? cleanString(evidence.manychatProfileName)
     ?? cleanString(item?.input?.name);
 };
 
