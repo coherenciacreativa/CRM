@@ -14,6 +14,8 @@ const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_PACKETS_INDEX = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_DELIVERY_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_FINALIZATION_PREFLIGHT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_OPERATOR_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
@@ -35,6 +37,8 @@ Options:
   --packets-index <path>             Department review packets index JSON. Defaults to ${DEFAULT_PACKETS_INDEX}
   --delivery-pack <path>             Department review delivery pack JSON. Defaults to ${DEFAULT_DELIVERY_PACK}
   --response-workspace <path>        Department review response workspace JSON. Defaults to ${DEFAULT_RESPONSE_WORKSPACE}
+  --finalization-preflight <path>    Department finalization preflight JSON. Defaults to ${DEFAULT_FINALIZATION_PREFLIGHT}
+  --operator-queue <path>            Department review operator queue JSON. Defaults to ${DEFAULT_OPERATOR_QUEUE}
   --onboarding-v1-audit <path>       Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-v2-execution <path>   Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
@@ -63,6 +67,8 @@ const parseArgs = (argv) => {
     packetsIndex: DEFAULT_PACKETS_INDEX,
     deliveryPack: DEFAULT_DELIVERY_PACK,
     responseWorkspace: DEFAULT_RESPONSE_WORKSPACE,
+    finalizationPreflight: DEFAULT_FINALIZATION_PREFLIGHT,
+    operatorQueue: DEFAULT_OPERATOR_QUEUE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
@@ -87,6 +93,8 @@ const parseArgs = (argv) => {
     else if (arg === '--packets-index') options.packetsIndex = argv[++index];
     else if (arg === '--delivery-pack') options.deliveryPack = argv[++index];
     else if (arg === '--response-workspace') options.responseWorkspace = argv[++index];
+    else if (arg === '--finalization-preflight') options.finalizationPreflight = argv[++index];
+    else if (arg === '--operator-queue') options.operatorQueue = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
@@ -115,6 +123,8 @@ const loadSourceDigests = async (options) => {
     [options.packetsIndex, 'individual Brand/Web/CRM packets'],
     [options.deliveryPack, 'safe department review delivery blocks and response paths'],
     [options.responseWorkspace, 'pending response workspace and final response readiness'],
+    [options.finalizationPreflight, 'department final response readiness and draft/pending distinction'],
+    [options.operatorQueue, 'operator queue for department final response collection'],
     [options.onboardingV1Audit, 'protected production onboarding v1 audit'],
     [options.onboardingV2Execution, 'onboarding v2 execution posture and protected v1'],
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
@@ -171,6 +181,8 @@ const buildCurrentState = ({
   reconciliationBoard,
   packetsIndex,
   responseWorkspace,
+  finalizationPreflight,
+  operatorQueue,
   onboardingV1Audit,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -235,6 +247,22 @@ const buildCurrentState = ({
       responseWorkspaceStatus: responseWorkspace?.status ?? null,
       readyForResponseIntake: responseWorkspace?.readyForIntake ?? false,
       responseWorkspacePendingDepartments: responseWorkspace?.pendingDepartments ?? [],
+      finalizationPreflightStatus: finalizationPreflight?.status ?? null,
+      finalizationReadyForIntake: finalizationPreflight?.readyForIntake ?? false,
+      acceptedFinalDepartments: finalizationPreflight?.acceptedDepartments ?? [],
+      pendingReadyDepartments: finalizationPreflight?.pendingReadyDepartments ?? [],
+      draftAssistDepartments: finalizationPreflight?.draftAssistDepartments ?? [],
+      awaitingFinalDepartments: finalizationPreflight?.awaitingDepartments ?? [],
+      operatorQueueStatus: operatorQueue?.status ?? null,
+      operatorQueueNextBestMove: operatorQueue?.summary?.nextBestMove ?? null,
+      operatorQueueAwaitingFinalCount: operatorQueue?.summary?.awaitingFinalCount ?? null,
+      departmentResponseStates: (finalizationPreflight?.departments ?? []).map((department) => ({
+        department: department.department,
+        state: department.state,
+        acceptedFinalResponse: department.acceptedFinalResponse,
+        pendingCanBecomeFinal: department.pendingCanBecomeFinal,
+        codexDraftAvailable: department.codexDraftAvailable,
+      })),
       packetCount: packetsIndex?.packetCount ?? null,
     },
     liveGates: {
@@ -256,6 +284,8 @@ const buildReportMap = (sourceDigests) => {
     departmentReviewPacketsIndex: findPath('mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json'),
     departmentReviewDeliveryPack: findPath('mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json'),
     departmentReviewResponseWorkspace: findPath('mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json'),
+    departmentReviewFinalizationPreflight: findPath('mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json'),
+    departmentReviewOperatorQueue: findPath('mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json'),
     departmentReviewReconciliation: findPath('mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json'),
     onboardingV1Audit: findPath('mailerlite_onboarding_v1_audit_2026-05-27.json'),
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
@@ -367,6 +397,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
       commands: [
         command('crm:vnext:mailerlite-mini-launch-department-review-response-workspace'),
         command('crm:vnext:mailerlite-mini-launch-department-review-draft-assist'),
+        command('crm:vnext:mailerlite-mini-launch-department-review-operator-queue'),
         command('crm:vnext:mailerlite-mini-launch-department-review-finalization-preflight'),
         command('crm:vnext:mailerlite-mini-launch-department-review-finalize-pending'),
         command('crm:vnext:mailerlite-mini-launch-department-review-intake'),
@@ -444,6 +475,8 @@ const buildRunbook = ({
   reconciliationBoard,
   packetsIndex,
   responseWorkspace,
+  finalizationPreflight,
+  operatorQueue,
   onboardingV1Audit,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -467,6 +500,8 @@ const buildRunbook = ({
       onboardingHandoffPolicy,
       reconciliationBoard,
       packetsIndex,
+      finalizationPreflight,
+      operatorQueue,
       onboardingV1Audit,
       onboardingV2Execution,
       onboardingV2EventContract,
@@ -485,6 +520,7 @@ const buildRunbook = ({
       'Create the response workspace so Brand/Web/CRM replies land as pending drafts before final files.',
       'Use the draft assist only as a starting point for departments; it cannot replace final Brand/Web/CRM responses.',
       'Run finalization preflight before intake so pending files, Codex drafts and final response files cannot be confused.',
+      'Use the operator queue to see each department message block, Codex draft, pending blockers and final response path in one place.',
       'Use finalize-pending only after a department confirms a clean pending response is final; it writes local final response files only.',
       'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
@@ -537,6 +573,14 @@ const renderMarkdown = (runbook) => {
     `- Department review status: ${runbook.currentState.miniLaunch.departmentReviewStatus}`,
     `- Response workspace: ${runbook.currentState.miniLaunch.responseWorkspaceStatus ?? 'unknown'}`,
     `- Ready for response intake: ${runbook.currentState.miniLaunch.readyForResponseIntake}`,
+    `- Finalization preflight: ${runbook.currentState.miniLaunch.finalizationPreflightStatus ?? 'unknown'}`,
+    `- Finalization ready for intake: ${runbook.currentState.miniLaunch.finalizationReadyForIntake}`,
+    `- Accepted final departments: ${runbook.currentState.miniLaunch.acceptedFinalDepartments.join(', ') || 'none'}`,
+    `- Draft assist departments: ${runbook.currentState.miniLaunch.draftAssistDepartments.join(', ') || 'none'}`,
+    `- Awaiting final departments: ${runbook.currentState.miniLaunch.awaitingFinalDepartments.join(', ') || 'none'}`,
+    `- Operator queue: ${runbook.currentState.miniLaunch.operatorQueueStatus ?? 'unknown'}`,
+    `- Operator queue awaiting final count: ${runbook.currentState.miniLaunch.operatorQueueAwaitingFinalCount ?? 'unknown'}`,
+    `- Operator queue next best move: ${runbook.currentState.miniLaunch.operatorQueueNextBestMove ?? 'unknown'}`,
     `- Pending departments: ${runbook.currentState.miniLaunch.pendingDepartments.join(', ') || 'none'}`,
     `- Open live gates: ${runbook.currentState.liveGates.openLiveGateCount}`,
     '',
@@ -625,6 +669,8 @@ const buildRunbookFromFiles = async (options) => {
     packetsIndex,
     deliveryPack,
     responseWorkspace,
+    finalizationPreflight,
+    operatorQueue,
     onboardingV1Audit,
     onboardingV2Execution,
     onboardingV2EventContract,
@@ -641,6 +687,8 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.packetsIndex),
     readJson(options.deliveryPack),
     readJson(options.responseWorkspace),
+    readJson(options.finalizationPreflight),
+    readJson(options.operatorQueue),
     readJson(options.onboardingV1Audit),
     readJson(options.onboardingV2Execution),
     readJson(options.onboardingV2EventContract),
@@ -659,6 +707,8 @@ const buildRunbookFromFiles = async (options) => {
     packetsIndex,
     deliveryPack,
     responseWorkspace,
+    finalizationPreflight,
+    operatorQueue,
     onboardingV1Audit,
     onboardingV2Execution,
     onboardingV2EventContract,

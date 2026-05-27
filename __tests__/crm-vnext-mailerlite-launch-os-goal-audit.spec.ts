@@ -63,6 +63,15 @@ const responseWorkspace = {
   pendingDepartments: ["brand", "web_design", "crm"],
 };
 
+const finalizationPreflight = {
+  status: "department_finalization_preflight_waiting_department_responses_no_live_changes",
+  readyForIntake: false,
+  acceptedDepartments: [],
+  pendingReadyDepartments: [],
+  draftAssistDepartments: ["brand", "web_design", "crm"],
+  awaitingDepartments: ["brand", "web_design", "crm"],
+};
+
 const onboardingV1Audit = {
   workflow: {
     name: "Onboarding flow",
@@ -155,6 +164,7 @@ const values = {
   readinessBoard,
   reconciliationBoard,
   responseWorkspace,
+  finalizationPreflight,
   onboardingV1Audit,
   onboardingV2Design,
   onboardingV2Execution,
@@ -188,6 +198,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-27.json");
     expect(parsed.controlRoom).toContain("mailerlite-launch-os-v0-control-room.md");
     expect(parsed.brandDictionary).toContain("MAILERLITE_GROUP_DICTIONARY_V0.md");
+    expect(parsed.finalizationPreflight).toContain("mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
@@ -199,9 +210,12 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
 
     expect(byId.protect_productive_onboarding_v1.status).toBe("proven");
     expect(byId.design_onboarding_v2.status).toBe("proven");
-    expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_reviews");
+    expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_final_responses");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("readyForResponseIntake=false");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("workspacePendingDepartments=brand,web_design,crm");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("finalizationReadyForIntake=false");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("draftAssistDepartments=brand,web_design,crm");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("awaitingFinalDepartments=brand,web_design,crm");
     expect(byId.define_mini_launch_to_onboarding_handoff.status).toBe("proven");
     expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("handoffTargetGroup=CC · Journey · Editorial onboarding · Eligible");
     expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("recommendationIsNotRouting=true");
@@ -251,6 +265,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(markdown).toContain("Status: goal_active_not_ready_for_live_operation");
     expect(markdown).toContain("### define_mini_launch_to_onboarding_handoff");
     expect(markdown).toContain("### coordinate_brand_web_crm");
+    expect(markdown).toContain("blocked_waiting_department_final_responses");
     expect(markdown).toContain("No MailerLite, Shopify or CRM live API calls");
   });
 });
