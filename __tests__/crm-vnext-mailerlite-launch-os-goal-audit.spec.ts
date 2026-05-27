@@ -220,11 +220,13 @@ const brujulaEmailRenderQa = {
   status: "brujula_email1_local_render_qa_green_no_live_changes",
   executiveSummary: {
     localRenderReady: true,
+    renderPreviewNonEmpty: true,
     publicUseReady: false,
     testSendReady: false,
   },
   renderPreview: {
     path: "/tmp/render/mailerlite_brujula_email1_corrected_draft_2026-05-27.html.png",
+    fileSizeBytes: 56000,
   },
   safety: {
     mailerLiteApiCalled: false,
@@ -372,6 +374,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_corrected_draft_render_checked_needs_mailerlite_builder_qa");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaStatus=brujula_email1_local_render_qa_green_no_live_changes");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaLocalRenderReady=true");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPreviewNonEmpty=true");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPreviewSize=56000");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPublicUseReady=false");
   });
 

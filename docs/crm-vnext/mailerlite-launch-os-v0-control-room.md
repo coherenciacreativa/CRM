@@ -225,7 +225,7 @@ Local render QA packet:
 - Script: `scripts/crm-vnext-mailerlite-brujula-email-render-qa-packet.mjs`
 - Test coverage: `__tests__/crm-vnext-mailerlite-brujula-email-render-qa-packet.spec.ts`
 - Status: `brujula_email1_local_render_qa_green_no_live_changes`
-- Meaning: local HTML preview renders and public copy boundary is clean; public use, MailerLite builder edit, real MailerLite render QA and test send all remain closed until exact approval.
+- Meaning: local HTML preview renders, the preview is non-empty, and public copy boundary is clean; public use, MailerLite builder edit, real MailerLite render QA and test send all remain closed until exact approval.
 
 ## Onboarding v1 audit status
 

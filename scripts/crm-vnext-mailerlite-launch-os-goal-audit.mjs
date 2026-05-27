@@ -359,6 +359,7 @@ const buildRequirementChecks = ({
   const brujulaEmailRenderQaStatus = brujulaEmailRenderQa?.status ?? null;
   const brujulaRenderQaReady = brujulaEmailRenderQaStatus === 'brujula_email1_local_render_qa_green_no_live_changes'
     && brujulaEmailRenderQa?.executiveSummary?.localRenderReady === true
+    && brujulaEmailRenderQa?.executiveSummary?.renderPreviewNonEmpty === true
     && brujulaEmailRenderQa?.executiveSummary?.publicUseReady === false
     && brujulaEmailRenderQa?.executiveSummary?.testSendReady === false
     && brujulaEmailRenderQa?.safety?.mailerLiteApiCalled === false
@@ -564,7 +565,9 @@ const buildRequirementChecks = ({
         `emailStyleCorrectionTestSendReady=${brujulaEmailStyleCorrection?.executiveSummary?.testSendReady ?? 'unknown'}`,
         `emailRenderQaStatus=${brujulaEmailRenderQaStatus ?? 'missing'}`,
         `emailRenderQaLocalRenderReady=${brujulaEmailRenderQa?.executiveSummary?.localRenderReady ?? 'unknown'}`,
+        `emailRenderQaPreviewNonEmpty=${brujulaEmailRenderQa?.executiveSummary?.renderPreviewNonEmpty ?? 'unknown'}`,
         `emailRenderQaPreview=${brujulaEmailRenderQa?.renderPreview?.path ?? 'missing'}`,
+        `emailRenderQaPreviewSize=${brujulaEmailRenderQa?.renderPreview?.fileSizeBytes ?? 'unknown'}`,
         `emailRenderQaPublicUseReady=${brujulaEmailRenderQa?.executiveSummary?.publicUseReady ?? 'unknown'}`,
       ],
       remaining: [

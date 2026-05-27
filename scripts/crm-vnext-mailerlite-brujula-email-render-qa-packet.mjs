@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFile } from 'node:child_process';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +12,7 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-brujula-email-render-qa-packet-2026
 const DEFAULT_CORRECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_HTML = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_corrected_draft_2026-05-27.html';
 const DEFAULT_RENDER_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports/brujula_email1_render_qa_2026-05-27';
+const MIN_RENDER_PREVIEW_BYTES = 5000;
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-brujula-email-render-qa-packet.mjs [options]
@@ -214,11 +215,16 @@ const renderQuickLookPreview = async ({ htmlPath, renderDir }) => {
     await execFileAsync('/usr/bin/qlmanage', ['-t', '-s', '1200', '-o', fullRenderDir, fullHtml], { timeout: 20000 });
     const exists = await pathExists(expectedPath);
     const dimensions = exists ? await dimensionsFromSips(expectedPath) : { width: null, height: null, ok: false };
+    const fileSizeBytes = exists ? (await stat(expectedPath)).size : 0;
+    const fileSizeOk = fileSizeBytes >= MIN_RENDER_PREVIEW_BYTES;
     return {
       attempted: true,
-      status: exists && dimensions.ok ? 'rendered' : 'render_missing_or_unreadable',
+      status: exists && dimensions.ok && fileSizeOk ? 'rendered' : 'render_missing_or_unreadable',
       path: exists ? expectedPath : null,
       dimensions,
+      fileSizeBytes,
+      fileSizeOk,
+      minFileSizeBytes: MIN_RENDER_PREVIEW_BYTES,
     };
   } catch (error) {
     return {
@@ -226,6 +232,9 @@ const renderQuickLookPreview = async ({ htmlPath, renderDir }) => {
       status: 'render_failed',
       path: null,
       dimensions: { width: null, height: null, ok: false },
+      fileSizeBytes: 0,
+      fileSizeOk: false,
+      minFileSizeBytes: MIN_RENDER_PREVIEW_BYTES,
       error: error.message,
     };
   }
@@ -265,9 +274,13 @@ const buildPacket = ({
 }) => {
   const staticQa = buildStaticChecks(html);
   const correctionReady = correctionPacket?.status === 'brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes';
+  const renderPreviewNonEmpty = renderPreview?.status === 'rendered'
+    && renderPreview?.dimensions?.ok === true
+    && renderPreview?.fileSizeOk !== false
+    && (renderPreview?.fileSizeBytes === undefined || renderPreview.fileSizeBytes >= MIN_RENDER_PREVIEW_BYTES);
   const localRenderReady = correctionReady
     && staticQa.staticGreenEnoughForLocalRender
-    && renderPreview?.status === 'rendered';
+    && renderPreviewNonEmpty;
   const status = localRenderReady
     ? 'brujula_email1_local_render_qa_green_no_live_changes'
     : correctionReady && staticQa.staticGreenEnoughForLocalRender
@@ -283,6 +296,7 @@ const buildPacket = ({
     executiveSummary: {
       correctionPacketStatus: correctionPacket?.status ?? null,
       staticGreenEnoughForLocalRender: staticQa.staticGreenEnoughForLocalRender,
+      renderPreviewNonEmpty,
       localRenderReady,
       renderStatus: renderPreview?.status ?? 'not_attempted',
       publicUseReady: false,
@@ -342,7 +356,15 @@ const loadSources = async (options) => {
 const buildPacketFromFiles = async (options) => {
   const { values, sourceDigests } = await loadSources(options);
   const renderPreview = options.skipRender
-    ? { attempted: false, status: 'skipped', path: null, dimensions: { width: null, height: null, ok: false } }
+    ? {
+        attempted: false,
+        status: 'skipped',
+        path: null,
+        dimensions: { width: null, height: null, ok: false },
+        fileSizeBytes: 0,
+        fileSizeOk: false,
+        minFileSizeBytes: MIN_RENDER_PREVIEW_BYTES,
+      }
     : await renderQuickLookPreview({ htmlPath: options.html, renderDir: options.renderDir });
 
   return buildPacket({
@@ -376,6 +398,8 @@ const renderMarkdown = (packet) => {
     `- Path: ${packet.renderPreview?.path ?? 'none'}`,
     `- Width: ${packet.renderPreview?.dimensions?.width ?? 'unknown'}`,
     `- Height: ${packet.renderPreview?.dimensions?.height ?? 'unknown'}`,
+    `- File size: ${packet.renderPreview?.fileSizeBytes ?? 'unknown'}`,
+    `- File size ok: ${packet.renderPreview?.fileSizeOk ?? 'unknown'}`,
     '',
     '## Static QA',
     '',
@@ -443,6 +467,7 @@ const main = async () => {
     generatedAt: packet.generatedAt,
     localRenderReady: packet.executiveSummary.localRenderReady,
     renderStatus: packet.executiveSummary.renderStatus,
+    renderPreviewNonEmpty: packet.executiveSummary.renderPreviewNonEmpty,
     renderPath: packet.renderPreview?.path ?? null,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,

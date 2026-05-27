@@ -49,6 +49,9 @@ const renderPreview = {
     height: 900,
     ok: true,
   },
+  fileSizeBytes: 56000,
+  fileSizeOk: true,
+  minFileSizeBytes: 5000,
 };
 
 describe("CRM vNext MailerLite Brújula Email 1 render QA packet", () => {
@@ -99,6 +102,7 @@ describe("CRM vNext MailerLite Brújula Email 1 render QA packet", () => {
     });
 
     expect(packet.status).toBe("brujula_email1_local_render_qa_green_no_live_changes");
+    expect(packet.executiveSummary.renderPreviewNonEmpty).toBe(true);
     expect(packet.executiveSummary.localRenderReady).toBe(true);
     expect(packet.executiveSummary.publicUseReady).toBe(false);
     expect(packet.inputs.correctionPacketPath).toBe("/tmp/correction.json");
@@ -109,6 +113,24 @@ describe("CRM vNext MailerLite Brújula Email 1 render QA packet", () => {
       sendsPerformed: false,
       factStoreWritePerformed: false,
     });
+  });
+
+  test("does not mark a tiny preview as local-render ready", () => {
+    const packet = buildPacket({
+      correctionPacket,
+      html,
+      htmlPath: "/tmp/email.html",
+      renderPreview: {
+        ...renderPreview,
+        fileSizeBytes: 800,
+        fileSizeOk: false,
+      },
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    expect(packet.status).toBe("brujula_email1_static_qa_green_render_missing_no_live_changes");
+    expect(packet.executiveSummary.renderPreviewNonEmpty).toBe(false);
+    expect(packet.executiveSummary.localRenderReady).toBe(false);
   });
 
   test("renders Markdown with preview path and public-use boundary", () => {
@@ -132,6 +154,7 @@ describe("CRM vNext MailerLite Brújula Email 1 render QA packet", () => {
     expect(markdown).toContain("Brújula Email 1 Render QA Packet");
     expect(markdown).toContain("Local render ready: true");
     expect(markdown).toContain(renderPreview.path);
+    expect(markdown).toContain("File size ok: true");
     expect(markdown).toContain("No MailerLite builder edit");
   });
 

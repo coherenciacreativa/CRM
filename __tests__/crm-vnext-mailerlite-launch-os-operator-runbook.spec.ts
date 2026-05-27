@@ -217,12 +217,14 @@ const brujulaEmailRenderQa = {
   status: "brujula_email1_local_render_qa_green_no_live_changes",
   executiveSummary: {
     localRenderReady: true,
+    renderPreviewNonEmpty: true,
     publicUseReady: false,
     testSendReady: false,
   },
   renderPreview: {
     path: "/tmp/render/mailerlite_brujula_email1_corrected_draft_2026-05-27.html.png",
     status: "rendered",
+    fileSizeBytes: 56000,
   },
 };
 
@@ -356,7 +358,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.brujulaPilot.correctedDraftTestSendReady).toBe(false);
     expect(state.brujulaPilot.emailRenderQaStatus).toBe("brujula_email1_local_render_qa_green_no_live_changes");
     expect(state.brujulaPilot.localRenderReady).toBe(true);
+    expect(state.brujulaPilot.localRenderPreviewNonEmpty).toBe(true);
     expect(state.brujulaPilot.localRenderPreviewPath).toContain("render");
+    expect(state.brujulaPilot.localRenderPreviewSize).toBe(56000);
     expect(state.miniLaunch.safeToIntakeOneMoreNoLiveIdea).toBe(true);
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
@@ -660,6 +664,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Brújula Email 1 correction: brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
     expect(markdown).toContain("Brújula Email 1 render QA: brujula_email1_local_render_qa_green_no_live_changes");
     expect(markdown).toContain("Brújula local render ready: true");
+    expect(markdown).toContain("Brújula local render non-empty: true");
+    expect(markdown).toContain("Brújula local render preview size: 56000");
     expect(markdown).toContain("Draft assist departments: brand, web_design, crm");
     expect(markdown).toContain("Awaiting final departments: brand, web_design, crm");
     expect(markdown).toContain("Onboarding v2 event contract");
