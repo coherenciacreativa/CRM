@@ -124,6 +124,7 @@ What this adds:
 - The backlog board turns mini-launch ideas into a controlled no-live intake queue.
 - Current capacity allows at most one additional no-live idea intake while `Inteligencia para descansar` waits for Brand/Web/CRM responses.
 - The delivery pack makes the department review handoff operational: it includes copy-ready no-live blocks, expected response paths and validation commands.
+- The delivery pack now carries the mini-launch-to-onboarding boundary into department review blocks: recommendation is not routing, and `CC · Journey · Editorial onboarding · Eligible` remains a future gated target.
 - The response workspace creates protected `*.pending.json` working copies and separates them from final `brand_response.json`, `web_design_response.json` and `crm_response.json` files.
 - The operator runbook consolidates current state, report map, command catalog, scenarios, approval matrix, and immediate next moves.
 - Open live gate count is 0.
@@ -141,8 +142,8 @@ Evidence:
 
 Current result:
 
-- Requirements audited: 9.
-- Proven: 5.
+- Requirements audited: 10.
+- Proven: 6.
 - Partial: 3.
 - Blocked: 1.
 - Open live action allowance: false.
@@ -150,6 +151,7 @@ Current result:
 Meaning:
 
 - The Launch OS now has a reproducible completion audit, not only a narrative checkpoint.
+- The audit now verifies the mini-launch-to-onboarding handoff as its own requirement: onboarding v1 protected, future target group explicit, recommendation separated from routing, and live gates closed.
 - The current blocker is not an engineering failure; it is an intentional no-live pause until Brand, Web Design and CRM review responses are collected and reconciled.
 - The next operator move remains department reviews, not live MailerLite or Shopify operation.
 

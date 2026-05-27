@@ -90,6 +90,40 @@ const onboardingV2EventContract = {
   },
 };
 
+const onboardingHandoffPolicy = {
+  status: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
+  targetGroups: {
+    eligible: "CC · Journey · Editorial onboarding · Eligible",
+  },
+  v1Protection: {
+    productionV1Protected: true,
+  },
+  contractCoverage: {
+    handoffEventProjectionPosture: "store_only; recommendation is not routing and not contact permission",
+  },
+  handoffLadder: [
+    {
+      action: "recommend_onboarding_handoff",
+      currentAllowedState: "store_only_event_contract",
+    },
+  ],
+  approvalBoundary: {
+    closedNow: [
+      "Assign any subscriber to onboarding eligibility.",
+      "Attach mini-launch participants to active onboarding v1.",
+    ],
+  },
+  operatorRule: "Recommendation is not routing. Routing requires a later exact approval and a fresh protected workflow/subscriber scan.",
+  safety: {
+    mailerLiteApiCalled: false,
+    subscriberMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    sendsPerformed: false,
+  },
+};
+
 const brujulaPlan = {
   localEvidence: {
     brujulaState: {
@@ -125,6 +159,7 @@ const values = {
   onboardingV2Design,
   onboardingV2Execution,
   onboardingV2EventContract,
+  onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
@@ -153,6 +188,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-27.json");
     expect(parsed.controlRoom).toContain("mailerlite-launch-os-v0-control-room.md");
     expect(parsed.brandDictionary).toContain("MAILERLITE_GROUP_DICTIONARY_V0.md");
+    expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
   });
@@ -166,6 +202,9 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_reviews");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("readyForResponseIntake=false");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("workspacePendingDepartments=brand,web_design,crm");
+    expect(byId.define_mini_launch_to_onboarding_handoff.status).toBe("proven");
+    expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("handoffTargetGroup=CC · Journey · Editorial onboarding · Eligible");
+    expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("recommendationIsNotRouting=true");
     expect(byId.enforce_live_change_approval_boundary.status).toBe("proven");
     expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_creative_yellow");
   });
@@ -210,6 +249,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
 
     expect(markdown).toContain("# MailerLite Launch OS v0 - Goal Audit");
     expect(markdown).toContain("Status: goal_active_not_ready_for_live_operation");
+    expect(markdown).toContain("### define_mini_launch_to_onboarding_handoff");
     expect(markdown).toContain("### coordinate_brand_web_crm");
     expect(markdown).toContain("No MailerLite, Shopify or CRM live API calls");
   });

@@ -17,6 +17,7 @@ const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Repo
 const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
+const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -39,6 +40,7 @@ Options:
   --onboarding-v2-design <path>     Onboarding v2 design JSON. Defaults to ${DEFAULT_ONBOARDING_V2_DESIGN}
   --onboarding-v2-execution <path>  Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
+  --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -66,6 +68,7 @@ const parseArgs = (argv) => {
     onboardingV2Design: DEFAULT_ONBOARDING_V2_DESIGN,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
+    onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -91,6 +94,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-design') options.onboardingV2Design = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
+    else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -128,6 +132,7 @@ const loadSources = async (options) => {
     ['onboardingV2Design', options.onboardingV2Design, 'Onboarding v2 design evidence', 'json'],
     ['onboardingV2Execution', options.onboardingV2Execution, 'Onboarding v2 execution gates', 'json'],
     ['onboardingV2EventContract', options.onboardingV2EventContract, 'Onboarding v2 CRM event contract', 'json'],
+    ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
@@ -158,6 +163,7 @@ const buildRequirementChecks = ({
   onboardingV2Design,
   onboardingV2Execution,
   onboardingV2EventContract,
+  onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
   brandTaxonomy,
@@ -189,6 +195,29 @@ const buildRequirementChecks = ({
   const readyNoLiveLaneCount = readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? 0;
   const liveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount ?? null;
   const validationPassed = validationStatus === 'passed';
+  const handoffTargetGroup = onboardingHandoffPolicy?.targetGroups?.eligible ?? null;
+  const handoffReady = onboardingHandoffPolicy?.status === 'mini_launch_onboarding_handoff_policy_ready_no_live_changes';
+  const handoffV1Protected = onboardingHandoffPolicy?.v1Protection?.productionV1Protected === true;
+  const handoffRecommendationIsNotRouting = onboardingHandoffPolicy?.operatorRule === 'Recommendation is not routing. Routing requires a later exact approval and a fresh protected workflow/subscriber scan.'
+    || onboardingHandoffPolicy?.contractCoverage?.handoffEventProjectionPosture?.includes('recommendation is not routing')
+    || (onboardingHandoffPolicy?.handoffLadder ?? []).some((step) => step.action === 'recommend_onboarding_handoff'
+      && step.currentAllowedState === 'store_only_event_contract');
+  const handoffLiveClosed = onboardingHandoffPolicy?.safety?.mailerLiteApiCalled === false
+    && onboardingHandoffPolicy?.safety?.subscriberMutationsPerformed === false
+    && onboardingHandoffPolicy?.safety?.workflowMutationsPerformed === false
+    && onboardingHandoffPolicy?.safety?.signalLedgerAppendPerformed === false
+    && onboardingHandoffPolicy?.safety?.crmCardMutationsPerformed === false
+    && onboardingHandoffPolicy?.safety?.sendsPerformed === false;
+  const handoffGateClosed = (onboardingHandoffPolicy?.approvalBoundary?.closedNow ?? [])
+    .some((item) => item.includes('Assign any subscriber to onboarding eligibility'))
+    && (onboardingHandoffPolicy?.approvalBoundary?.closedNow ?? [])
+      .some((item) => item.includes('Attach mini-launch participants to active onboarding v1'));
+  const handoffPolicyProven = handoffReady
+    && handoffTargetGroup === 'CC · Journey · Editorial onboarding · Eligible'
+    && handoffV1Protected
+    && handoffRecommendationIsNotRouting
+    && handoffLiveClosed
+    && handoffGateClosed;
 
   return [
     {
@@ -255,6 +284,22 @@ const buildRequirementChecks = ({
         'Current pilot is not ready for live operation until department reviews are accepted.',
         'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
       ],
+    },
+    {
+      id: 'define_mini_launch_to_onboarding_handoff',
+      requirement: 'Define how mini-launch signals can recommend onboarding without routing subscribers or touching production v1.',
+      status: handoffPolicyProven ? 'proven' : 'partial',
+      evidence: [
+        `handoffPolicyStatus=${onboardingHandoffPolicy?.status ?? 'missing'}`,
+        `handoffTargetGroup=${handoffTargetGroup ?? 'missing'}`,
+        `productionV1Protected=${handoffV1Protected}`,
+        `recommendationIsNotRouting=${handoffRecommendationIsNotRouting}`,
+        `liveClosed=${handoffLiveClosed}`,
+        `routingGateClosed=${handoffGateClosed}`,
+      ],
+      remaining: handoffPolicyProven
+        ? ['Keep recommendation separate from routing until a later exact approval names cohort, group and workflow posture.']
+        : ['Regenerate or repair the mini-launch to onboarding handoff policy before any launch routing design.'],
     },
     {
       id: 'coordinate_brand_web_crm',
