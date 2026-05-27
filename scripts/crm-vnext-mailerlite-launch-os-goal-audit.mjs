@@ -330,6 +330,11 @@ const buildRequirementChecks = ({
   const readyNoLiveLaneCount = readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? 0;
   const liveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount ?? null;
   const receiptPassed = validationReceiptPassed(validationReceipt);
+  const reconciliationActions = reconciliationBoard?.actionPlan?.actions ?? [];
+  const hasReconciliationAction = (id) => reconciliationActions.some((action) => action.id === id);
+  const brandAcceptedLaunchGroupCandidates = hasReconciliationAction('rerun_group_dry_run');
+  const webAcceptedScopedLocalDraft = hasReconciliationAction('prepare_scoped_shopify_local_build_request');
+  const crmAcceptedSignalBoundaries = hasReconciliationAction('signal_boundaries_ready_for_future_no_live_projection_packet');
   const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
     ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsTargetCount
@@ -508,11 +513,18 @@ const buildRequirementChecks = ({
         `brandTaxonomyChars=${brandTaxonomy.length}`,
         `brandDictionaryChars=${brandDictionary.length}`,
         `runbookCommandCount=${runbook?.commandCatalog?.length ?? 0}`,
+        `brandAcceptedLaunchGroupCandidates=${brandAcceptedLaunchGroupCandidates}`,
+        `reconciliationActions=${reconciliationActions.map((action) => action.id).join(',') || 'none'}`,
       ],
-      remaining: [
-        'Brand still needs to accept, rename or reject the two launch-specific candidate groups.',
-        'After Brand response, rerun the launch group dry-run before any group creation approval exists.',
-      ],
+      remaining: brandAcceptedLaunchGroupCandidates
+        ? [
+          'Represent the Brand-accepted launch candidates in the local/canonical planning surface before any creation request.',
+          'Rerun the launch group dry-run; this can only unlock a decision packet, not group creation.',
+        ]
+        : [
+          'Brand still needs to accept, rename or reject the two launch-specific candidate groups.',
+          'After Brand response, rerun the launch group dry-run before any group creation approval exists.',
+        ],
     },
     {
       id: 'prepare_frequent_mini_launch_infrastructure',
@@ -525,11 +537,19 @@ const buildRequirementChecks = ({
         `readyNoLiveLaneCount=${readyNoLiveLaneCount}`,
         `cadence=${runbook?.currentState?.miniLaunch?.cadenceNow ?? 'unknown'}`,
         `safeToIntakeOneMoreNoLiveIdea=${runbook?.currentState?.miniLaunch?.safeToIntakeOneMoreNoLiveIdea}`,
+        `departmentReviewsAccepted=${pendingDepartments.length === 0 && finalizationReadyForIntake === true}`,
+        `webAcceptedScopedLocalDraft=${webAcceptedScopedLocalDraft}`,
+        `crmAcceptedSignalBoundaries=${crmAcceptedSignalBoundaries}`,
       ],
-      remaining: [
-        'Current pilot is not ready for live operation until department reviews are accepted.',
-        'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
-      ],
+      remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
+        ? [
+          'Current pilot can continue through no-live moves: group dry-run, scoped Shopify local-build request and CRM signal projection packet.',
+          'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
+        ]
+        : [
+          'Current pilot is not ready for live operation until department reviews are accepted.',
+          'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
+        ],
     },
     {
       id: 'define_mini_launch_to_onboarding_handoff',
@@ -707,6 +727,26 @@ const buildGoalAudit = ({
     validationSummary,
   });
   const summary = summarizeCompletion(requirements);
+  const coordinationRequirement = requirements.find((requirement) => requirement.id === 'coordinate_brand_web_crm');
+  const departmentResponsesAccepted = coordinationRequirement?.status === 'proven';
+  const nextBestMove = departmentResponsesAccepted
+    ? 'Continue with the next no-live moves unlocked by department reconciliation: represent Brand-accepted launch group candidates locally, rerun the launch group dry-run, prepare a scoped Shopify local-build request, and prepare a CRM signal projection packet. Live actions remain closed.'
+    : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
+  const departmentResponseMoves = departmentResponsesAccepted
+    ? [
+      'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
+      'Represent the Brand-accepted Source/Delivered launch candidates in the local/canonical planning surface before rerunning the group dry-run.',
+      'Rerun the launch group dry-run; keep group creation behind a later exact approval packet.',
+      'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
+      'Prepare a no-live CRM signal projection packet from the CRM response; do not append ledgers, write cards, score, or touch Fact Store.',
+    ]
+    : [
+      'Use the department review request bundle to route Brand, Web Design and CRM no-live review requests without reconstructing context.',
+      'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
+      'Use the response watcher to confirm whether final response files exist before running finalization preflight.',
+      'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
+      'Run department review intake and reconciliation with final response files only.',
+    ];
   return {
     schemaVersion: SCHEMA_VERSION,
     mode: 'local_only_mailerlite_launch_os_goal_audit',
@@ -717,17 +757,13 @@ const buildGoalAudit = ({
     executiveSummary: {
       ...summary,
       currentOperatingPosture: 'continue_no_live_build_and_reviews',
-      nextBestMove: 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.',
+      nextBestMove,
       liveApprovalNeededNow: false,
       liveActionAllowedNow: false,
     },
     requirements,
     nextMoves: [
-      'Use the department review request bundle to route Brand, Web Design and CRM no-live review requests without reconstructing context.',
-      'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
-      'Use the response watcher to confirm whether final response files exist before running finalization preflight.',
-      'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
-      'Run department review intake and reconciliation with final response files only.',
+      ...departmentResponseMoves,
       'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so the welcome/orientation email is tracked as journey_welcome_sent, not as a content Sent receipt.',
