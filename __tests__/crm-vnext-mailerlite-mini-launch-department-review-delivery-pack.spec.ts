@@ -67,6 +67,14 @@ const runbook = {
   },
 };
 
+const handoffPolicy = {
+  status: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
+  targetGroups: {
+    eligible: "CC · Journey · Editorial onboarding · Eligible",
+  },
+  operatorRule: "Recommendation is not routing. Routing requires a later exact approval and a fresh protected workflow/subscriber scan.",
+};
+
 const sourceDigests = [
   {
     path: "/tmp/index.json",
@@ -93,6 +101,7 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
 
     expect(parsed.packetsIndex).toContain("mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json");
     expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-27.json");
+    expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.responsesDir).toContain("mailerlite_mini_launch_department_review_responses_inteligencia_descansar_2026-05-27");
     expect(parsed.out).toBe("/tmp/delivery.json");
   });
@@ -113,11 +122,15 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
       },
       templatePath: "/tmp/templates/brand_response_template.json",
       responsePath: "/tmp/responses/brand_response.json",
+      handoffPolicy,
     });
 
     expect(block.safeMessage).toContain("Review brand without live changes.");
+    expect(block.safeMessage).toContain("Recommendation is not routing");
+    expect(block.safeMessage).toContain("CC · Journey · Editorial onboarding · Eligible");
     expect(block.safeMessage).toContain("liveApprovalGranted debe ser false");
     expect(block.openLiveGateCount).toBe(0);
+    expect(block.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(block.priority).toBe(1);
   });
 
@@ -133,10 +146,12 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
   });
 
   test("builds follow-up policy with all live gates closed", () => {
-    const policy = buildFollowUpPolicy({ packetsIndex, runbook });
+    const policy = buildFollowUpPolicy({ packetsIndex, runbook, handoffPolicy });
 
     expect(policy.status).toBe("send_or_route_department_reviews_next_no_live");
     expect(policy.currentOpenLiveGateCount).toBe(0);
+    expect(policy.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
+    expect(policy.sequence.join(" ")).toContain("recommendation is not routing");
     expect(policy.hardStops).toContain("No MailerLite group creation, asset build, workflow use, subscriber assignment or send.");
   });
 
@@ -144,6 +159,7 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
     const pack = await buildDeliveryPack({
       packetsIndex,
       runbook,
+      handoffPolicy,
       templatesDir: "/tmp/templates",
       responsesDir: "/tmp/responses",
       sourceDigests,
@@ -159,6 +175,7 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
 
     expect(pack.status).toBe("department_review_delivery_pack_ready_no_live_changes");
     expect(pack.deliveries.map((delivery) => delivery.department)).toEqual(["brand", "crm", "web_design"]);
+    expect(pack.followUpPolicy.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(pack.liveGateSummary.openLiveGateCount).toBe(0);
     expect(pack.safety).toMatchObject({
       externalMessagesSent: false,
@@ -173,6 +190,7 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
     const pack = await buildDeliveryPack({
       packetsIndex,
       runbook,
+      handoffPolicy,
       templatesDir: "/tmp/templates",
       responsesDir: "/tmp/responses",
       sourceDigests,
@@ -189,6 +207,8 @@ describe("CRM vNext MailerLite department review delivery pack", () => {
 
     expect(markdown).toContain("Department Review Delivery Pack");
     expect(markdown).toContain("Open live gates: 0");
+    expect(markdown).toContain("Onboarding Handoff Boundary");
+    expect(markdown).toContain("Recommendation is not routing");
     expect(markdown).toContain("Message block:");
     expect(markdown).toContain("crm:vnext:mailerlite-mini-launch-department-review-intake");
     expect(markdown).toContain("Sin MailerLite, Shopify o CRM live API calls");

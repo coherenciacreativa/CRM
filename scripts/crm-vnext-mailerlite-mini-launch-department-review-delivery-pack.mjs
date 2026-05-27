@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-mini-launch-department-review-delivery-pack-2026-05-27';
 const DEFAULT_PACKETS_INDEX = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.json';
+const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_TEMPLATES_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_templates_inteligencia_descansar_2026-05-27';
 const DEFAULT_RESPONSES_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_responses_inteligencia_descansar_2026-05-27';
 
@@ -15,6 +16,7 @@ const usage = `Usage:
 Options:
   --packets-index <path>   Department packets index JSON. Defaults to ${DEFAULT_PACKETS_INDEX}
   --runbook <path>         Operator runbook JSON. Defaults to ${DEFAULT_RUNBOOK}
+  --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --templates-dir <path>   Response templates directory. Defaults to ${DEFAULT_TEMPLATES_DIR}
   --responses-dir <path>   Suggested response destination directory. Defaults to ${DEFAULT_RESPONSES_DIR}
   --out <path>             Write JSON delivery pack
@@ -31,6 +33,7 @@ const parseArgs = (argv) => {
   const options = {
     packetsIndex: DEFAULT_PACKETS_INDEX,
     runbook: DEFAULT_RUNBOOK,
+    onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     templatesDir: DEFAULT_TEMPLATES_DIR,
     responsesDir: DEFAULT_RESPONSES_DIR,
     out: null,
@@ -43,6 +46,7 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--packets-index') options.packetsIndex = argv[++index];
     else if (arg === '--runbook') options.runbook = argv[++index];
+    else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--templates-dir') options.templatesDir = argv[++index];
     else if (arg === '--responses-dir') options.responsesDir = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
@@ -104,10 +108,19 @@ const departmentPriority = (department) => ({
   crm: 2,
 }[department] ?? 3);
 
-const buildDeliveryBlock = ({ packet, templatePath, responsePath }) => {
+const handoffContextLines = (handoffPolicy) => [
+  'Contexto rector obligatorio:',
+  `- Onboarding target futuro: ${handoffPolicy?.targetGroups?.eligible ?? 'CC · Journey · Editorial onboarding · Eligible'}.`,
+  `- Regla: ${handoffPolicy?.operatorRule ?? 'Recommendation is not routing; routing requires later exact approval.'}`,
+  '- No recomendar acciones que inserten personas en onboarding v1, asignen eligibility group, activen workflows o escriban CRM Signal Ledger sin un gate separado.',
+];
+
+const buildDeliveryBlock = ({ packet, templatePath, responsePath, handoffPolicy }) => {
   const reviewPacket = packet.packetJson;
   const safeMessage = [
     `Revisa este paquete no-live para ${departmentLabel(packet.department)}:`,
+    '',
+    ...handoffContextLines(handoffPolicy),
     '',
     reviewPacket.dispatchBlock,
     '',
@@ -129,6 +142,8 @@ const buildDeliveryBlock = ({ packet, templatePath, responsePath }) => {
     packetJson: packet.json,
     responseTemplate: templatePath,
     expectedResponsePath: responsePath,
+    onboardingHandoffPolicyStatus: handoffPolicy?.status ?? null,
+    onboardingHandoffTargetGroup: handoffPolicy?.targetGroups?.eligible ?? null,
     safeMessage,
     requiredReturnShape: reviewPacket.responseTemplate,
     closedActions: reviewPacket.closedActions ?? [],
@@ -147,12 +162,13 @@ const buildValidationCommands = ({ responsesDir }) => {
   };
 };
 
-const buildFollowUpPolicy = ({ packetsIndex, runbook }) => ({
+const buildFollowUpPolicy = ({ packetsIndex, runbook, handoffPolicy }) => ({
   status: packetsIndex.pendingDepartments?.length
     ? 'send_or_route_department_reviews_next_no_live'
     : 'department_review_delivery_not_needed',
   sequence: [
     'Brand goes first because group semantics, voice and email style can change later dry-runs.',
+    'Every department must apply the handoff boundary: a mini-launch can recommend onboarding later, but recommendation is not routing.',
     'Web Design and CRM can review in parallel after Brand packet is available; they must stay no-live.',
     'Only save structured response JSON files; do not treat prose approval as operational permission.',
     'Run intake and reconciliation after responses exist.',
@@ -163,10 +179,12 @@ const buildFollowUpPolicy = ({ packetsIndex, runbook }) => ({
     'No Shopify build, preview, form connection or publish from this delivery pack.',
     'No MailerLite group creation, asset build, workflow use, subscriber assignment or send.',
     'No CRM Signal Ledger append, card write, scoring change or Fact Store write.',
-    'No onboarding route or production v1 touch.',
+    `No onboarding route, production v1 touch, or assignment to ${handoffPolicy?.targetGroups?.eligible ?? 'CC · Journey · Editorial onboarding · Eligible'}.`,
   ],
   currentRunbookStatus: runbook.status,
   currentOpenLiveGateCount: runbook.currentState?.liveGates?.openLiveGateCount ?? 0,
+  onboardingHandoffPolicyStatus: handoffPolicy?.status ?? null,
+  onboardingHandoffTargetGroup: handoffPolicy?.targetGroups?.eligible ?? null,
 });
 
 const loadPacket = async (packetSummary) => ({
@@ -180,6 +198,7 @@ const loadPacket = async (packetSummary) => ({
 const buildDeliveryPack = async ({
   packetsIndex,
   runbook,
+  handoffPolicy,
   templatesDir,
   responsesDir,
   sourceDigests,
@@ -191,6 +210,7 @@ const buildDeliveryPack = async ({
     packet,
     templatePath: templatePathFor(templatesDir, packet.department),
     responsePath: responsePathFor(responsesDir, packet.department),
+    handoffPolicy,
   })).sort((a, b) => a.priority - b.priority || a.department.localeCompare(b.department));
 
   return {
@@ -205,7 +225,7 @@ const buildDeliveryPack = async ({
     deliveries,
     responsesDir: resolve(responsesDir),
     validationCommands: buildValidationCommands({ responsesDir }),
-    followUpPolicy: buildFollowUpPolicy({ packetsIndex, runbook }),
+    followUpPolicy: buildFollowUpPolicy({ packetsIndex, runbook, handoffPolicy }),
     liveGateSummary: {
       openLiveGateCount: 0,
       liveApprovalNeededNow: false,
@@ -220,6 +240,7 @@ const loadSourceDigests = async (options) => {
   const sources = [
     [options.packetsIndex, 'department packet paths and pending departments'],
     [options.runbook, 'operator state and live gate count'],
+    [options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff boundary'],
   ];
   const digests = [];
   for (const [path, consultedFor] of sources) {
@@ -252,6 +273,12 @@ const renderMarkdown = (pack) => {
     '## Delivery Order',
     '',
     renderList(pack.followUpPolicy.sequence),
+    '',
+    '## Onboarding Handoff Boundary',
+    '',
+    `- Policy status: ${pack.followUpPolicy.onboardingHandoffPolicyStatus ?? 'unknown'}`,
+    `- Future target: ${pack.followUpPolicy.onboardingHandoffTargetGroup ?? 'unknown'}`,
+    '- Recommendation is not routing; no department response can authorize onboarding assignment, workflow use, Signal Ledger append, subscriber mutation or production v1 touch.',
     '',
     '## Department Blocks',
     '',
@@ -310,14 +337,16 @@ const writeText = async (path, value) => {
 };
 
 const buildDeliveryPackFromFiles = async (options) => {
-  const [packetsIndex, runbook, sourceDigests] = await Promise.all([
+  const [packetsIndex, runbook, handoffPolicy, sourceDigests] = await Promise.all([
     readJson(options.packetsIndex),
     readJson(options.runbook),
+    readJson(options.onboardingHandoffPolicy),
     loadSourceDigests(options),
   ]);
   return buildDeliveryPack({
     packetsIndex,
     runbook,
+    handoffPolicy,
     templatesDir: options.templatesDir,
     responsesDir: options.responsesDir,
     sourceDigests,
