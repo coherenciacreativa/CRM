@@ -651,6 +651,32 @@ Result:
 
 This checkpoint gives the system a clean way to coordinate Brand and CRM without editing the dirty Brand repo from the MailerLite lane. It is a decision artifact, not a live-operation artifact.
 
+## Mini-launch email sequence asset checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-email-sequence-asset-packet.mjs
+```
+
+Result:
+
+- The `Inteligencia para descansar` mini-launch now has a full four-email draft sequence for Brand review.
+- The sequence roles are delivery/orientation, practice/value, editorial depth, and invitation/feedback.
+- Email 1 reuses the existing Brand/email asset packet; Emails 2-4 are draft-only and not approved.
+- Public text scan is clean for internal implementation terms and the overused `a veces` formula.
+- MailerLite asset names are draft names only: no MailerLite asset build, no seed send, no receipt seed test, no workflow attachment and no audience launch are authorized.
+- `Sent` receipts are off by default for small follow-up emails unless Brand later canonizes reusable article/carta content or a dedupe need appears.
+- Onboarding handoff remains closed; future routing toward `CC · Journey · Editorial onboarding · Eligible` requires a separate onboarding gate.
+
+This checkpoint adds the relationship arc to the mini-launch machine without disturbing the production onboarding. It keeps the follow-up sequence useful for learning and care, but prevents it from silently becoming onboarding migration or audience automation.
+
 ## Planner dry-run requirements
 
 Proposed script:

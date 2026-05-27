@@ -425,6 +425,27 @@ Result:
 
 This is the handshake between CRM and Brand: CRM surfaces the operational need, Brand owns the semantic naming decision, and MailerLite stays untouched until a later explicit gate.
 
+## Mini-launch email sequence asset packet status
+
+Status: full four-email sequence packet ready for Brand review, no live changes.
+
+Evidence:
+
+- Email sequence asset report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-email-sequence-asset-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-email-sequence-asset-packet.spec.ts`
+
+Result:
+
+- Converts the `Inteligencia para descansar` mini-launch from one Email 1 draft into a four-email draft sequence: delivery/orientation, practice/value, editorial depth, and invitation/feedback.
+- Reuses the Email 1 Brand asset packet as the first email and drafts Emails 2-4 for Brand review.
+- Scans the full public sequence for internal implementation language and the overused `a veces` formula; current draft is clean.
+- Defines MailerLite asset names as draft names only. No MailerLite assets exist and no workflow use is allowed.
+- Keeps `Sent` groups off by default for the sequence unless Brand later canonizes reusable article/carta content or MailerLite needs dedupe.
+- Keeps onboarding handoff closed. The possible future target is `CC · Journey · Editorial onboarding · Eligible`, but only through a later onboarding gate that preserves production v1.
+
+This is the relationship layer of the mini-launch machine: a small product can now have a modest follow-up arc without pretending it is already an automation, a launch, a CRM write, or an onboarding migration.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -484,4 +505,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, and Brand candidate review packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or Brand's no-live semantic decision on the two `Inteligencia para descansar` group candidates.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, and full email sequence asset packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, Brand's no-live semantic decision on the two `Inteligencia para descansar` group candidates, or a Shopify/Web preview handoff for the same mini-launch.
