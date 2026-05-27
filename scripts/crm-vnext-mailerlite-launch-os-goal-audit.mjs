@@ -16,6 +16,7 @@ const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Repor
 const DEFAULT_FINALIZATION_PREFLIGHT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
+const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
@@ -43,6 +44,7 @@ Options:
   --finalization-preflight <path>   Department finalization preflight JSON. Defaults to ${DEFAULT_FINALIZATION_PREFLIGHT}
   --request-bundle <path>           Department review request bundle JSON. Defaults to ${DEFAULT_REQUEST_BUNDLE}
   --onboarding-v1-audit <path>      Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
+  --onboarding-trunk-map <path>     Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --onboarding-v2-design <path>     Onboarding v2 design JSON. Defaults to ${DEFAULT_ONBOARDING_V2_DESIGN}
   --onboarding-v2-execution <path>  Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
@@ -75,6 +77,7 @@ const parseArgs = (argv) => {
     finalizationPreflight: DEFAULT_FINALIZATION_PREFLIGHT,
     requestBundle: DEFAULT_REQUEST_BUNDLE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
+    onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     onboardingV2Design: DEFAULT_ONBOARDING_V2_DESIGN,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
@@ -105,6 +108,7 @@ const parseArgs = (argv) => {
     else if (arg === '--finalization-preflight') options.finalizationPreflight = argv[++index];
     else if (arg === '--request-bundle') options.requestBundle = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
+    else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--onboarding-v2-design') options.onboardingV2Design = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
@@ -147,6 +151,7 @@ const loadSources = async (options) => {
     ['finalizationPreflight', options.finalizationPreflight, 'department final response readiness and draft/pending distinction', 'json'],
     ['requestBundle', options.requestBundle, 'copy-ready department request texts for final responses', 'json'],
     ['onboardingV1Audit', options.onboardingV1Audit, 'protected production onboarding v1 evidence', 'json'],
+    ['onboardingTrunkMap', options.onboardingTrunkMap, 'onboarding trunk operator map and mini-launch handoff boundary', 'json'],
     ['onboardingV2Design', options.onboardingV2Design, 'Onboarding v2 design evidence', 'json'],
     ['onboardingV2Execution', options.onboardingV2Execution, 'Onboarding v2 execution gates', 'json'],
     ['onboardingV2EventContract', options.onboardingV2EventContract, 'Onboarding v2 CRM event contract', 'json'],
@@ -182,6 +187,7 @@ const buildRequirementChecks = ({
   finalizationPreflight,
   requestBundle,
   onboardingV1Audit,
+  onboardingTrunkMap,
   onboardingV2Design,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -202,6 +208,8 @@ const buildRequirementChecks = ({
   const v1Protected = onboardingV1Audit?.workflow?.enabled === true
     && onboardingV1Audit?.workflow?.complete === true
     && onboardingV1Audit?.workflow?.broken === false;
+  const trunkMapReady = onboardingTrunkMap?.status === 'onboarding_trunk_map_ready_no_live_changes'
+    || runbook?.currentState?.onboarding?.trunkMapStatus === 'onboarding_trunk_map_ready_no_live_changes';
   const pendingDepartments = reconciliationBoard?.responseState?.pendingDepartments ?? [];
   const workspacePendingDepartments = responseWorkspace?.pendingDepartments
     ?? runbook?.currentState?.miniLaunch?.responseWorkspacePendingDepartments
@@ -291,6 +299,8 @@ const buildRequirementChecks = ({
         `complete=${onboardingV1Audit?.workflow?.complete}`,
         `broken=${onboardingV1Audit?.workflow?.broken}`,
         `recommendedPath=${onboardingV1Audit?.migrationRecommendation?.option ?? 'unknown'}`,
+        `trunkMapStatus=${onboardingTrunkMap?.status ?? runbook?.currentState?.onboarding?.trunkMapStatus ?? 'missing'}`,
+        `trunkSequenceItems=${onboardingTrunkMap?.executiveSummary?.sequenceItems ?? runbook?.currentState?.onboarding?.trunkMapSequenceItems ?? 'unknown'}`,
       ],
       remaining: v1Protected
         ? ['Keep v1 untouched until a later exact approval names a workflow action.']
@@ -353,6 +363,8 @@ const buildRequirementChecks = ({
       evidence: [
         `handoffPolicyStatus=${onboardingHandoffPolicy?.status ?? 'missing'}`,
         `handoffTargetGroup=${handoffTargetGroup ?? 'missing'}`,
+        `trunkHandoffTarget=${onboardingTrunkMap?.executiveSummary?.futureHandoffTarget ?? runbook?.currentState?.onboarding?.trunkMapFutureHandoffTarget ?? 'missing'}`,
+        `trunkRecommendationIsRouting=${onboardingTrunkMap?.executiveSummary?.recommendationIsRouting ?? runbook?.currentState?.onboarding?.trunkMapRecommendationIsRouting ?? 'unknown'}`,
         `productionV1Protected=${handoffV1Protected}`,
         `recommendationIsNotRouting=${handoffRecommendationIsNotRouting}`,
         `liveClosed=${handoffLiveClosed}`,
@@ -399,6 +411,7 @@ const buildRequirementChecks = ({
         `runbookStatus=${runbook?.status ?? 'missing'}`,
         `scenarioCount=${runbook?.operatingScenarios?.length ?? 0}`,
         `approvalMatrixCount=${runbook?.approvalMatrix?.length ?? 0}`,
+        `trunkMapReady=${trunkMapReady}`,
         `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
         `brujulaEmailStyleQaStatus=${brujulaEmailStyleQaStatus ?? 'missing'}`,
         `brujulaEmailStyleCorrectionStatus=${brujulaEmailStyleCorrectionStatus ?? 'missing'}`,
@@ -521,6 +534,7 @@ const buildGoalAudit = ({
       'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
       'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
       'Run department review intake and reconciliation with final response files only.',
+      'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',

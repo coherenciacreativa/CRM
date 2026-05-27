@@ -18,6 +18,7 @@ const DEFAULT_FINALIZATION_PREFLIGHT = '/Users/alejandrogomez/Documents/Mantis-R
 const DEFAULT_OPERATOR_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
+const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
@@ -44,6 +45,7 @@ Options:
   --operator-queue <path>            Department review operator queue JSON. Defaults to ${DEFAULT_OPERATOR_QUEUE}
   --request-bundle <path>            Department review request bundle JSON. Defaults to ${DEFAULT_REQUEST_BUNDLE}
   --onboarding-v1-audit <path>       Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
+  --onboarding-trunk-map <path>      Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --onboarding-v2-execution <path>   Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
@@ -77,6 +79,7 @@ const parseArgs = (argv) => {
     operatorQueue: DEFAULT_OPERATOR_QUEUE,
     requestBundle: DEFAULT_REQUEST_BUNDLE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
+    onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
@@ -106,6 +109,7 @@ const parseArgs = (argv) => {
     else if (arg === '--operator-queue') options.operatorQueue = argv[++index];
     else if (arg === '--request-bundle') options.requestBundle = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
+    else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
@@ -139,6 +143,7 @@ const loadSourceDigests = async (options) => {
     [options.operatorQueue, 'operator queue for department final response collection'],
     [options.requestBundle, 'copy-ready department request texts for final responses'],
     [options.onboardingV1Audit, 'protected production onboarding v1 audit'],
+    [options.onboardingTrunkMap, 'single operator map for current onboarding, v2 and mini-launch handoff'],
     [options.onboardingV2Execution, 'onboarding v2 execution posture and protected v1'],
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
@@ -200,6 +205,7 @@ const buildCurrentState = ({
   operatorQueue,
   requestBundle,
   onboardingV1Audit,
+  onboardingTrunkMap,
   onboardingV2Execution,
   onboardingV2EventContract,
   brujulaPlan,
@@ -256,6 +262,10 @@ const buildCurrentState = ({
       },
       v2ExecutionStatus: onboardingV2Execution?.status ?? null,
       v2EventContractStatus: onboardingV2EventContract?.status ?? null,
+      trunkMapStatus: onboardingTrunkMap?.status ?? null,
+      trunkMapSequenceItems: onboardingTrunkMap?.executiveSummary?.sequenceItems ?? null,
+      trunkMapFutureHandoffTarget: onboardingTrunkMap?.executiveSummary?.futureHandoffTarget ?? null,
+      trunkMapRecommendationIsRouting: onboardingTrunkMap?.executiveSummary?.recommendationIsRouting ?? null,
       recommendedPath: onboardingV1Audit?.migrationRecommendation?.option ?? null,
       productionSwitchApproved: false,
     },
@@ -318,6 +328,7 @@ const buildReportMap = (sourceDigests) => {
     departmentReviewRequestBundle: findPath('mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json'),
     departmentReviewReconciliation: findPath('mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json'),
     onboardingV1Audit: findPath('mailerlite_onboarding_v1_audit_2026-05-27.json'),
+    onboardingTrunkMap: findPath('mailerlite_onboarding_trunk_map_2026-05-27.json'),
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
     onboardingV2EventContract: findPath('mailerlite_onboarding_v2_event_contract_2026-05-27.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
@@ -514,6 +525,7 @@ const buildRunbook = ({
   operatorQueue,
   requestBundle,
   onboardingV1Audit,
+  onboardingTrunkMap,
   onboardingV2Execution,
   onboardingV2EventContract,
   brujulaPlan,
@@ -542,6 +554,7 @@ const buildRunbook = ({
       operatorQueue,
       requestBundle,
       onboardingV1Audit,
+      onboardingTrunkMap,
       onboardingV2Execution,
       onboardingV2EventContract,
       brujulaPlan,
@@ -569,6 +582,7 @@ const buildRunbook = ({
       'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
       'Use the backlog board only for one additional no-live idea intake, not for live production.',
+      'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
       'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
       'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
       'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
@@ -614,6 +628,10 @@ const renderMarkdown = (runbook) => {
     `- Onboarding v1 workflow: ${runbook.currentState.onboarding.productionV1Workflow.name ?? 'unknown'}`,
     `- Onboarding v2 status: ${runbook.currentState.onboarding.v2ExecutionStatus ?? 'unknown'}`,
     `- Onboarding v2 event contract: ${runbook.currentState.onboarding.v2EventContractStatus ?? 'unknown'}`,
+    `- Onboarding trunk map: ${runbook.currentState.onboarding.trunkMapStatus ?? 'unknown'}`,
+    `- Onboarding trunk sequence items: ${runbook.currentState.onboarding.trunkMapSequenceItems ?? 'unknown'}`,
+    `- Onboarding trunk future handoff target: ${runbook.currentState.onboarding.trunkMapFutureHandoffTarget ?? 'unknown'}`,
+    `- Onboarding trunk recommendation is routing: ${runbook.currentState.onboarding.trunkMapRecommendationIsRouting ?? 'unknown'}`,
     `- Mini-launch readiness: ${runbook.currentState.miniLaunch.readinessState ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
@@ -725,6 +743,7 @@ const buildRunbookFromFiles = async (options) => {
     operatorQueue,
     requestBundle,
     onboardingV1Audit,
+    onboardingTrunkMap,
     onboardingV2Execution,
     onboardingV2EventContract,
     brujulaPlan,
@@ -746,6 +765,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.operatorQueue),
     readJson(options.requestBundle),
     readJson(options.onboardingV1Audit),
+    readJson(options.onboardingTrunkMap),
     readJson(options.onboardingV2Execution),
     readJson(options.onboardingV2EventContract),
     readJson(options.brujulaPlan),
@@ -769,6 +789,7 @@ const buildRunbookFromFiles = async (options) => {
     operatorQueue,
     requestBundle,
     onboardingV1Audit,
+    onboardingTrunkMap,
     onboardingV2Execution,
     onboardingV2EventContract,
     brujulaPlan,

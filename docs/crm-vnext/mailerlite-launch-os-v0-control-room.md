@@ -905,6 +905,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Queue/subscriber exposure assessed if MailerLite exposes it safely: done, partial API metric plus group counts only.
    - No active changes performed: done.
    - Onboarding v2 CRM event contract generated and tested: done.
+   - Onboarding trunk map generated and tested: done.
 
 3. Receipt architecture documented and tested.
    - Brand dictionary is canon.
@@ -944,6 +945,26 @@ The goal is not complete until all gates below are proven with current evidence:
 
 Run the no-live department reviews using `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`, use the draft assist only as a starting point if useful, then collect final responses through the response workspace at `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md`. Departments can draft in the `.pending.json` files or from the `.codex_draft.json` assist files, but the intake/reconciliation step should use only the final `brand_response.json`, `web_design_response.json` and `crm_response.json` files. Before intake, run the finalization preflight to confirm the operator is using final responses, not pending or Codex draft files; if a pending file is already clean and department-confirmed, use finalize-pending with explicit `--write --approved-by`. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
 
+## Onboarding trunk map status
+
+Status: trunk map ready, no live changes.
+
+Artifacts:
+
+- Report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.md`
+- JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json`
+- Script: `scripts/crm-vnext-mailerlite-onboarding-trunk-map.mjs`
+- Command: `npm run crm:vnext:mailerlite-onboarding-trunk-map`
+- Test coverage: `__tests__/crm-vnext-mailerlite-onboarding-trunk-map.spec.ts`
+
+What it proves:
+
+- Current `Onboarding flow` remains the protected relationship-deepening trunk: active, complete and not broken in the last read-only audit.
+- The sequence has 11 emails; Email 1 stays welcome/orientation without a `Sent` receipt, and the article emails map to explicit `CC · Sent · Article · ...` receipt candidates where v2 can later mark system delivery.
+- `Onboarding complete` remains the practical campaign audience for now, but v2 should later separate `Journey · Complete` from `Audience · General newsletter · Eligible`.
+- Mini-launches are marked entry points and market-learning tributaries; they may recommend `CC · Journey · Editorial onboarding · Eligible`, but recommendation is not routing.
+- All live gates remain closed: no group creation, subscriber assignment, workflow edit, send, Signal Ledger append, CRM card/scoring or Fact Store mutation.
+
 Scope:
 
 - Treat current `Onboarding flow` as production v1 and leave it live.
@@ -963,4 +984,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, Brújula email style QA packet, Brújula Email 1 correction packet, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. For Brújula specifically, use the Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, onboarding trunk map, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, Brújula email style QA packet, Brújula Email 1 correction packet, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. For Brújula specifically, use the Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.

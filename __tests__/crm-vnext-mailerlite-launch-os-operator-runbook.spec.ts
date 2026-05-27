@@ -143,6 +143,15 @@ const onboardingV1Audit = {
   },
 };
 
+const onboardingTrunkMap = {
+  status: "onboarding_trunk_map_ready_no_live_changes",
+  executiveSummary: {
+    sequenceItems: 11,
+    futureHandoffTarget: "CC · Journey · Editorial onboarding · Eligible",
+    recommendationIsRouting: false,
+  },
+};
+
 const brujulaPlan = {
   localEvidence: {
     emailStyle: {
@@ -208,6 +217,7 @@ const packageJson = {
     "crm:vnext:mailerlite-onboarding-v2-empty-groups-packet": "node scripts/v2-groups.mjs",
     "crm:vnext:mailerlite-onboarding-v2-execution-packet": "node scripts/v2-exec.mjs",
     "crm:vnext:mailerlite-onboarding-v2-event-contract": "node scripts/v2-event.mjs",
+    "crm:vnext:mailerlite-onboarding-trunk-map": "node scripts/onboarding-trunk-map.mjs",
     "crm:vnext:mailerlite-brujula-test-lane-plan": "node scripts/brujula-plan.mjs",
     "crm:vnext:mailerlite-brujula-test-lane-apply": "node scripts/brujula-apply.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
@@ -247,6 +257,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.requestBundle).toContain("mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
+    expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
@@ -256,6 +267,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     const catalog = commandCatalogFrom(packageJson);
 
     expect(catalog.map((entry) => entry.name)).toContain("crm:vnext:mailerlite-mini-launch-department-review-reconciliation");
+    expect(catalog.map((entry) => entry.name)).toContain("crm:vnext:mailerlite-onboarding-trunk-map");
     expect(catalog.find((entry) => entry.name === "crm:vnext:mailerlite-brujula-test-lane-apply")).toMatchObject({
       liveRisk: "guarded_live_or_live_adjacent_requires_exact_approval",
     });
@@ -271,6 +283,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       reconciliationBoard,
       packetsIndex,
       onboardingV1Audit,
+      onboardingTrunkMap,
       onboardingV2Execution,
       onboardingV2EventContract,
       brujulaPlan,
@@ -286,6 +299,10 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.onboarding.productionV1Protected).toBe(true);
     expect(state.onboarding.productionV1Workflow.name).toBe("Onboarding flow");
     expect(state.onboarding.v2EventContractStatus).toBe("onboarding_v2_event_contract_ready_no_ledger_write");
+    expect(state.onboarding.trunkMapStatus).toBe("onboarding_trunk_map_ready_no_live_changes");
+    expect(state.onboarding.trunkMapSequenceItems).toBe(11);
+    expect(state.onboarding.trunkMapFutureHandoffTarget).toBe("CC · Journey · Editorial onboarding · Eligible");
+    expect(state.onboarding.trunkMapRecommendationIsRouting).toBe(false);
     expect(state.brujulaPilot.functionalStatus).toBe("test_delivery_verified_creative_qa_pending");
     expect(state.brujulaPilot.emailStyleQaStatus).toBe("brujula_email_style_qa_yellow_no_live_changes");
     expect(state.brujulaPilot.emailStyleQaBlockerCount).toBe(4);
@@ -387,6 +404,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       operatorQueue,
       requestBundle,
       onboardingV1Audit,
+      onboardingTrunkMap,
       onboardingV2Execution,
       onboardingV2EventContract,
       brujulaPlan,
@@ -460,6 +478,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "copy-ready department request texts for final responses",
       },
       {
+        path: "/tmp/mailerlite_onboarding_trunk_map_2026-05-27.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "single operator map for current onboarding, v2 and mini-launch handoff",
+      },
+      {
         path: "/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json",
         present: true,
         chars: 2000,
@@ -487,6 +511,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.departmentReviewFinalizationPreflight).toBe("/tmp/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.departmentReviewOperatorQueue).toBe("/tmp/mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.departmentReviewRequestBundle).toBe("/tmp/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
+    expect(reportMap.onboardingTrunkMap).toBe("/tmp/mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(reportMap.onboardingV2EventContract).toBe("/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
@@ -505,6 +530,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       operatorQueue,
       requestBundle,
       onboardingV1Audit,
+      onboardingTrunkMap,
       onboardingV2Execution,
       onboardingV2EventContract,
       brujulaPlan,
@@ -542,6 +568,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Draft assist departments: brand, web_design, crm");
     expect(markdown).toContain("Awaiting final departments: brand, web_design, crm");
     expect(markdown).toContain("Onboarding v2 event contract");
+    expect(markdown).toContain("Onboarding trunk map: onboarding_trunk_map_ready_no_live_changes");
+    expect(markdown).toContain("Onboarding trunk sequence items: 11");
+    expect(markdown).toContain("Onboarding trunk recommendation is routing: false");
     expect(markdown).toContain("Onboarding handoff policy");
     expect(markdown).toContain("CC · Journey · Editorial onboarding · Eligible");
     expect(markdown).toContain("Approval Matrix");

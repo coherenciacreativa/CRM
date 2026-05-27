@@ -18,6 +18,12 @@ const runbook = {
   approvalMatrix: [{ action: "create_mailerlite_groups" }],
   currentState: {
     liveGates: { openLiveGateCount: 0 },
+    onboarding: {
+      trunkMapStatus: "onboarding_trunk_map_ready_no_live_changes",
+      trunkMapSequenceItems: 11,
+      trunkMapFutureHandoffTarget: "CC · Journey · Editorial onboarding · Eligible",
+      trunkMapRecommendationIsRouting: false,
+    },
     miniLaunch: {
       cadenceNow: "weekly",
       safeToIntakeOneMoreNoLiveIdea: true,
@@ -94,6 +100,15 @@ const onboardingV1Audit = {
 
 const onboardingV2Design = {
   status: "ready_for_human_architecture_review",
+};
+
+const onboardingTrunkMap = {
+  status: "onboarding_trunk_map_ready_no_live_changes",
+  executiveSummary: {
+    sequenceItems: 11,
+    futureHandoffTarget: "CC · Journey · Editorial onboarding · Eligible",
+    recommendationIsRouting: false,
+  },
 };
 
 const onboardingV2Execution = {
@@ -206,6 +221,7 @@ const values = {
   finalizationPreflight,
   requestBundle,
   onboardingV1Audit,
+  onboardingTrunkMap,
   onboardingV2Design,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -242,6 +258,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.brandDictionary).toContain("MAILERLITE_GROUP_DICTIONARY_V0.md");
     expect(parsed.finalizationPreflight).toContain("mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
     expect(parsed.requestBundle).toContain("mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
@@ -254,6 +271,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
 
     expect(byId.protect_productive_onboarding_v1.status).toBe("proven");
+    expect(byId.protect_productive_onboarding_v1.evidence).toContain("trunkMapStatus=onboarding_trunk_map_ready_no_live_changes");
+    expect(byId.protect_productive_onboarding_v1.evidence).toContain("trunkSequenceItems=11");
     expect(byId.design_onboarding_v2.status).toBe("proven");
     expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_final_responses");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("readyForResponseIntake=false");
@@ -265,6 +284,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.coordinate_brand_web_crm.evidence).toContain("awaitingFinalDepartments=brand,web_design,crm");
     expect(byId.define_mini_launch_to_onboarding_handoff.status).toBe("proven");
     expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("handoffTargetGroup=CC · Journey · Editorial onboarding · Eligible");
+    expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("trunkHandoffTarget=CC · Journey · Editorial onboarding · Eligible");
+    expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("trunkRecommendationIsRouting=false");
     expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("recommendationIsNotRouting=true");
     expect(byId.enforce_live_change_approval_boundary.status).toBe("proven");
     expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_corrected_draft_ready_needs_render_qa");
@@ -296,6 +317,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.nextBestMove).toContain("request bundle");
     expect(audit.nextMoves.join(" ")).toContain("rerun the launch group dry-run");
     expect(audit.nextMoves.join(" ")).toContain("final response files only");
+    expect(audit.nextMoves.join(" ")).toContain("onboarding trunk map");
     expect(audit.nextMoves.join(" ")).toContain("Brújula Email 1 correction packet");
     expect(audit.safety).toMatchObject({
       localOnly: true,
