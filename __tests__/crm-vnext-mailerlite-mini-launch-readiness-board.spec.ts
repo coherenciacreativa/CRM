@@ -66,6 +66,26 @@ const groupDryRun = {
 const promotedGroupDryRun = {
   ...groupDryRun,
   status: "mini_launch_group_dry_run_ready_for_future_empty_group_decision",
+  summary: {
+    missingBrandCandidateCount: 0,
+    brandStatusBlockedCount: 0,
+  },
+  plannedGroups: [
+    {
+      name: "CC · Source · Quiz · Inteligencia para descansar",
+      layer: "Source",
+      registeredInBrandDictionary: true,
+      brandStatus: "proposed_local",
+      existsInMailerLite: false,
+    },
+    {
+      name: "CC · Delivered · Quiz result · Inteligencia para descansar",
+      layer: "Delivered",
+      registeredInBrandDictionary: true,
+      brandStatus: "proposed_local",
+      existsInMailerLite: false,
+    },
+  ],
   readiness: {
     brandDictionaryHasTargets: true,
     brandApprovedForEmptyCreate: true,
@@ -306,6 +326,28 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     });
     expect(byId.get("mailerlite_group_dry_run")?.nextAction).toContain("exact empty-group creation approval packet");
     expect(byId.get("mailerlite_group_dry_run")?.liveActionsClosed).toContain("subscriber_assignment");
+  });
+
+  test("closes the Brand candidate lane from a promoted dry-run even when the request packet is historical", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      groupDryRun: promotedGroupDryRun,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("brand_candidate_groups")).toMatchObject({
+      sourceStatus: "brand_candidate_decision_closed_ready_no_live_changes",
+      readyNow: true,
+      blockedBy: [],
+      readiness: {
+        decisionState: "closed_from_promoted_group_dry_run",
+        acceptedGroupCount: 2,
+        missingCandidateCount: 0,
+        historicalMissingCandidateCount: 2,
+      },
+    });
+    expect(byId.get("brand_candidate_groups")?.nextAction).toContain("Empty group creation still requires exact Alejandro approval");
+    expect(byId.get("brand_candidate_groups")?.liveActionsClosed).toContain("group_creation");
   });
 
   test("live gate matrix keeps only review gates open and all live mutations closed", () => {

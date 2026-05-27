@@ -287,6 +287,61 @@ const emptyGroupCreateDryRunState = (run) => {
   };
 };
 
+const brandStatusClosesCandidateDecision = (status) =>
+  ['proposed_local', 'live_canonical'].includes(cleanString(status));
+
+const brandCandidateGroupState = ({ brandCandidateReviewPacket, groupDryRun }) => {
+  const plannedGroups = Array.isArray(groupDryRun?.plannedGroups) ? groupDryRun.plannedGroups : [];
+  const acceptedGroups = plannedGroups.filter((group) =>
+    group?.registeredInBrandDictionary === true && brandStatusClosesCandidateDecision(group?.brandStatus));
+  const dryRunClosesDecision = groupDryRun?.ok === true
+    && [
+      'mini_launch_group_dry_run_ready_for_future_empty_group_decision',
+      'mini_launch_groups_already_exist_no_create_needed',
+    ].includes(groupDryRun?.status)
+    && plannedGroups.length > 0
+    && acceptedGroups.length === plannedGroups.length
+    && (groupDryRun?.summary?.missingBrandCandidateCount ?? 0) === 0
+    && (groupDryRun?.summary?.brandStatusBlockedCount ?? 0) === 0;
+
+  if (dryRunClosesDecision) {
+    return {
+      sourceStatus: 'brand_candidate_decision_closed_ready_no_live_changes',
+      readyNow: true,
+      blockedBy: [],
+      nextAction: 'Brand candidate semantics are closed from the promoted dry-run; do not reopen unless naming evidence changes. Empty group creation still requires exact Alejandro approval and a fresh scan.',
+      readiness: {
+        decisionState: 'closed_from_promoted_group_dry_run',
+        recommendedDecision: 'accepted_as_proposed_local_or_live_canonical',
+        acceptedGroupCount: acceptedGroups.length,
+        missingCandidateCount: 0,
+        brandStatusBlockedCount: 0,
+        sourceDryRunStatus: groupDryRun.status,
+        historicalReviewPacketStatus: brandCandidateReviewPacket?.status ?? null,
+        historicalMissingCandidateCount: brandCandidateReviewPacket?.dictionaryState?.missingCandidateCount ?? null,
+        rows: acceptedGroups.map((group) => ({
+          name: group.name,
+          layer: group.layer,
+          brandStatus: group.brandStatus,
+          existsInMailerLite: group.existsInMailerLite ?? false,
+        })),
+      },
+    };
+  }
+
+  return {
+    sourceStatus: brandCandidateReviewPacket?.status ?? null,
+    readyNow: brandCandidateReviewPacket?.status === 'brand_candidate_review_packet_ready_no_live_changes',
+    blockedBy: ['brand_semantic_decision_pending'],
+    nextAction: 'Brand chooses add_as_candidate, rename, or reject for the two MailerLite receipt candidates.',
+    readiness: {
+      recommendedDecision: brandCandidateReviewPacket?.brandDecisionRequest?.recommendedDecision ?? null,
+      missingCandidateCount: brandCandidateReviewPacket?.dictionaryState?.missingCandidateCount ?? null,
+      decisionState: 'pending_semantic_decision',
+    },
+  };
+};
+
 const buildLanes = ({
   onboardingExecutionPacket,
   rehearsalPacket,
@@ -304,6 +359,7 @@ const buildLanes = ({
   const dryRunState = groupDryRunState(groupDryRun);
   const emptyPacketState = emptyGroupCreationPacketState(emptyGroupCreationPacket);
   const createDryRunState = emptyGroupCreateDryRunState(emptyGroupCreateDryRun);
+  const brandCandidateState = brandCandidateGroupState({ brandCandidateReviewPacket, groupDryRun });
 
   return [
     buildLane({
@@ -390,13 +446,11 @@ const buildLanes = ({
     id: 'brand_candidate_groups',
     owner: 'Brand',
     packet: brandCandidateReviewPacket,
-    readyNow: brandCandidateReviewPacket?.status === 'brand_candidate_review_packet_ready_no_live_changes',
-    readiness: {
-      recommendedDecision: brandCandidateReviewPacket?.brandDecisionRequest?.recommendedDecision ?? null,
-      missingCandidateCount: brandCandidateReviewPacket?.dictionaryState?.missingCandidateCount ?? null,
-    },
-    blockedBy: ['brand_semantic_decision_pending'],
-    nextAction: 'Brand chooses add_as_candidate, rename, or reject for the two MailerLite receipt candidates.',
+    status: brandCandidateState.sourceStatus,
+    readyNow: brandCandidateState.readyNow,
+    readiness: brandCandidateState.readiness,
+    blockedBy: brandCandidateState.blockedBy,
+    nextAction: brandCandidateState.nextAction,
     liveActionsClosed: ['group_creation', 'subscriber_assignment', 'workflow_use', 'send'],
   }),
   buildLane({
