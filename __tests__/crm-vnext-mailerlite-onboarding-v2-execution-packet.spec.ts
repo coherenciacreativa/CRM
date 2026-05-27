@@ -72,6 +72,29 @@ const miniLaunchPacket = {
   defaultEmailSequence: [{ step: 1 }, { step: 2 }, { step: 3 }, { step: 4 }],
 };
 
+const miniLaunchRehearsal = {
+  status: "mini_launch_rehearsal_ready_no_live_changes",
+  launch: {
+    launchId: "mini_2026_06_rehearsal_inteligencia_para_descansar",
+    resourceName: "Inteligencia para descansar",
+  },
+  handoffs: {
+    mailerLite: {
+      candidates: {
+        sourceGroupCandidate: { name: "CC · Source · Quiz · Inteligencia para descansar" },
+        deliveredGroupCandidate: { name: "CC · Delivered · Quiz result · Inteligencia para descansar" },
+      },
+    },
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    shopifyApiCalled: false,
+    crmLiveApiCalled: false,
+    sendsPerformed: false,
+    crmCardMutationsPerformed: false,
+  },
+};
+
 const firstEmailMapping = {
   status: "first_email_mapping_ready_no_sent_receipt",
   decision: {
@@ -89,6 +112,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
     expect(options.emptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(options.emptyGroupsCreateRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
     expect(options.miniLaunchPacket).toContain("mailerlite_mini_launch_os_v0_packet_2026-05-27.json");
+    expect(options.miniLaunchRehearsal).toContain("mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json");
     expect(options.firstEmailMapping).toContain("mailerlite_onboarding_v2_first_email_mapping_2026-05-27.json");
   });
 
@@ -124,6 +148,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       emptyGroupsPacket,
       emptyGroupsCreateRun,
       miniLaunchPacket,
+      miniLaunchRehearsal,
       firstEmailMapping,
     });
 
@@ -134,8 +159,8 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
     });
     expect(gateQueue.find((gate) => gate.id === "seed_test_onboarding_v2")?.status).toContain("blocked");
     expect(gateQueue.find((gate) => gate.id === "non_live_mini_launch_rehearsal")).toMatchObject({
-      status: "ready_without_live_approval",
-      allowedWithoutHumanApproval: true,
+      status: "rehearsal_ready_no_live_changes",
+      allowedWithoutHumanApproval: false,
       liveMutationIfApproved: false,
     });
     expect(gateQueue.find((gate) => gate.id === "brand_first_email_content_mapping")).toMatchObject({
@@ -151,11 +176,12 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       emptyGroupsPacket,
       emptyGroupsCreateRun,
       miniLaunchPacket,
+      miniLaunchRehearsal,
       firstEmailMapping,
     });
     const moves = buildNextAutonomousMoves(gateQueue);
 
-    expect(moves.some((move) => move.gate === "non_live_mini_launch_rehearsal")).toBe(true);
+    expect(moves.some((move) => move.gate === "non_live_mini_launch_rehearsal")).toBe(false);
     expect(moves.find((move) => move.gate === "create_empty_onboarding_v2_groups")?.action).toContain("Pause for exact human approval");
   });
 
@@ -165,6 +191,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       emptyGroupsPacket,
       emptyGroupsCreateRun,
       miniLaunchPacket,
+      miniLaunchRehearsal,
       firstEmailMapping,
       blueprintText: "blueprint",
       sourcePaths: {
@@ -172,6 +199,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
         emptyGroupsPacket: "/tmp/empty-packet.json",
         emptyGroupsCreateRun: "/tmp/create-run.json",
         miniLaunchPacket: "/tmp/mini.json",
+        miniLaunchRehearsal: "/tmp/rehearsal.json",
         firstEmailMapping: "/tmp/first-email.json",
         blueprint: "/tmp/blueprint.md",
       },
@@ -183,6 +211,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
     expect(packet.executiveDecision.humanApprovalRequiredFor).toContain("touching Onboarding v1");
     expect(markdown).toContain("Onboarding flow v1 stays live and untouched");
     expect(markdown).toContain("Do not infer Sobre el amor from Received second email.");
+    expect(markdown).toContain("Mini-Launch rehearsal: mini_launch_rehearsal_ready_no_live_changes; launch_id=mini_2026_06_rehearsal_inteligencia_para_descansar");
     expect(markdown).toContain("First email mapping: first_email_mapping_ready_no_sent_receipt; posture=welcome_orientation_no_sent_receipt");
     expect(markdown).toContain("Sin grupos/workflows/automations/envios.");
   });

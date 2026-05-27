@@ -51,6 +51,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_path_packet_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_os_v0_packet_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_os_v0_packet_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json`
 
 ## Brújula pilot status
 
@@ -228,7 +230,8 @@ Result:
 
 - Status: `ready_for_human_decision_or_non_live_continuation`.
 - Ready for exact human approval: `create_empty_onboarding_v2_groups`.
-- Safe to continue without live approval: `non_live_mini_launch_rehearsal`.
+- Safe to continue without live approval from this packet: none currently open.
+- Mini-launch rehearsal: closed as `rehearsal_ready_no_live_changes` for `mini_2026_06_rehearsal_inteligencia_para_descansar`.
 - First email mapping: closed as `mapped_as_welcome_only_no_sent_receipt`.
 - Draft workflow, seed test and production entry switch remain blocked behind separate future approvals.
 - The packet explicitly preserves v1, keeps `Onboarding complete` as the current practical audience until migration, and keeps mini-launch `Experiment` identity CRM-first unless MailerLite needs routing/dedupe/exclusion.
@@ -291,6 +294,28 @@ Approval gates remain closed:
 - Test email send.
 - Shopify publish or audience send.
 
+## Mini-launch rehearsal status
+
+Status: concrete no-live rehearsal ready.
+
+Evidence:
+
+- Rehearsal report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-rehearsal-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-rehearsal-packet.spec.ts`
+
+Result:
+
+- `launch_id`: `mini_2026_06_rehearsal_inteligencia_para_descansar`.
+- Resource: `Inteligencia para descansar`, quiz/test format.
+- Source candidate: `CC · Source · Quiz · Inteligencia para descansar`.
+- Delivered candidate: `CC · Delivered · Quiz result · Inteligencia para descansar`.
+- Experiment identity remains CRM-first by `launch_id`.
+- Onboarding handoff is explicitly protected: do not insert anyone automatically into the active onboarding flow.
+- All live gates remain closed: no groups, workflows, forms, subscribers, sends, Shopify publish, CRM card writes, or scoring changes.
+
+This is the first proof that Mini-Launch OS v0 can turn one idea into a coordinated Brand/Web/MailerLite/CRM handoff without touching production.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -318,6 +343,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Experiment identity lives first in CRM unless MailerLite needs routing/dedupe/exclusion.
    - Mini-launch path packet generated and tested: done.
    - Mini-Launch OS v0 full packet generated and tested: done.
+   - Concrete no-live rehearsal packet generated and tested: done.
 
 5. Brand and CRM handoff clear.
    - Brand knows what to review creatively.
@@ -326,13 +352,13 @@ The goal is not complete until all gates below are proven with current evidence:
 
 ## Next best step
 
-Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with non-live Brand/CRM preparation.
+Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with the next non-live production prep from the rehearsal: polished Brand copy, Shopify/Web preview handoff, CRM event schema, or MailerLite dry-run packet.
 
 Scope:
 
 - Treat current `Onboarding flow` as production v1 and leave it live.
 - If Alejandro approves the exact phrase, run the guarded runner in execute mode and then update Brand dictionary live IDs.
-- If not, continue non-live preparation: Brand mapping for first email, draft workflow checklist, or a no-live rehearsal for one concrete mini-launch idea using the Mini-Launch OS v0 packet.
+- If not, continue non-live preparation from the rehearsal: Brand/Web/email asset drafting, CRM signal schema, or MailerLite group/workflow dry-run packet.
 - Produce Markdown + JSON reports in `~/Documents/Mantis-Reports`.
 
 Non-goals:
@@ -347,4 +373,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, and Mini-Launch OS v0 packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live rehearsal of one real mini-launch idea through Brand, Shopify/Web, MailerLite and CRM.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, and concrete mini-launch rehearsal are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live asset/spec pass that turns the rehearsal into draft copy, Shopify handoff, CRM event schema, and a MailerLite dry-run plan.

@@ -420,7 +420,8 @@ Result:
 - Status: `ready_for_human_decision_or_non_live_continuation`.
 - Current best path: keep v1 live, create only missing v2 groups if Alejandro approves, then build a disabled v2 draft and seed-test before any production switch.
 - Ready for exact human approval: create the 12 named empty Onboarding v2 groups only.
-- Safe non-live continuation: a concrete mini-launch rehearsal packet.
+- Safe non-live continuation from this packet: none currently open.
+- Mini-launch rehearsal: closed as `rehearsal_ready_no_live_changes` for `mini_2026_06_rehearsal_inteligencia_para_descansar`.
 - First email mapping: closed as welcome/orientation only, with no canonical `Sent` receipt.
 - Still blocked: disabled v2 draft creation/cloning, seed subscriber test, production entry switch, any v1 edit, any audience send.
 
@@ -498,6 +499,33 @@ Result:
 - All live gates remain closed: no groups, workflows, seed sends, audience sends, Shopify publish, or CRM card/score mutation without explicit approval.
 
 This completes the reusable non-live mini-launch operating architecture. A concrete mini-launch still needs its own idea, `launch_id`, Brand brief, dry-runs, and approvals before any live operation.
+
+## Mini-launch rehearsal checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-rehearsal-packet.mjs
+```
+
+Result:
+
+- Status: `mini_launch_rehearsal_ready_no_live_changes`.
+- Concrete idea: `Inteligencia para descansar`, quiz/test format.
+- `launch_id`: `mini_2026_06_rehearsal_inteligencia_para_descansar`.
+- Produces a local-only Brand/Web/MailerLite/CRM handoff: public promise, quiz model, email sequence draft, Source/Delivered candidates, CRM signal map, data plan, onboarding handoff and approval queue.
+- Candidate groups stay candidates: `CC · Source · Quiz · Inteligencia para descansar` and `CC · Delivered · Quiz result · Inteligencia para descansar`.
+- Experiment remains CRM-first by `launch_id`.
+- Onboarding v1 stays untouched; no automatic insertion into onboarding.
+- All live gates remain closed: no MailerLite API calls, no Shopify API calls, no subscribers, no workflows/forms, no sends, no CRM card/score mutation.
+
+This proves the Mini-Launch OS can take one idea through a concrete rehearsal without touching production. The next non-live step is to turn the rehearsal into polished Brand copy, Shopify/Web handoff, CRM event schema, or a MailerLite dry-run plan.
 
 ## Planner dry-run requirements
 
