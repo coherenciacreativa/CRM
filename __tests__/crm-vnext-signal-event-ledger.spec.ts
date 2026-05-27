@@ -130,6 +130,64 @@ describe('CRM vNext signal event ledger', () => {
     });
   });
 
+  test('preserves mini-launch event kinds and channels for launch experiments', () => {
+    const report = buildCrmSignalEventLedgerInput({
+      events: [
+        {
+          sourceKind: 'mini_launch_rehearsal',
+          sourceId: 'mini_2026_06_rehearsal_inteligencia_para_descansar:quiz_completed:sample',
+          eventKind: 'quiz_or_game_completed',
+          channel: 'quiz',
+          direction: 'inbound',
+          email: 'sample@example.invalid',
+          observedAt: NOW,
+          metrics: {
+            launchId: 'mini_2026_06_rehearsal_inteligencia_para_descansar',
+            resourceType: 'quiz',
+            resultId: 'espacio_mental',
+          },
+          tags: ['mini_launch', 'rehearsal'],
+        },
+        {
+          sourceKind: 'mini_launch_rehearsal',
+          sourceId: 'mini_2026_06_rehearsal_inteligencia_para_descansar:market_review:sample',
+          eventKind: 'market_signal_reviewed',
+          channel: 'crm',
+          direction: 'internal',
+          email: 'sample@example.invalid',
+          observedAt: NOW,
+          metrics: {
+            launchId: 'mini_2026_06_rehearsal_inteligencia_para_descansar',
+            decisionCandidate: 'iterate',
+          },
+        },
+      ],
+    }, { now: NOW, sourceLabel: 'Mini-launch contract test', collector: 'Codex' });
+
+    expect(report.summary).toMatchObject({
+      recordsRead: 2,
+      eventsGenerated: 2,
+      skippedRecords: 0,
+      byKind: {
+        quiz_or_game_completed: 1,
+        market_signal_reviewed: 1,
+      },
+      byChannel: {
+        quiz: 1,
+        crm: 1,
+      },
+    });
+    expect(report.events.map((event) => event.event.kind)).toEqual([
+      'quiz_or_game_completed',
+      'market_signal_reviewed',
+    ]);
+    expect(report.events[0].event.metrics).toMatchObject({
+      launchId: 'mini_2026_06_rehearsal_inteligencia_para_descansar',
+      resultId: 'espacio_mental',
+    });
+    expect(report.safety.cardMutationProhibited).toBe(true);
+  });
+
   test('previews, commits, reads, and skips duplicate events', async () => {
     const ledgerPath = await tempLedger();
 

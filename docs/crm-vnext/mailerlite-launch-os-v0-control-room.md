@@ -53,6 +53,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_os_v0_packet_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json`
 
 ## Brújula pilot status
 
@@ -316,6 +318,29 @@ Result:
 
 This is the first proof that Mini-Launch OS v0 can turn one idea into a coordinated Brand/Web/MailerLite/CRM handoff without touching production.
 
+## Mini-launch event contract status
+
+Status: CRM event contract ready, no ledger write.
+
+Evidence:
+
+- Event contract report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-event-contract.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-event-contract.spec.ts`
+- Signal Event Ledger support updated for mini-launch event kinds and channels.
+
+Result:
+
+- The `Inteligencia para descansar` rehearsal now has a concrete CRM event contract.
+- The contract covers intake, Brand approval, Shopify preview, email capture, MailerLite Source/Delivered/Sent-style receipts, quiz start/completion, email opens/clicks/replies, Instagram snapshot/comment/like, market review, and continue/archive decision.
+- Sample events normalize through the Signal Event Ledger without becoming `unknown`.
+- Projectable now: existing email and Instagram engagement events.
+- Store-only by default: operational launch events, receipts, quiz/result events, market learning and decisions.
+- No append to the Signal Event Ledger was performed.
+- No CRM card/scoring/Fact Store mutation, MailerLite API call, Shopify API call, subscriber read, workflow/form change, send, or outbound action was performed.
+
+This closes the most important data-design gap in the mini-launch rehearsal: future launches can now produce learnable CRM signals without pretending every operational event is interest, warmth, or permission to contact.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -344,6 +369,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Mini-launch path packet generated and tested: done.
    - Mini-Launch OS v0 full packet generated and tested: done.
    - Concrete no-live rehearsal packet generated and tested: done.
+   - Concrete mini-launch CRM event contract generated and tested: done.
 
 5. Brand and CRM handoff clear.
    - Brand knows what to review creatively.
@@ -352,7 +378,7 @@ The goal is not complete until all gates below are proven with current evidence:
 
 ## Next best step
 
-Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with the next non-live production prep from the rehearsal: polished Brand copy, Shopify/Web preview handoff, CRM event schema, or MailerLite dry-run packet.
+Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with the next non-live production prep from the rehearsal: polished Brand copy, Shopify/Web preview handoff, MailerLite dry-run packet, or a seed-test QA packet.
 
 Scope:
 
@@ -373,4 +399,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, and concrete mini-launch rehearsal are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live asset/spec pass that turns the rehearsal into draft copy, Shopify handoff, CRM event schema, and a MailerLite dry-run plan.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, and CRM event contract are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live asset/spec pass that turns the rehearsal into draft copy, Shopify handoff, MailerLite dry-run plan, and seed-test QA checklist.

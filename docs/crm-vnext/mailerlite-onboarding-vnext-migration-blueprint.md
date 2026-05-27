@@ -525,7 +525,33 @@ Result:
 - Onboarding v1 stays untouched; no automatic insertion into onboarding.
 - All live gates remain closed: no MailerLite API calls, no Shopify API calls, no subscribers, no workflows/forms, no sends, no CRM card/score mutation.
 
-This proves the Mini-Launch OS can take one idea through a concrete rehearsal without touching production. The next non-live step is to turn the rehearsal into polished Brand copy, Shopify/Web handoff, CRM event schema, or a MailerLite dry-run plan.
+This proves the Mini-Launch OS can take one idea through a concrete rehearsal without touching production. The next non-live step is to turn the rehearsal into polished Brand copy, Shopify/Web handoff, MailerLite dry-run plan, or seed-test QA checklist.
+
+## Mini-launch event contract checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-event-contract.mjs
+```
+
+Result:
+
+- Status: `mini_launch_event_contract_ready_no_ledger_write`.
+- The `Inteligencia para descansar` rehearsal now has a CRM event contract for intake, Brand approval, Shopify preview, email capture, MailerLite receipts, quiz start/completion, email opens/clicks/replies, Instagram snapshot/comment/like, market review, and continue/archive decision.
+- Sample events normalize through the Signal Event Ledger without becoming `unknown`.
+- Existing projection can already understand email open/click/reply and Instagram snapshot/comment/like.
+- Operational launch events stay store-only by default: receipt assignment, delivery, Sent-style content markers, quiz/result events, market learning and decisions do not become warmth/product-fit/card changes without a reviewed policy.
+- No append to the Signal Event Ledger was performed.
+- No live MailerLite, Shopify, CRM, subscriber, workflow, form, scoring, Fact Store, send, or outbound mutation was performed.
+
+This gives future mini-launches a disciplined data spine: each launch can generate learnable CRM events while the active onboarding remains protected and the CRM avoids treating every operational marker as human interest.
 
 ## Planner dry-run requirements
 

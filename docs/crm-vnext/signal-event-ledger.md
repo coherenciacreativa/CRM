@@ -154,7 +154,7 @@ Each line in `.crm-vnext/signal-events/ledger.jsonl` is one event:
 
 ## Event Kinds
 
-Initial supported kinds:
+Supported kinds:
 
 - `email_engagement_snapshot`
 - `email_sent`
@@ -162,12 +162,23 @@ Initial supported kinds:
 - `email_click`
 - `email_reply`
 - `email_suppression`
+- `email_submitted`
 - `instagram_engagement_snapshot`
 - `instagram_dm`
 - `instagram_comment`
 - `instagram_like`
 - `instagram_story_view`
 - `instagram_follow`
+- `mini_launch_intake_created`
+- `brand_brief_approved`
+- `landing_preview_ready`
+- `source_assigned`
+- `resource_delivered`
+- `content_sent`
+- `quiz_started`
+- `quiz_or_game_completed`
+- `market_signal_reviewed`
+- `continue_or_archive_decision`
 - `class_attendance`
 - `recording_delivery`
 - `community_event_attendance`
@@ -179,6 +190,27 @@ Initial supported kinds:
 - `unknown`
 
 The v0 can store both raw events and aggregate snapshots. Aggregate snapshots are important because many available sources currently report "opens in 30 days" or "recent story activity" instead of a clean raw event stream.
+
+Mini-launch events are intentionally supported at the ledger layer before they all affect scoring. This lets a launch such as `Inteligencia para descansar` preserve the whole operating story: idea intake, Brand approval, Shopify preview, email capture, MailerLite receipts, quiz completion, email engagement, Instagram engagement, market review, and Alejandro's continue/archive decision. Store first; project into warmth/product-fit only when a reviewed scoring policy says that event should count.
+
+## Channels
+
+Supported channels:
+
+- `email`
+- `instagram`
+- `whatsapp`
+- `telegram`
+- `classbot`
+- `google_workspace`
+- `web`
+- `shopify`
+- `quiz`
+- `crm`
+- `commerce`
+- `mailerlite`
+- `manual`
+- `unknown`
 
 ## Relationship To Existing Layers
 

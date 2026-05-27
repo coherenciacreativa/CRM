@@ -74,6 +74,35 @@ Options:
 | `recording_delivery` | WhatsApp automation/delivery signal |
 | `purchase` | spend, purchase count, active client, product-family counts |
 
+## Mini-Launch Boundary
+
+Mini-launch operating events can be valid Signal Event Ledger records even when they do not yet project into scoring.
+
+Projectable now through existing rules:
+
+- `email_open`
+- `email_click`
+- `email_reply`
+- `instagram_engagement_snapshot`
+- `instagram_comment`
+- `instagram_like`
+
+Store-only by default:
+
+- `mini_launch_intake_created`
+- `brand_brief_approved`
+- `landing_preview_ready`
+- `email_submitted`
+- `source_assigned`
+- `resource_delivered`
+- `content_sent`
+- `quiz_started`
+- `quiz_or_game_completed`
+- `market_signal_reviewed`
+- `continue_or_archive_decision`
+
+Rule: the CRM may preserve launch operations and market-learning events now, but it must not turn them into warmth, product-fit, card mutations, or outbound permission until a reviewed policy explicitly says how to interpret them.
+
 ## Future Sources
 
 New sources should not require a new scoring lane. They should emit canonical Signal Event Ledger records with:
