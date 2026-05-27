@@ -861,6 +861,63 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
   ];
 };
 
+const buildDepartmentReviewCollectionMoves = () => [
+  'Run no-live department reviews from the individual packets.',
+  'Use the delivery pack for copy-ready no-live blocks and expected response paths.',
+  'Create the response workspace so Brand/Web/CRM replies land as pending drafts before final files.',
+  'Use the draft assist only as a starting point for departments; it cannot replace final Brand/Web/CRM responses.',
+  'Run finalization preflight before intake so pending files, Codex drafts and final response files cannot be confused.',
+  'Use the operator queue to see each department message block, Codex draft, pending blockers and final response path in one place.',
+  'Use the request bundle to route copy-ready department instructions without reconstructing context by hand.',
+  'Use finalize-pending only after a department confirms a clean pending response is final; it writes local final response files only.',
+  'Collect final responses through the response workspace and templates.',
+  'Run reconciliation with response files before any dry-run rerun or build request.',
+  'Use the response watcher before finalization preflight so missing final response files are obvious.',
+];
+
+const buildApprovalPhaseMoves = () => [
+  'Use the Launch OS approval queue as the current source of human boundaries; do not reopen department-review collection while pendingDepartments is empty.',
+  'Use the Launch OS approval intake only when Alejandro provides exact approval text; require a single exact phrase match before any fresh-evidence plan.',
+  'Hold at the mini-launch empty-group create runner dry-run: it is green, createdCount remains 0, and --execute still requires the exact phrase plus a fresh group scan.',
+  'Use the mini-launch email builder payload manifest only as local implementation input; it cannot execute MailerLite builder mutations or sends.',
+  'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
+  'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
+  'Use the Shopify local-build request only after exact no-live scope approval, and keep placeholders inert.',
+];
+
+const buildSharedImmediateMoves = () => [
+  'Use the Brújula email style QA packet to keep functional delivery separate from public-ready creative quality.',
+  'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
+  'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
+  'Use the backlog board only for one additional no-live idea intake, not for live production.',
+  'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
+  'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
+  'Use the mini-launch empty-group create runner only in dry-run until Alejandro gives the exact phrase for --execute.',
+  'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
+  'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
+  'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
+  'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
+  'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
+  'Regenerate the validation receipt after current-turn tests so the goal audit does not depend on ephemeral CLI flags.',
+  'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
+];
+
+const departmentFinalResponsesAccepted = (currentState) => {
+  const miniLaunch = currentState?.miniLaunch ?? {};
+  const pendingDepartments = miniLaunch.pendingDepartments ?? [];
+  const acceptedDepartments = new Set(miniLaunch.acceptedFinalDepartments ?? []);
+  return pendingDepartments.length === 0
+    && miniLaunch.finalizationReadyForIntake === true
+    && ['brand', 'web_design', 'crm'].every((department) => acceptedDepartments.has(department));
+};
+
+const buildImmediateNextMoves = ({ currentState }) => [
+  ...(departmentFinalResponsesAccepted(currentState)
+    ? buildApprovalPhaseMoves()
+    : buildDepartmentReviewCollectionMoves()),
+  ...buildSharedImmediateMoves(),
+];
+
 const buildRunbook = ({
   readinessBoard,
   cadenceBoard,
@@ -899,83 +956,53 @@ const buildRunbook = ({
   generatedAt = new Date().toISOString(),
 }) => {
   const commandCatalog = commandCatalogFrom(packageJson);
+  const currentState = buildCurrentState({
+    readinessBoard,
+    cadenceBoard,
+    backlogBoard,
+    onboardingHandoffPolicy,
+    reconciliationBoard,
+    packetsIndex,
+    finalizationPreflight,
+    operatorQueue,
+    requestBundle,
+    responseWatcher,
+    onboardingV1Audit,
+    onboardingTrunkMap,
+    onboardingV2Execution,
+    onboardingV2EventContract,
+    onboardingV2EmptyGroupsPacket,
+    onboardingV2EmptyGroupsCreateDryRun,
+    onboardingV2FirstEmailMap,
+    miniLaunchEmptyGroupCreateDryRun,
+    miniLaunchCrmSignalProjectionPacket,
+    miniLaunchEmailStyleQaPacket,
+    miniLaunchLocalEmailAssetPlan,
+    miniLaunchEmailAssetBuildScopePacket,
+    miniLaunchEmailBuilderPayloadManifest,
+    brujulaPlan,
+    brujulaApply,
+    brujulaEmailStyleQa,
+    brujulaEmailStyleCorrection,
+    brujulaEmailRenderQa,
+    approvalQueue,
+    approvalIntake,
+    validationReceipt,
+    responseWorkspace,
+  });
   return {
     schemaVersion: SCHEMA_VERSION,
     mode: 'local_only_mailerlite_launch_os_operator_runbook',
     generatedAt,
     ok: true,
     status: 'mailerlite_launch_os_operator_runbook_ready_no_live_changes',
-    currentState: buildCurrentState({
-      readinessBoard,
-      cadenceBoard,
-      backlogBoard,
-      onboardingHandoffPolicy,
-      reconciliationBoard,
-      packetsIndex,
-      finalizationPreflight,
-      operatorQueue,
-      requestBundle,
-      responseWatcher,
-      onboardingV1Audit,
-      onboardingTrunkMap,
-      onboardingV2Execution,
-      onboardingV2EventContract,
-      onboardingV2EmptyGroupsPacket,
-      onboardingV2EmptyGroupsCreateDryRun,
-      onboardingV2FirstEmailMap,
-      miniLaunchEmptyGroupCreateDryRun,
-      miniLaunchCrmSignalProjectionPacket,
-      miniLaunchEmailStyleQaPacket,
-      miniLaunchLocalEmailAssetPlan,
-      miniLaunchEmailAssetBuildScopePacket,
-      miniLaunchEmailBuilderPayloadManifest,
-      brujulaPlan,
-      brujulaApply,
-      brujulaEmailStyleQa,
-      brujulaEmailStyleCorrection,
-      brujulaEmailRenderQa,
-      approvalQueue,
-      approvalIntake,
-      validationReceipt,
-      responseWorkspace,
-    }),
+    currentState,
     reportMap: buildReportMap(sourceDigests),
     operatingPrinciples: buildOperatingPrinciples(),
     commandCatalog,
     operatingScenarios: buildOperatingScenarios({ commandCatalog }),
     approvalMatrix: buildApprovalMatrix(),
-    immediateNextMoves: [
-      'Run no-live department reviews from the individual packets.',
-      'Use the delivery pack for copy-ready no-live blocks and expected response paths.',
-      'Create the response workspace so Brand/Web/CRM replies land as pending drafts before final files.',
-      'Use the draft assist only as a starting point for departments; it cannot replace final Brand/Web/CRM responses.',
-      'Run finalization preflight before intake so pending files, Codex drafts and final response files cannot be confused.',
-      'Use the operator queue to see each department message block, Codex draft, pending blockers and final response path in one place.',
-      'Use the request bundle to route copy-ready department instructions without reconstructing context by hand.',
-      'Use the Brújula email style QA packet to keep functional delivery separate from public-ready creative quality.',
-      'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
-      'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
-      'Use finalize-pending only after a department confirms a clean pending response is final; it writes local final response files only.',
-      'Collect final responses through the response workspace and templates.',
-      'Run reconciliation with response files before any dry-run rerun or build request.',
-      'Use the backlog board only for one additional no-live idea intake, not for live production.',
-      'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
-      'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
-      'Use the mini-launch empty-group create runner only in dry-run until Alejandro gives the exact phrase for --execute.',
-      'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
-      'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
-      'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
-      'Use the mini-launch email builder payload manifest only as local implementation input; it cannot execute MailerLite builder mutations or sends.',
-      'Use the Launch OS approval queue as the single local map of exact phrases; it cannot approve or execute any operation by itself.',
-      'Use the Launch OS approval intake to check exact human phrases locally and require fresh evidence before any guarded runner.',
-      'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
-      'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
-      'Use the response watcher before finalization preflight so missing final response files are obvious.',
-      'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
-      'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
-      'Regenerate the validation receipt after current-turn tests so the goal audit does not depend on ephemeral CLI flags.',
-      'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
-    ],
+    immediateNextMoves: buildImmediateNextMoves({ currentState }),
     safety: {
       localOnly: true,
       externalMessagesSent: false,
@@ -1352,6 +1379,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 export {
   buildApprovalMatrix,
   buildCurrentState,
+  buildImmediateNextMoves,
   buildOperatingPrinciples,
   buildOperatingScenarios,
   buildReportMap,

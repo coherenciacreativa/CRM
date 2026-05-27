@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   buildApprovalMatrix,
   buildCurrentState,
+  buildImmediateNextMoves,
   buildOperatingPrinciples,
   buildOperatingScenarios,
   buildReportMap,
@@ -123,6 +124,72 @@ const responseWatcher = {
   },
 };
 
+const acceptedReconciliationBoard = {
+  ...reconciliationBoard,
+  status: "department_review_reconciliation_ready_no_live_changes",
+  responseState: {
+    pendingDepartments: [],
+  },
+};
+
+const acceptedPacketsIndex = {
+  ...packetsIndex,
+  pendingDepartments: [],
+};
+
+const acceptedResponseWorkspace = {
+  ...responseWorkspace,
+  status: "department_review_response_workspace_ready_final_responses_accepted_no_live_changes",
+  readyForIntake: true,
+  pendingDepartments: [],
+};
+
+const acceptedFinalizationPreflight = {
+  ...finalizationPreflight,
+  status: "department_finalization_preflight_ready_for_intake_no_live_changes",
+  readyForIntake: true,
+  acceptedDepartments: ["brand", "web_design", "crm"],
+  pendingReadyDepartments: [],
+  draftAssistDepartments: [],
+  awaitingDepartments: [],
+  departments: finalizationPreflight.departments.map((department) => ({
+    ...department,
+    state: "final_response_accepted",
+    acceptedFinalResponse: true,
+    pendingCanBecomeFinal: false,
+    codexDraftAvailable: false,
+  })),
+};
+
+const acceptedOperatorQueue = {
+  ...operatorQueue,
+  status: "department_review_operator_queue_final_responses_accepted_no_live_changes",
+  summary: {
+    awaitingFinalCount: 0,
+    nextBestMove: "Department finals accepted; use approval queue for the next human boundary.",
+  },
+};
+
+const acceptedRequestBundle = {
+  ...requestBundle,
+  status: "department_review_request_bundle_historical_no_live_changes",
+  summary: {
+    ...requestBundle.summary,
+    awaitingFinalCount: 0,
+    nextBestMove: "Historical request bundle only; do not collect duplicate final responses.",
+  },
+};
+
+const acceptedResponseWatcher = {
+  ...responseWatcher,
+  status: "department_review_response_watcher_final_responses_present_no_live_changes",
+  summary: {
+    missingFinalCount: 0,
+    finalFilePresentCount: 3,
+    nextBestMove: "Final responses are present; proceed through approval queue only.",
+  },
+};
+
 const validationReceipt = {
   status: "mailerlite_launch_os_validation_receipt_ready_no_live_changes",
   validationStatus: "passed",
@@ -154,6 +221,18 @@ const approvalQueue = {
       "mini_launch_seed_send",
       "crm_signal_writes",
     ],
+  },
+};
+
+const approvalIntake = {
+  status: "waiting_for_exact_approval_text_no_live_changes",
+  executiveSummary: {
+    approvalTextProvided: false,
+    matchedApprovalCount: 0,
+    matchedApprovalId: null,
+    canProceedToFreshEvidence: false,
+    executionAllowedNow: false,
+    openLiveMutationGateCount: 0,
   },
 };
 
@@ -691,6 +770,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(runbook.currentState.liveGates.openLiveGateCount).toBe(0);
     expect(runbook.currentState.approvalQueue.readyApprovalRequestCount).toBe(5);
     expect(runbook.currentState.approvalQueue.openLiveMutationGateCount).toBe(0);
+    expect(runbook.immediateNextMoves[0]).toBe("Run no-live department reviews from the individual packets.");
     expect(runbook.reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
     expect(runbook.safety).toMatchObject({
       localOnly: true,
@@ -699,6 +779,57 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       sendsPerformed: false,
       factStoreWritePerformed: false,
     });
+  });
+
+  test("switches next moves to approval intake after final department responses are accepted", () => {
+    const runbook = buildRunbook({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      onboardingHandoffPolicy,
+      reconciliationBoard: acceptedReconciliationBoard,
+      packetsIndex: acceptedPacketsIndex,
+      responseWorkspace: acceptedResponseWorkspace,
+      finalizationPreflight: acceptedFinalizationPreflight,
+      operatorQueue: acceptedOperatorQueue,
+      requestBundle: acceptedRequestBundle,
+      responseWatcher: acceptedResponseWatcher,
+      onboardingV1Audit,
+      onboardingTrunkMap,
+      onboardingV2Execution,
+      onboardingV2EventContract,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
+      miniLaunchEmailStyleQaPacket,
+      miniLaunchLocalEmailAssetPlan,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      brujulaPlan,
+      brujulaApply,
+      brujulaEmailStyleQa,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      approvalQueue,
+      approvalIntake,
+      validationReceipt,
+      packageJson,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    const movesText = runbook.immediateNextMoves.join("\n");
+
+    expect(runbook.currentState.miniLaunch.pendingDepartments).toEqual([]);
+    expect(runbook.currentState.miniLaunch.finalizationReadyForIntake).toBe(true);
+    expect(runbook.currentState.miniLaunch.acceptedFinalDepartments).toEqual(["brand", "web_design", "crm"]);
+    expect(runbook.immediateNextMoves).toEqual(buildImmediateNextMoves({ currentState: runbook.currentState }));
+    expect(movesText).toContain("Launch OS approval queue");
+    expect(movesText).toContain("Launch OS approval intake");
+    expect(movesText).toContain("createdCount remains 0");
+    expect(movesText).not.toContain("Run no-live department reviews");
+    expect(movesText).not.toContain("Create the response workspace");
+    expect(movesText).not.toContain("Collect final responses through the response workspace");
   });
 
   test("builds report map from consulted source paths", () => {
