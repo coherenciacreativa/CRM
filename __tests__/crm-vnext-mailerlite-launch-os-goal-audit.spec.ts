@@ -23,6 +23,14 @@ const runbook = {
       trunkMapSequenceItems: 11,
       trunkMapFutureHandoffTarget: "CC · Journey · Editorial onboarding · Eligible",
       trunkMapRecommendationIsRouting: false,
+      v2EmptyGroupsPacketStatus: "ready_for_exact_human_approval_to_create_empty_groups",
+      v2EmptyGroupsTargetCount: 12,
+      v2EmptyGroupsLiveGroupsRead: 75,
+      v2EmptyGroupsLiveAutomationsRead: 13,
+      v2EmptyGroupsCanAskApproval: true,
+      v2EmptyGroupsBlockerCount: 0,
+      v2EmptyGroupsCreateDryRunStatus: "dry_run_ready_for_exact_approval",
+      v2EmptyGroupsCreateDryRunCreatedCount: 0,
     },
     miniLaunch: {
       cadenceNow: "weekly",
@@ -132,6 +140,49 @@ const onboardingV2EventContract = {
   status: "onboarding_v2_event_contract_ready_no_ledger_write",
   normalizationProof: {
     eventsGenerated: 12,
+  },
+};
+
+const onboardingV2EmptyGroupsPacket = {
+  status: "ready_for_exact_human_approval_to_create_empty_groups",
+  sourceEvidence: {
+    targetGroupCount: 12,
+    liveGroupsRead: 75,
+    liveAutomationsRead: 13,
+  },
+  approvalGate: {
+    canAskAlejandroForApproval: true,
+  },
+  blockers: [],
+  safety: {
+    readOnly: true,
+    mailerLiteApiCalled: true,
+    groupMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    subscriberRowsRead: false,
+    sendsPerformed: false,
+  },
+};
+
+const onboardingV2EmptyGroupsCreateDryRun = {
+  status: "dry_run_ready_for_exact_approval",
+  mode: "dry_run",
+  packetSummary: {
+    targetCount: 12,
+    liveGroupsRead: 75,
+    liveAutomationsRead: 13,
+    blockers: [],
+  },
+  decision: {
+    canExecute: false,
+  },
+  createdGroups: [],
+  safety: {
+    mode: "dry_run_only",
+    groupMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    subscriberRowsRead: false,
+    sendsPerformed: false,
   },
 };
 
@@ -266,6 +317,8 @@ const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-onboarding-v2-event-contract": "node scripts/event.mjs",
+    "crm:vnext:mailerlite-onboarding-v2-empty-groups-packet": "node scripts/empty-groups-packet.mjs",
+    "crm:vnext:mailerlite-onboarding-v2-empty-groups-create": "node scripts/empty-groups-create.mjs",
     "crm:vnext:mailerlite-mini-launch-cadence-board": "node scripts/cadence.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
     "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/brujula-email-style-correction.mjs",
@@ -286,6 +339,8 @@ const values = {
   onboardingV2Design,
   onboardingV2Execution,
   onboardingV2EventContract,
+  onboardingV2EmptyGroupsPacket,
+  onboardingV2EmptyGroupsCreateDryRun,
   onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
@@ -323,6 +378,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.requestBundle).toContain("mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
     expect(parsed.responseWatcher).toContain("mailerlite_mini_launch_department_review_response_watcher_inteligencia_descansar_2026-05-27.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
+    expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
+    expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
@@ -340,6 +397,15 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.protect_productive_onboarding_v1.evidence).toContain("trunkMapStatus=onboarding_trunk_map_ready_no_live_changes");
     expect(byId.protect_productive_onboarding_v1.evidence).toContain("trunkSequenceItems=11");
     expect(byId.design_onboarding_v2.status).toBe("proven");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsPacketStatus=ready_for_exact_human_approval_to_create_empty_groups");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsTargetCount=12");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsLiveGroupsRead=75");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsLiveAutomationsRead=13");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsCanAskApproval=true");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsCreateDryRunStatus=dry_run_ready_for_exact_approval");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsCreateDryRunCreatedCount=0");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsPacketReady=true");
+    expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsCreateDryRunReady=true");
     expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_final_responses");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("readyForResponseIntake=false");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("workspacePendingDepartments=brand,web_design,crm");

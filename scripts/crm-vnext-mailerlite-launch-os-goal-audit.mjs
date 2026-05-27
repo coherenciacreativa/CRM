@@ -21,6 +21,8 @@ const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Rep
 const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -52,6 +54,8 @@ Options:
   --onboarding-v2-design <path>     Onboarding v2 design JSON. Defaults to ${DEFAULT_ONBOARDING_V2_DESIGN}
   --onboarding-v2-execution <path>  Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
+  --onboarding-v2-empty-groups-packet <path> Onboarding v2 empty-groups approval packet JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET}
+  --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
   --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -88,6 +92,8 @@ const parseArgs = (argv) => {
     onboardingV2Design: DEFAULT_ONBOARDING_V2_DESIGN,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
+    onboardingV2EmptyGroupsPacket: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET,
+    onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
     onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -122,6 +128,8 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-design') options.onboardingV2Design = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
+    else if (arg === '--onboarding-v2-empty-groups-packet') options.onboardingV2EmptyGroupsPacket = argv[++index];
+    else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
     else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -175,6 +183,8 @@ const loadSources = async (options) => {
     ['onboardingV2Design', options.onboardingV2Design, 'Onboarding v2 design evidence', 'json'],
     ['onboardingV2Execution', options.onboardingV2Execution, 'Onboarding v2 execution gates', 'json'],
     ['onboardingV2EventContract', options.onboardingV2EventContract, 'Onboarding v2 CRM event contract', 'json'],
+    ['onboardingV2EmptyGroupsPacket', options.onboardingV2EmptyGroupsPacket, 'Onboarding v2 empty-groups approval packet from fresh read-only scan', 'json', true],
+    ['onboardingV2EmptyGroupsCreateDryRun', options.onboardingV2EmptyGroupsCreateDryRun, 'Onboarding v2 empty-groups create runner dry-run with zero mutations', 'json', true],
     ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
@@ -239,6 +249,8 @@ const buildRequirementChecks = ({
   onboardingV2Design,
   onboardingV2Execution,
   onboardingV2EventContract,
+  onboardingV2EmptyGroupsPacket,
+  onboardingV2EmptyGroupsCreateDryRun,
   onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
@@ -312,6 +324,56 @@ const buildRequirementChecks = ({
   const readyNoLiveLaneCount = readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? 0;
   const liveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount ?? null;
   const receiptPassed = validationReceiptPassed(validationReceipt);
+  const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
+    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
+    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsTargetCount
+    ?? null;
+  const v2EmptyGroupsLiveGroupsRead = onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveGroupsRead
+    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead
+    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsLiveGroupsRead
+    ?? null;
+  const v2EmptyGroupsLiveAutomationsRead = onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveAutomationsRead
+    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveAutomationsRead
+    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsLiveAutomationsRead
+    ?? null;
+  const v2EmptyGroupsBlockerCount = onboardingV2EmptyGroupsPacket?.blockers?.length
+    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length
+    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsBlockerCount
+    ?? null;
+  const v2EmptyGroupsCreateDryRunCreatedCount = onboardingV2EmptyGroupsCreateDryRun?.createdGroups?.length
+    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsCreateDryRunCreatedCount
+    ?? null;
+  const v2EmptyGroupsCanAskApproval = onboardingV2EmptyGroupsPacket?.approvalGate?.canAskAlejandroForApproval
+    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsCanAskApproval
+    ?? false;
+  const v2EmptyGroupsPacketReady = onboardingV2EmptyGroupsPacket?.status === 'ready_for_exact_human_approval_to_create_empty_groups'
+    && v2EmptyGroupsTargetCount === 12
+    && v2EmptyGroupsLiveGroupsRead >= 75
+    && v2EmptyGroupsLiveAutomationsRead >= 13
+    && v2EmptyGroupsBlockerCount === 0
+    && v2EmptyGroupsCanAskApproval === true
+    && onboardingV2EmptyGroupsPacket?.safety?.readOnly === true
+    && onboardingV2EmptyGroupsPacket?.safety?.mailerLiteApiCalled === true
+    && onboardingV2EmptyGroupsPacket?.safety?.groupMutationsPerformed === false
+    && onboardingV2EmptyGroupsPacket?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsPacket?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsPacket?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsCreateDryRunReady = onboardingV2EmptyGroupsCreateDryRun?.status === 'dry_run_ready_for_exact_approval'
+    && onboardingV2EmptyGroupsCreateDryRun?.mode === 'dry_run'
+    && onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount === 12
+    && onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length === 0
+    && v2EmptyGroupsCreateDryRunCreatedCount === 0
+    && onboardingV2EmptyGroupsCreateDryRun?.decision?.canExecute === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.mode === 'dry_run_only'
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.groupMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2DesignProven = onboardingV2Design?.status
+    && onboardingV2Execution?.status
+    && onboardingV2EventContract?.status
+    && v2EmptyGroupsPacketReady
+    && v2EmptyGroupsCreateDryRunReady;
   const validationPassed = validationStatus === 'passed' || receiptPassed;
   const effectiveValidationStatus = validationStatus === 'passed'
     ? 'passed'
@@ -388,7 +450,7 @@ const buildRequirementChecks = ({
     {
       id: 'design_onboarding_v2',
       requirement: 'Design Onboarding v2 without touching production v1.',
-      status: onboardingV2Design?.status && onboardingV2Execution?.status && onboardingV2EventContract?.status
+      status: v2DesignProven
         ? 'proven'
         : 'partial',
       evidence: [
@@ -396,6 +458,16 @@ const buildRequirementChecks = ({
         `executionStatus=${onboardingV2Execution?.status ?? 'missing'}`,
         `eventContractStatus=${onboardingV2EventContract?.status ?? 'missing'}`,
         `eventCount=${onboardingV2EventContract?.eventContract?.length ?? onboardingV2EventContract?.normalizationProof?.eventsGenerated ?? 'unknown'}`,
+        `emptyGroupsPacketStatus=${onboardingV2EmptyGroupsPacket?.status ?? runbook?.currentState?.onboarding?.v2EmptyGroupsPacketStatus ?? 'missing'}`,
+        `emptyGroupsTargetCount=${v2EmptyGroupsTargetCount ?? 'unknown'}`,
+        `emptyGroupsLiveGroupsRead=${v2EmptyGroupsLiveGroupsRead ?? 'unknown'}`,
+        `emptyGroupsLiveAutomationsRead=${v2EmptyGroupsLiveAutomationsRead ?? 'unknown'}`,
+        `emptyGroupsCanAskApproval=${v2EmptyGroupsCanAskApproval}`,
+        `emptyGroupsBlockerCount=${v2EmptyGroupsBlockerCount ?? 'unknown'}`,
+        `emptyGroupsCreateDryRunStatus=${onboardingV2EmptyGroupsCreateDryRun?.status ?? runbook?.currentState?.onboarding?.v2EmptyGroupsCreateDryRunStatus ?? 'missing'}`,
+        `emptyGroupsCreateDryRunCreatedCount=${v2EmptyGroupsCreateDryRunCreatedCount ?? 'unknown'}`,
+        `emptyGroupsPacketReady=${v2EmptyGroupsPacketReady}`,
+        `emptyGroupsCreateDryRunReady=${v2EmptyGroupsCreateDryRunReady}`,
       ],
       remaining: [
         'Creating the 12 empty v2 groups remains a separate exact-approval lane.',
@@ -633,6 +705,7 @@ const buildGoalAudit = ({
       'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
       'Run department review intake and reconciliation with final response files only.',
       'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
+      'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
