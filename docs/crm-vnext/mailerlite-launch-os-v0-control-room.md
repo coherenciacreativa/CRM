@@ -724,6 +724,27 @@ Result:
 
 This checkpoint makes the agency review loop less fragile. Departments can draft and iterate without the operator mistaking a draft, a comment, or a partial answer for permission to touch MailerLite, Shopify, CRM, Signal Ledger, scoring, Fact Store, subscribers, sends, or onboarding.
 
+## Mini-launch department draft assist status
+
+Status: Codex draft assist ready, not final responses, no live changes.
+
+Evidence:
+
+- Draft assist report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_draft_assist_inteligencia_descansar_2026-05-27.md`
+- Codex draft directory: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_codex_drafts_inteligencia_descansar_2026-05-27/`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-draft-assist.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-draft-assist.spec.ts`
+
+Result:
+
+- Creates `brand_response.codex_draft.json`, `web_design_response.codex_draft.json`, and `crm_response.codex_draft.json` as local-only starting points.
+- Every Codex draft uses `reviewMode=draft_no_live_review`, so intake rejects it if it is passed as a final response.
+- Final response files remain separate: `brand_response.json`, `web_design_response.json`, and `crm_response.json`.
+- Existing Codex drafts are preserved unless `--overwrite-drafts` is explicit.
+- Live gate open count remains 0.
+
+This checkpoint reduces review friction without faking department approval. The drafts can help Brand, Web Design and CRM start faster, but only a real final response file with `reviewMode=no_live_review` can move into intake/reconciliation.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -774,7 +795,7 @@ The goal is not complete until all gates below are proven with current evidence:
 
 ## Next best step
 
-Run the no-live department reviews using `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`, then collect final responses through the response workspace at `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md`. Departments can draft in the `.pending.json` files, but the intake/reconciliation step should use only the final `brand_response.json`, `web_design_response.json` and `crm_response.json` files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
+Run the no-live department reviews using `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`, use the draft assist only as a starting point if useful, then collect final responses through the response workspace at `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md`. Departments can draft in the `.pending.json` files or from the `.codex_draft.json` assist files, but the intake/reconciliation step should use only the final `brand_response.json`, `web_design_response.json` and `crm_response.json` files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
 
 Scope:
 
