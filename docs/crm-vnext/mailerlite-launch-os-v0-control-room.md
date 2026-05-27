@@ -55,6 +55,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.json`
 
 ## Brújula pilot status
 
@@ -341,6 +343,27 @@ Result:
 
 This closes the most important data-design gap in the mini-launch rehearsal: future launches can now produce learnable CRM signals without pretending every operational event is interest, warmth, or permission to contact.
 
+## Mini-launch seed-test QA packet status
+
+Status: seed-test QA packet ready, no live changes.
+
+Evidence:
+
+- Seed-test QA report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.spec.ts`
+
+Result:
+
+- Separates three rehearsal modes: asset-only seed preview, receipt seed test, and CRM signal dry-run.
+- Confirms local asset drafting is ready, but seed email send, receipt seed test and audience launch are all closed.
+- Requires Brand-approved copy and Email Style QA before any seed send.
+- Requires a launch-specific fresh MailerLite group dry-run before creating or using `CC · Source · Quiz · Inteligencia para descansar` and `CC · Delivered · Quiz result · Inteligencia para descansar`.
+- Requires exact future approval for seed email, seed subscriber, receipt group assignment, Signal Event Ledger append, or audience launch.
+- No MailerLite/Shopify/CRM live API calls, subscribers, groups, workflows, forms, sends, ledger append, card writes, scoring, Fact Store writes, or outbound actions were performed.
+
+This packet is the practical rehearsal guard: it lets Mantis prepare a test without accidentally turning a test into public launch, onboarding routing, or audience delivery.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -370,6 +393,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Mini-Launch OS v0 full packet generated and tested: done.
    - Concrete no-live rehearsal packet generated and tested: done.
    - Concrete mini-launch CRM event contract generated and tested: done.
+   - Seed-test QA packet generated and tested: done.
 
 5. Brand and CRM handoff clear.
    - Brand knows what to review creatively.
@@ -378,7 +402,7 @@ The goal is not complete until all gates below are proven with current evidence:
 
 ## Next best step
 
-Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with the next non-live production prep from the rehearsal: polished Brand copy, Shopify/Web preview handoff, MailerLite dry-run packet, or a seed-test QA packet.
+Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with the next non-live production prep from the rehearsal: polished Brand/email asset packet, Shopify/Web preview handoff, or MailerLite group dry-run packet for the `Inteligencia para descansar` candidate groups.
 
 Scope:
 
@@ -399,4 +423,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, and CRM event contract are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live asset/spec pass that turns the rehearsal into draft copy, Shopify handoff, MailerLite dry-run plan, and seed-test QA checklist.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, and seed-test QA packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live Brand/email asset packet for `Inteligencia para descansar` that can later feed Shopify/Web and a launch-specific MailerLite dry-run.

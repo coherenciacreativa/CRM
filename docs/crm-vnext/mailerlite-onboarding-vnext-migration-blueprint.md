@@ -553,6 +553,32 @@ Result:
 
 This gives future mini-launches a disciplined data spine: each launch can generate learnable CRM events while the active onboarding remains protected and the CRM avoids treating every operational marker as human interest.
 
+## Mini-launch seed-test QA checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs
+```
+
+Result:
+
+- Status: `seed_test_qa_packet_ready_no_live_changes`.
+- The `Inteligencia para descansar` mini-launch now has a local QA/seed-test packet.
+- It separates asset-only seed preview, receipt seed test, and CRM signal dry-run.
+- Local asset drafting is ready, but asset seed send, receipt seed test, audience launch, ledger append, and any live route are closed.
+- A seed test needs Brand-approved copy, Email Style QA, exact seed email/scope approval, and MailerLite asset/draft readiness.
+- A receipt seed test additionally needs a fresh launch-specific group dry-run and later approval before creating or using `CC · Source · Quiz · Inteligencia para descansar` / `CC · Delivered · Quiz result · Inteligencia para descansar`.
+- No MailerLite API calls, Shopify API calls, subscribers, groups, workflows, forms, sends, Signal Event Ledger append, CRM card/scoring mutation, Fact Store write, or outbound action was performed.
+
+This checkpoint protects the mini-launch rehearsal from operational drift: a creative/rendering test, a receipt test, and a public launch are now visibly different gates.
+
 ## Planner dry-run requirements
 
 Proposed script:
