@@ -750,6 +750,30 @@ Result:
 
 This checkpoint makes the future launch machine governable. Mini-launch speed can increase only after the system proves clean reviews, seed tests, learning loops and protected onboarding behavior.
 
+## Mini-launch department review dispatch checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_dispatch_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-dispatch.mjs
+```
+
+Result:
+
+- The `Inteligencia para descansar` pilot now has precise no-live review requests for Brand, Web Design and CRM.
+- Brand is asked to review the four-email sequence and decide group candidate semantics before the next dry-run.
+- Web Design is asked to review the Shopify-native handoff and identify what would be needed before any scoped local build, preview or form connection.
+- CRM is asked to review signal boundaries so operational receipts do not become unearned interest, warmth, scoring or onboarding routing.
+- The packet does not send messages, call APIs, edit Shopify, create MailerLite groups, build assets, send emails, append ledgers, write cards, score people, touch Fact Store or route onboarding.
+
+This checkpoint turns cross-department coordination into a clean review queue. It moves the system toward agency-like operation while keeping every live gate closed.
+
 ## Planner dry-run requirements
 
 Proposed script:

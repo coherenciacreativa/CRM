@@ -71,6 +71,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_dispatch_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_dispatch_inteligencia_descansar_2026-05-27.json`
 
 ## Brújula pilot status
 
@@ -521,6 +523,26 @@ Result:
 
 This is the operating cadence for the future mini-launch machine. It prevents speed from becoming drift: the agency can increase frequency only after the review, seed-test and learning loops are proven.
 
+## Mini-launch department review dispatch status
+
+Status: department review dispatch ready, no live changes.
+
+Evidence:
+
+- Department review dispatch report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_dispatch_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-dispatch.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-dispatch.spec.ts`
+
+Result:
+
+- Converts the current readiness/cadence evidence into three precise no-live review requests: Brand, Web Design and CRM.
+- Brand review asks for voice/copy review, public/internal separation, email-style gaps and semantic decisions for `CC · Source · Quiz · Inteligencia para descansar` and `CC · Delivered · Quiz result · Inteligencia para descansar`.
+- Web Design review asks whether the Shopify handoff is enough for a native local draft, and what mobile/UX/form/CTA corrections are needed before any scoped build.
+- CRM review asks which events remain store-only, which could later become projected signals, and how to keep receipts from becoming unearned relationship meaning.
+- The packet explicitly does not send messages, create groups, edit Shopify, build MailerLite assets, send seed tests, append ledgers, write cards, change scoring, touch Fact Store or route onboarding.
+
+This checkpoint turns the next reviews into executable prompts without turning any review into approval. It is the safest way to coordinate the agency lanes before any live-adjacent step.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -558,16 +580,17 @@ The goal is not complete until all gates below are proven with current evidence:
    - Brand knows what to review creatively.
    - CRM knows what to read as signal/receipt.
    - Mantis can operate from these docs without inventing group meanings.
+   - Department review dispatch generated and tested: done.
 
 ## Next best step
 
-Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or route the `Inteligencia para descansar` Brand candidate review packet to Brand for a semantic no-live decision. If Brand accepts the two rows only as `candidate`, rerun the launch group dry-run; if Brand renames or rejects them, regenerate the dry-run from the new names or keep the launch CRM-first.
+Run the no-live department reviews from `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_dispatch_inteligencia_descansar_2026-05-27.md`. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. If Brand accepts the two rows only as `candidate`, rerun the launch group dry-run; if Brand renames or rejects them, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
 
 Scope:
 
 - Treat current `Onboarding flow` as production v1 and leave it live.
 - If Alejandro approves the exact phrase, run the guarded runner in execute mode and then update Brand dictionary live IDs.
-- If not, continue non-live preparation from the rehearsal: Brand candidate review, Shopify/Web preview handoff, CRM signal schema, or disabled MailerLite asset planning.
+- If not, continue non-live preparation from the dispatch packet: Brand review, Web Design review, CRM signal review, then rerun the launch group dry-run after Brand decisions.
 - Produce Markdown + JSON reports in `~/Documents/Mantis-Reports`.
 
 Non-goals:
@@ -582,4 +605,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, and readiness board are now documented. The next useful moves are Brand's no-live review of the sequence/candidate groups, Web Design's no-live review of the Shopify handoff, or exact approval for the 12 empty onboarding groups if Alejandro wants to move that separate lane forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board and department review dispatch are now documented. The next useful move is to run the no-live department reviews from the dispatch packet. After Brand returns semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
