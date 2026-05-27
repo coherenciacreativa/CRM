@@ -702,6 +702,30 @@ Result:
 
 This checkpoint gives Web Design a precise next action while preserving the production onboarding and avoiding accidental Shopify or MailerLite live changes.
 
+## Mini-launch readiness board checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-readiness-board.mjs
+```
+
+Result:
+
+- The `Inteligencia para descansar` mini-launch now has a consolidated operator board.
+- The board reads all current packets and reports one overall state: `ready_for_department_reviews_not_ready_for_live_operation`.
+- Open work is no-live only: Brand review of copy/sequence/group semantics and Web Design review of the Shopify handoff.
+- All live mutation gates remain closed: Shopify preview/publish, form connection, MailerLite group creation, asset build, seed send, receipt seed test, workflow use, onboarding handoff, audience launch, CRM writes, scoring, Signal Event Ledger and Fact Store.
+- Department queues make ownership explicit for Brand, Web Design, CRM, MailerLite and Alejandro.
+
+This checkpoint turns the growing set of packets into an operating map, which matters because the next failure mode is not lack of artifacts; it is an operator accidentally treating a review packet as live authorization.
+
 ## Planner dry-run requirements
 
 Proposed script:

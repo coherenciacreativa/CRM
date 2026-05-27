@@ -466,6 +466,26 @@ Result:
 
 This closes the no-live web routing gap: the mini-launch now has a concrete path toward the real website without falling back to loose HTML or silently touching Shopify.
 
+## Mini-launch readiness board status
+
+Status: consolidated operator board ready, no live changes.
+
+Evidence:
+
+- Readiness board report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-readiness-board.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-readiness-board.spec.ts`
+
+Result:
+
+- Consolidates onboarding protection, concept rehearsal, CRM event contract, Brand Email 1, full email sequence, Shopify/Web handoff, Brand candidate groups, MailerLite group dry-run and seed-test QA into one board.
+- Declares the current overall state: `ready_for_department_reviews_not_ready_for_live_operation`.
+- Opens only no-live review lanes: Brand review and Web Design review.
+- Keeps all live mutation gates closed: Shopify preview/publish, form connection, MailerLite group creation, asset build, seed send, receipt seed test, workflow use, onboarding handoff, audience launch, CRM writes, scoring, Signal Event Ledger and Fact Store.
+- Gives department queues for Brand, Web Design, CRM, MailerLite and Alejandro so operators do not confuse review with approval.
+
+This is the operating map for the current mini-launch rehearsal. It lowers coordination risk before any future approval or live-adjacent step.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -525,4 +545,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, and Shopify/Web handoff packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, Brand's no-live semantic decision on the two `Inteligencia para descansar` group candidates, or Web Design review/build of the Shopify handoff with explicit scope.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, and readiness board are now documented. The next useful moves are Brand's no-live review of the sequence/candidate groups, Web Design's no-live review of the Shopify handoff, or exact approval for the 12 empty onboarding groups if Alejandro wants to move that separate lane forward.
