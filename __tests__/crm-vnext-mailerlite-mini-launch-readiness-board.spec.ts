@@ -176,6 +176,31 @@ const emailStyleQaPacket = {
   },
 };
 
+const localEmailAssetPlan = {
+  ok: true,
+  status: "mini_launch_local_email_asset_plan_ready_no_live_changes",
+  launch,
+  executiveSummary: {
+    assetCount: 4,
+    styleQaStatus: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
+    styleQaHardBlockerCount: 0,
+    styleQaYellowCheckCount: 4,
+    readyForLocalAssetPlanNow: true,
+    readyForExactAssetBuildScopeRequestNow: true,
+    readyForMailerLiteAssetBuildNow: false,
+    readyForSeedSendNow: false,
+    placeholderCount: 4,
+  },
+  approvalBoundary: {
+    readyForExactAssetBuildScopeRequestNow: true,
+    readyForMailerLiteAssetBuildNow: false,
+    readyForSeedSendNow: false,
+    canCreateOrEditMailerLiteAssetsNow: false,
+    canAssignSubscribersNow: false,
+    canAttachWorkflowNow: false,
+  },
+};
+
 const shopifyHandoffPacket = {
   ok: true,
   status: "shopify_handoff_packet_ready_for_web_design_review_no_live_changes",
@@ -243,6 +268,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(parsed.rehearsalPacket).toContain("mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailSequencePacket).toContain("mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.localEmailAssetPlan).toContain("mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json");
     expect(parsed.shopifyHandoffPacket).toContain("mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.crmSignalProjectionPacket).toContain("mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emptyGroupCreationPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
@@ -316,6 +342,30 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     });
     expect(byId.get("email_sequence")?.nextAction).toContain("do not build in MailerLite or send");
     expect(byId.get("email_sequence")?.liveActionsClosed).toContain("mailerLite_asset_build");
+  });
+
+  test("moves the email sequence lane from QA to local asset-plan boundary", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      emailStyleQaPacket,
+      localEmailAssetPlan,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("email_sequence")).toMatchObject({
+      sourceStatus: "mini_launch_local_email_asset_plan_ready_no_live_changes",
+      readyNow: true,
+      readiness: {
+        readyForLocalAssetPlanNow: true,
+        readyForExactAssetBuildScopeRequestNow: true,
+        readyForMailerLiteAssetBuildNow: false,
+        readyForSeedSendNow: false,
+        assetCount: 4,
+        placeholderCount: 4,
+        canCreateOrEditMailerLiteAssetsNow: false,
+      },
+    });
+    expect(byId.get("email_sequence")?.nextAction).toContain("do not build assets");
   });
 
   test("marks empty group approval packet ready only as a human boundary", () => {

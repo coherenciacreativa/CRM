@@ -27,6 +27,7 @@ const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/M
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -63,6 +64,7 @@ Options:
   --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
   --mini-launch-email-style-qa-packet <path> Mini-launch Email Style QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET}
+  --mini-launch-local-email-asset-plan <path> Mini-launch local email asset plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -104,6 +106,7 @@ const parseArgs = (argv) => {
     onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
     miniLaunchEmailStyleQaPacket: DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET,
+    miniLaunchLocalEmailAssetPlan: DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -143,6 +146,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
     else if (arg === '--mini-launch-email-style-qa-packet') options.miniLaunchEmailStyleQaPacket = argv[++index];
+    else if (arg === '--mini-launch-local-email-asset-plan') options.miniLaunchLocalEmailAssetPlan = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -201,6 +205,7 @@ const loadSources = async (options) => {
     ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
     ['miniLaunchEmptyGroupCreateDryRun', options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty group create runner dry-run with zero mutations', 'json', true],
     ['miniLaunchEmailStyleQaPacket', options.miniLaunchEmailStyleQaPacket, 'mini-launch Email Style QA readiness for local asset planning with live gates closed', 'json', true],
+    ['miniLaunchLocalEmailAssetPlan', options.miniLaunchLocalEmailAssetPlan, 'mini-launch local email asset plan with inert placeholders and build/send gates closed', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -270,6 +275,7 @@ const buildRequirementChecks = ({
   onboardingHandoffPolicy,
   miniLaunchEmptyGroupCreateDryRun,
   miniLaunchEmailStyleQaPacket,
+  miniLaunchLocalEmailAssetPlan,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -402,6 +408,35 @@ const buildRequirementChecks = ({
   const miniLaunchEmailStyleQaYellowCheckCount = miniLaunchEmailStyleQaPacket?.executiveSummary?.yellowCheckCount
     ?? emailSequenceLane?.readiness?.yellowCheckCount
     ?? runbook?.currentState?.miniLaunch?.emailStyleQaYellowCheckCount
+    ?? null;
+  const miniLaunchLocalEmailAssetPlanStatus = miniLaunchLocalEmailAssetPlan?.status
+    ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanStatus
+    ?? (emailSequenceLane?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes'
+      ? emailSequenceLane.sourceStatus
+      : null);
+  const miniLaunchLocalEmailAssetPlanReady = miniLaunchLocalEmailAssetPlanStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes'
+    && (miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForExactAssetBuildScopeRequestNow
+      ?? emailSequenceLane?.readiness?.readyForExactAssetBuildScopeRequestNow
+      ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForExactBuildScopeRequest
+      ?? false) === true
+    && (miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForMailerLiteAssetBuildNow
+      ?? emailSequenceLane?.readiness?.readyForMailerLiteAssetBuildNow
+      ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForMailerLiteBuild
+      ?? false) === false
+    && (miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForSeedSendNow
+      ?? emailSequenceLane?.readiness?.readyForSeedSendNow
+      ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForSeedSend
+      ?? false) === false
+    && (miniLaunchLocalEmailAssetPlan?.safety?.mailerLiteApiCalled ?? false) === false
+    && (miniLaunchLocalEmailAssetPlan?.safety?.sendsPerformed ?? false) === false
+    && (miniLaunchLocalEmailAssetPlan?.safety?.crmLiveApiCalled ?? false) === false;
+  const miniLaunchLocalEmailAssetPlanAssetCount = miniLaunchLocalEmailAssetPlan?.executiveSummary?.assetCount
+    ?? emailSequenceLane?.readiness?.assetCount
+    ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanAssetCount
+    ?? null;
+  const miniLaunchLocalEmailAssetPlanPlaceholderCount = miniLaunchLocalEmailAssetPlan?.executiveSummary?.placeholderCount
+    ?? emailSequenceLane?.readiness?.placeholderCount
+    ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanPlaceholderCount
     ?? null;
   const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
     ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
@@ -631,6 +666,12 @@ const buildRequirementChecks = ({
         `miniLaunchEmailStyleQaReadyForSeedSend=${miniLaunchEmailStyleQaPacket?.approvalGate?.readyForSeedSendNow ?? emailSequenceLane?.readiness?.readyForSeedSendNow ?? runbook?.currentState?.miniLaunch?.emailStyleQaReadyForSeedSend ?? 'unknown'}`,
         `miniLaunchEmailStyleQaHardBlockerCount=${miniLaunchEmailStyleQaHardBlockerCount ?? 'unknown'}`,
         `miniLaunchEmailStyleQaYellowCheckCount=${miniLaunchEmailStyleQaYellowCheckCount ?? 'unknown'}`,
+        `miniLaunchLocalEmailAssetPlanStatus=${miniLaunchLocalEmailAssetPlanStatus ?? 'missing'}`,
+        `miniLaunchLocalEmailAssetPlanReady=${miniLaunchLocalEmailAssetPlanReady}`,
+        `miniLaunchLocalEmailAssetPlanAssetCount=${miniLaunchLocalEmailAssetPlanAssetCount ?? 'unknown'}`,
+        `miniLaunchLocalEmailAssetPlanPlaceholderCount=${miniLaunchLocalEmailAssetPlanPlaceholderCount ?? 'unknown'}`,
+        `miniLaunchLocalEmailAssetPlanReadyForMailerLiteBuild=${miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForMailerLiteAssetBuildNow ?? emailSequenceLane?.readiness?.readyForMailerLiteAssetBuildNow ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForMailerLiteBuild ?? 'unknown'}`,
+        `miniLaunchLocalEmailAssetPlanReadyForSeedSend=${miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForSeedSendNow ?? emailSequenceLane?.readiness?.readyForSeedSendNow ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForSeedSend ?? 'unknown'}`,
       ],
       remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
         ? [
@@ -638,7 +679,9 @@ const buildRequirementChecks = ({
             ? 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite creation is authorized yet.'
             : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
           miniLaunchEmailStyleQaReadyForLocalAssetPlan
-            ? 'Email Style QA is ready for local asset planning only; MailerLite asset build and seed send remain closed.'
+            ? miniLaunchLocalEmailAssetPlanReady
+              ? 'Local email asset plan is ready for exact MailerLite asset-build scope request only; MailerLite asset build and seed send remain closed.'
+              : 'Email Style QA is ready for local asset planning only; MailerLite asset build and seed send remain closed.'
             : 'Email Style QA must be generated before local asset planning becomes a reliable next step.',
           'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
         ]
@@ -834,12 +877,18 @@ const buildGoalAudit = ({
   const emptyGroupCreateDryRunReady = values.readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_create_dry_run')?.readyNow === true
     || values.miniLaunchEmptyGroupCreateDryRun?.status === 'dry_run_ready_for_exact_approval'
     || values.runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunStatus === 'dry_run_ready_for_exact_approval';
+  const localEmailAssetPlanReady = values.miniLaunchLocalEmailAssetPlan?.status === 'mini_launch_local_email_asset_plan_ready_no_live_changes'
+    || values.runbook?.currentState?.miniLaunch?.localEmailAssetPlanReady === true
+    || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes';
+  const localEmailAssetPlanMove = localEmailAssetPlanReady
+    ? 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
+    : 'Use Email Style QA to generate the local email asset plan before requesting exact MailerLite asset-build scope; builder execution remains closed.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunReady
-      ? 'The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.'
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? 'The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. Live actions remain closed.'
-      : 'Continue with the next no-live moves unlocked by department reconciliation: represent Brand-accepted launch group candidates locally, rerun the launch group dry-run, prepare the exact empty-group approval packet, prepare a scoped Shopify local-build request, and prepare a CRM signal projection packet. Live actions remain closed.'
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${localEmailAssetPlanMove} Prepare the exact empty-group approval packet, scoped Shopify local-build request, and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunReady
@@ -847,18 +896,19 @@ const buildGoalAudit = ({
         'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
         'Hold at the mini-launch empty-group create runner dry-run; it is green but not execution approval.',
         'Do not run --execute unless Alejandro gives the exact approval phrase for the two named empty groups.',
+        localEmailAssetPlanMove,
         'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
       ]
       : emptyGroupApprovalPacketReady
       ? [
         'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
         'Run the mini-launch empty-group create runner in dry-run mode only; it is not execution approval and still requires Alejandro exact phrase before --execute.',
+        localEmailAssetPlanMove,
         'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
       ]
       : [
       'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
-      'Represent the Brand-accepted Source/Delivered launch candidates in the local/canonical planning surface before rerunning the group dry-run.',
-      'Rerun the launch group dry-run; keep group creation behind a later exact approval packet.',
+      localEmailAssetPlanMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
       'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
       'Prepare a no-live CRM signal projection packet from the CRM response; do not append ledgers, write cards, score, or touch Fact Store.',
@@ -891,7 +941,7 @@ const buildGoalAudit = ({
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so the welcome/orientation email is tracked as journey_welcome_sent, not as a content Sent receipt.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
-      'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
+      localEmailAssetPlanMove,
       'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',
       'If the mini-launch create runner dry-run is green, stop before --execute until Alejandro gives the exact approval phrase.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',

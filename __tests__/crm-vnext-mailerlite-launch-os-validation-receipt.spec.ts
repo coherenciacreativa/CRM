@@ -41,6 +41,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
     "crm:vnext:mailerlite-onboarding-trunk-map": "node scripts/trunk-map.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-response-watcher": "node scripts/response-watcher.mjs",
+    "crm:vnext:mailerlite-mini-launch-local-email-asset-plan": "node scripts/local-email-asset-plan.mjs",
   },
 };
 
