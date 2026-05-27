@@ -228,11 +228,30 @@ Result:
 
 - Status: `ready_for_human_decision_or_non_live_continuation`.
 - Ready for exact human approval: `create_empty_onboarding_v2_groups`.
-- Safe to continue without live approval: `non_live_mini_launch_rehearsal` and `brand_first_email_content_mapping`.
+- Safe to continue without live approval: `non_live_mini_launch_rehearsal`.
+- First email mapping: closed as `mapped_as_welcome_only_no_sent_receipt`.
 - Draft workflow, seed test and production entry switch remain blocked behind separate future approvals.
 - The packet explicitly preserves v1, keeps `Onboarding complete` as the current practical audience until migration, and keeps mini-launch `Experiment` identity CRM-first unless MailerLite needs routing/dedupe/exclusion.
 
 This packet is the current board map for the Onboarding v2 lane. It prevents the operator from confusing "ready to create empty groups if approved" with "ready to use those groups in workflows."
+
+## Onboarding v2 first email mapping status
+
+Status: Email 1 mapped as welcome/orientation only, with no canonical `Sent` receipt.
+
+Evidence:
+
+- Mapping report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_mapping_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-onboarding-v2-first-email-map.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-onboarding-v2-first-email-map.spec.ts`
+
+Decision:
+
+- Email 1 subject: `{$name}, Tu primera nota de mi parte ✍🏻`.
+- Recommended posture: `welcome_orientation_no_sent_receipt`.
+- Do not create a `CC · Sent · Article · ...` group for this email in v2.
+- If CRM needs observability, use a journey event such as `journey_welcome_sent`, not a content receipt.
+- Brand may promote this note into a reusable article later, but that requires a separate content_id and receipt packet.
 
 ## Mini-launch OS v0 status
 

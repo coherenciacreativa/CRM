@@ -399,7 +399,7 @@ Guardrails:
 - It does not send emails.
 - It does not touch Onboarding v1.
 
-Next safe step: either pause for Alejandro's explicit approval phrase to create only those 12 empty groups, or continue with non-live work: Brand mapping for the first onboarding email, CRM event contract for v2, or a no-live mini-launch rehearsal using the full Mini-Launch OS v0 packet.
+Next safe step: either pause for Alejandro's explicit approval phrase to create only those 12 empty groups, or continue with non-live work: CRM event contract for v2, or a no-live mini-launch rehearsal using the full Mini-Launch OS v0 packet.
 
 ## Onboarding v2 execution packet checkpoint - 2026-05-27
 
@@ -420,10 +420,33 @@ Result:
 - Status: `ready_for_human_decision_or_non_live_continuation`.
 - Current best path: keep v1 live, create only missing v2 groups if Alejandro approves, then build a disabled v2 draft and seed-test before any production switch.
 - Ready for exact human approval: create the 12 named empty Onboarding v2 groups only.
-- Safe non-live continuation: Brand first-email content mapping and a concrete mini-launch rehearsal packet.
+- Safe non-live continuation: a concrete mini-launch rehearsal packet.
+- First email mapping: closed as welcome/orientation only, with no canonical `Sent` receipt.
 - Still blocked: disabled v2 draft creation/cloning, seed subscriber test, production entry switch, any v1 edit, any audience send.
 
 This packet is now the operational decision queue. It should be consulted before the next Onboarding v2 move so that group creation, workflow use, seed testing, and production routing remain separate gates.
+
+## First onboarding email mapping checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_mapping_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-onboarding-v2-first-email-map.mjs
+```
+
+Result:
+
+- Email 1 is treated as welcome/orientation inside the editorial journey.
+- Do not create a new `Sent` group or `content_id` for it in Onboarding v2.
+- Do not infer canonical content from the historical `Se le envió el primer boletín` group.
+- If observability is needed, CRM can use a journey signal such as `journey_welcome_sent`; that is not a content receipt.
+- Brand can later promote this note into a reusable article, but only through a separate Brand/CRM content_id packet.
 
 ## Mini-launch path checkpoint - 2026-05-27
 

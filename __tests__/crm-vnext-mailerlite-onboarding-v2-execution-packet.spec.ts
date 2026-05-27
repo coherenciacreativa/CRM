@@ -72,6 +72,15 @@ const miniLaunchPacket = {
   defaultEmailSequence: [{ step: 1 }, { step: 2 }, { step: 3 }, { step: 4 }],
 };
 
+const firstEmailMapping = {
+  status: "first_email_mapping_ready_no_sent_receipt",
+  decision: {
+    recommendedPosture: "welcome_orientation_no_sent_receipt",
+    recommendedContentId: null,
+    recommendedMailerLiteSentGroup: null,
+  },
+};
+
 describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
   test("uses current report paths by default", () => {
     const options = parseArgs([]);
@@ -80,6 +89,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
     expect(options.emptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(options.emptyGroupsCreateRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
     expect(options.miniLaunchPacket).toContain("mailerlite_mini_launch_os_v0_packet_2026-05-27.json");
+    expect(options.firstEmailMapping).toContain("mailerlite_onboarding_v2_first_email_mapping_2026-05-27.json");
   });
 
   test("only treats empty group targets as safe when workflow and subscriber use remain closed", () => {
@@ -114,6 +124,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       emptyGroupsPacket,
       emptyGroupsCreateRun,
       miniLaunchPacket,
+      firstEmailMapping,
     });
 
     expect(gateQueue.find((gate) => gate.id === "build_or_clone_disabled_onboarding_v2_draft")).toMatchObject({
@@ -127,6 +138,11 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       allowedWithoutHumanApproval: true,
       liveMutationIfApproved: false,
     });
+    expect(gateQueue.find((gate) => gate.id === "brand_first_email_content_mapping")).toMatchObject({
+      status: "mapped_as_welcome_only_no_sent_receipt",
+      allowedWithoutHumanApproval: false,
+      liveMutationIfApproved: false,
+    });
   });
 
   test("builds next autonomous moves without treating live changes as autonomous", () => {
@@ -135,6 +151,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       emptyGroupsPacket,
       emptyGroupsCreateRun,
       miniLaunchPacket,
+      firstEmailMapping,
     });
     const moves = buildNextAutonomousMoves(gateQueue);
 
@@ -148,12 +165,14 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
       emptyGroupsPacket,
       emptyGroupsCreateRun,
       miniLaunchPacket,
+      firstEmailMapping,
       blueprintText: "blueprint",
       sourcePaths: {
         designPacket: "/tmp/design.json",
         emptyGroupsPacket: "/tmp/empty-packet.json",
         emptyGroupsCreateRun: "/tmp/create-run.json",
         miniLaunchPacket: "/tmp/mini.json",
+        firstEmailMapping: "/tmp/first-email.json",
         blueprint: "/tmp/blueprint.md",
       },
       generatedAt: "2026-05-27T00:00:00.000Z",
@@ -164,6 +183,7 @@ describe("CRM vNext MailerLite onboarding v2 execution packet", () => {
     expect(packet.executiveDecision.humanApprovalRequiredFor).toContain("touching Onboarding v1");
     expect(markdown).toContain("Onboarding flow v1 stays live and untouched");
     expect(markdown).toContain("Do not infer Sobre el amor from Received second email.");
+    expect(markdown).toContain("First email mapping: first_email_mapping_ready_no_sent_receipt; posture=welcome_orientation_no_sent_receipt");
     expect(markdown).toContain("Sin grupos/workflows/automations/envios.");
   });
 });

@@ -8,6 +8,7 @@ const DEFAULT_DESIGN_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
 const DEFAULT_EMPTY_GROUPS_CREATE_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_os_v0_packet_2026-05-27.json';
+const DEFAULT_FIRST_EMAIL_MAPPING = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_mapping_2026-05-27.json';
 const DEFAULT_BLUEPRINT = 'docs/crm-vnext/mailerlite-onboarding-vnext-migration-blueprint.md';
 
 const usage = `Usage:
@@ -18,6 +19,7 @@ Options:
   --empty-groups-packet <path>      Onboarding v2 empty-groups dry-run JSON. Defaults to ${DEFAULT_EMPTY_GROUPS_PACKET}
   --empty-groups-create-run <path>  Empty-groups create runner dry-run JSON. Defaults to ${DEFAULT_EMPTY_GROUPS_CREATE_RUN}
   --mini-launch-packet <path>       Mini-Launch OS v0 JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PACKET}
+  --first-email-mapping <path>      First email Brand/CRM mapping JSON. Defaults to ${DEFAULT_FIRST_EMAIL_MAPPING}
   --blueprint <path>                Onboarding migration blueprint. Defaults to ${DEFAULT_BLUEPRINT}
   --out <path>                      Write JSON packet
   --markdown-out <path>             Write Markdown packet
@@ -41,6 +43,7 @@ const parseArgs = (argv) => {
     emptyGroupsPacket: DEFAULT_EMPTY_GROUPS_PACKET,
     emptyGroupsCreateRun: DEFAULT_EMPTY_GROUPS_CREATE_RUN,
     miniLaunchPacket: DEFAULT_MINI_LAUNCH_PACKET,
+    firstEmailMapping: DEFAULT_FIRST_EMAIL_MAPPING,
     blueprint: DEFAULT_BLUEPRINT,
     out: null,
     markdownOut: null,
@@ -54,6 +57,7 @@ const parseArgs = (argv) => {
     else if (arg === '--empty-groups-packet') options.emptyGroupsPacket = argv[++index];
     else if (arg === '--empty-groups-create-run') options.emptyGroupsCreateRun = argv[++index];
     else if (arg === '--mini-launch-packet') options.miniLaunchPacket = argv[++index];
+    else if (arg === '--first-email-mapping') options.firstEmailMapping = argv[++index];
     else if (arg === '--blueprint') options.blueprint = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -64,6 +68,16 @@ const parseArgs = (argv) => {
 };
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
+
+const readOptionalJson = async (path) => {
+  if (!path) return null;
+  try {
+    return JSON.parse(await readFile(resolve(path), 'utf8'));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+};
 
 const targetIsSafeEmptyCreate = (target) =>
   Boolean(target?.canCreateEmptyAfterExplicitApproval)
@@ -111,11 +125,25 @@ const buildCreateEmptyGroupsGate = ({ emptyGroupsPacket, emptyGroupsCreateRun })
   };
 };
 
-const buildGateQueue = ({ designPacket, emptyGroupsPacket, emptyGroupsCreateRun, miniLaunchPacket }) => {
+const firstEmailMappedAsWelcomeOnly = (firstEmailMapping) =>
+  firstEmailMapping?.status === 'first_email_mapping_ready_no_sent_receipt'
+  && firstEmailMapping?.decision?.recommendedPosture === 'welcome_orientation_no_sent_receipt'
+  && firstEmailMapping?.decision?.recommendedContentId === null
+  && firstEmailMapping?.decision?.recommendedMailerLiteSentGroup === null;
+
+const buildGateQueue = ({
+  designPacket,
+  emptyGroupsPacket,
+  emptyGroupsCreateRun,
+  miniLaunchPacket,
+  firstEmailMapping,
+}) => {
   const createEmptyGroups = buildCreateEmptyGroupsGate({ emptyGroupsPacket, emptyGroupsCreateRun });
   const v2Draft = emptyGroupsPacket?.sourceEvidence?.onboardingV2Draft ?? null;
   const v2DraftExists = v2Draft && v2Draft.found !== false;
   const v1 = emptyGroupsPacket?.sourceEvidence?.onboardingV1 ?? {};
+  const needsBrandMappingCount = designPacket?.brandHandoff?.needsBrandMapping?.length ?? 0;
+  const email1MappedWelcomeOnly = firstEmailMappedAsWelcomeOnly(firstEmailMapping);
 
   return [
     createEmptyGroups,
@@ -187,16 +215,22 @@ const buildGateQueue = ({ designPacket, emptyGroupsPacket, emptyGroupsCreateRun,
     {
       id: 'brand_first_email_content_mapping',
       lane: 'Brand Hub / Email canon',
-      status: designPacket?.brandHandoff?.needsBrandMapping?.length
+      status: email1MappedWelcomeOnly
+        ? 'mapped_as_welcome_only_no_sent_receipt'
+        : needsBrandMappingCount
         ? 'ready_for_brand_review_no_live_change'
         : 'not_needed_or_already_mapped',
       readyForHumanApproval: false,
-      allowedWithoutHumanApproval: true,
+      allowedWithoutHumanApproval: !email1MappedWelcomeOnly && needsBrandMappingCount > 0,
       liveMutationIfApproved: false,
       evidence: [
-        `needsBrandMapping=${designPacket?.brandHandoff?.needsBrandMapping?.length ?? 0}`,
+        `needsBrandMapping=${needsBrandMappingCount}`,
+        `firstEmailMapping.status=${firstEmailMapping?.status ?? 'missing'}`,
+        `firstEmailMapping.recommendedPosture=${firstEmailMapping?.decision?.recommendedPosture ?? 'missing'}`,
       ],
-      outputIfRun: 'A Brand/CRM note deciding whether Email 1 is welcome-only or receives a canonical content_id later.',
+      outputIfRun: email1MappedWelcomeOnly
+        ? 'No further mapping needed unless Brand later promotes Email 1 into a reusable article/content_id.'
+        : 'A Brand/CRM note deciding whether Email 1 is welcome-only or receives a canonical content_id later.',
     },
   ];
 };
@@ -257,6 +291,7 @@ const buildExecutionPacket = ({
   emptyGroupsPacket,
   emptyGroupsCreateRun,
   miniLaunchPacket,
+  firstEmailMapping,
   blueprintText,
   sourcePaths = {},
   generatedAt = new Date().toISOString(),
@@ -266,6 +301,7 @@ const buildExecutionPacket = ({
     emptyGroupsPacket,
     emptyGroupsCreateRun,
     miniLaunchPacket,
+    firstEmailMapping,
   });
   const createGate = gateQueue.find((gate) => gate.id === 'create_empty_onboarding_v2_groups');
   return {
@@ -305,6 +341,13 @@ const buildExecutionPacket = ({
         status: miniLaunchPacket?.status ?? null,
         launchTemplate: miniLaunchPacket?.launchTemplate ?? null,
       },
+      firstEmailMapping: {
+        path: sourcePaths.firstEmailMapping,
+        status: firstEmailMapping?.status ?? null,
+        recommendedPosture: firstEmailMapping?.decision?.recommendedPosture ?? null,
+        recommendedContentId: firstEmailMapping?.decision?.recommendedContentId ?? null,
+        recommendedMailerLiteSentGroup: firstEmailMapping?.decision?.recommendedMailerLiteSentGroup ?? null,
+      },
       blueprint: {
         path: sourcePaths.blueprint,
         present: Boolean(blueprintText),
@@ -313,7 +356,7 @@ const buildExecutionPacket = ({
     },
     executiveDecision: {
       currentBestPath: 'Keep v1 live, create only missing v2 groups if Alejandro approves, then build a disabled v2 draft and seed-test before any production switch.',
-      noApprovalDefault: 'Continue with non-live work: Brand first-email mapping and a concrete mini-launch rehearsal packet.',
+      noApprovalDefault: 'Continue with non-live work: concrete mini-launch rehearsal; Brand first-email mapping only if the mapping report is missing or stale.',
       humanApprovalRequiredFor: [
         'creating the 12 empty v2 groups',
         'creating or cloning a disabled v2 workflow',
@@ -389,6 +432,7 @@ const renderMarkdown = (packet) => {
     `- Onboarding v1: enabled=${packet.sourceEvidence.emptyGroupsPacket.onboardingV1?.enabled ?? 'unknown'} complete=${packet.sourceEvidence.emptyGroupsPacket.onboardingV1?.complete ?? 'unknown'} broken=${packet.sourceEvidence.emptyGroupsPacket.onboardingV1?.broken ?? 'unknown'}`,
     `- Onboarding v2 draft exists: ${packet.sourceEvidence.emptyGroupsPacket.onboardingV2Draft?.found === false ? 'false' : 'unknown_or_true'}`,
     `- Mini-Launch OS: ${packet.sourceEvidence.miniLaunchPacket.status}`,
+    `- First email mapping: ${packet.sourceEvidence.firstEmailMapping.status}; posture=${packet.sourceEvidence.firstEmailMapping.recommendedPosture}; sentGroup=${packet.sourceEvidence.firstEmailMapping.recommendedMailerLiteSentGroup ?? 'none'}`,
     `- Blueprint chars: ${packet.sourceEvidence.blueprint.chars}`,
     '',
     '## Gate Queue',
@@ -431,6 +475,7 @@ const renderMarkdown = (packet) => {
     `- ${packet.sourceEvidence.emptyGroupsPacket.path}`,
     `- ${packet.sourceEvidence.emptyGroupsCreateRun.path}`,
     `- ${packet.sourceEvidence.miniLaunchPacket.path}`,
+    `- ${packet.sourceEvidence.firstEmailMapping.path}`,
     `- ${packet.sourceEvidence.blueprint.path}`,
   ];
   return lines.join('\n');
@@ -449,11 +494,12 @@ const writeText = async (path, value) => {
 };
 
 const buildPacketFromFiles = async (options) => {
-  const [designPacket, emptyGroupsPacket, emptyGroupsCreateRun, miniLaunchPacket, blueprintText] = await Promise.all([
+  const [designPacket, emptyGroupsPacket, emptyGroupsCreateRun, miniLaunchPacket, firstEmailMapping, blueprintText] = await Promise.all([
     readJson(options.designPacket),
     readJson(options.emptyGroupsPacket),
     readJson(options.emptyGroupsCreateRun),
     readJson(options.miniLaunchPacket),
+    readOptionalJson(options.firstEmailMapping),
     readFile(resolve(options.blueprint), 'utf8'),
   ]);
 
@@ -462,12 +508,14 @@ const buildPacketFromFiles = async (options) => {
     emptyGroupsPacket,
     emptyGroupsCreateRun,
     miniLaunchPacket,
+    firstEmailMapping,
     blueprintText,
     sourcePaths: {
       designPacket: resolve(options.designPacket),
       emptyGroupsPacket: resolve(options.emptyGroupsPacket),
       emptyGroupsCreateRun: resolve(options.emptyGroupsCreateRun),
       miniLaunchPacket: resolve(options.miniLaunchPacket),
+      firstEmailMapping: resolve(options.firstEmailMapping),
       blueprint: resolve(options.blueprint),
     },
   });
