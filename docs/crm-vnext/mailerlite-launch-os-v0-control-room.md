@@ -43,6 +43,7 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_vnext_post_create_planner_verify_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.md`
@@ -189,6 +190,24 @@ Reason:
 - The inbox test proves delivery, not final brand quality.
 - Body readback still shows prototype traits: plain/default presentation, no verified visual signature in the readback, and default MailerLite footer/legal language.
 - Brand's email-style canon still needs to be applied before this can be considered agency-quality for public/audience use.
+
+QA packet:
+
+- Report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-brujula-email-style-qa-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-brujula-email-style-qa-packet.spec.ts`
+- Status: functional green, creative yellow, public use not ready.
+- Blockers before public use: typography alignment, signature identity, CTA style, footer/social area.
+- Safety: no MailerLite/Shopify/CRM live calls, no subscribers, no workflows, no sends.
+
+QA packet:
+
+- Report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.md`
+- Status: `brujula_email_style_qa_yellow_no_live_changes`
+- Functional lane: green/test delivery verified.
+- Creative lane: yellow; public use ready is false.
+- Concrete blockers: typography alignment, visual signature, CTA style, footer/legal/social review.
+- Hard boundary: the packet is only guidance/reporting; it does not edit MailerLite, send tests, publish, assign subscribers, or route anyone into onboarding.
 
 ## Onboarding v1 audit status
 
@@ -935,4 +954,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, Brújula email style QA packet, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. For Brújula specifically, use the email style QA packet as the correction checklist before any future test send or public use. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.

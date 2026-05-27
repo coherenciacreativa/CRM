@@ -22,6 +22,7 @@ const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
+const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const usage = `Usage:
@@ -46,6 +47,7 @@ Options:
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
+  --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
   --out <path>                       Write JSON runbook
   --markdown-out <path>              Write Markdown runbook
@@ -77,6 +79,7 @@ const parseArgs = (argv) => {
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
+    brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     packageJson: DEFAULT_PACKAGE_JSON,
     out: null,
     markdownOut: null,
@@ -104,6 +107,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
+    else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -135,6 +139,7 @@ const loadSourceDigests = async (options) => {
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
+    [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
     [options.packageJson, 'available local npm commands'],
   ];
 
@@ -194,6 +199,7 @@ const buildCurrentState = ({
   onboardingV2EventContract,
   brujulaPlan,
   brujulaApply,
+  brujulaEmailStyleQa,
 }) => {
   const assignedGroupNames = groupNamesFrom(brujulaApply?.assignedGroups);
   const brujulaReceiptsAssigned = assignedGroupNames.includes('CC · Source · Resource · Brújula')
@@ -220,6 +226,10 @@ const buildCurrentState = ({
       creativeStatus: brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence
         ? 'yellow_needs_brand_email_style_qa'
         : 'unknown_review_needed',
+      emailStyleQaStatus: brujulaEmailStyleQa?.status ?? null,
+      emailStyleQaFunctionalStatus: brujulaEmailStyleQa?.executiveSummary?.functionalStatus ?? null,
+      emailStyleQaBlockerCount: brujulaEmailStyleQa?.executiveSummary?.blockerCount ?? null,
+      emailStyleQaPublicUseReady: brujulaEmailStyleQa?.executiveSummary?.publicUseReady ?? false,
       publicUseReady: false,
     },
     onboarding: {
@@ -302,6 +312,7 @@ const buildReportMap = (sourceDigests) => {
     onboardingV2EventContract: findPath('mailerlite_onboarding_v2_event_contract_2026-05-27.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
+    brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
     packageJson: findPath('package.json'),
   };
 };
@@ -472,6 +483,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
       commands: [
         command('crm:vnext:mailerlite-brujula-test-lane-plan'),
         command('crm:vnext:mailerlite-brujula-test-lane-apply'),
+        command('crm:vnext:mailerlite-brujula-email-style-qa-packet'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['audience send', 'workflow activation', 'public launch', 'onboarding route'],
     },
@@ -494,6 +506,7 @@ const buildRunbook = ({
   onboardingV2EventContract,
   brujulaPlan,
   brujulaApply,
+  brujulaEmailStyleQa,
   packageJson,
   sourceDigests,
   generatedAt = new Date().toISOString(),
@@ -520,6 +533,7 @@ const buildRunbook = ({
       onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
+      brujulaEmailStyleQa,
       responseWorkspace,
     }),
     reportMap: buildReportMap(sourceDigests),
@@ -535,6 +549,7 @@ const buildRunbook = ({
       'Run finalization preflight before intake so pending files, Codex drafts and final response files cannot be confused.',
       'Use the operator queue to see each department message block, Codex draft, pending blockers and final response path in one place.',
       'Use the request bundle to route copy-ready department instructions without reconstructing context by hand.',
+      'Use the Brújula email style QA packet to keep functional delivery separate from public-ready creative quality.',
       'Use finalize-pending only after a department confirms a clean pending response is final; it writes local final response files only.',
       'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
@@ -575,6 +590,9 @@ const renderMarkdown = (runbook) => {
     '',
     `- Brújula functional: ${runbook.currentState.brujulaPilot.functionalStatus}`,
     `- Brújula creative: ${runbook.currentState.brujulaPilot.creativeStatus}`,
+    `- Brújula email style QA: ${runbook.currentState.brujulaPilot.emailStyleQaStatus ?? 'unknown'}`,
+    `- Brújula email style QA blockers: ${runbook.currentState.brujulaPilot.emailStyleQaBlockerCount ?? 'unknown'}`,
+    `- Brújula public use ready: ${runbook.currentState.brujulaPilot.emailStyleQaPublicUseReady}`,
     `- Onboarding v1 protected: ${runbook.currentState.onboarding.productionV1Protected}`,
     `- Onboarding v1 workflow: ${runbook.currentState.onboarding.productionV1Workflow.name ?? 'unknown'}`,
     `- Onboarding v2 status: ${runbook.currentState.onboarding.v2ExecutionStatus ?? 'unknown'}`,
@@ -694,6 +712,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2EventContract,
     brujulaPlan,
     brujulaApply,
+    brujulaEmailStyleQa,
     packageJson,
     sourceDigests,
   ] = await Promise.all([
@@ -713,6 +732,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.onboardingV2EventContract),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
+    readJson(options.brujulaEmailStyleQa),
     readJson(options.packageJson),
     loadSourceDigests(options),
   ]);
@@ -734,6 +754,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2EventContract,
     brujulaPlan,
     brujulaApply,
+    brujulaEmailStyleQa,
     packageJson,
     sourceDigests,
   });

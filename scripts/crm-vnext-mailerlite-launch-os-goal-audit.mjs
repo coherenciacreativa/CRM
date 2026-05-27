@@ -14,6 +14,7 @@ const DEFAULT_READINESS_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/
 const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_FINALIZATION_PREFLIGHT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
@@ -21,6 +22,7 @@ const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Ma
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
+const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const OBJECTIVE = 'Lleva MailerLite desde la arquitectura actual hacia un MailerLite Launch OS v0 listo para operar: preservar el onboarding productivo, disenar Onboarding v2, consolidar taxonomia de grupos/tags/recibos, preparar infraestructura para mini-lanzamientos frecuentes, coordinar con Brand Hub y CRM, documentar todo con reportes claros, validar con dry-runs y commits limpios, y detenerte a pedirme aprobacion antes de cualquier cambio vivo en MailerLite, Shopify, CRM, workflows, subscribers o envios reales.';
@@ -38,6 +40,7 @@ Options:
   --reconciliation-board <path>     Department review reconciliation JSON. Defaults to ${DEFAULT_RECONCILIATION}
   --response-workspace <path>       Department review response workspace JSON. Defaults to ${DEFAULT_RESPONSE_WORKSPACE}
   --finalization-preflight <path>   Department finalization preflight JSON. Defaults to ${DEFAULT_FINALIZATION_PREFLIGHT}
+  --request-bundle <path>           Department review request bundle JSON. Defaults to ${DEFAULT_REQUEST_BUNDLE}
   --onboarding-v1-audit <path>      Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-v2-design <path>     Onboarding v2 design JSON. Defaults to ${DEFAULT_ONBOARDING_V2_DESIGN}
   --onboarding-v2-execution <path>  Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
@@ -45,6 +48,7 @@ Options:
   --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
+  --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>      Optional closeout validation status, e.g. passed
   --validation-summary <text>       Optional human-readable validation receipt
@@ -67,6 +71,7 @@ const parseArgs = (argv) => {
     reconciliationBoard: DEFAULT_RECONCILIATION,
     responseWorkspace: DEFAULT_RESPONSE_WORKSPACE,
     finalizationPreflight: DEFAULT_FINALIZATION_PREFLIGHT,
+    requestBundle: DEFAULT_REQUEST_BUNDLE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingV2Design: DEFAULT_ONBOARDING_V2_DESIGN,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
@@ -74,6 +79,7 @@ const parseArgs = (argv) => {
     onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
+    brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'not_supplied',
     validationSummary: null,
@@ -94,6 +100,7 @@ const parseArgs = (argv) => {
     else if (arg === '--reconciliation-board') options.reconciliationBoard = argv[++index];
     else if (arg === '--response-workspace') options.responseWorkspace = argv[++index];
     else if (arg === '--finalization-preflight') options.finalizationPreflight = argv[++index];
+    else if (arg === '--request-bundle') options.requestBundle = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-v2-design') options.onboardingV2Design = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
@@ -101,6 +108,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
+    else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
     else if (arg === '--validation-summary') options.validationSummary = argv[++index];
@@ -133,6 +141,7 @@ const loadSources = async (options) => {
     ['reconciliationBoard', options.reconciliationBoard, 'department review response state', 'json'],
     ['responseWorkspace', options.responseWorkspace, 'pending response workspace and final response readiness', 'json'],
     ['finalizationPreflight', options.finalizationPreflight, 'department final response readiness and draft/pending distinction', 'json'],
+    ['requestBundle', options.requestBundle, 'copy-ready department request texts for final responses', 'json'],
     ['onboardingV1Audit', options.onboardingV1Audit, 'protected production onboarding v1 evidence', 'json'],
     ['onboardingV2Design', options.onboardingV2Design, 'Onboarding v2 design evidence', 'json'],
     ['onboardingV2Execution', options.onboardingV2Execution, 'Onboarding v2 execution gates', 'json'],
@@ -140,6 +149,7 @@ const loadSources = async (options) => {
     ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
+    ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
   ];
 
@@ -165,6 +175,7 @@ const buildRequirementChecks = ({
   reconciliationBoard,
   responseWorkspace,
   finalizationPreflight,
+  requestBundle,
   onboardingV1Audit,
   onboardingV2Design,
   onboardingV2Execution,
@@ -172,6 +183,7 @@ const buildRequirementChecks = ({
   onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
+  brujulaEmailStyleQa,
   brandTaxonomy,
   brandDictionary,
   packageJson,
@@ -200,6 +212,13 @@ const buildRequirementChecks = ({
   const finalizationReadyForIntake = finalizationPreflight?.readyForIntake
     ?? runbook?.currentState?.miniLaunch?.finalizationReadyForIntake
     ?? false;
+  const requestBundleStatus = requestBundle?.status
+    ?? runbook?.currentState?.miniLaunch?.requestBundleStatus
+    ?? null;
+  const requestBundleRequestCount = requestBundle?.summary?.requestCount
+    ?? runbook?.currentState?.miniLaunch?.requestBundleRequestCount
+    ?? null;
+  const requestBundleAwaitingFinalCount = requestBundle?.summary?.awaitingFinalCount ?? null;
   const acceptedFinalDepartments = finalizationPreflight?.acceptedDepartments
     ?? runbook?.currentState?.miniLaunch?.acceptedFinalDepartments
     ?? [];
@@ -242,6 +261,12 @@ const buildRequirementChecks = ({
     && handoffRecommendationIsNotRouting
     && handoffLiveClosed
     && handoffGateClosed;
+  const brujulaEmailStyleQaStatus = brujulaEmailStyleQa?.status ?? null;
+  const brujulaEmailStyleQaReady = brujulaEmailStyleQaStatus === 'brujula_email_style_qa_yellow_no_live_changes'
+    && brujulaEmailStyleQa?.executiveSummary?.functionalStatus === 'green_test_delivery_verified'
+    && brujulaEmailStyleQa?.executiveSummary?.publicUseReady === false
+    && brujulaEmailStyleQa?.safety?.mailerLiteApiCalled === false
+    && brujulaEmailStyleQa?.safety?.sendsPerformed === false;
 
   return [
     {
@@ -340,6 +365,9 @@ const buildRequirementChecks = ({
         `readyForResponseIntake=${readyForResponseIntake}`,
         `finalizationStatus=${finalizationStatus ?? 'missing'}`,
         `finalizationReadyForIntake=${finalizationReadyForIntake}`,
+        `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
+        `requestBundleRequestCount=${requestBundleRequestCount ?? 'unknown'}`,
+        `requestBundleAwaitingFinalCount=${requestBundleAwaitingFinalCount ?? 'unknown'}`,
         `acceptedFinalDepartments=${acceptedFinalDepartments.join(',') || 'none'}`,
         `draftAssistDepartments=${draftAssistDepartments.join(',') || 'none'}`,
         `pendingReadyDepartments=${pendingReadyDepartments.join(',') || 'none'}`,
@@ -359,6 +387,8 @@ const buildRequirementChecks = ({
         `runbookStatus=${runbook?.status ?? 'missing'}`,
         `scenarioCount=${runbook?.operatingScenarios?.length ?? 0}`,
         `approvalMatrixCount=${runbook?.approvalMatrix?.length ?? 0}`,
+        `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
+        `brujulaEmailStyleQaStatus=${brujulaEmailStyleQaStatus ?? 'missing'}`,
       ],
       remaining: [
         'Keep regenerating the runbook after accepted department reviews or new dry-runs.',
@@ -399,16 +429,22 @@ const buildRequirementChecks = ({
     {
       id: 'brujula_test_pilot_status',
       requirement: 'Keep Brújula as controlled proving ground, not a public launch.',
-      status: brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence
-        ? 'partial_functional_green_creative_yellow'
+      status: brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady
+        ? 'partial_functional_green_creative_qa_packet_ready'
+        : brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence
+          ? 'partial_functional_green_creative_yellow'
         : 'partial',
       evidence: [
         `assignedGroups=${groups.join(' | ') || 'none'}`,
         `currentWorkflowOffOrIncomplete=${brujulaPlan?.localEvidence?.brujulaState?.currentWorkflowOffOrIncomplete}`,
         `creativeAntiEvidence=${Boolean(brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence)}`,
+        `emailStyleQaStatus=${brujulaEmailStyleQaStatus ?? 'missing'}`,
+        `emailStyleQaFunctionalStatus=${brujulaEmailStyleQa?.executiveSummary?.functionalStatus ?? 'unknown'}`,
+        `emailStyleQaBlockerCount=${brujulaEmailStyleQa?.executiveSummary?.blockerCount ?? 'unknown'}`,
+        `emailStyleQaPublicUseReady=${brujulaEmailStyleQa?.executiveSummary?.publicUseReady ?? 'unknown'}`,
       ],
       remaining: [
-        'Do not treat Brújula as public-ready until Brand email style QA is green.',
+        'Apply Brand email-style corrections, rerun test-only visual QA and keep Brújula non-public until Brand email style QA is green.',
       ],
     },
   ];
@@ -456,16 +492,17 @@ const buildGoalAudit = ({
     executiveSummary: {
       ...summary,
       currentOperatingPosture: 'continue_no_live_build_and_reviews',
-      nextBestMove: 'Collect final no-live Brand, Web Design and CRM department review responses through the response workspace, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.',
+      nextBestMove: 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.',
       liveApprovalNeededNow: false,
       liveActionAllowedNow: false,
     },
     requirements,
     nextMoves: [
-      'Use the department review delivery pack to route Brand, Web Design and CRM no-live review requests.',
+      'Use the department review request bundle to route Brand, Web Design and CRM no-live review requests without reconstructing context.',
       'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
       'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
       'Run department review intake and reconciliation with final response files only.',
+      'Use the Brújula email style QA packet as the concrete correction checklist before any future test send or public use.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
     ],

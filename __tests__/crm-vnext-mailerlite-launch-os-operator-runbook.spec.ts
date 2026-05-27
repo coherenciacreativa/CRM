@@ -161,6 +161,16 @@ const brujulaApply = {
   ],
 };
 
+const brujulaEmailStyleQa = {
+  status: "brujula_email_style_qa_yellow_no_live_changes",
+  executiveSummary: {
+    functionalStatus: "green_test_delivery_verified",
+    creativeStatus: "yellow_needs_email_style_alignment",
+    blockerCount: 4,
+    publicUseReady: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/path.mjs",
@@ -189,6 +199,7 @@ const packageJson = {
     "crm:vnext:mailerlite-onboarding-v2-event-contract": "node scripts/v2-event.mjs",
     "crm:vnext:mailerlite-brujula-test-lane-plan": "node scripts/brujula-plan.mjs",
     "crm:vnext:mailerlite-brujula-test-lane-apply": "node scripts/brujula-apply.mjs",
+    "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
     "test": "vitest run",
   },
 };
@@ -222,6 +233,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.finalizationPreflight).toContain("mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
     expect(parsed.operatorQueue).toContain("mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json");
     expect(parsed.requestBundle).toContain("mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
@@ -250,6 +262,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
+      brujulaEmailStyleQa,
       responseWorkspace,
       finalizationPreflight,
       operatorQueue,
@@ -260,6 +273,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.onboarding.productionV1Workflow.name).toBe("Onboarding flow");
     expect(state.onboarding.v2EventContractStatus).toBe("onboarding_v2_event_contract_ready_no_ledger_write");
     expect(state.brujulaPilot.functionalStatus).toBe("test_delivery_verified_creative_qa_pending");
+    expect(state.brujulaPilot.emailStyleQaStatus).toBe("brujula_email_style_qa_yellow_no_live_changes");
+    expect(state.brujulaPilot.emailStyleQaBlockerCount).toBe(4);
+    expect(state.brujulaPilot.emailStyleQaPublicUseReady).toBe(false);
     expect(state.miniLaunch.safeToIntakeOneMoreNoLiveIdea).toBe(true);
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
@@ -337,6 +353,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.find((scenario) => scenario.id === "new_mini_launch_idea")?.commands.join(" ")).toContain("onboarding-handoff-policy");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-event-contract");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.liveGatesRemainClosed).toContain("v1 edit");
+    expect(scenarios.find((scenario) => scenario.id === "brujula_test_lane")?.commands.join(" ")).toContain("brujula-email-style-qa-packet");
   });
 
   test("builds runbook with command/scenario catalog and no live operations", () => {
@@ -356,6 +373,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
+      brujulaEmailStyleQa,
       packageJson,
       sourceDigests,
       generatedAt: "2026-05-27T00:00:00.000Z",
@@ -428,6 +446,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         chars: 2000,
         consultedFor: "onboarding v2 CRM event contract and projection boundary",
       },
+      {
+        path: "/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "Brújula email style QA blockers and green criteria",
+      },
     ]);
 
     expect(reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
@@ -439,6 +463,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.departmentReviewOperatorQueue).toBe("/tmp/mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.departmentReviewRequestBundle).toBe("/tmp/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.onboardingV2EventContract).toBe("/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json");
+    expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
   });
 
   test("renders operator runbook with next moves and approval matrix", () => {
@@ -458,6 +483,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
+      brujulaEmailStyleQa,
       packageJson,
       sourceDigests,
       generatedAt: "2026-05-27T00:00:00.000Z",
@@ -483,6 +509,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Operator queue awaiting final count: 3");
     expect(markdown).toContain("Request bundle");
     expect(markdown).toContain("Request bundle request count: 3");
+    expect(markdown).toContain("Brújula email style QA: brujula_email_style_qa_yellow_no_live_changes");
+    expect(markdown).toContain("Brújula email style QA blockers: 4");
     expect(markdown).toContain("Draft assist departments: brand, web_design, crm");
     expect(markdown).toContain("Awaiting final departments: brand, web_design, crm");
     expect(markdown).toContain("Onboarding v2 event contract");
