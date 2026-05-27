@@ -446,6 +446,26 @@ Result:
 
 This is the relationship layer of the mini-launch machine: a small product can now have a modest follow-up arc without pretending it is already an automation, a launch, a CRM write, or an onboarding migration.
 
+## Mini-launch Shopify/Web handoff packet status
+
+Status: Shopify/Web Design handoff ready for review, no live changes.
+
+Evidence:
+
+- Shopify/Web handoff report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.spec.ts`
+
+Result:
+
+- Converts the `Inteligencia para descansar` rehearsal into a Shopify-first handoff: landing, quiz, result/thank-you and future form/data plan.
+- Reads the Web Design source map, Shopify preview protocol, voice source, Brújula landing/resource precedents, MailerLite form snippet precedent, and web CSS references in read-only mode.
+- Suggests concrete Shopify files for Web Design to consider, all marked `suggested_not_created`.
+- Keeps public copy clean of internal implementation terms and the overused `a veces` formula.
+- Keeps Shopify repo edits, Shopify preview/draft page, real form connection, MailerLite groups/tags, CRM connection and live publish closed behind future gates.
+
+This closes the no-live web routing gap: the mini-launch now has a concrete path toward the real website without falling back to loose HTML or silently touching Shopify.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -505,4 +525,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, and full email sequence asset packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, Brand's no-live semantic decision on the two `Inteligencia para descansar` group candidates, or a Shopify/Web preview handoff for the same mini-launch.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, and Shopify/Web handoff packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, Brand's no-live semantic decision on the two `Inteligencia para descansar` group candidates, or Web Design review/build of the Shopify handoff with explicit scope.

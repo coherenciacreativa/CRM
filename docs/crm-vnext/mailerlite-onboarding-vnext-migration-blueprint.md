@@ -677,6 +677,31 @@ Result:
 
 This checkpoint adds the relationship arc to the mini-launch machine without disturbing the production onboarding. It keeps the follow-up sequence useful for learning and care, but prevents it from silently becoming onboarding migration or audience automation.
 
+## Mini-launch Shopify/Web handoff checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs
+```
+
+Result:
+
+- The `Inteligencia para descansar` mini-launch now has a Shopify/Web Design handoff for landing, quiz, result/thank-you and future form/data plan.
+- The handoff follows Brand's Shopify preview protocol: Shopify/Web is the default surface, not loose HTML.
+- It inspects the Shopify repo in read-only mode and references Brújula landing/resource sections, MailerLite form snippet, templates and web CSS as precedent.
+- Suggested files are concrete but not created: section/template/snippet names are marked `suggested_not_created`.
+- Public copy scan is clean for internal implementation terms and the overused `a veces` formula.
+- Shopify repo edit, preview/draft page creation, form connection, MailerLite group/tag wiring, CRM connection and live publish remain closed behind future gates.
+
+This checkpoint gives Web Design a precise next action while preserving the production onboarding and avoiding accidental Shopify or MailerLite live changes.
+
 ## Planner dry-run requirements
 
 Proposed script:
