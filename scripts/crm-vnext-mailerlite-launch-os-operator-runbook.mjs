@@ -9,6 +9,7 @@ const DEFAULT_MIGRATION_BLUEPRINT = '/Users/alejandrogomez/CRM/docs/crm-vnext/ma
 const DEFAULT_READINESS_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_CADENCE_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.json';
 const DEFAULT_BACKLOG_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.json';
+const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_PACKETS_INDEX = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_DELIVERY_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json';
@@ -29,6 +30,7 @@ Options:
   --readiness-board <path>           Current mini-launch readiness JSON. Defaults to ${DEFAULT_READINESS_BOARD}
   --cadence-board <path>             Mini-launch cadence board JSON. Defaults to ${DEFAULT_CADENCE_BOARD}
   --backlog-board <path>             Mini-launch backlog board JSON. Defaults to ${DEFAULT_BACKLOG_BOARD}
+  --onboarding-handoff-policy <path> Mini-launch to onboarding handoff JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --reconciliation-board <path>      Department review reconciliation JSON. Defaults to ${DEFAULT_RECONCILIATION}
   --packets-index <path>             Department review packets index JSON. Defaults to ${DEFAULT_PACKETS_INDEX}
   --delivery-pack <path>             Department review delivery pack JSON. Defaults to ${DEFAULT_DELIVERY_PACK}
@@ -56,6 +58,7 @@ const parseArgs = (argv) => {
     readinessBoard: DEFAULT_READINESS_BOARD,
     cadenceBoard: DEFAULT_CADENCE_BOARD,
     backlogBoard: DEFAULT_BACKLOG_BOARD,
+    onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     reconciliationBoard: DEFAULT_RECONCILIATION,
     packetsIndex: DEFAULT_PACKETS_INDEX,
     deliveryPack: DEFAULT_DELIVERY_PACK,
@@ -79,6 +82,7 @@ const parseArgs = (argv) => {
     else if (arg === '--readiness-board') options.readinessBoard = argv[++index];
     else if (arg === '--cadence-board') options.cadenceBoard = argv[++index];
     else if (arg === '--backlog-board') options.backlogBoard = argv[++index];
+    else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--reconciliation-board') options.reconciliationBoard = argv[++index];
     else if (arg === '--packets-index') options.packetsIndex = argv[++index];
     else if (arg === '--delivery-pack') options.deliveryPack = argv[++index];
@@ -106,6 +110,7 @@ const loadSourceDigests = async (options) => {
     [options.readinessBoard, 'current mini-launch readiness and closed live gates'],
     [options.cadenceBoard, 'mini-launch cadence, WIP limits and stages'],
     [options.backlogBoard, 'mini-launch idea queue and intake capacity'],
+    [options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff boundary and closed gates'],
     [options.reconciliationBoard, 'department review state and current blockers'],
     [options.packetsIndex, 'individual Brand/Web/CRM packets'],
     [options.deliveryPack, 'safe department review delivery blocks and response paths'],
@@ -162,6 +167,7 @@ const buildCurrentState = ({
   readinessBoard,
   cadenceBoard,
   backlogBoard,
+  onboardingHandoffPolicy,
   reconciliationBoard,
   packetsIndex,
   responseWorkspace,
@@ -222,6 +228,8 @@ const buildCurrentState = ({
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
+      onboardingHandoffPolicyStatus: onboardingHandoffPolicy?.status ?? null,
+      onboardingHandoffTargetGroup: onboardingHandoffPolicy?.targetGroups?.eligible ?? null,
       departmentReviewStatus: reconciliationBoard?.status ?? null,
       pendingDepartments: reconciliationBoard?.responseState?.pendingDepartments ?? packetsIndex?.pendingDepartments ?? [],
       responseWorkspaceStatus: responseWorkspace?.status ?? null,
@@ -244,6 +252,7 @@ const buildReportMap = (sourceDigests) => {
     readinessBoard: findPath('mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json'),
     cadenceBoard: findPath('mailerlite_mini_launch_cadence_board_2026-05-27.json'),
     backlogBoard: findPath('mailerlite_mini_launch_backlog_board_2026-05-27.json'),
+    onboardingHandoffPolicy: findPath('mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json'),
     departmentReviewPacketsIndex: findPath('mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json'),
     departmentReviewDeliveryPack: findPath('mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json'),
     departmentReviewResponseWorkspace: findPath('mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json'),
@@ -431,6 +440,7 @@ const buildRunbook = ({
   readinessBoard,
   cadenceBoard,
   backlogBoard,
+  onboardingHandoffPolicy,
   reconciliationBoard,
   packetsIndex,
   responseWorkspace,
@@ -454,6 +464,7 @@ const buildRunbook = ({
       readinessBoard,
       cadenceBoard,
       backlogBoard,
+      onboardingHandoffPolicy,
       reconciliationBoard,
       packetsIndex,
       onboardingV1Audit,
@@ -521,6 +532,8 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch readiness: ${runbook.currentState.miniLaunch.readinessState ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
+    `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
+    `- Onboarding handoff target: ${runbook.currentState.miniLaunch.onboardingHandoffTargetGroup ?? 'unknown'}`,
     `- Department review status: ${runbook.currentState.miniLaunch.departmentReviewStatus}`,
     `- Response workspace: ${runbook.currentState.miniLaunch.responseWorkspaceStatus ?? 'unknown'}`,
     `- Ready for response intake: ${runbook.currentState.miniLaunch.readyForResponseIntake}`,
@@ -607,6 +620,7 @@ const buildRunbookFromFiles = async (options) => {
     readinessBoard,
     cadenceBoard,
     backlogBoard,
+    onboardingHandoffPolicy,
     reconciliationBoard,
     packetsIndex,
     deliveryPack,
@@ -622,6 +636,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.readinessBoard),
     readJson(options.cadenceBoard),
     readJson(options.backlogBoard),
+    readJson(options.onboardingHandoffPolicy),
     readJson(options.reconciliationBoard),
     readJson(options.packetsIndex),
     readJson(options.deliveryPack),
@@ -639,6 +654,7 @@ const buildRunbookFromFiles = async (options) => {
     readinessBoard,
     cadenceBoard,
     backlogBoard,
+    onboardingHandoffPolicy,
     reconciliationBoard,
     packetsIndex,
     deliveryPack,
