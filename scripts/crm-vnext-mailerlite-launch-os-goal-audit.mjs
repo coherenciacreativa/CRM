@@ -12,6 +12,7 @@ const DEFAULT_BRAND_TAXONOMY = '/Users/alejandrogomez/Projects/hub-de-marca/90_s
 const DEFAULT_BRAND_DICTIONARY = '/Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md';
 const DEFAULT_READINESS_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
@@ -33,6 +34,7 @@ Options:
   --brand-dictionary <path>         Brand group dictionary canon. Defaults to ${DEFAULT_BRAND_DICTIONARY}
   --readiness-board <path>          Mini-launch readiness JSON. Defaults to ${DEFAULT_READINESS_BOARD}
   --reconciliation-board <path>     Department review reconciliation JSON. Defaults to ${DEFAULT_RECONCILIATION}
+  --response-workspace <path>       Department review response workspace JSON. Defaults to ${DEFAULT_RESPONSE_WORKSPACE}
   --onboarding-v1-audit <path>      Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-v2-design <path>     Onboarding v2 design JSON. Defaults to ${DEFAULT_ONBOARDING_V2_DESIGN}
   --onboarding-v2-execution <path>  Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
@@ -59,6 +61,7 @@ const parseArgs = (argv) => {
     brandDictionary: DEFAULT_BRAND_DICTIONARY,
     readinessBoard: DEFAULT_READINESS_BOARD,
     reconciliationBoard: DEFAULT_RECONCILIATION,
+    responseWorkspace: DEFAULT_RESPONSE_WORKSPACE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingV2Design: DEFAULT_ONBOARDING_V2_DESIGN,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
@@ -83,6 +86,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brand-dictionary') options.brandDictionary = argv[++index];
     else if (arg === '--readiness-board') options.readinessBoard = argv[++index];
     else if (arg === '--reconciliation-board') options.reconciliationBoard = argv[++index];
+    else if (arg === '--response-workspace') options.responseWorkspace = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-v2-design') options.onboardingV2Design = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
@@ -119,6 +123,7 @@ const loadSources = async (options) => {
     ['brandDictionary', options.brandDictionary, 'Brand Hub concrete group dictionary canon', 'text'],
     ['readinessBoard', options.readinessBoard, 'mini-launch readiness lanes and blockers', 'json'],
     ['reconciliationBoard', options.reconciliationBoard, 'department review response state', 'json'],
+    ['responseWorkspace', options.responseWorkspace, 'pending response workspace and final response readiness', 'json'],
     ['onboardingV1Audit', options.onboardingV1Audit, 'protected production onboarding v1 evidence', 'json'],
     ['onboardingV2Design', options.onboardingV2Design, 'Onboarding v2 design evidence', 'json'],
     ['onboardingV2Execution', options.onboardingV2Execution, 'Onboarding v2 execution gates', 'json'],
@@ -148,6 +153,7 @@ const buildRequirementChecks = ({
   runbook,
   readinessBoard,
   reconciliationBoard,
+  responseWorkspace,
   onboardingV1Audit,
   onboardingV2Design,
   onboardingV2Execution,
@@ -167,6 +173,15 @@ const buildRequirementChecks = ({
     && onboardingV1Audit?.workflow?.complete === true
     && onboardingV1Audit?.workflow?.broken === false;
   const pendingDepartments = reconciliationBoard?.responseState?.pendingDepartments ?? [];
+  const workspacePendingDepartments = responseWorkspace?.pendingDepartments
+    ?? runbook?.currentState?.miniLaunch?.responseWorkspacePendingDepartments
+    ?? [];
+  const readyForResponseIntake = responseWorkspace?.readyForIntake
+    ?? runbook?.currentState?.miniLaunch?.readyForResponseIntake
+    ?? false;
+  const responseWorkspaceStatus = responseWorkspace?.status
+    ?? runbook?.currentState?.miniLaunch?.responseWorkspaceStatus
+    ?? null;
   const openLiveGates = runbook?.currentState?.liveGates?.openLiveGateCount
     ?? reconciliationBoard?.liveGateSummary?.openLiveGateCount
     ?? 0;
@@ -248,10 +263,13 @@ const buildRequirementChecks = ({
       evidence: [
         `reconciliationStatus=${reconciliationBoard?.status ?? 'missing'}`,
         `pendingDepartments=${pendingDepartments.join(',') || 'none'}`,
+        `workspacePendingDepartments=${workspacePendingDepartments.join(',') || 'none'}`,
         `packetCount=${runbook?.currentState?.miniLaunch?.packetCount ?? 'unknown'}`,
+        `responseWorkspaceStatus=${responseWorkspaceStatus ?? 'missing'}`,
+        `readyForResponseIntake=${readyForResponseIntake}`,
       ],
       remaining: pendingDepartments.length > 0
-        ? ['Collect Brand, Web Design and CRM no-live review responses through the templates.']
+        ? ['Collect final Brand, Web Design and CRM no-live review responses through the response workspace.']
         : ['Run reconciliation after any later response change.'],
     },
     {
@@ -361,14 +379,15 @@ const buildGoalAudit = ({
     executiveSummary: {
       ...summary,
       currentOperatingPosture: 'continue_no_live_build_and_reviews',
-      nextBestMove: 'Collect no-live Brand, Web Design and CRM department review responses, then run reconciliation before any new dry-run or build request.',
+      nextBestMove: 'Collect final no-live Brand, Web Design and CRM department review responses through the response workspace, then run reconciliation before any new dry-run or build request.',
       liveApprovalNeededNow: false,
       liveActionAllowedNow: false,
     },
     requirements,
     nextMoves: [
-      'Use the department review delivery pack to get Brand, Web Design and CRM no-live responses.',
-      'Run department review intake and reconciliation with response files.',
+      'Use the department review delivery pack to route Brand, Web Design and CRM no-live review requests.',
+      'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
+      'Run department review intake and reconciliation with final response files only.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
     ],

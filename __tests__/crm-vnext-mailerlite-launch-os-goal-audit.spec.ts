@@ -22,6 +22,8 @@ const runbook = {
       cadenceNow: "weekly",
       safeToIntakeOneMoreNoLiveIdea: true,
       packetCount: 3,
+      responseWorkspaceStatus: "department_review_response_workspace_ready_awaiting_final_responses_no_live_changes",
+      readyForResponseIntake: false,
     },
   },
   safety: {
@@ -53,6 +55,12 @@ const reconciliationBoard = {
   liveGateSummary: {
     openLiveGateCount: 0,
   },
+};
+
+const responseWorkspace = {
+  status: "department_review_response_workspace_ready_awaiting_final_responses_no_live_changes",
+  readyForIntake: false,
+  pendingDepartments: ["brand", "web_design", "crm"],
 };
 
 const onboardingV1Audit = {
@@ -112,6 +120,7 @@ const values = {
   runbook,
   readinessBoard,
   reconciliationBoard,
+  responseWorkspace,
   onboardingV1Audit,
   onboardingV2Design,
   onboardingV2Execution,
@@ -155,6 +164,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.protect_productive_onboarding_v1.status).toBe("proven");
     expect(byId.design_onboarding_v2.status).toBe("proven");
     expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_reviews");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("readyForResponseIntake=false");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("workspacePendingDepartments=brand,web_design,crm");
     expect(byId.enforce_live_change_approval_boundary.status).toBe("proven");
     expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_creative_yellow");
   });
@@ -178,8 +189,9 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
 
     expect(audit.status).toBe("goal_active_not_ready_for_live_operation");
     expect(audit.executiveSummary.liveActionAllowedNow).toBe(false);
-    expect(audit.executiveSummary.nextBestMove).toContain("department review");
+    expect(audit.executiveSummary.nextBestMove).toContain("response workspace");
     expect(audit.nextMoves.join(" ")).toContain("rerun the launch group dry-run");
+    expect(audit.nextMoves.join(" ")).toContain("final response files only");
     expect(audit.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,
