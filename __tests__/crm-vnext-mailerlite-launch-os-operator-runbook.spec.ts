@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   buildApprovalMatrix,
   buildCurrentState,
+  buildOperatingPrinciples,
   buildOperatingScenarios,
   buildReportMap,
   buildRunbook,
@@ -109,6 +110,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-v0-packet": "node scripts/os.mjs",
     "crm:vnext:mailerlite-mini-launch-rehearsal-packet": "node scripts/rehearsal.mjs",
     "crm:vnext:mailerlite-mini-launch-event-contract": "node scripts/event.mjs",
+    "crm:vnext:mailerlite-mini-launch-onboarding-handoff-policy": "node scripts/handoff.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/seed.mjs",
     "crm:vnext:mailerlite-mini-launch-group-dry-run": "node scripts/group.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-packets": "node scripts/packets.mjs",
@@ -209,6 +211,19 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(matrix.find((gate) => gate.action === "crm_signal_ledger_card_scoring_fact_store")?.status).toBe("closed_until_separate_crm_approval_packet");
   });
 
+  test("codifies the onboarding trunk and mini-launch tributary contract", () => {
+    const principles = buildOperatingPrinciples();
+
+    expect(principles.map((principle) => principle.id)).toEqual([
+      "protected_editorial_onboarding_trunk",
+      "mini_launches_as_marked_entry_points",
+      "deliberate_handoff_to_onboarding",
+      "separate_delivery_identity_and_voice",
+    ]);
+    expect(principles.find((principle) => principle.id === "protected_editorial_onboarding_trunk")?.operatorRule).toContain("spaced article sequence");
+    expect(principles.find((principle) => principle.id === "deliberate_handoff_to_onboarding")?.operatorRule).toContain("CC · Journey · Editorial onboarding · Eligible");
+  });
+
   test("builds scenarios for current reviews, new ideas and onboarding", () => {
     const catalog = commandCatalogFrom(packageJson);
     const scenarios = buildOperatingScenarios({ commandCatalog: catalog });
@@ -230,6 +245,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.find((scenario) => scenario.id === "department_response_workspace")?.commands.join(" ")).toContain("department-review-finalization-preflight");
     expect(scenarios.find((scenario) => scenario.id === "department_response_workspace")?.commands.join(" ")).toContain("department-review-finalize-pending");
     expect(scenarios.find((scenario) => scenario.id === "current_pilot_department_reviews")?.commands.join(" ")).toContain("department-review-reconciliation");
+    expect(scenarios.find((scenario) => scenario.id === "new_mini_launch_idea")?.commands.join(" ")).toContain("onboarding-handoff-policy");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-event-contract");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.liveGatesRemainClosed).toContain("v1 edit");
   });
@@ -253,7 +269,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     });
 
     expect(runbook.status).toBe("mailerlite_launch_os_operator_runbook_ready_no_live_changes");
+    expect(runbook.schemaVersion).toContain("trunk-contract");
     expect(runbook.commandCatalog.length).toBeGreaterThan(10);
+    expect(runbook.operatingPrinciples).toHaveLength(4);
     expect(runbook.operatingScenarios).toHaveLength(8);
     expect(runbook.currentState.liveGates.openLiveGateCount).toBe(0);
     expect(runbook.reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
@@ -322,6 +340,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     const markdown = renderMarkdown(runbook);
 
     expect(markdown).toContain("Operator Runbook");
+    expect(markdown).toContain("Operating Principles");
+    expect(markdown).toContain("protected_editorial_onboarding_trunk");
+    expect(markdown).toContain("market-learning tributaries");
     expect(markdown).toContain("current_pilot_department_reviews");
     expect(markdown).toContain("backlog_intake");
     expect(markdown).toContain("department_review_delivery");

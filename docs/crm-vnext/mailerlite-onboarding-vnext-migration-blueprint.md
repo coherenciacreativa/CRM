@@ -45,6 +45,14 @@ Alejandro is not attached to the current MailerLite architecture. The production
 
 Therefore, the current `Onboarding flow` may be restructured later if needed, but not casually. The goal is migration with continuity, not preservation of messy historical labels for their own sake.
 
+## Guiding model
+
+The active onboarding is the protected trunk of the relationship system. Its job is not merely to tag a contact; it deepens trust over time through the welcome route, the editorial article sequence, the completion marker and the current general campaign audience.
+
+Mini-launches are tributaries into that relationship system. A guide, quiz, game, audio or small product can capture market signals, create source/delivery/content receipts, and help CRM understand a person's interests. It should not automatically compete with or replace onboarding.
+
+The normal handoff from a mini-launch toward onboarding is deliberate and gated. Future routing should usually prepare or assign `CC · Journey · Editorial onboarding · Eligible`, then let an approved onboarding lane decide how the person enters. No mini-launch may silently push real people into active onboarding v1.
+
 ## Current production contract
 
 Observed current state:
@@ -577,6 +585,32 @@ Result:
 - No live MailerLite, Shopify, CRM, subscriber, workflow, form, scoring, Fact Store, send, or outbound mutation was performed.
 
 This gives future mini-launches a disciplined data spine: each launch can generate learnable CRM events while the active onboarding remains protected and the CRM avoids treating every operational marker as human interest.
+
+## Mini-launch to onboarding handoff policy checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-onboarding-handoff-policy.mjs
+```
+
+Result:
+
+- Status: `mini_launch_onboarding_handoff_policy_ready_no_live_changes`.
+- Mini-launches can recommend editorial onboarding, but recommendation is not routing.
+- Future target group is `CC · Journey · Editorial onboarding · Eligible`.
+- Required inputs before a recommendation/route: stable identity and consent posture, delivered launch resource, real engagement or explicit interest, and protected onboarding capacity.
+- `onboarding_handoff_recommended` remains a CRM/store-only recommendation event.
+- Actual MailerLite assignment to onboarding eligibility requires separate exact approval, fresh scan, protected workflow check and subscriber scope.
+- No MailerLite, Shopify, CRM, subscriber, workflow, group, send, ledger, card/scoring, Fact Store or outbound mutation was performed.
+
+This closes a key architecture gap: mini-launches can feed the onboarding trunk intentionally without becoming an automatic funnel that overloads or corrupts the current productive onboarding.
 
 ## Mini-launch seed-test QA checkpoint - 2026-05-27
 

@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-operator-runbook-2026-05-27';
+const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-operator-runbook-2026-05-27-trunk-contract';
 const DEFAULT_CONTROL_ROOM = '/Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-launch-os-v0-control-room.md';
 const DEFAULT_MIGRATION_BLUEPRINT = '/Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-onboarding-vnext-migration-blueprint.md';
 const DEFAULT_READINESS_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json';
@@ -257,6 +257,29 @@ const buildReportMap = (sourceDigests) => {
   };
 };
 
+const buildOperatingPrinciples = () => [
+  {
+    id: 'protected_editorial_onboarding_trunk',
+    principle: 'Treat the active editorial onboarding as the protected relationship-deepening trunk.',
+    operatorRule: 'It welcomes new contacts, sends the spaced article sequence, marks completion and feeds the current general campaign audience; do not edit, pause, reroute into or replace it without a separate exact approval and rollback/reinsert plan.',
+  },
+  {
+    id: 'mini_launches_as_marked_entry_points',
+    principle: 'Treat mini-products, guides, quizzes, games and small launches as marked entry points and market-learning tributaries.',
+    operatorRule: 'They may create Source/Delivered/Sent receipts, seed tests and CRM signal proposals after their own gates, but they must not become parallel onboarding flows by accident.',
+  },
+  {
+    id: 'deliberate_handoff_to_onboarding',
+    principle: 'A mini-launch can point toward onboarding only through a deliberate handoff gate.',
+    operatorRule: 'The future target is usually CC · Journey · Editorial onboarding · Eligible; assigning it, using it in a workflow or routing a real person still requires the onboarding gate to be open and explicitly approved.',
+  },
+  {
+    id: 'separate_delivery_identity_and_voice',
+    principle: 'Keep MailerLite delivery, CRM relationship intelligence and Brand voice/design as separate but coordinated responsibilities.',
+    operatorRule: 'MailerLite should not carry rich person memory, CRM should not invent Brand canon, and Brand review should happen before public/audience-facing assets are treated as agency-quality.',
+  },
+];
+
 const buildApprovalMatrix = () => [
   {
     action: 'read_reports_or_generate_local_packets',
@@ -373,6 +396,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-v0-packet'),
         command('crm:vnext:mailerlite-mini-launch-rehearsal-packet'),
         command('crm:vnext:mailerlite-mini-launch-event-contract'),
+        command('crm:vnext:mailerlite-mini-launch-onboarding-handoff-policy'),
         command('crm:vnext:mailerlite-mini-launch-seed-test-qa-packet'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['Shopify', 'MailerLite', 'subscribers', 'audience send', 'CRM mutation'],
@@ -440,6 +464,7 @@ const buildRunbook = ({
       responseWorkspace,
     }),
     reportMap: buildReportMap(sourceDigests),
+    operatingPrinciples: buildOperatingPrinciples(),
     commandCatalog,
     operatingScenarios: buildOperatingScenarios({ commandCatalog }),
     approvalMatrix: buildApprovalMatrix(),
@@ -453,6 +478,7 @@ const buildRunbook = ({
       'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
       'Use the backlog board only for one additional no-live idea intake, not for live production.',
+      'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
       'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
       'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
     ],
@@ -501,13 +527,25 @@ const renderMarkdown = (runbook) => {
     `- Pending departments: ${runbook.currentState.miniLaunch.pendingDepartments.join(', ') || 'none'}`,
     `- Open live gates: ${runbook.currentState.liveGates.openLiveGateCount}`,
     '',
+    '## Operating Principles',
+    '',
+  ];
+
+  for (const principle of runbook.operatingPrinciples) {
+    lines.push(`### ${principle.id}`);
+    lines.push(`- Principle: ${principle.principle}`);
+    lines.push(`- Operator rule: ${principle.operatorRule}`);
+    lines.push('');
+  }
+
+  lines.push(
     '## Immediate Next Moves',
     '',
     renderList(runbook.immediateNextMoves),
     '',
     '## Operating Scenarios',
     '',
-  ];
+  );
 
   for (const scenario of runbook.operatingScenarios) {
     lines.push(`### ${scenario.id}`);
@@ -651,6 +689,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 export {
   buildApprovalMatrix,
   buildCurrentState,
+  buildOperatingPrinciples,
   buildOperatingScenarios,
   buildReportMap,
   buildRunbook,

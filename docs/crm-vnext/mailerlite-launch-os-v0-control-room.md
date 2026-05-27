@@ -14,6 +14,13 @@ Build MailerLite Launch OS v0: a safe, documented, tested architecture for onboa
 - MailerLite owns delivery, workflow routes, minimal receipts, dedupe, and coarse audience/journey state.
 - Alejandro approves live mutations, audience sends, active workflow changes, and public launch moments.
 
+## Operating principles
+
+- Treat the active editorial onboarding as the protected relationship-deepening trunk: welcome, spaced article sequence, completion marker and current general campaign audience.
+- Treat mini-products, guides, quizzes, games and small launches as marked entry points for market learning. They can create source/delivery/content receipts and CRM signal proposals, but they should not become parallel onboarding flows by accident.
+- A mini-launch can point a person toward onboarding only through a deliberate handoff gate. The usual future target is `CC · Journey · Editorial onboarding · Eligible`, never a silent direct route into the active v1 flow.
+- Keep MailerLite delivery, CRM relationship intelligence and Brand voice/design separate but coordinated. MailerLite does not carry rich person memory, CRM does not invent Brand canon, and Brand review must protect public/audience-facing quality.
+
 ## Current evidence
 
 Canonical Brand sources:
@@ -452,6 +459,27 @@ Result:
 
 This closes the most important data-design gap in the mini-launch rehearsal: future launches can now produce learnable CRM signals without pretending every operational event is interest, warmth, or permission to contact.
 
+## Mini-launch to onboarding handoff policy status
+
+Status: handoff policy ready, no live changes.
+
+Evidence:
+
+- Handoff policy report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-onboarding-handoff-policy.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-onboarding-handoff-policy.spec.ts`
+
+Result:
+
+- Defines the bridge from a mini-launch to editorial onboarding without automatic routing.
+- Target future eligibility group: `CC · Journey · Editorial onboarding · Eligible`.
+- Uses `onboarding_handoff_recommended` as a CRM/store-only recommendation event, not as a MailerLite assignment.
+- Requires identity/consent, launch delivery, real engagement or explicit interest, and onboarding capacity before any future route.
+- Keeps production `Onboarding flow` protected.
+- Keeps all live gates closed: no subscriber assignment, workflow trigger, Signal Ledger append, group creation, send, card/scoring or Fact Store write.
+
+This checkpoint turns Alejandro's intended shape into an operator rule: mini-launches are branches that may recommend the onboarding trunk, but they do not push people into it automatically.
+
 ## Mini-launch seed-test QA packet status
 
 Status: seed-test QA packet ready, no live changes.
@@ -816,6 +844,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Mini-Launch OS v0 full packet generated and tested: done.
    - Concrete no-live rehearsal packet generated and tested: done.
    - Concrete mini-launch CRM event contract generated and tested: done.
+   - Mini-launch to onboarding handoff policy generated and tested: done.
    - Seed-test QA packet generated and tested: done.
    - Cadence board generated and tested: done.
    - Backlog board generated and tested: done.
@@ -859,4 +888,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace and operator runbook are now documented. The next useful move is to run the no-live department reviews from the delivery pack, collect final responses through the response workspace, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace and operator runbook are now documented. The next useful move is to run the no-live department reviews from the delivery pack, collect final responses through the response workspace, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
