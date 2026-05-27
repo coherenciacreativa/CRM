@@ -335,6 +335,8 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
       commands: [
         command('crm:vnext:mailerlite-mini-launch-department-review-response-workspace'),
         command('crm:vnext:mailerlite-mini-launch-department-review-draft-assist'),
+        command('crm:vnext:mailerlite-mini-launch-department-review-finalization-preflight'),
+        command('crm:vnext:mailerlite-mini-launch-department-review-finalize-pending'),
         command('crm:vnext:mailerlite-mini-launch-department-review-intake'),
         command('crm:vnext:mailerlite-mini-launch-department-review-reconciliation'),
       ].filter(Boolean),
@@ -446,6 +448,8 @@ const buildRunbook = ({
       'Use the delivery pack for copy-ready no-live blocks and expected response paths.',
       'Create the response workspace so Brand/Web/CRM replies land as pending drafts before final files.',
       'Use the draft assist only as a starting point for departments; it cannot replace final Brand/Web/CRM responses.',
+      'Run finalization preflight before intake so pending files, Codex drafts and final response files cannot be confused.',
+      'Use finalize-pending only after a department confirms a clean pending response is final; it writes local final response files only.',
       'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
       'Use the backlog board only for one additional no-live idea intake, not for live production.',

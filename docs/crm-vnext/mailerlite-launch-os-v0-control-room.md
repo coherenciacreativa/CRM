@@ -746,6 +746,46 @@ Result:
 
 This checkpoint reduces review friction without faking department approval. The drafts can help Brand, Web Design and CRM start faster, but only a real final response file with `reviewMode=no_live_review` can move into intake/reconciliation.
 
+## Mini-launch department finalization preflight status
+
+Status: finalization preflight ready, waiting for real final responses, no live changes.
+
+Evidence:
+
+- Finalization preflight report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-finalization-preflight.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-finalization-preflight.spec.ts`
+
+Result:
+
+- Checks final response files, pending working copies and Codex draft assists in one report.
+- Treats only `brand_response.json`, `web_design_response.json` and `crm_response.json` as final response files.
+- Reports pending files as possible human-finalization inputs only if they already validate cleanly.
+- Reports Codex drafts as review aids only; they still require real department review and metadata removal.
+- Writes no final response files and opens no live gates.
+
+This checkpoint makes the handoff auditable before intake. It answers the operational question: "Are we actually ready to run intake/reconciliation, or are we still looking at drafts?"
+
+## Mini-launch department finalize-pending status
+
+Status: finalize-pending guard ready, no live changes.
+
+Evidence:
+
+- Finalize-pending report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalize_pending_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-finalize-pending.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-finalize-pending.spec.ts`
+
+Result:
+
+- Can promote a valid `*.pending.json` response to its final `*_response.json` path only when `--write` and `--approved-by` are explicit.
+- Blocks pending files that still contain `codexDraftMeta`.
+- Strips response-workspace helper fields (`workspaceStatus`, `workspaceInstructions`, `workspaceMeta`) before writing a final response file.
+- Refuses to overwrite existing final files unless `--overwrite-final` is explicit.
+- Performs no MailerLite, Shopify, CRM, subscriber, workflow, send, ledger, card, scoring or Fact Store action.
+
+This checkpoint gives the operator a clean local door between "draft is ready" and "final no-live response exists" without making Codex or a working file pretend to be a department.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -792,11 +832,13 @@ The goal is not complete until all gates below are proven with current evidence:
    - Individual department review packets generated and tested: done.
    - Department review delivery pack generated and tested: done.
    - Department review response workspace generated and tested: done.
+   - Department finalization preflight generated and tested: done.
+   - Department finalize-pending guard generated and tested: done.
    - Operator runbook includes Onboarding v2 event contract: done.
 
 ## Next best step
 
-Run the no-live department reviews using `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`, use the draft assist only as a starting point if useful, then collect final responses through the response workspace at `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md`. Departments can draft in the `.pending.json` files or from the `.codex_draft.json` assist files, but the intake/reconciliation step should use only the final `brand_response.json`, `web_design_response.json` and `crm_response.json` files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
+Run the no-live department reviews using `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`, use the draft assist only as a starting point if useful, then collect final responses through the response workspace at `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md`. Departments can draft in the `.pending.json` files or from the `.codex_draft.json` assist files, but the intake/reconciliation step should use only the final `brand_response.json`, `web_design_response.json` and `crm_response.json` files. Before intake, run the finalization preflight to confirm the operator is using final responses, not pending or Codex draft files; if a pending file is already clean and department-confirmed, use finalize-pending with explicit `--write --approved-by`. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
 
 Scope:
 

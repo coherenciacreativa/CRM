@@ -893,6 +893,8 @@ Current operator files:
 /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md
 /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md
 /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_draft_assist_inteligencia_descansar_2026-05-27.md
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.md
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalize_pending_inteligencia_descansar_2026-05-27.md
 ```
 
 Scripts:
@@ -903,6 +905,8 @@ CRM/scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs
 CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-delivery-pack.mjs
 CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-response-workspace.mjs
 CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-draft-assist.mjs
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-finalization-preflight.mjs
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-finalize-pending.mjs
 ```
 
 Purpose:
@@ -912,6 +916,8 @@ Purpose:
 - The department review delivery pack turns Brand/Web/CRM packets into copy-ready no-live review blocks with expected response paths and validation commands.
 - The response workspace creates protected `.pending.json` working copies, validates whether pending drafts are complete enough to finalize, and keeps final response files separate for intake/reconciliation.
 - The draft assist can create `*.codex_draft.json` starting points for Brand/Web/CRM, but those drafts deliberately use `reviewMode=draft_no_live_review`; intake also blocks copied drafts that still contain `codexDraftMeta`.
+- The finalization preflight checks final files, pending files and Codex draft assists together before intake, and reports whether the operator is actually ready to use final `brand_response.json`, `web_design_response.json` and `crm_response.json`.
+- The finalize-pending guard can write a clean final response file only from a validated pending file, only with explicit `--write --approved-by`, and never as live approval.
 - A backlog row is not permission to build, send, publish, score, route to onboarding, create groups, assign subscribers, append ledgers or mutate CRM.
 - Open live gate count remains 0.
 
@@ -1009,4 +1015,4 @@ This migration is succeeding when:
 
 ## Next local step
 
-No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` no-live department reviews from the delivery pack, optionally use draft assist as a starting point, let Brand/Web/CRM draft in the response workspace, collect only final `brand_response.json`, `web_design_response.json` and `crm_response.json` files for intake, run reconciliation, or use the backlog board for at most one additional no-live idea intake. Shopify/Web builds, MailerLite group creation, subscribers, seed sends, workflow use, onboarding handoff and CRM ledgers/cards/scoring remain separate approval lanes.
+No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` no-live department reviews from the delivery pack, optionally use draft assist as a starting point, let Brand/Web/CRM draft in the response workspace, run finalization preflight, promote only validated department-confirmed pending files through finalize-pending, collect only final `brand_response.json`, `web_design_response.json` and `crm_response.json` files for intake, run reconciliation, or use the backlog board for at most one additional no-live idea intake. Shopify/Web builds, MailerLite group creation, subscribers, seed sends, workflow use, onboarding handoff and CRM ledgers/cards/scoring remain separate approval lanes.
