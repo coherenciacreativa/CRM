@@ -875,10 +875,22 @@ const buildDepartmentReviewCollectionMoves = () => [
   'Use the response watcher before finalization preflight so missing final response files are obvious.',
 ];
 
-const buildApprovalPhaseMoves = () => [
+const miniLaunchEmptyGroupsAlreadyExist = (currentState) => {
+  const miniLaunch = currentState?.miniLaunch ?? {};
+  return miniLaunch.emptyGroupCreateDryRunStatus === 'dry_run_no_create_needed_targets_already_exist'
+    || (
+      (miniLaunch.emptyGroupCreateDryRunTargetExistingCount ?? 0) >= 2
+      && (miniLaunch.emptyGroupCreateDryRunTargetMissingCount ?? 2) === 0
+      && (miniLaunch.emptyGroupCreateDryRunCreatedCount ?? 0) === 0
+    );
+};
+
+const buildApprovalPhaseMoves = (currentState) => [
   'Use the Launch OS approval queue as the current source of human boundaries; do not reopen department-review collection while pendingDepartments is empty.',
   'Use the Launch OS approval intake only when Alejandro provides exact approval text; require a single exact phrase match before any fresh-evidence plan.',
-  'Hold at the mini-launch empty-group create runner dry-run: it is green, createdCount remains 0, and --execute still requires the exact phrase plus a fresh group scan.',
+  miniLaunchEmptyGroupsAlreadyExist(currentState)
+    ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
+    : 'Hold at the mini-launch empty-group create runner dry-run: it is green, createdCount remains 0, and --execute still requires the exact phrase plus a fresh group scan.',
   'Use the mini-launch email builder payload manifest only as local implementation input; it cannot execute MailerLite builder mutations or sends.',
   'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
   'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
@@ -892,7 +904,7 @@ const buildSharedImmediateMoves = () => [
   'Use the backlog board only for one additional no-live idea intake, not for live production.',
   'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
   'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
-  'Use the mini-launch empty-group create runner only in dry-run until Alejandro gives the exact phrase for --execute.',
+  'Use the mini-launch empty-group create runner only for dry-run or post-execution no-create-needed verification unless a new exact approval boundary is opened.',
   'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
   'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
   'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
@@ -913,7 +925,7 @@ const departmentFinalResponsesAccepted = (currentState) => {
 
 const buildImmediateNextMoves = ({ currentState }) => [
   ...(departmentFinalResponsesAccepted(currentState)
-    ? buildApprovalPhaseMoves()
+    ? buildApprovalPhaseMoves(currentState)
     : buildDepartmentReviewCollectionMoves()),
   ...buildSharedImmediateMoves(),
 ];

@@ -681,6 +681,54 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("Email builder payload manifest is ready");
   });
 
+  test("treats mini-launch empty-group creation as closed after target groups exist", () => {
+    const readinessBoardAfterGroupCreation = {
+      ...readinessBoardAfterBrandCandidateDecision,
+      lanes: readinessBoardAfterBrandCandidateDecision.lanes.map((lane) =>
+        lane.id === "mailerlite_group_dry_run"
+          ? {
+            ...lane,
+            sourceStatus: "mini_launch_groups_already_exist_no_create_needed",
+            readiness: {
+              ...lane.readiness,
+              canCreateNamedEmptyGroupsAfterExplicitApproval: false,
+            },
+          }
+          : lane),
+    };
+    const checks = buildRequirementChecks({
+      ...values,
+      readinessBoard: readinessBoardAfterGroupCreation,
+      reconciliationBoard: reconciliationBoardAfterResponses,
+      responseWorkspace: responseWorkspaceAfterResponses,
+      finalizationPreflight: finalizationPreflightAfterResponses,
+      miniLaunchEmptyGroupCreateDryRun: {
+        status: "dry_run_no_create_needed_targets_already_exist",
+        mode: "dry_run",
+        freshScan: {
+          targetGroupsExistingCount: 2,
+          targetGroupsMissingCount: 0,
+        },
+        decision: {
+          canExecute: false,
+        },
+        createdGroups: [],
+        safety: {
+          mailerLiteMutationsPerformed: false,
+        },
+      },
+    });
+    const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
+
+    expect(byId.consolidate_taxonomy_receipts.evidence).toContain("launchGroupsAlreadyExist=true");
+    expect(byId.consolidate_taxonomy_receipts.remaining.join(" ")).toContain("creation boundary is closed");
+    expect(byId.consolidate_taxonomy_receipts.remaining.join(" ")).not.toContain("live empty-group creation remains a separate exact approval boundary");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmptyGroupCreateDryRunNoCreateNeeded=true");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmptyGroupCreateDryRunTargetExistingCount=2");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmptyGroupCreateDryRunTargetMissingCount=0");
+    expect(byId.validate_with_dry_runs_and_tests.evidence).toContain("emptyGroupCreateDryRunNoCreateNeeded=true");
+  });
+
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {
     const checks = buildRequirementChecks({
       ...values,

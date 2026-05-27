@@ -380,7 +380,11 @@ const buildRequirementChecks = ({
     && (brandCandidateGroupsLane?.readiness?.acceptedGroupCount ?? 0) >= 2
     && (brandCandidateGroupsLane?.readiness?.missingCandidateCount ?? 0) === 0
     && (brandCandidateGroupsLane?.readiness?.brandStatusBlockedCount ?? 0) === 0;
-  const launchGroupDryRunReady = groupDryRunLane?.sourceStatus === 'mini_launch_group_dry_run_ready_for_future_empty_group_decision'
+  const launchGroupsAlreadyExist = groupDryRunLane?.sourceStatus === 'mini_launch_groups_already_exist_no_create_needed';
+  const launchGroupDryRunReady = [
+    'mini_launch_group_dry_run_ready_for_future_empty_group_decision',
+    'mini_launch_groups_already_exist_no_create_needed',
+  ].includes(groupDryRunLane?.sourceStatus)
     && groupDryRunLane?.readiness?.brandDictionaryHasTargets === true
     && groupDryRunLane?.readiness?.brandApprovedForEmptyCreate === true
     && groupDryRunLane?.readiness?.canAssignSubscribersNow === false
@@ -392,13 +396,40 @@ const buildRequirementChecks = ({
     ?? emptyGroupCreateDryRunLane?.sourceStatus
     ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunStatus
     ?? null;
-  const miniLaunchEmptyGroupCreateDryRunReady = miniLaunchEmptyGroupCreateDryRunStatus === 'dry_run_ready_for_exact_approval'
+  const miniLaunchEmptyGroupCreateDryRunTargetExistingCount = miniLaunchEmptyGroupCreateDryRun?.freshScan?.targetGroupsExistingCount
+    ?? emptyGroupCreateDryRunLane?.readiness?.targetGroupsExistingCount
+    ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunTargetExistingCount
+    ?? 0;
+  const miniLaunchEmptyGroupCreateDryRunTargetMissingCount = miniLaunchEmptyGroupCreateDryRun?.freshScan?.targetGroupsMissingCount
+    ?? emptyGroupCreateDryRunLane?.readiness?.targetGroupsMissingCount
+    ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunTargetMissingCount
+    ?? 2;
+  const miniLaunchEmptyGroupCreateDryRunCreatedCount = miniLaunchEmptyGroupCreateDryRun?.createdGroups?.length
+    ?? emptyGroupCreateDryRunLane?.readiness?.createdCount
+    ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunCreatedCount
+    ?? 0;
+  const miniLaunchEmptyGroupCreateDryRunCanExecute = miniLaunchEmptyGroupCreateDryRun?.decision?.canExecute
+    ?? emptyGroupCreateDryRunLane?.readiness?.canExecute
+    ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunCanExecute
+    ?? false;
+  const miniLaunchEmptyGroupCreateDryRunMutated = miniLaunchEmptyGroupCreateDryRun?.safety?.mailerLiteMutationsPerformed
+    ?? emptyGroupCreateDryRunLane?.readiness?.mailerLiteMutationsPerformed
+    ?? false;
+  const miniLaunchEmptyGroupCreateDryRunNoCreateNeeded = miniLaunchEmptyGroupCreateDryRunStatus === 'dry_run_no_create_needed_targets_already_exist'
+    && miniLaunchEmptyGroupCreateDryRunTargetExistingCount >= 2
+    && miniLaunchEmptyGroupCreateDryRunTargetMissingCount === 0
+    && miniLaunchEmptyGroupCreateDryRunCreatedCount === 0
+    && miniLaunchEmptyGroupCreateDryRunCanExecute === false
+    && miniLaunchEmptyGroupCreateDryRunMutated === false;
+  const miniLaunchEmptyGroupCreateDryRunReady = (
+    miniLaunchEmptyGroupCreateDryRunStatus === 'dry_run_ready_for_exact_approval'
     && (miniLaunchEmptyGroupCreateDryRun?.mode === 'dry_run' || !miniLaunchEmptyGroupCreateDryRun)
-    && (miniLaunchEmptyGroupCreateDryRun?.freshScan?.targetGroupsExistingCount ?? emptyGroupCreateDryRunLane?.readiness?.targetGroupsExistingCount ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunTargetExistingCount ?? 0) === 0
-    && (miniLaunchEmptyGroupCreateDryRun?.freshScan?.targetGroupsMissingCount ?? emptyGroupCreateDryRunLane?.readiness?.targetGroupsMissingCount ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunTargetMissingCount ?? 2) === 2
-    && (miniLaunchEmptyGroupCreateDryRun?.createdGroups?.length ?? emptyGroupCreateDryRunLane?.readiness?.createdCount ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunCreatedCount ?? 0) === 0
-    && (miniLaunchEmptyGroupCreateDryRun?.decision?.canExecute ?? emptyGroupCreateDryRunLane?.readiness?.canExecute ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunCanExecute ?? false) === false
-    && (miniLaunchEmptyGroupCreateDryRun?.safety?.mailerLiteMutationsPerformed ?? emptyGroupCreateDryRunLane?.readiness?.mailerLiteMutationsPerformed ?? false) === false;
+    && miniLaunchEmptyGroupCreateDryRunTargetExistingCount === 0
+    && miniLaunchEmptyGroupCreateDryRunTargetMissingCount === 2
+    && miniLaunchEmptyGroupCreateDryRunCreatedCount === 0
+    && miniLaunchEmptyGroupCreateDryRunCanExecute === false
+    && miniLaunchEmptyGroupCreateDryRunMutated === false
+  ) || miniLaunchEmptyGroupCreateDryRunNoCreateNeeded;
   const receiptPassed = validationReceiptPassed(validationReceipt);
   const reconciliationActions = reconciliationBoard?.actionPlan?.actions ?? [];
   const hasReconciliationAction = (id) => reconciliationActions.some((action) => action.id === id);
@@ -746,12 +777,18 @@ const buildRequirementChecks = ({
         `brandAcceptedLaunchGroupCandidates=${brandAcceptedLaunchGroupCandidates}`,
         `brandCandidateDecisionClosed=${brandCandidateDecisionClosed}`,
         `groupDryRunReadyForFutureEmptyGroupDecision=${launchGroupDryRunReady}`,
+        `launchGroupsAlreadyExist=${launchGroupsAlreadyExist}`,
         `brandCandidateAcceptedGroupCount=${brandCandidateGroupsLane?.readiness?.acceptedGroupCount ?? 'unknown'}`,
         `groupDryRunStatus=${groupDryRunLane?.sourceStatus ?? 'missing'}`,
         `reconciliationActions=${reconciliationActions.map((action) => action.id).join(',') || 'none'}`,
       ],
       remaining: brandCandidateDecisionClosed && launchGroupDryRunReady
-        ? [
+        ? launchGroupsAlreadyExist
+          ? [
+          'Launch Source/Delivered names are represented, dry-run validated and already live as empty MailerLite groups; this creation boundary is closed.',
+          'Sent groups for follow-up sequence remain off by default unless Brand canonizes reusable content.',
+        ]
+          : [
           'Launch Source/Delivered names are represented and dry-run validated; live empty-group creation remains a separate exact approval boundary.',
           'Sent groups for follow-up sequence remain off by default unless Brand canonizes reusable content.',
         ]
@@ -781,7 +818,10 @@ const buildRequirementChecks = ({
         `miniLaunchEmptyGroupApprovalTargetCount=${emptyGroupApprovalLane?.readiness?.targetGroupCount ?? runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketTargetCount ?? 'unknown'}`,
         `miniLaunchEmptyGroupCreateDryRunStatus=${miniLaunchEmptyGroupCreateDryRunStatus ?? 'missing'}`,
         `miniLaunchEmptyGroupCreateDryRunReady=${miniLaunchEmptyGroupCreateDryRunReady}`,
-        `miniLaunchEmptyGroupCreateDryRunCreatedCount=${miniLaunchEmptyGroupCreateDryRun?.createdGroups?.length ?? emptyGroupCreateDryRunLane?.readiness?.createdCount ?? runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunCreatedCount ?? 'unknown'}`,
+        `miniLaunchEmptyGroupCreateDryRunNoCreateNeeded=${miniLaunchEmptyGroupCreateDryRunNoCreateNeeded}`,
+        `miniLaunchEmptyGroupCreateDryRunTargetExistingCount=${miniLaunchEmptyGroupCreateDryRunTargetExistingCount}`,
+        `miniLaunchEmptyGroupCreateDryRunTargetMissingCount=${miniLaunchEmptyGroupCreateDryRunTargetMissingCount}`,
+        `miniLaunchEmptyGroupCreateDryRunCreatedCount=${miniLaunchEmptyGroupCreateDryRunCreatedCount}`,
         `departmentReviewsAccepted=${pendingDepartments.length === 0 && finalizationReadyForIntake === true}`,
         `webAcceptedScopedLocalDraft=${webAcceptedScopedLocalDraft}`,
         `crmAcceptedSignalBoundaries=${crmAcceptedSignalBoundaries}`,
@@ -925,6 +965,7 @@ const buildRequirementChecks = ({
         `emptyGroupApprovalPacketReady=${emptyGroupApprovalPacketReady}`,
         `emptyGroupCreateDryRunStatus=${miniLaunchEmptyGroupCreateDryRunStatus ?? 'unknown'}`,
         `emptyGroupCreateDryRunReady=${miniLaunchEmptyGroupCreateDryRunReady}`,
+        `emptyGroupCreateDryRunNoCreateNeeded=${miniLaunchEmptyGroupCreateDryRunNoCreateNeeded}`,
         `liveMutationGateOpenCount=${liveMutationGateOpenCount}`,
         `hasGoalAuditScript=${packageHas(packageJson, 'crm:vnext:mailerlite-launch-os-goal-audit')}`,
         `validationStatus=${effectiveValidationStatus}`,
@@ -1031,9 +1072,16 @@ const buildGoalAudit = ({
   const departmentResponsesAccepted = coordinationRequirement?.status === 'proven';
   const emptyGroupApprovalPacketReady = values.readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_approval_packet')?.readyNow === true
     || values.runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketReady === true;
+  const emptyGroupCreateDryRunStatus = values.miniLaunchEmptyGroupCreateDryRun?.status
+    ?? values.readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_create_dry_run')?.sourceStatus
+    ?? values.runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunStatus
+    ?? null;
+  const emptyGroupCreateDryRunNoCreateNeeded = emptyGroupCreateDryRunStatus === 'dry_run_no_create_needed_targets_already_exist';
   const emptyGroupCreateDryRunReady = values.readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_create_dry_run')?.readyNow === true
     || values.miniLaunchEmptyGroupCreateDryRun?.status === 'dry_run_ready_for_exact_approval'
-    || values.runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunStatus === 'dry_run_ready_for_exact_approval';
+    || values.miniLaunchEmptyGroupCreateDryRun?.status === 'dry_run_no_create_needed_targets_already_exist'
+    || values.runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunStatus === 'dry_run_ready_for_exact_approval'
+    || values.runbook?.currentState?.miniLaunch?.emptyGroupCreateDryRunStatus === 'dry_run_no_create_needed_targets_already_exist';
   const localEmailAssetPlanReady = values.miniLaunchLocalEmailAssetPlan?.status === 'mini_launch_local_email_asset_plan_ready_no_live_changes'
     || values.runbook?.currentState?.miniLaunch?.localEmailAssetPlanReady === true
     || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes';
@@ -1063,14 +1111,25 @@ const buildGoalAudit = ({
       : 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
     : 'Use Email Style QA to generate the local email asset plan before requesting exact MailerLite asset-build scope; builder execution remains closed.';
   const nextBestMove = departmentResponsesAccepted
-    ? emptyGroupCreateDryRunReady
+    ? emptyGroupCreateDryRunNoCreateNeeded
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${localEmailAssetPlanMove} Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.`
+      : emptyGroupCreateDryRunReady
       ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.`
       : emptyGroupApprovalPacketReady
       ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${localEmailAssetPlanMove} Live actions remain closed.`
       : `Continue with the next no-live moves unlocked by department reconciliation. ${localEmailAssetPlanMove} Prepare the exact empty-group approval packet, scoped Shopify local-build request, and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
-    ? emptyGroupCreateDryRunReady
+    ? emptyGroupCreateDryRunNoCreateNeeded
+      ? [
+        'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
+        'Treat the mini-launch empty-group creation boundary as closed: the two target groups already exist and no --execute rerun is needed.',
+        approvalQueueMove,
+        approvalIntakeMove,
+        localEmailAssetPlanMove,
+        'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
+      ]
+      : emptyGroupCreateDryRunReady
       ? [
         'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
         'Hold at the mini-launch empty-group create runner dry-run; it is green but not execution approval.',

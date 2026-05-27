@@ -237,6 +237,64 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.blockers).toContain("mini_launch_empty_group_create_dry_run_not_ready:blocked");
   });
 
+  test("marks mini-launch empty-group approval as reference-only after targets already exist", () => {
+    const item = buildMiniLaunchEmptyGroupItem({
+      packet: miniLaunchEmptyGroupPacket,
+      dryRun: {
+        ...miniLaunchEmptyGroupCreateDryRun,
+        status: "dry_run_no_create_needed_targets_already_exist",
+        freshScan: {
+          targetGroupsExistingCount: 2,
+          targetGroupsMissingCount: 0,
+        },
+      },
+    });
+
+    expect(item.status).toBe("reference_only_no_approval_request_now");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.exactApprovalPhrase).toBeNull();
+    expect(item.operationType).toBe("live_mailerlite_group_creation_already_completed");
+    expect(item.evidence).toMatchObject({
+      targetGroupsAlreadyExist: true,
+      targetMissingCount: 0,
+      targetExistingCount: 2,
+    });
+    expect(item.notes.join(" ")).toContain("already exist");
+  });
+
+  test("keeps mini-launch empty-group item reference-only with completed packet and no exact phrase", () => {
+    const item = buildMiniLaunchEmptyGroupItem({
+      packet: {
+        ...miniLaunchEmptyGroupPacket,
+        status: "reference_only_empty_group_creation_already_completed",
+        decision: {
+          ...miniLaunchEmptyGroupPacket.decision,
+          canAskAlejandroForApproval: false,
+          exactApprovalPhrase: null,
+        },
+        targetGroups: miniLaunchEmptyGroupPacket.targetGroups.map((target) => ({
+          ...target,
+          plannedOperation: "no_empty_group_creation_needed_already_exists",
+          allowedOperation: "already_exists_no_create_needed",
+          existsInMailerLite: true,
+        })),
+      },
+      dryRun: {
+        ...miniLaunchEmptyGroupCreateDryRun,
+        status: "dry_run_no_create_needed_targets_already_exist",
+        freshScan: {
+          targetGroupsExistingCount: 2,
+          targetGroupsMissingCount: 0,
+        },
+      },
+    });
+
+    expect(item.status).toBe("reference_only_no_approval_request_now");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.exactApprovalPhrase).toBeNull();
+    expect(item.blockers).toEqual([]);
+  });
+
   test("builds specific boundary items for onboarding v2, asset build and Brújula", () => {
     expect(buildOnboardingV2EmptyGroupItem({
       packet: onboardingV2EmptyGroupsPacket,

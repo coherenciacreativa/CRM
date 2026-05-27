@@ -155,6 +155,79 @@ describe("CRM vNext MailerLite mini-launch empty group create runner", () => {
     });
   });
 
+  test("returns a no-create-needed dry-run when both targets already exist", () => {
+    const run = buildRunFromState({
+      packet,
+      liveGroups: [
+        {
+          id: "188600000000000000",
+          name: "CC · Source · Quiz · Inteligencia para descansar",
+          active_count: 0,
+        },
+        {
+          id: "188600000000000001",
+          name: "CC · Delivered · Quiz result · Inteligencia para descansar",
+          active_count: 0,
+        },
+      ],
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(run.status).toBe("dry_run_no_create_needed_targets_already_exist");
+    expect(run.ok).toBe(true);
+    expect(run.freshScan).toMatchObject({
+      targetGroupsExistingCount: 2,
+      targetGroupsMissingCount: 0,
+    });
+    expect(run.decision.blockers).toEqual([]);
+    expect(run.safety.groupMutationsPerformed).toBe(false);
+  });
+
+  test("accepts a reference-only packet after target groups already exist", () => {
+    const referencePacket = {
+      ...packet,
+      ok: true,
+      status: "reference_only_empty_group_creation_already_completed",
+      decision: {
+        canAskAlejandroForApproval: false,
+        exactApprovalPhrase: null,
+        requiresFreshRerunBeforeExecution: false,
+        packetIsApprovalByItself: false,
+      },
+      targetGroups: packet.targetGroups.map((target, index) => ({
+        ...target,
+        plannedOperation: "no_empty_group_creation_needed_already_exists",
+        allowedOperation: "already_exists_no_create_needed",
+        existsInMailerLite: true,
+        liveGroupId: `18860000000000000${index}`,
+      })),
+    };
+    const readiness = validatePacketReadiness(referencePacket);
+    const run = buildRunFromState({
+      packet: referencePacket,
+      liveGroups: [
+        {
+          id: "188600000000000000",
+          name: "CC · Source · Quiz · Inteligencia para descansar",
+          active_count: 0,
+        },
+        {
+          id: "188600000000000001",
+          name: "CC · Delivered · Quiz result · Inteligencia para descansar",
+          active_count: 0,
+        },
+      ],
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(readiness.ok).toBe(true);
+    expect(readiness.issues).toEqual([]);
+    expect(run.status).toBe("dry_run_no_create_needed_targets_already_exist");
+    expect(run.ok).toBe(true);
+    expect(run.decision.blockers).toEqual([]);
+    expect(run.decision.canExecute).toBe(false);
+  });
+
   test("execute mode is blocked without the exact phrase", () => {
     const run = buildRunFromState({
       packet,

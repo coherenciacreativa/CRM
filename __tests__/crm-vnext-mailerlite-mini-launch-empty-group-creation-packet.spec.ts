@@ -152,6 +152,49 @@ describe("CRM vNext MailerLite mini-launch empty group creation packet", () => {
     });
   });
 
+  test("builds a reference packet when target groups already exist", () => {
+    const packet = buildPacketFromDryRun({
+      dryRun: {
+        ...readyDryRun,
+        status: "mini_launch_groups_already_exist_no_create_needed",
+        summary: {
+          ...readyDryRun.summary,
+          liveGroupsRead: 77,
+          groupsAlreadyLiveCount: 2,
+          safeEmptyCreateTargetCount: 0,
+        },
+        readiness: {
+          ...readyDryRun.readiness,
+          canCreateNamedEmptyGroupsAfterExplicitApproval: false,
+        },
+        plannedGroups: readyDryRun.plannedGroups.map((group, index) => ({
+          ...group,
+          existsInMailerLite: true,
+          liveGroupId: `18860000000000000${index}`,
+          emptyGroupCreationStatus: "exists_in_mailerlite",
+        })),
+        futureApprovalPhrase: null,
+        approvalGate: {
+          ...readyDryRun.approvalGate,
+          canCreateNamedEmptyGroupsAfterExplicitApproval: false,
+        },
+      },
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(packet.ok).toBe(true);
+    expect(packet.status).toBe("reference_only_empty_group_creation_already_completed");
+    expect(packet.decision.canAskAlejandroForApproval).toBe(false);
+    expect(packet.decision.exactApprovalPhrase).toBeNull();
+    expect(packet.targetGroups).toHaveLength(2);
+    expect(packet.targetGroups[0]).toMatchObject({
+      plannedOperation: "no_empty_group_creation_needed_already_exists",
+      allowedOperation: "already_exists_no_create_needed",
+      existsInMailerLite: true,
+    });
+    expect(packet.blockers).toEqual([]);
+  });
+
   test("renders the human boundary and closed gates", () => {
     const packet = buildPacketFromDryRun({
       dryRun: readyDryRun,

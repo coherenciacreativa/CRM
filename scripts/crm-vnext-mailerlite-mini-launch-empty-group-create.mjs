@@ -135,30 +135,44 @@ const approvalStatusFor = ({ execute, approvalPhrase, expectedPhrase }) => {
 const validatePacketReadiness = (packet) => {
   const issues = [];
   const targets = (packet?.targetGroups ?? []).filter((target) => cleanString(target?.name));
+  const referenceAlreadyCompleted = packet?.status === 'reference_only_empty_group_creation_already_completed';
 
   if (packet?.ok !== true) issues.push('approval_packet_not_ok');
-  if (packet?.status !== 'ready_for_exact_human_approval_to_create_mini_launch_empty_groups') {
+  if (![
+    'ready_for_exact_human_approval_to_create_mini_launch_empty_groups',
+    'reference_only_empty_group_creation_already_completed',
+  ].includes(packet?.status)) {
     issues.push(`approval_packet_status_not_ready:${packet?.status ?? 'missing'}`);
   }
-  if (packet?.decision?.canAskAlejandroForApproval !== true) issues.push('approval_packet_cannot_ask_alejandro');
+  if (!referenceAlreadyCompleted && packet?.decision?.canAskAlejandroForApproval !== true) issues.push('approval_packet_cannot_ask_alejandro');
+  if (referenceAlreadyCompleted && packet?.decision?.canAskAlejandroForApproval !== false) issues.push('reference_packet_can_ask_alejandro_unexpectedly');
   if (packet?.decision?.packetIsApprovalByItself !== false) issues.push('approval_packet_self_authorizes_unexpectedly');
-  if (packet?.decision?.requiresFreshRerunBeforeExecution !== true) issues.push('approval_packet_missing_fresh_rerun_requirement');
-  if (!cleanString(packet?.decision?.exactApprovalPhrase)) issues.push('approval_packet_missing_exact_phrase');
+  if (!referenceAlreadyCompleted && packet?.decision?.requiresFreshRerunBeforeExecution !== true) issues.push('approval_packet_missing_fresh_rerun_requirement');
+  if (referenceAlreadyCompleted && packet?.decision?.requiresFreshRerunBeforeExecution !== false) issues.push('reference_packet_should_not_require_execution_rerun');
+  if (!referenceAlreadyCompleted && !cleanString(packet?.decision?.exactApprovalPhrase)) issues.push('approval_packet_missing_exact_phrase');
+  if (referenceAlreadyCompleted && cleanString(packet?.decision?.exactApprovalPhrase)) issues.push('reference_packet_unexpected_exact_phrase');
   if (targets.length === 0) issues.push('approval_packet_has_no_target_groups');
 
   for (const target of targets) {
-    if (target.plannedOperation !== 'create_named_empty_group_after_exact_human_approval') {
+    if (!referenceAlreadyCompleted && target.plannedOperation !== 'create_named_empty_group_after_exact_human_approval') {
       issues.push(`target_planned_operation_not_create_empty:${target.name}`);
     }
-    if (target.allowedOperation !== 'create_named_empty_group_only_after_explicit_approval') {
+    if (referenceAlreadyCompleted && target.plannedOperation !== 'no_empty_group_creation_needed_already_exists') {
+      issues.push(`target_planned_operation_not_already_exists:${target.name}`);
+    }
+    if (!referenceAlreadyCompleted && target.allowedOperation !== 'create_named_empty_group_only_after_explicit_approval') {
       issues.push(`target_allowed_operation_not_narrow:${target.name}`);
+    }
+    if (referenceAlreadyCompleted && target.allowedOperation !== 'already_exists_no_create_needed') {
+      issues.push(`target_allowed_operation_not_already_exists:${target.name}`);
     }
     if (target.workflowAttachmentAllowed !== false) issues.push(`target_workflow_attachment_not_closed:${target.name}`);
     if (target.subscriberAssignmentAllowed !== false) issues.push(`target_subscriber_assignment_not_closed:${target.name}`);
     if (target.sendAllowed !== false) issues.push(`target_send_not_closed:${target.name}`);
-    if (target.existsInMailerLite === true || cleanString(target.liveGroupId)) {
+    if (!referenceAlreadyCompleted && (target.existsInMailerLite === true || cleanString(target.liveGroupId))) {
       issues.push(`target_packet_already_live:${target.name}`);
     }
+    if (referenceAlreadyCompleted && target.existsInMailerLite !== true) issues.push(`reference_target_not_marked_live:${target.name}`);
   }
 
   const safety = packet?.safety ?? {};
@@ -247,10 +261,15 @@ const buildRunFromState = ({
   const approval = approvalStatusFor({ execute, approvalPhrase, expectedPhrase });
   const targetPlan = buildTargetPlan({ packet, liveGroups });
   const existingTargets = targetPlan.filter((target) => target.existsInFreshScan);
+  const missingTargets = targetPlan.filter((target) => !target.existsInFreshScan);
+  const allTargetsAlreadyExist = targetPlan.length > 0
+    && existingTargets.length === targetPlan.length
+    && missingTargets.length === 0
+    && packetReadiness.issues.length === 0;
   const blockers = [
     ...packetReadiness.issues,
     ...(execute && !approval.ok ? [approval.status] : []),
-    ...(existingTargets.length ? ['target_group_already_exists_in_fresh_scan'] : []),
+    ...(existingTargets.length && !(allTargetsAlreadyExist && !execute) ? ['target_group_already_exists_in_fresh_scan'] : []),
   ];
   const canExecute = Boolean(execute && blockers.length === 0 && targetPlan.length > 0 && credentialPresent);
   const executedOk = canExecute && errors.length === 0 && createdGroups.length === targetPlan.length;
@@ -263,7 +282,9 @@ const buildRunFromState = ({
         : errors.length
           ? 'failed_during_mini_launch_empty_group_create'
           : 'execute_ready_but_not_performed'
-    : dryRunOk
+    : allTargetsAlreadyExist
+      ? 'dry_run_no_create_needed_targets_already_exist'
+      : dryRunOk
       ? 'dry_run_ready_for_exact_approval'
       : 'dry_run_blocked';
 
@@ -291,7 +312,7 @@ const buildRunFromState = ({
     freshScan: {
       groupsRead: liveGroups?.length ?? 0,
       targetGroupsExistingCount: existingTargets.length,
-      targetGroupsMissingCount: targetPlan.filter((target) => !target.existsInFreshScan).length,
+      targetGroupsMissingCount: missingTargets.length,
     },
     packetReadiness,
     decision: {
@@ -565,7 +586,9 @@ const renderMarkdown = (run) => [
   '',
   '## Decision Ejecutiva',
   '',
-  run.mode === 'dry_run'
+  run.status === 'dry_run_no_create_needed_targets_already_exist'
+    ? 'Dry-run completado. Los grupos objetivo ya existen en MailerLite; no hay creacion vacia pendiente.'
+    : run.mode === 'dry_run'
     ? 'Dry-run completado. No se crearon grupos; el runner solo re-escaneo MailerLite para confirmar que los targets siguen faltando.'
     : run.status === 'executed_mini_launch_empty_group_creation'
       ? 'Creacion aprobada ejecutada para los dos grupos vacios del mini-lanzamiento.'

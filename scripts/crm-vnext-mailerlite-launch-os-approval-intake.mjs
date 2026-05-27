@@ -131,6 +131,17 @@ const buildOperatorPlan = (item) => {
   ];
 };
 
+const buildUnmatchedApprovalPlan = ({ approvalTextProvided, readyApprovalIds }) => {
+  if (!approvalTextProvided) return [];
+  return [
+    'Human approval text was supplied, but it did not match exactly one queued approval phrase.',
+    'Treat broad, approximate, or multi-scope approval as non-executable.',
+    `Ready queue items remain separate boundaries: ${(readyApprovalIds ?? []).join(', ') || 'none'}.`,
+    'Ask for or route the exact scoped phrase for one queue item before any fresh evidence or guarded runner.',
+    'Do not infer whether broad approval applies to mini-launch groups, Onboarding v2 groups, email asset build, Shopify local build, or Brújula builder draft.',
+  ];
+};
+
 const buildApprovalIntake = ({
   approvalQueue,
   approvalText = null,
@@ -154,12 +165,36 @@ const buildApprovalIntake = ({
   const status = !normalizedText
     ? 'waiting_for_exact_approval_text_no_live_changes'
     : matches.length === 0
-      ? 'no_exact_approval_phrase_detected_no_live_changes'
+      ? 'approval_text_present_but_no_exact_phrase_no_live_changes'
       : matches.length > 1
         ? 'ambiguous_exact_approval_phrase_detected_no_live_changes'
         : matchedReady
           ? 'exact_approval_detected_requires_fresh_evidence_no_live_changes'
           : 'matched_approval_item_not_ready_no_live_changes';
+  const approvalTextClassification = !normalizedText
+    ? 'none'
+    : matches.length === 0
+      ? 'unmatched_or_broad_scope'
+      : matches.length > 1
+        ? 'ambiguous_multiple_exact_matches'
+        : matchedReady
+          ? 'single_exact_ready_match'
+          : 'single_exact_match_not_ready';
+  const approvalTextHandling = {
+    exactQueuedPhraseRequired: true,
+    broadOrApproximateApprovalExecutable: false,
+    approvalTextClassification,
+    noLiveActionReason: !normalizedText
+      ? 'no_approval_text_supplied'
+      : matches.length === 0
+        ? 'supplied_text_did_not_match_any_exact_queued_approval_phrase'
+        : matches.length > 1
+          ? 'supplied_text_matched_more_than_one_queued_approval_phrase'
+          : matchedReady
+            ? 'exact_phrase_detected_but_execution_still_requires_fresh_evidence_and_guarded_runner'
+            : 'matched_approval_item_is_not_ready',
+    recommendedBoundary: approvalQueue?.executiveSummary?.nextBestHumanBoundary ?? null,
+  };
 
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -182,9 +217,11 @@ const buildApprovalIntake = ({
       blockedApprovalRequestCount: approvalQueue?.executiveSummary?.blockedApprovalRequestCount ?? null,
       openLiveMutationGateCount: approvalQueue?.executiveSummary?.openLiveMutationGateCount ?? null,
       nextBestHumanBoundary: approvalQueue?.executiveSummary?.nextBestHumanBoundary ?? null,
+      approvalTextClassification,
       readyApprovalIds,
       blockedApprovalIds,
     },
+    approvalTextHandling,
     matchedApproval: matchedItem ? {
       id: matchedItem.id,
       title: matchedItem.title,
@@ -209,7 +246,12 @@ const buildApprovalIntake = ({
         canAskAlejandroNow: item.canAskAlejandroNow,
       }))
       : [],
-    operatorPlan: buildOperatorPlan(matchedItem),
+    operatorPlan: matchedItem
+      ? buildOperatorPlan(matchedItem)
+      : buildUnmatchedApprovalPlan({
+        approvalTextProvided: Boolean(normalizedText),
+        readyApprovalIds,
+      }),
     safety,
     sourceDigests,
   };

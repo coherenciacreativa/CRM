@@ -71,29 +71,62 @@ const safeTargetsFromDryRun = (dryRun) =>
     }))
     .filter((target) => target.name);
 
+const alreadyLiveTargetsFromDryRun = (dryRun) =>
+  (dryRun?.plannedGroups ?? [])
+    .filter((group) =>
+      group?.emptyGroupCreationStatus === 'exists_in_mailerlite'
+      || group?.existsInMailerLite === true)
+    .map((group) => ({
+      name: cleanString(group.name),
+      layer: cleanString(group.layer),
+      object: cleanString(group.object),
+      detail: cleanString(group.detail),
+      brandStatus: cleanString(group.brandStatus),
+      existsInMailerLite: group.existsInMailerLite === true,
+      liveGroupId: cleanString(group.liveGroupId),
+      plannedOperation: 'no_empty_group_creation_needed_already_exists',
+      allowedOperation: 'already_exists_no_create_needed',
+      workflowAttachmentAllowed: false,
+      subscriberAssignmentAllowed: false,
+      sendAllowed: false,
+    }))
+    .filter((target) => target.name);
+
 const validateDryRunReadiness = (dryRun) => {
   const issues = [];
-  const targets = safeTargetsFromDryRun(dryRun);
+  const alreadyComplete = dryRun?.status === 'mini_launch_groups_already_exist_no_create_needed';
+  const targets = alreadyComplete ? alreadyLiveTargetsFromDryRun(dryRun) : safeTargetsFromDryRun(dryRun);
 
   if (dryRun?.ok !== true) issues.push('group_dry_run_not_ok');
-  if (dryRun?.status !== 'mini_launch_group_dry_run_ready_for_future_empty_group_decision') {
+  if (![
+    'mini_launch_group_dry_run_ready_for_future_empty_group_decision',
+    'mini_launch_groups_already_exist_no_create_needed',
+  ].includes(dryRun?.status)) {
     issues.push(`group_dry_run_status_not_ready:${dryRun?.status ?? 'missing'}`);
   }
-  if (dryRun?.readiness?.canCreateNamedEmptyGroupsAfterExplicitApproval !== true) {
+  if (!alreadyComplete && dryRun?.readiness?.canCreateNamedEmptyGroupsAfterExplicitApproval !== true) {
     issues.push('dry_run_cannot_create_named_empty_groups_after_explicit_approval');
   }
-  if (dryRun?.approvalGate?.canCreateNamedEmptyGroupsAfterExplicitApproval !== true) {
+  if (alreadyComplete && dryRun?.readiness?.canCreateNamedEmptyGroupsAfterExplicitApproval !== false) {
+    issues.push('dry_run_reports_create_approval_open_after_targets_exist');
+  }
+  if (!alreadyComplete && dryRun?.approvalGate?.canCreateNamedEmptyGroupsAfterExplicitApproval !== true) {
     issues.push('approval_gate_missing_create_empty_after_approval');
+  }
+  if (alreadyComplete && dryRun?.approvalGate?.canCreateNamedEmptyGroupsAfterExplicitApproval !== false) {
+    issues.push('approval_gate_reports_create_empty_open_after_targets_exist');
   }
   if (dryRun?.approvalGate?.canCreateGroups !== false) issues.push('approval_gate_can_create_groups_now_unexpectedly_open');
   if (dryRun?.approvalGate?.canUseWorkflow !== false) issues.push('workflow_use_gate_unexpectedly_open');
   if (dryRun?.approvalGate?.canAssignSubscribers !== false) issues.push('subscriber_assignment_gate_unexpectedly_open');
   if (dryRun?.approvalGate?.canSendEmail !== false) issues.push('send_gate_unexpectedly_open');
-  if (!cleanString(dryRun?.futureApprovalPhrase)) issues.push('missing_future_approval_phrase');
-  if (targets.length === 0) issues.push('no_safe_empty_group_targets');
+  if (!alreadyComplete && !cleanString(dryRun?.futureApprovalPhrase)) issues.push('missing_future_approval_phrase');
+  if (!alreadyComplete && targets.length === 0) issues.push('no_safe_empty_group_targets');
+  if (alreadyComplete && targets.length === 0) issues.push('no_already_live_target_groups');
 
   for (const target of targets) {
-    if (target.existsInMailerLite || target.liveGroupId) issues.push(`target_already_live:${target.name}`);
+    if (!alreadyComplete && (target.existsInMailerLite || target.liveGroupId)) issues.push(`target_already_live:${target.name}`);
+    if (alreadyComplete && (!target.existsInMailerLite || !target.liveGroupId)) issues.push(`target_not_live_after_completed_dry_run:${target.name}`);
     if (target.brandStatus !== 'proposed_local' && target.brandStatus !== 'live_canonical') {
       issues.push(`target_brand_status_not_promoted:${target.name}:${target.brandStatus ?? 'missing'}`);
     }
@@ -110,6 +143,7 @@ const validateDryRunReadiness = (dryRun) => {
     ok: issues.length === 0,
     issues,
     targets,
+    alreadyComplete,
   };
 };
 
@@ -143,16 +177,19 @@ const buildPacketFromDryRun = ({
   generatedAt = new Date().toISOString(),
 }) => {
   const readiness = validateDryRunReadiness(dryRun);
-  const canAskApproval = readiness.ok;
+  const alreadyComplete = readiness.ok && readiness.alreadyComplete === true;
+  const canAskApproval = readiness.ok && !alreadyComplete;
 
   return {
     schemaVersion: SCHEMA_VERSION,
     mode: 'local_only_mailerlite_mini_launch_empty_group_creation_approval_packet',
     generatedAt,
-    ok: canAskApproval,
+    ok: readiness.ok,
     status: canAskApproval
       ? 'ready_for_exact_human_approval_to_create_mini_launch_empty_groups'
-      : 'blocked_before_exact_empty_group_approval',
+      : alreadyComplete
+        ? 'reference_only_empty_group_creation_already_completed'
+        : 'blocked_before_exact_empty_group_approval',
     launch: dryRun?.launch ?? null,
     sourceDryRun: {
       path: resolve(dryRunPath),
@@ -160,15 +197,18 @@ const buildPacketFromDryRun = ({
       generatedAt: dryRun?.generatedAt ?? null,
       summary: dryRun?.summary ?? null,
       futureApprovalPhrasePresent: Boolean(cleanString(dryRun?.futureApprovalPhrase)),
+      alreadyComplete,
     },
     decision: {
       canAskAlejandroForApproval: canAskApproval,
       recommendedDecision: canAskApproval
         ? 'approve_or_decline_named_empty_group_creation'
-        : 'resolve_blockers_before_asking_for_approval',
+        : alreadyComplete
+          ? 'no_approval_needed_target_groups_already_exist'
+          : 'resolve_blockers_before_asking_for_approval',
       exactApprovalPhrase: canAskApproval ? cleanString(dryRun.futureApprovalPhrase) : null,
       exactApprovalPhraseSource: canAskApproval ? 'fresh_mini_launch_group_dry_run' : null,
-      requiresFreshRerunBeforeExecution: true,
+      requiresFreshRerunBeforeExecution: !alreadyComplete,
       packetIsApprovalByItself: false,
     },
     targetGroups: readiness.targets,
@@ -188,10 +228,14 @@ const buildPacketFromDryRun = ({
         'onboarding_routing_or_handoff',
       ],
       requiredBeforeAnyExecutorRun: [
-        'rerun mini-launch group dry-run immediately before execution',
-        'confirm target groups are still missing',
-        'provide the exact approval phrase unchanged',
-        'execute only a create-empty-groups-only runner',
+        ...(alreadyComplete
+          ? ['do not run --execute for this closed empty-group creation boundary']
+          : [
+            'rerun mini-launch group dry-run immediately before execution',
+            'confirm target groups are still missing',
+            'provide the exact approval phrase unchanged',
+            'execute only a create-empty-groups-only runner',
+          ]),
       ],
     },
     blockers: readiness.issues,
@@ -210,7 +254,9 @@ const renderMarkdown = (packet) => {
     '',
     packet.decision.canAskAlejandroForApproval
       ? 'El paquete de aprobacion exacta esta listo. Esto no crea grupos; solo deja clara la frontera humana para crear grupos vacios nombrados.'
-      : 'El paquete no esta listo para aprobacion; primero hay que resolver bloqueos.',
+      : packet.status === 'reference_only_empty_group_creation_already_completed'
+        ? 'La creacion de estos grupos ya esta cerrada: los grupos objetivo existen en MailerLite y no hay aprobacion de creacion pendiente.'
+        : 'El paquete no esta listo para aprobacion; primero hay que resolver bloqueos.',
     '',
     `Mini-lanzamiento: ${packet.launch?.resourceName ?? 'unknown'}`,
     `launch_id: ${packet.launch?.launchId ?? 'unknown'}`,
@@ -237,7 +283,9 @@ const renderMarkdown = (packet) => {
     '',
     packet.decision.exactApprovalPhrase
       ? `\`${packet.decision.exactApprovalPhrase}\``
-      : '- No approval phrase until blockers are resolved.',
+      : packet.status === 'reference_only_empty_group_creation_already_completed'
+        ? '- No approval phrase needed; target groups already exist.'
+        : '- No approval phrase until blockers are resolved.',
     '',
     '## Boundary',
     '',
@@ -249,7 +297,9 @@ const renderMarkdown = (packet) => {
     '',
     ...(packet.approvalBoundary.allowedAfterExactApproval.length
       ? packet.approvalBoundary.allowedAfterExactApproval.map((item) => `- ${item}`)
-      : ['- None until blockers resolve.']),
+      : packet.status === 'reference_only_empty_group_creation_already_completed'
+        ? ['- None; this empty-group creation boundary is already closed.']
+        : ['- None until blockers resolve.']),
     '',
     'Still closed even after this approval:',
     '',

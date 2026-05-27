@@ -498,6 +498,38 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(byId.get("mailerlite_empty_group_approval_packet")?.liveActionsClosed).toContain("group_creation_until_exact_phrase");
   });
 
+  test("keeps completed empty group approval packet as reference only", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      groupDryRun: {
+        ...promotedGroupDryRun,
+        status: "mini_launch_groups_already_exist_no_create_needed",
+      },
+      emptyGroupCreationPacket: {
+        ...emptyGroupCreationPacket,
+        status: "reference_only_empty_group_creation_already_completed",
+        decision: {
+          ...emptyGroupCreationPacket.decision,
+          canAskAlejandroForApproval: false,
+          exactApprovalPhrase: null,
+          requiresFreshRerunBeforeExecution: false,
+        },
+      },
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("mailerlite_empty_group_approval_packet")).toMatchObject({
+      readyNow: true,
+      blockedBy: [],
+      readiness: {
+        canAskAlejandroForApproval: false,
+        targetGroupCount: 2,
+        requiresFreshRerunBeforeExecution: false,
+      },
+    });
+    expect(byId.get("mailerlite_empty_group_approval_packet")?.nextAction).toContain("reference only");
+  });
+
   test("marks create runner dry-run ready only as a pre-execute human boundary", () => {
     const lanes = buildLanes({
       ...packetSet,
@@ -521,6 +553,46 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     });
     expect(byId.get("mailerlite_empty_group_create_dry_run")?.nextAction).toContain("Pause at Alejandro exact-phrase boundary");
     expect(byId.get("mailerlite_empty_group_create_dry_run")?.liveActionsClosed).toContain("execute_until_exact_phrase");
+  });
+
+  test("marks create runner dry-run as complete when target groups already exist", () => {
+    const groupsAlreadyExistDryRun = {
+      ...emptyGroupCreateDryRun,
+      status: "dry_run_no_create_needed_targets_already_exist",
+      freshScan: {
+        groupsRead: 77,
+        targetGroupsExistingCount: 2,
+        targetGroupsMissingCount: 0,
+      },
+      decision: {
+        canExecute: false,
+        blockers: [],
+      },
+    };
+    const lanes = buildLanes({
+      ...packetSet,
+      groupDryRun: {
+        ...promotedGroupDryRun,
+        status: "mini_launch_groups_already_exist_no_create_needed",
+      },
+      emptyGroupCreationPacket,
+      emptyGroupCreateDryRun: groupsAlreadyExistDryRun,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("mailerlite_empty_group_create_dry_run")).toMatchObject({
+      readyNow: true,
+      blockedBy: [],
+      readiness: {
+        freshGroupsRead: 77,
+        targetGroupsExistingCount: 2,
+        targetGroupsMissingCount: 0,
+        createdCount: 0,
+        canExecute: false,
+        mailerLiteMutationsPerformed: false,
+      },
+    });
+    expect(byId.get("mailerlite_empty_group_create_dry_run")?.nextAction).toContain("No empty group creation is pending");
   });
 
   test("marks group dry-run ready only after Brand promotion and fresh read-only scan", () => {

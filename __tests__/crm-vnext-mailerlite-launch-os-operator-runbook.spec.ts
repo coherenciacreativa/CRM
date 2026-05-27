@@ -236,6 +236,20 @@ const approvalIntake = {
   },
 };
 
+const miniLaunchEmptyGroupCreateDryRun = {
+  status: "dry_run_ready_for_exact_approval",
+  mode: "dry_run",
+  freshScan: {
+    groupsRead: 75,
+    targetGroupsExistingCount: 0,
+    targetGroupsMissingCount: 2,
+  },
+  decision: {
+    canExecute: false,
+  },
+  createdGroups: [],
+};
+
 const onboardingHandoffPolicy = {
   status: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
   targetGroups: {
@@ -830,6 +844,59 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(movesText).not.toContain("Run no-live department reviews");
     expect(movesText).not.toContain("Create the response workspace");
     expect(movesText).not.toContain("Collect final responses through the response workspace");
+  });
+
+  test("does not request mini-launch group execution after groups already exist", () => {
+    const runbook = buildRunbook({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      onboardingHandoffPolicy,
+      reconciliationBoard: acceptedReconciliationBoard,
+      packetsIndex: acceptedPacketsIndex,
+      responseWorkspace: acceptedResponseWorkspace,
+      finalizationPreflight: acceptedFinalizationPreflight,
+      operatorQueue: acceptedOperatorQueue,
+      requestBundle: acceptedRequestBundle,
+      responseWatcher: acceptedResponseWatcher,
+      onboardingV1Audit,
+      onboardingTrunkMap,
+      onboardingV2Execution,
+      onboardingV2EventContract,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
+      miniLaunchEmailStyleQaPacket,
+      miniLaunchLocalEmailAssetPlan,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmptyGroupCreateDryRun: {
+        ...miniLaunchEmptyGroupCreateDryRun,
+        status: "dry_run_no_create_needed_targets_already_exist",
+        freshScan: {
+          groupsRead: 77,
+          targetGroupsExistingCount: 2,
+          targetGroupsMissingCount: 0,
+        },
+      },
+      brujulaPlan,
+      brujulaApply,
+      brujulaEmailStyleQa,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      approvalQueue,
+      approvalIntake,
+      validationReceipt,
+      packageJson,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    const movesText = runbook.immediateNextMoves.join("\n");
+
+    expect(movesText).toContain("Mini-launch empty groups already exist");
+    expect(movesText).toContain("do not rerun --execute");
+    expect(movesText).not.toContain("createdCount remains 0");
   });
 
   test("builds report map from consulted source paths", () => {

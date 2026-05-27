@@ -191,6 +191,31 @@ describe("CRM vNext MailerLite mini-launch group dry-run", () => {
     });
   });
 
+  test("already-live proposed_local groups close the empty-create boundary", async () => {
+    await withFixtureFiles(`
+| \`CC · Source · Quiz · Inteligencia para descansar\` | Source | \`proposed_local\` | Posible origen. | Cohorte futura. | \`source_type=quiz; source=inteligencia_para_descansar\` |
+| \`CC · Delivered · Quiz result · Inteligencia para descansar\` | Delivered | \`proposed_local\` | Posible entrega. | Recibo futuro. | \`content.delivered=quiz_result_inteligencia_para_descansar\` |
+`, async (paths) => {
+      const report = await buildReport({
+        ...parseArgs([]),
+        ...paths,
+      }, {
+        generatedAt: "2026-05-27T00:00:00.000Z",
+        liveGroupsOverride: [
+          { id: "source-group-id", name: "CC · Source · Quiz · Inteligencia para descansar" },
+          { id: "delivered-group-id", name: "CC · Delivered · Quiz result · Inteligencia para descansar" },
+        ],
+      });
+
+      expect(report.status).toBe("mini_launch_groups_already_exist_no_create_needed");
+      expect(report.summary.groupsAlreadyLiveCount).toBe(2);
+      expect(report.summary.safeEmptyCreateTargetCount).toBe(0);
+      expect(report.readiness.canCreateNamedEmptyGroupsAfterExplicitApproval).toBe(false);
+      expect(report.readiness.nextNoLiveMove).toContain("no empty-group creation approval is needed");
+      expect(report.futureApprovalPhrase).toBeNull();
+    });
+  });
+
   test("rendered report keeps live actions closed", async () => {
     await withFixtureFiles("", async (paths) => {
       const report = await buildReport({

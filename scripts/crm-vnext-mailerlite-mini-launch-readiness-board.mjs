@@ -274,6 +274,14 @@ const emptyGroupCreationPacketState = (packet) => {
       nextAction: 'Pause at Alejandro decision boundary: the exact approval phrase is prepared, but no group creation is authorized until he gives that phrase and a fresh re-scan still shows the targets missing.',
     };
   }
+  if (packet.status === 'reference_only_empty_group_creation_already_completed') {
+    return {
+      present: true,
+      readyNow: true,
+      blockedBy: [],
+      nextAction: 'The target groups already exist. Keep this packet as reference only; no empty-group creation approval is pending.',
+    };
+  }
   return {
     present: true,
     readyNow: false,
@@ -297,6 +305,14 @@ const emptyGroupCreateDryRunState = (run) => {
       readyNow: true,
       blockedBy: [],
       nextAction: 'Runner dry-run is green. Pause at Alejandro exact-phrase boundary; do not run --execute without exact approval and a fresh scan.',
+    };
+  }
+  if (run.status === 'dry_run_no_create_needed_targets_already_exist') {
+    return {
+      present: true,
+      readyNow: true,
+      blockedBy: [],
+      nextAction: 'Target groups already exist in the fresh scan. No empty group creation is pending; continue to the next separate approval boundary without --execute.',
     };
   }
   return {
@@ -815,7 +831,9 @@ const nextBestNoLiveMovesFor = ({ lanes }) => {
     moves[0] = 'Email sequence Brand review is closed for no-live continuation; use Email Style QA for local asset planning only.';
   }
 
-  if (emptyGroupCreateDryRunLane?.readyNow) {
+  if (emptyGroupCreateDryRunLane?.sourceStatus === 'dry_run_no_create_needed_targets_already_exist') {
+    moves.push('Mini-launch empty groups already exist; do not rerun --execute for that boundary. Continue with the next separate approval queue item.');
+  } else if (emptyGroupCreateDryRunLane?.readyNow) {
     moves.push('Mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-phrase boundary and do not run --execute.');
   } else if (emptyGroupPacketLane?.readyNow) {
     moves.push('Run the mini-launch empty-group create runner in dry-run mode only to confirm the fresh scan; do not create groups without exact phrase.');

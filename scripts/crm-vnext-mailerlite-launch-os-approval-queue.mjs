@@ -201,24 +201,39 @@ const buildApprovalItem = ({
 const buildMiniLaunchEmptyGroupItem = ({ packet, dryRun }) => {
   const targetNames = targetNamesFrom(packet?.targetGroups);
   const blockers = [];
+  const packetReadyForApproval = packet?.status === 'ready_for_exact_human_approval_to_create_mini_launch_empty_groups';
+  const packetReferenceAlreadyCompleted = packet?.status === 'reference_only_empty_group_creation_already_completed';
+  const targetGroupsAlreadyExist = dryRun?.status === 'dry_run_no_create_needed_targets_already_exist'
+    || (
+      dryRun?.freshScan?.targetGroupsMissingCount === 0
+      && dryRun?.freshScan?.targetGroupsExistingCount === targetNames.length
+      && targetNames.length > 0
+    );
 
-  if (packet?.status !== 'ready_for_exact_human_approval_to_create_mini_launch_empty_groups') {
+  if (!targetGroupsAlreadyExist && !packetReadyForApproval) {
     blockers.push(`mini_launch_empty_group_packet_not_ready:${packet?.status ?? 'missing'}`);
   }
-  if (dryRun?.status !== 'dry_run_ready_for_exact_approval') {
+  if (targetGroupsAlreadyExist && !packetReadyForApproval && !packetReferenceAlreadyCompleted) {
+    blockers.push(`mini_launch_empty_group_packet_not_reference_or_ready:${packet?.status ?? 'missing'}`);
+  }
+  if (!targetGroupsAlreadyExist && dryRun?.status !== 'dry_run_ready_for_exact_approval') {
     blockers.push(`mini_launch_empty_group_create_dry_run_not_ready:${dryRun?.status ?? 'missing'}`);
   }
   if (countRows(dryRun?.createdGroups) !== 0) blockers.push('dry_run_unexpectedly_reports_created_groups');
-  if (!cleanString(packet?.decision?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
+  if (!targetGroupsAlreadyExist && !cleanString(packet?.decision?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
   if (targetNames.length === 0) blockers.push('missing_target_groups');
 
-  const canAskNow = blockers.length === 0 && packet?.decision?.canAskAlejandroForApproval === true;
+  const canAskNow = !targetGroupsAlreadyExist
+    && blockers.length === 0
+    && packet?.decision?.canAskAlejandroForApproval === true;
 
   return buildApprovalItem({
     id: 'mini_launch_empty_group_creation',
     title: 'Mini-launch empty MailerLite groups',
     lane: 'mini_launch_inteligencia_para_descansar',
-    operationType: 'live_mailerlite_group_creation_after_exact_approval',
+    operationType: targetGroupsAlreadyExist
+      ? 'live_mailerlite_group_creation_already_completed'
+      : 'live_mailerlite_group_creation_after_exact_approval',
     approvalType: 'exact_phrase_required',
     canAskNow,
     exactApprovalPhrase: packet?.decision?.exactApprovalPhrase,
@@ -233,12 +248,16 @@ const buildMiniLaunchEmptyGroupItem = ({ packet, dryRun }) => {
     blockers,
     evidence: {
       sourceDryRunGroupsRead: packet?.safety?.sourceDryRunMailerLiteGroupsRead ?? dryRun?.safety?.mailerLiteGroupsRead ?? null,
-      targetMissingCount: targetNames.length,
+      targetMissingCount: dryRun?.freshScan?.targetGroupsMissingCount ?? targetNames.length,
+      targetExistingCount: dryRun?.freshScan?.targetGroupsExistingCount ?? null,
+      targetGroupsAlreadyExist,
       mutationsPerformed: dryRun?.safety?.mailerLiteMutationsPerformed ?? null,
     },
     commandAfterApproval: 'npm run crm:vnext:mailerlite-mini-launch-empty-group-create -- --execute --approval-phrase "<exact phrase>"',
     notes: [
-      'Approval covers only the two named empty groups.',
+      targetGroupsAlreadyExist
+        ? 'The two named empty groups already exist; no new approval request is needed for this boundary.'
+        : 'Approval covers only the two named empty groups.',
       'No subscribers, workflows, sends, onboarding route or Shopify/CRM action is included.',
     ],
   });

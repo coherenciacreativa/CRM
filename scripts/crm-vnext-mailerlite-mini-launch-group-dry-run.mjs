@@ -516,7 +516,9 @@ const buildReport = async (options, { generatedAt = new Date().toISOString(), li
         ? 'Have Brand add/review the proposed candidate rows in the group dictionary, then rerun this dry-run.'
         : brandStatusBlocked.length
           ? 'Brand should either promote the candidates to proposed_local or reject/rename them before any empty-group approval phrase exists.'
-          : 'Prepare exact approval packet only if Alejandro wants to create the missing groups empty; receipt assignment remains a separate gate.',
+          : groupsAlreadyLive.length === plannedGroups.length
+            ? 'Mini-launch receipt groups already exist in MailerLite; no empty-group creation approval is needed for this boundary. Continue only to the next separate local/approval gate.'
+            : 'Prepare exact approval packet only if Alejandro wants to create the missing groups empty; receipt assignment remains a separate gate.',
     },
     plannedGroups,
     proposedBrandDictionaryRows: missingBrandCandidates

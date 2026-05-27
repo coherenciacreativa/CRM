@@ -145,9 +145,31 @@ describe("CRM vNext MailerLite Launch OS approval intake", () => {
       generatedAt: "2026-05-28T00:00:00.000Z",
     });
 
-    expect(intake.status).toBe("no_exact_approval_phrase_detected_no_live_changes");
+    expect(intake.status).toBe("approval_text_present_but_no_exact_phrase_no_live_changes");
     expect(intake.executiveSummary.matchedApprovalCount).toBe(0);
     expect(intake.executiveSummary.canProceedToFreshEvidence).toBe(false);
+    expect(intake.approvalTextHandling).toMatchObject({
+      approvalTextClassification: "unmatched_or_broad_scope",
+      broadOrApproximateApprovalExecutable: false,
+      noLiveActionReason: "supplied_text_did_not_match_any_exact_queued_approval_phrase",
+    });
+    expect(intake.operatorPlan.join("\n")).toContain("Treat broad, approximate, or multi-scope approval as non-executable.");
+  });
+
+  test("classifies broad group approval as human intent but not executable scope", () => {
+    const intake = buildApprovalIntake({
+      approvalQueue,
+      approvalText: "Te autorizo para crear los grupos que necesites",
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(intake.status).toBe("approval_text_present_but_no_exact_phrase_no_live_changes");
+    expect(intake.executiveSummary.approvalTextProvided).toBe(true);
+    expect(intake.executiveSummary.matchedApprovalCount).toBe(0);
+    expect(intake.executiveSummary.executionAllowedNow).toBe(false);
+    expect(intake.executiveSummary.approvalTextClassification).toBe("unmatched_or_broad_scope");
+    expect(intake.operatorPlan.join("\n")).toContain("Ready queue items remain separate boundaries");
+    expect(intake.operatorPlan.join("\n")).toContain("Do not infer whether broad approval applies");
   });
 
   test("blocks ambiguous exact phrase matches", () => {
