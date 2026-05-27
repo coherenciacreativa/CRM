@@ -14,6 +14,7 @@ const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-validation-receipt.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-approval-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-local-email-asset-plan.mjs',
@@ -168,6 +169,7 @@ const buildValidationReceipt = ({
   const requiredScriptsPresent = [
     'crm:vnext:mailerlite-launch-os-operator-runbook',
     'crm:vnext:mailerlite-launch-os-approval-queue',
+    'crm:vnext:mailerlite-launch-os-approval-intake',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
     'crm:vnext:mailerlite-onboarding-trunk-map',
