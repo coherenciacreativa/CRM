@@ -273,6 +273,8 @@ const buildCurrentState = ({
   validationReceipt,
 }) => {
   const assignedGroupNames = groupNamesFrom(brujulaApply?.assignedGroups);
+  const readinessLaneById = new Map((readinessBoard?.lanes ?? []).map((lane) => [lane.id, lane]));
+  const emptyGroupApprovalLane = readinessLaneById.get('mailerlite_empty_group_approval_packet');
   const brujulaReceiptsAssigned = assignedGroupNames.includes('CC · Source · Resource · Brújula')
     && assignedGroupNames.includes('CC · Delivered · Guide · Brújula');
   const readinessLiveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount
@@ -361,6 +363,11 @@ const buildCurrentState = ({
       currentPilot: readinessBoard?.launch ?? cadenceBoard?.currentPilot?.launch ?? reconciliationBoard?.launch ?? null,
       readinessState: readinessBoard?.executiveSummary?.overallState ?? null,
       readyNoLiveLaneCount: readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? null,
+      emptyGroupApprovalPacketStatus: emptyGroupApprovalLane?.sourceStatus ?? null,
+      emptyGroupApprovalPacketReady: emptyGroupApprovalLane?.readyNow ?? false,
+      emptyGroupApprovalPacketTargetCount: emptyGroupApprovalLane?.readiness?.targetGroupCount ?? null,
+      emptyGroupApprovalPacketCanAskApproval: emptyGroupApprovalLane?.readiness?.canAskAlejandroForApproval ?? false,
+      emptyGroupApprovalPacketRequiresFreshRerun: emptyGroupApprovalLane?.readiness?.requiresFreshRerunBeforeExecution ?? null,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -575,6 +582,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-department-review-intake'),
         command('crm:vnext:mailerlite-mini-launch-department-review-reconciliation'),
         command('crm:vnext:mailerlite-mini-launch-group-dry-run'),
+        command('crm:vnext:mailerlite-mini-launch-empty-group-creation-packet'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['group creation', 'subscriber assignment', 'workflow use'],
     },
@@ -705,6 +713,7 @@ const buildRunbook = ({
       'Run reconciliation with response files before any dry-run rerun or build request.',
       'Use the backlog board only for one additional no-live idea intake, not for live production.',
       'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
+      'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
       'Use the response watcher before finalization preflight so missing final response files are obvious.',
@@ -777,6 +786,11 @@ const renderMarkdown = (runbook) => {
     `- Onboarding trunk future handoff target: ${runbook.currentState.onboarding.trunkMapFutureHandoffTarget ?? 'unknown'}`,
     `- Onboarding trunk recommendation is routing: ${runbook.currentState.onboarding.trunkMapRecommendationIsRouting ?? 'unknown'}`,
     `- Mini-launch readiness: ${runbook.currentState.miniLaunch.readinessState ?? 'unknown'}`,
+    `- Mini-launch empty-group approval packet: ${runbook.currentState.miniLaunch.emptyGroupApprovalPacketStatus ?? 'unknown'}`,
+    `- Mini-launch empty-group approval packet ready: ${runbook.currentState.miniLaunch.emptyGroupApprovalPacketReady}`,
+    `- Mini-launch empty-group target count: ${runbook.currentState.miniLaunch.emptyGroupApprovalPacketTargetCount ?? 'unknown'}`,
+    `- Mini-launch empty-group can ask approval: ${runbook.currentState.miniLaunch.emptyGroupApprovalPacketCanAskApproval}`,
+    `- Mini-launch empty-group requires fresh rerun: ${runbook.currentState.miniLaunch.emptyGroupApprovalPacketRequiresFreshRerun ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,

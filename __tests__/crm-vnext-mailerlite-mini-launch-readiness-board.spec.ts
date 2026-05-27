@@ -76,6 +76,21 @@ const promotedGroupDryRun = {
   },
 };
 
+const emptyGroupCreationPacket = {
+  ok: true,
+  status: "ready_for_exact_human_approval_to_create_mini_launch_empty_groups",
+  launch,
+  decision: {
+    canAskAlejandroForApproval: true,
+    requiresFreshRerunBeforeExecution: true,
+    packetIsApprovalByItself: false,
+  },
+  targetGroups: [
+    { name: "CC · Source · Quiz · Inteligencia para descansar" },
+    { name: "CC · Delivered · Quiz result · Inteligencia para descansar" },
+  ],
+};
+
 const brandCandidateReviewPacket = {
   ok: true,
   status: "brand_candidate_review_packet_ready_no_live_changes",
@@ -142,6 +157,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(parsed.rehearsalPacket).toContain("mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailSequencePacket).toContain("mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.shopifyHandoffPacket).toContain("mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.emptyGroupCreationPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/board.json");
     expect(parsed.markdownOut).toBe("/tmp/board.md");
   });
@@ -154,7 +170,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     const lanes = buildLanes(packetSet);
     const byId = new Map(lanes.map((lane) => [lane.id, lane]));
 
-    expect(lanes).toHaveLength(9);
+    expect(lanes).toHaveLength(10);
     expect(byId.get("shopify_web_handoff")).toMatchObject({
       owner: "Web Design / Shopify",
       readyNow: true,
@@ -163,8 +179,34 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
       readyNow: false,
       blockedBy: ["brand_dictionary_candidate_rows_missing"],
     });
+    expect(byId.get("mailerlite_empty_group_approval_packet")).toMatchObject({
+      readyNow: false,
+      blockedBy: ["empty_group_creation_packet_not_generated"],
+    });
     expect(byId.get("email_sequence")?.liveActionsClosed).toContain("seed_send");
     expect(byId.get("onboarding_protection")?.liveActionsClosed).toContain("edit_onboarding_v1");
+  });
+
+  test("marks empty group approval packet ready only as a human boundary", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      groupDryRun: promotedGroupDryRun,
+      emptyGroupCreationPacket,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("mailerlite_empty_group_approval_packet")).toMatchObject({
+      readyNow: true,
+      blockedBy: [],
+      readiness: {
+        canAskAlejandroForApproval: true,
+        targetGroupCount: 2,
+        requiresFreshRerunBeforeExecution: true,
+        packetIsApprovalByItself: false,
+      },
+    });
+    expect(byId.get("mailerlite_empty_group_approval_packet")?.nextAction).toContain("Pause at Alejandro decision boundary");
+    expect(byId.get("mailerlite_empty_group_approval_packet")?.liveActionsClosed).toContain("group_creation_until_exact_phrase");
   });
 
   test("marks group dry-run ready only after Brand promotion and fresh read-only scan", () => {
@@ -229,6 +271,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
       sendsPerformed: false,
     });
     expect(board.operatorWarnings).toContain("Do not treat a Brand candidate decision as permission to create MailerLite groups.");
+    expect(board.operatorWarnings).toContain("Do not treat the empty-group approval packet as execution approval; Alejandro must give the exact phrase and the runner must re-scan first.");
   });
 
   test("updates executive next moves after group dry-run is no longer blocked", () => {
@@ -245,6 +288,20 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     const queues = buildDepartmentQueues({ lanes: board.lanes });
     expect(queues.brand.join(" ")).toContain("Group candidate semantics are closed for this pass");
     expect(queues.crm.join(" ")).toContain("Use the fresh group dry-run");
+  });
+
+  test("updates executive next moves when the empty-group approval packet is prepared", () => {
+    const board = buildReadinessBoard({
+      ...packetSet,
+      groupDryRun: promotedGroupDryRun,
+      emptyGroupCreationPacket,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    expect(board.executiveSummary.nextBestNoLiveMoves.join(" ")).toContain("Pause at Alejandro decision boundary");
+    expect(board.executiveSummary.nextBestNoLiveMoves.join(" ")).not.toContain("Prepare an exact empty-group creation approval packet");
+    expect(buildDepartmentQueues({ lanes: board.lanes }).crm.join(" ")).toContain("Exact empty-group approval packet is prepared");
   });
 
   test("renders board as an operator-safe report", () => {

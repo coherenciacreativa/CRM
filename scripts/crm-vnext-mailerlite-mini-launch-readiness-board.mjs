@@ -10,6 +10,7 @@ const DEFAULT_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_BRAND_EMAIL_ASSET_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_email_asset_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_GROUP_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_EMPTY_GROUP_CREATION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_EMAIL_SEQUENCE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_SHOPIFY_HANDOFF_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json';
@@ -25,6 +26,7 @@ Options:
   --seed-test-qa-packet <path>          Seed-test QA JSON. Defaults to ${DEFAULT_SEED_TEST_QA_PACKET}
   --brand-email-asset-packet <path>     Brand/email asset JSON. Defaults to ${DEFAULT_BRAND_EMAIL_ASSET_PACKET}
   --group-dry-run <path>                Mini-launch group dry-run JSON. Defaults to ${DEFAULT_GROUP_DRY_RUN}
+  --empty-group-creation-packet <path>  Optional exact approval packet for creating missing empty groups. Defaults to ${DEFAULT_EMPTY_GROUP_CREATION_PACKET}
   --brand-candidate-review-packet <path>
                                          Brand candidate review JSON. Defaults to ${DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET}
   --email-sequence-packet <path>        Email sequence asset JSON. Defaults to ${DEFAULT_EMAIL_SEQUENCE_PACKET}
@@ -56,6 +58,7 @@ const parseArgs = (argv) => {
     seedTestQaPacket: DEFAULT_SEED_TEST_QA_PACKET,
     brandEmailAssetPacket: DEFAULT_BRAND_EMAIL_ASSET_PACKET,
     groupDryRun: DEFAULT_GROUP_DRY_RUN,
+    emptyGroupCreationPacket: DEFAULT_EMPTY_GROUP_CREATION_PACKET,
     brandCandidateReviewPacket: DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET,
     emailSequencePacket: DEFAULT_EMAIL_SEQUENCE_PACKET,
     shopifyHandoffPacket: DEFAULT_SHOPIFY_HANDOFF_PACKET,
@@ -74,6 +77,7 @@ const parseArgs = (argv) => {
     else if (arg === '--seed-test-qa-packet') options.seedTestQaPacket = argv[++index];
     else if (arg === '--brand-email-asset-packet') options.brandEmailAssetPacket = argv[++index];
     else if (arg === '--group-dry-run') options.groupDryRun = argv[++index];
+    else if (arg === '--empty-group-creation-packet') options.emptyGroupCreationPacket = argv[++index];
     else if (arg === '--brand-candidate-review-packet') options.brandCandidateReviewPacket = argv[++index];
     else if (arg === '--email-sequence-packet') options.emailSequencePacket = argv[++index];
     else if (arg === '--shopify-handoff-packet') options.shopifyHandoffPacket = argv[++index];
@@ -88,6 +92,15 @@ const parseArgs = (argv) => {
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
 
+const readOptionalJson = async (path) => {
+  try {
+    return JSON.parse(await readFile(resolve(path), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+};
+
 const loadSourceDigests = async (options) => {
   const sourceMap = [
     [options.onboardingExecutionPacket, 'onboarding v2 state and production v1 protection'],
@@ -96,6 +109,7 @@ const loadSourceDigests = async (options) => {
     [options.seedTestQaPacket, 'seed-test modes and approval separation'],
     [options.brandEmailAssetPacket, 'Email 1 Brand asset and creative QA state'],
     [options.groupDryRun, 'MailerLite receipt group dry-run state'],
+    [options.emptyGroupCreationPacket, 'exact approval packet for missing mini-launch empty groups', true],
     [options.brandCandidateReviewPacket, 'Brand semantic decision request for group candidates'],
     [options.emailSequencePacket, 'full email sequence asset state'],
     [options.shopifyHandoffPacket, 'Shopify/Web Design handoff state'],
@@ -103,8 +117,22 @@ const loadSourceDigests = async (options) => {
   ];
 
   const digests = [];
-  for (const [path, consultedFor] of sourceMap) {
-    const content = await readFile(resolve(path), 'utf8');
+  for (const [path, consultedFor, optional = false] of sourceMap) {
+    let content;
+    try {
+      content = await readFile(resolve(path), 'utf8');
+    } catch (error) {
+      if (optional && error.code === 'ENOENT') {
+        digests.push({
+          path: resolve(path),
+          present: false,
+          chars: 0,
+          consultedFor,
+        });
+        continue;
+      }
+      throw error;
+    }
     digests.push({
       path: resolve(path),
       present: true,
@@ -199,6 +227,31 @@ const groupDryRunState = (groupDryRun) => {
   };
 };
 
+const emptyGroupCreationPacketState = (packet) => {
+  if (!packet) {
+    return {
+      present: false,
+      readyNow: false,
+      blockedBy: ['empty_group_creation_packet_not_generated'],
+      nextAction: 'Prepare the exact empty-group creation approval packet from the fresh group dry-run before asking Alejandro to decide.',
+    };
+  }
+  if (packet.status === 'ready_for_exact_human_approval_to_create_mini_launch_empty_groups') {
+    return {
+      present: true,
+      readyNow: true,
+      blockedBy: [],
+      nextAction: 'Pause at Alejandro decision boundary: the exact approval phrase is prepared, but no group creation is authorized until he gives that phrase and a fresh re-scan still shows the targets missing.',
+    };
+  }
+  return {
+    present: true,
+    readyNow: false,
+    blockedBy: packet.blockers?.length ? packet.blockers : ['empty_group_creation_packet_not_ready'],
+    nextAction: 'Resolve approval-packet blockers before any MailerLite empty-group decision.',
+  };
+};
+
 const buildLanes = ({
   onboardingExecutionPacket,
   rehearsalPacket,
@@ -206,11 +259,13 @@ const buildLanes = ({
   seedTestQaPacket,
   brandEmailAssetPacket,
   groupDryRun,
+  emptyGroupCreationPacket,
   brandCandidateReviewPacket,
   emailSequencePacket,
   shopifyHandoffPacket,
 }) => {
   const dryRunState = groupDryRunState(groupDryRun);
+  const emptyPacketState = emptyGroupCreationPacketState(emptyGroupCreationPacket);
 
   return [
     buildLane({
@@ -296,6 +351,22 @@ const buildLanes = ({
     liveActionsClosed: ['group_creation', 'subscriber_assignment', 'workflow_attachment', 'send'],
   }),
   buildLane({
+    id: 'mailerlite_empty_group_approval_packet',
+    owner: 'CRM / MailerLite Planner',
+    packet: emptyGroupCreationPacket,
+    readyNow: emptyPacketState.readyNow,
+    readiness: {
+      present: emptyPacketState.present,
+      canAskAlejandroForApproval: emptyGroupCreationPacket?.decision?.canAskAlejandroForApproval ?? false,
+      targetGroupCount: emptyGroupCreationPacket?.targetGroups?.length ?? 0,
+      requiresFreshRerunBeforeExecution: emptyGroupCreationPacket?.decision?.requiresFreshRerunBeforeExecution ?? true,
+      packetIsApprovalByItself: emptyGroupCreationPacket?.decision?.packetIsApprovalByItself ?? false,
+    },
+    blockedBy: emptyPacketState.blockedBy,
+    nextAction: emptyPacketState.nextAction,
+    liveActionsClosed: ['group_creation_until_exact_phrase', 'subscriber_assignment', 'workflow_attachment', 'send'],
+  }),
+  buildLane({
     id: 'seed_test_qa',
     owner: 'MailerLite / QA',
     packet: seedTestQaPacket,
@@ -323,7 +394,9 @@ const buildDepartmentQueues = ({ lanes }) => ({
   ],
   crm: [
     'Preserve event contract as store-only until seed observations exist and append is approved.',
-    lanes.some((lane) => lane.id === 'mailerlite_group_dry_run' && lane.readyNow)
+    lanes.some((lane) => lane.id === 'mailerlite_empty_group_approval_packet' && lane.readyNow)
+      ? 'Exact empty-group approval packet is prepared; hold execution until Alejandro gives the exact phrase and a fresh re-scan stays clean.'
+      : lanes.some((lane) => lane.id === 'mailerlite_group_dry_run' && lane.readyNow)
       ? 'Use the fresh group dry-run only to prepare a later exact empty-group approval packet if Alejandro wants it.'
       : 'Rerun group dry-run after Brand semantic decision.',
     'Keep Experiment identity CRM-first unless MailerLite needs routing/dedupe/exclusion.',
@@ -431,12 +504,15 @@ const buildSafety = () => ({
 
 const nextBestNoLiveMovesFor = ({ lanes }) => {
   const groupDryRunLane = lanes.find((lane) => lane.id === 'mailerlite_group_dry_run');
+  const emptyGroupPacketLane = lanes.find((lane) => lane.id === 'mailerlite_empty_group_approval_packet');
   const moves = [
     'Brand reviews the full email sequence for voice, promise, CTA and public/internal separation.',
     'Web Design reviews/builds from the Shopify handoff only if scope is accepted.',
   ];
 
-  if (groupDryRunLane?.readyNow) {
+  if (emptyGroupPacketLane?.readyNow) {
+    moves.push('Pause at Alejandro decision boundary: exact empty-group approval packet is ready; do not create groups without the exact phrase and a fresh re-scan.');
+  } else if (groupDryRunLane?.readyNow) {
     moves.push('Prepare an exact empty-group creation approval packet only if Alejandro wants the two Brand-approved groups created empty; no subscribers, workflows, or sends.');
   } else {
     moves.push(groupDryRunLane?.nextAction ?? 'Rerun the launch group dry-run before any group creation approval exists.');
@@ -452,6 +528,7 @@ const buildReadinessBoard = ({
   seedTestQaPacket,
   brandEmailAssetPacket,
   groupDryRun,
+  emptyGroupCreationPacket,
   brandCandidateReviewPacket,
   emailSequencePacket,
   shopifyHandoffPacket,
@@ -466,6 +543,7 @@ const buildReadinessBoard = ({
     seedTestQaPacket,
     brandEmailAssetPacket,
     groupDryRun,
+    emptyGroupCreationPacket,
     brandCandidateReviewPacket,
     emailSequencePacket,
     shopifyHandoffPacket,
@@ -498,6 +576,7 @@ const buildReadinessBoard = ({
     blockedOrClosedLanes,
     operatorWarnings: [
       'Do not treat a Brand candidate decision as permission to create MailerLite groups.',
+      'Do not treat the empty-group approval packet as execution approval; Alejandro must give the exact phrase and the runner must re-scan first.',
       'Do not treat Web Design handoff as permission to publish or connect a real form.',
       'Do not treat Email Sequence draft as permission to build MailerLite assets or send tests.',
       'Do not route mini-launch participants into onboarding until a separate onboarding gate exists.',
@@ -599,6 +678,7 @@ const buildBoardFromFiles = async (options) => {
     seedTestQaPacket,
     brandEmailAssetPacket,
     groupDryRun,
+    emptyGroupCreationPacket,
     brandCandidateReviewPacket,
     emailSequencePacket,
     shopifyHandoffPacket,
@@ -610,6 +690,7 @@ const buildBoardFromFiles = async (options) => {
     readJson(options.seedTestQaPacket),
     readJson(options.brandEmailAssetPacket),
     readJson(options.groupDryRun),
+    readOptionalJson(options.emptyGroupCreationPacket),
     readJson(options.brandCandidateReviewPacket),
     readJson(options.emailSequencePacket),
     readJson(options.shopifyHandoffPacket),
@@ -623,6 +704,7 @@ const buildBoardFromFiles = async (options) => {
     seedTestQaPacket,
     brandEmailAssetPacket,
     groupDryRun,
+    emptyGroupCreationPacket,
     brandCandidateReviewPacket,
     emailSequencePacket,
     shopifyHandoffPacket,

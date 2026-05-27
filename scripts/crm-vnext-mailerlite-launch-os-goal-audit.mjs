@@ -329,6 +329,9 @@ const buildRequirementChecks = ({
   const readinessState = readinessBoard?.executiveSummary?.overallState ?? null;
   const readyNoLiveLaneCount = readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? 0;
   const liveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount ?? null;
+  const emptyGroupApprovalLane = readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_approval_packet') ?? null;
+  const emptyGroupApprovalPacketReady = emptyGroupApprovalLane?.readyNow === true
+    || runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketReady === true;
   const receiptPassed = validationReceiptPassed(validationReceipt);
   const reconciliationActions = reconciliationBoard?.actionPlan?.actions ?? [];
   const hasReconciliationAction = (id) => reconciliationActions.some((action) => action.id === id);
@@ -537,13 +540,18 @@ const buildRequirementChecks = ({
         `readyNoLiveLaneCount=${readyNoLiveLaneCount}`,
         `cadence=${runbook?.currentState?.miniLaunch?.cadenceNow ?? 'unknown'}`,
         `safeToIntakeOneMoreNoLiveIdea=${runbook?.currentState?.miniLaunch?.safeToIntakeOneMoreNoLiveIdea}`,
+        `miniLaunchEmptyGroupApprovalPacketStatus=${emptyGroupApprovalLane?.sourceStatus ?? runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketStatus ?? 'missing'}`,
+        `miniLaunchEmptyGroupApprovalPacketReady=${emptyGroupApprovalPacketReady}`,
+        `miniLaunchEmptyGroupApprovalTargetCount=${emptyGroupApprovalLane?.readiness?.targetGroupCount ?? runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketTargetCount ?? 'unknown'}`,
         `departmentReviewsAccepted=${pendingDepartments.length === 0 && finalizationReadyForIntake === true}`,
         `webAcceptedScopedLocalDraft=${webAcceptedScopedLocalDraft}`,
         `crmAcceptedSignalBoundaries=${crmAcceptedSignalBoundaries}`,
       ],
       remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
         ? [
-          'Current pilot can continue through no-live moves: group dry-run, scoped Shopify local-build request and CRM signal projection packet.',
+          emptyGroupApprovalPacketReady
+            ? 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite creation is authorized yet.'
+            : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
           'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
         ]
         : [
@@ -629,6 +637,8 @@ const buildRequirementChecks = ({
         : 'partial',
       evidence: [
         `groupDryRunStatus=${readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_group_dry_run')?.sourceStatus ?? 'unknown'}`,
+        `emptyGroupApprovalPacketStatus=${emptyGroupApprovalLane?.sourceStatus ?? runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketStatus ?? 'unknown'}`,
+        `emptyGroupApprovalPacketReady=${emptyGroupApprovalPacketReady}`,
         `liveMutationGateOpenCount=${liveMutationGateOpenCount}`,
         `hasGoalAuditScript=${packageHas(packageJson, 'crm:vnext:mailerlite-launch-os-goal-audit')}`,
         `validationStatus=${effectiveValidationStatus}`,
@@ -729,14 +739,25 @@ const buildGoalAudit = ({
   const summary = summarizeCompletion(requirements);
   const coordinationRequirement = requirements.find((requirement) => requirement.id === 'coordinate_brand_web_crm');
   const departmentResponsesAccepted = coordinationRequirement?.status === 'proven';
+  const emptyGroupApprovalPacketReady = values.readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_approval_packet')?.readyNow === true
+    || values.runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketReady === true;
   const nextBestMove = departmentResponsesAccepted
-    ? 'Continue with the next no-live moves unlocked by department reconciliation: represent Brand-accepted launch group candidates locally, rerun the launch group dry-run, prepare a scoped Shopify local-build request, and prepare a CRM signal projection packet. Live actions remain closed.'
+    ? emptyGroupApprovalPacketReady
+      ? 'The mini-launch empty-group approval packet is ready; pause at Alejandro exact-approval boundary if he wants the two groups created empty, while Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.'
+      : 'Continue with the next no-live moves unlocked by department reconciliation: represent Brand-accepted launch group candidates locally, rerun the launch group dry-run, prepare the exact empty-group approval packet, prepare a scoped Shopify local-build request, and prepare a CRM signal projection packet. Live actions remain closed.'
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
-    ? [
+    ? emptyGroupApprovalPacketReady
+      ? [
+        'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
+        'Hold at the exact empty-group approval packet; it is not execution approval and still requires Alejandro exact phrase plus a fresh re-scan.',
+        'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
+      ]
+      : [
       'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
       'Represent the Brand-accepted Source/Delivered launch candidates in the local/canonical planning surface before rerunning the group dry-run.',
       'Rerun the launch group dry-run; keep group creation behind a later exact approval packet.',
+      'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
       'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
       'Prepare a no-live CRM signal projection packet from the CRM response; do not append ledgers, write cards, score, or touch Fact Store.',
     ]
@@ -769,6 +790,7 @@ const buildGoalAudit = ({
       'Use the Onboarding v2 first-email map so the welcome/orientation email is tracked as journey_welcome_sent, not as a content Sent receipt.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
+      'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
     ],
     safety: {
