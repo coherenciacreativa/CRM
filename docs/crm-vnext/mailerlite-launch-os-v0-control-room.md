@@ -849,6 +849,26 @@ Result:
 
 This is the handoff-ready layer for the current bottleneck. It lets the operator route the right instructions into the right department chat without reconstructing context or accidentally turning a draft into approval.
 
+## Mini-launch department response watcher status
+
+Status: response watcher ready, waiting for final Brand/Web/CRM files, no live changes.
+
+Evidence:
+
+- Response watcher report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_watcher_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-response-watcher.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-response-watcher.spec.ts`
+
+Result:
+
+- Checks whether each expected final response file exists: `brand_response.json`, `web_design_response.json` and `crm_response.json`.
+- Separates final files from pending working copies, request text files and Codex drafts.
+- If all final files exist, the next safe step is finalization preflight, not intake directly.
+- If any final file is missing, it names the missing department(s) and points back to the request bundle/workspace.
+- It writes no final response files, sends no messages and opens no live gates.
+
+This is the low-noise heartbeat layer. It lets Mantis/Codex wake up, inspect the current response situation, and report only the useful state: still waiting, ready for preflight, or ready for intake after preflight accepts all responses.
+
 ## Mini-launch department finalization preflight status
 
 Status: finalization preflight ready, waiting for real final responses, no live changes.
@@ -984,4 +1004,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, onboarding trunk map, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, Brújula email style QA packet, Brújula Email 1 correction packet, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. For Brújula specifically, use the Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, onboarding trunk map, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, response watcher, Brújula email style QA packet, Brújula Email 1 correction packet, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, use the response watcher to confirm file presence, pass them through finalization preflight, and then run intake/reconciliation. For Brújula specifically, use the Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.

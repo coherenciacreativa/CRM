@@ -30,6 +30,10 @@ const runbook = {
       packetCount: 3,
       responseWorkspaceStatus: "department_review_response_workspace_ready_awaiting_final_responses_no_live_changes",
       readyForResponseIntake: false,
+      responseWatcherStatus: "department_review_response_watcher_waiting_final_responses_no_live_changes",
+      responseWatcherMissingFinalCount: 3,
+      responseWatcherFinalFilePresentCount: 0,
+      responseWatcherNextBestMove: "Keep collecting final response files for: brand, web_design, crm.",
     },
   },
   safety: {
@@ -83,6 +87,15 @@ const requestBundle = {
   summary: {
     requestCount: 3,
     awaitingFinalCount: 3,
+  },
+};
+
+const responseWatcher = {
+  status: "department_review_response_watcher_waiting_final_responses_no_live_changes",
+  summary: {
+    missingFinalCount: 3,
+    finalFilePresentCount: 0,
+    nextBestMove: "Keep collecting final response files for: brand, web_design, crm.",
   },
 };
 
@@ -220,6 +233,7 @@ const values = {
   responseWorkspace,
   finalizationPreflight,
   requestBundle,
+  responseWatcher,
   onboardingV1Audit,
   onboardingTrunkMap,
   onboardingV2Design,
@@ -258,6 +272,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.brandDictionary).toContain("MAILERLITE_GROUP_DICTIONARY_V0.md");
     expect(parsed.finalizationPreflight).toContain("mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
     expect(parsed.requestBundle).toContain("mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.responseWatcher).toContain("mailerlite_mini_launch_department_review_response_watcher_inteligencia_descansar_2026-05-27.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
@@ -280,6 +295,9 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.coordinate_brand_web_crm.evidence).toContain("finalizationReadyForIntake=false");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("requestBundleStatus=department_review_request_bundle_ready_to_collect_final_responses_no_live_changes");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("requestBundleRequestCount=3");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("responseWatcherStatus=department_review_response_watcher_waiting_final_responses_no_live_changes");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("responseWatcherMissingFinalCount=3");
+    expect(byId.coordinate_brand_web_crm.evidence).toContain("responseWatcherFinalFilePresentCount=0");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("draftAssistDepartments=brand,web_design,crm");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("awaitingFinalDepartments=brand,web_design,crm");
     expect(byId.define_mini_launch_to_onboarding_handoff.status).toBe("proven");
@@ -315,8 +333,10 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.status).toBe("goal_active_not_ready_for_live_operation");
     expect(audit.executiveSummary.liveActionAllowedNow).toBe(false);
     expect(audit.executiveSummary.nextBestMove).toContain("request bundle");
+    expect(audit.executiveSummary.nextBestMove).toContain("response watcher");
     expect(audit.nextMoves.join(" ")).toContain("rerun the launch group dry-run");
     expect(audit.nextMoves.join(" ")).toContain("final response files only");
+    expect(audit.nextMoves.join(" ")).toContain("response watcher");
     expect(audit.nextMoves.join(" ")).toContain("onboarding trunk map");
     expect(audit.nextMoves.join(" ")).toContain("Brújula Email 1 correction packet");
     expect(audit.safety).toMatchObject({

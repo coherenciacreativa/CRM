@@ -15,6 +15,7 @@ const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_FINALIZATION_PREFLIGHT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_RESPONSE_WATCHER = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_watcher_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json';
@@ -43,6 +44,7 @@ Options:
   --response-workspace <path>       Department review response workspace JSON. Defaults to ${DEFAULT_RESPONSE_WORKSPACE}
   --finalization-preflight <path>   Department finalization preflight JSON. Defaults to ${DEFAULT_FINALIZATION_PREFLIGHT}
   --request-bundle <path>           Department review request bundle JSON. Defaults to ${DEFAULT_REQUEST_BUNDLE}
+  --response-watcher <path>         Department response watcher JSON. Defaults to ${DEFAULT_RESPONSE_WATCHER}
   --onboarding-v1-audit <path>      Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-trunk-map <path>     Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --onboarding-v2-design <path>     Onboarding v2 design JSON. Defaults to ${DEFAULT_ONBOARDING_V2_DESIGN}
@@ -76,6 +78,7 @@ const parseArgs = (argv) => {
     responseWorkspace: DEFAULT_RESPONSE_WORKSPACE,
     finalizationPreflight: DEFAULT_FINALIZATION_PREFLIGHT,
     requestBundle: DEFAULT_REQUEST_BUNDLE,
+    responseWatcher: DEFAULT_RESPONSE_WATCHER,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     onboardingV2Design: DEFAULT_ONBOARDING_V2_DESIGN,
@@ -107,6 +110,7 @@ const parseArgs = (argv) => {
     else if (arg === '--response-workspace') options.responseWorkspace = argv[++index];
     else if (arg === '--finalization-preflight') options.finalizationPreflight = argv[++index];
     else if (arg === '--request-bundle') options.requestBundle = argv[++index];
+    else if (arg === '--response-watcher') options.responseWatcher = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--onboarding-v2-design') options.onboardingV2Design = argv[++index];
@@ -150,6 +154,7 @@ const loadSources = async (options) => {
     ['responseWorkspace', options.responseWorkspace, 'pending response workspace and final response readiness', 'json'],
     ['finalizationPreflight', options.finalizationPreflight, 'department final response readiness and draft/pending distinction', 'json'],
     ['requestBundle', options.requestBundle, 'copy-ready department request texts for final responses', 'json'],
+    ['responseWatcher', options.responseWatcher, 'file-existence watcher for final Brand/Web/CRM responses', 'json'],
     ['onboardingV1Audit', options.onboardingV1Audit, 'protected production onboarding v1 evidence', 'json'],
     ['onboardingTrunkMap', options.onboardingTrunkMap, 'onboarding trunk operator map and mini-launch handoff boundary', 'json'],
     ['onboardingV2Design', options.onboardingV2Design, 'Onboarding v2 design evidence', 'json'],
@@ -186,6 +191,7 @@ const buildRequirementChecks = ({
   responseWorkspace,
   finalizationPreflight,
   requestBundle,
+  responseWatcher,
   onboardingV1Audit,
   onboardingTrunkMap,
   onboardingV2Design,
@@ -233,6 +239,16 @@ const buildRequirementChecks = ({
     ?? runbook?.currentState?.miniLaunch?.requestBundleRequestCount
     ?? null;
   const requestBundleAwaitingFinalCount = requestBundle?.summary?.awaitingFinalCount ?? null;
+  const responseWatcherStatus = responseWatcher?.status ?? runbook?.currentState?.miniLaunch?.responseWatcherStatus ?? null;
+  const responseWatcherMissingFinalCount = responseWatcher?.summary?.missingFinalCount
+    ?? runbook?.currentState?.miniLaunch?.responseWatcherMissingFinalCount
+    ?? null;
+  const responseWatcherFinalFilePresentCount = responseWatcher?.summary?.finalFilePresentCount
+    ?? runbook?.currentState?.miniLaunch?.responseWatcherFinalFilePresentCount
+    ?? null;
+  const responseWatcherNextBestMove = responseWatcher?.summary?.nextBestMove
+    ?? runbook?.currentState?.miniLaunch?.responseWatcherNextBestMove
+    ?? null;
   const acceptedFinalDepartments = finalizationPreflight?.acceptedDepartments
     ?? runbook?.currentState?.miniLaunch?.acceptedFinalDepartments
     ?? [];
@@ -392,6 +408,10 @@ const buildRequirementChecks = ({
         `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
         `requestBundleRequestCount=${requestBundleRequestCount ?? 'unknown'}`,
         `requestBundleAwaitingFinalCount=${requestBundleAwaitingFinalCount ?? 'unknown'}`,
+        `responseWatcherStatus=${responseWatcherStatus ?? 'missing'}`,
+        `responseWatcherMissingFinalCount=${responseWatcherMissingFinalCount ?? 'unknown'}`,
+        `responseWatcherFinalFilePresentCount=${responseWatcherFinalFilePresentCount ?? 'unknown'}`,
+        `responseWatcherNextBestMove=${responseWatcherNextBestMove ?? 'unknown'}`,
         `acceptedFinalDepartments=${acceptedFinalDepartments.join(',') || 'none'}`,
         `draftAssistDepartments=${draftAssistDepartments.join(',') || 'none'}`,
         `pendingReadyDepartments=${pendingReadyDepartments.join(',') || 'none'}`,
@@ -413,6 +433,7 @@ const buildRequirementChecks = ({
         `approvalMatrixCount=${runbook?.approvalMatrix?.length ?? 0}`,
         `trunkMapReady=${trunkMapReady}`,
         `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
+        `responseWatcherStatus=${responseWatcherStatus ?? 'missing'}`,
         `brujulaEmailStyleQaStatus=${brujulaEmailStyleQaStatus ?? 'missing'}`,
         `brujulaEmailStyleCorrectionStatus=${brujulaEmailStyleCorrectionStatus ?? 'missing'}`,
       ],
@@ -524,7 +545,7 @@ const buildGoalAudit = ({
     executiveSummary: {
       ...summary,
       currentOperatingPosture: 'continue_no_live_build_and_reviews',
-      nextBestMove: 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.',
+      nextBestMove: 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.',
       liveApprovalNeededNow: false,
       liveActionAllowedNow: false,
     },
@@ -532,6 +553,7 @@ const buildGoalAudit = ({
     nextMoves: [
       'Use the department review request bundle to route Brand, Web Design and CRM no-live review requests without reconstructing context.',
       'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
+      'Use the response watcher to confirm whether final response files exist before running finalization preflight.',
       'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
       'Run department review intake and reconciliation with final response files only.',
       'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
