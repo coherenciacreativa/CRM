@@ -891,6 +891,7 @@ Current operator files:
 /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.md
 /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.md
 /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md
 ```
 
 Scripts:
@@ -899,6 +900,7 @@ Scripts:
 CRM/scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs
 CRM/scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs
 CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-delivery-pack.mjs
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-response-workspace.mjs
 ```
 
 Purpose:
@@ -906,6 +908,7 @@ Purpose:
 - The operator runbook is the current console for Mantis/Codex: current state, report map, command catalog, operating scenarios, approval matrix and next no-live moves.
 - The backlog board lets one future mini-launch idea enter no-live intake while the current pilot waits for department reviews.
 - The department review delivery pack turns Brand/Web/CRM packets into copy-ready no-live review blocks with expected response paths and validation commands.
+- The response workspace creates protected `.pending.json` working copies and keeps final response files separate for intake/reconciliation.
 - A backlog row is not permission to build, send, publish, score, route to onboarding, create groups, assign subscribers, append ledgers or mutate CRM.
 - Open live gate count remains 0.
 
@@ -1003,4 +1006,4 @@ This migration is succeeding when:
 
 ## Next local step
 
-No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` no-live department reviews from the delivery pack, collect Brand/Web/CRM responses through the intake templates, run reconciliation, or use the backlog board for at most one additional no-live idea intake. Shopify/Web builds, MailerLite group creation, subscribers, seed sends, workflow use, onboarding handoff and CRM ledgers/cards/scoring remain separate approval lanes.
+No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` no-live department reviews from the delivery pack, let Brand/Web/CRM draft in the response workspace, collect only final `brand_response.json`, `web_design_response.json` and `crm_response.json` files for intake, run reconciliation, or use the backlog board for at most one additional no-live idea intake. Shopify/Web builds, MailerLite group creation, subscribers, seed sends, workflow use, onboarding handoff and CRM ledgers/cards/scoring remain separate approval lanes.
