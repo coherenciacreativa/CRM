@@ -213,6 +213,19 @@ const brujulaEmailStyleCorrection = {
   },
 };
 
+const brujulaEmailRenderQa = {
+  status: "brujula_email1_local_render_qa_green_no_live_changes",
+  executiveSummary: {
+    localRenderReady: true,
+    publicUseReady: false,
+    testSendReady: false,
+  },
+  renderPreview: {
+    path: "/tmp/render/mailerlite_brujula_email1_corrected_draft_2026-05-27.html.png",
+    status: "rendered",
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/path.mjs",
@@ -246,6 +259,7 @@ const packageJson = {
     "crm:vnext:mailerlite-brujula-test-lane-apply": "node scripts/brujula-apply.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
     "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/brujula-email-style-correction.mjs",
+    "crm:vnext:mailerlite-brujula-email-render-qa-packet": "node scripts/brujula-email-render-qa.mjs",
     "test": "vitest run",
   },
 };
@@ -282,6 +296,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.responseWatcher).toContain("mailerlite_mini_launch_department_review_response_watcher_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
+    expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-27.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
@@ -316,6 +331,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaApply,
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
       validationReceipt,
       responseWorkspace,
       finalizationPreflight,
@@ -338,6 +354,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.brujulaPilot.emailStyleCorrectionStatus).toBe("brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
     expect(state.brujulaPilot.correctedDraftHtmlPath).toContain("corrected_draft");
     expect(state.brujulaPilot.correctedDraftTestSendReady).toBe(false);
+    expect(state.brujulaPilot.emailRenderQaStatus).toBe("brujula_email1_local_render_qa_green_no_live_changes");
+    expect(state.brujulaPilot.localRenderReady).toBe(true);
+    expect(state.brujulaPilot.localRenderPreviewPath).toContain("render");
     expect(state.miniLaunch.safeToIntakeOneMoreNoLiveIdea).toBe(true);
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
@@ -429,6 +448,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.liveGatesRemainClosed).toContain("v1 edit");
     expect(scenarios.find((scenario) => scenario.id === "brujula_test_lane")?.commands.join(" ")).toContain("brujula-email-style-qa-packet");
     expect(scenarios.find((scenario) => scenario.id === "brujula_test_lane")?.commands.join(" ")).toContain("brujula-email-style-correction-packet");
+    expect(scenarios.find((scenario) => scenario.id === "brujula_test_lane")?.commands.join(" ")).toContain("brujula-email-render-qa-packet");
   });
 
   test("builds runbook with command/scenario catalog and no live operations", () => {
@@ -452,6 +472,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaApply,
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
       validationReceipt,
       packageJson,
       sourceDigests,
@@ -550,6 +571,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Brújula Email 1 corrected local draft and builder inputs",
       },
       {
+        path: "/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "Brújula Email 1 local render QA and preview evidence",
+      },
+      {
         path: "/tmp/mailerlite_launch_os_validation_receipt_2026-05-27.json",
         present: true,
         chars: 2000,
@@ -570,6 +597,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.onboardingV2EventContract).toBe("/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
+    expect(reportMap.brujulaEmailRenderQa).toBe("/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-27.json");
   });
 
@@ -594,6 +622,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaApply,
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
       validationReceipt,
       packageJson,
       sourceDigests,
@@ -629,6 +658,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Brújula email style QA: brujula_email_style_qa_yellow_no_live_changes");
     expect(markdown).toContain("Brújula email style QA blockers: 4");
     expect(markdown).toContain("Brújula Email 1 correction: brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
+    expect(markdown).toContain("Brújula Email 1 render QA: brujula_email1_local_render_qa_green_no_live_changes");
+    expect(markdown).toContain("Brújula local render ready: true");
     expect(markdown).toContain("Draft assist departments: brand, web_design, crm");
     expect(markdown).toContain("Awaiting final departments: brand, web_design, crm");
     expect(markdown).toContain("Onboarding v2 event contract");

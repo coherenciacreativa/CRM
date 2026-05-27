@@ -80,6 +80,7 @@ describe("CRM vNext MailerLite Brújula email style correction packet", () => {
     expect(html).toContain("#FFFFFF");
     expect(html).toContain("#474747");
     expect(html).toContain("background: #2F3E63");
+    expect(html).not.toMatch(/MailerLite|lead magnet|CRM|workflow|tag/i);
     expect(byId.poppins_body.status).toBe("specified");
     expect(byId.cta_not_default_mailerlite_blue.status).toBe("specified_needs_render_check");
     expect(byId.signature_identity.status).toBe("text_fallback_specified_visual_signature_asset_still_pending");

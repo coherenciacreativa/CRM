@@ -216,6 +216,24 @@ const brujulaEmailStyleCorrection = {
   },
 };
 
+const brujulaEmailRenderQa = {
+  status: "brujula_email1_local_render_qa_green_no_live_changes",
+  executiveSummary: {
+    localRenderReady: true,
+    publicUseReady: false,
+    testSendReady: false,
+  },
+  renderPreview: {
+    path: "/tmp/render/mailerlite_brujula_email1_corrected_draft_2026-05-27.html.png",
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    sendsPerformed: false,
+    workflowMutationsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+};
+
 const validationReceipt = {
   status: "mailerlite_launch_os_validation_receipt_ready_no_live_changes",
   validationStatus: "passed",
@@ -271,6 +289,7 @@ const values = {
   brujulaApply,
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
+  brujulaEmailRenderQa: null,
   validationReceipt: null,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
   brandDictionary: "CC · Source · Resource · Brújula\n",
@@ -305,6 +324,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
+    expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
@@ -340,6 +360,19 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleQaPublicUseReady=false");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionStatus=brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionTestSendReady=false");
+  });
+
+  test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {
+    const checks = buildRequirementChecks({
+      ...values,
+      brujulaEmailRenderQa,
+    });
+    const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
+
+    expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_corrected_draft_render_checked_needs_mailerlite_builder_qa");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaStatus=brujula_email1_local_render_qa_green_no_live_changes");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaLocalRenderReady=true");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPublicUseReady=false");
   });
 
   test("uses the persistent validation receipt when explicit validation flags are absent", () => {

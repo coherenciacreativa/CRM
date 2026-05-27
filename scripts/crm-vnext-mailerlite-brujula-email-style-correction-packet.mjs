@@ -229,7 +229,7 @@ const renderHtml = (draft) => `<!doctype html>
         <div class="signature">${htmlEscape(draft.signatureText)}</div>
       </div>
       <div class="footer">
-        Recibes este correo porque pediste La Brújula de Claridad. Puedes darte de baja desde el enlace legal de MailerLite.
+        Recibes este correo porque pediste La Brújula de Claridad. Puedes darte de baja desde el enlace legal al final de este correo.
       </div>
     </div>
   </div>

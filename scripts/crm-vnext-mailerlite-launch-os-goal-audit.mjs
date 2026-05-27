@@ -26,6 +26,7 @@ const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mai
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
+const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -56,6 +57,7 @@ Options:
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
+  --brujula-email-render-qa <path>  Brújula Email 1 local render QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>      Optional closeout validation status, e.g. passed
@@ -91,6 +93,7 @@ const parseArgs = (argv) => {
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
+    brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'not_supplied',
@@ -124,6 +127,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
+    else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -176,6 +180,7 @@ const loadSources = async (options) => {
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
     ['brujulaEmailStyleCorrection', options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs', 'json'],
+    ['brujulaEmailRenderQa', options.brujulaEmailRenderQa, 'Brújula Email 1 local render QA and preview evidence', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
   ];
@@ -239,6 +244,7 @@ const buildRequirementChecks = ({
   brujulaApply,
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
+  brujulaEmailRenderQa,
   validationReceipt,
   brandTaxonomy,
   brandDictionary,
@@ -350,6 +356,15 @@ const buildRequirementChecks = ({
     && brujulaEmailStyleCorrection?.executiveSummary?.testSendReady === false
     && brujulaEmailStyleCorrection?.safety?.mailerLiteApiCalled === false
     && brujulaEmailStyleCorrection?.safety?.sendsPerformed === false;
+  const brujulaEmailRenderQaStatus = brujulaEmailRenderQa?.status ?? null;
+  const brujulaRenderQaReady = brujulaEmailRenderQaStatus === 'brujula_email1_local_render_qa_green_no_live_changes'
+    && brujulaEmailRenderQa?.executiveSummary?.localRenderReady === true
+    && brujulaEmailRenderQa?.executiveSummary?.publicUseReady === false
+    && brujulaEmailRenderQa?.executiveSummary?.testSendReady === false
+    && brujulaEmailRenderQa?.safety?.mailerLiteApiCalled === false
+    && brujulaEmailRenderQa?.safety?.sendsPerformed === false
+    && brujulaEmailRenderQa?.safety?.workflowMutationsPerformed === false
+    && brujulaEmailRenderQa?.safety?.factStoreWritePerformed === false;
 
   return [
     {
@@ -526,7 +541,9 @@ const buildRequirementChecks = ({
     {
       id: 'brujula_test_pilot_status',
       requirement: 'Keep Brújula as controlled proving ground, not a public launch.',
-      status: brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady && brujulaCorrectionReady
+      status: brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady && brujulaCorrectionReady && brujulaRenderQaReady
+        ? 'partial_functional_green_corrected_draft_render_checked_needs_mailerlite_builder_qa'
+        : brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady && brujulaCorrectionReady
         ? 'partial_functional_green_corrected_draft_ready_needs_render_qa'
         : brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady
           ? 'partial_functional_green_creative_qa_packet_ready'
@@ -545,9 +562,15 @@ const buildRequirementChecks = ({
         `emailStyleCorrectionHtml=${brujulaEmailStyleCorrection?.outputs?.htmlPath ?? 'missing'}`,
         `emailStyleCorrectionPublicUseReady=${brujulaEmailStyleCorrection?.executiveSummary?.publicUseReady ?? 'unknown'}`,
         `emailStyleCorrectionTestSendReady=${brujulaEmailStyleCorrection?.executiveSummary?.testSendReady ?? 'unknown'}`,
+        `emailRenderQaStatus=${brujulaEmailRenderQaStatus ?? 'missing'}`,
+        `emailRenderQaLocalRenderReady=${brujulaEmailRenderQa?.executiveSummary?.localRenderReady ?? 'unknown'}`,
+        `emailRenderQaPreview=${brujulaEmailRenderQa?.renderPreview?.path ?? 'missing'}`,
+        `emailRenderQaPublicUseReady=${brujulaEmailRenderQa?.executiveSummary?.publicUseReady ?? 'unknown'}`,
       ],
       remaining: [
-        'Build/apply the corrected draft in MailerLite only after exact approval, rerun render QA/test-only send, and keep Brújula non-public until Brand email style QA is green.',
+        brujulaRenderQaReady
+          ? 'Build/apply the corrected draft in MailerLite only after exact approval, verify real MailerLite render/test-only send, and keep Brújula non-public until Brand email style QA is green.'
+          : 'Run local render QA first, then build/apply the corrected draft in MailerLite only after exact approval, rerun real render QA/test-only send, and keep Brújula non-public until Brand email style QA is green.',
       ],
     },
   ];
