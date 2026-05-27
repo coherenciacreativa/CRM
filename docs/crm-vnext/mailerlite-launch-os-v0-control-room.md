@@ -405,6 +405,26 @@ Result:
 
 This keeps Brand as the naming authority: CRM/MailerLite can prepare the lane, but cannot invent live group names from the rehearsal alone.
 
+## Mini-launch Brand candidate review packet status
+
+Status: local-only Brand handoff ready, no live changes.
+
+Evidence:
+
+- Brand candidate review report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-brand-candidate-review-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-brand-candidate-review-packet.spec.ts`
+
+Result:
+
+- Converts the group dry-run blocker into a semantic decision packet for Brand.
+- Asks Brand to choose one no-live option for the `Inteligencia para descansar` group candidates: add as `candidate`, rename, reject MailerLite groups for now, or consider later promotion to `proposed_local`.
+- Makes explicit that `candidate` does not approve MailerLite group creation, workflow use, subscriber assignment, seed send, audience send, onboarding change, CRM card/scoring, Signal Event Ledger or Fact Store write.
+- Keeps the creative context attached: Email 1 remains review-ready but not Brand-approved, not asset-built, not seed-sent and not audience-ready.
+- Leaves no approval phrase available from this packet.
+
+This is the handshake between CRM and Brand: CRM surfaces the operational need, Brand owns the semantic naming decision, and MailerLite stays untouched until a later explicit gate.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -443,13 +463,13 @@ The goal is not complete until all gates below are proven with current evidence:
 
 ## Next best step
 
-Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or continue with the next non-live production prep from the rehearsal: polished Brand/email asset packet, Shopify/Web preview handoff, or MailerLite group dry-run packet for the `Inteligencia para descansar` candidate groups.
+Pause for explicit approval before creating the 12 Onboarding v2 empty groups, or route the `Inteligencia para descansar` Brand candidate review packet to Brand for a semantic no-live decision. If Brand accepts the two rows only as `candidate`, rerun the launch group dry-run; if Brand renames or rejects them, regenerate the dry-run from the new names or keep the launch CRM-first.
 
 Scope:
 
 - Treat current `Onboarding flow` as production v1 and leave it live.
 - If Alejandro approves the exact phrase, run the guarded runner in execute mode and then update Brand dictionary live IDs.
-- If not, continue non-live preparation from the rehearsal: Brand/Web/email asset drafting, CRM signal schema, or MailerLite group/workflow dry-run packet.
+- If not, continue non-live preparation from the rehearsal: Brand candidate review, Shopify/Web preview handoff, CRM signal schema, or disabled MailerLite asset planning.
 - Produce Markdown + JSON reports in `~/Documents/Mantis-Reports`.
 
 Non-goals:
@@ -464,4 +484,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, and seed-test QA packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or a no-live Brand/email asset packet for `Inteligencia para descansar` that can later feed Shopify/Web and a launch-specific MailerLite dry-run.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, and Brand candidate review packet are now documented. The next useful moves are either exact approval for the 12 empty onboarding groups, or Brand's no-live semantic decision on the two `Inteligencia para descansar` group candidates.

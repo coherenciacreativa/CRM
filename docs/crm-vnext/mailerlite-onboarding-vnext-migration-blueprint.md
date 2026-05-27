@@ -628,6 +628,29 @@ Result:
 
 This checkpoint prevents the mini-launch machinery from inventing MailerLite group meanings. Brand must own the naming row before CRM/MailerLite can ask Alejandro for any future empty-group approval.
 
+## Mini-launch Brand candidate review checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-brand-candidate-review-packet.mjs
+```
+
+Result:
+
+- The `Inteligencia para descansar` dry-run blocker is now packaged as a Brand decision request.
+- Brand is asked to decide whether the two groups should be added as `candidate`, renamed, rejected for now, or promoted later only after another semantic review.
+- Candidate-only approval remains non-operational: no MailerLite group creation, no workflow use, no subscriber assignment, no seed send, no audience send, no onboarding change and no CRM/Signal/Fact Store writes.
+- The packet includes copy/creative context from the Brand/email asset packet so Brand sees the operational need without confusing it with public approval.
+
+This checkpoint gives the system a clean way to coordinate Brand and CRM without editing the dirty Brand repo from the MailerLite lane. It is a decision artifact, not a live-operation artifact.
+
 ## Planner dry-run requirements
 
 Proposed script:
@@ -720,4 +743,4 @@ This migration is succeeding when:
 
 ## Next local step
 
-No further live-adjacent step should run without explicit approval. If continuing without approval, work on Brand/CRM non-live preparation, first-email Brand mapping, disabled draft workflow checklist, or a concrete mini-launch rehearsal that stays local-only.
+No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` Brand candidate review packet for semantic review, prepare Shopify/Web preview handoff, or keep working on disabled-draft/onboarding documentation that stays local-only.
