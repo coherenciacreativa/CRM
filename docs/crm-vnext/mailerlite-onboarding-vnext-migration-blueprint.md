@@ -774,6 +774,36 @@ Result:
 
 This checkpoint turns cross-department coordination into a clean review queue. It moves the system toward agency-like operation while keeping every live gate closed.
 
+## Mini-launch department review intake checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_intake_board_inteligencia_descansar_2026-05-27.md
+```
+
+Templates:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_templates_inteligencia_descansar_2026-05-27/
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-intake.mjs
+```
+
+Result:
+
+- The cross-department review now has a structured intake board.
+- Brand, Web Design and CRM each get a JSON response template.
+- The intake requires `reviewMode=no_live_review` and `liveApprovalGranted=false`; any response that tries to grant live approval is blocked.
+- Current status is `awaiting_department_review_responses_no_live_changes`, with Brand, Web Design and CRM pending.
+- The board can later reconcile accepted responses before any group dry-run rerun, Shopify build request, Signal Ledger proposal or onboarding handoff design.
+
+This checkpoint protects the next stage of agency work: reviews become structured evidence, not vague permission.
+
 ## Planner dry-run requirements
 
 Proposed script:
