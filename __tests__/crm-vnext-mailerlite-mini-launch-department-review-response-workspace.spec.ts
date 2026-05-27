@@ -6,6 +6,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   buildCommands,
+  buildPendingDraftState,
   buildPendingWorkingCopy,
   buildResponseWorkspace,
   buildSafety,
@@ -148,6 +149,7 @@ describe("CRM vNext MailerLite department review response workspace", () => {
     expect(workspace.status).toBe("department_review_response_workspace_ready_awaiting_final_responses_no_live_changes");
     expect(workspace.readyForIntake).toBe(false);
     expect(workspace.pendingDepartments).toEqual(["brand", "web_design", "crm"]);
+    expect(workspace.readyPendingDepartments).toEqual([]);
     expect(workspace.workingCopies.every((copy) => copy.written)).toBe(true);
     expect(workspace.workingCopies.every((copy) => copy.pendingFileIsAcceptedByIntake === false)).toBe(true);
 
@@ -155,6 +157,11 @@ describe("CRM vNext MailerLite department review response workspace", () => {
     expect(brandPending.workspaceStatus).toBe("pending_working_copy_not_final_response");
     await expect(readFile(join(responsesDir, "brand_response.json"), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
     expect(workspace.liveGateSummary.openLiveGateCount).toBe(0);
+    expect(workspace.pendingDraftState.brand).toMatchObject({
+      status: "incomplete_response",
+      readyToFinalize: false,
+      pendingFileIsFinalResponse: false,
+    });
     expect(workspace.safety).toMatchObject({
       mailerLiteApiCalled: false,
       shopifyApiCalled: false,
@@ -220,6 +227,59 @@ describe("CRM vNext MailerLite department review response workspace", () => {
     expect(workspace.acceptedDepartments).toEqual(["brand", "web_design", "crm"]);
   });
 
+  test("detects complete pending drafts without treating them as final responses", async () => {
+    const responsesDir = await tmpResponsesDir();
+    await writeFile(join(responsesDir, "brand_response.pending.json"), JSON.stringify({
+      ...responseTemplates.brand,
+      sequenceDecision: "approve",
+      groupDecisions: [
+        {
+          name: "CC · Source · Quiz · Inteligencia para descansar",
+          decision: "add_as_candidate",
+          proposedName: null,
+          notes: [],
+        },
+      ],
+    }, null, 2), "utf8");
+
+    const workspace = await buildResponseWorkspace({
+      deliveryPack,
+      intakeBoard,
+      responsesDir,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    expect(workspace.status).toBe("department_review_response_workspace_has_ready_pending_drafts_no_live_changes");
+    expect(workspace.readyForIntake).toBe(false);
+    expect(workspace.readyPendingDepartments).toEqual(["brand"]);
+    expect(workspace.pendingDraftState.brand).toMatchObject({
+      status: "accepted_no_live_review_response",
+      readyToFinalize: true,
+      pendingFileIsFinalResponse: false,
+    });
+    await expect(readFile(join(responsesDir, "brand_response.json"), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("reports invalid pending drafts as local blockers", async () => {
+    const responsesDir = await tmpResponsesDir();
+    await writeFile(join(responsesDir, "crm_response.pending.json"), "{not-json", "utf8");
+
+    const pendingState = await buildPendingDraftState({
+      responsesDir,
+      templates: responseTemplates,
+    });
+    const workspace = await buildResponseWorkspace({
+      deliveryPack,
+      intakeBoard,
+      responsesDir,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    expect(pendingState.crm.status).toBe("invalid_json_pending_working_copy_blocked");
+    expect(workspace.status).toBe("blocked_by_invalid_pending_draft_no_live_changes");
+    expect(workspace.liveGateSummary.openLiveGateCount).toBe(0);
+  });
+
   test("renders commands, rules and safety posture", async () => {
     const responsesDir = await tmpResponsesDir();
     const workspace = await buildResponseWorkspace({
@@ -234,6 +294,7 @@ describe("CRM vNext MailerLite department review response workspace", () => {
     expect(commands.createWorkspace).toContain("department-review-response-workspace");
     expect(markdown).toContain("Department Review Response Workspace");
     expect(markdown).toContain("Pending working copy");
+    expect(markdown).toContain("Pending Draft State");
     expect(markdown).toContain("Final response path");
     expect(markdown).toContain("Open live gates: 0");
     expect(markdown).toContain("Sin MailerLite, Shopify o CRM live API calls");

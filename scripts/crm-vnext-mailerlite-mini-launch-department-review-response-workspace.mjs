@@ -187,6 +187,57 @@ const buildFinalResponseState = async ({ responsesDir, templates }) => {
   return states;
 };
 
+const buildPendingDraftState = async ({ responsesDir, templates }) => {
+  const states = {};
+  for (const department of DEPARTMENTS) {
+    const path = pendingPathFor(responsesDir, department);
+    const finalResponsePath = finalPathFor(responsesDir, department);
+    const read = await readJsonIfPresent(path);
+    if (!read.exists) {
+      states[department] = {
+        department,
+        path,
+        exists: false,
+        status: 'awaiting_pending_working_copy',
+        readyToFinalize: false,
+        pendingFileIsFinalResponse: false,
+        finalResponsePath,
+        missing: ['pending_working_copy'],
+      };
+    } else if (read.error) {
+      states[department] = {
+        department,
+        path,
+        exists: true,
+        status: 'invalid_json_pending_working_copy_blocked',
+        readyToFinalize: false,
+        pendingFileIsFinalResponse: false,
+        finalResponsePath,
+        unsafe: true,
+        error: read.error,
+      };
+    } else {
+      const validation = validateResponse({
+        department,
+        response: read.value,
+        template: templates[department],
+      });
+      states[department] = {
+        path,
+        exists: true,
+        ...validation,
+        readyToFinalize: validation.accepted === true,
+        pendingFileIsFinalResponse: false,
+        finalResponsePath,
+        promotionInstruction: validation.accepted
+          ? `Copy this pending draft to ${finalResponsePath} only after the department confirms it is final.`
+          : 'Keep editing this pending draft until validation is accepted.',
+      };
+    }
+  }
+  return states;
+};
+
 const buildSafety = () => ({
   localOnly: true,
   filesWrittenOnly: true,
@@ -229,10 +280,13 @@ const sourceDigest = async (path, consultedFor) => {
   };
 };
 
-const statusFrom = (finalResponseState) => {
+const statusFrom = (finalResponseState, pendingDraftState) => {
   const values = Object.values(finalResponseState);
+  const pendingValues = Object.values(pendingDraftState);
   if (values.some((item) => item.unsafe)) return 'blocked_by_invalid_or_unsafe_final_response_no_live_changes';
+  if (pendingValues.some((item) => item.unsafe)) return 'blocked_by_invalid_pending_draft_no_live_changes';
   if (values.every((item) => item.accepted)) return 'department_review_response_workspace_ready_for_intake_no_live_changes';
+  if (pendingValues.some((item) => item.readyToFinalize)) return 'department_review_response_workspace_has_ready_pending_drafts_no_live_changes';
   return 'department_review_response_workspace_ready_awaiting_final_responses_no_live_changes';
 };
 
@@ -294,26 +348,34 @@ const buildResponseWorkspace = async ({
     responsesDir: fullResponsesDir,
     templates,
   });
+  const pendingDraftState = await buildPendingDraftState({
+    responsesDir: fullResponsesDir,
+    templates,
+  });
   const acceptedDepartments = Object.values(finalResponseState).filter((item) => item.accepted).map((item) => item.department);
   const pendingDepartments = Object.values(finalResponseState).filter((item) => !item.accepted).map((item) => item.department);
+  const readyPendingDepartments = Object.values(pendingDraftState).filter((item) => item.readyToFinalize).map((item) => item.department);
 
   return {
     schemaVersion: SCHEMA_VERSION,
     mode: 'local_only_mailerlite_launch_os_department_review_response_workspace',
     generatedAt,
     ok: true,
-    status: statusFrom(finalResponseState),
+    status: statusFrom(finalResponseState, pendingDraftState),
     launch: intakeBoard.launch ?? deliveryPack.launch ?? null,
     responsesDir: fullResponsesDir,
     readyForIntake: pendingDepartments.length === 0,
     acceptedDepartments,
     pendingDepartments,
+    readyPendingDepartments,
     workingCopies,
+    pendingDraftState,
     finalResponseState,
     commands: buildCommands({ responsesDir: fullResponsesDir }),
     operatorRules: [
       'Use *.pending.json files only as working copies.',
       'Only brand_response.json, web_design_response.json and crm_response.json are final response paths.',
+      'A pending draft can be complete enough to finalize, but it still must be saved to the final response path before intake.',
       'Final responses must keep reviewMode=no_live_review and liveApprovalGranted=false.',
       'Accepted responses unlock only no-live reconciliation; they never authorize live systems.',
       'If a pending file already exists, preserve it unless --overwrite-pending is explicit.',
@@ -365,6 +427,11 @@ const renderMarkdown = (workspace) => {
   lines.push('## Final Response State', '');
   for (const state of Object.values(workspace.finalResponseState)) {
     lines.push(`- ${state.department}: ${state.status} (${state.path})`);
+  }
+
+  lines.push('', '## Pending Draft State', '');
+  for (const state of Object.values(workspace.pendingDraftState)) {
+    lines.push(`- ${state.department}: ${state.status}; readyToFinalize=${state.readyToFinalize} (${state.path})`);
   }
 
   lines.push('', '## Commands', '');
@@ -429,6 +496,7 @@ const main = async () => {
     readyForIntake: workspace.readyForIntake,
     acceptedDepartments: workspace.acceptedDepartments,
     pendingDepartments: workspace.pendingDepartments,
+    readyPendingDepartments: workspace.readyPendingDepartments,
     openLiveGateCount: workspace.liveGateSummary.openLiveGateCount,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
@@ -447,6 +515,7 @@ export {
   buildCommands,
   buildFinalResponseState,
   buildPendingWorkingCopy,
+  buildPendingDraftState,
   buildResponseWorkspace,
   buildResponseWorkspaceFromFiles,
   buildSafety,

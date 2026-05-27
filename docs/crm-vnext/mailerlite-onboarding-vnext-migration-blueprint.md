@@ -908,7 +908,7 @@ Purpose:
 - The operator runbook is the current console for Mantis/Codex: current state, report map, command catalog, operating scenarios, approval matrix and next no-live moves.
 - The backlog board lets one future mini-launch idea enter no-live intake while the current pilot waits for department reviews.
 - The department review delivery pack turns Brand/Web/CRM packets into copy-ready no-live review blocks with expected response paths and validation commands.
-- The response workspace creates protected `.pending.json` working copies and keeps final response files separate for intake/reconciliation.
+- The response workspace creates protected `.pending.json` working copies, validates whether pending drafts are complete enough to finalize, and keeps final response files separate for intake/reconciliation.
 - A backlog row is not permission to build, send, publish, score, route to onboarding, create groups, assign subscribers, append ledgers or mutate CRM.
 - Open live gate count remains 0.
 

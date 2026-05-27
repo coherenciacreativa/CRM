@@ -718,6 +718,7 @@ Result:
 - Current status is `department_review_response_workspace_ready_awaiting_final_responses_no_live_changes`.
 - `readyForIntake=false` until all final response files exist and validate.
 - Pending files are explicitly not accepted by the intake board.
+- Pending drafts are now validated separately; a draft can show `readyToFinalize=true` while still not counting as a final response.
 - If a pending file already exists, the script preserves it unless `--overwrite-pending` is explicit.
 - Live gate open count is 0.
 
