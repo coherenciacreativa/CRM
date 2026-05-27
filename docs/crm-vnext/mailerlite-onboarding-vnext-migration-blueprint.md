@@ -401,6 +401,30 @@ Guardrails:
 
 Next safe step: either pause for Alejandro's explicit approval phrase to create only those 12 empty groups, or continue with non-live work: Brand mapping for the first onboarding email, CRM event contract for v2, or a no-live mini-launch rehearsal using the full Mini-Launch OS v0 packet.
 
+## Onboarding v2 execution packet checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-onboarding-v2-execution-packet.mjs
+```
+
+Result:
+
+- Status: `ready_for_human_decision_or_non_live_continuation`.
+- Current best path: keep v1 live, create only missing v2 groups if Alejandro approves, then build a disabled v2 draft and seed-test before any production switch.
+- Ready for exact human approval: create the 12 named empty Onboarding v2 groups only.
+- Safe non-live continuation: Brand first-email content mapping and a concrete mini-launch rehearsal packet.
+- Still blocked: disabled v2 draft creation/cloning, seed subscriber test, production entry switch, any v1 edit, any audience send.
+
+This packet is now the operational decision queue. It should be consulted before the next Onboarding v2 move so that group creation, workflow use, seed testing, and production routing remain separate gates.
+
 ## Mini-launch path checkpoint - 2026-05-27
 
 Report:

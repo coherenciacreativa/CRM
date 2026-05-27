@@ -45,6 +45,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_path_packet_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_path_packet_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_os_v0_packet_2026-05-27.md`
@@ -211,6 +213,26 @@ Dry-run result:
 - Errors: 0.
 
 The runner defaults to dry-run. Execute mode requires the exact phrase in the report and is still limited to creating those named empty groups only.
+
+## Onboarding v2 execution packet status
+
+Status: current decision queue generated, local-only, no live changes.
+
+Evidence:
+
+- Execution packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-onboarding-v2-execution-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-onboarding-v2-execution-packet.spec.ts`
+
+Result:
+
+- Status: `ready_for_human_decision_or_non_live_continuation`.
+- Ready for exact human approval: `create_empty_onboarding_v2_groups`.
+- Safe to continue without live approval: `non_live_mini_launch_rehearsal` and `brand_first_email_content_mapping`.
+- Draft workflow, seed test and production entry switch remain blocked behind separate future approvals.
+- The packet explicitly preserves v1, keeps `Onboarding complete` as the current practical audience until migration, and keeps mini-launch `Experiment` identity CRM-first unless MailerLite needs routing/dedupe/exclusion.
+
+This packet is the current board map for the Onboarding v2 lane. It prevents the operator from confusing "ready to create empty groups if approved" with "ready to use those groups in workflows."
 
 ## Mini-launch OS v0 status
 
