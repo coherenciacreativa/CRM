@@ -3,6 +3,8 @@
 Date: 2026-05-21
 Status: Implemented local adapter
 
+Related board-level map: `docs/crm-vnext/instagram-signal-os-v0.md`.
+
 ## Purpose
 
 `crm:vnext:instagram-signal-events` is the current bridge between Instagram activity and the canonical CRM vNext Signal Event Ledger.
@@ -56,11 +58,14 @@ npm run crm:vnext:instagram-signal-events -- \
 Supported event kinds:
 
 - `dm`, `message`, `instagram_dm`
+- `story_reply`, `reply_to_story`, `message_reaction`, `dm_reaction` (normalized as `instagram_dm` with surface tags)
 - `comment`, `instagram_comment`
+- `live_comment`, `mention` (normalized as `instagram_comment` with surface tags)
 - `like`, `instagram_like`
 - `story_view`, `story_views`, `instagram_story_view`
 - `follow`, `new_follow`, `instagram_follow`
 - `snapshot`, `engagement_snapshot`, `instagram_engagement_snapshot`
+- `media_insight`, `account_insight`, `story_insight`, `profile_visit`, `save`, `share` (normalized as `instagram_engagement_snapshot`)
 
 Aggregate snapshots can include:
 
@@ -78,6 +83,11 @@ Aggregate snapshots can include:
   }
 }
 ```
+
+Aggregate insight metrics such as `profileVisits30d`, `reach30d`, `impressions30d`,
+`saves30d`, and `shares30d` are preserved on the event metrics. They are not
+person-level outreach permission, and only the projection-supported Instagram
+fields affect the current heat preview.
 
 ## Output
 

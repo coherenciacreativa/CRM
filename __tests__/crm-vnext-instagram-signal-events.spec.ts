@@ -97,6 +97,62 @@ describe('CRM vNext Instagram signal events', () => {
     expect(report.safety.liveApiCallsProhibited).toBe(true);
   });
 
+  test('normalizes real Instagram surfaces without creating a parallel scoring lane', () => {
+    const report = buildCrmVNextInstagramSignalEvents({
+      observations: [
+        {
+          sourceKind: 'instagram_webhook',
+          eventKind: 'story_reply',
+          instagramHandle: 'cadavid_eli',
+          observedAt: '2026-05-21T08:30:00.000Z',
+          summary: 'Story reply visible through read-only webhook/UI packet.',
+        },
+        {
+          sourceKind: 'instagram_webhook',
+          eventKind: 'message_reaction',
+          instagramHandle: 'cadavid_eli',
+          observedAt: '2026-05-21T08:40:00.000Z',
+          summary: 'Reaction to an existing message; no outbound action.',
+        },
+        {
+          sourceKind: 'instagram_api',
+          eventKind: 'media_insight',
+          instagramHandle: 'cadavid_eli',
+          observedAt: '2026-05-21T09:00:00.000Z',
+          metrics: {
+            profileVisits30d: 4,
+            reach30d: 120,
+            shares30d: 2,
+          },
+          summary: 'Aggregate media/account insight attached to a known card for dry-run testing.',
+        },
+      ],
+    }, { now: NOW });
+
+    expect(report.summary).toMatchObject({
+      observationsRead: 3,
+      eventsGenerated: 3,
+      skippedRecords: 0,
+    });
+    expect(report.signalEvents[0]).toMatchObject({
+      eventKind: 'instagram_dm',
+      tags: expect.arrayContaining(['instagram_surface:story_reply']),
+    });
+    expect(report.signalEvents[1]).toMatchObject({
+      eventKind: 'instagram_dm',
+      tags: expect.arrayContaining(['instagram_surface:message_reaction']),
+    });
+    expect(report.signalEvents[2]).toMatchObject({
+      eventKind: 'instagram_engagement_snapshot',
+      metrics: expect.objectContaining({
+        profileVisits30d: 4,
+        reach30d: 120,
+        shares30d: 2,
+      }),
+      tags: expect.arrayContaining(['instagram_surface:aggregate_insight']),
+    });
+  });
+
   test('feeds Instagram events into the shared signal event pipeline', async () => {
     const cardStorePath = await writeCardStore();
     const instagramEvents = buildCrmVNextInstagramSignalEvents({
