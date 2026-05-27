@@ -74,6 +74,7 @@
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs",
+    "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/crm-vnext-mailerlite-launch-os-validation-receipt.mjs",
     "crm:vnext:snapshot": "node scripts/crm-vnext-snapshot.mjs",
     "crm:vnext:contacts-evidence": "node scripts/crm-vnext-contacts-evidence.mjs",
     "crm:vnext:mailerlite-evidence": "node scripts/crm-vnext-mailerlite-evidence.mjs",

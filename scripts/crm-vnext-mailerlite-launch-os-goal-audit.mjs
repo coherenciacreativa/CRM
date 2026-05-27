@@ -26,6 +26,7 @@ const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mai
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
+const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const OBJECTIVE = 'Lleva MailerLite desde la arquitectura actual hacia un MailerLite Launch OS v0 listo para operar: preservar el onboarding productivo, disenar Onboarding v2, consolidar taxonomia de grupos/tags/recibos, preparar infraestructura para mini-lanzamientos frecuentes, coordinar con Brand Hub y CRM, documentar todo con reportes claros, validar con dry-runs y commits limpios, y detenerte a pedirme aprobacion antes de cualquier cambio vivo en MailerLite, Shopify, CRM, workflows, subscribers o envios reales.';
@@ -55,6 +56,7 @@ Options:
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
+  --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>      Optional closeout validation status, e.g. passed
   --validation-summary <text>       Optional human-readable validation receipt
@@ -89,6 +91,7 @@ const parseArgs = (argv) => {
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
+    validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'not_supplied',
     validationSummary: null,
@@ -121,6 +124,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
+    else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
     else if (arg === '--validation-summary') options.validationSummary = argv[++index];
@@ -139,6 +143,13 @@ const sourceDigest = (path, content, consultedFor) => ({
   path: resolve(path),
   present: true,
   chars: content.length,
+  consultedFor,
+});
+
+const missingSourceDigest = (path, consultedFor) => ({
+  path: resolve(path),
+  present: false,
+  chars: 0,
   consultedFor,
 });
 
@@ -165,13 +176,24 @@ const loadSources = async (options) => {
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
     ['brujulaEmailStyleCorrection', options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs', 'json'],
+    ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
   ];
 
   const values = {};
   const sourceDigests = [];
-  for (const [key, path, consultedFor, kind] of specs) {
-    const content = await readText(path);
+  for (const [key, path, consultedFor, kind, optional = false] of specs) {
+    let content;
+    try {
+      content = await readText(path);
+    } catch (error) {
+      if (optional && error.code === 'ENOENT') {
+        values[key] = null;
+        sourceDigests.push(missingSourceDigest(path, consultedFor));
+        continue;
+      }
+      throw error;
+    }
     values[key] = kind === 'json' ? JSON.parse(content) : content;
     sourceDigests.push(sourceDigest(path, content, consultedFor));
   }
@@ -183,6 +205,21 @@ const packageHas = (packageJson, scriptName) => Boolean(packageJson?.scripts?.[s
 const assignedGroupNames = (brujulaApply) => (brujulaApply?.assignedGroups ?? [])
   .map((group) => group?.name)
   .filter(Boolean);
+
+const validationReceiptPassed = (validationReceipt) => validationReceipt?.status === 'mailerlite_launch_os_validation_receipt_ready_no_live_changes'
+  && validationReceipt?.validationStatus === 'passed'
+  && validationReceipt?.evidence?.liveGatesClosed === true
+  && validationReceipt?.safety?.mailerLiteApiCalled === false
+  && validationReceipt?.safety?.shopifyApiCalled === false
+  && validationReceipt?.safety?.crmLiveApiCalled === false
+  && validationReceipt?.safety?.subscribersRead === false
+  && validationReceipt?.safety?.groupMutationsPerformed === false
+  && validationReceipt?.safety?.workflowMutationsPerformed === false
+  && validationReceipt?.safety?.sendsPerformed === false
+  && validationReceipt?.safety?.signalLedgerAppendPerformed === false
+  && validationReceipt?.safety?.crmCardMutationsPerformed === false
+  && validationReceipt?.safety?.crmScoreMutationsPerformed === false
+  && validationReceipt?.safety?.factStoreWritePerformed === false;
 
 const buildRequirementChecks = ({
   runbook,
@@ -202,6 +239,7 @@ const buildRequirementChecks = ({
   brujulaApply,
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
+  validationReceipt,
   brandTaxonomy,
   brandDictionary,
   packageJson,
@@ -267,7 +305,16 @@ const buildRequirementChecks = ({
   const readinessState = readinessBoard?.executiveSummary?.overallState ?? null;
   const readyNoLiveLaneCount = readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? 0;
   const liveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount ?? null;
-  const validationPassed = validationStatus === 'passed';
+  const receiptPassed = validationReceiptPassed(validationReceipt);
+  const validationPassed = validationStatus === 'passed' || receiptPassed;
+  const effectiveValidationStatus = validationStatus === 'passed'
+    ? 'passed'
+    : receiptPassed
+      ? 'passed'
+      : validationStatus;
+  const effectiveValidationSummary = validationSummary
+    ?? validationReceipt?.validationSummary
+    ?? null;
   const handoffTargetGroup = onboardingHandoffPolicy?.targetGroups?.eligible ?? null;
   const handoffReady = onboardingHandoffPolicy?.status === 'mini_launch_onboarding_handoff_policy_ready_no_live_changes';
   const handoffV1Protected = onboardingHandoffPolicy?.v1Protection?.productionV1Protected === true;
@@ -452,8 +499,11 @@ const buildRequirementChecks = ({
         `groupDryRunStatus=${readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_group_dry_run')?.sourceStatus ?? 'unknown'}`,
         `liveMutationGateOpenCount=${liveMutationGateOpenCount}`,
         `hasGoalAuditScript=${packageHas(packageJson, 'crm:vnext:mailerlite-launch-os-goal-audit')}`,
-        `validationStatus=${validationStatus}`,
-        `validationSummary=${validationSummary ?? 'not supplied'}`,
+        `validationStatus=${effectiveValidationStatus}`,
+        `validationSummary=${effectiveValidationSummary ?? 'not supplied'}`,
+        `validationReceiptStatus=${validationReceipt?.status ?? 'missing'}`,
+        `validationReceiptTestFiles=${validationReceipt?.testScope?.testFiles ?? 'unknown'}`,
+        `validationReceiptTestCount=${validationReceipt?.testScope?.testCount ?? 'unknown'}`,
       ],
       remaining: validationPassed
         ? ['Repeat focused tests after future Launch OS edits.', 'Commit only Launch OS files; leave unrelated ManyChat work out.']

@@ -216,6 +216,32 @@ const brujulaEmailStyleCorrection = {
   },
 };
 
+const validationReceipt = {
+  status: "mailerlite_launch_os_validation_receipt_ready_no_live_changes",
+  validationStatus: "passed",
+  validationSummary: "node --check plus broad MailerLite Vitest suite passed",
+  testScope: {
+    testFiles: 46,
+    testCount: 260,
+  },
+  evidence: {
+    liveGatesClosed: true,
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    shopifyApiCalled: false,
+    crmLiveApiCalled: false,
+    subscribersRead: false,
+    groupMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    sendsPerformed: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -223,6 +249,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-cadence-board": "node scripts/cadence.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
     "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/brujula-email-style-correction.mjs",
+    "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
   },
 };
 
@@ -244,6 +271,7 @@ const values = {
   brujulaApply,
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
+  validationReceipt: null,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
   brandDictionary: "CC · Source · Resource · Brújula\n",
   packageJson,
@@ -277,6 +305,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
+    expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
   });
@@ -311,6 +340,20 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleQaPublicUseReady=false");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionStatus=brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionTestSendReady=false");
+  });
+
+  test("uses the persistent validation receipt when explicit validation flags are absent", () => {
+    const checks = buildRequirementChecks({
+      ...values,
+      validationReceipt,
+    });
+    const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
+
+    expect(byId.validate_with_dry_runs_and_tests.status).toBe("proven");
+    expect(byId.validate_with_dry_runs_and_tests.evidence).toContain("validationStatus=passed");
+    expect(byId.validate_with_dry_runs_and_tests.evidence).toContain("validationReceiptStatus=mailerlite_launch_os_validation_receipt_ready_no_live_changes");
+    expect(byId.validate_with_dry_runs_and_tests.evidence).toContain("validationReceiptTestFiles=46");
+    expect(byId.validate_with_dry_runs_and_tests.evidence).toContain("validationReceiptTestCount=260");
   });
 
   test("summarizes incomplete goal without opening live gates", () => {

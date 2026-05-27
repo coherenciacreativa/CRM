@@ -26,6 +26,7 @@ const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mai
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
+const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const usage = `Usage:
@@ -54,6 +55,7 @@ Options:
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
+  --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
   --out <path>                       Write JSON runbook
   --markdown-out <path>              Write Markdown runbook
@@ -89,6 +91,7 @@ const parseArgs = (argv) => {
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
+    validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     out: null,
     markdownOut: null,
@@ -120,6 +123,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
+    else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -130,6 +134,15 @@ const parseArgs = (argv) => {
 };
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
+
+const readOptionalJson = async (path) => {
+  try {
+    return JSON.parse(await readFile(resolve(path), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+};
 
 const loadSourceDigests = async (options) => {
   const sources = [
@@ -155,12 +168,27 @@ const loadSourceDigests = async (options) => {
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
     [options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs'],
+    [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
   ];
 
   const digests = [];
-  for (const [path, consultedFor] of sources) {
-    const content = await readFile(resolve(path), 'utf8');
+  for (const [path, consultedFor, optional = false] of sources) {
+    let content;
+    try {
+      content = await readFile(resolve(path), 'utf8');
+    } catch (error) {
+      if (optional && error.code === 'ENOENT') {
+        digests.push({
+          path: resolve(path),
+          present: false,
+          chars: 0,
+          consultedFor,
+        });
+        continue;
+      }
+      throw error;
+    }
     digests.push({
       path: resolve(path),
       present: true,
@@ -218,6 +246,7 @@ const buildCurrentState = ({
   brujulaApply,
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
+  validationReceipt,
 }) => {
   const assignedGroupNames = groupNamesFrom(brujulaApply?.assignedGroups);
   const brujulaReceiptsAssigned = assignedGroupNames.includes('CC · Source · Resource · Brújula')
@@ -318,6 +347,14 @@ const buildCurrentState = ({
       openLiveGateCount,
       liveApprovalNeededNow: false,
     },
+    validation: {
+      receiptStatus: validationReceipt?.status ?? null,
+      validationStatus: validationReceipt?.validationStatus ?? null,
+      validationSummary: validationReceipt?.validationSummary ?? null,
+      testFiles: validationReceipt?.testScope?.testFiles ?? null,
+      testCount: validationReceipt?.testScope?.testCount ?? null,
+      liveGatesClosed: validationReceipt?.evidence?.liveGatesClosed ?? null,
+    },
   };
 };
 
@@ -346,6 +383,7 @@ const buildReportMap = (sourceDigests) => {
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
     brujulaEmailStyleCorrection: findPath('mailerlite_brujula_email_style_correction_packet_2026-05-27.json'),
+    validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-27.json'),
     packageJson: findPath('package.json'),
   };
 };
@@ -545,6 +583,7 @@ const buildRunbook = ({
   brujulaApply,
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
+  validationReceipt,
   packageJson,
   sourceDigests,
   generatedAt = new Date().toISOString(),
@@ -575,6 +614,7 @@ const buildRunbook = ({
       brujulaApply,
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
+      validationReceipt,
       responseWorkspace,
     }),
     reportMap: buildReportMap(sourceDigests),
@@ -600,6 +640,7 @@ const buildRunbook = ({
       'Use the response watcher before finalization preflight so missing final response files are obvious.',
       'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
       'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
+      'Regenerate the validation receipt after current-turn tests so the goal audit does not depend on ephemeral CLI flags.',
       'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
     ],
     safety: {
@@ -672,6 +713,10 @@ const renderMarkdown = (runbook) => {
     `- Response watcher next best move: ${runbook.currentState.miniLaunch.responseWatcherNextBestMove ?? 'unknown'}`,
     `- Pending departments: ${runbook.currentState.miniLaunch.pendingDepartments.join(', ') || 'none'}`,
     `- Open live gates: ${runbook.currentState.liveGates.openLiveGateCount}`,
+    `- Validation receipt: ${runbook.currentState.validation.receiptStatus ?? 'missing'}`,
+    `- Validation status: ${runbook.currentState.validation.validationStatus ?? 'unknown'}`,
+    `- Validation tests: ${runbook.currentState.validation.testCount ?? 'unknown'}`,
+    `- Validation live gates closed: ${runbook.currentState.validation.liveGatesClosed ?? 'unknown'}`,
     '',
     '## Operating Principles',
     '',
@@ -770,6 +815,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaApply,
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
+    validationReceipt,
     packageJson,
     sourceDigests,
   ] = await Promise.all([
@@ -793,6 +839,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
     readJson(options.brujulaEmailStyleCorrection),
+    readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
     loadSourceDigests(options),
   ]);
@@ -818,6 +865,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaApply,
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
+    validationReceipt,
     packageJson,
     sourceDigests,
   });
@@ -841,6 +889,7 @@ const main = async () => {
     commandCount: runbook.commandCatalog.length,
     scenarioCount: runbook.operatingScenarios.length,
     openLiveGateCount: runbook.currentState.liveGates.openLiveGateCount,
+    validationStatus: runbook.currentState.validation.validationStatus,
     pendingDepartments: runbook.currentState.miniLaunch.pendingDepartments,
     safeToIntakeOneMoreNoLiveIdea: runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea,
     out: options.out ? resolve(options.out) : null,
