@@ -221,6 +221,26 @@ const emailAssetBuildScopePacket = {
   },
 };
 
+const emailBuilderPayloadManifest = {
+  ok: true,
+  status: "email_builder_payload_manifest_ready_no_live_changes",
+  launch,
+  executiveSummary: {
+    payloadCount: 4,
+    contentBlockCount: 32,
+    inertUrlPlaceholderCount: 3,
+    replyCtaCount: 1,
+    readyForExactAssetBuildApprovalReviewNow: true,
+    canExecuteBuilderNow: false,
+    canCreateOrEditMailerLiteAssetsNow: false,
+    readyForSeedSendNow: false,
+  },
+  approvalBoundary: {
+    manifestIsApprovalByItself: false,
+    exactAssetBuildApprovalStillRequired: true,
+  },
+};
+
 const shopifyHandoffPacket = {
   ok: true,
   status: "shopify_handoff_packet_ready_for_web_design_review_no_live_changes",
@@ -290,6 +310,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(parsed.emailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.localEmailAssetPlan).toContain("mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emailAssetBuildScopePacket).toContain("mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.emailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(parsed.shopifyHandoffPacket).toContain("mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.crmSignalProjectionPacket).toContain("mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emptyGroupCreationPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
@@ -422,6 +443,39 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(byId.get("email_sequence")?.nextAction).toContain("human approval boundary");
   });
 
+  test("moves the email sequence lane to local builder payload manifest input", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      emailStyleQaPacket,
+      localEmailAssetPlan,
+      emailAssetBuildScopePacket,
+      emailBuilderPayloadManifest,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("email_sequence")).toMatchObject({
+      sourceStatus: "email_builder_payload_manifest_ready_no_live_changes",
+      readyNow: true,
+      blockedBy: [
+        "exact_mailerlite_asset_build_approval",
+        "builder_render_qa_before_seed_send",
+        "exact_seed_send_approval",
+      ],
+      readiness: {
+        payloadCount: 4,
+        contentBlockCount: 32,
+        placeholderCount: 3,
+        replyCtaCount: 1,
+        canExecuteBuilderNow: false,
+        canCreateOrEditMailerLiteAssetsNow: false,
+        readyForSeedSendNow: false,
+        manifestIsApprovalByItself: false,
+        exactAssetBuildApprovalStillRequired: true,
+      },
+    });
+    expect(byId.get("email_sequence")?.nextAction).toContain("local implementation input");
+  });
+
   test("marks empty group approval packet ready only as a human boundary", () => {
     const lanes = buildLanes({
       ...packetSet,
@@ -546,6 +600,25 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(board.executiveSummary.nextBestNoLiveMoves[0]).toContain("Email sequence Brand review is closed");
     expect(queues.brand.join(" ")).toContain("Brand sequence approval is closed");
     expect(queues.crm.join(" ")).toContain("Email Style QA is ready for local asset planning only");
+  });
+
+  test("updates executive next moves when the builder payload manifest is ready", () => {
+    const board = buildReadinessBoard({
+      ...packetSet,
+      groupDryRun: promotedGroupDryRun,
+      emptyGroupCreationPacket,
+      emptyGroupCreateDryRun,
+      emailStyleQaPacket,
+      localEmailAssetPlan,
+      emailAssetBuildScopePacket,
+      emailBuilderPayloadManifest,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    expect(board.executiveSummary.nextBestNoLiveMoves[0]).toContain("Email builder payload manifest is ready");
+    expect(buildDepartmentQueues({ lanes: board.lanes }).crm.join(" ")).toContain("Email builder payload manifest is ready");
+    expect(board.operatorWarnings).toContain("Do not treat the email builder payload manifest as MailerLite builder execution; it is local input only.");
   });
 
   test("builds board with no live mutation gates open", () => {

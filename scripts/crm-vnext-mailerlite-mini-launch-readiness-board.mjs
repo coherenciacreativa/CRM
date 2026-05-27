@@ -9,7 +9,7 @@ const DEFAULT_REHEARSAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports
 const DEFAULT_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_BRAND_EMAIL_ASSET_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_email_asset_packet_inteligencia_descansar_2026-05-27.json';
-const DEFAULT_GROUP_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_GROUP_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_after_brand_promoted_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_EMPTY_GROUP_CREATION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.json';
@@ -17,6 +17,7 @@ const DEFAULT_EMAIL_SEQUENCE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Re
 const DEFAULT_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_SHOPIFY_HANDOFF_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_CONTROL_ROOM = '/Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-launch-os-v0-control-room.md';
@@ -39,6 +40,7 @@ Options:
   --email-style-qa-packet <path>        Optional Email Style QA JSON after final Brand response. Defaults to ${DEFAULT_EMAIL_STYLE_QA_PACKET}
   --local-email-asset-plan <path>       Optional local email asset plan JSON. Defaults to ${DEFAULT_LOCAL_EMAIL_ASSET_PLAN}
   --email-asset-build-scope-packet <path> Optional exact approval scope packet for draft email asset build. Defaults to ${DEFAULT_EMAIL_ASSET_BUILD_SCOPE_PACKET}
+  --email-builder-payload-manifest <path> Optional local builder payload manifest. Defaults to ${DEFAULT_EMAIL_BUILDER_PAYLOAD_MANIFEST}
   --shopify-handoff-packet <path>       Shopify/Web handoff JSON. Defaults to ${DEFAULT_SHOPIFY_HANDOFF_PACKET}
   --crm-signal-projection-packet <path> CRM signal projection JSON. Defaults to ${DEFAULT_CRM_SIGNAL_PROJECTION_PACKET}
   --control-room <path>                 CRM Launch OS control room. Defaults to ${DEFAULT_CONTROL_ROOM}
@@ -75,6 +77,7 @@ const parseArgs = (argv) => {
     emailStyleQaPacket: DEFAULT_EMAIL_STYLE_QA_PACKET,
     localEmailAssetPlan: DEFAULT_LOCAL_EMAIL_ASSET_PLAN,
     emailAssetBuildScopePacket: DEFAULT_EMAIL_ASSET_BUILD_SCOPE_PACKET,
+    emailBuilderPayloadManifest: DEFAULT_EMAIL_BUILDER_PAYLOAD_MANIFEST,
     shopifyHandoffPacket: DEFAULT_SHOPIFY_HANDOFF_PACKET,
     crmSignalProjectionPacket: DEFAULT_CRM_SIGNAL_PROJECTION_PACKET,
     controlRoom: DEFAULT_CONTROL_ROOM,
@@ -99,6 +102,7 @@ const parseArgs = (argv) => {
     else if (arg === '--email-style-qa-packet') options.emailStyleQaPacket = argv[++index];
     else if (arg === '--local-email-asset-plan') options.localEmailAssetPlan = argv[++index];
     else if (arg === '--email-asset-build-scope-packet') options.emailAssetBuildScopePacket = argv[++index];
+    else if (arg === '--email-builder-payload-manifest') options.emailBuilderPayloadManifest = argv[++index];
     else if (arg === '--shopify-handoff-packet') options.shopifyHandoffPacket = argv[++index];
     else if (arg === '--crm-signal-projection-packet') options.crmSignalProjectionPacket = argv[++index];
     else if (arg === '--control-room') options.controlRoom = argv[++index];
@@ -136,6 +140,7 @@ const loadSourceDigests = async (options) => {
     [options.emailStyleQaPacket, 'final Brand-approved email style QA and local asset-plan boundary', true],
     [options.localEmailAssetPlan, 'local-only MailerLite email asset implementation plan with placeholders and closed build/send gates', true],
     [options.emailAssetBuildScopePacket, 'exact approval scope packet for future MailerLite draft email asset build; no execution', true],
+    [options.emailBuilderPayloadManifest, 'local builder payload manifest with exact draft payloads and closed execution/send gates', true],
     [options.shopifyHandoffPacket, 'Shopify/Web Design handoff state'],
     [options.crmSignalProjectionPacket, 'CRM signal projection state and closed write gates'],
     [options.controlRoom, 'current Launch OS board and completion gates'],
@@ -357,7 +362,37 @@ const brandCandidateGroupState = ({ brandCandidateReviewPacket, groupDryRun }) =
   };
 };
 
-const emailSequenceState = ({ emailSequencePacket, emailStyleQaPacket, localEmailAssetPlan, emailAssetBuildScopePacket }) => {
+const emailSequenceState = ({
+  emailSequencePacket,
+  emailStyleQaPacket,
+  localEmailAssetPlan,
+  emailAssetBuildScopePacket,
+  emailBuilderPayloadManifest,
+}) => {
+  if (emailBuilderPayloadManifest?.status === 'email_builder_payload_manifest_ready_no_live_changes') {
+    return {
+      sourceStatus: emailBuilderPayloadManifest.status,
+      readyNow: true,
+      blockedBy: ['exact_mailerlite_asset_build_approval', 'builder_render_qa_before_seed_send', 'exact_seed_send_approval'],
+      nextAction: 'Email builder payload manifest is ready as local implementation input; do not create/edit MailerLite assets, send, attach workflows or assign subscribers until exact approval.',
+      readiness: {
+        brandReviewStatus: 'approved_no_live_from_final_brand_response',
+        localEmailAssetPlanStatus: localEmailAssetPlan?.status ?? null,
+        emailAssetBuildScopePacketStatus: emailAssetBuildScopePacket?.status ?? null,
+        payloadCount: emailBuilderPayloadManifest?.executiveSummary?.payloadCount ?? null,
+        contentBlockCount: emailBuilderPayloadManifest?.executiveSummary?.contentBlockCount ?? null,
+        placeholderCount: emailBuilderPayloadManifest?.executiveSummary?.inertUrlPlaceholderCount ?? null,
+        replyCtaCount: emailBuilderPayloadManifest?.executiveSummary?.replyCtaCount ?? null,
+        readyForExactAssetBuildApprovalReviewNow: emailBuilderPayloadManifest?.executiveSummary?.readyForExactAssetBuildApprovalReviewNow ?? true,
+        canExecuteBuilderNow: emailBuilderPayloadManifest?.executiveSummary?.canExecuteBuilderNow ?? false,
+        canCreateOrEditMailerLiteAssetsNow: emailBuilderPayloadManifest?.executiveSummary?.canCreateOrEditMailerLiteAssetsNow ?? false,
+        readyForSeedSendNow: emailBuilderPayloadManifest?.executiveSummary?.readyForSeedSendNow ?? false,
+        manifestIsApprovalByItself: emailBuilderPayloadManifest?.approvalBoundary?.manifestIsApprovalByItself ?? false,
+        exactAssetBuildApprovalStillRequired: emailBuilderPayloadManifest?.approvalBoundary?.exactAssetBuildApprovalStillRequired ?? true,
+      },
+    };
+  }
+
   if (emailAssetBuildScopePacket?.status === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes') {
     return {
       sourceStatus: emailAssetBuildScopePacket.status,
@@ -451,6 +486,7 @@ const buildLanes = ({
   emailStyleQaPacket,
   localEmailAssetPlan,
   emailAssetBuildScopePacket,
+  emailBuilderPayloadManifest,
   shopifyHandoffPacket,
   crmSignalProjectionPacket,
 }) => {
@@ -463,6 +499,7 @@ const buildLanes = ({
     emailStyleQaPacket,
     localEmailAssetPlan,
     emailAssetBuildScopePacket,
+    emailBuilderPayloadManifest,
   });
 
   return [
@@ -637,6 +674,8 @@ const buildDepartmentQueues = ({ lanes }) => ({
       : 'Prepare or repair the CRM signal projection packet before any future signal append/write request.',
     lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes'
       ? 'Email asset-build scope packet is ready as a human boundary; keep MailerLite builder, workflows, subscribers and seed send closed until exact approval.'
+      : lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_builder_payload_manifest_ready_no_live_changes'
+      ? 'Email builder payload manifest is ready as local implementation input; keep MailerLite builder, workflows, subscribers and seed send closed until exact approval.'
       : lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes'
       ? 'Local email asset plan is ready for exact build-scope request only; keep MailerLite builder, workflows, subscribers and seed send closed.'
       : lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes'
@@ -766,10 +805,12 @@ const nextBestNoLiveMovesFor = ({ lanes }) => {
     moves.push('CRM signal projection packet is ready as a no-live interpretation bridge; no Signal Ledger append, cards, scoring or Fact Store writes.');
   }
 
-  if (lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes') {
+  if (lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_builder_payload_manifest_ready_no_live_changes') {
+    moves[0] = 'Email builder payload manifest is ready; next boundary remains exact asset-build approval, not builder execution.';
+  } else if (lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes') {
     moves[0] = 'Local email asset plan is ready; next no-live move is an exact MailerLite asset-build scope request, not builder execution.';
   } else if (lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes') {
-    moves[0] = 'Email asset-build scope packet is ready; next human boundary is exact asset-build approval, not builder execution.';
+    moves[0] = 'Email asset-build scope packet is ready; next no-live move is the exact local builder payload manifest, not builder execution.';
   } else if (lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes') {
     moves[0] = 'Email sequence Brand review is closed for no-live continuation; use Email Style QA for local asset planning only.';
   }
@@ -801,6 +842,7 @@ const buildReadinessBoard = ({
   emailStyleQaPacket,
   localEmailAssetPlan,
   emailAssetBuildScopePacket,
+  emailBuilderPayloadManifest,
   shopifyHandoffPacket,
   crmSignalProjectionPacket,
   sourceDigests,
@@ -821,6 +863,7 @@ const buildReadinessBoard = ({
     emailStyleQaPacket,
     localEmailAssetPlan,
     emailAssetBuildScopePacket,
+    emailBuilderPayloadManifest,
     shopifyHandoffPacket,
     crmSignalProjectionPacket,
   });
@@ -857,6 +900,7 @@ const buildReadinessBoard = ({
       'Do not treat Web Design handoff as permission to publish or connect a real form.',
       'Do not treat Email Sequence draft as permission to build MailerLite assets or send tests.',
       'Do not treat the email asset-build scope packet as MailerLite builder approval; Alejandro must approve exact scope before any asset mutation.',
+      'Do not treat the email builder payload manifest as MailerLite builder execution; it is local input only.',
       'Do not treat the CRM signal projection packet as permission to append ledgers, write cards, score, or touch Fact Store.',
       'Do not route mini-launch participants into onboarding until a separate onboarding gate exists.',
     ],
@@ -964,6 +1008,7 @@ const buildBoardFromFiles = async (options) => {
     emailStyleQaPacket,
     localEmailAssetPlan,
     emailAssetBuildScopePacket,
+    emailBuilderPayloadManifest,
     shopifyHandoffPacket,
     crmSignalProjectionPacket,
     sourceDigests,
@@ -981,6 +1026,7 @@ const buildBoardFromFiles = async (options) => {
     readOptionalJson(options.emailStyleQaPacket),
     readOptionalJson(options.localEmailAssetPlan),
     readOptionalJson(options.emailAssetBuildScopePacket),
+    readOptionalJson(options.emailBuilderPayloadManifest),
     readJson(options.shopifyHandoffPacket),
     readJson(options.crmSignalProjectionPacket),
     loadSourceDigests(options),
@@ -1000,6 +1046,7 @@ const buildBoardFromFiles = async (options) => {
     emailStyleQaPacket,
     localEmailAssetPlan,
     emailAssetBuildScopePacket,
+    emailBuilderPayloadManifest,
     shopifyHandoffPacket,
     crmSignalProjectionPacket,
     sourceDigests,

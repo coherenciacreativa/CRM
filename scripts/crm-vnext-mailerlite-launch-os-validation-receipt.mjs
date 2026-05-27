@@ -17,6 +17,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-local-email-asset-plan.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-asset-build-scope-packet.mjs',
+  'node --check scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs',
   'npm exec vitest run __tests__/crm-vnext-mailerlite*.spec.ts',
 ];
 
@@ -170,6 +171,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-mini-launch-department-review-response-watcher',
     'crm:vnext:mailerlite-mini-launch-local-email-asset-plan',
     'crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet',
+    'crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest',
   ].every((scriptName) => packageHas(packageJson, scriptName));
   const trunkMapReady = onboardingTrunkMap?.status === 'onboarding_trunk_map_ready_no_live_changes';
   const canMarkPassed = validationStatus === 'passed'
