@@ -57,6 +57,12 @@ const packetsIndex = {
   pendingDepartments: ["brand", "web_design", "crm"],
 };
 
+const responseWorkspace = {
+  status: "department_review_response_workspace_ready_awaiting_final_responses_no_live_changes",
+  readyForIntake: false,
+  pendingDepartments: ["brand", "web_design", "crm"],
+};
+
 const onboardingV2Execution = {
   status: "ready_for_human_decision_or_non_live_continuation",
 };
@@ -109,6 +115,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-department-review-intake": "node scripts/intake.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-reconciliation": "node scripts/reconciliation.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-delivery-pack": "node scripts/delivery.mjs",
+    "crm:vnext:mailerlite-mini-launch-department-review-response-workspace": "node scripts/response-workspace.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/backlog.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-onboarding-v1-audit": "node scripts/v1.mjs",
@@ -146,6 +153,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.backlogBoard).toContain("mailerlite_mini_launch_backlog_board_2026-05-27.json");
     expect(parsed.reconciliationBoard).toContain("mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json");
     expect(parsed.deliveryPack).toContain("mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.responseWorkspace).toContain("mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
@@ -173,6 +181,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
+      responseWorkspace,
     });
 
     expect(state.onboarding.productionV1Protected).toBe(true);
@@ -181,6 +190,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.brujulaPilot.functionalStatus).toBe("test_delivery_verified_creative_qa_pending");
     expect(state.miniLaunch.safeToIntakeOneMoreNoLiveIdea).toBe(true);
     expect(state.miniLaunch.pendingDepartments).toEqual(["brand", "web_design", "crm"]);
+    expect(state.miniLaunch.responseWorkspaceStatus).toBe("department_review_response_workspace_ready_awaiting_final_responses_no_live_changes");
+    expect(state.miniLaunch.readyForResponseIntake).toBe(false);
     expect(state.liveGates).toMatchObject({
       openLiveGateCount: 0,
       liveApprovalNeededNow: false,
@@ -202,6 +213,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.map((scenario) => scenario.id)).toEqual([
       "backlog_intake",
       "department_review_delivery",
+      "department_response_workspace",
       "current_pilot_department_reviews",
       "after_brand_response",
       "new_mini_launch_idea",
@@ -210,6 +222,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     ]);
     expect(scenarios.find((scenario) => scenario.id === "backlog_intake")?.commands.join(" ")).toContain("mini-launch-backlog-board");
     expect(scenarios.find((scenario) => scenario.id === "department_review_delivery")?.commands.join(" ")).toContain("department-review-delivery-pack");
+    expect(scenarios.find((scenario) => scenario.id === "department_response_workspace")?.commands.join(" ")).toContain("department-review-response-workspace");
     expect(scenarios.find((scenario) => scenario.id === "current_pilot_department_reviews")?.commands.join(" ")).toContain("department-review-reconciliation");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-event-contract");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.liveGatesRemainClosed).toContain("v1 edit");
@@ -222,6 +235,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       backlogBoard,
       reconciliationBoard,
       packetsIndex,
+      responseWorkspace,
       onboardingV1Audit,
       onboardingV2Execution,
       onboardingV2EventContract,
@@ -234,7 +248,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
 
     expect(runbook.status).toBe("mailerlite_launch_os_operator_runbook_ready_no_live_changes");
     expect(runbook.commandCatalog.length).toBeGreaterThan(10);
-    expect(runbook.operatingScenarios).toHaveLength(7);
+    expect(runbook.operatingScenarios).toHaveLength(8);
     expect(runbook.currentState.liveGates.openLiveGateCount).toBe(0);
     expect(runbook.reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
     expect(runbook.safety).toMatchObject({
@@ -262,6 +276,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "safe department review delivery blocks and response paths",
       },
       {
+        path: "/tmp/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "pending response workspace and final response readiness",
+      },
+      {
         path: "/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json",
         present: true,
         chars: 2000,
@@ -272,6 +292,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
     expect(reportMap.backlogBoard).toBe("/tmp/mailerlite_mini_launch_backlog_board_2026-05-27.json");
     expect(reportMap.departmentReviewDeliveryPack).toBe("/tmp/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json");
+    expect(reportMap.departmentReviewResponseWorkspace).toBe("/tmp/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.onboardingV2EventContract).toBe("/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json");
   });
 
@@ -282,6 +303,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       backlogBoard,
       reconciliationBoard,
       packetsIndex,
+      responseWorkspace,
       onboardingV1Audit,
       onboardingV2Execution,
       onboardingV2EventContract,
@@ -297,6 +319,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("current_pilot_department_reviews");
     expect(markdown).toContain("backlog_intake");
     expect(markdown).toContain("department_review_delivery");
+    expect(markdown).toContain("department_response_workspace");
+    expect(markdown).toContain("Ready for response intake: false");
     expect(markdown).toContain("Onboarding v2 event contract");
     expect(markdown).toContain("Approval Matrix");
     expect(markdown).toContain("Report Map");

@@ -12,6 +12,7 @@ const DEFAULT_BACKLOG_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_PACKETS_INDEX = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_DELIVERY_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
@@ -31,6 +32,7 @@ Options:
   --reconciliation-board <path>      Department review reconciliation JSON. Defaults to ${DEFAULT_RECONCILIATION}
   --packets-index <path>             Department review packets index JSON. Defaults to ${DEFAULT_PACKETS_INDEX}
   --delivery-pack <path>             Department review delivery pack JSON. Defaults to ${DEFAULT_DELIVERY_PACK}
+  --response-workspace <path>        Department review response workspace JSON. Defaults to ${DEFAULT_RESPONSE_WORKSPACE}
   --onboarding-v1-audit <path>       Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-v2-execution <path>   Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
@@ -57,6 +59,7 @@ const parseArgs = (argv) => {
     reconciliationBoard: DEFAULT_RECONCILIATION,
     packetsIndex: DEFAULT_PACKETS_INDEX,
     deliveryPack: DEFAULT_DELIVERY_PACK,
+    responseWorkspace: DEFAULT_RESPONSE_WORKSPACE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
@@ -79,6 +82,7 @@ const parseArgs = (argv) => {
     else if (arg === '--reconciliation-board') options.reconciliationBoard = argv[++index];
     else if (arg === '--packets-index') options.packetsIndex = argv[++index];
     else if (arg === '--delivery-pack') options.deliveryPack = argv[++index];
+    else if (arg === '--response-workspace') options.responseWorkspace = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
@@ -105,6 +109,7 @@ const loadSourceDigests = async (options) => {
     [options.reconciliationBoard, 'department review state and current blockers'],
     [options.packetsIndex, 'individual Brand/Web/CRM packets'],
     [options.deliveryPack, 'safe department review delivery blocks and response paths'],
+    [options.responseWorkspace, 'pending response workspace and final response readiness'],
     [options.onboardingV1Audit, 'protected production onboarding v1 audit'],
     [options.onboardingV2Execution, 'onboarding v2 execution posture and protected v1'],
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
@@ -159,6 +164,7 @@ const buildCurrentState = ({
   backlogBoard,
   reconciliationBoard,
   packetsIndex,
+  responseWorkspace,
   onboardingV1Audit,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -218,6 +224,9 @@ const buildCurrentState = ({
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
       departmentReviewStatus: reconciliationBoard?.status ?? null,
       pendingDepartments: reconciliationBoard?.responseState?.pendingDepartments ?? packetsIndex?.pendingDepartments ?? [],
+      responseWorkspaceStatus: responseWorkspace?.status ?? null,
+      readyForResponseIntake: responseWorkspace?.readyForIntake ?? false,
+      responseWorkspacePendingDepartments: responseWorkspace?.pendingDepartments ?? [],
       packetCount: packetsIndex?.packetCount ?? null,
     },
     liveGates: {
@@ -237,6 +246,7 @@ const buildReportMap = (sourceDigests) => {
     backlogBoard: findPath('mailerlite_mini_launch_backlog_board_2026-05-27.json'),
     departmentReviewPacketsIndex: findPath('mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json'),
     departmentReviewDeliveryPack: findPath('mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json'),
+    departmentReviewResponseWorkspace: findPath('mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json'),
     departmentReviewReconciliation: findPath('mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json'),
     onboardingV1Audit: findPath('mailerlite_onboarding_v1_audit_2026-05-27.json'),
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
@@ -319,6 +329,17 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
       liveGatesRemainClosed: ['external send authorization', 'MailerLite mutations', 'Shopify edits', 'CRM writes', 'onboarding routing'],
     },
     {
+      id: 'department_response_workspace',
+      when: 'Department review packets are ready and the operator needs a clean place for Brand/Web/CRM replies.',
+      firstMove: 'Create pending response working copies and wait for final response files before intake.',
+      commands: [
+        command('crm:vnext:mailerlite-mini-launch-department-review-response-workspace'),
+        command('crm:vnext:mailerlite-mini-launch-department-review-intake'),
+        command('crm:vnext:mailerlite-mini-launch-department-review-reconciliation'),
+      ].filter(Boolean),
+      liveGatesRemainClosed: ['final responses as live approval', 'MailerLite mutations', 'Shopify edits', 'CRM writes', 'onboarding routing'],
+    },
+    {
       id: 'current_pilot_department_reviews',
       when: 'You need Brand, Web Design and CRM review for Inteligencia para descansar.',
       firstMove: 'Use the individual packets index and packet files in Mantis-Reports.',
@@ -385,6 +406,7 @@ const buildRunbook = ({
   backlogBoard,
   reconciliationBoard,
   packetsIndex,
+  responseWorkspace,
   onboardingV1Audit,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -412,6 +434,7 @@ const buildRunbook = ({
       onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
+      responseWorkspace,
     }),
     reportMap: buildReportMap(sourceDigests),
     commandCatalog,
@@ -420,7 +443,8 @@ const buildRunbook = ({
     immediateNextMoves: [
       'Run no-live department reviews from the individual packets.',
       'Use the delivery pack for copy-ready no-live blocks and expected response paths.',
-      'Collect responses through the response templates.',
+      'Create the response workspace so Brand/Web/CRM replies land as pending drafts before final files.',
+      'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
       'Use the backlog board only for one additional no-live idea intake, not for live production.',
       'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
@@ -466,6 +490,8 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Department review status: ${runbook.currentState.miniLaunch.departmentReviewStatus}`,
+    `- Response workspace: ${runbook.currentState.miniLaunch.responseWorkspaceStatus ?? 'unknown'}`,
+    `- Ready for response intake: ${runbook.currentState.miniLaunch.readyForResponseIntake}`,
     `- Pending departments: ${runbook.currentState.miniLaunch.pendingDepartments.join(', ') || 'none'}`,
     `- Open live gates: ${runbook.currentState.liveGates.openLiveGateCount}`,
     '',
@@ -540,6 +566,7 @@ const buildRunbookFromFiles = async (options) => {
     reconciliationBoard,
     packetsIndex,
     deliveryPack,
+    responseWorkspace,
     onboardingV1Audit,
     onboardingV2Execution,
     onboardingV2EventContract,
@@ -554,6 +581,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.reconciliationBoard),
     readJson(options.packetsIndex),
     readJson(options.deliveryPack),
+    readJson(options.responseWorkspace),
     readJson(options.onboardingV1Audit),
     readJson(options.onboardingV2Execution),
     readJson(options.onboardingV2EventContract),
@@ -570,6 +598,7 @@ const buildRunbookFromFiles = async (options) => {
     reconciliationBoard,
     packetsIndex,
     deliveryPack,
+    responseWorkspace,
     onboardingV1Audit,
     onboardingV2Execution,
     onboardingV2EventContract,
