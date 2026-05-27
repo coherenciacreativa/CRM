@@ -829,6 +829,35 @@ Result:
 
 This checkpoint gives the agency a traffic controller after reviews. It keeps department opinions from becoming accidental MailerLite, Shopify, CRM, Signal Ledger, scoring, Fact Store or onboarding actions.
 
+## Mini-launch individual review packets checkpoint - 2026-05-27
+
+Index:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.md
+```
+
+Packets:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_inteligencia_descansar_2026-05-27/
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-packets.mjs
+```
+
+Result:
+
+- The master dispatch is now split into individual Brand, Web Design and CRM review packets.
+- Each packet includes department-specific evidence, requested output, closed actions, dispatch block and response template.
+- Packet statuses are `awaiting_response`.
+- Live gate open count is 0 and no external messages were sent.
+
+This checkpoint lowers operational friction: each department can work from one clean packet without reading the whole control room or accidentally inheriting another department's authority.
+
 ## Planner dry-run requirements
 
 Proposed script:

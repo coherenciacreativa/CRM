@@ -77,6 +77,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_intake_board_inteligencia_descansar_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json`
 
 ## Brújula pilot status
 
@@ -590,6 +592,27 @@ Result:
 
 This checkpoint is the agency's traffic controller after reviews: it prevents feedback from jumping directly into MailerLite, Shopify, CRM writes, scoring, ledgers or onboarding.
 
+## Mini-launch individual review packets status
+
+Status: individual department packets ready, no live changes.
+
+Evidence:
+
+- Packets index: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.md`
+- Packets dir: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_inteligencia_descansar_2026-05-27/`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-packets.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-packets.spec.ts`
+
+Result:
+
+- Materializes one review packet per department: Brand, Web Design and CRM.
+- Each packet contains its specific evidence, requested output, closed actions, dispatch block and response template.
+- Current packet statuses are all `awaiting_response`.
+- Live gate open count is 0.
+- No messages were sent; files were written only to `~/Documents/Mantis-Reports`.
+
+This checkpoint reduces handoff friction. Each department can receive only the relevant packet while the global dispatch, intake and reconciliation machinery remains intact.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -630,10 +653,11 @@ The goal is not complete until all gates below are proven with current evidence:
    - Department review dispatch generated and tested: done.
    - Department review intake templates generated and tested: done.
    - Department review reconciliation generated and tested: done.
+   - Individual department review packets generated and tested: done.
 
 ## Next best step
 
-Run the no-live department reviews from `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_dispatch_inteligencia_descansar_2026-05-27.md`, then collect the responses using the templates in `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_templates_inteligencia_descansar_2026-05-27/`, then run the reconciliation board with the response files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
+Run the no-live department reviews from the individual packets in `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_inteligencia_descansar_2026-05-27/`, then collect the responses using the templates in `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_templates_inteligencia_descansar_2026-05-27/`, then run the reconciliation board with the response files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
 
 Scope:
 
@@ -654,4 +678,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, department review dispatch, department review intake board and department review reconciliation are now documented. The next useful move is to run the no-live department reviews from the dispatch packet, collect responses through the intake templates, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, department review dispatch, department review intake board, department review reconciliation and individual department review packets are now documented. The next useful move is to run the no-live department reviews from the individual packets, collect responses through the intake templates, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
