@@ -153,6 +153,29 @@ const emailSequencePacket = {
   },
 };
 
+const emailStyleQaPacket = {
+  ok: true,
+  status: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
+  launch,
+  executiveSummary: {
+    brandSequenceApprovedNoLive: true,
+    readyForLocalAssetPlanNow: true,
+    hardBlockerCount: 0,
+    yellowCheckCount: 4,
+    styleGapCount: 3,
+    claimsRiskCount: 2,
+    publicInternalLeakIssueCount: 0,
+  },
+  approvalGate: {
+    readyForLocalAssetPlanNow: true,
+    readyForMailerLiteAssetBuildNow: false,
+    readyForSeedSendNow: false,
+    readyForReceiptSeedTestNow: false,
+    readyForAudienceLaunchNow: false,
+    nextNoLiveMove: "Prepare local email asset plan/style implementation from this QA packet; do not build in MailerLite or send until exact scope approval.",
+  },
+};
+
 const shopifyHandoffPacket = {
   ok: true,
   status: "shopify_handoff_packet_ready_for_web_design_review_no_live_changes",
@@ -219,6 +242,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
 
     expect(parsed.rehearsalPacket).toContain("mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailSequencePacket).toContain("mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.emailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.shopifyHandoffPacket).toContain("mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.crmSignalProjectionPacket).toContain("mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emptyGroupCreationPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
@@ -264,6 +288,34 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     });
     expect(byId.get("email_sequence")?.liveActionsClosed).toContain("seed_send");
     expect(byId.get("onboarding_protection")?.liveActionsClosed).toContain("edit_onboarding_v1");
+  });
+
+  test("moves the email sequence lane from Brand review to local asset planning after Email Style QA", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      emailStyleQaPacket,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("email_sequence")).toMatchObject({
+      sourceStatus: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
+      readyNow: true,
+      blockedBy: [
+        "exact_mailerlite_asset_build_scope",
+        "builder_render_qa_before_seed_send",
+        "exact_seed_send_approval",
+      ],
+      readiness: {
+        brandReviewStatus: "approved_no_live_from_final_brand_response",
+        readyForLocalAssetPlanNow: true,
+        readyForMailerLiteAssetBuildNow: false,
+        readyForSeedSendNow: false,
+        hardBlockerCount: 0,
+        yellowCheckCount: 4,
+      },
+    });
+    expect(byId.get("email_sequence")?.nextAction).toContain("do not build in MailerLite or send");
+    expect(byId.get("email_sequence")?.liveActionsClosed).toContain("mailerLite_asset_build");
   });
 
   test("marks empty group approval packet ready only as a human boundary", () => {
@@ -376,6 +428,20 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(queues.crm.join(" ")).toContain("CRM signal projection packet is ready as no-live policy");
     expect(queues.mailerLite.join(" ")).toContain("No action now");
     expect(queues.alejandro.join(" ")).toContain("No immediate live decision needed");
+  });
+
+  test("department queues and next moves use Email Style QA after Brand sequence approval", () => {
+    const board = buildReadinessBoard({
+      ...packetSet,
+      emailStyleQaPacket,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+    const queues = buildDepartmentQueues({ lanes: board.lanes });
+
+    expect(board.executiveSummary.nextBestNoLiveMoves[0]).toContain("Email sequence Brand review is closed");
+    expect(queues.brand.join(" ")).toContain("Brand sequence approval is closed");
+    expect(queues.crm.join(" ")).toContain("Email Style QA is ready for local asset planning only");
   });
 
   test("builds board with no live mutation gates open", () => {

@@ -59,6 +59,7 @@
     "crm:vnext:mailerlite-mini-launch-empty-group-create": "node scripts/crm-vnext-mailerlite-mini-launch-empty-group-create.mjs",
     "crm:vnext:mailerlite-mini-launch-brand-candidate-review-packet": "node scripts/crm-vnext-mailerlite-mini-launch-brand-candidate-review-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-sequence-asset-packet": "node scripts/crm-vnext-mailerlite-mini-launch-email-sequence-asset-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-style-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-email-style-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-handoff-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet": "node scripts/crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-readiness-board": "node scripts/crm-vnext-mailerlite-mini-launch-readiness-board.mjs",

@@ -65,10 +65,78 @@ const readinessBoard = {
   ],
 };
 
+const readinessBoardAfterBrandCandidateDecision = {
+  executiveSummary: {
+    overallState: "ready_for_department_reviews_not_ready_for_live_operation",
+    readyNoLiveLaneCount: 12,
+    liveMutationGateOpenCount: 0,
+  },
+  lanes: [
+    {
+      id: "brand_candidate_groups",
+      sourceStatus: "brand_candidate_decision_closed_ready_no_live_changes",
+      readyNow: true,
+      blockedBy: [],
+      readiness: {
+        acceptedGroupCount: 2,
+        missingCandidateCount: 0,
+        brandStatusBlockedCount: 0,
+      },
+    },
+    {
+      id: "mailerlite_group_dry_run",
+      sourceStatus: "mini_launch_group_dry_run_ready_for_future_empty_group_decision",
+      readyNow: true,
+      blockedBy: [],
+      readiness: {
+        brandDictionaryHasTargets: true,
+        brandApprovedForEmptyCreate: true,
+        canAssignSubscribersNow: false,
+        canSendNow: false,
+        canAttachWorkflowNow: false,
+      },
+    },
+    {
+      id: "email_sequence",
+      sourceStatus: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
+      readyNow: true,
+      blockedBy: [
+        "exact_mailerlite_asset_build_scope",
+        "builder_render_qa_before_seed_send",
+        "exact_seed_send_approval",
+      ],
+      readiness: {
+        readyForLocalAssetPlanNow: true,
+        readyForMailerLiteAssetBuildNow: false,
+        readyForSeedSendNow: false,
+        hardBlockerCount: 0,
+        yellowCheckCount: 5,
+      },
+    },
+  ],
+};
+
 const reconciliationBoard = {
   status: "blocked_until_department_reviews_accepted_no_live_changes",
   responseState: {
     pendingDepartments: ["brand", "web_design", "crm"],
+  },
+  liveGateSummary: {
+    openLiveGateCount: 0,
+  },
+};
+
+const reconciliationBoardAfterResponses = {
+  status: "department_reviews_reconciled_ready_for_next_no_live_moves",
+  responseState: {
+    pendingDepartments: [],
+  },
+  actionPlan: {
+    actions: [
+      { id: "rerun_group_dry_run" },
+      { id: "prepare_scoped_shopify_local_build_request" },
+      { id: "signal_boundaries_ready_for_future_no_live_projection_packet" },
+    ],
   },
   liveGateSummary: {
     openLiveGateCount: 0,
@@ -81,6 +149,12 @@ const responseWorkspace = {
   pendingDepartments: ["brand", "web_design", "crm"],
 };
 
+const responseWorkspaceAfterResponses = {
+  status: "department_review_response_workspace_ready_for_intake_no_live_changes",
+  readyForIntake: true,
+  pendingDepartments: [],
+};
+
 const finalizationPreflight = {
   status: "department_finalization_preflight_waiting_department_responses_no_live_changes",
   readyForIntake: false,
@@ -88,6 +162,15 @@ const finalizationPreflight = {
   pendingReadyDepartments: [],
   draftAssistDepartments: ["brand", "web_design", "crm"],
   awaitingDepartments: ["brand", "web_design", "crm"],
+};
+
+const finalizationPreflightAfterResponses = {
+  status: "department_final_responses_ready_for_intake_no_live_changes",
+  readyForIntake: true,
+  acceptedDepartments: ["brand", "web_design", "crm"],
+  pendingReadyDepartments: [],
+  draftAssistDepartments: [],
+  awaitingDepartments: [],
 };
 
 const requestBundle = {
@@ -314,6 +397,31 @@ const brujulaEmailRenderQa = {
   },
 };
 
+const miniLaunchEmailStyleQaPacket = {
+  status: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
+  executiveSummary: {
+    brandSequenceApprovedNoLive: true,
+    readyForLocalAssetPlanNow: true,
+    hardBlockerCount: 0,
+    yellowCheckCount: 5,
+    publicUseReady: false,
+    mailerLiteBuildReady: false,
+    seedSendReady: false,
+  },
+  approvalGate: {
+    readyForLocalAssetPlanNow: true,
+    readyForMailerLiteAssetBuildNow: false,
+    readyForSeedSendNow: false,
+    readyForReceiptSeedTestNow: false,
+    readyForAudienceLaunchNow: false,
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    crmLiveApiCalled: false,
+    sendsPerformed: false,
+  },
+};
+
 const validationReceipt = {
   status: "mailerlite_launch_os_validation_receipt_ready_no_live_changes",
   validationStatus: "passed",
@@ -348,6 +456,7 @@ const packageJson = {
     "crm:vnext:mailerlite-onboarding-v2-empty-groups-create": "node scripts/empty-groups-create.mjs",
     "crm:vnext:mailerlite-mini-launch-cadence-board": "node scripts/cadence.mjs",
     "crm:vnext:mailerlite-mini-launch-empty-group-creation-packet": "node scripts/empty-group-approval.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-style-qa-packet": "node scripts/email-style-qa.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
     "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/brujula-email-style-correction.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -376,6 +485,7 @@ const values = {
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa: null,
+  miniLaunchEmailStyleQaPacket: null,
   validationReceipt: null,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
   brandDictionary: "CC · Source · Resource · Brújula\n",
@@ -411,6 +521,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
     expect(parsed.onboardingV2FirstEmailMap).toContain("mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.miniLaunchEmailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
@@ -464,6 +575,29 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleQaPublicUseReady=false");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionStatus=brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionTestSendReady=false");
+  });
+
+  test("closes stale Brand candidate instructions after promoted local group dry-run", () => {
+    const checks = buildRequirementChecks({
+      ...values,
+      readinessBoard: readinessBoardAfterBrandCandidateDecision,
+      reconciliationBoard: reconciliationBoardAfterResponses,
+      responseWorkspace: responseWorkspaceAfterResponses,
+      finalizationPreflight: finalizationPreflightAfterResponses,
+      miniLaunchEmailStyleQaPacket,
+    });
+    const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
+
+    expect(byId.consolidate_taxonomy_receipts.status).toBe("partial_ready_no_live");
+    expect(byId.consolidate_taxonomy_receipts.evidence).toContain("brandCandidateDecisionClosed=true");
+    expect(byId.consolidate_taxonomy_receipts.evidence).toContain("groupDryRunReadyForFutureEmptyGroupDecision=true");
+    expect(byId.consolidate_taxonomy_receipts.remaining.join(" ")).toContain("live empty-group creation remains a separate exact approval boundary");
+    expect(byId.consolidate_taxonomy_receipts.remaining.join(" ")).not.toContain("Represent the Brand-accepted launch candidates");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmailStyleQaStatus=mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmailStyleQaReadyForLocalAssetPlan=true");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmailStyleQaReadyForMailerLiteBuild=false");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchEmailStyleQaReadyForSeedSend=false");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("Email Style QA is ready for local asset planning only");
   });
 
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {

@@ -14,6 +14,7 @@ const DEFAULT_EMPTY_GROUP_CREATION_PACKET = '/Users/alejandrogomez/Documents/Man
 const DEFAULT_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_EMAIL_SEQUENCE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_SHOPIFY_HANDOFF_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_CONTROL_ROOM = '/Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-launch-os-v0-control-room.md';
@@ -33,6 +34,7 @@ Options:
   --brand-candidate-review-packet <path>
                                          Brand candidate review JSON. Defaults to ${DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET}
   --email-sequence-packet <path>        Email sequence asset JSON. Defaults to ${DEFAULT_EMAIL_SEQUENCE_PACKET}
+  --email-style-qa-packet <path>        Optional Email Style QA JSON after final Brand response. Defaults to ${DEFAULT_EMAIL_STYLE_QA_PACKET}
   --shopify-handoff-packet <path>       Shopify/Web handoff JSON. Defaults to ${DEFAULT_SHOPIFY_HANDOFF_PACKET}
   --crm-signal-projection-packet <path> CRM signal projection JSON. Defaults to ${DEFAULT_CRM_SIGNAL_PROJECTION_PACKET}
   --control-room <path>                 CRM Launch OS control room. Defaults to ${DEFAULT_CONTROL_ROOM}
@@ -66,6 +68,7 @@ const parseArgs = (argv) => {
     emptyGroupCreateDryRun: DEFAULT_EMPTY_GROUP_CREATE_DRY_RUN,
     brandCandidateReviewPacket: DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET,
     emailSequencePacket: DEFAULT_EMAIL_SEQUENCE_PACKET,
+    emailStyleQaPacket: DEFAULT_EMAIL_STYLE_QA_PACKET,
     shopifyHandoffPacket: DEFAULT_SHOPIFY_HANDOFF_PACKET,
     crmSignalProjectionPacket: DEFAULT_CRM_SIGNAL_PROJECTION_PACKET,
     controlRoom: DEFAULT_CONTROL_ROOM,
@@ -87,6 +90,7 @@ const parseArgs = (argv) => {
     else if (arg === '--empty-group-create-dry-run') options.emptyGroupCreateDryRun = argv[++index];
     else if (arg === '--brand-candidate-review-packet') options.brandCandidateReviewPacket = argv[++index];
     else if (arg === '--email-sequence-packet') options.emailSequencePacket = argv[++index];
+    else if (arg === '--email-style-qa-packet') options.emailStyleQaPacket = argv[++index];
     else if (arg === '--shopify-handoff-packet') options.shopifyHandoffPacket = argv[++index];
     else if (arg === '--crm-signal-projection-packet') options.crmSignalProjectionPacket = argv[++index];
     else if (arg === '--control-room') options.controlRoom = argv[++index];
@@ -121,6 +125,7 @@ const loadSourceDigests = async (options) => {
     [options.emptyGroupCreateDryRun, 'guarded create runner dry-run for missing mini-launch empty groups', true],
     [options.brandCandidateReviewPacket, 'Brand semantic decision request for group candidates'],
     [options.emailSequencePacket, 'full email sequence asset state'],
+    [options.emailStyleQaPacket, 'final Brand-approved email style QA and local asset-plan boundary', true],
     [options.shopifyHandoffPacket, 'Shopify/Web Design handoff state'],
     [options.crmSignalProjectionPacket, 'CRM signal projection state and closed write gates'],
     [options.controlRoom, 'current Launch OS board and completion gates'],
@@ -342,6 +347,39 @@ const brandCandidateGroupState = ({ brandCandidateReviewPacket, groupDryRun }) =
   };
 };
 
+const emailSequenceState = ({ emailSequencePacket, emailStyleQaPacket }) => {
+  if (emailStyleQaPacket?.status === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes') {
+    return {
+      sourceStatus: emailStyleQaPacket.status,
+      readyNow: true,
+      blockedBy: ['exact_mailerlite_asset_build_scope', 'builder_render_qa_before_seed_send', 'exact_seed_send_approval'],
+      nextAction: 'Brand approved the sequence for no-live continuation; use Email Style QA to prepare a local asset plan, but do not build in MailerLite or send.',
+      readiness: {
+        brandReviewStatus: 'approved_no_live_from_final_brand_response',
+        readyForLocalAssetPlanNow: emailStyleQaPacket?.approvalGate?.readyForLocalAssetPlanNow ?? true,
+        readyForMailerLiteAssetBuildNow: emailStyleQaPacket?.approvalGate?.readyForMailerLiteAssetBuildNow ?? false,
+        readyForSeedSendNow: emailStyleQaPacket?.approvalGate?.readyForSeedSendNow ?? false,
+        readyForReceiptSeedTestNow: emailStyleQaPacket?.approvalGate?.readyForReceiptSeedTestNow ?? false,
+        readyForAudienceLaunchNow: emailStyleQaPacket?.approvalGate?.readyForAudienceLaunchNow ?? false,
+        hardBlockerCount: emailStyleQaPacket?.executiveSummary?.hardBlockerCount ?? null,
+        yellowCheckCount: emailStyleQaPacket?.executiveSummary?.yellowCheckCount ?? null,
+        styleGapCount: emailStyleQaPacket?.executiveSummary?.styleGapCount ?? null,
+        claimsRiskCount: emailStyleQaPacket?.executiveSummary?.claimsRiskCount ?? null,
+        publicInternalLeakIssueCount: emailStyleQaPacket?.executiveSummary?.publicInternalLeakIssueCount ?? null,
+        nextNoLiveMove: emailStyleQaPacket?.approvalGate?.nextNoLiveMove ?? null,
+      },
+    };
+  }
+
+  return {
+    sourceStatus: emailSequencePacket?.status ?? null,
+    readyNow: emailSequencePacket?.status === 'email_sequence_asset_packet_ready_for_brand_review_no_live_changes',
+    blockedBy: ['brand_review_full_sequence', 'email_style_qa'],
+    nextAction: 'Brand reviews the four-email arc; Sent groups remain off by default.',
+    readiness: emailSequencePacket?.readiness ?? {},
+  };
+};
+
 const buildLanes = ({
   onboardingExecutionPacket,
   rehearsalPacket,
@@ -353,6 +391,7 @@ const buildLanes = ({
   emptyGroupCreateDryRun,
   brandCandidateReviewPacket,
   emailSequencePacket,
+  emailStyleQaPacket,
   shopifyHandoffPacket,
   crmSignalProjectionPacket,
 }) => {
@@ -360,6 +399,7 @@ const buildLanes = ({
   const emptyPacketState = emptyGroupCreationPacketState(emptyGroupCreationPacket);
   const createDryRunState = emptyGroupCreateDryRunState(emptyGroupCreateDryRun);
   const brandCandidateState = brandCandidateGroupState({ brandCandidateReviewPacket, groupDryRun });
+  const sequenceState = emailSequenceState({ emailSequencePacket, emailStyleQaPacket });
 
   return [
     buildLane({
@@ -426,10 +466,11 @@ const buildLanes = ({
     id: 'email_sequence',
     owner: 'Brand / Email',
     packet: emailSequencePacket,
-    readyNow: emailSequencePacket?.status === 'email_sequence_asset_packet_ready_for_brand_review_no_live_changes',
-    readiness: emailSequencePacket?.readiness ?? {},
-    blockedBy: ['brand_review_full_sequence', 'email_style_qa'],
-    nextAction: 'Brand reviews the four-email arc; Sent groups remain off by default.',
+    status: sequenceState.sourceStatus,
+    readyNow: sequenceState.readyNow,
+    readiness: sequenceState.readiness,
+    blockedBy: sequenceState.blockedBy,
+    nextAction: sequenceState.nextAction,
     liveActionsClosed: ['mailerLite_asset_build', 'seed_send', 'workflow_attachment', 'audience_send'],
   }),
   buildLane({
@@ -512,7 +553,9 @@ const buildLanes = ({
 
 const buildDepartmentQueues = ({ lanes }) => ({
   brand: [
-    'Review Email 1 and full four-email sequence for voice, promise, CTA and public/internal separation.',
+    lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes'
+      ? 'Brand sequence approval is closed for no-live continuation; review only if copy evidence changes.'
+      : 'Review Email 1 and full four-email sequence for voice, promise, CTA and public/internal separation.',
     lanes.some((lane) => lane.id === 'mailerlite_group_dry_run' && lane.readyNow)
       ? 'Group candidate semantics are closed for this pass; do not reopen unless naming evidence changes.'
       : 'Decide semantic status for the two group candidates: add_as_candidate, rename, or reject for now.',
@@ -528,6 +571,9 @@ const buildDepartmentQueues = ({ lanes }) => ({
     lanes.some((lane) => lane.id === 'crm_signal_projection_packet' && lane.readyNow)
       ? 'CRM signal projection packet is ready as no-live policy; do not append ledgers, write cards, score, or touch Fact Store.'
       : 'Prepare or repair the CRM signal projection packet before any future signal append/write request.',
+    lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes'
+      ? 'Email Style QA is ready for local asset planning only; keep MailerLite builder and seed send closed.'
+      : 'Wait for Brand sequence review and Email Style QA before any local asset plan.',
     lanes.some((lane) => lane.id === 'mailerlite_empty_group_create_dry_run' && lane.readyNow)
       ? 'Mini-launch create runner dry-run is green; hold at exact phrase boundary and never run --execute without Alejandro.'
       : lanes.some((lane) => lane.id === 'mailerlite_empty_group_approval_packet' && lane.readyNow)
@@ -652,6 +698,10 @@ const nextBestNoLiveMovesFor = ({ lanes }) => {
     moves.push('CRM signal projection packet is ready as a no-live interpretation bridge; no Signal Ledger append, cards, scoring or Fact Store writes.');
   }
 
+  if (lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes') {
+    moves[0] = 'Email sequence Brand review is closed for no-live continuation; use Email Style QA for local asset planning only.';
+  }
+
   if (emptyGroupCreateDryRunLane?.readyNow) {
     moves.push('Mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-phrase boundary and do not run --execute.');
   } else if (emptyGroupPacketLane?.readyNow) {
@@ -676,6 +726,7 @@ const buildReadinessBoard = ({
   emptyGroupCreateDryRun,
   brandCandidateReviewPacket,
   emailSequencePacket,
+  emailStyleQaPacket,
   shopifyHandoffPacket,
   crmSignalProjectionPacket,
   sourceDigests,
@@ -693,6 +744,7 @@ const buildReadinessBoard = ({
     emptyGroupCreateDryRun,
     brandCandidateReviewPacket,
     emailSequencePacket,
+    emailStyleQaPacket,
     shopifyHandoffPacket,
     crmSignalProjectionPacket,
   });
@@ -832,6 +884,7 @@ const buildBoardFromFiles = async (options) => {
     emptyGroupCreateDryRun,
     brandCandidateReviewPacket,
     emailSequencePacket,
+    emailStyleQaPacket,
     shopifyHandoffPacket,
     crmSignalProjectionPacket,
     sourceDigests,
@@ -846,6 +899,7 @@ const buildBoardFromFiles = async (options) => {
     readOptionalJson(options.emptyGroupCreateDryRun),
     readJson(options.brandCandidateReviewPacket),
     readJson(options.emailSequencePacket),
+    readOptionalJson(options.emailStyleQaPacket),
     readJson(options.shopifyHandoffPacket),
     readJson(options.crmSignalProjectionPacket),
     loadSourceDigests(options),
@@ -862,6 +916,7 @@ const buildBoardFromFiles = async (options) => {
     emptyGroupCreateDryRun,
     brandCandidateReviewPacket,
     emailSequencePacket,
+    emailStyleQaPacket,
     shopifyHandoffPacket,
     crmSignalProjectionPacket,
     sourceDigests,

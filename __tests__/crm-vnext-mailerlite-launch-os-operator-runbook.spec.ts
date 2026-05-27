@@ -271,6 +271,19 @@ const brujulaEmailRenderQa = {
   },
 };
 
+const miniLaunchEmailStyleQaPacket = {
+  status: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
+  executiveSummary: {
+    hardBlockerCount: 0,
+    yellowCheckCount: 4,
+  },
+  approvalGate: {
+    readyForLocalAssetPlanNow: true,
+    readyForMailerLiteAssetBuildNow: false,
+    readyForSeedSendNow: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/path.mjs",
@@ -281,6 +294,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/seed.mjs",
     "crm:vnext:mailerlite-mini-launch-group-dry-run": "node scripts/group.mjs",
     "crm:vnext:mailerlite-mini-launch-empty-group-creation-packet": "node scripts/empty-group-approval.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-style-qa-packet": "node scripts/email-style-qa.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-packets": "node scripts/packets.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-intake": "node scripts/intake.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-reconciliation": "node scripts/reconciliation.mjs",
@@ -350,6 +364,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
     expect(parsed.onboardingV2FirstEmailMap).toContain("mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
+    expect(parsed.miniLaunchEmailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
   });
@@ -380,6 +395,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EmptyGroupsPacket,
       onboardingV2EmptyGroupsCreateDryRun,
       onboardingV2FirstEmailMap,
+      miniLaunchEmailStyleQaPacket,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -427,6 +443,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.brujulaPilot.localRenderPreviewPath).toContain("render");
     expect(state.brujulaPilot.localRenderPreviewSize).toBe(56000);
     expect(state.miniLaunch.safeToIntakeOneMoreNoLiveIdea).toBe(true);
+    expect(state.miniLaunch.emailStyleQaPacketStatus).toBe("mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes");
+    expect(state.miniLaunch.emailStyleQaReadyForLocalAssetPlan).toBe(true);
+    expect(state.miniLaunch.emailStyleQaReadyForMailerLiteBuild).toBe(false);
+    expect(state.miniLaunch.emailStyleQaReadyForSeedSend).toBe(false);
+    expect(state.miniLaunch.emailStyleQaHardBlockerCount).toBe(0);
+    expect(state.miniLaunch.emailStyleQaYellowCheckCount).toBe(4);
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
     expect(state.miniLaunch.pendingDepartments).toEqual(["brand", "web_design", "crm"]);
@@ -513,6 +535,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.find((scenario) => scenario.id === "department_response_workspace")?.commands.join(" ")).toContain("department-review-finalize-pending");
     expect(scenarios.find((scenario) => scenario.id === "current_pilot_department_reviews")?.commands.join(" ")).toContain("department-review-reconciliation");
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-empty-group-creation-packet");
+    expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-style-qa-packet");
     expect(scenarios.find((scenario) => scenario.id === "new_mini_launch_idea")?.commands.join(" ")).toContain("onboarding-handoff-policy");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-event-contract");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-empty-groups-create");
@@ -542,6 +565,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EmptyGroupsPacket,
       onboardingV2EmptyGroupsCreateDryRun,
       onboardingV2FirstEmailMap,
+      miniLaunchEmailStyleQaPacket,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,

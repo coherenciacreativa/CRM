@@ -27,6 +27,7 @@ const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -62,6 +63,7 @@ Options:
   --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
   --mini-launch-crm-signal-projection-packet <path> Mini-launch CRM signal projection JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
+  --mini-launch-email-style-qa-packet <path> Mini-launch Email Style QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -104,6 +106,7 @@ const parseArgs = (argv) => {
     onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
+    miniLaunchEmailStyleQaPacket: DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -142,6 +145,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
+    else if (arg === '--mini-launch-email-style-qa-packet') options.miniLaunchEmailStyleQaPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -193,6 +197,7 @@ const loadSourceDigests = async (options) => {
     [options.onboardingV2FirstEmailMap, 'onboarding v2 first-email mapping to prevent unnecessary Sent receipts', true],
     [options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty-group create runner dry-run with zero mutations', true],
     [options.miniLaunchCrmSignalProjectionPacket, 'mini-launch CRM signal projection packet with closed write gates', true],
+    [options.miniLaunchEmailStyleQaPacket, 'mini-launch Email Style QA packet after final Brand sequence approval', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -277,6 +282,7 @@ const buildCurrentState = ({
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
   miniLaunchCrmSignalProjectionPacket,
+  miniLaunchEmailStyleQaPacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -418,6 +424,24 @@ const buildCurrentState = ({
       crmSignalProjectionCanScore: miniLaunchCrmSignalProjectionPacket?.approvalGate?.canScoreNow
         ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.canScoreNow
         ?? false,
+      emailStyleQaPacketStatus: miniLaunchEmailStyleQaPacket?.status
+        ?? readinessLaneById.get('email_sequence')?.sourceStatus
+        ?? null,
+      emailStyleQaReadyForLocalAssetPlan: miniLaunchEmailStyleQaPacket?.approvalGate?.readyForLocalAssetPlanNow
+        ?? readinessLaneById.get('email_sequence')?.readiness?.readyForLocalAssetPlanNow
+        ?? false,
+      emailStyleQaReadyForMailerLiteBuild: miniLaunchEmailStyleQaPacket?.approvalGate?.readyForMailerLiteAssetBuildNow
+        ?? readinessLaneById.get('email_sequence')?.readiness?.readyForMailerLiteAssetBuildNow
+        ?? false,
+      emailStyleQaReadyForSeedSend: miniLaunchEmailStyleQaPacket?.approvalGate?.readyForSeedSendNow
+        ?? readinessLaneById.get('email_sequence')?.readiness?.readyForSeedSendNow
+        ?? false,
+      emailStyleQaHardBlockerCount: miniLaunchEmailStyleQaPacket?.executiveSummary?.hardBlockerCount
+        ?? readinessLaneById.get('email_sequence')?.readiness?.hardBlockerCount
+        ?? null,
+      emailStyleQaYellowCheckCount: miniLaunchEmailStyleQaPacket?.executiveSummary?.yellowCheckCount
+        ?? readinessLaneById.get('email_sequence')?.readiness?.yellowCheckCount
+        ?? null,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -637,8 +661,9 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-empty-group-creation-packet'),
         command('crm:vnext:mailerlite-mini-launch-empty-group-create'),
         command('crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet'),
+        command('crm:vnext:mailerlite-mini-launch-email-style-qa-packet'),
       ].filter(Boolean),
-      liveGatesRemainClosed: ['group creation', 'subscriber assignment', 'workflow use', 'Signal Ledger append', 'card/scoring/Fact Store writes'],
+      liveGatesRemainClosed: ['group creation', 'subscriber assignment', 'workflow use', 'MailerLite asset build', 'seed send', 'Signal Ledger append', 'card/scoring/Fact Store writes'],
     },
     {
       id: 'new_mini_launch_idea',
@@ -705,6 +730,7 @@ const buildRunbook = ({
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
   miniLaunchCrmSignalProjectionPacket,
+  miniLaunchEmailStyleQaPacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -742,6 +768,7 @@ const buildRunbook = ({
       onboardingV2FirstEmailMap,
       miniLaunchEmptyGroupCreateDryRun,
       miniLaunchCrmSignalProjectionPacket,
+      miniLaunchEmailStyleQaPacket,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -862,6 +889,12 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch CRM signal projection signals generated: ${runbook.currentState.miniLaunch.crmSignalProjectionSignalsGenerated ?? 'unknown'}`,
     `- Mini-launch CRM signal projection store-only count: ${runbook.currentState.miniLaunch.crmSignalProjectionStoreOnlyNowCount ?? 'unknown'}`,
     `- Mini-launch CRM signal projection can append ledger: ${runbook.currentState.miniLaunch.crmSignalProjectionCanAppendLedger}`,
+    `- Mini-launch Email Style QA packet: ${runbook.currentState.miniLaunch.emailStyleQaPacketStatus ?? 'unknown'}`,
+    `- Mini-launch Email Style QA local asset plan ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForLocalAssetPlan}`,
+    `- Mini-launch Email Style QA MailerLite build ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForMailerLiteBuild}`,
+    `- Mini-launch Email Style QA seed send ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForSeedSend}`,
+    `- Mini-launch Email Style QA hard blockers: ${runbook.currentState.miniLaunch.emailStyleQaHardBlockerCount ?? 'unknown'}`,
+    `- Mini-launch Email Style QA yellow checks: ${runbook.currentState.miniLaunch.emailStyleQaYellowCheckCount ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
@@ -989,6 +1022,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchEmailStyleQaPacket,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -1019,6 +1053,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.onboardingV2FirstEmailMap),
     readOptionalJson(options.miniLaunchEmptyGroupCreateDryRun),
     readOptionalJson(options.miniLaunchCrmSignalProjectionPacket),
+    readOptionalJson(options.miniLaunchEmailStyleQaPacket),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -1051,6 +1086,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchEmailStyleQaPacket,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,

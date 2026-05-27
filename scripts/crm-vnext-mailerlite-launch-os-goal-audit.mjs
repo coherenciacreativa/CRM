@@ -26,6 +26,7 @@ const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -61,6 +62,7 @@ Options:
   --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
+  --mini-launch-email-style-qa-packet <path> Mini-launch Email Style QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -101,6 +103,7 @@ const parseArgs = (argv) => {
     onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
+    miniLaunchEmailStyleQaPacket: DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -139,6 +142,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
+    else if (arg === '--mini-launch-email-style-qa-packet') options.miniLaunchEmailStyleQaPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -196,6 +200,7 @@ const loadSources = async (options) => {
     ['onboardingV2FirstEmailMap', options.onboardingV2FirstEmailMap, 'Onboarding v2 first-email mapping to prevent unnecessary Sent receipts', 'json', true],
     ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
     ['miniLaunchEmptyGroupCreateDryRun', options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty group create runner dry-run with zero mutations', 'json', true],
+    ['miniLaunchEmailStyleQaPacket', options.miniLaunchEmailStyleQaPacket, 'mini-launch Email Style QA readiness for local asset planning with live gates closed', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -264,6 +269,7 @@ const buildRequirementChecks = ({
   onboardingV2FirstEmailMap,
   onboardingHandoffPolicy,
   miniLaunchEmptyGroupCreateDryRun,
+  miniLaunchEmailStyleQaPacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -335,8 +341,21 @@ const buildRequirementChecks = ({
   const readinessState = readinessBoard?.executiveSummary?.overallState ?? null;
   const readyNoLiveLaneCount = readinessBoard?.executiveSummary?.readyNoLiveLaneCount ?? 0;
   const liveMutationGateOpenCount = readinessBoard?.executiveSummary?.liveMutationGateOpenCount ?? null;
+  const brandCandidateGroupsLane = readinessBoard?.lanes?.find((lane) => lane.id === 'brand_candidate_groups') ?? null;
+  const groupDryRunLane = readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_group_dry_run') ?? null;
+  const emailSequenceLane = readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence') ?? null;
   const emptyGroupApprovalLane = readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_approval_packet') ?? null;
   const emptyGroupCreateDryRunLane = readinessBoard?.lanes?.find((lane) => lane.id === 'mailerlite_empty_group_create_dry_run') ?? null;
+  const brandCandidateDecisionClosed = brandCandidateGroupsLane?.sourceStatus === 'brand_candidate_decision_closed_ready_no_live_changes'
+    && (brandCandidateGroupsLane?.readiness?.acceptedGroupCount ?? 0) >= 2
+    && (brandCandidateGroupsLane?.readiness?.missingCandidateCount ?? 0) === 0
+    && (brandCandidateGroupsLane?.readiness?.brandStatusBlockedCount ?? 0) === 0;
+  const launchGroupDryRunReady = groupDryRunLane?.sourceStatus === 'mini_launch_group_dry_run_ready_for_future_empty_group_decision'
+    && groupDryRunLane?.readiness?.brandDictionaryHasTargets === true
+    && groupDryRunLane?.readiness?.brandApprovedForEmptyCreate === true
+    && groupDryRunLane?.readiness?.canAssignSubscribersNow === false
+    && groupDryRunLane?.readiness?.canSendNow === false
+    && groupDryRunLane?.readiness?.canAttachWorkflowNow === false;
   const emptyGroupApprovalPacketReady = emptyGroupApprovalLane?.readyNow === true
     || runbook?.currentState?.miniLaunch?.emptyGroupApprovalPacketReady === true;
   const miniLaunchEmptyGroupCreateDryRunStatus = miniLaunchEmptyGroupCreateDryRun?.status
@@ -356,6 +375,34 @@ const buildRequirementChecks = ({
   const brandAcceptedLaunchGroupCandidates = hasReconciliationAction('rerun_group_dry_run');
   const webAcceptedScopedLocalDraft = hasReconciliationAction('prepare_scoped_shopify_local_build_request');
   const crmAcceptedSignalBoundaries = hasReconciliationAction('signal_boundaries_ready_for_future_no_live_projection_packet');
+  const miniLaunchEmailStyleQaStatus = miniLaunchEmailStyleQaPacket?.status
+    ?? emailSequenceLane?.sourceStatus
+    ?? runbook?.currentState?.miniLaunch?.emailStyleQaPacketStatus
+    ?? null;
+  const miniLaunchEmailStyleQaReadyForLocalAssetPlan = miniLaunchEmailStyleQaStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes'
+    && (miniLaunchEmailStyleQaPacket?.approvalGate?.readyForLocalAssetPlanNow
+      ?? emailSequenceLane?.readiness?.readyForLocalAssetPlanNow
+      ?? runbook?.currentState?.miniLaunch?.emailStyleQaReadyForLocalAssetPlan
+      ?? false) === true
+    && (miniLaunchEmailStyleQaPacket?.approvalGate?.readyForMailerLiteAssetBuildNow
+      ?? emailSequenceLane?.readiness?.readyForMailerLiteAssetBuildNow
+      ?? runbook?.currentState?.miniLaunch?.emailStyleQaReadyForMailerLiteBuild
+      ?? false) === false
+    && (miniLaunchEmailStyleQaPacket?.approvalGate?.readyForSeedSendNow
+      ?? emailSequenceLane?.readiness?.readyForSeedSendNow
+      ?? runbook?.currentState?.miniLaunch?.emailStyleQaReadyForSeedSend
+      ?? false) === false
+    && (miniLaunchEmailStyleQaPacket?.safety?.mailerLiteApiCalled ?? false) === false
+    && (miniLaunchEmailStyleQaPacket?.safety?.sendsPerformed ?? false) === false
+    && (miniLaunchEmailStyleQaPacket?.safety?.crmLiveApiCalled ?? false) === false;
+  const miniLaunchEmailStyleQaHardBlockerCount = miniLaunchEmailStyleQaPacket?.executiveSummary?.hardBlockerCount
+    ?? emailSequenceLane?.readiness?.hardBlockerCount
+    ?? runbook?.currentState?.miniLaunch?.emailStyleQaHardBlockerCount
+    ?? null;
+  const miniLaunchEmailStyleQaYellowCheckCount = miniLaunchEmailStyleQaPacket?.executiveSummary?.yellowCheckCount
+    ?? emailSequenceLane?.readiness?.yellowCheckCount
+    ?? runbook?.currentState?.miniLaunch?.emailStyleQaYellowCheckCount
+    ?? null;
   const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
     ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsTargetCount
@@ -528,16 +575,27 @@ const buildRequirementChecks = ({
       id: 'consolidate_taxonomy_receipts',
       requirement: 'Consolidate groups/tags/receipts with Brand Hub as canon and CRM as derived operator cache.',
       status: brandTaxonomy.includes('CC · Source') && brandDictionary.includes('CC ·')
-        ? 'partial'
+        ? brandCandidateDecisionClosed && launchGroupDryRunReady
+          ? 'partial_ready_no_live'
+          : 'partial'
         : 'not_proven',
       evidence: [
         `brandTaxonomyChars=${brandTaxonomy.length}`,
         `brandDictionaryChars=${brandDictionary.length}`,
         `runbookCommandCount=${runbook?.commandCatalog?.length ?? 0}`,
         `brandAcceptedLaunchGroupCandidates=${brandAcceptedLaunchGroupCandidates}`,
+        `brandCandidateDecisionClosed=${brandCandidateDecisionClosed}`,
+        `groupDryRunReadyForFutureEmptyGroupDecision=${launchGroupDryRunReady}`,
+        `brandCandidateAcceptedGroupCount=${brandCandidateGroupsLane?.readiness?.acceptedGroupCount ?? 'unknown'}`,
+        `groupDryRunStatus=${groupDryRunLane?.sourceStatus ?? 'missing'}`,
         `reconciliationActions=${reconciliationActions.map((action) => action.id).join(',') || 'none'}`,
       ],
-      remaining: brandAcceptedLaunchGroupCandidates
+      remaining: brandCandidateDecisionClosed && launchGroupDryRunReady
+        ? [
+          'Launch Source/Delivered names are represented and dry-run validated; live empty-group creation remains a separate exact approval boundary.',
+          'Sent groups for follow-up sequence remain off by default unless Brand canonizes reusable content.',
+        ]
+        : brandAcceptedLaunchGroupCandidates
         ? [
           'Represent the Brand-accepted launch candidates in the local/canonical planning surface before any creation request.',
           'Rerun the launch group dry-run; this can only unlock a decision packet, not group creation.',
@@ -567,12 +625,21 @@ const buildRequirementChecks = ({
         `departmentReviewsAccepted=${pendingDepartments.length === 0 && finalizationReadyForIntake === true}`,
         `webAcceptedScopedLocalDraft=${webAcceptedScopedLocalDraft}`,
         `crmAcceptedSignalBoundaries=${crmAcceptedSignalBoundaries}`,
+        `miniLaunchEmailStyleQaStatus=${miniLaunchEmailStyleQaStatus ?? 'missing'}`,
+        `miniLaunchEmailStyleQaReadyForLocalAssetPlan=${miniLaunchEmailStyleQaReadyForLocalAssetPlan}`,
+        `miniLaunchEmailStyleQaReadyForMailerLiteBuild=${miniLaunchEmailStyleQaPacket?.approvalGate?.readyForMailerLiteAssetBuildNow ?? emailSequenceLane?.readiness?.readyForMailerLiteAssetBuildNow ?? runbook?.currentState?.miniLaunch?.emailStyleQaReadyForMailerLiteBuild ?? 'unknown'}`,
+        `miniLaunchEmailStyleQaReadyForSeedSend=${miniLaunchEmailStyleQaPacket?.approvalGate?.readyForSeedSendNow ?? emailSequenceLane?.readiness?.readyForSeedSendNow ?? runbook?.currentState?.miniLaunch?.emailStyleQaReadyForSeedSend ?? 'unknown'}`,
+        `miniLaunchEmailStyleQaHardBlockerCount=${miniLaunchEmailStyleQaHardBlockerCount ?? 'unknown'}`,
+        `miniLaunchEmailStyleQaYellowCheckCount=${miniLaunchEmailStyleQaYellowCheckCount ?? 'unknown'}`,
       ],
       remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
         ? [
           emptyGroupApprovalPacketReady
             ? 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite creation is authorized yet.'
             : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
+          miniLaunchEmailStyleQaReadyForLocalAssetPlan
+            ? 'Email Style QA is ready for local asset planning only; MailerLite asset build and seed send remain closed.'
+            : 'Email Style QA must be generated before local asset planning becomes a reliable next step.',
           'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
         ]
         : [
