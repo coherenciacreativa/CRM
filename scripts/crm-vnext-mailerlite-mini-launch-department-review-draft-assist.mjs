@@ -11,6 +11,7 @@ const DEFAULT_EMAIL_SEQUENCE = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_BRAND_CANDIDATE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_SHOPIFY_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_READINESS_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_DRAFTS_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_codex_drafts_inteligencia_descansar_2026-05-27';
 
@@ -23,6 +24,7 @@ Options:
   --brand-candidate <path>      Brand candidate packet JSON. Defaults to ${DEFAULT_BRAND_CANDIDATE}
   --shopify-handoff <path>      Shopify handoff packet JSON. Defaults to ${DEFAULT_SHOPIFY_HANDOFF}
   --event-contract <path>       Mini-launch event contract JSON. Defaults to ${DEFAULT_EVENT_CONTRACT}
+  --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --readiness-board <path>      Readiness board JSON. Defaults to ${DEFAULT_READINESS_BOARD}
   --drafts-dir <path>           Draft output directory. Defaults to ${DEFAULT_DRAFTS_DIR}
   --overwrite-drafts            Overwrite existing *.codex_draft.json files
@@ -44,6 +46,7 @@ const parseArgs = (argv) => {
     brandCandidate: DEFAULT_BRAND_CANDIDATE,
     shopifyHandoff: DEFAULT_SHOPIFY_HANDOFF,
     eventContract: DEFAULT_EVENT_CONTRACT,
+    onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     readinessBoard: DEFAULT_READINESS_BOARD,
     draftsDir: DEFAULT_DRAFTS_DIR,
     overwriteDrafts: false,
@@ -60,6 +63,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brand-candidate') options.brandCandidate = argv[++index];
     else if (arg === '--shopify-handoff') options.shopifyHandoff = argv[++index];
     else if (arg === '--event-contract') options.eventContract = argv[++index];
+    else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--readiness-board') options.readinessBoard = argv[++index];
     else if (arg === '--drafts-dir') options.draftsDir = argv[++index];
     else if (arg === '--overwrite-drafts') options.overwriteDrafts = true;
@@ -161,6 +165,7 @@ const buildDraftResponses = ({
   brandCandidate,
   shopifyHandoff,
   eventContract,
+  onboardingHandoffPolicy,
   generatedAt = new Date().toISOString(),
 }) => {
   const candidates = candidateNamesFrom(brandCandidate);
@@ -173,6 +178,11 @@ const buildDraftResponses = ({
     ?? shopifyHandoff?.launch?.launchId
     ?? eventContract?.launch?.launchId
     ?? 'mini_2026_06_rehearsal_inteligencia_para_descansar';
+  const onboardingTargetGroup = onboardingHandoffPolicy?.targetGroups?.eligible
+    ?? 'CC · Journey · Editorial onboarding · Eligible';
+  const onboardingHandoffRule = onboardingHandoffPolicy?.operatorRule
+    ?? 'Recommendation is not routing. Routing requires a later exact approval and a fresh protected workflow/subscriber scan.';
+  const onboardingBoundaryNote = `${onboardingHandoffRule} Future target: ${onboardingTargetGroup}.`;
 
   return {
     brand: attachDraftMeta({
@@ -190,6 +200,7 @@ const buildDraftResponses = ({
           'Draft sequence is structurally useful and currently reports 0 internal-term hits and 0 "a veces" formula hits.',
           'Before any seed send, Brand should verify that the four emails sound specifically like Alejandro rather than merely clean/on-brand.',
           'Keep follow-up Sent groups off by default unless Brand canonizes one email as a reusable article/carta.',
+          onboardingBoundaryNote,
         ],
         groupDecisions: candidates.map((name) => ({
           name,
@@ -238,6 +249,7 @@ const buildDraftResponses = ({
         ctaFormIssues: [
           'No real MailerLite form id, group, tag, automation or CRM connection until a separate approval exists.',
           'Hidden launch/source fields must remain internal and absent from public copy.',
+          `Do not design copy or UX that implies automatic onboarding routing; ${onboardingBoundaryNote}`,
         ],
         proposedLocalBuildFiles: shopifyFiles,
         blockers: [],
@@ -270,9 +282,11 @@ const buildDraftResponses = ({
         preconditionsBeforeCardWriteOrScoring: [
           'Separate CRM approval packet exists.',
           'Evidence distinguishes delivery from engagement.',
-          'Onboarding handoff recommendation is reviewed and not treated as automatic routing.',
+          onboardingBoundaryNote,
         ],
         onboardingProtectionStatus: 'protected',
+        onboardingHandoffTargetGroup: onboardingTargetGroup,
+        onboardingHandoffRule,
         blockers: [],
         nextSafeStep: 'CRM edits this draft, then saves final crm_response.json with reviewMode=no_live_review if it accepts the no-live signal boundary.',
       },
@@ -328,6 +342,7 @@ const buildDraftAssist = async ({
   brandCandidate,
   shopifyHandoff,
   eventContract,
+  onboardingHandoffPolicy,
   readinessBoard,
   draftsDir,
   overwriteDrafts = false,
@@ -340,6 +355,7 @@ const buildDraftAssist = async ({
     brandCandidate,
     shopifyHandoff,
     eventContract,
+    onboardingHandoffPolicy,
     generatedAt,
   });
 
@@ -388,6 +404,7 @@ const loadSourceDigests = async (options) => Promise.all([
   sourceDigest(options.brandCandidate, 'Brand group candidate semantics'),
   sourceDigest(options.shopifyHandoff, 'Web Design Shopify handoff and suggested files'),
   sourceDigest(options.eventContract, 'CRM event contract and projection boundaries'),
+  sourceDigest(options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff boundary'),
   sourceDigest(options.readinessBoard, 'current mini-launch readiness blockers'),
 ]);
 
@@ -398,6 +415,7 @@ const buildDraftAssistFromFiles = async (options) => {
     brandCandidate,
     shopifyHandoff,
     eventContract,
+    onboardingHandoffPolicy,
     readinessBoard,
     sourceDigests,
   ] = await Promise.all([
@@ -406,6 +424,7 @@ const buildDraftAssistFromFiles = async (options) => {
     readJson(options.brandCandidate),
     readJson(options.shopifyHandoff),
     readJson(options.eventContract),
+    readJson(options.onboardingHandoffPolicy),
     readJson(options.readinessBoard),
     loadSourceDigests(options),
   ]);
@@ -416,6 +435,7 @@ const buildDraftAssistFromFiles = async (options) => {
     brandCandidate,
     shopifyHandoff,
     eventContract,
+    onboardingHandoffPolicy,
     readinessBoard,
     draftsDir: options.draftsDir,
     overwriteDrafts: options.overwriteDrafts,

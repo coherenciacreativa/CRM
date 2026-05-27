@@ -79,6 +79,14 @@ const eventContract = {
   ],
 };
 
+const onboardingHandoffPolicy = {
+  status: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
+  targetGroups: {
+    eligible: "CC · Journey · Editorial onboarding · Eligible",
+  },
+  operatorRule: "Recommendation is not routing. Routing requires a later exact approval and a fresh protected workflow/subscriber scan.",
+};
+
 const brandTemplate = {
   schemaVersion: "crm-vnext-mailerlite-mini-launch-department-review-response-2026-05-27",
   department: "brand",
@@ -110,6 +118,7 @@ describe("CRM vNext MailerLite department review draft assist", () => {
 
     expect(parsed.responseWorkspace).toContain("mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailSequence).toContain("mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.draftsDir).toBe("/tmp/drafts");
     expect(parsed.overwriteDrafts).toBe(true);
     expect(parsed.out).toBe("/tmp/draft-assist.json");
@@ -124,6 +133,7 @@ describe("CRM vNext MailerLite department review draft assist", () => {
       brandCandidate,
       shopifyHandoff,
       eventContract,
+      onboardingHandoffPolicy,
       generatedAt: "2026-05-27T00:00:00.000Z",
     });
 
@@ -135,8 +145,11 @@ describe("CRM vNext MailerLite department review draft assist", () => {
       "add_as_candidate",
     ]);
     expect(drafts.web_design.proposedLocalBuildFiles).toContain("sections/landing-inteligencia-para-descansar.liquid");
+    expect(drafts.web_design.ctaFormIssues.join(" ")).toContain("Recommendation is not routing");
     expect(drafts.crm.storeOnlyEvents).toEqual(["mini_launch_intake_created", "resource_delivered"]);
     expect(drafts.crm.projectableLaterEvents).toEqual(["email_open"]);
+    expect(drafts.crm.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
+    expect(drafts.crm.onboardingHandoffRule).toContain("Recommendation is not routing");
 
     const validation = validateResponse({
       department: "brand",
@@ -170,6 +183,7 @@ describe("CRM vNext MailerLite department review draft assist", () => {
       brandCandidate,
       shopifyHandoff,
       eventContract,
+      onboardingHandoffPolicy,
       readinessBoard: { launch },
       draftsDir,
       generatedAt: "2026-05-27T00:00:00.000Z",
@@ -206,6 +220,7 @@ describe("CRM vNext MailerLite department review draft assist", () => {
       brandCandidate,
       shopifyHandoff,
       eventContract,
+      onboardingHandoffPolicy,
       readinessBoard: { launch },
       draftsDir,
       generatedAt: "2026-05-27T00:00:00.000Z",
@@ -229,6 +244,7 @@ describe("CRM vNext MailerLite department review draft assist", () => {
       brandCandidate,
       shopifyHandoff,
       eventContract,
+      onboardingHandoffPolicy,
       readinessBoard: { launch },
       draftsDir,
       sourceDigests: [

@@ -125,6 +125,7 @@ What this adds:
 - Current capacity allows at most one additional no-live idea intake while `Inteligencia para descansar` waits for Brand/Web/CRM responses.
 - The delivery pack makes the department review handoff operational: it includes copy-ready no-live blocks, expected response paths and validation commands.
 - The delivery pack now carries the mini-launch-to-onboarding boundary into department review blocks: recommendation is not routing, and `CC · Journey · Editorial onboarding · Eligible` remains a future gated target.
+- The draft-assist lane also carries that boundary into Brand/Web/CRM starter drafts without making them acceptable as final responses.
 - The response workspace creates protected `*.pending.json` working copies and separates them from final `brand_response.json`, `web_design_response.json` and `crm_response.json` files.
 - The operator runbook consolidates current state, report map, command catalog, scenarios, approval matrix, and immediate next moves.
 - Open live gate count is 0.
