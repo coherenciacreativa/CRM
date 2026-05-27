@@ -1,10 +1,12 @@
 # MailerLite Receipt Taxonomy v0
 
-Status: local manifest / proposal only.
+Status: local manifest / operating cache derived from Brand Hub.
 
-This manifest defines the first canonical `CC · ...` MailerLite groups that CRM vNext can use as operational receipts. It is intentionally small: MailerLite should route, deliver, and dedupe; CRM should keep the richer intelligence, scoring, replies, purchases, and channel history.
+This manifest is a CRM-side operating cache derived from Brand Hub. It defines the first `CC · ...` MailerLite groups that CRM vNext can use as operational receipts, but Brand Hub remains the semantic authority. MailerLite should route, deliver, and dedupe; CRM should keep the richer intelligence, scoring, replies, purchases, and channel history.
 
-No live MailerLite groups, workflows, subscribers, tags, or automations are changed by this document.
+No live MailerLite workflows, subscribers, tags, or automations are changed by this document. Five empty `CC · ...` groups were created after explicit human approval on 2026-05-27 and are documented below.
+
+Checkpoint 2026-05-27: after a separate explicit test-only approval, one approved test subscriber (`saludoalsol+pruebasmayo2026@gmail.com`) was created/updated and assigned only to `CC · Source · Resource · Brújula` and `CC · Delivered · Guide · Brújula`. Email 1 was sent as a MailerLite UI test and verified in Gmail. This did not touch active onboarding, activate workflows, send to audience, or assign `CC · Sent · Article · Sobre el amor`.
 
 ## Rules
 
@@ -12,7 +14,10 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
 - Do not edit the active `Onboarding flow` directly from this manifest.
 - Create empty groups only after explicit human approval.
 - Apply first in disabled or draft flows, especially Brújula, before touching active onboarding.
-- Treat `Received second email` as a journey-position receipt, not as proof that a specific canonical article was received.
+- Treat `Received second email` as a journey-position marker, not as proof that a specific canonical article was sent, opened, read, or clicked.
+- Use `Sent` for article/editorial content markers; do not create new `Received` groups.
+- Use `Resource` or `Guide` in Source group names; CRM can store `source_type=lead_magnet` internally.
+- Use `Experiment` groups in MailerLite only when routing/dedupe/exclusion needs them.
 - Use CRM event ledgers for rich signal detail; use MailerLite groups only for routing, delivery receipts, dedupe, and coarse journey state.
 
 ## Machine Manifest
@@ -20,7 +25,12 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
 ```json
 {
   "schemaVersion": "crm-vnext-mailerlite-receipt-taxonomy-v0-2026-05-26",
-  "generatedFrom": "MailerLite Onboarding + Tags/Groups Architecture Audit 2026-05-26",
+  "generatedFrom": "Brand Hub MailerLite taxonomy/dictionary v0, reconciled with Brand + CRM audits 2026-05-26",
+  "semanticAuthority": "Brand Hub",
+  "canonicalSourcePaths": [
+    "/Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_RECEIPT_TAXONOMY_V0.md",
+    "/Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md"
+  ],
   "policy": {
     "liveMutationsAllowedByPlanner": false,
     "safeToCreateEmptyRequiresHumanApproval": true,
@@ -66,7 +76,7 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "publicName": "Volver a fluir"
     },
     {
-      "contentId": "article_perder_miedo",
+      "contentId": "article_algo_para_perder_miedo",
       "type": "article",
       "publicName": "Algo para perder el miedo"
     },
@@ -95,31 +105,33 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": ["leads_instagram.csv", "Instagram"],
       "relatedWorkflows": ["Onboarding flow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
-      "name": "CC · Source · Lead magnet · Brújula",
+      "name": "CC · Source · Resource · Brújula",
+      "liveGroupId": "188581887447401645",
+      "liveStatus": "live_canonical_empty_created_2026-05-27",
       "layer": "Source",
-      "object": "Lead magnet",
+      "object": "Resource",
       "detail": "Brújula",
       "purpose": "Marks people who entered via the Brújula guide opt-in.",
       "relatedHistoricGroups": ["Brújula de Claridad — Guía gratuita", "Notas de Alejandro — opt-in Brújula"],
       "relatedWorkflows": ["Brújula de Claridad - Guía gratuita Workflow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": true,
+      "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
     },
     {
-      "name": "CC · Source · Lead magnet · Perfect Week",
+      "name": "CC · Source · Resource · Perfect Week",
       "layer": "Source",
-      "object": "Lead magnet",
+      "object": "Resource",
       "detail": "Perfect Week",
-      "purpose": "Marks people who entered via the Perfect Week lead magnet.",
+      "purpose": "Marks people who entered via the Perfect Week resource opt-in.",
       "relatedHistoricGroups": ["Perfect Week Leads"],
       "relatedWorkflows": ["Perfect Week — Email 0 + handoff 24h"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 3
     },
     {
@@ -127,11 +139,11 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "layer": "Source",
       "object": "Quiz",
       "detail": "Energia renovada",
-      "purpose": "Marks people who entered via the energy/renewal quiz route.",
+      "purpose": "Candidate marker for people who entered via the energy/renewal quiz route; requires verification of real quiz name before creation.",
       "relatedHistoricGroups": ["Quiz Subscribers"],
       "relatedWorkflows": [],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToCreateEmpty": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 4
     },
     {
@@ -139,11 +151,11 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "layer": "Source",
       "object": "Product",
       "detail": "Arte de No Reventar",
-      "purpose": "Marks buyers/leads whose source route is the Arte de No Reventar product.",
+      "purpose": "Review-only candidate; the historical group appears to describe buyers and may belong in CRM/customer/audience semantics instead of Source.",
       "relatedHistoricGroups": ["Arte de no reventar — Compradores"],
       "relatedWorkflows": [],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToCreateEmpty": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 5
     },
     {
@@ -151,15 +163,17 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "layer": "Source",
       "object": "Event",
       "detail": "Encuentro Feliz",
-      "purpose": "Marks people entering through Encuentro Feliz registration or event route.",
+      "purpose": "Candidate marker for people entering through Encuentro Feliz registration or event route; create only if routing need becomes concrete.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Encuentro Feliz"],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToCreateEmpty": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 5
     },
     {
       "name": "CC · Delivered · Guide · Brújula",
+      "liveGroupId": "188581888003147002",
+      "liveStatus": "live_canonical_empty_created_2026-05-27",
       "layer": "Delivered",
       "object": "Guide",
       "detail": "Brújula",
@@ -168,7 +182,7 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Brújula de Claridad - Guía gratuita Workflow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": true,
+      "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
     },
     {
@@ -181,7 +195,7 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Perfect Week — Email 0 + handoff 24h"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 3
     },
     {
@@ -194,100 +208,92 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": [],
       "relatedWorkflows": [],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 4
     },
     {
-      "name": "CC · Delivered · Link · Clase gratis",
+      "name": "CC · Delivered · Access · Encuentro Feliz",
       "layer": "Delivered",
-      "object": "Link",
-      "detail": "Clase gratis",
-      "purpose": "Receipt that a free class link was delivered.",
-      "relatedHistoricGroups": [],
-      "relatedWorkflows": [],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
-      "pilotPriority": 4
-    },
-    {
-      "name": "CC · Delivered · Link · Encuentro Feliz",
-      "layer": "Delivered",
-      "object": "Link",
+      "object": "Access",
       "detail": "Encuentro Feliz",
-      "purpose": "Receipt that an Encuentro Feliz access link was delivered.",
+      "purpose": "Candidate marker that Encuentro Feliz access was delivered; replaces the fragile generic Link wording if routing needs it.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Encuentro Feliz"],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToCreateEmpty": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 4
     },
     {
-      "name": "CC · Received · Article · Sobre el amor",
-      "layer": "Received",
+      "name": "CC · Sent · Article · Sobre el amor",
+      "liveGroupId": "188581888519046472",
+      "liveStatus": "live_canonical_empty_created_2026-05-27",
+      "layer": "Sent",
       "object": "Article",
       "detail": "Sobre el amor",
       "contentId": "article_sobre_el_amor",
-      "purpose": "Canonical receipt that this reusable article has been sent, independent of its position in any workflow.",
+      "purpose": "Canonical marker that this reusable article has been sent, independent of its position in any workflow. It does not imply opened, read, clicked, or interested.",
       "relatedHistoricGroups": ["Received second email"],
       "relatedWorkflows": ["Onboarding flow", "Onboarding for legacy subscribers", "Brújula de Claridad - Guía gratuita Workflow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": true,
+      "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
     },
     {
-      "name": "CC · Received · Article · Relaciones que aumentan nuestra energia",
-      "layer": "Received",
+      "name": "CC · Sent · Article · Relaciones que aumentan nuestra energia",
+      "layer": "Sent",
       "object": "Article",
       "detail": "Relaciones que aumentan nuestra energia",
       "contentId": "article_relaciones_aumentan_energia",
-      "purpose": "Canonical receipt for the reusable article, independent of workflow position.",
+      "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Onboarding flow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
-      "name": "CC · Received · Article · Navegar los bajonazos",
-      "layer": "Received",
+      "name": "CC · Sent · Article · Navegar los bajonazos",
+      "layer": "Sent",
       "object": "Article",
       "detail": "Navegar los bajonazos",
       "contentId": "article_navegar_bajonazos",
-      "purpose": "Canonical receipt for the reusable article, independent of workflow position.",
+      "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Onboarding flow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
-      "name": "CC · Received · Article · Volver a fluir",
-      "layer": "Received",
+      "name": "CC · Sent · Article · Volver a fluir",
+      "layer": "Sent",
       "object": "Article",
       "detail": "Volver a fluir",
       "contentId": "article_volver_a_fluir",
-      "purpose": "Canonical receipt for the reusable article, independent of workflow position.",
+      "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Onboarding flow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
-      "name": "CC · Received · Article · Algo para perder el miedo",
-      "layer": "Received",
+      "name": "CC · Sent · Article · Algo para perder el miedo",
+      "layer": "Sent",
       "object": "Article",
       "detail": "Algo para perder el miedo",
-      "contentId": "article_perder_miedo",
-      "purpose": "Canonical receipt for the reusable article, independent of workflow position.",
+      "contentId": "article_algo_para_perder_miedo",
+      "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": ["Onboarding flow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
       "name": "CC · Journey · Editorial onboarding · Eligible",
+      "liveGroupId": "188581889031800192",
+      "liveStatus": "live_canonical_empty_created_2026-05-27",
       "layer": "Journey",
       "object": "Editorial onboarding",
       "detail": "Eligible",
@@ -295,7 +301,7 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": ["will get first email"],
       "relatedWorkflows": ["Onboarding flow", "Brújula de Claridad - Guía gratuita Workflow"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": true,
+      "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
     },
     {
@@ -307,7 +313,7 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": ["will get first email", "Se le envió el primer boletín", "Received second email"],
       "relatedWorkflows": ["Onboarding flow", "Onboarding for legacy subscribers"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
@@ -319,80 +325,51 @@ No live MailerLite groups, workflows, subscribers, tags, or automations are chan
       "relatedHistoricGroups": ["Onboarding complete"],
       "relatedWorkflows": ["Onboarding flow", "Onboarding for legacy subscribers"],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
+      "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 2
     },
     {
-      "name": "CC · Journey · Mini-launch · Active",
-      "layer": "Journey",
-      "object": "Mini-launch",
-      "detail": "Active",
-      "purpose": "Coarse group for people currently inside a mini-launch sequence.",
-      "relatedHistoricGroups": [],
+      "name": "CC · Audience · General newsletter · Eligible",
+      "liveGroupId": "188581889544553921",
+      "liveStatus": "live_canonical_empty_created_2026-05-27",
+      "layer": "Audience",
+      "object": "General newsletter",
+      "detail": "Eligible",
+      "purpose": "Coarse audience marker for people who can receive fresh general campaigns.",
+      "relatedHistoricGroups": ["Onboarding complete"],
       "relatedWorkflows": [],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
-      "pilotPriority": 5
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 1
     },
     {
-      "name": "CC · Journey · Mini-launch · Completed",
-      "layer": "Journey",
-      "object": "Mini-launch",
-      "detail": "Completed",
-      "purpose": "Coarse group for people who completed a mini-launch sequence.",
+      "name": "CC · Audience · Mini-launches · Eligible",
+      "layer": "Audience",
+      "object": "Mini-launches",
+      "detail": "Eligible",
+      "purpose": "Coarse audience marker for people who can receive future mini-launch invitations or continuities.",
       "relatedHistoricGroups": [],
       "relatedWorkflows": [],
       "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
-      "pilotPriority": 5
-    },
-    {
-      "name": "CC · Experiment · 2026-06 · Chill",
-      "layer": "Experiment",
-      "object": "2026-06",
-      "detail": "Chill",
-      "purpose": "Cohort marker for a June 2026 mini-launch experiment.",
-      "relatedHistoricGroups": [],
-      "relatedWorkflows": [],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
-      "pilotPriority": 5
-    },
-    {
-      "name": "CC · Experiment · 2026-06 · Mente lago tranquilo",
-      "layer": "Experiment",
-      "object": "2026-06",
-      "detail": "Mente lago tranquilo",
-      "purpose": "Cohort marker for a June 2026 mini-launch experiment.",
-      "relatedHistoricGroups": [],
-      "relatedWorkflows": [],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
-      "pilotPriority": 5
-    },
-    {
-      "name": "CC · Experiment · 2026-06 · Inteligencia para descansar",
-      "layer": "Experiment",
-      "object": "2026-06",
-      "detail": "Inteligencia para descansar",
-      "purpose": "Cohort marker for a June 2026 mini-launch experiment.",
-      "relatedHistoricGroups": [],
-      "relatedWorkflows": [],
-      "safeToCreateEmpty": true,
-      "safeToUseInLiveFlowNow": false,
-      "pilotPriority": 5
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 3
     }
   ]
 }
 ```
 
-## First Safe Create Set
+## First Live Canonical Set
 
-The first group creation batch, after explicit approval, should be only empty groups:
+The first group creation batch was approved by Alejandro and executed on 2026-05-27 as empty groups only:
 
-- `CC · Source · Lead magnet · Brújula`
-- `CC · Delivered · Guide · Brújula`
-- `CC · Received · Article · Sobre el amor`
-- `CC · Journey · Editorial onboarding · Eligible`
+- `CC · Source · Resource · Brújula` — `188581887447401645`
+- `CC · Delivered · Guide · Brújula` — `188581888003147002`
+- `CC · Sent · Article · Sobre el amor` — `188581888519046472`
+- `CC · Journey · Editorial onboarding · Eligible` — `188581889031800192`
+- `CC · Audience · General newsletter · Eligible` — `188581889544553921`
 
-These prepare the Brújula pilot without touching active onboarding or subscribers.
+Execution report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_vnext_empty_group_create_EXECUTED_2026-05-27.md`.
+
+Post-create planner verification: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_vnext_post_create_planner_verify_2026-05-27.md`.
+
+These groups prepare the Brújula pilot and future onboarding split without touching active onboarding, subscribers, workflows, automations, or sends. They must remain empty until a separate migration/use gate approves exact subscriber routing or workflow behavior.

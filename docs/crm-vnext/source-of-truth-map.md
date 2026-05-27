@@ -28,7 +28,7 @@ Everything else has a defined supporting role. This prevents two CRMs from formi
 
 | Source | Current role | Authority |
 | --- | --- | --- |
-| MailerLite | High-value read source for subscriber identity, groups, status, opens/clicks. Use cursor pagination + local filtering. | Evidence/signals source, not direct card authority by itself. |
+| MailerLite | High-value read source for subscriber identity, groups, status, opens/clicks. Use cursor pagination + local filtering. Operationally, MailerLite should hold sending routes and minimal Source/Delivered/Sent/Journey/Audience receipts, plus Experiment only when needed for routing/dedupe. Taxonomy is owned by Brand Hub. | Evidence/signals source, not direct card authority by itself. |
 | Gmail / newsletter replies | High-value read source for human replies and relationship context. Use metadata/redacted snippets. | Signal/evidence source. No email body export by default. |
 | Instagram UI | High-value read-only source recovery lane for handle/email/location/context when API access is limited. | Evidence/signals source. No social actions. |
 | Google Drive/Docs/Sheets | Retreat/program tables and historical context. | Evidence source, often requiring human review for shared/family emails. |
@@ -63,6 +63,7 @@ Use the right layer for the right kind of truth:
 | "This person attended Tuesday class" | Signal Event Ledger. |
 | "This email belongs to this person" | Evidence review/card write approval. |
 | "This person opened 2 campaigns in 30 days" | Signal Event Ledger -> engagement preview. |
+| "This person was sent a canonical MailerLite article/resource" | MailerLite `Sent`/`Delivered` group for routing/dedupe, plus CRM Signal Event Ledger or evidence packet for intelligence. This does not equal read/open/click/interest. |
 | "This person viewed stories / sent DM / commented on Instagram" | `crm:vnext:instagram-signal-events` -> Signal Event Ledger -> engagement preview. |
 | "This person replied thoughtfully to a newsletter" | Signal Event Ledger, plus evidence if the snippet helps stitching/context. |
 | "This person is a therapy client/patient" | Restricted fact/evidence/card path with human-review boundaries. |
