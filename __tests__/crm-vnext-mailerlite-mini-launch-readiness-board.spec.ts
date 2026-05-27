@@ -63,6 +63,19 @@ const groupDryRun = {
   },
 };
 
+const promotedGroupDryRun = {
+  ...groupDryRun,
+  status: "mini_launch_group_dry_run_ready_for_future_empty_group_decision",
+  readiness: {
+    brandDictionaryHasTargets: true,
+    brandApprovedForEmptyCreate: true,
+    canCreateNamedEmptyGroupsAfterExplicitApproval: true,
+    canAssignSubscribersNow: false,
+    canSendNow: false,
+    canAttachWorkflowNow: false,
+  },
+};
+
 const brandCandidateReviewPacket = {
   ok: true,
   status: "brand_candidate_review_packet_ready_no_live_changes",
@@ -154,6 +167,21 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(byId.get("onboarding_protection")?.liveActionsClosed).toContain("edit_onboarding_v1");
   });
 
+  test("marks group dry-run ready only after Brand promotion and fresh read-only scan", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      groupDryRun: promotedGroupDryRun,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("mailerlite_group_dry_run")).toMatchObject({
+      readyNow: true,
+      blockedBy: [],
+    });
+    expect(byId.get("mailerlite_group_dry_run")?.nextAction).toContain("exact empty-group creation approval packet");
+    expect(byId.get("mailerlite_group_dry_run")?.liveActionsClosed).toContain("subscriber_assignment");
+  });
+
   test("live gate matrix keeps only review gates open and all live mutations closed", () => {
     const matrix = buildLiveGateMatrix();
 
@@ -201,6 +229,22 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
       sendsPerformed: false,
     });
     expect(board.operatorWarnings).toContain("Do not treat a Brand candidate decision as permission to create MailerLite groups.");
+  });
+
+  test("updates executive next moves after group dry-run is no longer blocked", () => {
+    const board = buildReadinessBoard({
+      ...packetSet,
+      groupDryRun: promotedGroupDryRun,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    expect(board.executiveSummary.nextBestNoLiveMoves.join(" ")).toContain("exact empty-group creation approval packet");
+    expect(board.executiveSummary.nextBestNoLiveMoves.join(" ")).not.toContain("reruns the group dry-run after Brand");
+
+    const queues = buildDepartmentQueues({ lanes: board.lanes });
+    expect(queues.brand.join(" ")).toContain("Group candidate semantics are closed for this pass");
+    expect(queues.crm.join(" ")).toContain("Use the fresh group dry-run");
   });
 
   test("renders board as an operator-safe report", () => {

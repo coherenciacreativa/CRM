@@ -162,6 +162,43 @@ const buildLane = ({
   liveActionsClosed,
 });
 
+const groupDryRunState = (groupDryRun) => {
+  const status = groupDryRun?.status ?? null;
+  if (status === 'mini_launch_group_dry_run_ready_for_future_empty_group_decision') {
+    return {
+      readyNow: true,
+      blockedBy: [],
+      nextAction: 'Dry-run is fresh and Brand-approved. Prepare an exact empty-group creation approval packet only if Alejandro wants the two missing groups created empty; no subscriber assignment, workflow use, or sends.',
+    };
+  }
+  if (status === 'mini_launch_groups_already_exist_no_create_needed') {
+    return {
+      readyNow: true,
+      blockedBy: [],
+      nextAction: 'Launch receipt groups already exist. Move only to a separate receipt seed-test scope packet if Alejandro approves that next gate.',
+    };
+  }
+  if (status === 'blocked_until_brand_promotes_or_rejects_candidates') {
+    return {
+      readyNow: false,
+      blockedBy: ['brand_dictionary_candidate_status_pending'],
+      nextAction: 'Brand must promote, reject, or rename the candidate rows before this dry-run can unlock an approval packet.',
+    };
+  }
+  if (status === 'blocked_until_brand_dictionary_candidates') {
+    return {
+      readyNow: false,
+      blockedBy: ['brand_dictionary_candidate_rows_missing'],
+      nextAction: 'Brand must add/review the candidate rows, then CRM reruns the group dry-run before any group creation approval exists.',
+    };
+  }
+  return {
+    readyNow: false,
+    blockedBy: ['group_dry_run_not_ready'],
+    nextAction: 'Rerun or inspect the group dry-run before any group creation approval exists.',
+  };
+};
+
 const buildLanes = ({
   onboardingExecutionPacket,
   rehearsalPacket,
@@ -172,8 +209,11 @@ const buildLanes = ({
   brandCandidateReviewPacket,
   emailSequencePacket,
   shopifyHandoffPacket,
-}) => [
-  buildLane({
+}) => {
+  const dryRunState = groupDryRunState(groupDryRun);
+
+  return [
+    buildLane({
     id: 'onboarding_protection',
     owner: 'CRM / MailerLite',
     packet: onboardingExecutionPacket,
@@ -249,10 +289,10 @@ const buildLanes = ({
     id: 'mailerlite_group_dry_run',
     owner: 'CRM / MailerLite Planner',
     packet: groupDryRun,
-    readyNow: false,
+    readyNow: dryRunState.readyNow,
     readiness: groupDryRun?.readiness ?? {},
-    blockedBy: ['brand_dictionary_candidate_rows_missing'],
-    nextAction: 'After Brand candidate decision, rerun the group dry-run before any group creation approval exists.',
+    blockedBy: dryRunState.blockedBy,
+    nextAction: dryRunState.nextAction,
     liveActionsClosed: ['group_creation', 'subscriber_assignment', 'workflow_attachment', 'send'],
   }),
   buildLane({
@@ -265,12 +305,15 @@ const buildLanes = ({
     nextAction: 'Use this as the seed-test checklist only; no seed send or receipt test is authorized.',
     liveActionsClosed: ['seed_send', 'receipt_seed_test', 'subscriber_mutation', 'workflow_use'],
   }),
-];
+  ];
+};
 
 const buildDepartmentQueues = ({ lanes }) => ({
   brand: [
     'Review Email 1 and full four-email sequence for voice, promise, CTA and public/internal separation.',
-    'Decide semantic status for the two group candidates: add_as_candidate, rename, or reject for now.',
+    lanes.some((lane) => lane.id === 'mailerlite_group_dry_run' && lane.readyNow)
+      ? 'Group candidate semantics are closed for this pass; do not reopen unless naming evidence changes.'
+      : 'Decide semantic status for the two group candidates: add_as_candidate, rename, or reject for now.',
     'Keep candidate decision separate from any permission to create groups.',
   ],
   webDesign: [
@@ -280,7 +323,9 @@ const buildDepartmentQueues = ({ lanes }) => ({
   ],
   crm: [
     'Preserve event contract as store-only until seed observations exist and append is approved.',
-    'Rerun group dry-run after Brand semantic decision.',
+    lanes.some((lane) => lane.id === 'mailerlite_group_dry_run' && lane.readyNow)
+      ? 'Use the fresh group dry-run only to prepare a later exact empty-group approval packet if Alejandro wants it.'
+      : 'Rerun group dry-run after Brand semantic decision.',
     'Keep Experiment identity CRM-first unless MailerLite needs routing/dedupe/exclusion.',
   ],
   mailerLite: [
@@ -329,7 +374,7 @@ const buildLiveGateMatrix = () => [
     status: 'closed',
     owner: 'Alejandro / MailerLite Planner',
     needsAlejandroApprovalNow: true,
-    meaning: 'Needs Brand dictionary decision, fresh dry-run, and exact approval phrase.',
+    meaning: 'Needs Brand dictionary decision/fresh dry-run when unresolved, plus an exact approval phrase before any group creation.',
   },
   {
     id: 'mailerLite_asset_build_or_seed_send',
@@ -384,6 +429,22 @@ const buildSafety = () => ({
   tokensPrinted: false,
 });
 
+const nextBestNoLiveMovesFor = ({ lanes }) => {
+  const groupDryRunLane = lanes.find((lane) => lane.id === 'mailerlite_group_dry_run');
+  const moves = [
+    'Brand reviews the full email sequence for voice, promise, CTA and public/internal separation.',
+    'Web Design reviews/builds from the Shopify handoff only if scope is accepted.',
+  ];
+
+  if (groupDryRunLane?.readyNow) {
+    moves.push('Prepare an exact empty-group creation approval packet only if Alejandro wants the two Brand-approved groups created empty; no subscribers, workflows, or sends.');
+  } else {
+    moves.push(groupDryRunLane?.nextAction ?? 'Rerun the launch group dry-run before any group creation approval exists.');
+  }
+
+  return moves;
+};
+
 const buildReadinessBoard = ({
   onboardingExecutionPacket,
   rehearsalPacket,
@@ -428,11 +489,7 @@ const buildReadinessBoard = ({
       readyNoLiveLaneCount: readyNoLiveLanes.length,
       liveGateOpenCount: liveGateMatrix.filter((gate) => gate.status === 'open_no_live').length,
       liveMutationGateOpenCount: liveGateMatrix.filter((gate) => gate.status === 'open_no_live' && gate.needsAlejandroApprovalNow).length,
-      nextBestNoLiveMoves: [
-        'Brand reviews the full email sequence and group candidate semantics.',
-        'Web Design reviews/builds from the Shopify handoff only if scope is accepted.',
-        'CRM reruns the group dry-run after Brand records/renames/rejects the candidate rows.',
-      ],
+      nextBestNoLiveMoves: nextBestNoLiveMovesFor({ lanes }),
       noImmediateAlejandroLiveApprovalNeeded: true,
     },
     lanes,
