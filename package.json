@@ -58,6 +58,7 @@
     "crm:vnext:mailerlite-mini-launch-department-review-intake": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-intake.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-reconciliation": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-reconciliation.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-packets": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-packets.mjs",
+    "crm:vnext:mailerlite-mini-launch-department-review-delivery-pack": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-delivery-pack.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs",
     "crm:vnext:snapshot": "node scripts/crm-vnext-snapshot.mjs",

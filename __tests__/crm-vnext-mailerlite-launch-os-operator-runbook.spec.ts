@@ -104,6 +104,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-department-review-packets": "node scripts/packets.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-intake": "node scripts/intake.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-reconciliation": "node scripts/reconciliation.mjs",
+    "crm:vnext:mailerlite-mini-launch-department-review-delivery-pack": "node scripts/delivery.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/backlog.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-onboarding-v1-audit": "node scripts/v1.mjs",
@@ -139,6 +140,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.cadenceBoard).toContain("mailerlite_mini_launch_cadence_board_2026-05-27.json");
     expect(parsed.backlogBoard).toContain("mailerlite_mini_launch_backlog_board_2026-05-27.json");
     expect(parsed.reconciliationBoard).toContain("mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.deliveryPack).toContain("mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
   });
@@ -191,6 +193,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
 
     expect(scenarios.map((scenario) => scenario.id)).toEqual([
       "backlog_intake",
+      "department_review_delivery",
       "current_pilot_department_reviews",
       "after_brand_response",
       "new_mini_launch_idea",
@@ -198,6 +201,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       "brujula_test_lane",
     ]);
     expect(scenarios.find((scenario) => scenario.id === "backlog_intake")?.commands.join(" ")).toContain("mini-launch-backlog-board");
+    expect(scenarios.find((scenario) => scenario.id === "department_review_delivery")?.commands.join(" ")).toContain("department-review-delivery-pack");
     expect(scenarios.find((scenario) => scenario.id === "current_pilot_department_reviews")?.commands.join(" ")).toContain("department-review-reconciliation");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.liveGatesRemainClosed).toContain("v1 edit");
   });
@@ -220,7 +224,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
 
     expect(runbook.status).toBe("mailerlite_launch_os_operator_runbook_ready_no_live_changes");
     expect(runbook.commandCatalog.length).toBeGreaterThan(10);
-    expect(runbook.operatingScenarios).toHaveLength(6);
+    expect(runbook.operatingScenarios).toHaveLength(7);
     expect(runbook.currentState.liveGates.openLiveGateCount).toBe(0);
     expect(runbook.reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
     expect(runbook.safety).toMatchObject({
@@ -241,10 +245,17 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         chars: 2000,
         consultedFor: "mini-launch idea queue and intake capacity",
       },
+      {
+        path: "/tmp/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "safe department review delivery blocks and response paths",
+      },
     ]);
 
     expect(reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
     expect(reportMap.backlogBoard).toBe("/tmp/mailerlite_mini_launch_backlog_board_2026-05-27.json");
+    expect(reportMap.departmentReviewDeliveryPack).toBe("/tmp/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json");
   });
 
   test("renders operator runbook with next moves and approval matrix", () => {
@@ -267,6 +278,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Operator Runbook");
     expect(markdown).toContain("current_pilot_department_reviews");
     expect(markdown).toContain("backlog_intake");
+    expect(markdown).toContain("department_review_delivery");
     expect(markdown).toContain("Approval Matrix");
     expect(markdown).toContain("Report Map");
     expect(markdown).toContain("Open live gates: 0");

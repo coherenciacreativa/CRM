@@ -11,8 +11,10 @@ const DEFAULT_CADENCE_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_BACKLOG_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.json';
 const DEFAULT_RECONCILIATION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_PACKETS_INDEX = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_DELIVERY_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -28,8 +30,10 @@ Options:
   --backlog-board <path>             Mini-launch backlog board JSON. Defaults to ${DEFAULT_BACKLOG_BOARD}
   --reconciliation-board <path>      Department review reconciliation JSON. Defaults to ${DEFAULT_RECONCILIATION}
   --packets-index <path>             Department review packets index JSON. Defaults to ${DEFAULT_PACKETS_INDEX}
+  --delivery-pack <path>             Department review delivery pack JSON. Defaults to ${DEFAULT_DELIVERY_PACK}
   --onboarding-v1-audit <path>       Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-v2-execution <path>   Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
+  --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -52,8 +56,10 @@ const parseArgs = (argv) => {
     backlogBoard: DEFAULT_BACKLOG_BOARD,
     reconciliationBoard: DEFAULT_RECONCILIATION,
     packetsIndex: DEFAULT_PACKETS_INDEX,
+    deliveryPack: DEFAULT_DELIVERY_PACK,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
+    onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -72,8 +78,10 @@ const parseArgs = (argv) => {
     else if (arg === '--backlog-board') options.backlogBoard = argv[++index];
     else if (arg === '--reconciliation-board') options.reconciliationBoard = argv[++index];
     else if (arg === '--packets-index') options.packetsIndex = argv[++index];
+    else if (arg === '--delivery-pack') options.deliveryPack = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
+    else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -96,8 +104,10 @@ const loadSourceDigests = async (options) => {
     [options.backlogBoard, 'mini-launch idea queue and intake capacity'],
     [options.reconciliationBoard, 'department review state and current blockers'],
     [options.packetsIndex, 'individual Brand/Web/CRM packets'],
+    [options.deliveryPack, 'safe department review delivery blocks and response paths'],
     [options.onboardingV1Audit, 'protected production onboarding v1 audit'],
     [options.onboardingV2Execution, 'onboarding v2 execution posture and protected v1'],
+    [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.packageJson, 'available local npm commands'],
@@ -151,6 +161,7 @@ const buildCurrentState = ({
   packetsIndex,
   onboardingV1Audit,
   onboardingV2Execution,
+  onboardingV2EventContract,
   brujulaPlan,
   brujulaApply,
 }) => {
@@ -194,6 +205,7 @@ const buildCurrentState = ({
         emailsCount: onboardingV1Audit?.workflow?.emailsCount ?? null,
       },
       v2ExecutionStatus: onboardingV2Execution?.status ?? null,
+      v2EventContractStatus: onboardingV2EventContract?.status ?? null,
       recommendedPath: onboardingV1Audit?.migrationRecommendation?.option ?? null,
       productionSwitchApproved: false,
     },
@@ -224,9 +236,11 @@ const buildReportMap = (sourceDigests) => {
     cadenceBoard: findPath('mailerlite_mini_launch_cadence_board_2026-05-27.json'),
     backlogBoard: findPath('mailerlite_mini_launch_backlog_board_2026-05-27.json'),
     departmentReviewPacketsIndex: findPath('mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json'),
+    departmentReviewDeliveryPack: findPath('mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json'),
     departmentReviewReconciliation: findPath('mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json'),
     onboardingV1Audit: findPath('mailerlite_onboarding_v1_audit_2026-05-27.json'),
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
+    onboardingV2EventContract: findPath('mailerlite_onboarding_v2_event_contract_2026-05-27.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     packageJson: findPath('package.json'),
@@ -296,6 +310,15 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
       liveGatesRemainClosed: ['platform build', 'MailerLite assets', 'receipts', 'onboarding handoff', 'CRM writes'],
     },
     {
+      id: 'department_review_delivery',
+      when: 'The individual review packets are ready but department responses do not exist yet.',
+      firstMove: 'Use the delivery pack to route safe no-live review blocks and expected response files.',
+      commands: [
+        command('crm:vnext:mailerlite-mini-launch-department-review-delivery-pack'),
+      ].filter(Boolean),
+      liveGatesRemainClosed: ['external send authorization', 'MailerLite mutations', 'Shopify edits', 'CRM writes', 'onboarding routing'],
+    },
+    {
       id: 'current_pilot_department_reviews',
       when: 'You need Brand, Web Design and CRM review for Inteligencia para descansar.',
       firstMove: 'Use the individual packets index and packet files in Mantis-Reports.',
@@ -339,6 +362,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-onboarding-v2-design-packet'),
         command('crm:vnext:mailerlite-onboarding-v2-empty-groups-packet'),
         command('crm:vnext:mailerlite-onboarding-v2-execution-packet'),
+        command('crm:vnext:mailerlite-onboarding-v2-event-contract'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['v1 edit', 'v2 activation', 'entry switch', 'workflow clone', 'seed sends'],
     },
@@ -363,6 +387,7 @@ const buildRunbook = ({
   packetsIndex,
   onboardingV1Audit,
   onboardingV2Execution,
+  onboardingV2EventContract,
   brujulaPlan,
   brujulaApply,
   packageJson,
@@ -384,6 +409,7 @@ const buildRunbook = ({
       packetsIndex,
       onboardingV1Audit,
       onboardingV2Execution,
+      onboardingV2EventContract,
       brujulaPlan,
       brujulaApply,
     }),
@@ -393,9 +419,11 @@ const buildRunbook = ({
     approvalMatrix: buildApprovalMatrix(),
     immediateNextMoves: [
       'Run no-live department reviews from the individual packets.',
+      'Use the delivery pack for copy-ready no-live blocks and expected response paths.',
       'Collect responses through the response templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
       'Use the backlog board only for one additional no-live idea intake, not for live production.',
+      'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
       'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
     ],
     safety: {
@@ -433,6 +461,7 @@ const renderMarkdown = (runbook) => {
     `- Onboarding v1 protected: ${runbook.currentState.onboarding.productionV1Protected}`,
     `- Onboarding v1 workflow: ${runbook.currentState.onboarding.productionV1Workflow.name ?? 'unknown'}`,
     `- Onboarding v2 status: ${runbook.currentState.onboarding.v2ExecutionStatus ?? 'unknown'}`,
+    `- Onboarding v2 event contract: ${runbook.currentState.onboarding.v2EventContractStatus ?? 'unknown'}`,
     `- Mini-launch readiness: ${runbook.currentState.miniLaunch.readinessState ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
@@ -510,8 +539,10 @@ const buildRunbookFromFiles = async (options) => {
     backlogBoard,
     reconciliationBoard,
     packetsIndex,
+    deliveryPack,
     onboardingV1Audit,
     onboardingV2Execution,
+    onboardingV2EventContract,
     brujulaPlan,
     brujulaApply,
     packageJson,
@@ -522,8 +553,10 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.backlogBoard),
     readJson(options.reconciliationBoard),
     readJson(options.packetsIndex),
+    readJson(options.deliveryPack),
     readJson(options.onboardingV1Audit),
     readJson(options.onboardingV2Execution),
+    readJson(options.onboardingV2EventContract),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.packageJson),
@@ -536,8 +569,10 @@ const buildRunbookFromFiles = async (options) => {
     backlogBoard,
     reconciliationBoard,
     packetsIndex,
+    deliveryPack,
     onboardingV1Audit,
     onboardingV2Execution,
+    onboardingV2EventContract,
     brujulaPlan,
     brujulaApply,
     packageJson,

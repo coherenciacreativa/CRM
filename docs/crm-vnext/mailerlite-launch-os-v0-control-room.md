@@ -79,6 +79,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.md`
@@ -91,17 +93,21 @@ Status: ready, local-only, no live changes.
 Evidence:
 
 - Backlog board: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.md`
+- Department review delivery pack: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`
 - Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.md`
 - Backlog script: `scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs`
+- Delivery pack script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-delivery-pack.mjs`
 - Runbook script: `scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs`
 - Test coverage:
   - `__tests__/crm-vnext-mailerlite-mini-launch-backlog-board.spec.ts`
+  - `__tests__/crm-vnext-mailerlite-mini-launch-department-review-delivery-pack.spec.ts`
   - `__tests__/crm-vnext-mailerlite-launch-os-operator-runbook.spec.ts`
 
 What this adds:
 
 - The backlog board turns mini-launch ideas into a controlled no-live intake queue.
 - Current capacity allows at most one additional no-live idea intake while `Inteligencia para descansar` waits for Brand/Web/CRM responses.
+- The delivery pack makes the department review handoff operational: it includes copy-ready no-live blocks, expected response paths and validation commands.
 - The operator runbook consolidates current state, report map, command catalog, scenarios, approval matrix, and immediate next moves.
 - Open live gate count is 0.
 - Neither artifact permits Shopify edits, MailerLite API mutations, subscribers, workflows, seed sends, audience sends, CRM ledgers/cards/scoring, or Fact Store writes.
@@ -682,10 +688,11 @@ The goal is not complete until all gates below are proven with current evidence:
    - Department review intake templates generated and tested: done.
    - Department review reconciliation generated and tested: done.
    - Individual department review packets generated and tested: done.
+   - Department review delivery pack generated and tested: done.
 
 ## Next best step
 
-Run the no-live department reviews from the individual packets in `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_inteligencia_descansar_2026-05-27/`, then collect the responses using the templates in `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_templates_inteligencia_descansar_2026-05-27/`, then run the reconciliation board with the response files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
+Run the no-live department reviews using `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`, then collect the responses using the templates in `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_templates_inteligencia_descansar_2026-05-27/`, then run the reconciliation board with the response files. Brand should go first because the group semantics and email voice affect the next dry-run; Web Design and CRM can review in parallel. While those reviews are pending, the backlog board allows at most one additional no-live idea intake, not platform build or live operation. If reconciliation accepts Brand decisions, rerun the launch group dry-run; if Brand renames or rejects the rows, regenerate the dry-run from the new names or keep the launch CRM-first. Creating the 12 Onboarding v2 empty groups remains a separate explicit-approval lane.
 
 Scope:
 
@@ -706,4 +713,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets and operator runbook are now documented. The next useful move is to run the no-live department reviews from the individual packets, collect responses through the intake templates, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack and operator runbook are now documented. The next useful move is to run the no-live department reviews from the delivery pack, collect responses through the intake templates, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
