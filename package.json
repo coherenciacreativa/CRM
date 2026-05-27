@@ -64,6 +64,7 @@
     "crm:vnext:mailerlite-mini-launch-department-review-response-workspace": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-response-workspace.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-draft-assist": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-draft-assist.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-operator-queue": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-operator-queue.mjs",
+    "crm:vnext:mailerlite-mini-launch-department-review-request-bundle": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-request-bundle.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-finalization-preflight": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-finalization-preflight.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-finalize-pending": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-finalize-pending.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs",

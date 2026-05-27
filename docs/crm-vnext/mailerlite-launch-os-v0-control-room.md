@@ -109,6 +109,7 @@ Evidence:
 - Department review delivery pack: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.md`
 - Department review response workspace: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.md`
 - Department review finalization preflight: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.md`
+- Department review request bundle: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.md`
 - Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.md`
 - Backlog script: `scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs`
 - Delivery pack script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-delivery-pack.mjs`
@@ -130,6 +131,7 @@ What this adds:
 - The response workspace creates protected `*.pending.json` working copies and separates them from final `brand_response.json`, `web_design_response.json` and `crm_response.json` files.
 - The finalization preflight distinguishes empty pending templates, Codex draft assists and true final response files before intake/reconciliation can run.
 - The operator queue puts each department's message block, pending file, Codex draft, final response path and blockers in one place.
+- The request bundle turns the operator queue into local copy-ready text files for Brand, Web Design and CRM without sending messages or writing final responses.
 - The operator runbook consolidates current state, report map, command catalog, scenarios, approval matrix, and immediate next moves.
 - Open live gate count is 0.
 - Neither artifact permits Shopify edits, MailerLite API mutations, subscribers, workflows, seed sends, audience sends, CRM ledgers/cards/scoring, or Fact Store writes.
@@ -799,6 +801,26 @@ Result:
 
 This is the practical operator surface for the current bottleneck. It reduces the chance that Mantis/Codex/Alejandro have to hop across five reports just to know what Brand, Web Design or CRM still need to return.
 
+## Mini-launch department request bundle status
+
+Status: request bundle ready, waiting for final Brand/Web/CRM files, no live changes.
+
+Evidence:
+
+- Request bundle report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.md`
+- Request text files: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_requests_inteligencia_descansar_2026-05-27/`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-department-review-request-bundle.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-department-review-request-bundle.spec.ts`
+
+Result:
+
+- Produces one local request text file per department: Brand, Web Design and CRM.
+- Each request includes the Codex draft path, pending file, final response path, missing fields and hard stops.
+- It explicitly says the Codex draft is not a final response and keeps `Recommendation is not routing` visible.
+- It sends no messages, writes no final response files and opens no live gates.
+
+This is the handoff-ready layer for the current bottleneck. It lets the operator route the right instructions into the right department chat without reconstructing context or accidentally turning a draft into approval.
+
 ## Mini-launch department finalization preflight status
 
 Status: finalization preflight ready, waiting for real final responses, no live changes.
@@ -913,4 +935,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, finalization preflight and operator runbook are now documented. The next useful move is to use the operator queue to run the no-live department reviews, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, pass them through finalization preflight, and then run intake/reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.

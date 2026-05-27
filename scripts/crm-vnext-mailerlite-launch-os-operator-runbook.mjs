@@ -16,6 +16,7 @@ const DEFAULT_DELIVERY_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_FINALIZATION_PREFLIGHT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_OPERATOR_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_ONBOARDING_V1_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
@@ -39,6 +40,7 @@ Options:
   --response-workspace <path>        Department review response workspace JSON. Defaults to ${DEFAULT_RESPONSE_WORKSPACE}
   --finalization-preflight <path>    Department finalization preflight JSON. Defaults to ${DEFAULT_FINALIZATION_PREFLIGHT}
   --operator-queue <path>            Department review operator queue JSON. Defaults to ${DEFAULT_OPERATOR_QUEUE}
+  --request-bundle <path>            Department review request bundle JSON. Defaults to ${DEFAULT_REQUEST_BUNDLE}
   --onboarding-v1-audit <path>       Onboarding v1 audit JSON. Defaults to ${DEFAULT_ONBOARDING_V1_AUDIT}
   --onboarding-v2-execution <path>   Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
@@ -69,6 +71,7 @@ const parseArgs = (argv) => {
     responseWorkspace: DEFAULT_RESPONSE_WORKSPACE,
     finalizationPreflight: DEFAULT_FINALIZATION_PREFLIGHT,
     operatorQueue: DEFAULT_OPERATOR_QUEUE,
+    requestBundle: DEFAULT_REQUEST_BUNDLE,
     onboardingV1Audit: DEFAULT_ONBOARDING_V1_AUDIT,
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
@@ -95,6 +98,7 @@ const parseArgs = (argv) => {
     else if (arg === '--response-workspace') options.responseWorkspace = argv[++index];
     else if (arg === '--finalization-preflight') options.finalizationPreflight = argv[++index];
     else if (arg === '--operator-queue') options.operatorQueue = argv[++index];
+    else if (arg === '--request-bundle') options.requestBundle = argv[++index];
     else if (arg === '--onboarding-v1-audit') options.onboardingV1Audit = argv[++index];
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
@@ -125,6 +129,7 @@ const loadSourceDigests = async (options) => {
     [options.responseWorkspace, 'pending response workspace and final response readiness'],
     [options.finalizationPreflight, 'department final response readiness and draft/pending distinction'],
     [options.operatorQueue, 'operator queue for department final response collection'],
+    [options.requestBundle, 'copy-ready department request texts for final responses'],
     [options.onboardingV1Audit, 'protected production onboarding v1 audit'],
     [options.onboardingV2Execution, 'onboarding v2 execution posture and protected v1'],
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
@@ -183,6 +188,7 @@ const buildCurrentState = ({
   responseWorkspace,
   finalizationPreflight,
   operatorQueue,
+  requestBundle,
   onboardingV1Audit,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -256,6 +262,9 @@ const buildCurrentState = ({
       operatorQueueStatus: operatorQueue?.status ?? null,
       operatorQueueNextBestMove: operatorQueue?.summary?.nextBestMove ?? null,
       operatorQueueAwaitingFinalCount: operatorQueue?.summary?.awaitingFinalCount ?? null,
+      requestBundleStatus: requestBundle?.status ?? null,
+      requestBundleRequestCount: requestBundle?.summary?.requestCount ?? null,
+      requestBundleRequestsDir: requestBundle?.requestsDir ?? null,
       departmentResponseStates: (finalizationPreflight?.departments ?? []).map((department) => ({
         department: department.department,
         state: department.state,
@@ -286,6 +295,7 @@ const buildReportMap = (sourceDigests) => {
     departmentReviewResponseWorkspace: findPath('mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json'),
     departmentReviewFinalizationPreflight: findPath('mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json'),
     departmentReviewOperatorQueue: findPath('mailerlite_mini_launch_department_review_operator_queue_inteligencia_descansar_2026-05-27.json'),
+    departmentReviewRequestBundle: findPath('mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json'),
     departmentReviewReconciliation: findPath('mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json'),
     onboardingV1Audit: findPath('mailerlite_onboarding_v1_audit_2026-05-27.json'),
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
@@ -398,6 +408,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-department-review-response-workspace'),
         command('crm:vnext:mailerlite-mini-launch-department-review-draft-assist'),
         command('crm:vnext:mailerlite-mini-launch-department-review-operator-queue'),
+        command('crm:vnext:mailerlite-mini-launch-department-review-request-bundle'),
         command('crm:vnext:mailerlite-mini-launch-department-review-finalization-preflight'),
         command('crm:vnext:mailerlite-mini-launch-department-review-finalize-pending'),
         command('crm:vnext:mailerlite-mini-launch-department-review-intake'),
@@ -477,6 +488,7 @@ const buildRunbook = ({
   responseWorkspace,
   finalizationPreflight,
   operatorQueue,
+  requestBundle,
   onboardingV1Audit,
   onboardingV2Execution,
   onboardingV2EventContract,
@@ -502,6 +514,7 @@ const buildRunbook = ({
       packetsIndex,
       finalizationPreflight,
       operatorQueue,
+      requestBundle,
       onboardingV1Audit,
       onboardingV2Execution,
       onboardingV2EventContract,
@@ -521,6 +534,7 @@ const buildRunbook = ({
       'Use the draft assist only as a starting point for departments; it cannot replace final Brand/Web/CRM responses.',
       'Run finalization preflight before intake so pending files, Codex drafts and final response files cannot be confused.',
       'Use the operator queue to see each department message block, Codex draft, pending blockers and final response path in one place.',
+      'Use the request bundle to route copy-ready department instructions without reconstructing context by hand.',
       'Use finalize-pending only after a department confirms a clean pending response is final; it writes local final response files only.',
       'Collect final responses through the response workspace and templates.',
       'Run reconciliation with response files before any dry-run rerun or build request.',
@@ -581,6 +595,9 @@ const renderMarkdown = (runbook) => {
     `- Operator queue: ${runbook.currentState.miniLaunch.operatorQueueStatus ?? 'unknown'}`,
     `- Operator queue awaiting final count: ${runbook.currentState.miniLaunch.operatorQueueAwaitingFinalCount ?? 'unknown'}`,
     `- Operator queue next best move: ${runbook.currentState.miniLaunch.operatorQueueNextBestMove ?? 'unknown'}`,
+    `- Request bundle: ${runbook.currentState.miniLaunch.requestBundleStatus ?? 'unknown'}`,
+    `- Request bundle request count: ${runbook.currentState.miniLaunch.requestBundleRequestCount ?? 'unknown'}`,
+    `- Request bundle dir: ${runbook.currentState.miniLaunch.requestBundleRequestsDir ?? 'unknown'}`,
     `- Pending departments: ${runbook.currentState.miniLaunch.pendingDepartments.join(', ') || 'none'}`,
     `- Open live gates: ${runbook.currentState.liveGates.openLiveGateCount}`,
     '',
@@ -671,6 +688,7 @@ const buildRunbookFromFiles = async (options) => {
     responseWorkspace,
     finalizationPreflight,
     operatorQueue,
+    requestBundle,
     onboardingV1Audit,
     onboardingV2Execution,
     onboardingV2EventContract,
@@ -689,6 +707,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.responseWorkspace),
     readJson(options.finalizationPreflight),
     readJson(options.operatorQueue),
+    readJson(options.requestBundle),
     readJson(options.onboardingV1Audit),
     readJson(options.onboardingV2Execution),
     readJson(options.onboardingV2EventContract),
@@ -709,6 +728,7 @@ const buildRunbookFromFiles = async (options) => {
     responseWorkspace,
     finalizationPreflight,
     operatorQueue,
+    requestBundle,
     onboardingV1Audit,
     onboardingV2Execution,
     onboardingV2EventContract,
