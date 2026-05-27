@@ -179,6 +179,11 @@ Supported kinds:
 - `quiz_or_game_completed`
 - `market_signal_reviewed`
 - `continue_or_archive_decision`
+- `onboarding_handoff_recommended`
+- `onboarding_eligibility_assigned`
+- `onboarding_started`
+- `onboarding_completed`
+- `audience_eligibility_assigned`
 - `class_attendance`
 - `recording_delivery`
 - `community_event_attendance`
@@ -192,6 +197,8 @@ Supported kinds:
 The v0 can store both raw events and aggregate snapshots. Aggregate snapshots are important because many available sources currently report "opens in 30 days" or "recent story activity" instead of a clean raw event stream.
 
 Mini-launch events are intentionally supported at the ledger layer before they all affect scoring. This lets a launch such as `Inteligencia para descansar` preserve the whole operating story: idea intake, Brand approval, Shopify preview, email capture, MailerLite receipts, quiz completion, email engagement, Instagram engagement, market review, and Alejandro's continue/archive decision. Store first; project into warmth/product-fit only when a reviewed scoring policy says that event should count.
+
+Onboarding v2 events are supported for the same reason: the CRM should be able to preserve when a person becomes eligible for the editorial onboarding, starts it, receives canonical article content, completes it, and becomes eligible for general newsletter campaigns without treating those states as opens, clicks, warmth, product fit, or permission for outbound. The production `Onboarding flow` remains protected; ledger support is a storage contract, not workflow approval.
 
 ## Channels
 

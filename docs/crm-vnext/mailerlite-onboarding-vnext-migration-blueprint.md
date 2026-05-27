@@ -399,7 +399,7 @@ Guardrails:
 - It does not send emails.
 - It does not touch Onboarding v1.
 
-Next safe step: either pause for Alejandro's explicit approval phrase to create only those 12 empty groups, or continue with non-live work: CRM event contract for v2, or a no-live mini-launch rehearsal using the full Mini-Launch OS v0 packet.
+Next safe step: either pause for Alejandro's explicit approval phrase to create only those 12 empty groups, or continue with non-live work such as department reviews, response reconciliation, or one additional backlog-only mini-launch intake. The CRM event contract for v2 is now complete.
 
 ## Onboarding v2 execution packet checkpoint - 2026-05-27
 
@@ -448,6 +448,31 @@ Result:
 - Do not infer canonical content from the historical `Se le envió el primer boletín` group.
 - If observability is needed, CRM can use a journey signal such as `journey_welcome_sent`; that is not a content receipt.
 - Brand can later promote this note into a reusable article, but only through a separate Brand/CRM content_id packet.
+
+## Onboarding v2 CRM event contract checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-onboarding-v2-event-contract.mjs
+```
+
+Result:
+
+- Status: `onboarding_v2_event_contract_ready_no_ledger_write`.
+- Defines the CRM Signal Event Ledger contract for Onboarding v2: source assignment, eligibility, started, welcome email, canonical article sent, email opens/clicks/replies, suppression, completion, general newsletter eligibility, and mini-launch handoff recommendation.
+- Sample events normalize through the Signal Event Ledger with 12 generated events, 0 skipped records, and no `unknown` event kinds/channels.
+- Store-only by default: Source, eligibility, started, welcome, `content_sent`, completion, audience eligibility and onboarding handoff recommendation.
+- Projectable through existing pipelines: email open, click, reply and suppression/review events.
+- No Signal Event Ledger append, CRM card write, scoring mutation, Fact Store write, MailerLite API call, subscriber read, group creation, workflow use, send, outbound, or Onboarding v1 touch was performed.
+
+This checkpoint makes Onboarding v2 observable before it becomes operational. The CRM now has clear semantics for future onboarding events without treating journey state as engagement or permission.
 
 ## Mini-launch path checkpoint - 2026-05-27
 
@@ -971,6 +996,7 @@ This migration is succeeding when:
 - CRM can know which experiment/content a person touched;
 - `Onboarding complete` no longer carries too many meanings;
 - a canonical article like `Sobre el amor` is never accidentally duplicated across flows;
+- CRM can store Onboarding v2 journey/source/audience events without confusing them with engagement or scoring;
 - Mantis can prepare a new launch without asking Alejandro to remember MailerLite wiring;
 - Mantis can consult the operator runbook/backlog instead of reconstructing state from memory;
 - live MailerLite changes happen only after local dry-run and explicit approval.

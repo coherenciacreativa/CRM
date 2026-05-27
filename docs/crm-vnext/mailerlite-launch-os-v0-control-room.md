@@ -47,6 +47,8 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_path_packet_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_path_packet_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_os_v0_packet_2026-05-27.md`
@@ -313,6 +315,27 @@ Decision:
 - Do not create a `CC · Sent · Article · ...` group for this email in v2.
 - If CRM needs observability, use a journey event such as `journey_welcome_sent`, not a content receipt.
 - Brand may promote this note into a reusable article later, but that requires a separate content_id and receipt packet.
+
+## Onboarding v2 CRM event contract status
+
+Status: CRM event contract ready, no ledger write.
+
+Evidence:
+
+- Event contract report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.md`
+- Event contract JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json`
+- Script: `scripts/crm-vnext-mailerlite-onboarding-v2-event-contract.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-onboarding-v2-event-contract.spec.ts`
+
+Result:
+
+- Defines how Onboarding v2 should appear in the CRM Signal Event Ledger: Source, eligibility, started, welcome email, canonical article sent, opens, clicks, replies, suppression/deliverability, completed, general newsletter eligibility, and mini-launch-to-onboarding handoff recommendation.
+- Sample events normalize through the Signal Event Ledger with 12 generated events, 0 skipped records, and no `unknown` event kinds/channels.
+- Store-only by default: Source, eligibility, started, welcome email, canonical `content_sent`, completion, audience eligibility, and handoff recommendation.
+- Projectable through existing pipelines: email open, click, reply, and suppression/review events.
+- Open live gate count is 0: no Signal Ledger append, card write, score mutation, Fact Store write, MailerLite group creation/assignment, workflow use, sends, outbound, subscriber rows, or Onboarding v1 touch.
+
+This closes the CRM observability gap for Onboarding v2. The system now knows what future onboarding events should mean before any workflow is created or connected.
 
 ## Mini-launch OS v0 status
 
@@ -660,6 +683,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Completion/audience logic mapped: done.
    - Queue/subscriber exposure assessed if MailerLite exposes it safely: done, partial API metric plus group counts only.
    - No active changes performed: done.
+   - Onboarding v2 CRM event contract generated and tested: done.
 
 3. Receipt architecture documented and tested.
    - Brand dictionary is canon.
@@ -689,6 +713,7 @@ The goal is not complete until all gates below are proven with current evidence:
    - Department review reconciliation generated and tested: done.
    - Individual department review packets generated and tested: done.
    - Department review delivery pack generated and tested: done.
+   - Operator runbook includes Onboarding v2 event contract: done.
 
 ## Next best step
 
@@ -713,4 +738,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack and operator runbook are now documented. The next useful move is to run the no-live department reviews from the delivery pack, collect responses through the intake templates, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack and operator runbook are now documented. The next useful move is to run the no-live department reviews from the delivery pack, collect responses through the intake templates, and pass them through reconciliation. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.

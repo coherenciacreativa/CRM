@@ -100,8 +100,15 @@ Store-only by default:
 - `quiz_or_game_completed`
 - `market_signal_reviewed`
 - `continue_or_archive_decision`
+- `onboarding_handoff_recommended`
+- `onboarding_eligibility_assigned`
+- `onboarding_started`
+- `onboarding_completed`
+- `audience_eligibility_assigned`
 
 Rule: the CRM may preserve launch operations and market-learning events now, but it must not turn them into warmth, product-fit, card mutations, or outbound permission until a reviewed policy explicitly says how to interpret them.
+
+Onboarding v2 journey events are also store-only by default. They describe routing, eligibility and lifecycle state around the editorial onboarding; they do not mean the person read, clicked, replied, became warmer, or should receive additional outbound unless a separate projection/scoring policy says so.
 
 ## Future Sources
 
