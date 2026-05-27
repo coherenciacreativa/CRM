@@ -726,6 +726,30 @@ Result:
 
 This checkpoint turns the growing set of packets into an operating map, which matters because the next failure mode is not lack of artifacts; it is an operator accidentally treating a review packet as live authorization.
 
+## Mini-launch cadence board checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-cadence-board.mjs
+```
+
+Result:
+
+- MailerLite Launch OS now has a repeatable cadence board for moving from one prepared pilot to a weekly mini-launch rhythm.
+- The board keeps weekly cadence as the active recommendation and treats every-3-days cadence as designed but not active.
+- It defines WIP limits so the system does not run too many live-adjacent launches, Web builds, seed tests or CRM signal reviews at once.
+- It defines the pipeline stages from idea intake to continue/archive decision, with Brand, Web Design, CRM, MailerLite, onboarding and Alejandro ownership separated.
+- It keeps every live gate closed by default: Shopify preview/publish, form connection, MailerLite group creation, asset build, seed send, receipt seed test, workflow use, onboarding handoff, audience launch, CRM writes, scoring, Signal Event Ledger and Fact Store.
+
+This checkpoint makes the future launch machine governable. Mini-launch speed can increase only after the system proves clean reviews, seed tests, learning loops and protected onboarding behavior.
+
 ## Planner dry-run requirements
 
 Proposed script:

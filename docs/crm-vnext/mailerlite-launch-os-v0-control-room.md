@@ -57,6 +57,20 @@ Key reports:
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.md`
 - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_email_asset_packet_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_email_asset_packet_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.md`
+- `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.json`
 
 ## Brújula pilot status
 
@@ -486,6 +500,27 @@ Result:
 
 This is the operating map for the current mini-launch rehearsal. It lowers coordination risk before any future approval or live-adjacent step.
 
+## Mini-launch cadence board status
+
+Status: repeatable cadence board ready, no live changes.
+
+Evidence:
+
+- Cadence board report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-cadence-board.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-cadence-board.spec.ts`
+
+Result:
+
+- Converts the current prepared mini-launch into a repeatable operating rhythm.
+- Recommends weekly cadence first, then every 3 days only after two no-live rehearsals plus one approved seed test prove throughput.
+- Defines WIP limits: one live-adjacent launch, two no-live prep launches, one Web build, one MailerLite seed test and one CRM signal review at a time.
+- Defines the pipeline from idea intake through Brand brief, Shopify/Web handoff, resource production, email sequence, Brand candidate review, group dry-run, seed QA, exact approval, market signal review and continue/archive decision.
+- Keeps all live gates closed by default: Shopify preview/publish, form connection, MailerLite group creation, asset build, seed send, receipt seed test, workflow use, onboarding handoff, audience launch, CRM writes, scoring, Signal Event Ledger and Fact Store.
+- Keeps onboarding as the protected trunk: mini-launches can recommend a future handoff, but cannot route participants into onboarding automatically.
+
+This is the operating cadence for the future mini-launch machine. It prevents speed from becoming drift: the agency can increase frequency only after the review, seed-test and learning loops are proven.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:
@@ -516,6 +551,8 @@ The goal is not complete until all gates below are proven with current evidence:
    - Concrete no-live rehearsal packet generated and tested: done.
    - Concrete mini-launch CRM event contract generated and tested: done.
    - Seed-test QA packet generated and tested: done.
+   - Cadence board generated and tested: done.
+   - Weekly-to-every-3-days ramp defined with WIP limits and onboarding protection: done.
 
 5. Brand and CRM handoff clear.
    - Brand knows what to review creatively.
