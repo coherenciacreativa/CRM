@@ -858,6 +858,29 @@ Result:
 
 This checkpoint lowers operational friction: each department can work from one clean packet without reading the whole control room or accidentally inheriting another department's authority.
 
+## Operator runbook and backlog board
+
+Current operator files:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.md
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_backlog_board_2026-05-27.md
+```
+
+Scripts:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs
+CRM/scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs
+```
+
+Purpose:
+
+- The operator runbook is the current console for Mantis/Codex: current state, report map, command catalog, operating scenarios, approval matrix and next no-live moves.
+- The backlog board lets one future mini-launch idea enter no-live intake while the current pilot waits for department reviews.
+- A backlog row is not permission to build, send, publish, score, route to onboarding, create groups, assign subscribers, append ledgers or mutate CRM.
+- Open live gate count remains 0.
+
 ## Planner dry-run requirements
 
 Proposed script:
@@ -946,8 +969,9 @@ This migration is succeeding when:
 - `Onboarding complete` no longer carries too many meanings;
 - a canonical article like `Sobre el amor` is never accidentally duplicated across flows;
 - Mantis can prepare a new launch without asking Alejandro to remember MailerLite wiring;
+- Mantis can consult the operator runbook/backlog instead of reconstructing state from memory;
 - live MailerLite changes happen only after local dry-run and explicit approval.
 
 ## Next local step
 
-No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` Brand candidate review packet for semantic review, prepare Shopify/Web preview handoff, or keep working on disabled-draft/onboarding documentation that stays local-only.
+No further live-adjacent step should run without explicit approval. If continuing without approval, route the `Inteligencia para descansar` Brand candidate review packet for semantic review, collect Brand/Web/CRM responses through the intake templates, run reconciliation, or use the backlog board for at most one additional no-live idea intake. Shopify/Web builds, MailerLite group creation, subscribers, seed sends, workflow use, onboarding handoff and CRM ledgers/cards/scoring remain separate approval lanes.
