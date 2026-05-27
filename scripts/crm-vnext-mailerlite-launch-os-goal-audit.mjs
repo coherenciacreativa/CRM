@@ -23,6 +23,7 @@ const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -56,6 +57,7 @@ Options:
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --onboarding-v2-empty-groups-packet <path> Onboarding v2 empty-groups approval packet JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET}
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
+  --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -94,6 +96,7 @@ const parseArgs = (argv) => {
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     onboardingV2EmptyGroupsPacket: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET,
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
+    onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -130,6 +133,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-packet') options.onboardingV2EmptyGroupsPacket = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
+    else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -185,6 +189,7 @@ const loadSources = async (options) => {
     ['onboardingV2EventContract', options.onboardingV2EventContract, 'Onboarding v2 CRM event contract', 'json'],
     ['onboardingV2EmptyGroupsPacket', options.onboardingV2EmptyGroupsPacket, 'Onboarding v2 empty-groups approval packet from fresh read-only scan', 'json', true],
     ['onboardingV2EmptyGroupsCreateDryRun', options.onboardingV2EmptyGroupsCreateDryRun, 'Onboarding v2 empty-groups create runner dry-run with zero mutations', 'json', true],
+    ['onboardingV2FirstEmailMap', options.onboardingV2FirstEmailMap, 'Onboarding v2 first-email mapping to prevent unnecessary Sent receipts', 'json', true],
     ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
@@ -251,6 +256,7 @@ const buildRequirementChecks = ({
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
   onboardingV2EmptyGroupsCreateDryRun,
+  onboardingV2FirstEmailMap,
   onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
@@ -369,11 +375,23 @@ const buildRequirementChecks = ({
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2FirstEmailMapped = onboardingV2FirstEmailMap?.status === 'first_email_mapping_ready_no_sent_receipt'
+    && onboardingV2FirstEmailMap?.decision?.recommendedPosture === 'welcome_orientation_no_sent_receipt'
+    && onboardingV2FirstEmailMap?.decision?.recommendedMailerLiteSentGroup === null
+    && onboardingV2FirstEmailMap?.decision?.createNewSentGroup === false
+    && onboardingV2FirstEmailMap?.v2ImplementationGuidance?.crmSignals?.[0]?.event === 'journey_welcome_sent'
+    && onboardingV2FirstEmailMap?.safety?.mailerLiteApiCalled === false
+    && onboardingV2FirstEmailMap?.safety?.brandHubMutationsPerformed === false
+    && onboardingV2FirstEmailMap?.safety?.crmCardMutationsPerformed === false
+    && onboardingV2FirstEmailMap?.safety?.subscriberRowsRead === false
+    && onboardingV2FirstEmailMap?.safety?.workflowMutationsPerformed === false
+    && onboardingV2FirstEmailMap?.safety?.sendsPerformed === false;
   const v2DesignProven = onboardingV2Design?.status
     && onboardingV2Execution?.status
     && onboardingV2EventContract?.status
     && v2EmptyGroupsPacketReady
-    && v2EmptyGroupsCreateDryRunReady;
+    && v2EmptyGroupsCreateDryRunReady
+    && v2FirstEmailMapped;
   const validationPassed = validationStatus === 'passed' || receiptPassed;
   const effectiveValidationStatus = validationStatus === 'passed'
     ? 'passed'
@@ -468,6 +486,12 @@ const buildRequirementChecks = ({
         `emptyGroupsCreateDryRunCreatedCount=${v2EmptyGroupsCreateDryRunCreatedCount ?? 'unknown'}`,
         `emptyGroupsPacketReady=${v2EmptyGroupsPacketReady}`,
         `emptyGroupsCreateDryRunReady=${v2EmptyGroupsCreateDryRunReady}`,
+        `firstEmailMapStatus=${onboardingV2FirstEmailMap?.status ?? runbook?.currentState?.onboarding?.v2FirstEmailMapStatus ?? 'missing'}`,
+        `firstEmailPosture=${onboardingV2FirstEmailMap?.decision?.recommendedPosture ?? runbook?.currentState?.onboarding?.v2FirstEmailRecommendedPosture ?? 'unknown'}`,
+        `firstEmailSentGroup=${onboardingV2FirstEmailMap?.decision?.recommendedMailerLiteSentGroup ?? runbook?.currentState?.onboarding?.v2FirstEmailRecommendedSentGroup ?? 'none'}`,
+        `firstEmailCreateNewSentGroup=${onboardingV2FirstEmailMap?.decision?.createNewSentGroup ?? runbook?.currentState?.onboarding?.v2FirstEmailCreateNewSentGroup ?? 'unknown'}`,
+        `firstEmailCrmSignal=${onboardingV2FirstEmailMap?.v2ImplementationGuidance?.crmSignals?.[0]?.event ?? runbook?.currentState?.onboarding?.v2FirstEmailCrmSignal ?? 'unknown'}`,
+        `firstEmailMapped=${v2FirstEmailMapped}`,
       ],
       remaining: [
         'Creating the 12 empty v2 groups remains a separate exact-approval lane.',
@@ -706,6 +730,7 @@ const buildGoalAudit = ({
       'Run department review intake and reconciliation with final response files only.',
       'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
+      'Use the Onboarding v2 first-email map so the welcome/orientation email is tracked as journey_welcome_sent, not as a content Sent receipt.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',

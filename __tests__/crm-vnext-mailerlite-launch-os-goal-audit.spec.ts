@@ -186,6 +186,33 @@ const onboardingV2EmptyGroupsCreateDryRun = {
   },
 };
 
+const onboardingV2FirstEmailMap = {
+  status: "first_email_mapping_ready_no_sent_receipt",
+  firstEmail: {
+    subject: "{$name}, Tu primera nota de mi parte ✍🏻",
+  },
+  decision: {
+    recommendedPosture: "welcome_orientation_no_sent_receipt",
+    recommendedMailerLiteSentGroup: null,
+    createNewSentGroup: false,
+  },
+  v2ImplementationGuidance: {
+    crmSignals: [
+      {
+        event: "journey_welcome_sent",
+      },
+    ],
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    brandHubMutationsPerformed: false,
+    crmCardMutationsPerformed: false,
+    subscriberRowsRead: false,
+    workflowMutationsPerformed: false,
+    sendsPerformed: false,
+  },
+};
+
 const onboardingHandoffPolicy = {
   status: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
   targetGroups: {
@@ -341,6 +368,7 @@ const values = {
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
   onboardingV2EmptyGroupsCreateDryRun,
+  onboardingV2FirstEmailMap,
   onboardingHandoffPolicy,
   brujulaPlan,
   brujulaApply,
@@ -380,6 +408,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
+    expect(parsed.onboardingV2FirstEmailMap).toContain("mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
@@ -406,6 +435,12 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsCreateDryRunCreatedCount=0");
     expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsPacketReady=true");
     expect(byId.design_onboarding_v2.evidence).toContain("emptyGroupsCreateDryRunReady=true");
+    expect(byId.design_onboarding_v2.evidence).toContain("firstEmailMapStatus=first_email_mapping_ready_no_sent_receipt");
+    expect(byId.design_onboarding_v2.evidence).toContain("firstEmailPosture=welcome_orientation_no_sent_receipt");
+    expect(byId.design_onboarding_v2.evidence).toContain("firstEmailSentGroup=none");
+    expect(byId.design_onboarding_v2.evidence).toContain("firstEmailCreateNewSentGroup=false");
+    expect(byId.design_onboarding_v2.evidence).toContain("firstEmailCrmSignal=journey_welcome_sent");
+    expect(byId.design_onboarding_v2.evidence).toContain("firstEmailMapped=true");
     expect(byId.coordinate_brand_web_crm.status).toBe("blocked_waiting_department_final_responses");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("readyForResponseIntake=false");
     expect(byId.coordinate_brand_web_crm.evidence).toContain("workspacePendingDepartments=brand,web_design,crm");

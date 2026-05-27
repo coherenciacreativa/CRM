@@ -175,6 +175,25 @@ const onboardingV2EmptyGroupsCreateDryRun = {
   createdGroups: [],
 };
 
+const onboardingV2FirstEmailMap = {
+  status: "first_email_mapping_ready_no_sent_receipt",
+  firstEmail: {
+    subject: "{$name}, Tu primera nota de mi parte ✍🏻",
+  },
+  decision: {
+    recommendedPosture: "welcome_orientation_no_sent_receipt",
+    recommendedMailerLiteSentGroup: null,
+    createNewSentGroup: false,
+  },
+  v2ImplementationGuidance: {
+    crmSignals: [
+      {
+        event: "journey_welcome_sent",
+      },
+    ],
+  },
+};
+
 const onboardingV1Audit = {
   workflow: {
     id: "154049547088167956",
@@ -329,6 +348,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
+    expect(parsed.onboardingV2FirstEmailMap).toContain("mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
   });
@@ -358,6 +378,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       onboardingV2EmptyGroupsPacket,
       onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -383,6 +404,11 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.onboarding.v2EmptyGroupsCreateDryRunStatus).toBe("dry_run_ready_for_exact_approval");
     expect(state.onboarding.v2EmptyGroupsCreateDryRunCreatedCount).toBe(0);
     expect(state.onboarding.v2EmptyGroupsCreateDryRunBlockerCount).toBe(0);
+    expect(state.onboarding.v2FirstEmailMapStatus).toBe("first_email_mapping_ready_no_sent_receipt");
+    expect(state.onboarding.v2FirstEmailRecommendedPosture).toBe("welcome_orientation_no_sent_receipt");
+    expect(state.onboarding.v2FirstEmailRecommendedSentGroup).toBe(null);
+    expect(state.onboarding.v2FirstEmailCreateNewSentGroup).toBe(false);
+    expect(state.onboarding.v2FirstEmailCrmSignal).toBe("journey_welcome_sent");
     expect(state.onboarding.trunkMapStatus).toBe("onboarding_trunk_map_ready_no_live_changes");
     expect(state.onboarding.trunkMapSequenceItems).toBe(11);
     expect(state.onboarding.trunkMapFutureHandoffTarget).toBe("CC · Journey · Editorial onboarding · Eligible");
@@ -513,6 +539,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       onboardingV2EmptyGroupsPacket,
       onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -616,6 +643,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "onboarding v2 empty-groups create runner dry-run with zero mutations",
       },
       {
+        path: "/tmp/mailerlite_onboarding_v2_first_email_map_2026-05-27.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "onboarding v2 first-email mapping to prevent unnecessary Sent receipts",
+      },
+      {
         path: "/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json",
         present: true,
         chars: 2000,
@@ -654,6 +687,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.onboardingV2EventContract).toBe("/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(reportMap.onboardingV2EmptyGroupsPacket).toBe("/tmp/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(reportMap.onboardingV2EmptyGroupsCreateDryRun).toBe("/tmp/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json");
+    expect(reportMap.onboardingV2FirstEmailMap).toBe("/tmp/mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailRenderQa).toBe("/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
@@ -679,6 +713,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       onboardingV2EventContract,
       onboardingV2EmptyGroupsPacket,
       onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -731,6 +766,11 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Onboarding v2 empty-groups can ask approval: true");
     expect(markdown).toContain("Onboarding v2 create dry-run: dry_run_ready_for_exact_approval");
     expect(markdown).toContain("Onboarding v2 create dry-run created count: 0");
+    expect(markdown).toContain("Onboarding v2 first email map: first_email_mapping_ready_no_sent_receipt");
+    expect(markdown).toContain("Onboarding v2 first email posture: welcome_orientation_no_sent_receipt");
+    expect(markdown).toContain("Onboarding v2 first email Sent group: none");
+    expect(markdown).toContain("Onboarding v2 first email create new Sent group: false");
+    expect(markdown).toContain("Onboarding v2 first email CRM signal: journey_welcome_sent");
     expect(markdown).toContain("Onboarding trunk map: onboarding_trunk_map_ready_no_live_changes");
     expect(markdown).toContain("Onboarding trunk sequence items: 11");
     expect(markdown).toContain("Onboarding trunk recommendation is routing: false");

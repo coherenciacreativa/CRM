@@ -24,6 +24,7 @@ const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -56,6 +57,7 @@ Options:
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --onboarding-v2-empty-groups-packet <path> Onboarding v2 empty-groups approval packet JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET}
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
+  --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -95,6 +97,7 @@ const parseArgs = (argv) => {
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     onboardingV2EmptyGroupsPacket: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET,
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
+    onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -130,6 +133,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-packet') options.onboardingV2EmptyGroupsPacket = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
+    else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -178,6 +182,7 @@ const loadSourceDigests = async (options) => {
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
     [options.onboardingV2EmptyGroupsPacket, 'onboarding v2 empty-groups approval packet from fresh read-only scan', true],
     [options.onboardingV2EmptyGroupsCreateDryRun, 'onboarding v2 empty-groups create runner dry-run with zero mutations', true],
+    [options.onboardingV2FirstEmailMap, 'onboarding v2 first-email mapping to prevent unnecessary Sent receipts', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -259,6 +264,7 @@ const buildCurrentState = ({
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
   onboardingV2EmptyGroupsCreateDryRun,
+  onboardingV2FirstEmailMap,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -338,6 +344,12 @@ const buildCurrentState = ({
       v2EmptyGroupsCreateDryRunStatus: onboardingV2EmptyGroupsCreateDryRun?.status ?? null,
       v2EmptyGroupsCreateDryRunCreatedCount: onboardingV2EmptyGroupsCreateDryRun?.createdGroups?.length ?? null,
       v2EmptyGroupsCreateDryRunBlockerCount: onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length ?? null,
+      v2FirstEmailMapStatus: onboardingV2FirstEmailMap?.status ?? null,
+      v2FirstEmailSubject: onboardingV2FirstEmailMap?.firstEmail?.subject ?? null,
+      v2FirstEmailRecommendedPosture: onboardingV2FirstEmailMap?.decision?.recommendedPosture ?? null,
+      v2FirstEmailRecommendedSentGroup: onboardingV2FirstEmailMap?.decision?.recommendedMailerLiteSentGroup ?? null,
+      v2FirstEmailCreateNewSentGroup: onboardingV2FirstEmailMap?.decision?.createNewSentGroup ?? null,
+      v2FirstEmailCrmSignal: onboardingV2FirstEmailMap?.v2ImplementationGuidance?.crmSignals?.[0]?.event ?? null,
       trunkMapStatus: onboardingTrunkMap?.status ?? null,
       trunkMapSequenceItems: onboardingTrunkMap?.executiveSummary?.sequenceItems ?? null,
       trunkMapFutureHandoffTarget: onboardingTrunkMap?.executiveSummary?.futureHandoffTarget ?? null,
@@ -422,6 +434,7 @@ const buildReportMap = (sourceDigests) => {
     onboardingV2EventContract: findPath('mailerlite_onboarding_v2_event_contract_2026-05-27.json'),
     onboardingV2EmptyGroupsPacket: findPath('mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json'),
     onboardingV2EmptyGroupsCreateDryRun: findPath('mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json'),
+    onboardingV2FirstEmailMap: findPath('mailerlite_onboarding_v2_first_email_map_2026-05-27.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
@@ -627,6 +640,7 @@ const buildRunbook = ({
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
   onboardingV2EmptyGroupsCreateDryRun,
+  onboardingV2FirstEmailMap,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -661,6 +675,7 @@ const buildRunbook = ({
       onboardingV2EventContract,
       onboardingV2EmptyGroupsPacket,
       onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -691,6 +706,7 @@ const buildRunbook = ({
       'Use the backlog board only for one additional no-live idea intake, not for live production.',
       'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
+      'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
       'Use the response watcher before finalization preflight so missing final response files are obvious.',
       'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
       'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
@@ -751,6 +767,11 @@ const renderMarkdown = (runbook) => {
     `- Onboarding v2 empty-groups blocker count: ${runbook.currentState.onboarding.v2EmptyGroupsBlockerCount ?? 'unknown'}`,
     `- Onboarding v2 create dry-run: ${runbook.currentState.onboarding.v2EmptyGroupsCreateDryRunStatus ?? 'unknown'}`,
     `- Onboarding v2 create dry-run created count: ${runbook.currentState.onboarding.v2EmptyGroupsCreateDryRunCreatedCount ?? 'unknown'}`,
+    `- Onboarding v2 first email map: ${runbook.currentState.onboarding.v2FirstEmailMapStatus ?? 'unknown'}`,
+    `- Onboarding v2 first email posture: ${runbook.currentState.onboarding.v2FirstEmailRecommendedPosture ?? 'unknown'}`,
+    `- Onboarding v2 first email Sent group: ${runbook.currentState.onboarding.v2FirstEmailRecommendedSentGroup ?? 'none'}`,
+    `- Onboarding v2 first email create new Sent group: ${runbook.currentState.onboarding.v2FirstEmailCreateNewSentGroup ?? 'unknown'}`,
+    `- Onboarding v2 first email CRM signal: ${runbook.currentState.onboarding.v2FirstEmailCrmSignal ?? 'unknown'}`,
     `- Onboarding trunk map: ${runbook.currentState.onboarding.trunkMapStatus ?? 'unknown'}`,
     `- Onboarding trunk sequence items: ${runbook.currentState.onboarding.trunkMapSequenceItems ?? 'unknown'}`,
     `- Onboarding trunk future handoff target: ${runbook.currentState.onboarding.trunkMapFutureHandoffTarget ?? 'unknown'}`,
@@ -880,6 +901,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2EventContract,
     onboardingV2EmptyGroupsPacket,
     onboardingV2EmptyGroupsCreateDryRun,
+    onboardingV2FirstEmailMap,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -907,6 +929,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.onboardingV2EventContract),
     readOptionalJson(options.onboardingV2EmptyGroupsPacket),
     readOptionalJson(options.onboardingV2EmptyGroupsCreateDryRun),
+    readOptionalJson(options.onboardingV2FirstEmailMap),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -936,6 +959,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2EventContract,
     onboardingV2EmptyGroupsPacket,
     onboardingV2EmptyGroupsCreateDryRun,
+    onboardingV2FirstEmailMap,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
