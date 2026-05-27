@@ -739,6 +739,7 @@ Result:
 
 - Creates `brand_response.codex_draft.json`, `web_design_response.codex_draft.json`, and `crm_response.codex_draft.json` as local-only starting points.
 - Every Codex draft uses `reviewMode=draft_no_live_review`, so intake rejects it if it is passed as a final response.
+- Intake also rejects any final response that still contains `codexDraftMeta`; a real department response must remove that metadata after review.
 - Final response files remain separate: `brand_response.json`, `web_design_response.json`, and `crm_response.json`.
 - Existing Codex drafts are preserved unless `--overwrite-drafts` is explicit.
 - Live gate open count remains 0.

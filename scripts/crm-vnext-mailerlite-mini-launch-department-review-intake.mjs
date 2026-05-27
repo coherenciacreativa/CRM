@@ -186,6 +186,7 @@ const validateResponse = ({ department, response, template }) => {
   if (response.launchId !== template.launchId) missing.push('launchId');
   if (response.reviewMode !== 'no_live_review') missing.push('reviewMode');
   if (response.liveApprovalGranted !== false) unsafe.push('liveApprovalGranted_must_be_false');
+  if (response.codexDraftMeta) unsafe.push('codexDraftMeta_must_not_be_present_in_final_response');
 
   if (normalizedDepartment === 'brand') {
     if (!['approve', 'revise', 'reject', 'needs_more_context'].includes(response.sequenceDecision)) missing.push('sequenceDecision');

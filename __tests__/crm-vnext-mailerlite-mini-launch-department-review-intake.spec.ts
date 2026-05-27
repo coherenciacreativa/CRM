@@ -167,6 +167,25 @@ describe("CRM vNext MailerLite mini-launch department review intake", () => {
     expect(unsafe.unsafeReasons).toContain("liveApprovalGranted_must_be_false");
   });
 
+  test("blocks copied Codex draft metadata even if reviewMode is changed", () => {
+    const templates = buildResponseTemplates({ dispatchPacket, brandCandidateReviewPacket });
+    const copiedDraft = validateResponse({
+      department: "brand",
+      response: {
+        ...acceptedBrandResponse,
+        codexDraftMeta: {
+          draftOnly: true,
+          acceptedByIntake: false,
+        },
+      },
+      template: templates.brand,
+    });
+
+    expect(copiedDraft.status).toBe("unsafe_response_blocked");
+    expect(copiedDraft.accepted).toBe(false);
+    expect(copiedDraft.unsafeReasons).toContain("codexDraftMeta_must_not_be_present_in_final_response");
+  });
+
   test("builds intake board ready for reconciliation only when all responses are accepted", () => {
     const pendingBoard = buildIntakeBoard({
       dispatchPacket,

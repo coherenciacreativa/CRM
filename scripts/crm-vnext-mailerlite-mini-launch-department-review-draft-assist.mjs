@@ -151,7 +151,7 @@ const attachDraftMeta = ({ response, workspace, department, generatedAt }) => ({
     draftOnly: true,
     acceptedByIntake: false,
     finalResponsePath: finalPathFor(workspace, department),
-    conversionRule: 'A real department reviewer must review, edit, then change reviewMode to no_live_review before saving the final response path.',
+    conversionRule: 'A real department reviewer must review, edit, remove codexDraftMeta, then change reviewMode to no_live_review before saving the final response path.',
   },
 });
 
@@ -374,7 +374,7 @@ const buildDraftAssist = async ({
     nextSafeStep: 'Give the draft files to Brand/Web/CRM as starting points; departments must save final response files separately before intake/reconciliation.',
     hardStops: [
       'Do not pass *.codex_draft.json files to intake as final responses.',
-      'Do not change reviewMode to no_live_review unless a real department reviewer accepts the response.',
+      'Do not change reviewMode to no_live_review unless a real department reviewer accepts the response and removes codexDraftMeta.',
       'Do not treat any draft field as MailerLite, Shopify, CRM, workflow, subscriber, send, ledger, card, scoring or Fact Store approval.',
     ],
     safety: buildSafety(),

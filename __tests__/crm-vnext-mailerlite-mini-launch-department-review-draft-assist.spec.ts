@@ -144,8 +144,21 @@ describe("CRM vNext MailerLite department review draft assist", () => {
       template: brandTemplate,
     });
     expect(validation.accepted).toBe(false);
-    expect(validation.status).toBe("incomplete_response");
+    expect(validation.status).toBe("unsafe_response_blocked");
     expect(validation.missing).toContain("reviewMode");
+    expect(validation.unsafeReasons).toContain("codexDraftMeta_must_not_be_present_in_final_response");
+
+    const copiedWithReviewModeChanged = validateResponse({
+      department: "brand",
+      response: {
+        ...drafts.brand,
+        reviewMode: "no_live_review",
+      },
+      template: brandTemplate,
+    });
+    expect(copiedWithReviewModeChanged.accepted).toBe(false);
+    expect(copiedWithReviewModeChanged.status).toBe("unsafe_response_blocked");
+    expect(copiedWithReviewModeChanged.unsafeReasons).toContain("codexDraftMeta_must_not_be_present_in_final_response");
   });
 
   test("writes only codex draft files and never final responses", async () => {
