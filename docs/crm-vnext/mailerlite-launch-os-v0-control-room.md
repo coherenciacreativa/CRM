@@ -385,6 +385,26 @@ Result:
 
 This is the first agency-quality creative packet in the mini-launch lane. It lets Brand review voice and email feel before any platform test, which avoids testing plumbing around a weak piece.
 
+## Mini-launch group dry-run status
+
+Status: launch-specific group dry-run blocked until Brand dictionary candidate rows exist.
+
+Evidence:
+
+- Group dry-run report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-group-dry-run.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-group-dry-run.spec.ts`
+
+Result:
+
+- Re-scans live MailerLite groups read-only for the `Inteligencia para descansar` receipt candidates.
+- Does not read subscribers, print tokens, create groups, assign subscribers, edit workflows, send email, append Signal Event Ledger, mutate cards, scoring, Fact Store or Shopify.
+- Checks `CC · Source · Quiz · Inteligencia para descansar` and `CC · Delivered · Quiz result · Inteligencia para descansar`.
+- Current blocker: those exact groups are not yet registered in the Brand group dictionary.
+- The report emits exact candidate rows for Brand to review/add first. Until Brand records or promotes them, no empty-group approval phrase exists.
+
+This keeps Brand as the naming authority: CRM/MailerLite can prepare the lane, but cannot invent live group names from the rehearsal alone.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:

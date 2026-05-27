@@ -48,6 +48,7 @@
     "crm:vnext:mailerlite-mini-launch-event-contract": "node scripts/crm-vnext-mailerlite-mini-launch-event-contract.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-brand-email-asset-packet": "node scripts/crm-vnext-mailerlite-mini-launch-brand-email-asset-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-group-dry-run": "node scripts/crm-vnext-mailerlite-mini-launch-group-dry-run.mjs",
     "crm:vnext:snapshot": "node scripts/crm-vnext-snapshot.mjs",
     "crm:vnext:contacts-evidence": "node scripts/crm-vnext-contacts-evidence.mjs",
     "crm:vnext:mailerlite-evidence": "node scripts/crm-vnext-mailerlite-evidence.mjs",

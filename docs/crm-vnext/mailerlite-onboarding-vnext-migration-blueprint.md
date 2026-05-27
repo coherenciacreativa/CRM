@@ -604,6 +604,30 @@ Result:
 
 This moves the first mini-launch from architecture into creative production prep while still preserving the active onboarding and all live approval gates.
 
+## Mini-launch group dry-run checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-group-dry-run.mjs
+```
+
+Result:
+
+- Status: `blocked_until_brand_dictionary_candidates`.
+- The dry-run reads MailerLite groups only and checks the two receipt candidates for `Inteligencia para descansar`.
+- It confirms there is no approval phrase yet because the exact Source/Delivered group names are not in the Brand dictionary.
+- It emits proposed candidate rows for Brand to add/review before any empty group creation can be considered.
+- Subscriber assignment, workflow attachment, seed send, audience launch, onboarding handoff, Signal Event Ledger append, CRM card/scoring and Fact Store remain closed.
+
+This checkpoint prevents the mini-launch machinery from inventing MailerLite group meanings. Brand must own the naming row before CRM/MailerLite can ask Alejandro for any future empty-group approval.
+
 ## Planner dry-run requirements
 
 Proposed script:
