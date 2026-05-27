@@ -804,6 +804,31 @@ Result:
 
 This checkpoint protects the next stage of agency work: reviews become structured evidence, not vague permission.
 
+## Mini-launch department review reconciliation checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-department-review-reconciliation.mjs
+```
+
+Result:
+
+- The cross-department review now has a local-only reconciler.
+- Current status is `blocked_until_department_reviews_accepted_no_live_changes` because no Brand/Web/CRM responses have been accepted yet.
+- Pending departments are Brand, Web Design and CRM.
+- Action count is 0 and live gate open count is 0.
+- Once responses are accepted, the reconciler can propose only no-live next moves: group dry-run rerun, sequence revision, Shopify scoped-build request, CRM signal packet, or hold/blocker.
+- Any response that tries to grant live approval is blocked.
+
+This checkpoint gives the agency a traffic controller after reviews. It keeps department opinions from becoming accidental MailerLite, Shopify, CRM, Signal Ledger, scoring, Fact Store or onboarding actions.
+
 ## Planner dry-run requirements
 
 Proposed script:
