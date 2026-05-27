@@ -28,6 +28,7 @@ const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Manti
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -65,6 +66,7 @@ Options:
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
   --mini-launch-email-style-qa-packet <path> Mini-launch Email Style QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET}
   --mini-launch-local-email-asset-plan <path> Mini-launch local email asset plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN}
+  --mini-launch-email-asset-build-scope-packet <path> Mini-launch exact approval scope packet for future email asset build. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -107,6 +109,7 @@ const parseArgs = (argv) => {
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
     miniLaunchEmailStyleQaPacket: DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET,
     miniLaunchLocalEmailAssetPlan: DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN,
+    miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -147,6 +150,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
     else if (arg === '--mini-launch-email-style-qa-packet') options.miniLaunchEmailStyleQaPacket = argv[++index];
     else if (arg === '--mini-launch-local-email-asset-plan') options.miniLaunchLocalEmailAssetPlan = argv[++index];
+    else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -206,6 +210,7 @@ const loadSources = async (options) => {
     ['miniLaunchEmptyGroupCreateDryRun', options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty group create runner dry-run with zero mutations', 'json', true],
     ['miniLaunchEmailStyleQaPacket', options.miniLaunchEmailStyleQaPacket, 'mini-launch Email Style QA readiness for local asset planning with live gates closed', 'json', true],
     ['miniLaunchLocalEmailAssetPlan', options.miniLaunchLocalEmailAssetPlan, 'mini-launch local email asset plan with inert placeholders and build/send gates closed', 'json', true],
+    ['miniLaunchEmailAssetBuildScopePacket', options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch exact approval scope packet for future MailerLite draft email asset build; no execution', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -276,6 +281,7 @@ const buildRequirementChecks = ({
   miniLaunchEmptyGroupCreateDryRun,
   miniLaunchEmailStyleQaPacket,
   miniLaunchLocalEmailAssetPlan,
+  miniLaunchEmailAssetBuildScopePacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -437,6 +443,43 @@ const buildRequirementChecks = ({
   const miniLaunchLocalEmailAssetPlanPlaceholderCount = miniLaunchLocalEmailAssetPlan?.executiveSummary?.placeholderCount
     ?? emailSequenceLane?.readiness?.placeholderCount
     ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanPlaceholderCount
+    ?? null;
+  const miniLaunchEmailAssetBuildScopePacketStatus = miniLaunchEmailAssetBuildScopePacket?.status
+    ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopePacketStatus
+    ?? (emailSequenceLane?.sourceStatus === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes'
+      ? emailSequenceLane.sourceStatus
+      : null);
+  const miniLaunchEmailAssetBuildScopePacketReady = miniLaunchEmailAssetBuildScopePacketStatus === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes'
+    && (miniLaunchEmailAssetBuildScopePacket?.requestedFutureScope?.canAskAlejandroForApproval
+      ?? emailSequenceLane?.readiness?.canAskAlejandroForApproval
+      ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopeCanAskApproval
+      ?? false) === true
+    && (miniLaunchEmailAssetBuildScopePacket?.requestedFutureScope?.packetIsApprovalByItself
+      ?? emailSequenceLane?.readiness?.packetIsApprovalByItself
+      ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopePacketIsApprovalByItself
+      ?? true) === false
+    && (miniLaunchEmailAssetBuildScopePacket?.requestedFutureScope?.canExecuteBuildNow
+      ?? emailSequenceLane?.readiness?.canExecuteBuildNow
+      ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopeCanExecuteBuildNow
+      ?? true) === false
+    && (miniLaunchEmailAssetBuildScopePacket?.executiveSummary?.readyForSeedSendNow
+      ?? emailSequenceLane?.readiness?.readyForSeedSendNow
+      ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopeReadyForSeedSend
+      ?? true) === false
+    && (miniLaunchEmailAssetBuildScopePacket?.safety?.mailerLiteApiCalled ?? false) === false
+    && (miniLaunchEmailAssetBuildScopePacket?.safety?.mailerLiteAssetsCreatedOrEdited ?? false) === false
+    && (miniLaunchEmailAssetBuildScopePacket?.safety?.sendsPerformed ?? false) === false;
+  const miniLaunchEmailAssetBuildScopeAssetCount = miniLaunchEmailAssetBuildScopePacket?.executiveSummary?.assetCount
+    ?? emailSequenceLane?.readiness?.assetCount
+    ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopeAssetCount
+    ?? null;
+  const miniLaunchEmailAssetBuildScopePlaceholderCount = miniLaunchEmailAssetBuildScopePacket?.executiveSummary?.inertUrlPlaceholderCount
+    ?? emailSequenceLane?.readiness?.placeholderCount
+    ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopePlaceholderCount
+    ?? null;
+  const miniLaunchEmailAssetBuildScopeReplyCtaCount = miniLaunchEmailAssetBuildScopePacket?.executiveSummary?.replyCtaCount
+    ?? emailSequenceLane?.readiness?.replyCtaCount
+    ?? runbook?.currentState?.miniLaunch?.emailAssetBuildScopeReplyCtaCount
     ?? null;
   const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
     ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
@@ -672,6 +715,11 @@ const buildRequirementChecks = ({
         `miniLaunchLocalEmailAssetPlanPlaceholderCount=${miniLaunchLocalEmailAssetPlanPlaceholderCount ?? 'unknown'}`,
         `miniLaunchLocalEmailAssetPlanReadyForMailerLiteBuild=${miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForMailerLiteAssetBuildNow ?? emailSequenceLane?.readiness?.readyForMailerLiteAssetBuildNow ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForMailerLiteBuild ?? 'unknown'}`,
         `miniLaunchLocalEmailAssetPlanReadyForSeedSend=${miniLaunchLocalEmailAssetPlan?.approvalBoundary?.readyForSeedSendNow ?? emailSequenceLane?.readiness?.readyForSeedSendNow ?? runbook?.currentState?.miniLaunch?.localEmailAssetPlanReadyForSeedSend ?? 'unknown'}`,
+        `miniLaunchEmailAssetBuildScopePacketStatus=${miniLaunchEmailAssetBuildScopePacketStatus ?? 'missing'}`,
+        `miniLaunchEmailAssetBuildScopePacketReady=${miniLaunchEmailAssetBuildScopePacketReady}`,
+        `miniLaunchEmailAssetBuildScopeAssetCount=${miniLaunchEmailAssetBuildScopeAssetCount ?? 'unknown'}`,
+        `miniLaunchEmailAssetBuildScopePlaceholderCount=${miniLaunchEmailAssetBuildScopePlaceholderCount ?? 'unknown'}`,
+        `miniLaunchEmailAssetBuildScopeReplyCtaCount=${miniLaunchEmailAssetBuildScopeReplyCtaCount ?? 'unknown'}`,
       ],
       remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
         ? [
@@ -679,8 +727,10 @@ const buildRequirementChecks = ({
             ? 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite creation is authorized yet.'
             : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
           miniLaunchEmailStyleQaReadyForLocalAssetPlan
-            ? miniLaunchLocalEmailAssetPlanReady
-              ? 'Local email asset plan is ready for exact MailerLite asset-build scope request only; MailerLite asset build and seed send remain closed.'
+            ? miniLaunchEmailAssetBuildScopePacketReady
+              ? 'Email asset-build scope packet is ready for exact human approval request only; MailerLite builder execution, seed send, workflows and subscribers remain closed.'
+              : miniLaunchLocalEmailAssetPlanReady
+              ? 'Local email asset plan is ready for exact MailerLite asset-build scope packet/request only; MailerLite asset build and seed send remain closed.'
               : 'Email Style QA is ready for local asset planning only; MailerLite asset build and seed send remain closed.'
             : 'Email Style QA must be generated before local asset planning becomes a reliable next step.',
           'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
@@ -880,8 +930,13 @@ const buildGoalAudit = ({
   const localEmailAssetPlanReady = values.miniLaunchLocalEmailAssetPlan?.status === 'mini_launch_local_email_asset_plan_ready_no_live_changes'
     || values.runbook?.currentState?.miniLaunch?.localEmailAssetPlanReady === true
     || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes';
+  const emailAssetBuildScopePacketReady = values.miniLaunchEmailAssetBuildScopePacket?.status === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes'
+    || values.runbook?.currentState?.miniLaunch?.emailAssetBuildScopePacketReady === true
+    || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes';
   const localEmailAssetPlanMove = localEmailAssetPlanReady
-    ? 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
+    ? emailAssetBuildScopePacketReady
+      ? 'The email asset-build scope packet is ready for exact human approval request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
+      : 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
     : 'Use Email Style QA to generate the local email asset plan before requesting exact MailerLite asset-build scope; builder execution remains closed.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunReady

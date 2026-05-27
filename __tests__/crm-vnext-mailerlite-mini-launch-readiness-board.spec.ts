@@ -201,6 +201,26 @@ const localEmailAssetPlan = {
   },
 };
 
+const emailAssetBuildScopePacket = {
+  ok: true,
+  status: "email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes",
+  launch,
+  executiveSummary: {
+    assetCount: 4,
+    inertUrlPlaceholderCount: 3,
+    replyCtaCount: 1,
+    readyForExactAssetBuildApprovalRequestNow: true,
+    readyForMailerLiteAssetBuildNow: false,
+    readyForSeedSendNow: false,
+    canCreateOrEditMailerLiteAssetsNow: false,
+  },
+  requestedFutureScope: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canExecuteBuildNow: false,
+  },
+};
+
 const shopifyHandoffPacket = {
   ok: true,
   status: "shopify_handoff_packet_ready_for_web_design_review_no_live_changes",
@@ -269,6 +289,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(parsed.emailSequencePacket).toContain("mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.localEmailAssetPlan).toContain("mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.emailAssetBuildScopePacket).toContain("mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.shopifyHandoffPacket).toContain("mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.crmSignalProjectionPacket).toContain("mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emptyGroupCreationPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
@@ -366,6 +387,39 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
       },
     });
     expect(byId.get("email_sequence")?.nextAction).toContain("do not build assets");
+  });
+
+  test("moves the email sequence lane to exact asset-build approval boundary", () => {
+    const lanes = buildLanes({
+      ...packetSet,
+      emailStyleQaPacket,
+      localEmailAssetPlan,
+      emailAssetBuildScopePacket,
+    });
+    const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+
+    expect(byId.get("email_sequence")).toMatchObject({
+      sourceStatus: "email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes",
+      readyNow: true,
+      blockedBy: [
+        "exact_mailerlite_asset_build_approval",
+        "builder_render_qa_before_seed_send",
+        "exact_seed_send_approval",
+      ],
+      readiness: {
+        readyForExactAssetBuildApprovalRequestNow: true,
+        readyForMailerLiteAssetBuildNow: false,
+        readyForSeedSendNow: false,
+        assetCount: 4,
+        placeholderCount: 3,
+        replyCtaCount: 1,
+        canAskAlejandroForApproval: true,
+        packetIsApprovalByItself: false,
+        canExecuteBuildNow: false,
+        canCreateOrEditMailerLiteAssetsNow: false,
+      },
+    });
+    expect(byId.get("email_sequence")?.nextAction).toContain("human approval boundary");
   });
 
   test("marks empty group approval packet ready only as a human boundary", () => {
