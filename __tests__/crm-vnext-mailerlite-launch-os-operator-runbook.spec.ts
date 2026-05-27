@@ -136,6 +136,27 @@ const validationReceipt = {
   },
 };
 
+const approvalQueue = {
+  status: "mailerlite_launch_os_approval_queue_ready_no_live_changes",
+  executiveSummary: {
+    readyApprovalRequestCount: 5,
+    blockedApprovalRequestCount: 2,
+    openLiveMutationGateCount: 0,
+    nextBestHumanBoundary: "mini_launch_empty_group_creation",
+    readyApprovalIds: [
+      "mini_launch_empty_group_creation",
+      "onboarding_v2_empty_group_creation",
+      "mini_launch_email_asset_build",
+      "shopify_no_live_local_build",
+      "brujula_email1_builder_draft",
+    ],
+    blockedApprovalIds: [
+      "mini_launch_seed_send",
+      "crm_signal_writes",
+    ],
+  },
+};
+
 const onboardingHandoffPolicy = {
   status: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
   targetGroups: {
@@ -353,6 +374,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-department-review-finalization-preflight": "node scripts/finalization-preflight.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-finalize-pending": "node scripts/finalize-pending.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/backlog.mjs",
+    "crm:vnext:mailerlite-launch-os-approval-queue": "node scripts/approval-queue.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
     "crm:vnext:mailerlite-onboarding-v1-audit": "node scripts/v1.mjs",
@@ -404,6 +426,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
+    expect(parsed.approvalQueue).toContain("mailerlite_launch_os_approval_queue_2026-05-28.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-27.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
@@ -453,6 +476,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
       brujulaEmailRenderQa,
+      approvalQueue,
       validationReceipt,
       responseWorkspace,
       finalizationPreflight,
@@ -596,6 +620,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       "department_response_workspace",
       "current_pilot_department_reviews",
       "after_brand_response",
+      "approval_queue_review",
       "new_mini_launch_idea",
       "onboarding_v2_lane",
       "brujula_test_lane",
@@ -615,6 +640,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-local-email-asset-plan");
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-asset-build-scope-packet");
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-builder-payload-manifest");
+    expect(scenarios.find((scenario) => scenario.id === "approval_queue_review")?.commands.join(" ")).toContain("launch-os-approval-queue");
     expect(scenarios.find((scenario) => scenario.id === "new_mini_launch_idea")?.commands.join(" ")).toContain("onboarding-handoff-policy");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-event-contract");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-empty-groups-create");
@@ -650,6 +676,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
       brujulaEmailRenderQa,
+      approvalQueue,
       validationReceipt,
       packageJson,
       sourceDigests,
@@ -660,8 +687,10 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(runbook.schemaVersion).toContain("trunk-contract");
     expect(runbook.commandCatalog.length).toBeGreaterThan(10);
     expect(runbook.operatingPrinciples).toHaveLength(4);
-    expect(runbook.operatingScenarios).toHaveLength(8);
+    expect(runbook.operatingScenarios).toHaveLength(9);
     expect(runbook.currentState.liveGates.openLiveGateCount).toBe(0);
+    expect(runbook.currentState.approvalQueue.readyApprovalRequestCount).toBe(5);
+    expect(runbook.currentState.approvalQueue.openLiveMutationGateCount).toBe(0);
     expect(runbook.reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
     expect(runbook.safety).toMatchObject({
       localOnly: true,
@@ -784,6 +813,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Brújula Email 1 local render QA and preview evidence",
       },
       {
+        path: "/tmp/mailerlite_launch_os_approval_queue_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "single exact approval queue for current MailerLite Launch OS gates",
+      },
+      {
         path: "/tmp/mailerlite_launch_os_validation_receipt_2026-05-27.json",
         present: true,
         chars: 2000,
@@ -810,6 +845,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailRenderQa).toBe("/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
+    expect(reportMap.approvalQueue).toBe("/tmp/mailerlite_launch_os_approval_queue_2026-05-28.json");
     expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-27.json");
   });
 
@@ -838,6 +874,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
       brujulaEmailRenderQa,
+      approvalQueue,
       validationReceipt,
       packageJson,
       sourceDigests,
@@ -852,6 +889,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("current_pilot_department_reviews");
     expect(markdown).toContain("backlog_intake");
     expect(markdown).toContain("department_review_delivery");
+    expect(markdown).toContain("approval_queue_review");
     expect(markdown).toContain("department_response_workspace");
     expect(markdown).toContain("draft-assist");
     expect(markdown).toContain("operator-queue");
@@ -868,6 +906,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Response watcher");
     expect(markdown).toContain("Response watcher missing final count: 3");
     expect(markdown).toContain("Response watcher final file present count: 0");
+    expect(markdown).toContain("Approval queue ready requests: 5");
     expect(markdown).toContain("Validation receipt: mailerlite_launch_os_validation_receipt_ready_no_live_changes");
     expect(markdown).toContain("Validation tests: 269");
     expect(markdown).toContain("Brújula email style QA: brujula_email_style_qa_yellow_no_live_changes");

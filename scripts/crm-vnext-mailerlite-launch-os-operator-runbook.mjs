@@ -36,6 +36,7 @@ const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
+const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -75,6 +76,7 @@ Options:
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>   Brújula Email 1 local render QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
+  --approval-queue <path>            Launch OS exact approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
   --out <path>                       Write JSON runbook
@@ -121,6 +123,7 @@ const parseArgs = (argv) => {
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
+    approvalQueue: DEFAULT_APPROVAL_QUEUE,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     out: null,
@@ -163,6 +166,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
+    else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
@@ -218,6 +222,7 @@ const loadSourceDigests = async (options) => {
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
     [options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs'],
     [options.brujulaEmailRenderQa, 'Brújula Email 1 local render QA and preview evidence', true],
+    [options.approvalQueue, 'single exact approval queue for current MailerLite Launch OS gates', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
   ];
@@ -306,6 +311,7 @@ const buildCurrentState = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  approvalQueue,
   validationReceipt,
 }) => {
   const assignedGroupNames = groupNamesFrom(brujulaApply?.assignedGroups);
@@ -574,6 +580,15 @@ const buildCurrentState = ({
       openLiveGateCount,
       liveApprovalNeededNow: false,
     },
+    approvalQueue: {
+      status: approvalQueue?.status ?? null,
+      readyApprovalRequestCount: approvalQueue?.executiveSummary?.readyApprovalRequestCount ?? null,
+      blockedApprovalRequestCount: approvalQueue?.executiveSummary?.blockedApprovalRequestCount ?? null,
+      openLiveMutationGateCount: approvalQueue?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextBestHumanBoundary: approvalQueue?.executiveSummary?.nextBestHumanBoundary ?? null,
+      readyApprovalIds: approvalQueue?.executiveSummary?.readyApprovalIds ?? [],
+      blockedApprovalIds: approvalQueue?.executiveSummary?.blockedApprovalIds ?? [],
+    },
     validation: {
       receiptStatus: validationReceipt?.status ?? null,
       validationStatus: validationReceipt?.validationStatus ?? null,
@@ -619,6 +634,7 @@ const buildReportMap = (sourceDigests) => {
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
     brujulaEmailStyleCorrection: findPath('mailerlite_brujula_email_style_correction_packet_2026-05-27.json'),
     brujulaEmailRenderQa: findPath('mailerlite_brujula_email_render_qa_packet_2026-05-27.json'),
+    approvalQueue: findPath('mailerlite_launch_os_approval_queue_2026-05-28.json'),
     validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-27.json'),
     packageJson: findPath('package.json'),
   };
@@ -771,8 +787,18 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-local-email-asset-plan'),
         command('crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet'),
         command('crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest'),
+        command('crm:vnext:mailerlite-launch-os-approval-queue'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['group creation', 'subscriber assignment', 'workflow use', 'MailerLite asset build', 'seed send', 'Signal Ledger append', 'card/scoring/Fact Store writes'],
+    },
+    {
+      id: 'approval_queue_review',
+      when: 'The operator needs to know which exact approvals are ready to ask and which are still blocked.',
+      firstMove: 'Use the approval queue as a local map only; never treat it as approval or execution.',
+      commands: [
+        command('crm:vnext:mailerlite-launch-os-approval-queue'),
+      ].filter(Boolean),
+      liveGatesRemainClosed: ['all operations until their own exact phrase is supplied', 'subscriber assignment', 'workflow use', 'send', 'Shopify publish', 'CRM writes'],
     },
     {
       id: 'new_mini_launch_idea',
@@ -848,6 +874,7 @@ const buildRunbook = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  approvalQueue,
   validationReceipt,
   packageJson,
   sourceDigests,
@@ -889,6 +916,7 @@ const buildRunbook = ({
       brujulaEmailStyleQa,
       brujulaEmailStyleCorrection,
       brujulaEmailRenderQa,
+      approvalQueue,
       validationReceipt,
       responseWorkspace,
     }),
@@ -919,6 +947,7 @@ const buildRunbook = ({
       'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
       'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
       'Use the mini-launch email builder payload manifest only as local implementation input; it cannot execute MailerLite builder mutations or sends.',
+      'Use the Launch OS approval queue as the single local map of exact phrases; it cannot approve or execute any operation by itself.',
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
       'Use the response watcher before finalization preflight so missing final response files are obvious.',
@@ -1059,6 +1088,11 @@ const renderMarkdown = (runbook) => {
     `- Response watcher next best move: ${runbook.currentState.miniLaunch.responseWatcherNextBestMove ?? 'unknown'}`,
     `- Pending departments: ${runbook.currentState.miniLaunch.pendingDepartments.join(', ') || 'none'}`,
     `- Open live gates: ${runbook.currentState.liveGates.openLiveGateCount}`,
+    `- Approval queue: ${runbook.currentState.approvalQueue.status ?? 'missing'}`,
+    `- Approval queue ready requests: ${runbook.currentState.approvalQueue.readyApprovalRequestCount ?? 'unknown'}`,
+    `- Approval queue blocked requests: ${runbook.currentState.approvalQueue.blockedApprovalRequestCount ?? 'unknown'}`,
+    `- Approval queue next human boundary: ${runbook.currentState.approvalQueue.nextBestHumanBoundary ?? 'none'}`,
+    `- Approval queue open live mutation gates: ${runbook.currentState.approvalQueue.openLiveMutationGateCount ?? 'unknown'}`,
     `- Validation receipt: ${runbook.currentState.validation.receiptStatus ?? 'missing'}`,
     `- Validation status: ${runbook.currentState.validation.validationStatus ?? 'unknown'}`,
     `- Validation tests: ${runbook.currentState.validation.testCount ?? 'unknown'}`,
@@ -1171,6 +1205,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    approvalQueue,
     validationReceipt,
     packageJson,
     sourceDigests,
@@ -1205,6 +1240,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.brujulaEmailStyleQa),
     readJson(options.brujulaEmailStyleCorrection),
     readOptionalJson(options.brujulaEmailRenderQa),
+    readOptionalJson(options.approvalQueue),
     readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
     loadSourceDigests(options),
@@ -1241,6 +1277,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    approvalQueue,
     validationReceipt,
     packageJson,
     sourceDigests,
@@ -1266,6 +1303,8 @@ const main = async () => {
     scenarioCount: runbook.operatingScenarios.length,
     openLiveGateCount: runbook.currentState.liveGates.openLiveGateCount,
     validationStatus: runbook.currentState.validation.validationStatus,
+    approvalQueueStatus: runbook.currentState.approvalQueue.status,
+    approvalQueueReadyCount: runbook.currentState.approvalQueue.readyApprovalRequestCount,
     pendingDepartments: runbook.currentState.miniLaunch.pendingDepartments,
     safeToIntakeOneMoreNoLiveIdea: runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea,
     out: options.out ? resolve(options.out) : null,

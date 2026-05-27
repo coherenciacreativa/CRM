@@ -13,6 +13,7 @@ const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-validation-receipt.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-local-email-asset-plan.mjs',
@@ -158,6 +159,7 @@ const buildValidationReceipt = ({
   const safety = buildSafety();
   const commandList = commands.length > 0 ? commands : DEFAULT_COMMANDS;
   const liveGatesClosed = runbook?.currentState?.liveGates?.openLiveGateCount === 0
+    && (runbook?.currentState?.approvalQueue?.openLiveMutationGateCount ?? 0) === 0
     && goalAudit?.safety?.mailerLiteApiCalled === false
     && goalAudit?.safety?.shopifyApiCalled === false
     && goalAudit?.safety?.crmLiveApiCalled === false
@@ -165,6 +167,7 @@ const buildValidationReceipt = ({
     && safetyClosed(safety);
   const requiredScriptsPresent = [
     'crm:vnext:mailerlite-launch-os-operator-runbook',
+    'crm:vnext:mailerlite-launch-os-approval-queue',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
     'crm:vnext:mailerlite-onboarding-trunk-map',

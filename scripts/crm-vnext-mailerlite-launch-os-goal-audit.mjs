@@ -35,6 +35,7 @@ const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
+const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -74,6 +75,7 @@ Options:
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>  Brújula Email 1 local render QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
+  --approval-queue <path>           Launch OS exact approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>      Optional closeout validation status, e.g. passed
@@ -118,6 +120,7 @@ const parseArgs = (argv) => {
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
+    approvalQueue: DEFAULT_APPROVAL_QUEUE,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'not_supplied',
@@ -160,6 +163,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
+    else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -221,6 +225,7 @@ const loadSources = async (options) => {
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
     ['brujulaEmailStyleCorrection', options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs', 'json'],
     ['brujulaEmailRenderQa', options.brujulaEmailRenderQa, 'Brújula Email 1 local render QA and preview evidence', 'json', true],
+    ['approvalQueue', options.approvalQueue, 'single exact approval queue for current MailerLite Launch OS gates', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
   ];
@@ -293,6 +298,7 @@ const buildRequirementChecks = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  approvalQueue,
   validationReceipt,
   brandTaxonomy,
   brandDictionary,
@@ -516,6 +522,25 @@ const buildRequirementChecks = ({
     ?? emailSequenceLane?.readiness?.contentBlockCount
     ?? runbook?.currentState?.miniLaunch?.emailBuilderPayloadManifestContentBlockCount
     ?? null;
+  const approvalQueueStatus = approvalQueue?.status
+    ?? runbook?.currentState?.approvalQueue?.status
+    ?? null;
+  const approvalQueueReadyCount = approvalQueue?.executiveSummary?.readyApprovalRequestCount
+    ?? runbook?.currentState?.approvalQueue?.readyApprovalRequestCount
+    ?? null;
+  const approvalQueueBlockedCount = approvalQueue?.executiveSummary?.blockedApprovalRequestCount
+    ?? runbook?.currentState?.approvalQueue?.blockedApprovalRequestCount
+    ?? null;
+  const approvalQueueOpenLiveGateCount = approvalQueue?.executiveSummary?.openLiveMutationGateCount
+    ?? runbook?.currentState?.approvalQueue?.openLiveMutationGateCount
+    ?? null;
+  const approvalQueueNextBestHumanBoundary = approvalQueue?.executiveSummary?.nextBestHumanBoundary
+    ?? runbook?.currentState?.approvalQueue?.nextBestHumanBoundary
+    ?? null;
+  const approvalQueueReady = approvalQueueStatus === 'mailerlite_launch_os_approval_queue_ready_no_live_changes'
+    && Number.isInteger(approvalQueueReadyCount)
+    && approvalQueueReadyCount >= 1
+    && approvalQueueOpenLiveGateCount === 0;
   const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
     ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsTargetCount
@@ -759,6 +784,11 @@ const buildRequirementChecks = ({
         `miniLaunchEmailBuilderPayloadManifestReady=${miniLaunchEmailBuilderPayloadManifestReady}`,
         `miniLaunchEmailBuilderPayloadManifestPayloadCount=${miniLaunchEmailBuilderPayloadManifestPayloadCount ?? 'unknown'}`,
         `miniLaunchEmailBuilderPayloadManifestContentBlockCount=${miniLaunchEmailBuilderPayloadManifestContentBlockCount ?? 'unknown'}`,
+        `approvalQueueStatus=${approvalQueueStatus ?? 'missing'}`,
+        `approvalQueueReadyCount=${approvalQueueReadyCount ?? 'unknown'}`,
+        `approvalQueueBlockedCount=${approvalQueueBlockedCount ?? 'unknown'}`,
+        `approvalQueueOpenLiveGateCount=${approvalQueueOpenLiveGateCount ?? 'unknown'}`,
+        `approvalQueueNextBestHumanBoundary=${approvalQueueNextBestHumanBoundary ?? 'none'}`,
       ],
       remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
         ? [
@@ -767,7 +797,9 @@ const buildRequirementChecks = ({
             : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
           miniLaunchEmailStyleQaReadyForLocalAssetPlan
             ? miniLaunchEmailBuilderPayloadManifestReady
-              ? 'Email builder payload manifest is ready as local implementation input only; MailerLite builder execution, seed send, workflows and subscribers remain closed until exact approval.'
+              ? approvalQueueReady
+                ? 'Email builder payload manifest is ready and the approval queue now centralizes exact human boundaries; MailerLite builder execution, seed send, workflows and subscribers remain closed until exact approval.'
+                : 'Email builder payload manifest is ready as local implementation input only; MailerLite builder execution, seed send, workflows and subscribers remain closed until exact approval.'
               : miniLaunchEmailAssetBuildScopePacketReady
               ? 'Email asset-build scope packet is ready for exact human approval request only; next no-live move is the local builder payload manifest; MailerLite builder execution, seed send, workflows and subscribers remain closed.'
               : miniLaunchLocalEmailAssetPlanReady
@@ -840,6 +872,9 @@ const buildRequirementChecks = ({
         `runbookStatus=${runbook?.status ?? 'missing'}`,
         `scenarioCount=${runbook?.operatingScenarios?.length ?? 0}`,
         `approvalMatrixCount=${runbook?.approvalMatrix?.length ?? 0}`,
+        `approvalQueueStatus=${approvalQueueStatus ?? 'missing'}`,
+        `approvalQueueReadyCount=${approvalQueueReadyCount ?? 'unknown'}`,
+        `approvalQueueOpenLiveGateCount=${approvalQueueOpenLiveGateCount ?? 'unknown'}`,
         `trunkMapReady=${trunkMapReady}`,
         `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
         `responseWatcherStatus=${responseWatcherStatus ?? 'missing'}`,
@@ -884,6 +919,7 @@ const buildRequirementChecks = ({
         `runbookMailerLiteApiCalled=${runbook?.safety?.mailerLiteApiCalled}`,
         `runbookMutationsPerformed=${runbook?.safety?.mutationsPerformed}`,
         `runbookSendsPerformed=${runbook?.safety?.sendsPerformed}`,
+        `approvalQueueOpenLiveGateCount=${approvalQueueOpenLiveGateCount ?? 'unknown'}`,
       ],
       remaining: openLiveGates === 0
         ? ['Maintain exact approval gates for every live or live-adjacent action.']
@@ -977,9 +1013,16 @@ const buildGoalAudit = ({
   const emailBuilderPayloadManifestReady = values.miniLaunchEmailBuilderPayloadManifest?.status === 'email_builder_payload_manifest_ready_no_live_changes'
     || values.runbook?.currentState?.miniLaunch?.emailBuilderPayloadManifestReady === true
     || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_builder_payload_manifest_ready_no_live_changes';
+  const approvalQueueReady = values.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes'
+    || values.runbook?.currentState?.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes';
+  const approvalQueueMove = approvalQueueReady
+    ? 'Use the Launch OS approval queue as the single local map of exact approval phrases; it cannot approve or execute any operation by itself.'
+    : 'Generate the Launch OS approval queue so exact approval boundaries are visible in one local surface.';
   const localEmailAssetPlanMove = localEmailAssetPlanReady
     ? emailBuilderPayloadManifestReady
-      ? 'The email builder payload manifest is ready as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
+      ? approvalQueueReady
+        ? 'The email builder payload manifest is ready and represented in the approval queue as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
+        : 'The email builder payload manifest is ready as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
       : emailAssetBuildScopePacketReady
       ? 'The email asset-build scope packet is ready for exact human approval request only; next no-live move is the local builder payload manifest; builder execution, seed sends, workflow attachment and subscribers remain closed.'
       : 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
@@ -997,6 +1040,7 @@ const buildGoalAudit = ({
         'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
         'Hold at the mini-launch empty-group create runner dry-run; it is green but not execution approval.',
         'Do not run --execute unless Alejandro gives the exact approval phrase for the two named empty groups.',
+        approvalQueueMove,
         localEmailAssetPlanMove,
         'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
       ]
@@ -1004,11 +1048,13 @@ const buildGoalAudit = ({
       ? [
         'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
         'Run the mini-launch empty-group create runner in dry-run mode only; it is not execution approval and still requires Alejandro exact phrase before --execute.',
+        approvalQueueMove,
         localEmailAssetPlanMove,
         'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
       ]
       : [
       'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
+      approvalQueueMove,
       localEmailAssetPlanMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
       'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
@@ -1042,6 +1088,7 @@ const buildGoalAudit = ({
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so the welcome/orientation email is tracked as journey_welcome_sent, not as a content Sent receipt.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
+      approvalQueueMove,
       localEmailAssetPlanMove,
       'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',
       'If the mini-launch create runner dry-run is green, stop before --execute until Alejandro gives the exact approval phrase.',

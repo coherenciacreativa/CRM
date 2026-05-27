@@ -80,6 +80,7 @@
     "crm:vnext:mailerlite-mini-launch-department-review-finalization-preflight": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-finalization-preflight.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-finalize-pending": "node scripts/crm-vnext-mailerlite-mini-launch-department-review-finalize-pending.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs",
+    "crm:vnext:mailerlite-launch-os-approval-queue": "node scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/crm-vnext-mailerlite-launch-os-validation-receipt.mjs",

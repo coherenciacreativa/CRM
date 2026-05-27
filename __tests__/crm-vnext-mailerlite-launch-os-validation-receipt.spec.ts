@@ -37,6 +37,7 @@ const onboardingTrunkMap = {
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
+    "crm:vnext:mailerlite-launch-os-approval-queue": "node scripts/approval-queue.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
     "crm:vnext:mailerlite-onboarding-trunk-map": "node scripts/trunk-map.mjs",
