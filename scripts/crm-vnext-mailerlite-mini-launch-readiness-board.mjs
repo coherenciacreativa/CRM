@@ -15,6 +15,7 @@ const DEFAULT_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mant
 const DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_candidate_review_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_EMAIL_SEQUENCE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_SHOPIFY_HANDOFF_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_CONTROL_ROOM = '/Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-launch-os-v0-control-room.md';
 
 const usage = `Usage:
@@ -33,6 +34,7 @@ Options:
                                          Brand candidate review JSON. Defaults to ${DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET}
   --email-sequence-packet <path>        Email sequence asset JSON. Defaults to ${DEFAULT_EMAIL_SEQUENCE_PACKET}
   --shopify-handoff-packet <path>       Shopify/Web handoff JSON. Defaults to ${DEFAULT_SHOPIFY_HANDOFF_PACKET}
+  --crm-signal-projection-packet <path> CRM signal projection JSON. Defaults to ${DEFAULT_CRM_SIGNAL_PROJECTION_PACKET}
   --control-room <path>                 CRM Launch OS control room. Defaults to ${DEFAULT_CONTROL_ROOM}
   --out <path>                          Write JSON board
   --markdown-out <path>                 Write Markdown board
@@ -65,6 +67,7 @@ const parseArgs = (argv) => {
     brandCandidateReviewPacket: DEFAULT_BRAND_CANDIDATE_REVIEW_PACKET,
     emailSequencePacket: DEFAULT_EMAIL_SEQUENCE_PACKET,
     shopifyHandoffPacket: DEFAULT_SHOPIFY_HANDOFF_PACKET,
+    crmSignalProjectionPacket: DEFAULT_CRM_SIGNAL_PROJECTION_PACKET,
     controlRoom: DEFAULT_CONTROL_ROOM,
     out: null,
     markdownOut: null,
@@ -85,6 +88,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brand-candidate-review-packet') options.brandCandidateReviewPacket = argv[++index];
     else if (arg === '--email-sequence-packet') options.emailSequencePacket = argv[++index];
     else if (arg === '--shopify-handoff-packet') options.shopifyHandoffPacket = argv[++index];
+    else if (arg === '--crm-signal-projection-packet') options.crmSignalProjectionPacket = argv[++index];
     else if (arg === '--control-room') options.controlRoom = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -118,6 +122,7 @@ const loadSourceDigests = async (options) => {
     [options.brandCandidateReviewPacket, 'Brand semantic decision request for group candidates'],
     [options.emailSequencePacket, 'full email sequence asset state'],
     [options.shopifyHandoffPacket, 'Shopify/Web Design handoff state'],
+    [options.crmSignalProjectionPacket, 'CRM signal projection state and closed write gates'],
     [options.controlRoom, 'current Launch OS board and completion gates'],
   ];
 
@@ -294,6 +299,7 @@ const buildLanes = ({
   brandCandidateReviewPacket,
   emailSequencePacket,
   shopifyHandoffPacket,
+  crmSignalProjectionPacket,
 }) => {
   const dryRunState = groupDryRunState(groupDryRun);
   const emptyPacketState = emptyGroupCreationPacketState(emptyGroupCreationPacket);
@@ -328,6 +334,27 @@ const buildLanes = ({
     readyNow: eventContract?.ok === true,
     nextAction: 'Use as the event spine for future seed observations; do not append ledger events yet.',
     liveActionsClosed: ['signal_ledger_append', 'crm_card_write', 'crm_score_mutation', 'fact_store_write'],
+  }),
+  buildLane({
+    id: 'crm_signal_projection_packet',
+    owner: 'CRM / Signal OS',
+    packet: crmSignalProjectionPacket,
+    readyNow: crmSignalProjectionPacket?.status === 'ready_for_no_live_signal_projection_design',
+    readiness: {
+      currentProjectionReadyFor: crmSignalProjectionPacket?.projectionModel?.currentProjectionReadyFor ?? [],
+      storeOnlyNowCount: crmSignalProjectionPacket?.projectionModel?.storeOnlyNow?.length ?? null,
+      futurePolicyOnlyEvents: crmSignalProjectionPacket?.projectionModel?.futurePolicyOnlyEvents ?? [],
+      signalsGenerated: crmSignalProjectionPacket?.projectionProof?.projection?.signalsGenerated ?? null,
+      canAppendSignalLedgerNow: crmSignalProjectionPacket?.approvalGate?.canAppendSignalLedgerNow ?? false,
+      canWriteCardsNow: crmSignalProjectionPacket?.approvalGate?.canWriteCardsNow ?? false,
+      canScoreNow: crmSignalProjectionPacket?.approvalGate?.canScoreNow ?? false,
+      canWriteFactStoreNow: crmSignalProjectionPacket?.approvalGate?.canWriteFactStoreNow ?? false,
+    },
+    blockedBy: crmSignalProjectionPacket?.status === 'ready_for_no_live_signal_projection_design'
+      ? []
+      : ['crm_signal_projection_packet_not_ready'],
+    nextAction: 'Use this as the no-live interpretation bridge from mini-launch events to projection policy; do not append ledgers, write cards, score, or touch Fact Store.',
+    liveActionsClosed: ['signal_ledger_append', 'crm_card_write', 'crm_score_mutation', 'fact_store_write', 'onboarding_routing'],
   }),
   buildLane({
     id: 'brand_email_1',
@@ -444,6 +471,9 @@ const buildDepartmentQueues = ({ lanes }) => ({
   ],
   crm: [
     'Preserve event contract as store-only until seed observations exist and append is approved.',
+    lanes.some((lane) => lane.id === 'crm_signal_projection_packet' && lane.readyNow)
+      ? 'CRM signal projection packet is ready as no-live policy; do not append ledgers, write cards, score, or touch Fact Store.'
+      : 'Prepare or repair the CRM signal projection packet before any future signal append/write request.',
     lanes.some((lane) => lane.id === 'mailerlite_empty_group_create_dry_run' && lane.readyNow)
       ? 'Mini-launch create runner dry-run is green; hold at exact phrase boundary and never run --execute without Alejandro.'
       : lanes.some((lane) => lane.id === 'mailerlite_empty_group_approval_packet' && lane.readyNow)
@@ -558,10 +588,15 @@ const nextBestNoLiveMovesFor = ({ lanes }) => {
   const groupDryRunLane = lanes.find((lane) => lane.id === 'mailerlite_group_dry_run');
   const emptyGroupPacketLane = lanes.find((lane) => lane.id === 'mailerlite_empty_group_approval_packet');
   const emptyGroupCreateDryRunLane = lanes.find((lane) => lane.id === 'mailerlite_empty_group_create_dry_run');
+  const crmSignalProjectionLane = lanes.find((lane) => lane.id === 'crm_signal_projection_packet');
   const moves = [
     'Brand reviews the full email sequence for voice, promise, CTA and public/internal separation.',
     'Web Design reviews/builds from the Shopify handoff only if scope is accepted.',
   ];
+
+  if (crmSignalProjectionLane?.readyNow) {
+    moves.push('CRM signal projection packet is ready as a no-live interpretation bridge; no Signal Ledger append, cards, scoring or Fact Store writes.');
+  }
 
   if (emptyGroupCreateDryRunLane?.readyNow) {
     moves.push('Mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-phrase boundary and do not run --execute.');
@@ -588,6 +623,7 @@ const buildReadinessBoard = ({
   brandCandidateReviewPacket,
   emailSequencePacket,
   shopifyHandoffPacket,
+  crmSignalProjectionPacket,
   sourceDigests,
   generatedAt = new Date().toISOString(),
 }) => {
@@ -604,6 +640,7 @@ const buildReadinessBoard = ({
     brandCandidateReviewPacket,
     emailSequencePacket,
     shopifyHandoffPacket,
+    crmSignalProjectionPacket,
   });
   const liveGateMatrix = buildLiveGateMatrix();
   const readyNoLiveLanes = lanes.filter((lane) => lane.readyNow).map((lane) => lane.id);
@@ -637,6 +674,7 @@ const buildReadinessBoard = ({
       'Do not run the mini-launch create runner with --execute unless Alejandro gives the exact phrase for the two named empty groups.',
       'Do not treat Web Design handoff as permission to publish or connect a real form.',
       'Do not treat Email Sequence draft as permission to build MailerLite assets or send tests.',
+      'Do not treat the CRM signal projection packet as permission to append ledgers, write cards, score, or touch Fact Store.',
       'Do not route mini-launch participants into onboarding until a separate onboarding gate exists.',
     ],
     sourceDigests,
@@ -741,6 +779,7 @@ const buildBoardFromFiles = async (options) => {
     brandCandidateReviewPacket,
     emailSequencePacket,
     shopifyHandoffPacket,
+    crmSignalProjectionPacket,
     sourceDigests,
   ] = await Promise.all([
     readJson(options.onboardingExecutionPacket),
@@ -754,6 +793,7 @@ const buildBoardFromFiles = async (options) => {
     readJson(options.brandCandidateReviewPacket),
     readJson(options.emailSequencePacket),
     readJson(options.shopifyHandoffPacket),
+    readJson(options.crmSignalProjectionPacket),
     loadSourceDigests(options),
   ]);
 
@@ -769,6 +809,7 @@ const buildBoardFromFiles = async (options) => {
     brandCandidateReviewPacket,
     emailSequencePacket,
     shopifyHandoffPacket,
+    crmSignalProjectionPacket,
     sourceDigests,
   });
 };

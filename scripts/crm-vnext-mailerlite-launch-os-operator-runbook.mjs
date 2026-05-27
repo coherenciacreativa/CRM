@@ -26,6 +26,7 @@ const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documen
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -60,6 +61,7 @@ Options:
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
   --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
+  --mini-launch-crm-signal-projection-packet <path> Mini-launch CRM signal projection JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -101,6 +103,7 @@ const parseArgs = (argv) => {
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
     onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
+    miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -138,6 +141,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
     else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
+    else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -188,6 +192,7 @@ const loadSourceDigests = async (options) => {
     [options.onboardingV2EmptyGroupsCreateDryRun, 'onboarding v2 empty-groups create runner dry-run with zero mutations', true],
     [options.onboardingV2FirstEmailMap, 'onboarding v2 first-email mapping to prevent unnecessary Sent receipts', true],
     [options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty-group create runner dry-run with zero mutations', true],
+    [options.miniLaunchCrmSignalProjectionPacket, 'mini-launch CRM signal projection packet with closed write gates', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -271,6 +276,7 @@ const buildCurrentState = ({
   onboardingV2EmptyGroupsCreateDryRun,
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
+  miniLaunchCrmSignalProjectionPacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -392,6 +398,26 @@ const buildCurrentState = ({
       emptyGroupCreateDryRunCanExecute: miniLaunchEmptyGroupCreateDryRun?.decision?.canExecute
         ?? readinessLaneById.get('mailerlite_empty_group_create_dry_run')?.readiness?.canExecute
         ?? false,
+      crmSignalProjectionPacketStatus: miniLaunchCrmSignalProjectionPacket?.status
+        ?? readinessLaneById.get('crm_signal_projection_packet')?.sourceStatus
+        ?? null,
+      crmSignalProjectionReady: miniLaunchCrmSignalProjectionPacket?.status === 'ready_for_no_live_signal_projection_design'
+        || readinessLaneById.get('crm_signal_projection_packet')?.readyNow === true,
+      crmSignalProjectionSignalsGenerated: miniLaunchCrmSignalProjectionPacket?.projectionProof?.projection?.signalsGenerated
+        ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.signalsGenerated
+        ?? null,
+      crmSignalProjectionStoreOnlyNowCount: miniLaunchCrmSignalProjectionPacket?.projectionModel?.storeOnlyNow?.length
+        ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.storeOnlyNowCount
+        ?? null,
+      crmSignalProjectionCanAppendLedger: miniLaunchCrmSignalProjectionPacket?.approvalGate?.canAppendSignalLedgerNow
+        ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.canAppendSignalLedgerNow
+        ?? false,
+      crmSignalProjectionCanWriteCards: miniLaunchCrmSignalProjectionPacket?.approvalGate?.canWriteCardsNow
+        ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.canWriteCardsNow
+        ?? false,
+      crmSignalProjectionCanScore: miniLaunchCrmSignalProjectionPacket?.approvalGate?.canScoreNow
+        ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.canScoreNow
+        ?? false,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -467,6 +493,7 @@ const buildReportMap = (sourceDigests) => {
     onboardingV2EmptyGroupsCreateDryRun: findPath('mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json'),
     onboardingV2FirstEmailMap: findPath('mailerlite_onboarding_v2_first_email_map_2026-05-27.json'),
     miniLaunchEmptyGroupCreateDryRun: findPath('mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json'),
+    miniLaunchCrmSignalProjectionPacket: findPath('mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
@@ -609,8 +636,9 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-group-dry-run'),
         command('crm:vnext:mailerlite-mini-launch-empty-group-creation-packet'),
         command('crm:vnext:mailerlite-mini-launch-empty-group-create'),
+        command('crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet'),
       ].filter(Boolean),
-      liveGatesRemainClosed: ['group creation', 'subscriber assignment', 'workflow use'],
+      liveGatesRemainClosed: ['group creation', 'subscriber assignment', 'workflow use', 'Signal Ledger append', 'card/scoring/Fact Store writes'],
     },
     {
       id: 'new_mini_launch_idea',
@@ -676,6 +704,7 @@ const buildRunbook = ({
   onboardingV2EmptyGroupsCreateDryRun,
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
+  miniLaunchCrmSignalProjectionPacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -712,6 +741,7 @@ const buildRunbook = ({
       onboardingV2EmptyGroupsCreateDryRun,
       onboardingV2FirstEmailMap,
       miniLaunchEmptyGroupCreateDryRun,
+      miniLaunchCrmSignalProjectionPacket,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -743,6 +773,7 @@ const buildRunbook = ({
       'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
       'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
       'Use the mini-launch empty-group create runner only in dry-run until Alejandro gives the exact phrase for --execute.',
+      'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
       'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
       'Use the response watcher before finalization preflight so missing final response files are obvious.',
@@ -826,6 +857,11 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch empty-group create dry-run missing targets: ${runbook.currentState.miniLaunch.emptyGroupCreateDryRunTargetMissingCount ?? 'unknown'}`,
     `- Mini-launch empty-group create dry-run created count: ${runbook.currentState.miniLaunch.emptyGroupCreateDryRunCreatedCount ?? 'unknown'}`,
     `- Mini-launch empty-group create dry-run can execute: ${runbook.currentState.miniLaunch.emptyGroupCreateDryRunCanExecute}`,
+    `- Mini-launch CRM signal projection packet: ${runbook.currentState.miniLaunch.crmSignalProjectionPacketStatus ?? 'unknown'}`,
+    `- Mini-launch CRM signal projection ready: ${runbook.currentState.miniLaunch.crmSignalProjectionReady}`,
+    `- Mini-launch CRM signal projection signals generated: ${runbook.currentState.miniLaunch.crmSignalProjectionSignalsGenerated ?? 'unknown'}`,
+    `- Mini-launch CRM signal projection store-only count: ${runbook.currentState.miniLaunch.crmSignalProjectionStoreOnlyNowCount ?? 'unknown'}`,
+    `- Mini-launch CRM signal projection can append ledger: ${runbook.currentState.miniLaunch.crmSignalProjectionCanAppendLedger}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
@@ -952,6 +988,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2EmptyGroupsCreateDryRun,
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
+    miniLaunchCrmSignalProjectionPacket,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -981,6 +1018,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.onboardingV2EmptyGroupsCreateDryRun),
     readOptionalJson(options.onboardingV2FirstEmailMap),
     readOptionalJson(options.miniLaunchEmptyGroupCreateDryRun),
+    readOptionalJson(options.miniLaunchCrmSignalProjectionPacket),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -1012,6 +1050,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2EmptyGroupsCreateDryRun,
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
+    miniLaunchCrmSignalProjectionPacket,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,

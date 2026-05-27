@@ -144,6 +144,28 @@ const shopifyHandoffPacket = {
   },
 };
 
+const crmSignalProjectionPacket = {
+  ok: true,
+  status: "ready_for_no_live_signal_projection_design",
+  launch,
+  projectionModel: {
+    currentProjectionReadyFor: ["email_open", "email_click", "email_reply"],
+    storeOnlyNow: ["source_assigned", "resource_delivered"],
+    futurePolicyOnlyEvents: ["quiz_completed", "result_viewed"],
+  },
+  projectionProof: {
+    projection: {
+      signalsGenerated: 3,
+    },
+  },
+  approvalGate: {
+    canAppendSignalLedgerNow: false,
+    canWriteCardsNow: false,
+    canScoreNow: false,
+    canWriteFactStoreNow: false,
+  },
+};
+
 const sourceDigests = [
   {
     path: "/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json",
@@ -163,6 +185,7 @@ const packetSet = {
   brandCandidateReviewPacket,
   emailSequencePacket,
   shopifyHandoffPacket,
+  crmSignalProjectionPacket,
 };
 
 describe("CRM vNext MailerLite mini-launch readiness board", () => {
@@ -177,6 +200,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(parsed.rehearsalPacket).toContain("mailerlite_mini_launch_rehearsal_inteligencia_descansar_2026-05-27.json");
     expect(parsed.emailSequencePacket).toContain("mailerlite_mini_launch_email_sequence_asset_packet_inteligencia_descansar_2026-05-27.json");
     expect(parsed.shopifyHandoffPacket).toContain("mailerlite_mini_launch_shopify_handoff_packet_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.crmSignalProjectionPacket).toContain("mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emptyGroupCreationPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.emptyGroupCreateDryRun).toContain("mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/board.json");
@@ -191,7 +215,17 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     const lanes = buildLanes(packetSet);
     const byId = new Map(lanes.map((lane) => [lane.id, lane]));
 
-    expect(lanes).toHaveLength(11);
+    expect(lanes).toHaveLength(12);
+    expect(byId.get("crm_signal_projection_packet")).toMatchObject({
+      owner: "CRM / Signal OS",
+      readyNow: true,
+      readiness: {
+        canAppendSignalLedgerNow: false,
+        canWriteCardsNow: false,
+        canScoreNow: false,
+        canWriteFactStoreNow: false,
+      },
+    });
     expect(byId.get("shopify_web_handoff")).toMatchObject({
       owner: "Web Design / Shopify",
       readyNow: true,
@@ -297,6 +331,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
 
     expect(queues.brand.join(" ")).toContain("Review Email 1");
     expect(queues.webDesign.join(" ")).toContain("local/draft scope only");
+    expect(queues.crm.join(" ")).toContain("CRM signal projection packet is ready as no-live policy");
     expect(queues.mailerLite.join(" ")).toContain("No action now");
     expect(queues.alejandro.join(" ")).toContain("No immediate live decision needed");
   });
@@ -323,6 +358,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     expect(board.operatorWarnings).toContain("Do not treat a Brand candidate decision as permission to create MailerLite groups.");
     expect(board.operatorWarnings).toContain("Do not treat the empty-group approval packet as execution approval; Alejandro must give the exact phrase and the runner must re-scan first.");
     expect(board.operatorWarnings).toContain("Do not run the mini-launch create runner with --execute unless Alejandro gives the exact phrase for the two named empty groups.");
+    expect(board.operatorWarnings).toContain("Do not treat the CRM signal projection packet as permission to append ledgers, write cards, score, or touch Fact Store.");
   });
 
   test("updates executive next moves after group dry-run is no longer blocked", () => {
