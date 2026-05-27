@@ -173,12 +173,28 @@ const brujulaEmailStyleQa = {
   },
 };
 
+const brujulaEmailStyleCorrection = {
+  status: "brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes",
+  executiveSummary: {
+    publicUseReady: false,
+    testSendReady: false,
+  },
+  outputs: {
+    htmlPath: "/tmp/mailerlite_brujula_email1_corrected_draft_2026-05-27.html",
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    sendsPerformed: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-onboarding-v2-event-contract": "node scripts/event.mjs",
     "crm:vnext:mailerlite-mini-launch-cadence-board": "node scripts/cadence.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
+    "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/brujula-email-style-correction.mjs",
   },
 };
 
@@ -197,6 +213,7 @@ const values = {
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
+  brujulaEmailStyleCorrection,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
   brandDictionary: "CC · Source · Resource · Brújula\n",
   packageJson,
@@ -227,6 +244,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.requestBundle).toContain("mailerlite_mini_launch_department_review_request_bundle_inteligencia_descansar_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
+    expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
   });
@@ -249,9 +267,11 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("handoffTargetGroup=CC · Journey · Editorial onboarding · Eligible");
     expect(byId.define_mini_launch_to_onboarding_handoff.evidence).toContain("recommendationIsNotRouting=true");
     expect(byId.enforce_live_change_approval_boundary.status).toBe("proven");
-    expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_creative_qa_packet_ready");
+    expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_corrected_draft_ready_needs_render_qa");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleQaStatus=brujula_email_style_qa_yellow_no_live_changes");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleQaPublicUseReady=false");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionStatus=brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionTestSendReady=false");
   });
 
   test("summarizes incomplete goal without opening live gates", () => {
@@ -276,7 +296,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.nextBestMove).toContain("request bundle");
     expect(audit.nextMoves.join(" ")).toContain("rerun the launch group dry-run");
     expect(audit.nextMoves.join(" ")).toContain("final response files only");
-    expect(audit.nextMoves.join(" ")).toContain("Brújula email style QA packet");
+    expect(audit.nextMoves.join(" ")).toContain("Brújula Email 1 correction packet");
     expect(audit.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,

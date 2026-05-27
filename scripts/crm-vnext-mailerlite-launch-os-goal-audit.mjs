@@ -23,6 +23,7 @@ const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Manti
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
+const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const OBJECTIVE = 'Lleva MailerLite desde la arquitectura actual hacia un MailerLite Launch OS v0 listo para operar: preservar el onboarding productivo, disenar Onboarding v2, consolidar taxonomia de grupos/tags/recibos, preparar infraestructura para mini-lanzamientos frecuentes, coordinar con Brand Hub y CRM, documentar todo con reportes claros, validar con dry-runs y commits limpios, y detenerte a pedirme aprobacion antes de cualquier cambio vivo en MailerLite, Shopify, CRM, workflows, subscribers o envios reales.';
@@ -49,6 +50,7 @@ Options:
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
+  --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>      Optional closeout validation status, e.g. passed
   --validation-summary <text>       Optional human-readable validation receipt
@@ -80,6 +82,7 @@ const parseArgs = (argv) => {
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
+    brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'not_supplied',
     validationSummary: null,
@@ -109,6 +112,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
+    else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
     else if (arg === '--validation-summary') options.validationSummary = argv[++index];
@@ -150,6 +154,7 @@ const loadSources = async (options) => {
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
+    ['brujulaEmailStyleCorrection', options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs', 'json'],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
   ];
 
@@ -184,6 +189,7 @@ const buildRequirementChecks = ({
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
+  brujulaEmailStyleCorrection,
   brandTaxonomy,
   brandDictionary,
   packageJson,
@@ -267,6 +273,12 @@ const buildRequirementChecks = ({
     && brujulaEmailStyleQa?.executiveSummary?.publicUseReady === false
     && brujulaEmailStyleQa?.safety?.mailerLiteApiCalled === false
     && brujulaEmailStyleQa?.safety?.sendsPerformed === false;
+  const brujulaEmailStyleCorrectionStatus = brujulaEmailStyleCorrection?.status ?? null;
+  const brujulaCorrectionReady = brujulaEmailStyleCorrectionStatus === 'brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes'
+    && brujulaEmailStyleCorrection?.executiveSummary?.publicUseReady === false
+    && brujulaEmailStyleCorrection?.executiveSummary?.testSendReady === false
+    && brujulaEmailStyleCorrection?.safety?.mailerLiteApiCalled === false
+    && brujulaEmailStyleCorrection?.safety?.sendsPerformed === false;
 
   return [
     {
@@ -389,6 +401,7 @@ const buildRequirementChecks = ({
         `approvalMatrixCount=${runbook?.approvalMatrix?.length ?? 0}`,
         `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
         `brujulaEmailStyleQaStatus=${brujulaEmailStyleQaStatus ?? 'missing'}`,
+        `brujulaEmailStyleCorrectionStatus=${brujulaEmailStyleCorrectionStatus ?? 'missing'}`,
       ],
       remaining: [
         'Keep regenerating the runbook after accepted department reviews or new dry-runs.',
@@ -429,8 +442,10 @@ const buildRequirementChecks = ({
     {
       id: 'brujula_test_pilot_status',
       requirement: 'Keep Brújula as controlled proving ground, not a public launch.',
-      status: brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady
-        ? 'partial_functional_green_creative_qa_packet_ready'
+      status: brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady && brujulaCorrectionReady
+        ? 'partial_functional_green_corrected_draft_ready_needs_render_qa'
+        : brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence && brujulaEmailStyleQaReady
+          ? 'partial_functional_green_creative_qa_packet_ready'
         : brujulaReceiptsOk && brujulaPlan?.localEvidence?.emailStyle?.brujulaCurrentAntiEvidence
           ? 'partial_functional_green_creative_yellow'
         : 'partial',
@@ -442,9 +457,13 @@ const buildRequirementChecks = ({
         `emailStyleQaFunctionalStatus=${brujulaEmailStyleQa?.executiveSummary?.functionalStatus ?? 'unknown'}`,
         `emailStyleQaBlockerCount=${brujulaEmailStyleQa?.executiveSummary?.blockerCount ?? 'unknown'}`,
         `emailStyleQaPublicUseReady=${brujulaEmailStyleQa?.executiveSummary?.publicUseReady ?? 'unknown'}`,
+        `emailStyleCorrectionStatus=${brujulaEmailStyleCorrectionStatus ?? 'missing'}`,
+        `emailStyleCorrectionHtml=${brujulaEmailStyleCorrection?.outputs?.htmlPath ?? 'missing'}`,
+        `emailStyleCorrectionPublicUseReady=${brujulaEmailStyleCorrection?.executiveSummary?.publicUseReady ?? 'unknown'}`,
+        `emailStyleCorrectionTestSendReady=${brujulaEmailStyleCorrection?.executiveSummary?.testSendReady ?? 'unknown'}`,
       ],
       remaining: [
-        'Apply Brand email-style corrections, rerun test-only visual QA and keep Brújula non-public until Brand email style QA is green.',
+        'Build/apply the corrected draft in MailerLite only after exact approval, rerun render QA/test-only send, and keep Brújula non-public until Brand email style QA is green.',
       ],
     },
   ];
@@ -502,7 +521,7 @@ const buildGoalAudit = ({
       'Use the response workspace pending files for drafting, then save final Brand/Web/CRM response files.',
       'Run finalization preflight so empty pending templates and Codex drafts cannot be confused with final department responses.',
       'Run department review intake and reconciliation with final response files only.',
-      'Use the Brújula email style QA packet as the concrete correction checklist before any future test send or public use.',
+      'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       'If Brand accepts or renames launch group candidates, rerun the launch group dry-run.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
     ],
