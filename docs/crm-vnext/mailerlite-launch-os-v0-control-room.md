@@ -364,6 +364,27 @@ Result:
 
 This packet is the practical rehearsal guard: it lets Mantis prepare a test without accidentally turning a test into public launch, onboarding routing, or audience delivery.
 
+## Mini-launch Brand/email asset packet status
+
+Status: Brand/email asset packet ready for Brand review, no live changes.
+
+Evidence:
+
+- Brand/email asset report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_email_asset_packet_inteligencia_descansar_2026-05-27.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-brand-email-asset-packet.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-brand-email-asset-packet.spec.ts`
+
+Result:
+
+- Drafts Email 1 public copy for `Inteligencia para descansar`: subject options, preheaders, body, CTA and plain-text fallback.
+- Uses Brand voice and email style sources before MailerLite rendering.
+- Keeps the copy in `draft_for_brand_review_not_public_not_sent`; it is not Brand-approved and not ready for audience use.
+- Scans the public draft for internal implementation terms and the overused `a veces` formula; current draft has 0 hits.
+- Defines email visual specs from the email canon: Poppins body, Georgia accent, `#F4F7FA` background, white container, brand-aligned CTA, visual signature pending, footer QA pending.
+- Keeps all live gates closed: MailerLite asset build, seed send, receipt seed test, audience launch, onboarding handoff, Signal Event Ledger append, CRM card/scoring and Fact Store.
+
+This is the first agency-quality creative packet in the mini-launch lane. It lets Brand review voice and email feel before any platform test, which avoids testing plumbing around a weak piece.
+
 ## Goal completion gates
 
 The goal is not complete until all gates below are proven with current evidence:

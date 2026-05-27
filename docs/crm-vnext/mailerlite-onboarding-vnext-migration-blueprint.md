@@ -579,6 +579,31 @@ Result:
 
 This checkpoint protects the mini-launch rehearsal from operational drift: a creative/rendering test, a receipt test, and a public launch are now visibly different gates.
 
+## Mini-launch Brand/email asset checkpoint - 2026-05-27
+
+Report:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_brand_email_asset_packet_inteligencia_descansar_2026-05-27.md
+```
+
+Script:
+
+```text
+CRM/scripts/crm-vnext-mailerlite-mini-launch-brand-email-asset-packet.mjs
+```
+
+Result:
+
+- Status: `brand_email_asset_packet_ready_for_brand_review_no_live_changes`.
+- The `Inteligencia para descansar` mini-launch now has a local Email 1 Brand asset packet.
+- It drafts subject options, preheaders, body, CTA and plain-text fallback for Brand review.
+- It translates `VOICE_FINGERPRINT_V0.md` and `email_style_canon.md` into email-specific QA: editorial voice, modest promise, Poppins body, Georgia accent, brand-aligned CTA, visual signature pending and footer pending.
+- Public draft scan is clean for internal terms and the overused `a veces` formula.
+- MailerLite asset build, seed send, receipt seed test, audience launch, onboarding handoff, ledger append, card/scoring and Fact Store remain closed.
+
+This moves the first mini-launch from architecture into creative production prep while still preserving the active onboarding and all live approval gates.
+
 ## Planner dry-run requirements
 
 Proposed script:
