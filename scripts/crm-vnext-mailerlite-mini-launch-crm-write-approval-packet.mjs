@@ -9,6 +9,7 @@ const DEFAULT_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_GROUP_CREATE_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_execution_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_WRITE_POLICY_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_policy_packet_inteligencia_descansar_2026-05-28.json';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs [options]
@@ -19,6 +20,7 @@ Options:
   --manual-ui-build-receipt <path>   MailerLite manual UI build receipt. Defaults to ${DEFAULT_MANUAL_UI_BUILD_RECEIPT}
   --group-create-execution <path>    Mini-launch empty group execution receipt. Defaults to ${DEFAULT_GROUP_CREATE_EXECUTION}
   --shopify-local-build-receipt <path> Shopify no-live local build receipt. Defaults to ${DEFAULT_SHOPIFY_LOCAL_BUILD_RECEIPT}
+  --write-policy-packet <path>       Optional CRM write policy packet. Defaults to ${DEFAULT_WRITE_POLICY_PACKET}
   --observed-events-file <path>      Optional real observed CRM events file for future approval readiness
   --out <path>                       Write JSON packet
   --markdown-out <path>              Write Markdown packet
@@ -38,6 +40,7 @@ const parseArgs = (argv) => {
     manualUiBuildReceipt: DEFAULT_MANUAL_UI_BUILD_RECEIPT,
     groupCreateExecution: DEFAULT_GROUP_CREATE_EXECUTION,
     shopifyLocalBuildReceipt: DEFAULT_SHOPIFY_LOCAL_BUILD_RECEIPT,
+    writePolicyPacket: DEFAULT_WRITE_POLICY_PACKET,
     observedEventsFile: null,
     out: null,
     markdownOut: null,
@@ -52,6 +55,7 @@ const parseArgs = (argv) => {
     else if (arg === '--manual-ui-build-receipt') options.manualUiBuildReceipt = argv[++index];
     else if (arg === '--group-create-execution') options.groupCreateExecution = argv[++index];
     else if (arg === '--shopify-local-build-receipt') options.shopifyLocalBuildReceipt = argv[++index];
+    else if (arg === '--write-policy-packet') options.writePolicyPacket = argv[++index];
     else if (arg === '--observed-events-file') options.observedEventsFile = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -112,6 +116,7 @@ const loadSourceDigests = async (options) => Promise.all([
   sourceDigest(options.manualUiBuildReceipt, 'manual UI draft build receipt proving email assets exist without sends', true),
   sourceDigest(options.groupCreateExecution, 'approved empty group creation receipt proving receipt groups exist', true),
   sourceDigest(options.shopifyLocalBuildReceipt, 'Shopify no-live local build receipt proving inert web surface exists', true),
+  sourceDigest(options.writePolicyPacket, 'CRM write policy packet for card/scoring/identity/fact boundaries', true),
   ...(options.observedEventsFile
     ? [sourceDigest(options.observedEventsFile, 'optional real observed events supplied for future CRM write approval')]
     : []),
@@ -216,12 +221,44 @@ const buildSafety = () => ({
   tokensPrinted: false,
 });
 
+const policyPacketReady = (packet) =>
+  packet?.status === 'crm_write_policy_packet_ready_no_live_changes'
+  && packet?.executiveSummary?.policyReady === true
+  && packet?.policyCoverage?.cardWritePolicyPacketReady === true
+  && packet?.policyCoverage?.identityStitchingPacketReady === true
+  && packet?.policyCoverage?.scoringPolicyForMiniLaunchReady === true
+  && packet?.policyCoverage?.sourceDeliveredReceiptsMustNotScoreByThemselves === true
+  && packet?.safety?.signalLedgerAppendPerformed === false
+  && packet?.safety?.crmCardMutationsPerformed === false
+  && packet?.safety?.crmScoreMutationsPerformed === false
+  && packet?.safety?.factStoreWritePerformed === false
+  && packet?.safety?.sendsPerformed === false;
+
+const buildPolicyState = (writePolicyPacket) => {
+  const ready = policyPacketReady(writePolicyPacket);
+  return {
+    status: writePolicyPacket?.status ?? null,
+    ready,
+    cardWritePolicyReady: ready && writePolicyPacket?.policyCoverage?.cardWritePolicyPacketReady === true,
+    identityStitchingPolicyReady: ready && writePolicyPacket?.policyCoverage?.identityStitchingPacketReady === true,
+    scoringPolicyReady: ready && writePolicyPacket?.policyCoverage?.scoringPolicyForMiniLaunchReady === true,
+    sourceDeliveredReceiptsNoScore: ready && writePolicyPacket?.policyCoverage?.sourceDeliveredReceiptsMustNotScoreByThemselves === true,
+    aggregateMarketReviewPolicyReady: ready && writePolicyPacket?.policyCoverage?.aggregateMarketReviewPolicyReady === true,
+    factStoreWritePolicyReady: ready && writePolicyPacket?.policyCoverage?.factStoreWritePolicyReady === true,
+    blockersResolvedIfConsumed: ready
+      ? writePolicyPacket?.executiveSummary?.blockersResolvedIfConsumed ?? []
+      : [],
+    stillRequiresRealEvidence: writePolicyPacket?.executiveSummary?.blockersStillRequireRealEvidence ?? [],
+  };
+};
+
 const buildLaunchEvidenceState = ({
   signalProjectionPacket,
   eventContract,
   manualUiBuildReceipt,
   groupCreateExecution,
   shopifyLocalBuildReceipt,
+  writePolicyPacket,
 }) => ({
   projectionPacketStatus: signalProjectionPacket?.status ?? null,
   projectionReady: signalProjectionPacket?.status === 'ready_for_no_live_signal_projection_design',
@@ -245,6 +282,7 @@ const buildLaunchEvidenceState = ({
   shopifyLocalFileCount: shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated
     ?? countRows(shopifyLocalBuildReceipt?.files),
   inertPlaceholders: shopifyLocalBuildReceipt?.placeholders?.inert ?? null,
+  writePolicy: buildPolicyState(writePolicyPacket),
 });
 
 const writeFamily = ({
@@ -274,7 +312,7 @@ const writeFamily = ({
   operationsExecuted: 0,
 });
 
-const buildWriteFamilies = ({ projectionPacket, observedSummary }) => {
+const buildWriteFamilies = ({ projectionPacket, observedSummary, policyState }) => {
   const noObservedBlockers = [
     ...(observedSummary.supplied ? [] : ['real_observed_event_file_missing']),
     ...(observedSummary.writableCount > 0 ? [] : ['exact_observed_events_missing']),
@@ -283,6 +321,14 @@ const buildWriteFamilies = ({ projectionPacket, observedSummary }) => {
   ];
   const projectableKinds = projectionPacket?.projectionModel?.currentProjectionReadyFor ?? [];
   const storeOnlyKinds = projectionPacket?.projectionModel?.storeOnlyNow ?? [];
+  const cardPolicyBlockers = [
+    ...(policyState.cardWritePolicyReady ? [] : ['card_write_policy_packet_missing']),
+    ...(policyState.identityStitchingPolicyReady ? [] : ['identity_stitching_packet_missing']),
+  ];
+  const scoringPolicyBlockers = [
+    ...(policyState.scoringPolicyReady ? [] : ['scoring_policy_for_mini_launch_missing']),
+    ...(policyState.sourceDeliveredReceiptsNoScore ? [] : ['source_delivered_receipts_must_not_score_by_themselves']),
+  ];
 
   return [
     writeFamily({
@@ -326,8 +372,7 @@ const buildWriteFamilies = ({ projectionPacket, observedSummary }) => {
       ],
       blockers: [
         ...noObservedBlockers,
-        'card_write_policy_packet_missing',
-        'identity_stitching_packet_missing',
+        ...cardPolicyBlockers,
       ],
       requiredBeforeApproval: [
         'Run the normal CRM card-write approval packet for each person.',
@@ -350,8 +395,7 @@ const buildWriteFamilies = ({ projectionPacket, observedSummary }) => {
       ],
       blockers: [
         ...noObservedBlockers,
-        'scoring_policy_for_mini_launch_missing',
-        'source_delivered_receipts_must_not_score_by_themselves',
+        ...scoringPolicyBlockers,
       ],
       requiredBeforeApproval: [
         'Define a scoring policy for mini-launch engagement dimensions.',
@@ -412,6 +456,7 @@ const buildCrmWriteApprovalPacket = ({
   manualUiBuildReceipt = null,
   groupCreateExecution = null,
   shopifyLocalBuildReceipt = null,
+  writePolicyPacket = null,
   observedEventsPayload = null,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
@@ -425,8 +470,14 @@ const buildCrmWriteApprovalPacket = ({
     manualUiBuildReceipt,
     groupCreateExecution,
     shopifyLocalBuildReceipt,
+    writePolicyPacket,
   });
-  const writeFamilies = buildWriteFamilies({ projectionPacket: signalProjectionPacket, observedSummary });
+  const policyState = launchEvidenceState.writePolicy;
+  const writeFamilies = buildWriteFamilies({
+    projectionPacket: signalProjectionPacket,
+    observedSummary,
+    policyState,
+  });
   const approvalBoundary = buildApprovalBoundary({ observedSummary, writeFamilies });
   const safety = buildSafety();
 
@@ -445,6 +496,7 @@ const buildCrmWriteApprovalPacket = ({
       exactPersonCountReady: observedSummary.exactPersonCount,
       candidateWriteFamilyCount: writeFamilies.length,
       blockedWriteFamilyCount: writeFamilies.filter((family) => family.blockers.length > 0).length,
+      writePolicyPacketReady: policyState.ready,
       operationsPreviewed: 0,
       operationsExecuted: 0,
       blockers: approvalBoundary.blockersBeforeApprovalRequest,
@@ -468,6 +520,17 @@ const buildCrmWriteApprovalPacket = ({
     },
     writeFamilies,
     approvalBoundary,
+    policyEffect: {
+      consumedPolicyPacket: policyState.ready,
+      resolvedPolicyBlockers: policyState.blockersResolvedIfConsumed,
+      policyBlockersStillOpen: unique(approvalBoundary.blockersBeforeApprovalRequest.filter((blocker) => [
+        'card_write_policy_packet_missing',
+        'identity_stitching_packet_missing',
+        'scoring_policy_for_mini_launch_missing',
+        'source_delivered_receipts_must_not_score_by_themselves',
+      ].includes(blocker))),
+      stillRequiresRealEvidence: policyState.stillRequiresRealEvidence,
+    },
     hardStops: [
       'This packet is not approval to write CRM.',
       'Sample event-contract events are not writable person history.',
@@ -495,6 +558,7 @@ const renderMarkdown = (packet) => {
     `- Exact writable events ready: ${packet.executiveSummary.exactEventCountReady}`,
     `- Exact people ready: ${packet.executiveSummary.exactPersonCountReady}`,
     `- Candidate write families: ${packet.executiveSummary.candidateWriteFamilyCount}`,
+    `- Write policy packet ready: ${packet.executiveSummary.writePolicyPacketReady}`,
     `- Operations executed: ${packet.executiveSummary.operationsExecuted}`,
     '',
     '## Blockers Before Asking Alejandro',
@@ -504,6 +568,12 @@ const renderMarkdown = (packet) => {
     '## Required Before Approval Request',
     '',
     renderList(packet.approvalBoundary.requiredBeforeApprovalRequest),
+    '',
+    '## Policy Effect',
+    '',
+    `- Consumed policy packet: ${packet.policyEffect.consumedPolicyPacket}`,
+    `- Resolved policy blockers: ${packet.policyEffect.resolvedPolicyBlockers.join(', ') || 'none'}`,
+    `- Policy blockers still open: ${packet.policyEffect.policyBlockersStillOpen.join(', ') || 'none'}`,
     '',
     '## Write Families',
     '',
@@ -541,6 +611,7 @@ const buildFromFiles = async (options) => {
     manualUiBuildReceipt,
     groupCreateExecution,
     shopifyLocalBuildReceipt,
+    writePolicyPacket,
     observedEventsPayload,
     sourceDigests,
   ] = await Promise.all([
@@ -549,6 +620,7 @@ const buildFromFiles = async (options) => {
     readOptionalJson(options.manualUiBuildReceipt),
     readOptionalJson(options.groupCreateExecution),
     readOptionalJson(options.shopifyLocalBuildReceipt),
+    readOptionalJson(options.writePolicyPacket),
     readOptionalJson(options.observedEventsFile),
     loadSourceDigests(options),
   ]);
@@ -559,6 +631,7 @@ const buildFromFiles = async (options) => {
     manualUiBuildReceipt,
     groupCreateExecution,
     shopifyLocalBuildReceipt,
+    writePolicyPacket,
     observedEventsPayload,
     sourceDigests,
   });
@@ -579,6 +652,7 @@ const main = async () => {
     approvalRequestReady: packet.executiveSummary.approvalRequestReady,
     exactEventCountReady: packet.executiveSummary.exactEventCountReady,
     exactPersonCountReady: packet.executiveSummary.exactPersonCountReady,
+    writePolicyPacketReady: packet.executiveSummary.writePolicyPacketReady,
     blockerCount: packet.approvalBoundary.blockersBeforeApprovalRequest.length,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
@@ -597,6 +671,7 @@ export {
   buildCrmWriteApprovalPacket,
   buildLaunchEvidenceState,
   buildWriteFamilies,
+  buildPolicyState,
   identityForEvent,
   isWritableObservedEvent,
   parseArgs,

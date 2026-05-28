@@ -1010,6 +1010,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-empty-group-creation-packet'),
         command('crm:vnext:mailerlite-mini-launch-empty-group-create'),
         command('crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet'),
+        command('crm:vnext:mailerlite-mini-launch-crm-write-policy-packet'),
         command('crm:vnext:mailerlite-mini-launch-crm-write-approval-packet'),
         command('crm:vnext:mailerlite-mini-launch-email-style-qa-packet'),
         command('crm:vnext:mailerlite-mini-launch-local-email-asset-plan'),

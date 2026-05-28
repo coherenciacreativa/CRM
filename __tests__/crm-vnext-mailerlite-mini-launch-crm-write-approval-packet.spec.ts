@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  buildPolicyState,
   buildCrmWriteApprovalPacket,
   identityForEvent,
   isWritableObservedEvent,
@@ -90,6 +91,38 @@ const sourceDigests = [
   },
 ];
 
+const writePolicyPacket = {
+  status: "crm_write_policy_packet_ready_no_live_changes",
+  executiveSummary: {
+    policyReady: true,
+    blockersResolvedIfConsumed: [
+      "card_write_policy_packet_missing",
+      "identity_stitching_packet_missing",
+      "scoring_policy_for_mini_launch_missing",
+      "source_delivered_receipts_must_not_score_by_themselves",
+    ],
+    blockersStillRequireRealEvidence: [
+      "real_observed_event_file_missing",
+      "exact_observed_events_missing",
+    ],
+  },
+  policyCoverage: {
+    cardWritePolicyPacketReady: true,
+    identityStitchingPacketReady: true,
+    scoringPolicyForMiniLaunchReady: true,
+    sourceDeliveredReceiptsMustNotScoreByThemselves: true,
+    aggregateMarketReviewPolicyReady: true,
+    factStoreWritePolicyReady: true,
+  },
+  safety: {
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    sendsPerformed: false,
+  },
+};
+
 const realObservedEvent = {
   eventKind: "email_open",
   sourceKind: "mailerlite_engagement",
@@ -115,6 +148,7 @@ describe("CRM vNext MailerLite mini-launch CRM write approval packet", () => {
     expect(parsed.signalProjectionPacket).toContain("mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.eventContract).toContain("mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json");
     expect(parsed.manualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.writePolicyPacket).toContain("mailerlite_mini_launch_crm_write_policy_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.observedEventsFile).toBe("/tmp/events.json");
     expect(parsed.out).toBe("/tmp/crm-write.json");
   });
@@ -208,6 +242,42 @@ describe("CRM vNext MailerLite mini-launch CRM write approval packet", () => {
     ]));
     expect(packet.writeFamilies.find((family) => family.id === "score_projection")?.blockers).toContain("scoring_policy_for_mini_launch_missing");
     expect(packet.writeFamilies.find((family) => family.id === "fact_store_market_learning")?.blockers).toContain("exact_fact_store_facts_missing");
+  });
+
+  test("consumes policy packet to close policy-only blockers while keeping evidence blockers", () => {
+    const policyState = buildPolicyState(writePolicyPacket);
+    expect(policyState).toMatchObject({
+      ready: true,
+      cardWritePolicyReady: true,
+      identityStitchingPolicyReady: true,
+      scoringPolicyReady: true,
+      sourceDeliveredReceiptsNoScore: true,
+    });
+
+    const packet = buildCrmWriteApprovalPacket({
+      signalProjectionPacket,
+      eventContract,
+      writePolicyPacket,
+      sourceDigests,
+      generatedAt,
+    });
+
+    expect(packet.executiveSummary.writePolicyPacketReady).toBe(true);
+    expect(packet.policyEffect).toMatchObject({
+      consumedPolicyPacket: true,
+      policyBlockersStillOpen: [],
+    });
+    expect(packet.approvalBoundary.blockersBeforeApprovalRequest).toEqual(expect.arrayContaining([
+      "real_observed_event_file_missing",
+      "exact_observed_events_missing",
+      "aggregate_market_review_missing",
+      "exact_fact_store_facts_missing",
+      "fact_store_write_approval_missing",
+    ]));
+    expect(packet.approvalBoundary.blockersBeforeApprovalRequest).not.toContain("card_write_policy_packet_missing");
+    expect(packet.approvalBoundary.blockersBeforeApprovalRequest).not.toContain("identity_stitching_packet_missing");
+    expect(packet.approvalBoundary.blockersBeforeApprovalRequest).not.toContain("scoring_policy_for_mini_launch_missing");
+    expect(packet.approvalBoundary.blockersBeforeApprovalRequest).not.toContain("source_delivered_receipts_must_not_score_by_themselves");
   });
 
   test("renders operator-safe markdown", () => {

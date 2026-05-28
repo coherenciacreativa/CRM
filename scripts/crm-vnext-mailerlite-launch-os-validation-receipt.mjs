@@ -31,6 +31,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-draft-repair-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-send-approval-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs',
+  'node --check scripts/crm-vnext-mailerlite-mini-launch-crm-write-policy-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs',
   'npm exec vitest run __tests__/crm-vnext-mailerlite*.spec.ts',
 ];
@@ -200,6 +201,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-draft-repair-packet',
     'crm:vnext:mailerlite-mini-launch-seed-send-approval-packet',
     'crm:vnext:mailerlite-mini-launch-seed-test-qa-packet',
+    'crm:vnext:mailerlite-mini-launch-crm-write-policy-packet',
     'crm:vnext:mailerlite-mini-launch-crm-write-approval-packet',
   ].every((scriptName) => packageHas(packageJson, scriptName));
   const trunkMapReady = onboardingTrunkMap?.status === 'onboarding_trunk_map_ready_no_live_changes';
