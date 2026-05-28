@@ -97,6 +97,8 @@
     "crm:vnext:mailerlite-launch-os-blocked-gate-handoff": "node scripts/crm-vnext-mailerlite-launch-os-blocked-gate-handoff.mjs",
     "crm:vnext:mailerlite-launch-os-missing-inputs-kit": "node scripts/crm-vnext-mailerlite-launch-os-missing-inputs-kit.mjs",
     "crm:vnext:mailerlite-launch-os-missing-inputs-intake": "node scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs",
+    "crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle": "node scripts/crm-vnext-mailerlite-launch-os-missing-inputs-request-bundle.mjs",
+    "crm:vnext:mailerlite-launch-os-private-input-template-pack": "node scripts/crm-vnext-mailerlite-launch-os-private-input-template-pack.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs",

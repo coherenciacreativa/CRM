@@ -49,6 +49,8 @@ const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/
 const DEFAULT_BLOCKED_GATE_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_KIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_kit_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json';
+const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json';
+const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -110,6 +112,8 @@ Options:
   --blocked-gate-handoff <path>     Launch OS blocked-gate handoff JSON. Defaults to ${DEFAULT_BLOCKED_GATE_HANDOFF}
   --missing-inputs-kit <path>        Launch OS missing-inputs kit JSON. Defaults to ${DEFAULT_MISSING_INPUTS_KIT}
   --missing-inputs-intake <path>     Launch OS missing-inputs redacted intake JSON. Defaults to ${DEFAULT_MISSING_INPUTS_INTAKE}
+  --missing-inputs-request-bundle <path> Launch OS copy-ready missing-input request bundle JSON. Defaults to ${DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE}
+  --private-input-template-pack <path> Launch OS inert private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
   --continuation-guard <path>       Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -169,6 +173,8 @@ const parseArgs = (argv) => {
     blockedGateHandoff: DEFAULT_BLOCKED_GATE_HANDOFF,
     missingInputsKit: DEFAULT_MISSING_INPUTS_KIT,
     missingInputsIntake: DEFAULT_MISSING_INPUTS_INTAKE,
+    missingInputsRequestBundle: DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE,
+    privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -226,6 +232,8 @@ const parseArgs = (argv) => {
     else if (arg === '--blocked-gate-handoff') options.blockedGateHandoff = argv[++index];
     else if (arg === '--missing-inputs-kit') options.missingInputsKit = argv[++index];
     else if (arg === '--missing-inputs-intake') options.missingInputsIntake = argv[++index];
+    else if (arg === '--missing-inputs-request-bundle') options.missingInputsRequestBundle = argv[++index];
+    else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -362,6 +370,8 @@ const loadSources = async (options) => {
     ['blockedGateHandoff', options.blockedGateHandoff, 'current blocked gates and missing inputs before any new approval request', 'json', true],
     ['missingInputsKit', options.missingInputsKit, 'Launch OS missing-inputs kit with capture specs and post-input commands', 'json', true],
     ['missingInputsIntake', options.missingInputsIntake, 'Launch OS missing-inputs intake with redacted private input status', 'json', true],
+    ['missingInputsRequestBundle', options.missingInputsRequestBundle, 'Launch OS copy-ready missing-input request bundle with no approval or private file creation', 'json', true],
+    ['privateInputTemplatePack', options.privateInputTemplatePack, 'Launch OS inert private-input template pack with example files ignored by active intake', 'json', true],
     ['continuationGuard', options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
@@ -449,6 +459,8 @@ const buildRequirementChecks = ({
   blockedGateHandoff,
   missingInputsKit,
   missingInputsIntake,
+  missingInputsRequestBundle,
+  privateInputTemplatePack,
   continuationGuard,
   validationReceipt,
   brandTaxonomy,
@@ -921,6 +933,55 @@ const buildRequirementChecks = ({
   const missingInputsIntakeBlockerIds = missingInputsIntakeState?.executiveSummary?.blockerIds
     ?? missingInputsIntakeState?.blockerIds
     ?? [];
+  const missingInputsRequestBundleState = missingInputsRequestBundle ?? runbook?.currentState?.missingInputsRequestBundle ?? null;
+  const missingInputsRequestBundleStatus = missingInputsRequestBundleState?.status ?? null;
+  const missingInputsRequestBundleRequestCount = missingInputsRequestBundleState?.executiveSummary?.requestCount
+    ?? missingInputsRequestBundleState?.requestCount
+    ?? null;
+  const missingInputsRequestBundleCopyBlocksReady = missingInputsRequestBundleState?.executiveSummary?.copyBlocksReady
+    ?? missingInputsRequestBundleState?.copyBlocksReady
+    ?? null;
+  const missingInputsRequestBundleCreatesPrivateFiles = missingInputsRequestBundleState?.executiveSummary?.createsPrivateFiles
+    ?? missingInputsRequestBundleState?.createsPrivateFiles
+    ?? null;
+  const missingInputsRequestBundleAsksApproval = missingInputsRequestBundleState?.executiveSummary?.asksApproval
+    ?? missingInputsRequestBundleState?.asksApproval
+    ?? null;
+  const missingInputsRequestBundleCanAskApprovalNow = missingInputsRequestBundleState?.executiveSummary?.canAskApprovalNow
+    ?? missingInputsRequestBundleState?.canAskApprovalNow
+    ?? null;
+  const missingInputsRequestBundleOpenLiveGateCount = missingInputsRequestBundleState?.executiveSummary?.openLiveMutationGateCount
+    ?? missingInputsRequestBundleState?.openLiveMutationGateCount
+    ?? null;
+  const missingInputsRequestBundleRequestIdsFromPacket = (missingInputsRequestBundleState?.requests ?? [])
+    .map((request) => request?.id)
+    .filter(Boolean);
+  const missingInputsRequestBundleRequestIds = missingInputsRequestBundleRequestIdsFromPacket.length > 0
+    ? missingInputsRequestBundleRequestIdsFromPacket
+    : missingInputsRequestBundleState?.requestIds ?? [];
+  const privateInputTemplatePackState = privateInputTemplatePack ?? runbook?.currentState?.privateInputTemplatePack ?? null;
+  const privateInputTemplatePackStatus = privateInputTemplatePackState?.status ?? null;
+  const privateInputTemplatePackTemplateCount = privateInputTemplatePackState?.executiveSummary?.templateCount
+    ?? privateInputTemplatePackState?.templateCount
+    ?? null;
+  const privateInputTemplatePackExampleFileCount = privateInputTemplatePackState?.executiveSummary?.exampleFileCount
+    ?? privateInputTemplatePackState?.exampleFileCount
+    ?? null;
+  const privateInputTemplatePackActivePathCollisionCount = privateInputTemplatePackState?.executiveSummary?.activePathCollisionCount
+    ?? privateInputTemplatePackState?.activePathCollisionCount
+    ?? null;
+  const privateInputTemplatePackCreatesActivePrivateInputFiles = privateInputTemplatePackState?.safety?.createsActivePrivateInputFiles
+    ?? privateInputTemplatePackState?.createsActivePrivateInputFiles
+    ?? null;
+  const privateInputTemplatePackWritesRealPrivateValues = privateInputTemplatePackState?.safety?.writesRealPrivateValues
+    ?? privateInputTemplatePackState?.writesRealPrivateValues
+    ?? null;
+  const privateInputTemplatePackCanAskApprovalNow = privateInputTemplatePackState?.executiveSummary?.canAskApprovalNow
+    ?? privateInputTemplatePackState?.canAskApprovalNow
+    ?? null;
+  const privateInputTemplatePackOpenLiveGateCount = privateInputTemplatePackState?.executiveSummary?.openLiveMutationGateCount
+    ?? privateInputTemplatePackState?.openLiveMutationGateCount
+    ?? null;
   const continuationGuardState = continuationGuard ?? runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardClosedBoundaryCount = continuationGuardState?.executiveSummary?.closedBoundaryCount
@@ -1328,6 +1389,22 @@ const buildRequirementChecks = ({
         `missingInputsIntakeFullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
         `missingInputsIntakeOpenLiveGateCount=${missingInputsIntakeOpenLiveGateCount ?? 'unknown'}`,
         `missingInputsIntakeBlockerIds=${missingInputsIntakeBlockerIds.join('|') || 'none'}`,
+        `missingInputsRequestBundleStatus=${missingInputsRequestBundleStatus ?? 'missing'}`,
+        `missingInputsRequestBundleRequestCount=${missingInputsRequestBundleRequestCount ?? 'unknown'}`,
+        `missingInputsRequestBundleCopyBlocksReady=${missingInputsRequestBundleCopyBlocksReady ?? 'unknown'}`,
+        `missingInputsRequestBundleCreatesPrivateFiles=${missingInputsRequestBundleCreatesPrivateFiles ?? 'unknown'}`,
+        `missingInputsRequestBundleAsksApproval=${missingInputsRequestBundleAsksApproval ?? 'unknown'}`,
+        `missingInputsRequestBundleCanAskApprovalNow=${missingInputsRequestBundleCanAskApprovalNow ?? 'unknown'}`,
+        `missingInputsRequestBundleOpenLiveGateCount=${missingInputsRequestBundleOpenLiveGateCount ?? 'unknown'}`,
+        `missingInputsRequestBundleRequestIds=${missingInputsRequestBundleRequestIds.join('|') || 'none'}`,
+        `privateInputTemplatePackStatus=${privateInputTemplatePackStatus ?? 'missing'}`,
+        `privateInputTemplatePackTemplateCount=${privateInputTemplatePackTemplateCount ?? 'unknown'}`,
+        `privateInputTemplatePackExampleFileCount=${privateInputTemplatePackExampleFileCount ?? 'unknown'}`,
+        `privateInputTemplatePackActivePathCollisionCount=${privateInputTemplatePackActivePathCollisionCount ?? 'unknown'}`,
+        `privateInputTemplatePackCreatesActivePrivateInputFiles=${privateInputTemplatePackCreatesActivePrivateInputFiles ?? 'unknown'}`,
+        `privateInputTemplatePackWritesRealPrivateValues=${privateInputTemplatePackWritesRealPrivateValues ?? 'unknown'}`,
+        `privateInputTemplatePackCanAskApprovalNow=${privateInputTemplatePackCanAskApprovalNow ?? 'unknown'}`,
+        `privateInputTemplatePackOpenLiveGateCount=${privateInputTemplatePackOpenLiveGateCount ?? 'unknown'}`,
         `continuationGuardStatus=${continuationGuardStatus ?? 'missing'}`,
         `continuationGuardClosedBoundaryCount=${continuationGuardClosedBoundaryCount ?? 'unknown'}`,
         `continuationGuardTrackedBoundaryCount=${continuationGuardTrackedBoundaryCount ?? 'unknown'}`,
@@ -1451,6 +1528,17 @@ const buildRequirementChecks = ({
         `missingInputsIntakeCanAskApprovalNow=${missingInputsIntakeCanAskApprovalNow ?? 'unknown'}`,
         `missingInputsIntakeFullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
         `missingInputsIntakeNextSafeAction=${missingInputsIntakeNextSafeAction ?? 'unknown'}`,
+        `missingInputsRequestBundleStatus=${missingInputsRequestBundleStatus ?? 'missing'}`,
+        `missingInputsRequestBundleRequestCount=${missingInputsRequestBundleRequestCount ?? 'unknown'}`,
+        `missingInputsRequestBundleCopyBlocksReady=${missingInputsRequestBundleCopyBlocksReady ?? 'unknown'}`,
+        `missingInputsRequestBundleCreatesPrivateFiles=${missingInputsRequestBundleCreatesPrivateFiles ?? 'unknown'}`,
+        `missingInputsRequestBundleAsksApproval=${missingInputsRequestBundleAsksApproval ?? 'unknown'}`,
+        `missingInputsRequestBundleCanAskApprovalNow=${missingInputsRequestBundleCanAskApprovalNow ?? 'unknown'}`,
+        `privateInputTemplatePackStatus=${privateInputTemplatePackStatus ?? 'missing'}`,
+        `privateInputTemplatePackExampleFileCount=${privateInputTemplatePackExampleFileCount ?? 'unknown'}`,
+        `privateInputTemplatePackCreatesActivePrivateInputFiles=${privateInputTemplatePackCreatesActivePrivateInputFiles ?? 'unknown'}`,
+        `privateInputTemplatePackWritesRealPrivateValues=${privateInputTemplatePackWritesRealPrivateValues ?? 'unknown'}`,
+        `privateInputTemplatePackCanAskApprovalNow=${privateInputTemplatePackCanAskApprovalNow ?? 'unknown'}`,
         `continuationGuardStatus=${continuationGuardStatus ?? 'missing'}`,
         `continuationGuardClosedBoundaryCount=${continuationGuardClosedBoundaryCount ?? 'unknown'}`,
         `continuationGuardOldUiWorkClosed=${continuationGuardOldUiWorkClosed ?? 'unknown'}`,
@@ -1731,6 +1819,47 @@ const buildGoalAudit = ({
         : missingInputsIntakeStatus
           ? `Refresh the Launch OS missing-inputs intake before packet regeneration; current status ${missingInputsIntakeStatus}.`
           : 'Generate the Launch OS missing-inputs intake so private seed/CRM inputs are checked locally and redacted before any packet regeneration.';
+  const missingInputsRequestBundleState = values.missingInputsRequestBundle ?? values.runbook?.currentState?.missingInputsRequestBundle ?? null;
+  const missingInputsRequestBundleStatus = missingInputsRequestBundleState?.status ?? null;
+  const missingInputsRequestBundleRequestCount = missingInputsRequestBundleState?.executiveSummary?.requestCount
+    ?? missingInputsRequestBundleState?.requestCount
+    ?? null;
+  const missingInputsRequestBundleCopyBlocksReady = missingInputsRequestBundleState?.executiveSummary?.copyBlocksReady
+    ?? missingInputsRequestBundleState?.copyBlocksReady
+    ?? null;
+  const missingInputsRequestBundleCreatesPrivateFiles = missingInputsRequestBundleState?.executiveSummary?.createsPrivateFiles
+    ?? missingInputsRequestBundleState?.createsPrivateFiles
+    ?? null;
+  const missingInputsRequestBundleAsksApproval = missingInputsRequestBundleState?.executiveSummary?.asksApproval
+    ?? missingInputsRequestBundleState?.asksApproval
+    ?? null;
+  const missingInputsRequestBundleMove = missingInputsRequestBundleStatus === 'missing_inputs_request_bundle_ready_no_live_changes'
+    ? `Use the Launch OS missing-inputs request bundle to collect inputs only; requests ${missingInputsRequestBundleRequestCount ?? 'unknown'}, copyBlocksReady=${missingInputsRequestBundleCopyBlocksReady}, asksApproval=${missingInputsRequestBundleAsksApproval}, createsPrivateFiles=${missingInputsRequestBundleCreatesPrivateFiles}.`
+    : missingInputsRequestBundleStatus
+      ? `Refresh the Launch OS missing-inputs request bundle before collecting inputs; current status ${missingInputsRequestBundleStatus}.`
+      : 'Generate the Launch OS missing-inputs request bundle so Alejandro can supply inputs without reopening old UI work or granting premature approvals.';
+  const privateInputTemplatePackState = values.privateInputTemplatePack ?? values.runbook?.currentState?.privateInputTemplatePack ?? null;
+  const privateInputTemplatePackStatus = privateInputTemplatePackState?.status ?? null;
+  const privateInputTemplatePackTemplateCount = privateInputTemplatePackState?.executiveSummary?.templateCount
+    ?? privateInputTemplatePackState?.templateCount
+    ?? null;
+  const privateInputTemplatePackExampleFileCount = privateInputTemplatePackState?.executiveSummary?.exampleFileCount
+    ?? privateInputTemplatePackState?.exampleFileCount
+    ?? null;
+  const privateInputTemplatePackActivePathCollisionCount = privateInputTemplatePackState?.executiveSummary?.activePathCollisionCount
+    ?? privateInputTemplatePackState?.activePathCollisionCount
+    ?? null;
+  const privateInputTemplatePackCreatesActivePrivateInputFiles = privateInputTemplatePackState?.safety?.createsActivePrivateInputFiles
+    ?? privateInputTemplatePackState?.createsActivePrivateInputFiles
+    ?? null;
+  const privateInputTemplatePackWritesRealPrivateValues = privateInputTemplatePackState?.safety?.writesRealPrivateValues
+    ?? privateInputTemplatePackState?.writesRealPrivateValues
+    ?? null;
+  const privateInputTemplatePackMove = privateInputTemplatePackStatus === 'private_input_template_pack_ready_no_live_changes'
+    ? `Use the Launch OS private-input template pack only as inert scaffolding; templates=${privateInputTemplatePackTemplateCount ?? 'unknown'}, exampleFiles=${privateInputTemplatePackExampleFileCount ?? 'unknown'}, activePathCollisions=${privateInputTemplatePackActivePathCollisionCount ?? 'unknown'}, createsActivePrivateInputFiles=${privateInputTemplatePackCreatesActivePrivateInputFiles}, writesRealPrivateValues=${privateInputTemplatePackWritesRealPrivateValues}.`
+    : privateInputTemplatePackStatus
+      ? `Refresh the Launch OS private-input template pack before using examples; current status ${privateInputTemplatePackStatus}.`
+      : 'Generate the Launch OS private-input template pack so examples exist without creating active private input files.';
   const continuationGuardState = values.continuationGuard ?? values.runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardOldUiWorkClosed = continuationGuardState?.executiveSummary?.oldUiWorkClosed
@@ -1834,12 +1963,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -1851,6 +1980,8 @@ const buildGoalAudit = ({
         blockedGateHandoffMove,
         missingInputsKitMove,
         missingInputsIntakeMove,
+        missingInputsRequestBundleMove,
+        privateInputTemplatePackMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1866,6 +1997,8 @@ const buildGoalAudit = ({
         blockedGateHandoffMove,
         missingInputsKitMove,
         missingInputsIntakeMove,
+        missingInputsRequestBundleMove,
+        privateInputTemplatePackMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1880,6 +2013,8 @@ const buildGoalAudit = ({
         blockedGateHandoffMove,
         missingInputsKitMove,
         missingInputsIntakeMove,
+        missingInputsRequestBundleMove,
+        privateInputTemplatePackMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1892,6 +2027,8 @@ const buildGoalAudit = ({
       blockedGateHandoffMove,
       missingInputsKitMove,
       missingInputsIntakeMove,
+      missingInputsRequestBundleMove,
+      privateInputTemplatePackMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
@@ -1931,6 +2068,17 @@ const buildGoalAudit = ({
       missingInputsIntakeReadyInputCount,
       missingInputsIntakeCanAskApprovalNow,
       missingInputsIntakeFullPrivateValuesStored,
+      missingInputsRequestBundleStatus,
+      missingInputsRequestBundleRequestCount,
+      missingInputsRequestBundleCopyBlocksReady,
+      missingInputsRequestBundleCreatesPrivateFiles,
+      missingInputsRequestBundleAsksApproval,
+      privateInputTemplatePackStatus,
+      privateInputTemplatePackTemplateCount,
+      privateInputTemplatePackExampleFileCount,
+      privateInputTemplatePackActivePathCollisionCount,
+      privateInputTemplatePackCreatesActivePrivateInputFiles,
+      privateInputTemplatePackWritesRealPrivateValues,
       continuationGuardStatus,
       continuationGuardOldUiWorkClosed,
       continuationGuardClosedBoundaryCount,
@@ -1951,6 +2099,8 @@ const buildGoalAudit = ({
       blockedGateHandoffMove,
       missingInputsKitMove,
       missingInputsIntakeMove,
+      missingInputsRequestBundleMove,
+      privateInputTemplatePackMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       repairPacketMove,
