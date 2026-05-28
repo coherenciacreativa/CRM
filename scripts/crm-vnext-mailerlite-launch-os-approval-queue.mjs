@@ -14,6 +14,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Man
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
@@ -34,6 +35,7 @@ Options:
   --mini-launch-email-asset-build-dry-run <path> Mini-launch email asset-build dry-run. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN}
   --mini-launch-email-asset-build-execution <path> Mini-launch email asset-build execution attempt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION}
   --mini-launch-email-manual-ui-builder-packet <path> Mini-launch manual UI builder fallback packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET}
+  --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI post-build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
@@ -70,6 +72,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailAssetBuildDryRun: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN,
     miniLaunchEmailAssetBuildExecution: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION,
     miniLaunchEmailManualUiBuilderPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET,
+    miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
@@ -93,6 +96,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-asset-build-dry-run') options.miniLaunchEmailAssetBuildDryRun = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-execution') options.miniLaunchEmailAssetBuildExecution = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-builder-packet') options.miniLaunchEmailManualUiBuilderPacket = argv[++index];
+    else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
@@ -539,8 +543,70 @@ const buildMiniLaunchEmailAssetBuildItem = ({
   });
 };
 
-const buildMiniLaunchEmailManualUiBuilderItem = ({ packet }) => {
+const manualUiReceiptCompleted = (receipt, targetNames) =>
+  receipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
+  && receipt?.executiveSummary?.createdOrEditedDraftCount === targetNames.length
+  && targetNames.length === 4
+  && receipt?.executiveSummary?.sendCount === 0
+  && receipt?.executiveSummary?.scheduleCount === 0
+  && receipt?.executiveSummary?.subscriberReadOrAssignmentCount === 0
+  && receipt?.executiveSummary?.groupAssignmentCount === 0
+  && receipt?.executiveSummary?.workflowAttachmentCount === 0
+  && receipt?.executiveSummary?.outboxCountAfterBuild === 0
+  && receipt?.safety?.sendsPerformed === false
+  && receipt?.safety?.groupsCreatedOrAssigned === false
+  && receipt?.safety?.workflowMutationsPerformed === false;
+
+const buildMiniLaunchEmailManualUiBuilderItem = ({ packet, receipt = null }) => {
   const targetNames = targetNamesFrom((packet?.manualUiTargetDrafts ?? []).map((row) => row?.draftName));
+  const receiptCompleted = manualUiReceiptCompleted(receipt, targetNames);
+  if (receiptCompleted) {
+    return buildApprovalItem({
+      id: 'mini_launch_email_manual_ui_builder',
+      title: 'Mini-launch MailerLite manual UI draft build',
+      lane: 'mini_launch_inteligencia_para_descansar',
+      operationType: 'live_mailerlite_ui_draft_mutation_already_completed',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        packet: packet?.status ?? null,
+        receipt: receipt?.status ?? null,
+        apiExecution: packet?.sourceEvidence?.assetBuildExecutionStatus ?? null,
+        renderQa: packet?.sourceEvidence?.renderQaStatus ?? null,
+        payloadManifest: packet?.sourceEvidence?.payloadManifestStatus ?? null,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: receipt?.stillClosedAfterThisReceipt ?? packet?.manualUiApprovalBoundary?.stillClosedEvenAfterApproval ?? [],
+      requiredFreshEvidence: [
+        'run real MailerLite builder/render QA before any seed-send approval request',
+        'confirm exact seed recipient before any test send',
+      ],
+      blockers: [],
+      evidence: {
+        receiptStatus: receipt.status,
+        createdOrEditedDraftCount: receipt.executiveSummary.createdOrEditedDraftCount,
+        allTargetDraftsVisibleInDrafts: receipt.executiveSummary.allTargetDraftsVisibleInDrafts,
+        draftsTabCountAfterBuild: receipt.executiveSummary.draftsTabCountAfterBuild,
+        outboxCountAfterBuild: receipt.executiveSummary.outboxCountAfterBuild,
+        usedEditor: receipt.executiveSummary.usedEditor,
+        customHtmlEditorStatus: receipt.executiveSummary.customHtmlEditorStatus,
+        sendsPerformed: receipt.safety?.sendsPerformed ?? null,
+        schedulesCreated: receipt.safety?.schedulesCreated ?? null,
+        subscribersReadOrAssigned: receipt.safety?.subscribersReadOrAssigned ?? null,
+        groupsCreatedOrAssigned: receipt.safety?.groupsCreatedOrAssigned ?? null,
+        workflowMutationsPerformed: receipt.safety?.workflowMutationsPerformed ?? null,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The approved manual UI draft build boundary has already been used.',
+        'Current route is MailerLite UI on Growing Business; revisit Advanced/API when launches are frequent enough or subscribers pass 2,500 / pricing needs review.',
+        'Seed send remains a separate later approval after real MailerLite render QA.',
+      ],
+    });
+  }
+
   const blockers = [];
 
   if (packet?.status !== 'mini_launch_email_manual_ui_builder_packet_ready_for_exact_human_approval_no_live_changes') {
@@ -729,44 +795,59 @@ const buildBrujulaBuilderDraftItem = ({ correction, renderQa }) => {
   });
 };
 
-const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null }) => buildApprovalItem({
-  id: 'mini_launch_seed_send',
-  title: 'Mini-launch seed/test send',
-  lane: 'mini_launch_inteligencia_para_descansar',
-  operationType: 'mailerLite_seed_send_after_later_exact_approval',
-  approvalType: 'not_ready_for_request',
-  canAskNow: false,
-  exactApprovalPhrase: null,
-  sourceStatuses: {
-    payloadManifest: payloadManifest?.status ?? null,
-    renderQa: renderQa?.status ?? null,
-  },
-  targetNames: [],
-  allowedAfterExactApproval: [],
-  stillClosed: [
-    'seed_send',
-    'workflow_or_automation_attachment',
-    'subscriber_read_assignment_or_import',
-    'audience_launch',
-  ],
-  requiredFreshEvidence: [
-    'assets must first be built as drafts after exact asset-build approval',
-    'real MailerLite builder/render QA must pass',
-    'exact seed recipient and asset scope must be named',
-  ],
-  blockers: [
-    'asset_build_not_executed',
+const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null, manualUiReceipt = null }) => {
+  const manualUiDraftsBuilt = manualUiReceipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
+    && manualUiReceipt?.executiveSummary?.createdOrEditedDraftCount === 4;
+  const blockers = [
+    ...(manualUiDraftsBuilt ? [] : ['asset_build_not_executed']),
     'real_mailerlite_render_qa_missing',
     'exact_seed_recipient_missing',
-  ],
-  evidence: {
-    readyForSeedSendNow: payloadManifest?.executiveSummary?.readyForSeedSendNow ?? null,
-    localRenderReady: renderQa?.executiveSummary?.localRenderReady ?? null,
-    renderPreviewNonEmptyCount: renderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
-  },
-  commandAfterApproval: null,
-  notes: ['Do not ask for seed-send approval from the asset-build packet alone.'],
-});
+  ];
+
+  return buildApprovalItem({
+    id: 'mini_launch_seed_send',
+    title: 'Mini-launch seed/test send',
+    lane: 'mini_launch_inteligencia_para_descansar',
+    operationType: 'mailerLite_seed_send_after_later_exact_approval',
+    approvalType: 'not_ready_for_request',
+    canAskNow: false,
+    exactApprovalPhrase: null,
+    sourceStatuses: {
+      payloadManifest: payloadManifest?.status ?? null,
+      renderQa: renderQa?.status ?? null,
+      manualUiReceipt: manualUiReceipt?.status ?? null,
+    },
+    targetNames: [],
+    allowedAfterExactApproval: [],
+    stillClosed: [
+      'seed_send',
+      'workflow_or_automation_attachment',
+      'subscriber_read_assignment_or_import',
+      'audience_launch',
+    ],
+    requiredFreshEvidence: [
+      manualUiDraftsBuilt
+        ? 'manual UI drafts exist; run real MailerLite builder/render QA on those drafts'
+        : 'assets must first be built as drafts after exact asset-build or manual UI approval',
+      'exact seed recipient and asset scope must be named',
+    ],
+    blockers,
+    evidence: {
+      manualUiDraftsBuilt,
+      manualUiReceiptStatus: manualUiReceipt?.status ?? null,
+      readyForSeedSendNow: payloadManifest?.executiveSummary?.readyForSeedSendNow ?? null,
+      localRenderReady: renderQa?.executiveSummary?.localRenderReady ?? null,
+      renderPreviewNonEmptyCount: renderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
+      outboxCountAfterManualBuild: manualUiReceipt?.executiveSummary?.outboxCountAfterBuild ?? null,
+    },
+    commandAfterApproval: null,
+    notes: [
+      manualUiDraftsBuilt
+        ? 'Manual UI drafts are present; the next seed-send blocker is real MailerLite render QA plus exact seed recipient.'
+        : 'Do not ask for seed-send approval from the asset-build packet alone.',
+    ],
+  });
+};
 
 const buildCrmSignalWriteItem = ({ packet }) => buildApprovalItem({
   id: 'crm_signal_writes',
@@ -814,6 +895,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailAssetBuildDryRun,
   miniLaunchEmailAssetBuildExecution,
   miniLaunchEmailManualUiBuilderPacket,
+  miniLaunchEmailManualUiBuildReceipt,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
@@ -840,6 +922,7 @@ const buildApprovalQueue = ({
     }),
     buildMiniLaunchEmailManualUiBuilderItem({
       packet: miniLaunchEmailManualUiBuilderPacket,
+      receipt: miniLaunchEmailManualUiBuildReceipt,
     }),
     buildShopifyLocalBuildItem({
       request: miniLaunchShopifyLocalBuildRequest,
@@ -851,6 +934,7 @@ const buildApprovalQueue = ({
     buildMiniLaunchSeedSendItem({
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
       renderQa: miniLaunchEmailRenderQa,
+      manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
     }),
     buildCrmSignalWriteItem({
       packet: miniLaunchCrmSignalProjectionPacket,
@@ -974,6 +1058,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildDryRun, 'mini-launch email asset-build dry-run'),
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildExecution, 'mini-launch email asset-build execution attempt'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuilderPacket, 'mini-launch manual UI builder fallback approval packet'),
+    readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI post-build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
@@ -992,6 +1077,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailAssetBuildDryRun,
     miniLaunchEmailAssetBuildExecution,
     miniLaunchEmailManualUiBuilderPacket,
+    miniLaunchEmailManualUiBuildReceipt,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
@@ -1010,6 +1096,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailAssetBuildDryRun,
     miniLaunchEmailAssetBuildExecution,
     miniLaunchEmailManualUiBuilderPacket,
+    miniLaunchEmailManualUiBuildReceipt,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,

@@ -204,6 +204,35 @@ const miniLaunchEmailManualUiBuilderPacket = {
   },
 };
 
+const miniLaunchEmailManualUiBuildReceipt = {
+  status: "manual_ui_build_receipt_executed_drafts_created_no_sends",
+  executiveSummary: {
+    createdOrEditedDraftCount: 4,
+    allTargetDraftsVisibleInDrafts: true,
+    draftsTabCountAfterBuild: 9,
+    outboxCountAfterBuild: 0,
+    usedEditor: "new_simple_editor",
+    customHtmlEditorStatus: "premium_upgrade_locked_on_growing_business",
+    sendCount: 0,
+    scheduleCount: 0,
+    subscriberReadOrAssignmentCount: 0,
+    groupAssignmentCount: 0,
+    workflowAttachmentCount: 0,
+  },
+  stillClosedAfterThisReceipt: [
+    "seed_send_or_test_send",
+    "workflow_or_automation_attachment",
+    "subscriber_read_assignment_or_import",
+  ],
+  safety: {
+    sendsPerformed: false,
+    schedulesCreated: false,
+    subscribersReadOrAssigned: false,
+    groupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+  },
+};
+
 const miniLaunchShopifyLocalBuildRequest = {
   status: "ready_for_human_or_web_design_scope_approval_no_live_changes",
   approvalGate: {
@@ -286,6 +315,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailAssetBuildDryRun).toContain("mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailAssetBuildExecution).toContain("mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuilderPacket).toContain("mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
@@ -354,6 +384,43 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
       canAskAlejandroNow: false,
     });
     expect(byId.get("crm_signal_writes")?.blockers).toContain("separate_crm_write_approval_packet_missing");
+  });
+
+  test("marks manual UI approval as completed once the post-build receipt exists", () => {
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchEmailManualUiBuildReceipt,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+    const byId = new Map(queue.approvalItems.map((item) => [item.id, item]));
+
+    expect(byId.get("mini_launch_email_manual_ui_builder")).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      operationType: "live_mailerlite_ui_draft_mutation_already_completed",
+      evidence: {
+        receiptStatus: "manual_ui_build_receipt_executed_drafts_created_no_sends",
+        createdOrEditedDraftCount: 4,
+        outboxCountAfterBuild: 0,
+      },
+    });
+    expect(byId.get("mini_launch_seed_send")?.blockers).not.toContain("asset_build_not_executed");
+    expect(byId.get("mini_launch_seed_send")?.blockers).toContain("real_mailerlite_render_qa_missing");
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_email_manual_ui_builder");
   });
 
   test("blocks a mini-launch empty-group item if the create dry-run is not green", () => {
