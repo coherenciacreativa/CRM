@@ -720,6 +720,36 @@ const blockedGateHandoff = {
   ],
 };
 
+const missingInputsKit = {
+  status: "missing_inputs_kit_ready_no_live_changes",
+  executiveSummary: {
+    inputCount: 5,
+    seedInputCount: 1,
+    crmInputCount: 4,
+    privateInputCount: 3,
+    canAskApprovalNow: false,
+    kitCreatesPrivateFiles: false,
+    kitAsksApproval: false,
+    openLiveMutationGateCount: 0,
+    nextSafeAction: "collect_missing_inputs_without_approval_or_execution",
+  },
+  inputRequests: [
+    { id: "exact_seed_recipient" },
+    { id: "real_observed_events_file" },
+    { id: "exact_people" },
+    { id: "writable_event_screen" },
+    { id: "fact_store_market_review" },
+  ],
+  postInputCommands: [
+    "seed",
+    "crm",
+    "handoff",
+    "runbook",
+    "audit",
+    "validation",
+  ],
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -773,6 +803,7 @@ const values = {
   miniLaunchSeedTestQaPacket: null,
   miniLaunchCrmWriteApprovalPacket: null,
   blockedGateHandoff: null,
+  missingInputsKit: null,
   validationReceipt: null,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
   brandDictionary: "CC · Source · Resource · Brújula\n",
@@ -821,6 +852,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailManualUiBuildReceipt).toContain("mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json");
     expect(parsed.blockedGateHandoff).toContain("mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
+    expect(parsed.missingInputsKit).toContain("mailerlite_launch_os_missing_inputs_kit_2026-05-28.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
@@ -1059,6 +1091,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
         },
       },
       blockedGateHandoff,
+      missingInputsKit,
     };
     const checks = buildRequirementChecks(valuesWithManualUiBuild);
     const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
@@ -1085,6 +1118,12 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("blockedGateHandoffStatus=blocked_gate_handoff_ready_no_live_changes");
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("blockedGateHandoffCanAskApprovalNow=false");
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("blockedGateHandoffInputIds=exact_seed_recipient|real_observed_events_file|exact_people|writable_event_screen|fact_store_market_review");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("missingInputsKitStatus=missing_inputs_kit_ready_no_live_changes");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("missingInputsKitInputCount=5");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("missingInputsKitCanAskApprovalNow=false");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("missingInputsKitCreatesPrivateFiles=false");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("missingInputsKitAsksApproval=false");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("missingInputsKitInputIds=exact_seed_recipient|real_observed_events_file|exact_people|writable_event_screen|fact_store_market_review");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("four mini-launch drafts already exist in MailerLite Drafts");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("CRM write approval packet exists as the current boundary");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).not.toContain("no MailerLite creation is authorized yet");
@@ -1093,10 +1132,12 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.nextBestMove).toContain("no UI repair is pending");
     expect(audit.executiveSummary.nextBestMove).toContain("CRM write approval packet is the current CRM boundary");
     expect(audit.executiveSummary.nextBestMove).toContain("blocked-gate handoff");
+    expect(audit.executiveSummary.nextBestMove).toContain("missing-inputs kit");
     expect(audit.executiveSummary.nextBestMove).not.toContain("exact asset-build approval is still required");
     expect(audit.nextMoves.join(" ")).toContain("Do not rerun mini-launch empty-group creation");
     expect(audit.nextMoves.join(" ")).toContain("Use the Launch OS approval intake");
     expect(audit.nextMoves.join(" ")).toContain("Use the Launch OS blocked-gate handoff");
+    expect(audit.nextMoves.join(" ")).toContain("Use the Launch OS missing-inputs kit");
     expect(audit.nextMoves.join(" ")).toContain("canAskApprovalNow=false");
     expect(audit.nextMoves.join(" ")).toContain("collect only the private seed email");
     expect(audit.nextMoves.join(" ")).not.toContain("Generate the Launch OS approval intake");
