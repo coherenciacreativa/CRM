@@ -13,6 +13,11 @@ const runbook = {
     liveGates: {
       openLiveGateCount: 0,
     },
+    continuationGuard: {
+      status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
+      oldUiWorkClosed: true,
+      closedBoundaryCount: 8,
+    },
   },
 };
 
@@ -34,6 +39,14 @@ const onboardingTrunkMap = {
   status: "onboarding_trunk_map_ready_no_live_changes",
 };
 
+const continuationGuard = {
+  status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
+  executiveSummary: {
+    oldUiWorkClosed: true,
+    closedBoundaryCount: 8,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -41,6 +54,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-approval-intake": "node scripts/approval-intake.mjs",
     "crm:vnext:mailerlite-launch-os-blocked-gate-handoff": "node scripts/blocked-gate-handoff.mjs",
     "crm:vnext:mailerlite-launch-os-missing-inputs-kit": "node scripts/missing-inputs-kit.mjs",
+    "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
     "crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt": "node scripts/brujula-manual-ui-build-receipt.mjs",
@@ -98,6 +112,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
 
     expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
     expect(parsed.goalAudit).toContain("mailerlite_launch_os_v0_goal_audit_2026-05-28.json");
+    expect(parsed.continuationGuard).toContain("mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);
@@ -109,6 +124,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     const receipt = buildValidationReceipt({
       runbook,
       goalAudit,
+      continuationGuard,
       onboardingTrunkMap,
       packageJson,
       sourceDigests,
@@ -124,6 +140,8 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.validationStatus).toBe("passed");
     expect(receipt.evidence.liveGatesClosed).toBe(true);
     expect(receipt.evidence.packageRequiredScriptsPresent).toBe(true);
+    expect(receipt.evidence.continuationGuardStatus).toBe("mailerlite_launch_os_continuation_guard_ready_no_live_changes");
+    expect(receipt.evidence.continuationGuardOldUiWorkClosed).toBe(true);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,
@@ -136,6 +154,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     const receipt = buildValidationReceipt({
       runbook,
       goalAudit,
+      continuationGuard,
       onboardingTrunkMap,
       packageJson,
       validationStatus: "passed",
@@ -152,6 +171,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     const receipt = buildValidationReceipt({
       runbook,
       goalAudit,
+      continuationGuard,
       onboardingTrunkMap,
       packageJson,
       sourceDigests,
@@ -171,6 +191,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       subscribersRead: false,
     });
     expect(markdown).toContain("Validation Receipt");
+    expect(markdown).toContain("Continuation guard");
     expect(markdown).toContain("No live actions");
     expect(markdown).toContain("This receipt cannot approve live action");
   });

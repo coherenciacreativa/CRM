@@ -8,6 +8,7 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-validation-receipt-2026-0
 
 const DEFAULT_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.json';
 const DEFAULT_GOAL_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.json';
+const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -17,6 +18,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-approval-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-blocked-gate-handoff.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-missing-inputs-kit.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
   'node --check scripts/crm-vnext-mailerlite-brujula-email-manual-ui-build-receipt.mjs',
@@ -45,6 +47,7 @@ const usage = `Usage:
 Options:
   --runbook <path>               Operator runbook JSON. Defaults to ${DEFAULT_RUNBOOK}
   --goal-audit <path>            Goal audit JSON. Defaults to ${DEFAULT_GOAL_AUDIT}
+  --continuation-guard <path>    Continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
@@ -72,6 +75,7 @@ const parseArgs = (argv) => {
   const options = {
     runbook: DEFAULT_RUNBOOK,
     goalAudit: DEFAULT_GOAL_AUDIT,
+    continuationGuard: DEFAULT_CONTINUATION_GUARD,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
@@ -89,6 +93,7 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--runbook') options.runbook = argv[++index];
     else if (arg === '--goal-audit') options.goalAudit = argv[++index];
+    else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -163,6 +168,7 @@ const safetyClosed = (safety) => [
 const buildValidationReceipt = ({
   runbook,
   goalAudit,
+  continuationGuard,
   onboardingTrunkMap,
   packageJson,
   sourceDigests = [],
@@ -188,6 +194,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-launch-os-approval-intake',
     'crm:vnext:mailerlite-launch-os-blocked-gate-handoff',
     'crm:vnext:mailerlite-launch-os-missing-inputs-kit',
+    'crm:vnext:mailerlite-launch-os-continuation-guard',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
     'crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt',
@@ -248,6 +255,13 @@ const buildValidationReceipt = ({
       goalAuditStatus: goalAudit?.status ?? null,
       goalAuditReadyForLiveOperation: goalAudit?.executiveSummary?.readyForLiveOperation ?? null,
       goalAuditLiveActionAllowedNow: goalAudit?.executiveSummary?.liveActionAllowedNow ?? null,
+      continuationGuardStatus: continuationGuard?.status ?? runbook?.currentState?.continuationGuard?.status ?? null,
+      continuationGuardOldUiWorkClosed: continuationGuard?.executiveSummary?.oldUiWorkClosed
+        ?? runbook?.currentState?.continuationGuard?.oldUiWorkClosed
+        ?? null,
+      continuationGuardClosedBoundaryCount: continuationGuard?.executiveSummary?.closedBoundaryCount
+        ?? runbook?.currentState?.continuationGuard?.closedBoundaryCount
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -266,17 +280,20 @@ const buildValidationReceiptFromFiles = async (options) => {
   const [
     runbook,
     goalAudit,
+    continuationGuard,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
   ] = await Promise.all([
     readJson(options.runbook),
     readJson(options.goalAudit),
+    readJson(options.continuationGuard),
     readJson(options.onboardingTrunkMap),
     readJson(options.packageJson),
     Promise.all([
       digestFor(options.runbook, 'operator runbook state and closed gates'),
       digestFor(options.goalAudit, 'goal audit status and safety posture'),
+      digestFor(options.continuationGuard, 'continuation guard closed hito and do-not-recycle state'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
@@ -285,6 +302,7 @@ const buildValidationReceiptFromFiles = async (options) => {
   return buildValidationReceipt({
     runbook,
     goalAudit,
+    continuationGuard,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -314,6 +332,8 @@ const renderMarkdown = (receipt) => {
     `- Live gates closed: ${receipt.evidence.liveGatesClosed}`,
     `- Required scripts present: ${receipt.evidence.packageRequiredScriptsPresent}`,
     `- Goal audit live action allowed now: ${receipt.evidence.goalAuditLiveActionAllowedNow}`,
+    `- Continuation guard: ${receipt.evidence.continuationGuardStatus ?? 'missing'}`,
+    `- Old UI work closed: ${receipt.evidence.continuationGuardOldUiWorkClosed ?? 'unknown'}`,
     '',
     '## Commands',
     '',

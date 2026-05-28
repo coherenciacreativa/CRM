@@ -49,6 +49,7 @@ const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_2026-05-28.json';
 const DEFAULT_BLOCKED_GATE_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_KIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_kit_2026-05-28.json';
+const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -101,6 +102,7 @@ Options:
   --approval-intake <path>           Launch OS exact approval intake JSON. Defaults to ${DEFAULT_APPROVAL_INTAKE}
   --blocked-gate-handoff <path>      Launch OS blocked-gate handoff JSON. Defaults to ${DEFAULT_BLOCKED_GATE_HANDOFF}
   --missing-inputs-kit <path>         Launch OS missing-inputs kit JSON. Defaults to ${DEFAULT_MISSING_INPUTS_KIT}
+  --continuation-guard <path>        Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
   --out <path>                       Write JSON runbook
@@ -160,6 +162,7 @@ const parseArgs = (argv) => {
     approvalIntake: DEFAULT_APPROVAL_INTAKE,
     blockedGateHandoff: DEFAULT_BLOCKED_GATE_HANDOFF,
     missingInputsKit: DEFAULT_MISSING_INPUTS_KIT,
+    continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     out: null,
@@ -215,6 +218,7 @@ const parseArgs = (argv) => {
     else if (arg === '--approval-intake') options.approvalIntake = argv[++index];
     else if (arg === '--blocked-gate-handoff') options.blockedGateHandoff = argv[++index];
     else if (arg === '--missing-inputs-kit') options.missingInputsKit = argv[++index];
+    else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
@@ -283,6 +287,7 @@ const loadSourceDigests = async (options) => {
     [options.approvalIntake, 'local exact approval intake and fresh-evidence pre-execution plan', true],
     [options.blockedGateHandoff, 'current blocked gates and missing inputs before any new approval request', true],
     [options.missingInputsKit, 'Launch OS missing-inputs kit with capture specs and post-input commands', true],
+    [options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
   ];
@@ -450,6 +455,7 @@ const buildCurrentState = ({
   approvalIntake,
   blockedGateHandoff,
   missingInputsKit,
+  continuationGuard,
   validationReceipt,
 }) => {
   const assignedGroupNames = groupNamesFrom(brujulaApply?.assignedGroups);
@@ -550,6 +556,13 @@ const buildCurrentState = ({
     .map((gate) => gate?.id)
     .filter(Boolean);
   const missingInputsKitInputIds = (missingInputsKit?.inputRequests ?? [])
+    .map((input) => input?.id)
+    .filter(Boolean);
+  const continuationGuardClosedBoundaryIds = (continuationGuard?.closedBoundaries ?? [])
+    .filter((boundary) => boundary?.closed === true)
+    .map((boundary) => boundary.id)
+    .filter(Boolean);
+  const continuationGuardActiveInputIds = (continuationGuard?.activeInputs ?? [])
     .map((input) => input?.id)
     .filter(Boolean);
 
@@ -913,6 +926,20 @@ const buildCurrentState = ({
       inputIds: missingInputsKitInputIds,
       postInputCommandCount: missingInputsKit?.postInputCommands?.length ?? null,
     },
+    continuationGuard: {
+      status: continuationGuard?.status ?? null,
+      allTrackedBoundariesClosed: continuationGuard?.executiveSummary?.allTrackedBoundariesClosed ?? null,
+      closedBoundaryCount: continuationGuard?.executiveSummary?.closedBoundaryCount ?? null,
+      trackedBoundaryCount: continuationGuard?.executiveSummary?.trackedBoundaryCount ?? null,
+      oldUiWorkClosed: continuationGuard?.executiveSummary?.oldUiWorkClosed ?? null,
+      activeInputCount: continuationGuard?.executiveSummary?.activeInputCount ?? null,
+      activeInputIds: continuationGuardActiveInputIds,
+      recycledActionBlockCount: continuationGuard?.executiveSummary?.recycledActionBlockCount ?? null,
+      openLiveMutationGateCount: continuationGuard?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextSafeAction: continuationGuard?.executiveSummary?.nextSafeAction ?? null,
+      uiWorkAction: continuationGuard?.executiveSummary?.uiWorkAction ?? null,
+      closedBoundaryIds: continuationGuardClosedBoundaryIds,
+    },
     validation: {
       receiptStatus: validationReceipt?.status ?? null,
       validationStatus: validationReceipt?.validationStatus ?? null,
@@ -971,6 +998,7 @@ const buildReportMap = (sourceDigests) => {
     approvalIntake: findPath('mailerlite_launch_os_approval_intake_2026-05-28.json'),
     blockedGateHandoff: findPath('mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json'),
     missingInputsKit: findPath('mailerlite_launch_os_missing_inputs_kit_2026-05-28.json'),
+    continuationGuard: findPath('mailerlite_launch_os_continuation_guard_2026-05-28.json'),
     validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-28.json'),
     packageJson: findPath('package.json'),
   };
@@ -1247,6 +1275,15 @@ const buildMissingInputsKitMove = (currentState) => {
   return `Refresh the Launch OS missing-inputs kit before requesting new approvals; current status: ${kit.status}.`;
 };
 
+const buildContinuationGuardMove = (currentState) => {
+  const guard = currentState?.continuationGuard;
+  if (!guard?.status) return null;
+  if (guard.status === 'mailerlite_launch_os_continuation_guard_ready_no_live_changes') {
+    return `Use the Launch OS continuation guard after resumes/compactions; old UI work closed: ${guard.oldUiWorkClosed}; closed boundaries: ${guard.closedBoundaryIds.join(', ') || 'none'}; do not reopen UI or group creation unless new concrete evidence changes those boundaries.`;
+  }
+  return `Refresh the Launch OS continuation guard before acting after a resume; current status: ${guard.status}.`;
+};
+
 const buildApprovalPhaseMoves = (currentState) => {
   const miniLaunchEmptyGroupBoundaryClosed = approvalItemStatus(currentState, 'mini_launch_empty_group_creation') === 'reference_only_no_approval_request_now'
     || miniLaunchEmptyGroupsAlreadyExist(currentState);
@@ -1256,6 +1293,7 @@ const buildApprovalPhaseMoves = (currentState) => {
     'Use the Launch OS approval intake only when Alejandro provides exact approval text; require a single exact phrase match before any fresh-evidence plan.',
     buildBlockedGateHandoffMove(currentState),
     buildMissingInputsKitMove(currentState),
+    buildContinuationGuardMove(currentState),
     miniLaunchEmptyGroupBoundaryClosed
     ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
     : 'Hold at the mini-launch empty-group create runner dry-run: it is green, createdCount remains 0, and --execute still requires the exact phrase plus a fresh group scan.',
@@ -1317,6 +1355,7 @@ const buildSharedImmediateMoves = (currentState) => {
       : 'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
     buildBlockedGateHandoffMove(currentState),
     buildMissingInputsKitMove(currentState),
+    buildContinuationGuardMove(currentState),
     'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
     'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
     'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
@@ -1384,6 +1423,7 @@ const buildRunbook = ({
   approvalIntake,
   blockedGateHandoff,
   missingInputsKit,
+  continuationGuard,
   validationReceipt,
   packageJson,
   sourceDigests,
@@ -1432,6 +1472,7 @@ const buildRunbook = ({
     approvalIntake,
     blockedGateHandoff,
     missingInputsKit,
+    continuationGuard,
     validationReceipt,
     responseWorkspace,
   });
@@ -1640,6 +1681,11 @@ const renderMarkdown = (runbook) => {
     `- Missing-inputs ids: ${runbook.currentState.missingInputsKit.inputIds.join(', ') || 'none'}`,
     `- Missing-inputs next safe action: ${runbook.currentState.missingInputsKit.nextSafeAction ?? 'unknown'}`,
     `- Missing-inputs creates private files: ${runbook.currentState.missingInputsKit.kitCreatesPrivateFiles ?? 'unknown'}`,
+    `- Continuation guard: ${runbook.currentState.continuationGuard.status ?? 'missing'}`,
+    `- Continuation guard closed boundaries: ${runbook.currentState.continuationGuard.closedBoundaryCount ?? 'unknown'}/${runbook.currentState.continuationGuard.trackedBoundaryCount ?? 'unknown'}`,
+    `- Continuation guard old UI work closed: ${runbook.currentState.continuationGuard.oldUiWorkClosed ?? 'unknown'}`,
+    `- Continuation guard active inputs: ${runbook.currentState.continuationGuard.activeInputIds.join(', ') || 'none'}`,
+    `- Continuation guard UI action: ${runbook.currentState.continuationGuard.uiWorkAction ?? 'unknown'}`,
     `- Validation receipt: ${runbook.currentState.validation.receiptStatus ?? 'missing'}`,
     `- Validation status: ${runbook.currentState.validation.validationStatus ?? 'unknown'}`,
     `- Validation tests: ${runbook.currentState.validation.testCount ?? 'unknown'}`,
@@ -1765,6 +1811,7 @@ const buildRunbookFromFiles = async (options) => {
     approvalIntake,
     blockedGateHandoff,
     missingInputsKit,
+    continuationGuard,
     validationReceipt,
     packageJson,
     sourceDigests,
@@ -1812,6 +1859,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.approvalIntake),
     readOptionalJson(options.blockedGateHandoff),
     readOptionalJson(options.missingInputsKit),
+    readOptionalJson(options.continuationGuard),
     readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
     loadSourceDigests(options),
@@ -1861,6 +1909,7 @@ const buildRunbookFromFiles = async (options) => {
     approvalIntake,
     blockedGateHandoff,
     missingInputsKit,
+    continuationGuard,
     validationReceipt,
     packageJson,
     sourceDigests,
@@ -1895,6 +1944,9 @@ const main = async () => {
     blockedGateHandoffCanAskApprovalNow: runbook.currentState.blockedGateHandoff.canAskApprovalNow,
     missingInputsKitStatus: runbook.currentState.missingInputsKit.status,
     missingInputsKitInputCount: runbook.currentState.missingInputsKit.inputCount,
+    continuationGuardStatus: runbook.currentState.continuationGuard.status,
+    continuationGuardOldUiWorkClosed: runbook.currentState.continuationGuard.oldUiWorkClosed,
+    continuationGuardClosedBoundaryCount: runbook.currentState.continuationGuard.closedBoundaryCount,
     pendingDepartments: runbook.currentState.miniLaunch.pendingDepartments,
     safeToIntakeOneMoreNoLiveIdea: runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea,
     out: options.out ? resolve(options.out) : null,
