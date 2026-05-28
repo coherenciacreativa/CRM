@@ -48,6 +48,7 @@ const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/m
 const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_2026-05-28.json';
 const DEFAULT_BLOCKED_GATE_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_KIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_kit_2026-05-28.json';
+const DEFAULT_MISSING_INPUTS_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -108,6 +109,7 @@ Options:
   --approval-intake <path>          Launch OS exact approval intake JSON. Defaults to ${DEFAULT_APPROVAL_INTAKE}
   --blocked-gate-handoff <path>     Launch OS blocked-gate handoff JSON. Defaults to ${DEFAULT_BLOCKED_GATE_HANDOFF}
   --missing-inputs-kit <path>        Launch OS missing-inputs kit JSON. Defaults to ${DEFAULT_MISSING_INPUTS_KIT}
+  --missing-inputs-intake <path>     Launch OS missing-inputs redacted intake JSON. Defaults to ${DEFAULT_MISSING_INPUTS_INTAKE}
   --continuation-guard <path>       Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -166,6 +168,7 @@ const parseArgs = (argv) => {
     approvalIntake: DEFAULT_APPROVAL_INTAKE,
     blockedGateHandoff: DEFAULT_BLOCKED_GATE_HANDOFF,
     missingInputsKit: DEFAULT_MISSING_INPUTS_KIT,
+    missingInputsIntake: DEFAULT_MISSING_INPUTS_INTAKE,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -222,6 +225,7 @@ const parseArgs = (argv) => {
     else if (arg === '--approval-intake') options.approvalIntake = argv[++index];
     else if (arg === '--blocked-gate-handoff') options.blockedGateHandoff = argv[++index];
     else if (arg === '--missing-inputs-kit') options.missingInputsKit = argv[++index];
+    else if (arg === '--missing-inputs-intake') options.missingInputsIntake = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -357,6 +361,7 @@ const loadSources = async (options) => {
     ['approvalIntake', options.approvalIntake, 'local exact approval intake and fresh-evidence pre-execution plan', 'json', true],
     ['blockedGateHandoff', options.blockedGateHandoff, 'current blocked gates and missing inputs before any new approval request', 'json', true],
     ['missingInputsKit', options.missingInputsKit, 'Launch OS missing-inputs kit with capture specs and post-input commands', 'json', true],
+    ['missingInputsIntake', options.missingInputsIntake, 'Launch OS missing-inputs intake with redacted private input status', 'json', true],
     ['continuationGuard', options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
@@ -443,6 +448,7 @@ const buildRequirementChecks = ({
   approvalIntake,
   blockedGateHandoff,
   missingInputsKit,
+  missingInputsIntake,
   continuationGuard,
   validationReceipt,
   brandTaxonomy,
@@ -877,6 +883,44 @@ const buildRequirementChecks = ({
   const missingInputsKitInputIds = missingInputsKitInputIdsFromPacket.length > 0
     ? missingInputsKitInputIdsFromPacket
     : missingInputsKitState?.inputIds ?? [];
+  const missingInputsIntakeState = missingInputsIntake ?? runbook?.currentState?.missingInputsIntake ?? null;
+  const missingInputsIntakeStatus = missingInputsIntakeState?.status ?? null;
+  const missingInputsIntakeInputCount = missingInputsIntakeState?.executiveSummary?.inputCount
+    ?? missingInputsIntakeState?.inputCount
+    ?? null;
+  const missingInputsIntakePresentInputCount = missingInputsIntakeState?.executiveSummary?.presentInputCount
+    ?? missingInputsIntakeState?.presentInputCount
+    ?? null;
+  const missingInputsIntakeReadyInputCount = missingInputsIntakeState?.executiveSummary?.readyInputCount
+    ?? missingInputsIntakeState?.readyInputCount
+    ?? null;
+  const missingInputsIntakeReadyForSeedApprovalPacket = missingInputsIntakeState?.executiveSummary?.readyForSeedApprovalPacket
+    ?? missingInputsIntakeState?.readyForSeedApprovalPacket
+    ?? null;
+  const missingInputsIntakeReadyForCrmWritePacketRegeneration = missingInputsIntakeState?.executiveSummary?.readyForCrmWritePacketRegeneration
+    ?? missingInputsIntakeState?.readyForCrmWritePacketRegeneration
+    ?? null;
+  const missingInputsIntakeReadyForCrmApprovalRequest = missingInputsIntakeState?.executiveSummary?.readyForCrmApprovalRequest
+    ?? missingInputsIntakeState?.readyForCrmApprovalRequest
+    ?? null;
+  const missingInputsIntakeFactStoreReviewReady = missingInputsIntakeState?.executiveSummary?.factStoreReviewReady
+    ?? missingInputsIntakeState?.factStoreReviewReady
+    ?? null;
+  const missingInputsIntakeCanAskApprovalNow = missingInputsIntakeState?.executiveSummary?.canAskApprovalNow
+    ?? missingInputsIntakeState?.canAskApprovalNow
+    ?? null;
+  const missingInputsIntakeFullPrivateValuesStored = missingInputsIntakeState?.executiveSummary?.fullPrivateValuesStoredInReport
+    ?? missingInputsIntakeState?.fullPrivateValuesStoredInReport
+    ?? null;
+  const missingInputsIntakeOpenLiveGateCount = missingInputsIntakeState?.executiveSummary?.openLiveMutationGateCount
+    ?? missingInputsIntakeState?.openLiveMutationGateCount
+    ?? null;
+  const missingInputsIntakeNextSafeAction = missingInputsIntakeState?.executiveSummary?.nextSafeAction
+    ?? missingInputsIntakeState?.nextSafeAction
+    ?? null;
+  const missingInputsIntakeBlockerIds = missingInputsIntakeState?.executiveSummary?.blockerIds
+    ?? missingInputsIntakeState?.blockerIds
+    ?? [];
   const continuationGuardState = continuationGuard ?? runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardClosedBoundaryCount = continuationGuardState?.executiveSummary?.closedBoundaryCount
@@ -1272,6 +1316,18 @@ const buildRequirementChecks = ({
         `missingInputsKitAsksApproval=${missingInputsKitAsksApproval ?? 'unknown'}`,
         `missingInputsKitOpenLiveGateCount=${missingInputsKitOpenLiveGateCount ?? 'unknown'}`,
         `missingInputsKitInputIds=${missingInputsKitInputIds.join('|') || 'none'}`,
+        `missingInputsIntakeStatus=${missingInputsIntakeStatus ?? 'missing'}`,
+        `missingInputsIntakeInputCount=${missingInputsIntakeInputCount ?? 'unknown'}`,
+        `missingInputsIntakePresentInputCount=${missingInputsIntakePresentInputCount ?? 'unknown'}`,
+        `missingInputsIntakeReadyInputCount=${missingInputsIntakeReadyInputCount ?? 'unknown'}`,
+        `missingInputsIntakeReadyForSeedApprovalPacket=${missingInputsIntakeReadyForSeedApprovalPacket ?? 'unknown'}`,
+        `missingInputsIntakeReadyForCrmWritePacketRegeneration=${missingInputsIntakeReadyForCrmWritePacketRegeneration ?? 'unknown'}`,
+        `missingInputsIntakeReadyForCrmApprovalRequest=${missingInputsIntakeReadyForCrmApprovalRequest ?? 'unknown'}`,
+        `missingInputsIntakeFactStoreReviewReady=${missingInputsIntakeFactStoreReviewReady ?? 'unknown'}`,
+        `missingInputsIntakeCanAskApprovalNow=${missingInputsIntakeCanAskApprovalNow ?? 'unknown'}`,
+        `missingInputsIntakeFullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
+        `missingInputsIntakeOpenLiveGateCount=${missingInputsIntakeOpenLiveGateCount ?? 'unknown'}`,
+        `missingInputsIntakeBlockerIds=${missingInputsIntakeBlockerIds.join('|') || 'none'}`,
         `continuationGuardStatus=${continuationGuardStatus ?? 'missing'}`,
         `continuationGuardClosedBoundaryCount=${continuationGuardClosedBoundaryCount ?? 'unknown'}`,
         `continuationGuardTrackedBoundaryCount=${continuationGuardTrackedBoundaryCount ?? 'unknown'}`,
@@ -1389,6 +1445,12 @@ const buildRequirementChecks = ({
         `missingInputsKitCanAskApprovalNow=${missingInputsKitCanAskApprovalNow ?? 'unknown'}`,
         `missingInputsKitCreatesPrivateFiles=${missingInputsKitCreatesPrivateFiles ?? 'unknown'}`,
         `missingInputsKitAsksApproval=${missingInputsKitAsksApproval ?? 'unknown'}`,
+        `missingInputsIntakeStatus=${missingInputsIntakeStatus ?? 'missing'}`,
+        `missingInputsIntakeReadyInputCount=${missingInputsIntakeReadyInputCount ?? 'unknown'}`,
+        `missingInputsIntakePresentInputCount=${missingInputsIntakePresentInputCount ?? 'unknown'}`,
+        `missingInputsIntakeCanAskApprovalNow=${missingInputsIntakeCanAskApprovalNow ?? 'unknown'}`,
+        `missingInputsIntakeFullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
+        `missingInputsIntakeNextSafeAction=${missingInputsIntakeNextSafeAction ?? 'unknown'}`,
         `continuationGuardStatus=${continuationGuardStatus ?? 'missing'}`,
         `continuationGuardClosedBoundaryCount=${continuationGuardClosedBoundaryCount ?? 'unknown'}`,
         `continuationGuardOldUiWorkClosed=${continuationGuardOldUiWorkClosed ?? 'unknown'}`,
@@ -1640,6 +1702,35 @@ const buildGoalAudit = ({
     : missingInputsKitStatus
       ? `Refresh the Launch OS missing-inputs kit before new approvals; current status ${missingInputsKitStatus}.`
       : null;
+  const missingInputsIntakeState = values.missingInputsIntake ?? values.runbook?.currentState?.missingInputsIntake ?? null;
+  const missingInputsIntakeStatus = missingInputsIntakeState?.status ?? null;
+  const missingInputsIntakeInputCount = missingInputsIntakeState?.executiveSummary?.inputCount
+    ?? missingInputsIntakeState?.inputCount
+    ?? null;
+  const missingInputsIntakePresentInputCount = missingInputsIntakeState?.executiveSummary?.presentInputCount
+    ?? missingInputsIntakeState?.presentInputCount
+    ?? null;
+  const missingInputsIntakeReadyInputCount = missingInputsIntakeState?.executiveSummary?.readyInputCount
+    ?? missingInputsIntakeState?.readyInputCount
+    ?? null;
+  const missingInputsIntakeCanAskApprovalNow = missingInputsIntakeState?.executiveSummary?.canAskApprovalNow
+    ?? missingInputsIntakeState?.canAskApprovalNow
+    ?? null;
+  const missingInputsIntakeFullPrivateValuesStored = missingInputsIntakeState?.executiveSummary?.fullPrivateValuesStoredInReport
+    ?? missingInputsIntakeState?.fullPrivateValuesStoredInReport
+    ?? null;
+  const missingInputsIntakeNextSafeAction = missingInputsIntakeState?.executiveSummary?.nextSafeAction
+    ?? missingInputsIntakeState?.nextSafeAction
+    ?? null;
+  const missingInputsIntakeMove = missingInputsIntakeStatus === 'missing_inputs_intake_waiting_for_inputs_no_live_changes'
+    ? `Use the Launch OS missing-inputs intake as redacted current state; ready inputs ${missingInputsIntakeReadyInputCount ?? 0}/${missingInputsIntakeInputCount ?? 'unknown'}, present inputs ${missingInputsIntakePresentInputCount ?? 0}, canAskApprovalNow=${missingInputsIntakeCanAskApprovalNow}.`
+    : missingInputsIntakeStatus === 'missing_inputs_intake_partial_no_live_changes'
+      ? `Use the Launch OS missing-inputs intake before regenerating seed/CRM packets; ready inputs ${missingInputsIntakeReadyInputCount ?? 0}/${missingInputsIntakeInputCount ?? 'unknown'}, fullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored}.`
+      : missingInputsIntakeStatus === 'missing_inputs_intake_all_inputs_ready_no_live_changes'
+        ? `Use the Launch OS missing-inputs intake to regenerate seed/CRM packets without execution; all ${missingInputsIntakeInputCount ?? 'current'} inputs are ready, canAskApprovalNow=${missingInputsIntakeCanAskApprovalNow}.`
+        : missingInputsIntakeStatus
+          ? `Refresh the Launch OS missing-inputs intake before packet regeneration; current status ${missingInputsIntakeStatus}.`
+          : 'Generate the Launch OS missing-inputs intake so private seed/CRM inputs are checked locally and redacted before any packet regeneration.';
   const continuationGuardState = values.continuationGuard ?? values.runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardOldUiWorkClosed = continuationGuardState?.executiveSummary?.oldUiWorkClosed
@@ -1678,7 +1769,9 @@ const buildGoalAudit = ({
     && repairPacket?.decision?.canRepairNow === false
     && repairPacket?.executiveSummary?.openLiveMutationGateCount === 0;
   const repairPacketResolved = repairPacket?.status === 'mini_launch_email_manual_ui_draft_repair_packet_reference_only_no_repair_needed';
-  const repairPacketMove = repairPacketReady
+  const repairPacketMove = continuationGuardOldUiWorkClosed === true
+    ? 'Manual UI draft repair is closed by the continuation guard; do not reopen MailerLite UI work unless new concrete mismatch evidence appears.'
+    : repairPacketReady
     ? `Manual UI draft repair packet is the current mini-launch asset boundary: repair ${repairPacket.executiveSummary?.targetDraftCount ?? 'unknown'} draft / ${repairPacket.executiveSummary?.missingFragmentCount ?? 'unknown'} exact fragments, then rerun real MailerLite render QA before seed-send approval.`
     : repairPacketResolved
       ? 'Manual UI draft repair packet is reference-only: real MailerLite render QA is green and no repair approval is pending.'
@@ -1711,7 +1804,9 @@ const buildGoalAudit = ({
       : 'Generate the seed/test QA packet before any seed-send approval request.';
   const localEmailAssetPlanMove = localEmailAssetPlanReady
     ? manualUiBuildClosed
-      ? repairPacketReady
+      ? continuationGuardOldUiWorkClosed === true
+        ? `The four mini-launch email assets are now represented as MailerLite UI drafts, UI repair is closed by the continuation guard and no UI repair is pending. ${seedRecipientMove}`
+        : repairPacketReady
         ? `The four mini-launch email assets are represented as MailerLite UI drafts, but real QA found a repairable mismatch. ${repairPacketMove}`
         : seedRecipientMissingOnly
           ? `The four mini-launch email assets are now represented as MailerLite UI drafts via the manual build receipt, real MailerLite QA is green and no UI repair is pending. ${seedRecipientMove}`
@@ -1739,12 +1834,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -1755,6 +1850,7 @@ const buildGoalAudit = ({
         approvalIntakeMove,
         blockedGateHandoffMove,
         missingInputsKitMove,
+        missingInputsIntakeMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1769,6 +1865,7 @@ const buildGoalAudit = ({
         approvalIntakeMove,
         blockedGateHandoffMove,
         missingInputsKitMove,
+        missingInputsIntakeMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1782,6 +1879,7 @@ const buildGoalAudit = ({
         approvalIntakeMove,
         blockedGateHandoffMove,
         missingInputsKitMove,
+        missingInputsIntakeMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1793,6 +1891,7 @@ const buildGoalAudit = ({
       approvalIntakeMove,
       blockedGateHandoffMove,
       missingInputsKitMove,
+      missingInputsIntakeMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
@@ -1827,6 +1926,11 @@ const buildGoalAudit = ({
       missingInputsKitStatus,
       missingInputsKitInputCount,
       missingInputsKitInputIds,
+      missingInputsIntakeStatus,
+      missingInputsIntakeInputCount,
+      missingInputsIntakeReadyInputCount,
+      missingInputsIntakeCanAskApprovalNow,
+      missingInputsIntakeFullPrivateValuesStored,
       continuationGuardStatus,
       continuationGuardOldUiWorkClosed,
       continuationGuardClosedBoundaryCount,
@@ -1846,6 +1950,7 @@ const buildGoalAudit = ({
       approvalQueueMove,
       blockedGateHandoffMove,
       missingInputsKitMove,
+      missingInputsIntakeMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       repairPacketMove,

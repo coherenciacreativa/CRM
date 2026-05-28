@@ -290,6 +290,37 @@ const missingInputsKit = {
   ],
 };
 
+const missingInputsIntake = {
+  status: "missing_inputs_intake_waiting_for_inputs_no_live_changes",
+  executiveSummary: {
+    inputCount: 5,
+    presentInputCount: 0,
+    readyInputCount: 0,
+    blockerIds: [
+      "exact_seed_recipient",
+      "real_observed_events_file",
+      "exact_people",
+      "writable_event_screen",
+      "fact_store_market_review",
+    ],
+    readyForSeedApprovalPacket: false,
+    readyForCrmWritePacketRegeneration: false,
+    readyForCrmApprovalRequest: false,
+    factStoreReviewReady: false,
+    fullPrivateValuesStoredInReport: false,
+    canAskApprovalNow: false,
+    openLiveMutationGateCount: 0,
+    nextSafeAction: "collect_missing_inputs_without_approval_or_execution",
+  },
+  inputStates: [
+    { id: "exact_seed_recipient" },
+    { id: "real_observed_events_file" },
+    { id: "exact_people" },
+    { id: "writable_event_screen" },
+    { id: "fact_store_market_review" },
+  ],
+};
+
 const continuationGuard = {
   status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
   executiveSummary: {
@@ -753,7 +784,10 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-department-review-finalize-pending": "node scripts/finalize-pending.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/backlog.mjs",
     "crm:vnext:mailerlite-launch-os-approval-queue": "node scripts/approval-queue.mjs",
+    "crm:vnext:mailerlite-launch-os-approval-intake": "node scripts/approval-intake.mjs",
     "crm:vnext:mailerlite-launch-os-blocked-gate-handoff": "node scripts/blocked-gate-handoff.mjs",
+    "crm:vnext:mailerlite-launch-os-missing-inputs-kit": "node scripts/missing-inputs-kit.mjs",
+    "crm:vnext:mailerlite-launch-os-missing-inputs-intake": "node scripts/missing-inputs-intake.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -809,6 +843,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.approvalQueue).toContain("mailerlite_launch_os_approval_queue_2026-05-28.json");
     expect(parsed.blockedGateHandoff).toContain("mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
     expect(parsed.missingInputsKit).toContain("mailerlite_launch_os_missing_inputs_kit_2026-05-28.json");
+    expect(parsed.missingInputsIntake).toContain("mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
     expect(parsed.continuationGuard).toContain("mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
@@ -871,6 +906,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       approvalQueue,
       blockedGateHandoff,
       missingInputsKit,
+      missingInputsIntake,
       continuationGuard,
       validationReceipt,
       responseWorkspace,
@@ -1043,6 +1079,34 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         "fact_store_market_review",
       ],
       postInputCommandCount: 6,
+    });
+    expect(state.missingInputsIntake).toMatchObject({
+      status: "missing_inputs_intake_waiting_for_inputs_no_live_changes",
+      inputCount: 5,
+      presentInputCount: 0,
+      readyInputCount: 0,
+      readyForSeedApprovalPacket: false,
+      readyForCrmWritePacketRegeneration: false,
+      readyForCrmApprovalRequest: false,
+      factStoreReviewReady: false,
+      fullPrivateValuesStoredInReport: false,
+      canAskApprovalNow: false,
+      openLiveMutationGateCount: 0,
+      nextSafeAction: "collect_missing_inputs_without_approval_or_execution",
+      inputIds: [
+        "exact_seed_recipient",
+        "real_observed_events_file",
+        "exact_people",
+        "writable_event_screen",
+        "fact_store_market_review",
+      ],
+      blockerIds: [
+        "exact_seed_recipient",
+        "real_observed_events_file",
+        "exact_people",
+        "writable_event_screen",
+        "fact_store_market_review",
+      ],
     });
     expect(state.continuationGuard).toMatchObject({
       status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
@@ -1638,6 +1702,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Launch OS missing-inputs kit with capture specs and post-input commands",
       },
       {
+        path: "/tmp/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "Launch OS missing-inputs intake with redacted private input status",
+      },
+      {
         path: "/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json",
         present: true,
         chars: 2000,
@@ -1678,6 +1748,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.approvalQueue).toBe("/tmp/mailerlite_launch_os_approval_queue_2026-05-28.json");
     expect(reportMap.blockedGateHandoff).toBe("/tmp/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
     expect(reportMap.missingInputsKit).toBe("/tmp/mailerlite_launch_os_missing_inputs_kit_2026-05-28.json");
+    expect(reportMap.missingInputsIntake).toBe("/tmp/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
     expect(reportMap.continuationGuard).toBe("/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json");
   });
@@ -1710,6 +1781,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       approvalQueue,
       blockedGateHandoff,
       missingInputsKit,
+      missingInputsIntake,
       continuationGuard,
       validationReceipt,
       packageJson,
@@ -1749,6 +1821,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Missing-inputs count: 5");
     expect(markdown).toContain("Missing-inputs ids: exact_seed_recipient");
     expect(markdown).toContain("Missing-inputs next safe action: collect_missing_inputs_without_approval_or_execution");
+    expect(markdown).toContain("Missing-inputs intake: missing_inputs_intake_waiting_for_inputs_no_live_changes");
+    expect(markdown).toContain("Missing-inputs intake ready: 0/5");
+    expect(markdown).toContain("Missing-inputs intake full private values stored: false");
     expect(markdown).toContain("Continuation guard: mailerlite_launch_os_continuation_guard_ready_no_live_changes");
     expect(markdown).toContain("Continuation guard old UI work closed: true");
     expect(markdown).toContain("Continuation guard UI action: do_not_open_ui_or_repair_drafts_without_new_concrete_mismatch");

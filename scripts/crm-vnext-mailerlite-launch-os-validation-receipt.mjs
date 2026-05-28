@@ -9,6 +9,7 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-validation-receipt-2026-0
 const DEFAULT_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.json';
 const DEFAULT_GOAL_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
+const DEFAULT_MISSING_INPUTS_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -18,6 +19,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-approval-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-blocked-gate-handoff.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-missing-inputs-kit.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
@@ -48,6 +50,7 @@ Options:
   --runbook <path>               Operator runbook JSON. Defaults to ${DEFAULT_RUNBOOK}
   --goal-audit <path>            Goal audit JSON. Defaults to ${DEFAULT_GOAL_AUDIT}
   --continuation-guard <path>    Continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
+  --missing-inputs-intake <path>  Missing-inputs intake JSON. Defaults to ${DEFAULT_MISSING_INPUTS_INTAKE}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
@@ -76,6 +79,7 @@ const parseArgs = (argv) => {
     runbook: DEFAULT_RUNBOOK,
     goalAudit: DEFAULT_GOAL_AUDIT,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
+    missingInputsIntake: DEFAULT_MISSING_INPUTS_INTAKE,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
@@ -94,6 +98,7 @@ const parseArgs = (argv) => {
     else if (arg === '--runbook') options.runbook = argv[++index];
     else if (arg === '--goal-audit') options.goalAudit = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
+    else if (arg === '--missing-inputs-intake') options.missingInputsIntake = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -169,6 +174,7 @@ const buildValidationReceipt = ({
   runbook,
   goalAudit,
   continuationGuard,
+  missingInputsIntake = null,
   onboardingTrunkMap,
   packageJson,
   sourceDigests = [],
@@ -194,6 +200,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-launch-os-approval-intake',
     'crm:vnext:mailerlite-launch-os-blocked-gate-handoff',
     'crm:vnext:mailerlite-launch-os-missing-inputs-kit',
+    'crm:vnext:mailerlite-launch-os-missing-inputs-intake',
     'crm:vnext:mailerlite-launch-os-continuation-guard',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
@@ -262,6 +269,15 @@ const buildValidationReceipt = ({
       continuationGuardClosedBoundaryCount: continuationGuard?.executiveSummary?.closedBoundaryCount
         ?? runbook?.currentState?.continuationGuard?.closedBoundaryCount
         ?? null,
+      missingInputsIntakeStatus: missingInputsIntake?.status
+        ?? runbook?.currentState?.missingInputsIntake?.status
+        ?? null,
+      missingInputsIntakeReadyInputCount: missingInputsIntake?.executiveSummary?.readyInputCount
+        ?? runbook?.currentState?.missingInputsIntake?.readyInputCount
+        ?? null,
+      missingInputsIntakeFullPrivateValuesStored: missingInputsIntake?.executiveSummary?.fullPrivateValuesStoredInReport
+        ?? runbook?.currentState?.missingInputsIntake?.fullPrivateValuesStoredInReport
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -281,6 +297,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     runbook,
     goalAudit,
     continuationGuard,
+    missingInputsIntake,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -288,12 +305,14 @@ const buildValidationReceiptFromFiles = async (options) => {
     readJson(options.runbook),
     readJson(options.goalAudit),
     readJson(options.continuationGuard),
+    readJson(options.missingInputsIntake),
     readJson(options.onboardingTrunkMap),
     readJson(options.packageJson),
     Promise.all([
       digestFor(options.runbook, 'operator runbook state and closed gates'),
       digestFor(options.goalAudit, 'goal audit status and safety posture'),
       digestFor(options.continuationGuard, 'continuation guard closed hito and do-not-recycle state'),
+      digestFor(options.missingInputsIntake, 'missing-inputs intake redacted private input status'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
@@ -303,6 +322,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     runbook,
     goalAudit,
     continuationGuard,
+    missingInputsIntake,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -334,6 +354,9 @@ const renderMarkdown = (receipt) => {
     `- Goal audit live action allowed now: ${receipt.evidence.goalAuditLiveActionAllowedNow}`,
     `- Continuation guard: ${receipt.evidence.continuationGuardStatus ?? 'missing'}`,
     `- Old UI work closed: ${receipt.evidence.continuationGuardOldUiWorkClosed ?? 'unknown'}`,
+    `- Missing-inputs intake: ${receipt.evidence.missingInputsIntakeStatus ?? 'missing'}`,
+    `- Missing-inputs intake ready: ${receipt.evidence.missingInputsIntakeReadyInputCount ?? 'unknown'}`,
+    `- Missing-inputs intake full private values stored: ${receipt.evidence.missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
     '',
     '## Commands',
     '',
