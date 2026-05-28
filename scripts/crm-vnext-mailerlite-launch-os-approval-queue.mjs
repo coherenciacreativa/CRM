@@ -7,9 +7,10 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-approval-queue-2026-05-28
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
-const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
@@ -27,6 +28,7 @@ Options:
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
   --mini-launch-email-asset-build-scope-packet <path> Mini-launch email asset-build scope packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
   --mini-launch-email-builder-payload-manifest <path> Mini-launch email builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
+  --mini-launch-email-render-qa <path>         Mini-launch local email render QA packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --mini-launch-email-asset-build-dry-run <path> Mini-launch email asset-build dry-run. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
@@ -60,6 +62,7 @@ const parseArgs = (argv) => {
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
     miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
+    miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     miniLaunchEmailAssetBuildDryRun: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
@@ -80,6 +83,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
+    else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-dry-run') options.miniLaunchEmailAssetBuildDryRun = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
@@ -269,25 +273,37 @@ const buildMiniLaunchEmptyGroupItem = ({ packet, dryRun }) => {
 
 const buildOnboardingV2EmptyGroupItem = ({ packet, dryRun }) => {
   const targetNames = targetNamesFrom(packet?.targetPlan, dryRun?.decision?.targetPlan);
+  const targetPlan = dryRun?.decision?.targetPlan ?? packet?.targetPlan ?? [];
+  const executionCompleted = dryRun?.status === 'executed_onboarding_v2_empty_group_creation'
+    && countRows(dryRun?.createdGroups) === targetNames.length
+    && targetNames.length > 0;
+  const postExecutionAllExist = targetNames.length > 0
+    && targetPlan.length === targetNames.length
+    && targetPlan.every((target) => target?.existsInFreshScan === true);
+  const targetGroupsAlreadyExist = executionCompleted || postExecutionAllExist;
   const blockers = [];
 
-  if (packet?.status !== 'ready_for_exact_human_approval_to_create_empty_groups') {
+  if (!targetGroupsAlreadyExist && packet?.status !== 'ready_for_exact_human_approval_to_create_empty_groups') {
     blockers.push(`onboarding_v2_empty_groups_packet_not_ready:${packet?.status ?? 'missing'}`);
   }
-  if (dryRun?.status !== 'dry_run_ready_for_exact_approval') {
+  if (!targetGroupsAlreadyExist && dryRun?.status !== 'dry_run_ready_for_exact_approval') {
     blockers.push(`onboarding_v2_empty_groups_create_dry_run_not_ready:${dryRun?.status ?? 'missing'}`);
   }
-  if (countRows(dryRun?.createdGroups) !== 0) blockers.push('dry_run_unexpectedly_reports_created_groups');
-  if (!cleanString(packet?.approvalGate?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
+  if (!targetGroupsAlreadyExist && countRows(dryRun?.createdGroups) !== 0) blockers.push('dry_run_unexpectedly_reports_created_groups');
+  if (!targetGroupsAlreadyExist && !cleanString(packet?.approvalGate?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
   if (targetNames.length === 0) blockers.push('missing_target_groups');
 
-  const canAskNow = blockers.length === 0 && packet?.approvalGate?.canAskAlejandroForApproval === true;
+  const canAskNow = !targetGroupsAlreadyExist
+    && blockers.length === 0
+    && packet?.approvalGate?.canAskAlejandroForApproval === true;
 
   return buildApprovalItem({
     id: 'onboarding_v2_empty_group_creation',
     title: 'Onboarding v2 empty MailerLite groups',
     lane: 'onboarding_v2',
-    operationType: 'live_mailerlite_group_creation_after_exact_approval',
+    operationType: targetGroupsAlreadyExist
+      ? 'live_mailerlite_group_creation_already_completed'
+      : 'live_mailerlite_group_creation_after_exact_approval',
     approvalType: 'exact_phrase_required',
     canAskNow,
     exactApprovalPhrase: packet?.approvalGate?.exactApprovalPhrase,
@@ -315,19 +331,23 @@ const buildOnboardingV2EmptyGroupItem = ({ packet, dryRun }) => {
     blockers,
     evidence: {
       targetCount: targetNames.length,
-      liveGroupsRead: packet?.sourceEvidence?.liveGroupCount ?? null,
-      liveAutomationsRead: packet?.sourceEvidence?.liveAutomationCount ?? null,
+      liveGroupsRead: dryRun?.packetSummary?.liveGroupsRead ?? packet?.sourceEvidence?.liveGroupCount ?? null,
+      liveAutomationsRead: dryRun?.packetSummary?.liveAutomationsRead ?? packet?.sourceEvidence?.liveAutomationCount ?? null,
+      targetGroupsAlreadyExist,
+      createdCount: countRows(dryRun?.createdGroups),
       mutationsPerformed: dryRun?.safety?.groupMutationsPerformed ?? null,
     },
     commandAfterApproval: 'npm run crm:vnext:mailerlite-onboarding-v2-empty-groups-create -- --execute --approval-phrase "<exact phrase>"',
     notes: [
-      'Approval covers empty group creation only.',
+      targetGroupsAlreadyExist
+        ? 'The twelve named empty groups already exist; no new approval request is needed for this boundary.'
+        : 'Approval covers empty group creation only.',
       'It is not permission to build or switch the Onboarding v2 workflow.',
     ],
   });
 };
 
-const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest, dryRun = null }) => {
+const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest, renderQa = null, dryRun = null }) => {
   const targetNames = targetNamesFrom(scopePacket?.assetBuildScope?.assets, payloadManifest?.payloads);
   const blockers = [];
 
@@ -345,6 +365,18 @@ const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest, dryR
   }
   if (payloadManifest?.approvalBoundary?.canExecuteBuilderNow !== false) {
     blockers.push('payload_manifest_build_gate_unexpectedly_open');
+  }
+  if (renderQa) {
+    if (renderQa.status !== 'mini_launch_email_render_qa_green_no_live_changes') {
+      blockers.push(`email_render_qa_not_green:${renderQa.status ?? 'missing'}`);
+    }
+    if (renderQa.executiveSummary?.localRenderReady !== true) blockers.push('email_render_qa_local_render_not_ready');
+    if (renderQa.executiveSummary?.publicUseReady !== false) blockers.push('email_render_qa_public_gate_unexpectedly_open');
+    if (renderQa.executiveSummary?.seedSendReady !== false) blockers.push('email_render_qa_seed_send_gate_unexpectedly_open');
+    if (renderQa.safety?.mailerLiteApiCalled !== false) blockers.push('email_render_qa_reports_mailerlite_api_call');
+    if (renderQa.safety?.sendsPerformed !== false) blockers.push('email_render_qa_reports_send');
+  } else {
+    blockers.push('email_render_qa_missing');
   }
   if (dryRun) {
     if (dryRun.status !== 'dry_run_ready_for_exact_asset_build_approval') {
@@ -374,6 +406,7 @@ const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest, dryR
     sourceStatuses: {
       scopePacket: scopePacket?.status ?? null,
       payloadManifest: payloadManifest?.status ?? null,
+      renderQa: renderQa?.status ?? null,
       dryRun: dryRun?.status ?? null,
     },
     targetNames,
@@ -386,6 +419,9 @@ const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest, dryR
       payloadCount: payloadManifest?.executiveSummary?.payloadCount ?? null,
       contentBlockCount: payloadManifest?.executiveSummary?.contentBlockCount ?? null,
       placeholders: payloadManifest?.executiveSummary?.inertUrlPlaceholderCount ?? null,
+      localRenderReady: renderQa?.executiveSummary?.localRenderReady ?? null,
+      renderPreviewNonEmptyCount: renderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
+      htmlWrittenCount: renderQa?.executiveSummary?.htmlWrittenCount ?? null,
       campaignsRead: dryRun?.freshScan?.campaignsRead ?? null,
       createDraftCount: dryRun?.freshScan?.createDraftCount ?? null,
       updateDraftCount: dryRun?.freshScan?.updateDraftCount ?? null,
@@ -520,7 +556,7 @@ const buildBrujulaBuilderDraftItem = ({ correction, renderQa }) => {
   });
 };
 
-const buildMiniLaunchSeedSendItem = ({ payloadManifest }) => buildApprovalItem({
+const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null }) => buildApprovalItem({
   id: 'mini_launch_seed_send',
   title: 'Mini-launch seed/test send',
   lane: 'mini_launch_inteligencia_para_descansar',
@@ -530,6 +566,7 @@ const buildMiniLaunchSeedSendItem = ({ payloadManifest }) => buildApprovalItem({
   exactApprovalPhrase: null,
   sourceStatuses: {
     payloadManifest: payloadManifest?.status ?? null,
+    renderQa: renderQa?.status ?? null,
   },
   targetNames: [],
   allowedAfterExactApproval: [],
@@ -551,6 +588,8 @@ const buildMiniLaunchSeedSendItem = ({ payloadManifest }) => buildApprovalItem({
   ],
   evidence: {
     readyForSeedSendNow: payloadManifest?.executiveSummary?.readyForSeedSendNow ?? null,
+    localRenderReady: renderQa?.executiveSummary?.localRenderReady ?? null,
+    renderPreviewNonEmptyCount: renderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
   },
   commandAfterApproval: null,
   notes: ['Do not ask for seed-send approval from the asset-build packet alone.'],
@@ -598,6 +637,7 @@ const buildApprovalQueue = ({
   onboardingV2EmptyGroupsCreateDryRun,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailRenderQa,
   miniLaunchEmailAssetBuildDryRun,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
@@ -619,6 +659,7 @@ const buildApprovalQueue = ({
     buildMiniLaunchEmailAssetBuildItem({
       scopePacket: miniLaunchEmailAssetBuildScopePacket,
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
       dryRun: miniLaunchEmailAssetBuildDryRun,
     }),
     buildShopifyLocalBuildItem({
@@ -630,6 +671,7 @@ const buildApprovalQueue = ({
     }),
     buildMiniLaunchSeedSendItem({
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
     }),
     buildCrmSignalWriteItem({
       packet: miniLaunchCrmSignalProjectionPacket,
@@ -749,6 +791,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.onboardingV2EmptyGroupsCreateDryRun, 'onboarding v2 empty-groups create dry-run'),
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch email asset-build scope packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch email builder payload manifest'),
+    readOptionalJsonWithDigest(options.miniLaunchEmailRenderQa, 'mini-launch local email render QA packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildDryRun, 'mini-launch email asset-build dry-run'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
@@ -764,6 +807,7 @@ const buildQueueFromFiles = async (options) => {
     onboardingV2EmptyGroupsCreateDryRun,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailRenderQa,
     miniLaunchEmailAssetBuildDryRun,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
@@ -779,6 +823,7 @@ const buildQueueFromFiles = async (options) => {
     onboardingV2EmptyGroupsCreateDryRun,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailRenderQa,
     miniLaunchEmailAssetBuildDryRun,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,

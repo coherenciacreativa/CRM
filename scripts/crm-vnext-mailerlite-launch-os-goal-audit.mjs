@@ -22,7 +22,7 @@ const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Rep
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
-const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
@@ -30,6 +30,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documen
 const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -71,6 +72,7 @@ Options:
   --mini-launch-local-email-asset-plan <path> Mini-launch local email asset plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN}
   --mini-launch-email-asset-build-scope-packet <path> Mini-launch exact approval scope packet for future email asset build. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
   --mini-launch-email-builder-payload-manifest <path> Mini-launch local builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
+  --mini-launch-email-render-qa <path> Mini-launch local email render QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -117,6 +119,7 @@ const parseArgs = (argv) => {
     miniLaunchLocalEmailAssetPlan: DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN,
     miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
+    miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -161,6 +164,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-local-email-asset-plan') options.miniLaunchLocalEmailAssetPlan = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
+    else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -224,6 +228,7 @@ const loadSources = async (options) => {
     ['miniLaunchLocalEmailAssetPlan', options.miniLaunchLocalEmailAssetPlan, 'mini-launch local email asset plan with inert placeholders and build/send gates closed', 'json', true],
     ['miniLaunchEmailAssetBuildScopePacket', options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch exact approval scope packet for future MailerLite draft email asset build; no execution', 'json', true],
     ['miniLaunchEmailBuilderPayloadManifest', options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch local builder payload manifest with exact payloads and closed execution/send gates', 'json', true],
+    ['miniLaunchEmailRenderQa', options.miniLaunchEmailRenderQa, 'mini-launch local email render QA with HTML and non-empty PNG preview evidence', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -298,6 +303,7 @@ const buildRequirementChecks = ({
   miniLaunchLocalEmailAssetPlan,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailRenderQa,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -559,6 +565,28 @@ const buildRequirementChecks = ({
     ?? emailSequenceLane?.readiness?.contentBlockCount
     ?? runbook?.currentState?.miniLaunch?.emailBuilderPayloadManifestContentBlockCount
     ?? null;
+  const miniLaunchEmailRenderQaStatus = miniLaunchEmailRenderQa?.status
+    ?? runbook?.currentState?.miniLaunch?.emailRenderQaStatus
+    ?? null;
+  const miniLaunchEmailRenderQaReady = miniLaunchEmailRenderQaStatus === 'mini_launch_email_render_qa_green_no_live_changes'
+    && (miniLaunchEmailRenderQa?.executiveSummary?.localRenderReady
+      ?? runbook?.currentState?.miniLaunch?.emailRenderQaLocalRenderReady
+      ?? false) === true
+    && (miniLaunchEmailRenderQa?.executiveSummary?.publicUseReady
+      ?? runbook?.currentState?.miniLaunch?.emailRenderQaPublicUseReady
+      ?? true) === false
+    && (miniLaunchEmailRenderQa?.executiveSummary?.seedSendReady
+      ?? runbook?.currentState?.miniLaunch?.emailRenderQaSeedSendReady
+      ?? true) === false
+    && (miniLaunchEmailRenderQa?.safety?.mailerLiteApiCalled ?? false) === false
+    && (miniLaunchEmailRenderQa?.safety?.sendsPerformed ?? false) === false
+    && (miniLaunchEmailRenderQa?.safety?.crmLiveApiCalled ?? false) === false;
+  const miniLaunchEmailRenderQaEmailCount = miniLaunchEmailRenderQa?.executiveSummary?.emailCount
+    ?? runbook?.currentState?.miniLaunch?.emailRenderQaEmailCount
+    ?? null;
+  const miniLaunchEmailRenderQaRenderPreviewNonEmptyCount = miniLaunchEmailRenderQa?.executiveSummary?.renderPreviewNonEmptyCount
+    ?? runbook?.currentState?.miniLaunch?.emailRenderQaRenderPreviewNonEmptyCount
+    ?? null;
   const approvalQueueStatus = approvalQueue?.status
     ?? runbook?.currentState?.approvalQueue?.status
     ?? null;
@@ -639,6 +667,27 @@ const buildRequirementChecks = ({
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsPostExecutionAllExist = onboardingV2EmptyGroupsCreateDryRun?.status === 'dry_run_blocked'
+    && onboardingV2EmptyGroupsCreateDryRun?.mode === 'dry_run'
+    && onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount === 12
+    && onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead >= 89
+    && (onboardingV2EmptyGroupsCreateDryRun?.decision?.targetPlan ?? []).length === 12
+    && onboardingV2EmptyGroupsCreateDryRun.decision.targetPlan.every((target) => target?.existsInFreshScan === true)
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.mode === 'dry_run_only'
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.groupMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsExecutionCompleted = onboardingV2EmptyGroupsCreateDryRun?.status === 'executed_onboarding_v2_empty_group_creation'
+    && onboardingV2EmptyGroupsCreateDryRun?.mode === 'execute_requested'
+    && onboardingV2EmptyGroupsCreateDryRun?.createdGroups?.length === 12
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.groupMutationType === 'create_empty_groups_only'
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsBoundaryClosed = v2EmptyGroupsCreateDryRunReady
+    || v2EmptyGroupsPostExecutionAllExist
+    || v2EmptyGroupsExecutionCompleted;
   const v2FirstEmailMapped = onboardingV2FirstEmailMap?.status === 'first_email_mapping_ready_no_sent_receipt'
     && onboardingV2FirstEmailMap?.decision?.recommendedPosture === 'welcome_orientation_no_sent_receipt'
     && onboardingV2FirstEmailMap?.decision?.recommendedMailerLiteSentGroup === null
@@ -654,7 +703,7 @@ const buildRequirementChecks = ({
     && onboardingV2Execution?.status
     && onboardingV2EventContract?.status
     && v2EmptyGroupsPacketReady
-    && v2EmptyGroupsCreateDryRunReady
+    && v2EmptyGroupsBoundaryClosed
     && v2FirstEmailMapped;
   const validationPassed = validationStatus === 'passed' || receiptPassed;
   const effectiveValidationStatus = validationStatus === 'passed'
@@ -750,6 +799,8 @@ const buildRequirementChecks = ({
         `emptyGroupsCreateDryRunCreatedCount=${v2EmptyGroupsCreateDryRunCreatedCount ?? 'unknown'}`,
         `emptyGroupsPacketReady=${v2EmptyGroupsPacketReady}`,
         `emptyGroupsCreateDryRunReady=${v2EmptyGroupsCreateDryRunReady}`,
+        `emptyGroupsPostExecutionAllExist=${v2EmptyGroupsPostExecutionAllExist}`,
+        `emptyGroupsBoundaryClosed=${v2EmptyGroupsBoundaryClosed}`,
         `firstEmailMapStatus=${onboardingV2FirstEmailMap?.status ?? runbook?.currentState?.onboarding?.v2FirstEmailMapStatus ?? 'missing'}`,
         `firstEmailPosture=${onboardingV2FirstEmailMap?.decision?.recommendedPosture ?? runbook?.currentState?.onboarding?.v2FirstEmailRecommendedPosture ?? 'unknown'}`,
         `firstEmailSentGroup=${onboardingV2FirstEmailMap?.decision?.recommendedMailerLiteSentGroup ?? runbook?.currentState?.onboarding?.v2FirstEmailRecommendedSentGroup ?? 'none'}`,
@@ -758,7 +809,9 @@ const buildRequirementChecks = ({
         `firstEmailMapped=${v2FirstEmailMapped}`,
       ],
       remaining: [
-        'Creating the 12 empty v2 groups remains a separate exact-approval lane.',
+        v2EmptyGroupsBoundaryClosed
+          ? 'The 12 empty v2 groups now exist; do not rerun group creation for this boundary.'
+          : 'Creating the 12 empty v2 groups remains a separate exact-approval lane.',
         'Workflow draft, seed test and production switch remain closed.',
       ],
     },
@@ -846,6 +899,10 @@ const buildRequirementChecks = ({
         `miniLaunchEmailBuilderPayloadManifestReady=${miniLaunchEmailBuilderPayloadManifestReady}`,
         `miniLaunchEmailBuilderPayloadManifestPayloadCount=${miniLaunchEmailBuilderPayloadManifestPayloadCount ?? 'unknown'}`,
         `miniLaunchEmailBuilderPayloadManifestContentBlockCount=${miniLaunchEmailBuilderPayloadManifestContentBlockCount ?? 'unknown'}`,
+        `miniLaunchEmailRenderQaStatus=${miniLaunchEmailRenderQaStatus ?? 'missing'}`,
+        `miniLaunchEmailRenderQaReady=${miniLaunchEmailRenderQaReady}`,
+        `miniLaunchEmailRenderQaEmailCount=${miniLaunchEmailRenderQaEmailCount ?? 'unknown'}`,
+        `miniLaunchEmailRenderQaRenderPreviewNonEmptyCount=${miniLaunchEmailRenderQaRenderPreviewNonEmptyCount ?? 'unknown'}`,
         `approvalQueueStatus=${approvalQueueStatus ?? 'missing'}`,
         `approvalQueueReadyCount=${approvalQueueReadyCount ?? 'unknown'}`,
         `approvalQueueBlockedCount=${approvalQueueBlockedCount ?? 'unknown'}`,
@@ -1091,6 +1148,9 @@ const buildGoalAudit = ({
   const emailBuilderPayloadManifestReady = values.miniLaunchEmailBuilderPayloadManifest?.status === 'email_builder_payload_manifest_ready_no_live_changes'
     || values.runbook?.currentState?.miniLaunch?.emailBuilderPayloadManifestReady === true
     || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_builder_payload_manifest_ready_no_live_changes';
+  const emailRenderQaReady = values.miniLaunchEmailRenderQa?.status === 'mini_launch_email_render_qa_green_no_live_changes'
+    || values.runbook?.currentState?.miniLaunch?.emailRenderQaLocalRenderReady === true;
+  const onboardingV2GroupBoundaryClosed = values.approvalQueue?.approvalItems?.find((item) => item.id === 'onboarding_v2_empty_group_creation')?.status === 'reference_only_no_approval_request_now';
   const approvalQueueReady = values.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes'
     || values.runbook?.currentState?.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes';
   const approvalQueueMove = approvalQueueReady
@@ -1103,9 +1163,11 @@ const buildGoalAudit = ({
     : 'Generate the Launch OS approval intake so future exact human phrases are checked locally before any guarded runner.';
   const localEmailAssetPlanMove = localEmailAssetPlanReady
     ? emailBuilderPayloadManifestReady
-      ? approvalQueueReady
-        ? 'The email builder payload manifest is ready and represented in the approval queue as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
-        : 'The email builder payload manifest is ready as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
+      ? emailRenderQaReady
+        ? 'The email builder payload manifest and local render QA are green and represented in the approval queue as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
+        : approvalQueueReady
+          ? 'The email builder payload manifest is ready and represented in the approval queue as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
+          : 'The email builder payload manifest is ready as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
       : emailAssetBuildScopePacketReady
       ? 'The email asset-build scope packet is ready for exact human approval request only; next no-live move is the local builder payload manifest; builder execution, seed sends, workflow attachment and subscribers remain closed.'
       : 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
@@ -1182,7 +1244,9 @@ const buildGoalAudit = ({
     nextMoves: [
       ...departmentResponseMoves,
       'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
-      'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
+      onboardingV2GroupBoundaryClosed
+        ? 'Treat Onboarding v2 empty-group creation as closed: the 12 named groups now exist, and workflow draft/seed/production switch remain separate approvals.'
+        : 'Use the fresh Onboarding v2 empty-groups packet and create dry-run before any exact approval request for the 12 named empty groups.',
       'Use the Onboarding v2 first-email map so the welcome/orientation email is tracked as journey_welcome_sent, not as a content Sent receipt.',
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       approvalQueueMove,

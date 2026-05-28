@@ -63,6 +63,7 @@
     "crm:vnext:mailerlite-mini-launch-local-email-asset-plan": "node scripts/crm-vnext-mailerlite-mini-launch-local-email-asset-plan.mjs",
     "crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet": "node scripts/crm-vnext-mailerlite-mini-launch-email-asset-build-scope-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest": "node scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-render-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-asset-build": "node scripts/crm-vnext-mailerlite-mini-launch-email-asset-build.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-handoff-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet": "node scripts/crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.mjs",

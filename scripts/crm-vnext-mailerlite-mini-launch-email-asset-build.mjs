@@ -268,13 +268,26 @@ const buildHtmlForPayload = (payload) => {
     .replace(/"/g, '&quot;');
   const lines = [
     '<!doctype html>',
-    '<html>',
+    '<html lang="es">',
     '<head>',
     '  <meta charset="utf-8">',
+    '  <meta name="viewport" content="width=device-width, initial-scale=1">',
     `  <title>${escape(payload.subject)}</title>`,
+    '  <style>',
+    '    body { margin: 0; background: #F4F7FA; color: #474747; font-family: Poppins, Arial, sans-serif; }',
+    '    .email-container { max-width: 640px; margin: 0 auto; background: #FFFFFF; }',
+    '    .email-content { padding: 44px 42px 36px; }',
+    '    p { font-size: 16px; line-height: 165%; margin: 0 0 18px; }',
+    '    .cta-placeholder { display: inline-block; margin: 8px 0 4px; padding: 12px 18px; border-radius: 7px; background: #2F3E63; color: #FFFFFF; font-weight: 600; }',
+    '    .placeholder-note { color: #777777; font-size: 13px; line-height: 150%; }',
+    '    .signature { margin: 28px 0 0; font-family: Georgia, serif; color: #2F3E63; }',
+    '    .footer { font-size: 13px; line-height: 150%; color: #777777; }',
+    '    @media (max-width: 640px) { .email-content { padding: 36px 24px 32px; } p { font-size: 15px; } }',
+    '  </style>',
     '</head>',
-    '<body style="margin:0;background:#F4F7FA;color:#474747;font-family:Poppins, Arial, sans-serif;">',
-    '  <div style="max-width:640px;margin:0 auto;background:#FFFFFF;padding:40px 32px;">',
+    '<body>',
+    '  <div class="email-container">',
+    '    <div class="email-content">',
   ];
 
   if (payload.preheader) {
@@ -286,20 +299,24 @@ const buildHtmlForPayload = (payload) => {
     if (!text) continue;
     if (block.type === 'preheader') continue;
     if (block.type === 'signature') {
-      lines.push('    <p style="margin:28px 0 0;font-size:16px;line-height:165%;">Alejandro</p>');
+      lines.push('      <p class="signature">Alejandro</p>');
     } else if (block.type === 'compliance_footer') {
-      lines.push('    <hr style="border:0;border-top:1px solid #E3E7EA;margin:32px 0 18px;">');
-      lines.push(`    <p style="font-size:13px;line-height:150%;color:#777777;">${escape(text)}</p>`);
+      lines.push('      <hr style="border:0;border-top:1px solid #E3E7EA;margin:32px 0 18px;">');
+      lines.push('      <p class="footer">Recibes este correo porque pediste recursos de Coherencia Creativa. Puedes darte de baja desde el enlace de suscripcion incluido por la plataforma.</p>');
     } else if (block.type === 'cta') {
       const placeholder = cleanString(block?.placeholder?.value) ?? cleanString(block?.destination) ?? 'inert_placeholder';
-      lines.push(`    <p style="margin:26px 0;font-size:16px;line-height:165%;"><strong>${escape(text)}</strong><br><span style="color:#777777;">${escape(placeholder)}</span></p>`);
+      lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span><br><span class="placeholder-note">${escape(placeholder)}</span></p>`);
+    } else if (block.type === 'reply_cta') {
+      const destination = cleanString(block?.destination) ?? 'reply_to_email';
+      lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span><br><span class="placeholder-note">${escape(destination)}</span></p>`);
     } else {
       for (const paragraph of text.split('\n').map(cleanString).filter(Boolean)) {
-        lines.push(`    <p style="font-size:16px;line-height:165%;margin:0 0 18px;">${escape(paragraph)}</p>`);
+        lines.push(`      <p>${escape(paragraph)}</p>`);
       }
     }
   }
 
+  lines.push('    </div>');
   lines.push('  </div>');
   lines.push('</body>');
   lines.push('</html>');

@@ -23,7 +23,7 @@ const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Rep
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
-const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
@@ -31,6 +31,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documen
 const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -72,6 +73,7 @@ Options:
   --mini-launch-local-email-asset-plan <path> Mini-launch local email asset plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN}
   --mini-launch-email-asset-build-scope-packet <path> Mini-launch exact approval scope packet for future email asset build. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
   --mini-launch-email-builder-payload-manifest <path> Mini-launch local builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
+  --mini-launch-email-render-qa <path> Mini-launch local email render QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -120,6 +122,7 @@ const parseArgs = (argv) => {
     miniLaunchLocalEmailAssetPlan: DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN,
     miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
+    miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -164,6 +167,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-local-email-asset-plan') options.miniLaunchLocalEmailAssetPlan = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
+    else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -221,6 +225,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchLocalEmailAssetPlan, 'mini-launch local email asset plan with inert placeholders and build/send gates closed', true],
     [options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch exact approval scope packet for future MailerLite draft email asset build; no execution', true],
     [options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch local builder payload manifest with exact payloads and closed execution/send gates', true],
+    [options.miniLaunchEmailRenderQa, 'mini-launch local email render QA with HTML and non-empty PNG preview evidence', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -311,6 +316,7 @@ const buildCurrentState = ({
   miniLaunchLocalEmailAssetPlan,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailRenderQa,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -547,6 +553,14 @@ const buildCurrentState = ({
       emailBuilderPayloadManifestIsApprovalByItself: miniLaunchEmailBuilderPayloadManifest?.approvalBoundary?.manifestIsApprovalByItself
         ?? readinessLaneById.get('email_sequence')?.readiness?.manifestIsApprovalByItself
         ?? false,
+      emailRenderQaStatus: miniLaunchEmailRenderQa?.status ?? null,
+      emailRenderQaLocalRenderReady: miniLaunchEmailRenderQa?.executiveSummary?.localRenderReady ?? false,
+      emailRenderQaEmailCount: miniLaunchEmailRenderQa?.executiveSummary?.emailCount ?? null,
+      emailRenderQaHtmlWrittenCount: miniLaunchEmailRenderQa?.executiveSummary?.htmlWrittenCount ?? null,
+      emailRenderQaRenderPreviewNonEmptyCount: miniLaunchEmailRenderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
+      emailRenderQaPublicUseReady: miniLaunchEmailRenderQa?.executiveSummary?.publicUseReady ?? false,
+      emailRenderQaMailerLiteBuilderReady: miniLaunchEmailRenderQa?.executiveSummary?.mailerLiteBuilderReady ?? false,
+      emailRenderQaSeedSendReady: miniLaunchEmailRenderQa?.executiveSummary?.seedSendReady ?? false,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -637,13 +651,14 @@ const buildReportMap = (sourceDigests) => {
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
     onboardingV2EventContract: findPath('mailerlite_onboarding_v2_event_contract_2026-05-27.json'),
     onboardingV2EmptyGroupsPacket: findPath('mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json'),
-    onboardingV2EmptyGroupsCreateDryRun: findPath('mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json'),
+    onboardingV2EmptyGroupsCreateDryRun: findPath('mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json'),
     onboardingV2FirstEmailMap: findPath('mailerlite_onboarding_v2_first_email_map_2026-05-27.json'),
     miniLaunchEmptyGroupCreateDryRun: findPath('mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json'),
     miniLaunchCrmSignalProjectionPacket: findPath('mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json'),
     miniLaunchLocalEmailAssetPlan: findPath('mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailAssetBuildScopePacket: findPath('mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailBuilderPayloadManifest: findPath('mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json'),
+    miniLaunchEmailRenderQa: findPath('mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
@@ -955,6 +970,7 @@ const buildRunbook = ({
   miniLaunchLocalEmailAssetPlan,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailRenderQa,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -992,6 +1008,7 @@ const buildRunbook = ({
     miniLaunchLocalEmailAssetPlan,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailRenderQa,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -1123,6 +1140,10 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch email builder placeholders: ${runbook.currentState.miniLaunch.emailBuilderPayloadManifestPlaceholderCount ?? 'unknown'}`,
     `- Mini-launch email builder reply CTAs: ${runbook.currentState.miniLaunch.emailBuilderPayloadManifestReplyCtaCount ?? 'unknown'}`,
     `- Mini-launch email builder can execute now: ${runbook.currentState.miniLaunch.emailBuilderPayloadManifestCanExecuteBuilderNow}`,
+    `- Mini-launch email render QA: ${runbook.currentState.miniLaunch.emailRenderQaStatus ?? 'unknown'}`,
+    `- Mini-launch email render local ready: ${runbook.currentState.miniLaunch.emailRenderQaLocalRenderReady}`,
+    `- Mini-launch email render count: ${runbook.currentState.miniLaunch.emailRenderQaEmailCount ?? 'unknown'}`,
+    `- Mini-launch email render non-empty previews: ${runbook.currentState.miniLaunch.emailRenderQaRenderPreviewNonEmptyCount ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
@@ -1263,6 +1284,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchLocalEmailAssetPlan,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailRenderQa,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -1299,6 +1321,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchLocalEmailAssetPlan),
     readOptionalJson(options.miniLaunchEmailAssetBuildScopePacket),
     readOptionalJson(options.miniLaunchEmailBuilderPayloadManifest),
+    readOptionalJson(options.miniLaunchEmailRenderQa),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -1337,6 +1360,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchLocalEmailAssetPlan,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailRenderQa,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,

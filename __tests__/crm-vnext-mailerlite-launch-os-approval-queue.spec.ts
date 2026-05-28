@@ -120,6 +120,21 @@ const miniLaunchEmailAssetBuildDryRun = {
   },
 };
 
+const miniLaunchEmailRenderQa = {
+  status: "mini_launch_email_render_qa_green_no_live_changes",
+  executiveSummary: {
+    localRenderReady: true,
+    renderPreviewNonEmptyCount: 4,
+    htmlWrittenCount: 4,
+    publicUseReady: false,
+    seedSendReady: false,
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    sendsPerformed: false,
+  },
+};
+
 const miniLaunchShopifyLocalBuildRequest = {
   status: "ready_for_human_or_web_design_scope_approval_no_live_changes",
   approvalGate: {
@@ -178,6 +193,7 @@ const buildQueue = () => buildApprovalQueue({
   onboardingV2EmptyGroupsCreateDryRun,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailRenderQa,
   miniLaunchEmailAssetBuildDryRun,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
@@ -193,7 +209,9 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
 
     expect(parsed.miniLaunchEmptyGroupPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
+    expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json");
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailAssetBuildDryRun).toContain("mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/queue.json");
@@ -241,6 +259,8 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         updateDraftCount: 0,
         conflictCount: 0,
         assetMutationsPerformed: false,
+        localRenderReady: true,
+        renderPreviewNonEmptyCount: 4,
       },
     });
     expect(byId.get("mini_launch_seed_send")).toMatchObject({
@@ -322,6 +342,39 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.blockers).toEqual([]);
   });
 
+  test("marks onboarding v2 empty-group approval as reference-only after targets already exist", () => {
+    const item = buildOnboardingV2EmptyGroupItem({
+      packet: onboardingV2EmptyGroupsPacket,
+      dryRun: {
+        status: "dry_run_blocked",
+        packetSummary: {
+          status: "blocked_before_empty_group_approval",
+          liveGroupsRead: 89,
+          liveAutomationsRead: 13,
+        },
+        decision: {
+          targetPlan: onboardingV2EmptyGroupsPacket.targetPlan.map((target) => ({
+            ...target,
+            existsInFreshScan: true,
+          })),
+        },
+        createdGroups: [],
+        safety: {
+          groupMutationsPerformed: false,
+        },
+      },
+    });
+
+    expect(item.status).toBe("reference_only_no_approval_request_now");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.exactApprovalPhrase).toBeNull();
+    expect(item.operationType).toBe("live_mailerlite_group_creation_already_completed");
+    expect(item.evidence).toMatchObject({
+      targetGroupsAlreadyExist: true,
+      liveGroupsRead: 89,
+    });
+  });
+
   test("builds specific boundary items for onboarding v2, asset build and Brújula", () => {
     expect(buildOnboardingV2EmptyGroupItem({
       packet: onboardingV2EmptyGroupsPacket,
@@ -335,12 +388,14 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(buildMiniLaunchEmailAssetBuildItem({
       scopePacket: miniLaunchEmailAssetBuildScopePacket,
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
     })).toMatchObject({
       status: "ready_for_exact_approval_request",
       operationType: "live_mailerlite_builder_draft_mutation_after_exact_approval",
       evidence: {
         payloadCount: 4,
         contentBlockCount: 40,
+        localRenderReady: true,
       },
     });
 
