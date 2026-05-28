@@ -1312,6 +1312,9 @@ const writeFamilyLabelsFrom = (writeApprovalPacket) =>
 const buildCrmSignalWriteItem = ({ packet, writeApprovalPacket = null }) => {
   const writePacketPresent = Boolean(writeApprovalPacket);
   const canAskNow = writeApprovalPacket?.approvalBoundary?.canAskAlejandroForApproval === true;
+  const writePolicyPacketReady = writeApprovalPacket?.executiveSummary?.writePolicyPacketReady === true;
+  const resolvedPolicyBlockers = writeApprovalPacket?.policyEffect?.resolvedPolicyBlockers ?? [];
+  const policyBlockersStillOpen = writeApprovalPacket?.policyEffect?.policyBlockersStillOpen ?? [];
   const packetBlockers = writePacketPresent
     ? (writeApprovalPacket?.approvalBoundary?.blockersBeforeApprovalRequest ?? [])
     : ['separate_crm_write_approval_packet_missing'];
@@ -1359,6 +1362,9 @@ const buildCrmSignalWriteItem = ({ packet, writeApprovalPacket = null }) => {
       exactEventCountReady: writeApprovalPacket?.executiveSummary?.exactEventCountReady ?? null,
       exactPersonCountReady: writeApprovalPacket?.executiveSummary?.exactPersonCountReady ?? null,
       candidateWriteFamilyCount: writeApprovalPacket?.executiveSummary?.candidateWriteFamilyCount ?? null,
+      writePolicyPacketReady,
+      policyBlockersResolved: resolvedPolicyBlockers,
+      policyBlockersStillOpen,
       operationsPreviewed: writeApprovalPacket?.executiveSummary?.operationsPreviewed ?? null,
       operationsExecuted: writeApprovalPacket?.executiveSummary?.operationsExecuted ?? null,
     },
@@ -1369,8 +1375,11 @@ const buildCrmSignalWriteItem = ({ packet, writeApprovalPacket = null }) => {
       writePacketPresent
         ? 'CRM write approval packet exists, but current state is still blocked until real observed events, exact people and one write family are named.'
         : 'Current projection packet is a no-live interpretation bridge only.',
+      writePolicyPacketReady
+        ? 'CRM write policy packet is ready and consumed; current blockers are evidence, identity, aggregate review, Fact Store or future exact approval gates.'
+        : null,
       'Sample event-contract events cannot become person history.',
-    ],
+    ].filter(Boolean),
   });
 };
 

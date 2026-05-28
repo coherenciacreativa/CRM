@@ -407,8 +407,17 @@ const miniLaunchCrmWriteApprovalPacket = {
     exactEventCountReady: 0,
     exactPersonCountReady: 0,
     candidateWriteFamilyCount: 4,
+    writePolicyPacketReady: true,
     operationsPreviewed: 0,
     operationsExecuted: 0,
+  },
+  policyEffect: {
+    consumedPolicyPacket: true,
+    resolvedPolicyBlockers: [
+      "card_write_policy_packet_missing",
+      "identity_stitching_packet_missing",
+    ],
+    policyBlockersStillOpen: [],
   },
   approvalBoundary: {
     canAskAlejandroForApproval: false,
@@ -846,12 +855,19 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         exactEventCountReady: 0,
         exactPersonCountReady: 0,
         candidateWriteFamilyCount: 4,
+        writePolicyPacketReady: true,
+        policyBlockersResolved: [
+          "card_write_policy_packet_missing",
+          "identity_stitching_packet_missing",
+        ],
+        policyBlockersStillOpen: [],
         operationsExecuted: 0,
       },
     });
     expect(item?.blockers).toContain("real_observed_event_file_missing");
     expect(item?.blockers).not.toContain("separate_crm_write_approval_packet_missing");
     expect(item?.requiredFreshEvidence.join(" ")).toContain("real observed-events file");
+    expect(item?.notes.join(" ")).toContain("CRM write policy packet is ready and consumed");
   });
 
   test("marks Shopify local build approval as completed once the local receipt exists", () => {

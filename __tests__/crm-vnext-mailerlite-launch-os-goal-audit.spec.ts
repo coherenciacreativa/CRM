@@ -606,7 +606,16 @@ const miniLaunchCrmWriteApprovalPacket = {
     exactEventCountReady: 0,
     exactPersonCountReady: 0,
     candidateWriteFamilyCount: 4,
+    writePolicyPacketReady: true,
     operationsExecuted: 0,
+  },
+  policyEffect: {
+    consumedPolicyPacket: true,
+    resolvedPolicyBlockers: [
+      "card_write_policy_packet_missing",
+      "identity_stitching_packet_missing",
+    ],
+    policyBlockersStillOpen: [],
   },
   approvalBoundary: {
     canAskAlejandroForApproval: false,
@@ -934,6 +943,9 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalCandidateFamilyCount=4");
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalOperationsExecuted=0");
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalBlockers=real_observed_event_file_missing|exact_observed_events_missing|exact_person_identity_missing");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWritePolicyPacketReady=true");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWritePolicyResolvedBlockers=card_write_policy_packet_missing|identity_stitching_packet_missing");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWritePolicyOpenBlockers=none");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("four mini-launch drafts already exist in MailerLite Drafts");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("CRM write approval packet exists as the current boundary");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).not.toContain("no MailerLite creation is authorized yet");

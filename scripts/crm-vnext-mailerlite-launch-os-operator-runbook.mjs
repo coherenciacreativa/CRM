@@ -615,6 +615,10 @@ const buildCurrentState = ({
       crmWriteApprovalCandidateFamilyCount: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.candidateWriteFamilyCount ?? null,
       crmWriteApprovalOperationsExecuted: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.operationsExecuted ?? null,
       crmWriteApprovalBlockers: miniLaunchCrmWriteApprovalPacket?.approvalBoundary?.blockersBeforeApprovalRequest ?? [],
+      crmWritePolicyPacketReady: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.writePolicyPacketReady ?? false,
+      crmWritePolicyPacketConsumed: miniLaunchCrmWriteApprovalPacket?.policyEffect?.consumedPolicyPacket ?? false,
+      crmWritePolicyResolvedBlockers: miniLaunchCrmWriteApprovalPacket?.policyEffect?.resolvedPolicyBlockers ?? [],
+      crmWritePolicyOpenBlockers: miniLaunchCrmWriteApprovalPacket?.policyEffect?.policyBlockersStillOpen ?? [],
       emailStyleQaPacketStatus: miniLaunchEmailStyleQaPacket?.status
         ?? readinessLaneById.get('email_sequence')?.sourceStatus
         ?? null,
@@ -1124,7 +1128,9 @@ const buildApprovalPhaseMoves = (currentState) => [
     ? 'Use the mini-launch seed/test QA packet before any seed/test send; it currently requires real MailerLite render QA, an exact seed recipient and an exact send approval.'
     : 'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
   currentState?.miniLaunch?.crmWriteApprovalPacketStatus
-    ? 'Use the CRM write approval packet as the current CRM boundary; it cannot ask approval until real observed events, exact people and one write family are named.'
+    ? currentState?.miniLaunch?.crmWritePolicyPacketReady === true
+      ? 'Use the CRM write approval packet as the current CRM boundary; the CRM write policy packet is ready and consumed, so the remaining blockers are evidence, identity, aggregate review, Fact Store or future exact approval gates.'
+      : 'Use the CRM write approval packet as the current CRM boundary; it cannot ask approval until real observed events, exact people and one write family are named.'
     : 'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
   miniLaunchShopifyLocalBuildClosed(currentState)
     ? 'Shopify no-live local build is complete; keep the five files inert and do not publish, preview, connect forms or call APIs without a later exact scope.'
@@ -1363,6 +1369,10 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch CRM write approval exact events ready: ${runbook.currentState.miniLaunch.crmWriteApprovalExactEventCount ?? 'unknown'}`,
     `- Mini-launch CRM write approval exact people ready: ${runbook.currentState.miniLaunch.crmWriteApprovalExactPersonCount ?? 'unknown'}`,
     `- Mini-launch CRM write approval blockers: ${runbook.currentState.miniLaunch.crmWriteApprovalBlockers.join(', ') || 'none'}`,
+    `- Mini-launch CRM write policy packet ready: ${runbook.currentState.miniLaunch.crmWritePolicyPacketReady}`,
+    `- Mini-launch CRM write policy consumed: ${runbook.currentState.miniLaunch.crmWritePolicyPacketConsumed}`,
+    `- Mini-launch CRM write policy resolved blockers: ${runbook.currentState.miniLaunch.crmWritePolicyResolvedBlockers.join(', ') || 'none'}`,
+    `- Mini-launch CRM write policy open blockers: ${runbook.currentState.miniLaunch.crmWritePolicyOpenBlockers.join(', ') || 'none'}`,
     `- Mini-launch Email Style QA packet: ${runbook.currentState.miniLaunch.emailStyleQaPacketStatus ?? 'unknown'}`,
     `- Mini-launch Email Style QA local asset plan ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForLocalAssetPlan}`,
     `- Mini-launch Email Style QA MailerLite build ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForMailerLiteBuild}`,

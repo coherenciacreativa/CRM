@@ -741,6 +741,15 @@ const buildRequirementChecks = ({
   const miniLaunchCrmWriteApprovalBlockers = miniLaunchCrmWriteApprovalPacket?.approvalBoundary?.blockersBeforeApprovalRequest
     ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalBlockers
     ?? [];
+  const miniLaunchCrmWritePolicyPacketReady = miniLaunchCrmWriteApprovalPacket?.executiveSummary?.writePolicyPacketReady
+    ?? runbook?.currentState?.miniLaunch?.crmWritePolicyPacketReady
+    ?? false;
+  const miniLaunchCrmWritePolicyResolvedBlockers = miniLaunchCrmWriteApprovalPacket?.policyEffect?.resolvedPolicyBlockers
+    ?? runbook?.currentState?.miniLaunch?.crmWritePolicyResolvedBlockers
+    ?? [];
+  const miniLaunchCrmWritePolicyOpenBlockers = miniLaunchCrmWriteApprovalPacket?.policyEffect?.policyBlockersStillOpen
+    ?? runbook?.currentState?.miniLaunch?.crmWritePolicyOpenBlockers
+    ?? [];
   const shopifyLocalBuildReceipt = miniLaunchShopifyLocalBuildReceipt ?? null;
   const shopifyLocalBuildClosed = shopifyLocalBuildReceipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
     && shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated === 5
@@ -1109,6 +1118,9 @@ const buildRequirementChecks = ({
         `miniLaunchCrmWriteApprovalCandidateFamilyCount=${miniLaunchCrmWriteApprovalCandidateFamilyCount ?? 'unknown'}`,
         `miniLaunchCrmWriteApprovalOperationsExecuted=${miniLaunchCrmWriteApprovalOperationsExecuted ?? 'unknown'}`,
         `miniLaunchCrmWriteApprovalBlockers=${miniLaunchCrmWriteApprovalBlockers.join('|') || 'none'}`,
+        `miniLaunchCrmWritePolicyPacketReady=${miniLaunchCrmWritePolicyPacketReady}`,
+        `miniLaunchCrmWritePolicyResolvedBlockers=${miniLaunchCrmWritePolicyResolvedBlockers.join('|') || 'none'}`,
+        `miniLaunchCrmWritePolicyOpenBlockers=${miniLaunchCrmWritePolicyOpenBlockers.join('|') || 'none'}`,
         `shopifyLocalBuildReceiptStatus=${shopifyLocalBuildReceipt?.status ?? 'missing'}`,
         `shopifyLocalBuildClosed=${shopifyLocalBuildClosed}`,
         `shopifyLocalBuildFileCount=${shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 'unknown'}`,
@@ -1147,7 +1159,9 @@ const buildRequirementChecks = ({
               : 'Email Style QA is ready for local asset planning only; MailerLite asset build and seed send remain closed.'
             : 'Email Style QA must be generated before local asset planning becomes a reliable next step.',
           miniLaunchCrmWriteApprovalPacketStatus
-            ? 'CRM write approval packet exists as the current boundary; CRM writes still cannot be requested until real observed events, exact people and one write family are supplied.'
+            ? miniLaunchCrmWritePolicyPacketReady
+              ? 'CRM write approval packet exists as the current boundary and the CRM write policy packet is ready/consumed; CRM writes still cannot be requested until real observed events, exact people, aggregate review/facts and one future exact write approval are supplied.'
+              : 'CRM write approval packet exists as the current boundary; CRM writes still cannot be requested until real observed events, exact people and one write family are supplied.'
             : 'CRM signal projection remains no-live; build the CRM write approval packet before asking for any ledger/card/scoring/Fact Store write approval.',
           'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
         ]
@@ -1462,8 +1476,12 @@ const buildGoalAudit = ({
     ? 'The Shopify no-live local build now exists as five inert local files; publish, preview/theme push, real forms, MailerLite connection and CRM writes remain closed.'
     : 'Shopify local-build remains a no-live approval/request boundary; do not edit, preview, publish or connect forms without exact scope approval.';
   const crmWriteApprovalPacket = values.miniLaunchCrmWriteApprovalPacket ?? null;
+  const crmWritePolicyPacketReady = crmWriteApprovalPacket?.executiveSummary?.writePolicyPacketReady === true;
+  const crmWritePolicyResolvedBlockers = crmWriteApprovalPacket?.policyEffect?.resolvedPolicyBlockers ?? [];
   const crmWriteApprovalMove = crmWriteApprovalPacket
-    ? `CRM write approval packet is the current CRM boundary: status ${crmWriteApprovalPacket.status ?? 'unknown'}, exact writable events ${crmWriteApprovalPacket.executiveSummary?.exactEventCountReady ?? 'unknown'}, exact people ${crmWriteApprovalPacket.executiveSummary?.exactPersonCountReady ?? 'unknown'}; do not request CRM writes until blockers are gone.`
+    ? crmWritePolicyPacketReady
+      ? `CRM write approval packet is the current CRM boundary: status ${crmWriteApprovalPacket.status ?? 'unknown'}, policy packet ready/consumed with ${crmWritePolicyResolvedBlockers.length} policy blockers resolved, exact writable events ${crmWriteApprovalPacket.executiveSummary?.exactEventCountReady ?? 'unknown'}, exact people ${crmWriteApprovalPacket.executiveSummary?.exactPersonCountReady ?? 'unknown'}; do not request CRM writes until real evidence, identities, facts and future exact approval are present.`
+      : `CRM write approval packet is the current CRM boundary: status ${crmWriteApprovalPacket.status ?? 'unknown'}, exact writable events ${crmWriteApprovalPacket.executiveSummary?.exactEventCountReady ?? 'unknown'}, exact people ${crmWriteApprovalPacket.executiveSummary?.exactPersonCountReady ?? 'unknown'}; do not request CRM writes until blockers are gone.`
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded

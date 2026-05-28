@@ -536,7 +536,16 @@ const miniLaunchCrmWriteApprovalPacket = {
     exactEventCountReady: 0,
     exactPersonCountReady: 0,
     candidateWriteFamilyCount: 4,
+    writePolicyPacketReady: true,
     operationsExecuted: 0,
+  },
+  policyEffect: {
+    consumedPolicyPacket: true,
+    resolvedPolicyBlockers: [
+      "card_write_policy_packet_missing",
+      "identity_stitching_packet_missing",
+    ],
+    policyBlockersStillOpen: [],
   },
   approvalBoundary: {
     canAskAlejandroForApproval: false,
@@ -803,6 +812,10 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.crmWriteApprovalExactPersonCount).toBe(0);
     expect(state.miniLaunch.crmWriteApprovalCandidateFamilyCount).toBe(4);
     expect(state.miniLaunch.crmWriteApprovalBlockers).toContain("real_observed_event_file_missing");
+    expect(state.miniLaunch.crmWritePolicyPacketReady).toBe(true);
+    expect(state.miniLaunch.crmWritePolicyPacketConsumed).toBe(true);
+    expect(state.miniLaunch.crmWritePolicyResolvedBlockers).toContain("card_write_policy_packet_missing");
+    expect(state.miniLaunch.crmWritePolicyOpenBlockers).toEqual([]);
     expect(state.miniLaunch.shopifyLocalBuildReceiptStatus).toBe("shopify_local_build_receipt_executed_files_created_no_live_changes");
     expect(state.miniLaunch.shopifyLocalBuildFileCount).toBe(5);
     expect(state.miniLaunch.shopifyLocalBuildClosed).toBe(true);
