@@ -70,6 +70,7 @@
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet": "node scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-builder-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit": "node scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-execution-kit.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt": "node scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-build-receipt.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-manual-ui-draft-repair-packet": "node scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-draft-repair-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-handoff-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet": "node scripts/crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs",

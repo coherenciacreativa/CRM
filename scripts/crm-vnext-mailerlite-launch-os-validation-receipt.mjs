@@ -27,6 +27,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-builder-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-execution-kit.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-build-receipt.mjs',
+  'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-draft-repair-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs',
   'npm exec vitest run __tests__/crm-vnext-mailerlite*.spec.ts',
@@ -193,6 +194,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet',
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit',
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt',
+    'crm:vnext:mailerlite-mini-launch-email-manual-ui-draft-repair-packet',
     'crm:vnext:mailerlite-mini-launch-seed-test-qa-packet',
     'crm:vnext:mailerlite-mini-launch-crm-write-approval-packet',
   ].every((scriptName) => packageHas(packageJson, scriptName));

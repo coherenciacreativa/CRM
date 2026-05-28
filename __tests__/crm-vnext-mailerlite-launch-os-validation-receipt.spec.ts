@@ -53,6 +53,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet": "node scripts/email-manual-ui-builder-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit": "node scripts/email-manual-ui-execution-kit.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt": "node scripts/email-manual-ui-build-receipt.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-manual-ui-draft-repair-packet": "node scripts/email-manual-ui-draft-repair-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/seed-test-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-write-approval-packet.mjs",
   },

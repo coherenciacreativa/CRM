@@ -4,6 +4,7 @@ import {
   buildApprovalQueue,
   buildBrujulaBuilderDraftItem,
   buildMiniLaunchEmailAssetBuildItem,
+  buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
   buildOnboardingV2EmptyGroupItem,
@@ -233,6 +234,54 @@ const miniLaunchEmailManualUiBuildReceipt = {
   },
 };
 
+const miniLaunchEmailManualUiDraftRepairPacket = {
+  status: "mini_launch_email_manual_ui_draft_repair_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    canAskAlejandroForApproval: true,
+    canRepairNow: false,
+    packetIsApprovalByItself: false,
+    targetDraftCount: 1,
+    missingFragmentCount: 4,
+    realMailerLiteRenderQaStatus: "mini_launch_real_mailerlite_render_qa_blocked_content_mismatch_no_live_changes",
+    manualUiBuildReceiptStatus: "manual_ui_build_receipt_executed_drafts_created_no_sends",
+    seedTestQaPacketStatus: "seed_test_qa_packet_updated_after_manual_ui_build_no_live_changes",
+    seedTestQaCanAskApprovalNow: false,
+    seedTestQaBlockerCount: 2,
+    openLiveMutationGateCount: 0,
+  },
+  repairTargets: [{
+    step: 1,
+    role: "delivery_and_orientation",
+    campaignId: "188672517160830964",
+    draftName: "ML Draft · descanso · E01",
+    missingFragmentCount: 4,
+    missingFragments: [
+      { id: "email_1_paragraph_2" },
+      { id: "email_1_paragraph_3" },
+      { id: "email_1_paragraph_4" },
+      { id: "email_1_cta" },
+    ],
+  }],
+  decision: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canRepairNow: false,
+    exactApprovalPhrase: "Apruebo reparar manualmente en MailerLite UI únicamente el borrador Email 1 del mini-lanzamiento Inteligencia para descansar, campaña 188672517160830964, corrigiendo solo estos 4 fragmentos de cuerpo/CTA para que coincidan con el payload local y usando el placeholder inerte result_or_resource_link_placeholder, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store.",
+    approvalOpensOnly: ["edit only the existing draft campaign named in this packet"],
+    stillClosedEvenAfterApproval: ["send_email_or_test_email", "workflow_or_automation_attachment"],
+    requiredFreshEvidenceBeforeExecution: ["confirm Outbox is still empty before repair"],
+  },
+  safety: {
+    browserOpened: false,
+    mailerLiteApiCalledByThisPacket: false,
+    sendsPerformed: false,
+    subscriberMutationsPerformed: false,
+    groupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+};
+
 const miniLaunchShopifyLocalBuildRequest = {
   status: "ready_for_human_or_web_design_scope_approval_no_live_changes",
   approvalGate: {
@@ -434,6 +483,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailAssetBuildExecution).toContain("mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuilderPacket).toContain("mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailManualUiDraftRepairPacket).toContain("mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
@@ -542,6 +592,103 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(byId.get("mini_launch_seed_send")?.blockers).not.toContain("asset_build_not_executed");
     expect(byId.get("mini_launch_seed_send")?.blockers).toContain("real_mailerlite_render_qa_missing");
     expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_email_manual_ui_builder");
+  });
+
+  test("adds a ready repair boundary when real MailerLite QA finds an exact-copy mismatch", () => {
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchEmailManualUiBuildReceipt,
+      miniLaunchEmailManualUiDraftRepairPacket,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+    const item = queue.approvalItems.find((approvalItem) => approvalItem.id === "mini_launch_email_manual_ui_draft_repair");
+
+    expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_email_manual_ui_draft_repair");
+    expect(item).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      operationType: "live_mailerlite_ui_existing_draft_copy_repair_after_exact_approval",
+      evidence: {
+        targetDraftCount: 1,
+        missingFragmentCount: 4,
+        canRepairNow: false,
+        packetIsApprovalByItself: false,
+        seedTestQaCanAskApprovalNow: false,
+      },
+    });
+    expect(item?.exactApprovalPhrase).toContain("campaña 188672517160830964");
+    expect(item?.stillClosed).toContain("send_email_or_test_email");
+  });
+
+  test("keeps resolved manual UI draft repair as reference-only after real QA is green", () => {
+    const item = buildMiniLaunchEmailManualUiDraftRepairItem({
+      packet: {
+        ...miniLaunchEmailManualUiDraftRepairPacket,
+        status: "mini_launch_email_manual_ui_draft_repair_packet_reference_only_no_repair_needed",
+        executiveSummary: {
+          ...miniLaunchEmailManualUiDraftRepairPacket.executiveSummary,
+          canAskAlejandroForApproval: false,
+          targetDraftCount: 0,
+          missingFragmentCount: 0,
+          realMailerLiteRenderQaStatus: "mini_launch_real_mailerlite_render_qa_green_no_live_changes",
+        },
+        repairTargets: [],
+        decision: {
+          ...miniLaunchEmailManualUiDraftRepairPacket.decision,
+          canAskAlejandroForApproval: false,
+          exactApprovalPhrase: null,
+        },
+      },
+    });
+
+    expect(item).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_completed",
+      operationType: "live_mailerlite_ui_existing_draft_copy_repair_already_resolved",
+      blockers: [],
+      evidence: {
+        realMailerLiteRenderQaGreen: true,
+        targetDraftCount: 0,
+        missingFragmentCount: 0,
+      },
+    });
+    expect(item.exactApprovalPhrase).toBeNull();
+  });
+
+  test("blocks repair boundary if packet self-authorizes or reports live actions", () => {
+    const item = buildMiniLaunchEmailManualUiDraftRepairItem({
+      packet: {
+        ...miniLaunchEmailManualUiDraftRepairPacket,
+        decision: {
+          ...miniLaunchEmailManualUiDraftRepairPacket.decision,
+          canRepairNow: true,
+        },
+        safety: {
+          ...miniLaunchEmailManualUiDraftRepairPacket.safety,
+          sendsPerformed: true,
+        },
+      },
+    });
+
+    expect(item.status).toBe("prepared_but_blocked_before_approval_request");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.blockers).toContain("manual_ui_draft_repair_gate_unexpectedly_open");
+    expect(item.blockers).toContain("manual_ui_draft_repair_packet_reports_send");
   });
 
   test("uses CRM write approval packet blockers once the packet exists", () => {
