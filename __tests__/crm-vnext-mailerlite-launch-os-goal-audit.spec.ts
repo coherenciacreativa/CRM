@@ -599,6 +599,25 @@ const miniLaunchEmailManualUiBuildReceipt = {
   ],
 };
 
+const miniLaunchCrmWriteApprovalPacket = {
+  status: "crm_write_approval_packet_blocked_missing_observed_events_no_live_changes",
+  executiveSummary: {
+    approvalRequestReady: false,
+    exactEventCountReady: 0,
+    exactPersonCountReady: 0,
+    candidateWriteFamilyCount: 4,
+    operationsExecuted: 0,
+  },
+  approvalBoundary: {
+    canAskAlejandroForApproval: false,
+    blockersBeforeApprovalRequest: [
+      "real_observed_event_file_missing",
+      "exact_observed_events_missing",
+      "exact_person_identity_missing",
+    ],
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -612,6 +631,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet": "node scripts/email-asset-build-scope.mjs",
     "crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest": "node scripts/email-builder-payload-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-email-render-qa-packet": "node scripts/email-render-qa.mjs",
+    "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-write-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt": "node scripts/manual-ui-build-receipt.mjs",
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/brujula-email-style-qa.mjs",
     "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/brujula-email-style-correction.mjs",
@@ -647,6 +667,7 @@ const values = {
   miniLaunchEmailBuilderPayloadManifest: null,
   miniLaunchEmailRenderQa: null,
   miniLaunchEmailManualUiBuildReceipt: null,
+  miniLaunchCrmWriteApprovalPacket: null,
   validationReceipt: null,
   brandTaxonomy: "CC · Source\nCC · Delivered\nCC · Sent\n",
   brandDictionary: "CC · Source · Resource · Brújula\n",
@@ -688,6 +709,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
@@ -878,6 +900,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
       miniLaunchEmailBuilderPayloadManifest,
       miniLaunchEmailRenderQa,
       miniLaunchEmailManualUiBuildReceipt,
+      miniLaunchCrmWriteApprovalPacket,
       approvalQueue: {
         status: "mailerlite_launch_os_approval_queue_ready_no_live_changes",
         executiveSummary: {
@@ -904,9 +927,18 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchManualUiDraftVisibleCount=4");
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchManualUiBuildClosed=true");
     expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchManualUiEditor=new_simple_editor");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalPacketStatus=crm_write_approval_packet_blocked_missing_observed_events_no_live_changes");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalCanAskApproval=false");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalExactEventCount=0");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalExactPersonCount=0");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalCandidateFamilyCount=4");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalOperationsExecuted=0");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.evidence).toContain("miniLaunchCrmWriteApprovalBlockers=real_observed_event_file_missing|exact_observed_events_missing|exact_person_identity_missing");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("four mini-launch drafts already exist in MailerLite Drafts");
+    expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).toContain("CRM write approval packet exists as the current boundary");
     expect(byId.prepare_frequent_mini_launch_infrastructure.remaining.join(" ")).not.toContain("no MailerLite creation is authorized yet");
     expect(audit.executiveSummary.nextBestMove).toContain("four mini-launch email assets are now represented as MailerLite UI drafts");
+    expect(audit.executiveSummary.nextBestMove).toContain("CRM write approval packet is the current CRM boundary");
     expect(audit.executiveSummary.nextBestMove).not.toContain("exact asset-build approval is still required");
     expect(audit.nextMoves.join(" ")).toContain("Do not rerun mini-launch empty-group creation");
     expect(audit.nextMoves.join(" ")).not.toContain("If the mini-launch empty-group approval packet is ready");

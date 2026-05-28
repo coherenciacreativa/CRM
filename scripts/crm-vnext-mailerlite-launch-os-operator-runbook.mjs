@@ -27,6 +27,7 @@ const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
@@ -73,6 +74,7 @@ Options:
   --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
   --mini-launch-crm-signal-projection-packet <path> Mini-launch CRM signal projection JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
+  --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --mini-launch-email-style-qa-packet <path> Mini-launch Email Style QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET}
   --mini-launch-local-email-asset-plan <path> Mini-launch local email asset plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN}
   --mini-launch-email-asset-build-scope-packet <path> Mini-launch exact approval scope packet for future email asset build. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
@@ -126,6 +128,7 @@ const parseArgs = (argv) => {
     onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
+    miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     miniLaunchEmailStyleQaPacket: DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET,
     miniLaunchLocalEmailAssetPlan: DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN,
     miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
@@ -175,6 +178,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
+    else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-email-style-qa-packet') options.miniLaunchEmailStyleQaPacket = argv[++index];
     else if (arg === '--mini-launch-local-email-asset-plan') options.miniLaunchLocalEmailAssetPlan = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
@@ -237,6 +241,7 @@ const loadSourceDigests = async (options) => {
     [options.onboardingV2FirstEmailMap, 'onboarding v2 first-email mapping to prevent unnecessary Sent receipts', true],
     [options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty-group create runner dry-run with zero mutations', true],
     [options.miniLaunchCrmSignalProjectionPacket, 'mini-launch CRM signal projection packet with closed write gates', true],
+    [options.miniLaunchCrmWriteApprovalPacket, 'mini-launch CRM write approval packet with exact events/people/fields boundary', true],
     [options.miniLaunchEmailStyleQaPacket, 'mini-launch Email Style QA packet after final Brand sequence approval', true],
     [options.miniLaunchLocalEmailAssetPlan, 'mini-launch local email asset plan with inert placeholders and build/send gates closed', true],
     [options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch exact approval scope packet for future MailerLite draft email asset build; no execution', true],
@@ -398,6 +403,7 @@ const buildCurrentState = ({
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
   miniLaunchCrmSignalProjectionPacket,
+  miniLaunchCrmWriteApprovalPacket,
   miniLaunchEmailStyleQaPacket,
   miniLaunchLocalEmailAssetPlan,
   miniLaunchEmailAssetBuildScopePacket,
@@ -585,6 +591,13 @@ const buildCurrentState = ({
       crmSignalProjectionCanScore: miniLaunchCrmSignalProjectionPacket?.approvalGate?.canScoreNow
         ?? readinessLaneById.get('crm_signal_projection_packet')?.readiness?.canScoreNow
         ?? false,
+      crmWriteApprovalPacketStatus: miniLaunchCrmWriteApprovalPacket?.status ?? null,
+      crmWriteApprovalCanAskApproval: miniLaunchCrmWriteApprovalPacket?.approvalBoundary?.canAskAlejandroForApproval ?? false,
+      crmWriteApprovalExactEventCount: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.exactEventCountReady ?? null,
+      crmWriteApprovalExactPersonCount: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.exactPersonCountReady ?? null,
+      crmWriteApprovalCandidateFamilyCount: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.candidateWriteFamilyCount ?? null,
+      crmWriteApprovalOperationsExecuted: miniLaunchCrmWriteApprovalPacket?.executiveSummary?.operationsExecuted ?? null,
+      crmWriteApprovalBlockers: miniLaunchCrmWriteApprovalPacket?.approvalBoundary?.blockersBeforeApprovalRequest ?? [],
       emailStyleQaPacketStatus: miniLaunchEmailStyleQaPacket?.status
         ?? readinessLaneById.get('email_sequence')?.sourceStatus
         ?? null,
@@ -802,6 +815,7 @@ const buildReportMap = (sourceDigests) => {
     onboardingV2FirstEmailMap: findPath('mailerlite_onboarding_v2_first_email_map_2026-05-27.json'),
     miniLaunchEmptyGroupCreateDryRun: findPath('mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json'),
     miniLaunchCrmSignalProjectionPacket: findPath('mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json'),
+    miniLaunchCrmWriteApprovalPacket: findPath('mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json'),
     miniLaunchLocalEmailAssetPlan: findPath('mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailAssetBuildScopePacket: findPath('mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailBuilderPayloadManifest: findPath('mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json'),
@@ -970,6 +984,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-mini-launch-empty-group-creation-packet'),
         command('crm:vnext:mailerlite-mini-launch-empty-group-create'),
         command('crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet'),
+        command('crm:vnext:mailerlite-mini-launch-crm-write-approval-packet'),
         command('crm:vnext:mailerlite-mini-launch-email-style-qa-packet'),
         command('crm:vnext:mailerlite-mini-launch-local-email-asset-plan'),
         command('crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet'),
@@ -1074,7 +1089,9 @@ const buildApprovalPhaseMoves = (currentState) => [
   miniLaunchManualUiBuildClosed(currentState)
     ? 'Use the mini-launch seed/test QA packet before any seed/test send; it currently requires real MailerLite render QA, an exact seed recipient and an exact send approval.'
     : 'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
-  'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
+  currentState?.miniLaunch?.crmWriteApprovalPacketStatus
+    ? 'Use the CRM write approval packet as the current CRM boundary; it cannot ask approval until real observed events, exact people and one write family are named.'
+    : 'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
   miniLaunchShopifyLocalBuildClosed(currentState)
     ? 'Shopify no-live local build is complete; keep the five files inert and do not publish, preview, connect forms or call APIs without a later exact scope.'
     : 'Use the Shopify local-build request only after exact no-live scope approval, and keep placeholders inert.',
@@ -1143,6 +1160,7 @@ const buildRunbook = ({
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
   miniLaunchCrmSignalProjectionPacket,
+  miniLaunchCrmWriteApprovalPacket,
   miniLaunchEmailStyleQaPacket,
   miniLaunchLocalEmailAssetPlan,
   miniLaunchEmailAssetBuildScopePacket,
@@ -1185,6 +1203,7 @@ const buildRunbook = ({
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchCrmWriteApprovalPacket,
     miniLaunchEmailStyleQaPacket,
     miniLaunchLocalEmailAssetPlan,
     miniLaunchEmailAssetBuildScopePacket,
@@ -1297,6 +1316,11 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch CRM signal projection signals generated: ${runbook.currentState.miniLaunch.crmSignalProjectionSignalsGenerated ?? 'unknown'}`,
     `- Mini-launch CRM signal projection store-only count: ${runbook.currentState.miniLaunch.crmSignalProjectionStoreOnlyNowCount ?? 'unknown'}`,
     `- Mini-launch CRM signal projection can append ledger: ${runbook.currentState.miniLaunch.crmSignalProjectionCanAppendLedger}`,
+    `- Mini-launch CRM write approval packet: ${runbook.currentState.miniLaunch.crmWriteApprovalPacketStatus ?? 'unknown'}`,
+    `- Mini-launch CRM write approval can ask approval: ${runbook.currentState.miniLaunch.crmWriteApprovalCanAskApproval}`,
+    `- Mini-launch CRM write approval exact events ready: ${runbook.currentState.miniLaunch.crmWriteApprovalExactEventCount ?? 'unknown'}`,
+    `- Mini-launch CRM write approval exact people ready: ${runbook.currentState.miniLaunch.crmWriteApprovalExactPersonCount ?? 'unknown'}`,
+    `- Mini-launch CRM write approval blockers: ${runbook.currentState.miniLaunch.crmWriteApprovalBlockers.join(', ') || 'none'}`,
     `- Mini-launch Email Style QA packet: ${runbook.currentState.miniLaunch.emailStyleQaPacketStatus ?? 'unknown'}`,
     `- Mini-launch Email Style QA local asset plan ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForLocalAssetPlan}`,
     `- Mini-launch Email Style QA MailerLite build ready: ${runbook.currentState.miniLaunch.emailStyleQaReadyForMailerLiteBuild}`,
@@ -1482,6 +1506,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchCrmWriteApprovalPacket,
     miniLaunchEmailStyleQaPacket,
     miniLaunchLocalEmailAssetPlan,
     miniLaunchEmailAssetBuildScopePacket,
@@ -1523,6 +1548,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.onboardingV2FirstEmailMap),
     readOptionalJson(options.miniLaunchEmptyGroupCreateDryRun),
     readOptionalJson(options.miniLaunchCrmSignalProjectionPacket),
+    readOptionalJson(options.miniLaunchCrmWriteApprovalPacket),
     readOptionalJson(options.miniLaunchEmailStyleQaPacket),
     readOptionalJson(options.miniLaunchLocalEmailAssetPlan),
     readOptionalJson(options.miniLaunchEmailAssetBuildScopePacket),
@@ -1566,6 +1592,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchCrmWriteApprovalPacket,
     miniLaunchEmailStyleQaPacket,
     miniLaunchLocalEmailAssetPlan,
     miniLaunchEmailAssetBuildScopePacket,

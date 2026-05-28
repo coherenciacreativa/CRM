@@ -495,6 +495,11 @@ const buildSeedTestQaPacket = ({
   const targetDrafts = targetDraftsFrom(manualUiBuildReceipt);
   const targetGroupsExist = groupsExistFrom(emptyGroupCreateDryRun);
   const realMailerLiteRenderQaReady = realMailerLiteRenderReadyFrom(realMailerLiteRenderQa);
+  const realMailerLiteRenderQaBlocker = realMailerLiteRenderQaReady
+    ? null
+    : realMailerLiteRenderQa
+      ? `real_mailerlite_render_qa_not_green:${realMailerLiteRenderQa.status ?? 'unknown'}`
+      : 'real_mailerlite_render_qa_missing';
   const approvalQueueSeedItem = approvalQueue?.approvalItems?.find((item) => item.id === 'mini_launch_seed_send') ?? null;
   const machineBlockersBeforeSeedSendApprovalRequest = [
     ...(rehearsalReady ? [] : ['rehearsal_packet_not_ready']),
@@ -503,7 +508,7 @@ const buildSeedTestQaPacket = ({
     ...(localRenderReady ? [] : ['local_render_qa_not_green']),
     ...(manualUiDraftsBuilt ? [] : ['manual_ui_drafts_not_built']),
     ...(targetGroupsExist ? [] : ['receipt_groups_not_proven_existing']),
-    ...(realMailerLiteRenderQaReady ? [] : ['real_mailerlite_render_qa_missing']),
+    ...(realMailerLiteRenderQaBlocker ? [realMailerLiteRenderQaBlocker] : []),
     ...(testEmailRedacted ? [] : ['exact_seed_recipient_missing']),
   ];
   const canAskSeedSendApprovalNow = machineBlockersBeforeSeedSendApprovalRequest.length === 0;
@@ -531,14 +536,20 @@ const buildSeedTestQaPacket = ({
     exact_seed_recipient_missing: 'No exact seed recipient is supplied in this packet.',
     exact_seed_send_approval_missing: 'No exact seed-send approval has been given.',
   };
+  const blockerLabelFor = (blocker) => {
+    if (String(blocker).startsWith('real_mailerlite_render_qa_not_green:')) {
+      return `Real MailerLite render QA exists but is not green (${String(blocker).split(':').slice(1).join(':')}).`;
+    }
+    return blockerLabels[blocker] ?? blocker;
+  };
   const blockersBeforeSeedSendApprovalRequest = machineBlockersBeforeSeedSendApprovalRequest
-    .map((blocker) => blockerLabels[blocker] ?? blocker);
+    .map(blockerLabelFor);
   const machineBlockersBeforeAnySeedSend = [
     ...machineBlockersBeforeSeedSendApprovalRequest,
     'exact_seed_send_approval_missing',
   ];
   const blockersBeforeAnySeedSend = machineBlockersBeforeAnySeedSend
-    .map((blocker) => blockerLabels[blocker] ?? blocker);
+    .map(blockerLabelFor);
 
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -581,7 +592,7 @@ const buildSeedTestQaPacket = ({
           'Source/Delivered candidate groups are not proven live for this launch.',
           'No fresh read-only MailerLite scan exists for this launch-specific group plan.',
         ]),
-        ...(realMailerLiteRenderQaReady ? [] : ['Real MailerLite render QA on the four UI drafts is missing.']),
+        ...(realMailerLiteRenderQaReady ? [] : [blockerLabelFor(realMailerLiteRenderQaBlocker)]),
         ...(testEmailRedacted ? [] : ['No exact seed recipient is supplied in this packet.']),
         'No exact approval exists to create/update the seed subscriber or assign groups.',
         'No exact approval exists to send a seed email for this launch.',

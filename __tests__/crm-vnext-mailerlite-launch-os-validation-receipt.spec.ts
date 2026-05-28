@@ -48,11 +48,13 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet": "node scripts/email-asset-build-scope.mjs",
     "crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest": "node scripts/email-builder-payload-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-email-render-qa-packet": "node scripts/email-render-qa.mjs",
+    "crm:vnext:mailerlite-mini-launch-real-mailerlite-render-qa": "node scripts/real-mailerlite-render-qa.mjs",
     "crm:vnext:mailerlite-mini-launch-email-asset-build": "node scripts/email-asset-build.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet": "node scripts/email-manual-ui-builder-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit": "node scripts/email-manual-ui-execution-kit.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt": "node scripts/email-manual-ui-build-receipt.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/seed-test-qa-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-write-approval-packet.mjs",
   },
 };
 
@@ -88,7 +90,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     ]);
 
     expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
-    expect(parsed.goalAudit).toContain("mailerlite_launch_os_goal_audit_2026-05-28.json");
+    expect(parsed.goalAudit).toContain("mailerlite_launch_os_v0_goal_audit_2026-05-28.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);

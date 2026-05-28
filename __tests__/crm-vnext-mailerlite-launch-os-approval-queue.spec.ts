@@ -298,6 +298,38 @@ const miniLaunchCrmSignalProjectionPacket = {
   },
 };
 
+const miniLaunchCrmWriteApprovalPacket = {
+  status: "crm_write_approval_packet_blocked_missing_observed_events_no_live_changes",
+  executiveSummary: {
+    approvalRequestReady: false,
+    exactEventCountReady: 0,
+    exactPersonCountReady: 0,
+    candidateWriteFamilyCount: 4,
+    operationsPreviewed: 0,
+    operationsExecuted: 0,
+  },
+  approvalBoundary: {
+    canAskAlejandroForApproval: false,
+    exactApprovalPhrase: null,
+    blockersBeforeApprovalRequest: [
+      "real_observed_event_file_missing",
+      "exact_observed_events_missing",
+      "exact_person_identity_missing",
+    ],
+    requiredBeforeApprovalRequest: [
+      "Supply a real observed-events file with exact people and exact event fields.",
+      "Choose one write family at a time: ledger append, card write, scoring, or Fact Store.",
+      "Keep subscribers, workflows, sends, MailerLite mutations and Shopify live changes out of the CRM approval.",
+    ],
+  },
+  writeFamilies: [
+    { title: "Append observed mini-launch events to CRM Signal Event Ledger", canAskAlejandroForApproval: false, operationType: "local_crm_signal_event_ledger_append_after_future_exact_approval" },
+    { title: "Write mini-launch signal history onto CRM person cards", canAskAlejandroForApproval: false, operationType: "local_crm_person_card_enrichment_after_future_exact_approval" },
+    { title: "Project engagement signals into CRM scoring", canAskAlejandroForApproval: false, operationType: "local_crm_score_projection_after_future_exact_policy_approval" },
+    { title: "Write aggregate launch learning to Fact Store", canAskAlejandroForApproval: false, operationType: "local_crm_fact_store_write_after_future_exact_approval" },
+  ],
+};
+
 const brujulaEmailStyleCorrection = {
   status: "brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes",
   draft: {
@@ -404,6 +436,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.brujulaEmailManualUiBuildReceipt).toContain("mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
@@ -509,6 +542,47 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(byId.get("mini_launch_seed_send")?.blockers).not.toContain("asset_build_not_executed");
     expect(byId.get("mini_launch_seed_send")?.blockers).toContain("real_mailerlite_render_qa_missing");
     expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_email_manual_ui_builder");
+  });
+
+  test("uses CRM write approval packet blockers once the packet exists", () => {
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      miniLaunchCrmWriteApprovalPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    const item = queue.approvalItems.find((approvalItem) => approvalItem.id === "crm_signal_writes");
+
+    expect(item).toMatchObject({
+      status: "prepared_but_blocked_before_approval_request",
+      canAskAlejandroNow: false,
+      targetCount: 4,
+      evidence: {
+        writeApprovalPacketPresent: true,
+        writeApprovalPacketStatus: "crm_write_approval_packet_blocked_missing_observed_events_no_live_changes",
+        exactEventCountReady: 0,
+        exactPersonCountReady: 0,
+        candidateWriteFamilyCount: 4,
+        operationsExecuted: 0,
+      },
+    });
+    expect(item?.blockers).toContain("real_observed_event_file_missing");
+    expect(item?.blockers).not.toContain("separate_crm_write_approval_packet_missing");
+    expect(item?.requiredFreshEvidence.join(" ")).toContain("real observed-events file");
   });
 
   test("marks Shopify local build approval as completed once the local receipt exists", () => {

@@ -19,6 +19,7 @@ const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json';
@@ -43,6 +44,7 @@ Options:
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-shopify-local-build-receipt <path> Shopify no-live local build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
+  --mini-launch-crm-write-approval-packet <path> CRM write approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>                Brújula local render QA packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
   --brujula-email-manual-ui-build-receipt <path>  Brújula Email 1 manual UI build receipt. Defaults to ${DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT}
@@ -83,6 +85,7 @@ const parseArgs = (argv) => {
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
+    miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
     brujulaEmailManualUiBuildReceipt: DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT,
@@ -110,6 +113,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
+    else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
     else if (arg === '--brujula-email-manual-ui-build-receipt') options.brujulaEmailManualUiBuildReceipt = argv[++index];
@@ -1079,40 +1083,73 @@ const buildMiniLaunchSeedSendItem = ({
   });
 };
 
-const buildCrmSignalWriteItem = ({ packet }) => buildApprovalItem({
-  id: 'crm_signal_writes',
-  title: 'CRM signal ledger/card/scoring/Fact Store writes',
-  lane: 'crm_signal_projection',
-  operationType: 'crm_live_write_after_future_specific_approval_packet',
-  approvalType: 'not_ready_for_request',
-  canAskNow: false,
-  exactApprovalPhrase: null,
-  sourceStatuses: {
-    projectionPacket: packet?.status ?? null,
-  },
-  targetNames: [],
-  allowedAfterExactApproval: [],
-  stillClosed: [
-    'signal_ledger_append',
-    'crm_card_write',
-    'crm_scoring',
-    'fact_store_write',
-    'mailerlite_or_shopify_mutation',
-  ],
-  requiredFreshEvidence: [
-    'build a separate CRM write approval packet with exact events, people and fields',
-    'confirm no subscriber/workflow/send action is bundled',
-  ],
-  blockers: ['separate_crm_write_approval_packet_missing'],
-  evidence: {
-    canAppendSignalLedgerNow: packet?.approvalGate?.canAppendSignalLedgerNow ?? null,
-    canWriteCardsNow: packet?.approvalGate?.canWriteCardsNow ?? null,
-    canScoreNow: packet?.approvalGate?.canScoreNow ?? null,
-    canWriteFactStoreNow: packet?.approvalGate?.canWriteFactStoreNow ?? null,
-  },
-  commandAfterApproval: null,
-  notes: ['Current packet is a no-live interpretation bridge only.'],
-});
+const writeFamilyLabelsFrom = (writeApprovalPacket) =>
+  (writeApprovalPacket?.writeFamilies ?? []).map((family) => cleanString(family?.title)).filter(Boolean);
+
+const buildCrmSignalWriteItem = ({ packet, writeApprovalPacket = null }) => {
+  const writePacketPresent = Boolean(writeApprovalPacket);
+  const canAskNow = writeApprovalPacket?.approvalBoundary?.canAskAlejandroForApproval === true;
+  const packetBlockers = writePacketPresent
+    ? (writeApprovalPacket?.approvalBoundary?.blockersBeforeApprovalRequest ?? [])
+    : ['separate_crm_write_approval_packet_missing'];
+  const targetNames = writePacketPresent
+    ? writeFamilyLabelsFrom(writeApprovalPacket)
+    : [];
+
+  return buildApprovalItem({
+    id: 'crm_signal_writes',
+    title: 'CRM signal ledger/card/scoring/Fact Store writes',
+    lane: 'crm_signal_projection',
+    operationType: 'crm_live_write_after_future_specific_approval_packet',
+    approvalType: canAskNow ? 'exact_phrase_required' : 'not_ready_for_request',
+    canAskNow,
+    exactApprovalPhrase: writeApprovalPacket?.approvalBoundary?.exactApprovalPhrase ?? null,
+    sourceStatuses: {
+      projectionPacket: packet?.status ?? null,
+      writeApprovalPacket: writeApprovalPacket?.status ?? null,
+    },
+    targetNames,
+    allowedAfterExactApproval: writeApprovalPacket?.writeFamilies
+      ?.filter((family) => family.canAskAlejandroForApproval === true)
+      .map((family) => family.operationType)
+      ?? [],
+    stillClosed: [
+      'signal_ledger_append_until_exact_event_approval',
+      'crm_card_write_until_card_packet_approval',
+      'crm_scoring_until_policy_and_exact_deltas_approval',
+      'fact_store_write_until_exact_fact_approval',
+      'mailerlite_or_shopify_mutation',
+      'subscribers_workflows_or_sends',
+    ],
+    requiredFreshEvidence: writeApprovalPacket?.approvalBoundary?.requiredBeforeApprovalRequest ?? [
+      'build a separate CRM write approval packet with exact events, people and fields',
+      'confirm no subscriber/workflow/send action is bundled',
+    ],
+    blockers: packetBlockers,
+    evidence: {
+      canAppendSignalLedgerNow: packet?.approvalGate?.canAppendSignalLedgerNow ?? null,
+      canWriteCardsNow: packet?.approvalGate?.canWriteCardsNow ?? null,
+      canScoreNow: packet?.approvalGate?.canScoreNow ?? null,
+      canWriteFactStoreNow: packet?.approvalGate?.canWriteFactStoreNow ?? null,
+      writeApprovalPacketPresent: writePacketPresent,
+      writeApprovalPacketStatus: writeApprovalPacket?.status ?? null,
+      exactEventCountReady: writeApprovalPacket?.executiveSummary?.exactEventCountReady ?? null,
+      exactPersonCountReady: writeApprovalPacket?.executiveSummary?.exactPersonCountReady ?? null,
+      candidateWriteFamilyCount: writeApprovalPacket?.executiveSummary?.candidateWriteFamilyCount ?? null,
+      operationsPreviewed: writeApprovalPacket?.executiveSummary?.operationsPreviewed ?? null,
+      operationsExecuted: writeApprovalPacket?.executiveSummary?.operationsExecuted ?? null,
+    },
+    commandAfterApproval: canAskNow
+      ? 'future CRM write runner only after exact approval for one write family; no MailerLite/Shopify/subscriber/workflow/send bundle'
+      : null,
+    notes: [
+      writePacketPresent
+        ? 'CRM write approval packet exists, but current state is still blocked until real observed events, exact people and one write family are named.'
+        : 'Current projection packet is a no-live interpretation bridge only.',
+      'Sample event-contract events cannot become person history.',
+    ],
+  });
+};
 
 const buildApprovalQueue = ({
   miniLaunchEmptyGroupPacket,
@@ -1130,6 +1167,7 @@ const buildApprovalQueue = ({
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchCrmSignalProjectionPacket,
+  miniLaunchCrmWriteApprovalPacket = null,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
   brujulaEmailManualUiBuildReceipt,
@@ -1174,6 +1212,7 @@ const buildApprovalQueue = ({
     }),
     buildCrmSignalWriteItem({
       packet: miniLaunchCrmSignalProjectionPacket,
+      writeApprovalPacket: miniLaunchCrmWriteApprovalPacket,
     }),
   ];
 
@@ -1299,6 +1338,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildReceipt, 'Shopify no-live local build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
+    readOptionalJsonWithDigest(options.miniLaunchCrmWriteApprovalPacket, 'CRM write approval packet with exact events/people/fields boundary'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
     readOptionalJsonWithDigest(options.brujulaEmailRenderQa, 'Brújula local render QA packet'),
     readOptionalJsonWithDigest(options.brujulaEmailManualUiBuildReceipt, 'Brújula Email 1 manual UI build receipt'),
@@ -1321,6 +1361,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchCrmWriteApprovalPacket,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
     brujulaEmailManualUiBuildReceipt,
@@ -1343,6 +1384,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
+    miniLaunchCrmWriteApprovalPacket,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
     brujulaEmailManualUiBuildReceipt,

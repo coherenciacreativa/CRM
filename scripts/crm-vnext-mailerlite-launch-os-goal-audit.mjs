@@ -34,6 +34,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Man
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -80,6 +81,7 @@ Options:
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI draft build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
+  --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -131,6 +133,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
+    miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -180,6 +183,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
+    else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -299,6 +303,7 @@ const loadSources = async (options) => {
     ['miniLaunchEmailManualUiBuildReceipt', options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI MailerLite draft build receipt and closed send/subscriber/workflow gates', 'json', true],
     ['miniLaunchSeedTestQaPacket', options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight with real-render and seed-recipient blockers', 'json', true],
     ['miniLaunchShopifyLocalBuildReceipt', options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', 'json', true],
+    ['miniLaunchCrmWriteApprovalPacket', options.miniLaunchCrmWriteApprovalPacket, 'mini-launch CRM write approval packet with exact observed-events/person/write-family boundary', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -378,6 +383,7 @@ const buildRequirementChecks = ({
   miniLaunchEmailManualUiBuildReceipt,
   miniLaunchSeedTestQaPacket,
   miniLaunchShopifyLocalBuildReceipt,
+  miniLaunchCrmWriteApprovalPacket,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -696,6 +702,27 @@ const buildRequirementChecks = ({
     ?? false;
   const miniLaunchSeedTestQaBlockers = miniLaunchSeedTestQaPacket?.readiness?.machineBlockersBeforeSeedSendApprovalRequest
     ?? runbook?.currentState?.miniLaunch?.seedTestQaBlockersBeforeApprovalRequest
+    ?? [];
+  const miniLaunchCrmWriteApprovalPacketStatus = miniLaunchCrmWriteApprovalPacket?.status
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalPacketStatus
+    ?? null;
+  const miniLaunchCrmWriteApprovalCanAskApproval = miniLaunchCrmWriteApprovalPacket?.approvalBoundary?.canAskAlejandroForApproval
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalCanAskApproval
+    ?? false;
+  const miniLaunchCrmWriteApprovalExactEventCount = miniLaunchCrmWriteApprovalPacket?.executiveSummary?.exactEventCountReady
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalExactEventCount
+    ?? null;
+  const miniLaunchCrmWriteApprovalExactPersonCount = miniLaunchCrmWriteApprovalPacket?.executiveSummary?.exactPersonCountReady
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalExactPersonCount
+    ?? null;
+  const miniLaunchCrmWriteApprovalCandidateFamilyCount = miniLaunchCrmWriteApprovalPacket?.executiveSummary?.candidateWriteFamilyCount
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalCandidateFamilyCount
+    ?? null;
+  const miniLaunchCrmWriteApprovalOperationsExecuted = miniLaunchCrmWriteApprovalPacket?.executiveSummary?.operationsExecuted
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalOperationsExecuted
+    ?? null;
+  const miniLaunchCrmWriteApprovalBlockers = miniLaunchCrmWriteApprovalPacket?.approvalBoundary?.blockersBeforeApprovalRequest
+    ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalBlockers
     ?? [];
   const shopifyLocalBuildReceipt = miniLaunchShopifyLocalBuildReceipt ?? null;
   const shopifyLocalBuildClosed = shopifyLocalBuildReceipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
@@ -1042,6 +1069,13 @@ const buildRequirementChecks = ({
         `miniLaunchSeedTestQaSeedRecipientSupplied=${miniLaunchSeedTestQaSeedRecipientSupplied}`,
         `miniLaunchSeedTestQaTargetGroupsExist=${miniLaunchSeedTestQaTargetGroupsExist}`,
         `miniLaunchSeedTestQaBlockers=${miniLaunchSeedTestQaBlockers.join('|') || 'none'}`,
+        `miniLaunchCrmWriteApprovalPacketStatus=${miniLaunchCrmWriteApprovalPacketStatus ?? 'missing'}`,
+        `miniLaunchCrmWriteApprovalCanAskApproval=${miniLaunchCrmWriteApprovalCanAskApproval}`,
+        `miniLaunchCrmWriteApprovalExactEventCount=${miniLaunchCrmWriteApprovalExactEventCount ?? 'unknown'}`,
+        `miniLaunchCrmWriteApprovalExactPersonCount=${miniLaunchCrmWriteApprovalExactPersonCount ?? 'unknown'}`,
+        `miniLaunchCrmWriteApprovalCandidateFamilyCount=${miniLaunchCrmWriteApprovalCandidateFamilyCount ?? 'unknown'}`,
+        `miniLaunchCrmWriteApprovalOperationsExecuted=${miniLaunchCrmWriteApprovalOperationsExecuted ?? 'unknown'}`,
+        `miniLaunchCrmWriteApprovalBlockers=${miniLaunchCrmWriteApprovalBlockers.join('|') || 'none'}`,
         `shopifyLocalBuildReceiptStatus=${shopifyLocalBuildReceipt?.status ?? 'missing'}`,
         `shopifyLocalBuildClosed=${shopifyLocalBuildClosed}`,
         `shopifyLocalBuildFileCount=${shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 'unknown'}`,
@@ -1079,6 +1113,9 @@ const buildRequirementChecks = ({
               ? 'Local email asset plan is ready for exact MailerLite asset-build scope packet/request only; MailerLite asset build and seed send remain closed.'
               : 'Email Style QA is ready for local asset planning only; MailerLite asset build and seed send remain closed.'
             : 'Email Style QA must be generated before local asset planning becomes a reliable next step.',
+          miniLaunchCrmWriteApprovalPacketStatus
+            ? 'CRM write approval packet exists as the current boundary; CRM writes still cannot be requested until real observed events, exact people and one write family are supplied.'
+            : 'CRM signal projection remains no-live; build the CRM write approval packet before asking for any ledger/card/scoring/Fact Store write approval.',
           'Every-3-days cadence stays inactive until rehearsals and seed tests prove throughput.',
         ]
         : [
@@ -1367,11 +1404,15 @@ const buildGoalAudit = ({
   const shopifyLocalBuildMove = shopifyLocalBuildClosed
     ? 'The Shopify no-live local build now exists as five inert local files; publish, preview/theme push, real forms, MailerLite connection and CRM writes remain closed.'
     : 'Shopify local-build remains a no-live approval/request boundary; do not edit, preview, publish or connect forms without exact scope approval.';
+  const crmWriteApprovalPacket = values.miniLaunchCrmWriteApprovalPacket ?? null;
+  const crmWriteApprovalMove = crmWriteApprovalPacket
+    ? `CRM write approval packet is the current CRM boundary: status ${crmWriteApprovalPacket.status ?? 'unknown'}, exact writable events ${crmWriteApprovalPacket.executiveSummary?.exactEventCountReady ?? 'unknown'}, exact people ${crmWriteApprovalPacket.executiveSummary?.exactPersonCountReady ?? 'unknown'}; do not request CRM writes until blockers are gone.`
+    : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} CRM signal projection remains no-live. Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} CRM signal projection remains no-live. Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
       ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${localEmailAssetPlanMove} Live actions remain closed.`
       : `Continue with the next no-live moves unlocked by department reconciliation. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
@@ -1385,7 +1426,7 @@ const buildGoalAudit = ({
         approvalIntakeMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
-        'Prepare/maintain the CRM signal projection packet as a no-live move only.',
+        crmWriteApprovalMove,
       ]
       : emptyGroupCreateDryRunReady
       ? [
@@ -1396,7 +1437,7 @@ const buildGoalAudit = ({
         approvalIntakeMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
-        'Prepare/maintain the CRM signal projection packet as a no-live move only.',
+        crmWriteApprovalMove,
       ]
       : emptyGroupApprovalPacketReady
       ? [
@@ -1406,7 +1447,7 @@ const buildGoalAudit = ({
         approvalIntakeMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
-        'Prepare/maintain the CRM signal projection packet as a no-live move only.',
+        crmWriteApprovalMove,
       ]
       : [
       'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
@@ -1416,7 +1457,7 @@ const buildGoalAudit = ({
       shopifyLocalBuildMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
       'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
-      'Prepare a no-live CRM signal projection packet from the CRM response; do not append ledgers, write cards, score, or touch Fact Store.',
+      crmWriteApprovalMove,
     ]
     : [
       'Use the department review request bundle to route Brand, Web Design and CRM no-live review requests without reconstructing context.',
@@ -1452,6 +1493,7 @@ const buildGoalAudit = ({
         : 'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       approvalQueueMove,
       localEmailAssetPlanMove,
+      crmWriteApprovalMove,
       emptyGroupCreateDryRunNoCreateNeeded
         ? 'Do not rerun mini-launch empty-group creation; the two target groups already exist and that boundary is closed.'
         : 'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',

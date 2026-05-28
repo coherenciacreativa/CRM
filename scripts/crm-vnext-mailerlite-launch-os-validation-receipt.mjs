@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-validation-receipt-2026-05-27';
 
 const DEFAULT_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.json';
-const DEFAULT_GOAL_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_goal_audit_2026-05-28.json';
+const DEFAULT_GOAL_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -22,11 +22,13 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-asset-build-scope-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs',
+  'node --check scripts/crm-vnext-mailerlite-mini-launch-real-mailerlite-render-qa.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-asset-build.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-builder-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-execution-kit.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-manual-ui-build-receipt.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs',
+  'node --check scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs',
   'npm exec vitest run __tests__/crm-vnext-mailerlite*.spec.ts',
 ];
 
@@ -186,11 +188,13 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet',
     'crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest',
     'crm:vnext:mailerlite-mini-launch-email-render-qa-packet',
+    'crm:vnext:mailerlite-mini-launch-real-mailerlite-render-qa',
     'crm:vnext:mailerlite-mini-launch-email-asset-build',
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet',
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit',
     'crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt',
     'crm:vnext:mailerlite-mini-launch-seed-test-qa-packet',
+    'crm:vnext:mailerlite-mini-launch-crm-write-approval-packet',
   ].every((scriptName) => packageHas(packageJson, scriptName));
   const trunkMapReady = onboardingTrunkMap?.status === 'onboarding_trunk_map_ready_no_live_changes';
   const canMarkPassed = validationStatus === 'passed'
