@@ -210,6 +210,10 @@ const buildSeedBlockedGate = ({ approvalItem, seedTestQa, seedSendApproval, sour
     realMailerLiteRenderQaReady: seedSendApproval?.executiveSummary?.realMailerLiteRenderQaReady ?? approvalItem?.evidence?.realMailerLiteRenderQaReady ?? null,
     targetGroupsExist: seedSendApproval?.executiveSummary?.targetGroupsExist ?? approvalItem?.evidence?.targetGroupsExist ?? null,
     targetDraftCount: seedSendApproval?.executiveSummary?.targetDraftCount ?? null,
+    uiExecutionPlanStatus: seedSendApproval?.uiExecutionPlan?.status ?? null,
+    uiExecutionCampaignTargetCount: seedSendApproval?.uiExecutionPlan?.campaignTargetCount ?? null,
+    noAlejandroUiNeededAfterExactApproval: seedSendApproval?.uiExecutionPlan?.noAlejandroUiNeededAfterExactApproval ?? false,
+    preferredUiBrowser: seedSendApproval?.uiExecutionPlan?.preferredBrowser ?? null,
     readyForAudienceLaunchNow: seedTestQa?.readiness?.readyForAudienceLaunchNow ?? false,
   },
   stillClosed: seedSendApproval?.approvalBoundary?.stillClosedEvenAfterApproval ?? [
@@ -390,6 +394,16 @@ const renderMarkdown = (handoff) => {
       'Do not ask yet reason:',
       ...renderList(gate.doNotAskYetReason),
       '',
+      ...(gate.id === 'mini_launch_seed_send'
+        ? [
+          'UI execution prep:',
+          `- Plan: ${gate.currentEvidence.uiExecutionPlanStatus ?? 'missing'}`,
+          `- Preferred browser: ${gate.currentEvidence.preferredUiBrowser ?? 'unknown'}`,
+          `- Campaign targets: ${gate.currentEvidence.uiExecutionCampaignTargetCount ?? 'unknown'}`,
+          `- No Alejandro UI needed after exact approval: ${gate.currentEvidence.noAlejandroUiNeededAfterExactApproval}`,
+          '',
+        ]
+        : []),
       'Still closed:',
       ...renderList(gate.stillClosed),
       '',

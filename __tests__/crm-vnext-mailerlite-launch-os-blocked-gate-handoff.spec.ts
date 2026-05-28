@@ -89,6 +89,12 @@ const seedSendApproval = {
       "crm_signal_ledger_append",
     ],
   },
+  uiExecutionPlan: {
+    status: "ui_seed_send_execution_plan_waiting_exact_seed_recipient",
+    preferredBrowser: "Safari",
+    campaignTargetCount: 4,
+    noAlejandroUiNeededAfterExactApproval: true,
+  },
 };
 
 const crmWriteApproval = {
@@ -212,6 +218,12 @@ describe("CRM vNext MailerLite Launch OS blocked gate handoff", () => {
     expect(seedGate?.inputNeededNow.map((item) => item.id)).toContain("exact_seed_recipient");
     expect(seedGate?.doNotAskYetReason).toContain("exact_seed_recipient_missing");
     expect(seedGate?.approvalLaterNotNow.exactApprovalPhraseAvailableNow).toBe(false);
+    expect(seedGate?.currentEvidence).toMatchObject({
+      uiExecutionPlanStatus: "ui_seed_send_execution_plan_waiting_exact_seed_recipient",
+      preferredUiBrowser: "Safari",
+      uiExecutionCampaignTargetCount: 4,
+      noAlejandroUiNeededAfterExactApproval: true,
+    });
     expect(JSON.stringify(handoff)).not.toContain("Do not print this in the handoff");
   });
 
@@ -249,6 +261,8 @@ describe("CRM vNext MailerLite Launch OS blocked gate handoff", () => {
 
     expect(markdown).toContain("Blocked Gate Handoff");
     expect(markdown).toContain("Approval later, not now");
+    expect(markdown).toContain("UI execution prep");
+    expect(markdown).toContain("Preferred browser: Safari");
     expect(markdown).toContain("mini_launch_seed_send");
     expect(markdown).toContain("crm_signal_writes");
     expect(markdown).toContain("No live actions");

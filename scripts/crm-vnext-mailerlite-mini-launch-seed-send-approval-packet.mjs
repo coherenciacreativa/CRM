@@ -151,6 +151,78 @@ const seedQaPrereqsClosed = (seedQa) =>
   && seedQa?.safety?.workflowMutationsPerformed === false
   && seedQa?.safety?.factStoreWritePerformed === false;
 
+const campaignTargetsFromRealQa = (realQa) => (realQa?.drafts ?? []).map((draft) => ({
+  step: draft.step ?? null,
+  role: cleanString(draft.role),
+  campaignId: cleanString(draft.campaignId),
+  draftName: cleanString(draft.observedName) ?? cleanString(draft.expectedName),
+  status: cleanString(draft.status),
+  type: cleanString(draft.type),
+  subject: cleanString(draft.subject?.observed) ?? cleanString(draft.subject?.expected),
+  preheader: cleanString(draft.preheader?.observed) ?? cleanString(draft.preheader?.expected),
+  allRequiredFragmentsExact: draft.content?.allRequiredFragmentsExact === true,
+  allSafetyGatesClosed: draft.safetyChecks?.allSafetyGatesClosed === true,
+  failedSafetyChecks: draft.safetyChecks?.failedSafetyChecks ?? [],
+}));
+
+const buildUiExecutionPlan = ({
+  realMailerLiteRenderQa,
+  manualUiBuildReceipt,
+  blockers,
+  ready,
+  waitingOnlyForSeed,
+}) => {
+  const campaignTargets = campaignTargetsFromRealQa(realMailerLiteRenderQa);
+  const planStatus = ready
+    ? 'ui_seed_send_execution_plan_ready_after_exact_approval'
+    : waitingOnlyForSeed
+      ? 'ui_seed_send_execution_plan_waiting_exact_seed_recipient'
+      : 'ui_seed_send_execution_plan_blocked_by_preflight';
+
+  return {
+    status: planStatus,
+    preferredBrowser: 'Safari',
+    executionRoute: 'manual_mailerlite_ui_test_send_from_existing_draft_campaigns',
+    operator: 'Codex UI/computer-use operator after exact seed-send approval only',
+    noAlejandroUiNeededAfterExactApproval: true,
+    currentBlockers: blockers,
+    campaignTargetCount: campaignTargets.length,
+    campaignTargets,
+    currentUiEvidence: {
+      accountPlanObserved: cleanString(manualUiBuildReceipt?.uiEvidence?.mailerLiteAccountPlanObserved),
+      editorRoute: cleanString(manualUiBuildReceipt?.uiEvidence?.editorRoute?.usedEditor),
+      customHtmlEditorStatus: cleanString(manualUiBuildReceipt?.uiEvidence?.editorRoute?.customHtmlEditorStatus),
+      outboxCountAfterBuild: manualUiBuildReceipt?.executiveSummary?.outboxCountAfterBuild ?? null,
+    },
+    beforeOpeningSendDialog: [
+      'rerun real MailerLite render QA and require all four target drafts to stay exact and safety-green',
+      'confirm each target campaign is still status=draft and type=regular',
+      'confirm Outbox is empty and no campaign has schedule/queue/start/finish timestamps',
+      'confirm exact seed recipient is supplied through the private seed packet',
+      'confirm exact human approval phrase names test emails only and the exact seed recipient',
+    ],
+    sendDialogStopConditions: [
+      'recipient field differs from the approved exact seed recipient',
+      'UI exposes or preselects audience, group, segment, workflow, automation, schedule or public send controls',
+      'any draft content, subject, preheader, placeholder or safety check differs from the latest green QA',
+      'MailerLite asks to publish, schedule, choose subscribers, attach automation, or upgrade plan before test-send',
+      'browser dialog is clipped or ambiguous after retrying zoom/resolution/browser fallback',
+    ],
+    fallbackStrategy: [
+      'reopen each campaign by exact draft name from MailerLite Drafts if a direct campaign route is unreliable',
+      'use Safari first; if MailerLite UI becomes unusable, retry with another browser only for the same exact test-send scope',
+      'adjust zoom or display resolution if the test-send dialog is clipped before entering the seed recipient',
+      'if content drift is found, stop and regenerate a repair packet instead of sending',
+    ],
+    evidenceToCaptureAfterApprovedSend: [
+      'campaign id and exact draft name for each test send',
+      'redacted seed recipient and sha256 from the private packet',
+      'MailerLite UI accepted-send confirmation or screenshot reference',
+      'fresh Outbox/Drafts readback showing no public send, no schedule, no workflow and no audience mutation',
+    ],
+  };
+};
+
 const buildSafety = () => ({
   localOnly: true,
   reportsOnly: true,
@@ -264,6 +336,13 @@ const buildSeedSendApprovalPacket = ({
       exactEmail: normalizedSeedEmail,
       handlingRule: 'Private execution packet: do not paste or forward publicly; reports may use redactedEmail only.',
     },
+    uiExecutionPlan: buildUiExecutionPlan({
+      realMailerLiteRenderQa,
+      manualUiBuildReceipt,
+      blockers: uniqueBlockers,
+      ready,
+      waitingOnlyForSeed,
+    }),
     inputRequest: seedRecipientInputRequest({ waitingOnlyForSeed, seedQa: seedTestQaPacket }),
     approvalBoundary: {
       canAskAlejandroForApproval: ready,
@@ -344,6 +423,22 @@ const renderMarkdown = (packet) => [
   '## Blockers',
   '',
   renderList(packet.blockers),
+  '',
+  '## Autonomous UI Execution Plan',
+  '',
+  `- Status: ${packet.uiExecutionPlan.status}`,
+  `- Preferred browser: ${packet.uiExecutionPlan.preferredBrowser}`,
+  `- Route: ${packet.uiExecutionPlan.executionRoute}`,
+  `- No Alejandro UI needed after exact approval: ${packet.uiExecutionPlan.noAlejandroUiNeededAfterExactApproval}`,
+  `- Campaign targets: ${packet.uiExecutionPlan.campaignTargetCount}`,
+  '',
+  'Campaigns:',
+  '',
+  renderList(packet.uiExecutionPlan.campaignTargets.map((target) => `${target.step}. ${target.campaignId} - ${target.draftName}`)),
+  '',
+  'Stop conditions:',
+  '',
+  renderList(packet.uiExecutionPlan.sendDialogStopConditions),
   '',
   '## Allowed After Exact Approval',
   '',
@@ -450,5 +545,7 @@ export {
   realQaGreen,
   redactEmail,
   renderMarkdown,
+  buildUiExecutionPlan,
+  campaignTargetsFromRealQa,
   seedQaPrereqsClosed,
 };

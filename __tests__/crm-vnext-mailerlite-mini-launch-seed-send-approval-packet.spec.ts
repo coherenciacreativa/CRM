@@ -2,6 +2,8 @@ import { describe, expect, test } from "vitest";
 
 import {
   buildSeedSendApprovalPacket,
+  buildUiExecutionPlan,
+  campaignTargetsFromRealQa,
   emailLooksValid,
   manualUiReceiptClosed,
   parseArgs,
@@ -61,6 +63,56 @@ const realMailerLiteRenderQa = {
     groupsCreatedOrAssigned: false,
     workflowMutationsPerformed: false,
   },
+  drafts: [
+    {
+      step: 1,
+      role: "delivery_and_orientation",
+      campaignId: "188672517160830964",
+      observedName: "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E01 Delivery orientation",
+      status: "draft",
+      type: "regular",
+      subject: { observed: "Tu lectura: qué tipo de descanso está pidiendo tu mente" },
+      preheader: { observed: "Una lectura pequeña para mirar tu descanso sin convertirlo en otra tarea." },
+      content: { allRequiredFragmentsExact: true },
+      safetyChecks: { allSafetyGatesClosed: true, failedSafetyChecks: [] },
+    },
+    {
+      step: 2,
+      role: "practice_or_value",
+      campaignId: "188672844320736587",
+      observedName: "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E02 Practice",
+      status: "draft",
+      type: "regular",
+      subject: { observed: "Una práctica pequeña para descansar sin exigirte calma" },
+      preheader: { observed: "Una práctica breve para que el descanso no se convierta en otra tarea." },
+      content: { allRequiredFragmentsExact: true },
+      safetyChecks: { allSafetyGatesClosed: true, failedSafetyChecks: [] },
+    },
+    {
+      step: 3,
+      role: "story_or_editorial_depth",
+      campaignId: "188673170016831339",
+      observedName: "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E03 Editorial depth",
+      status: "draft",
+      type: "regular",
+      subject: { observed: "El descanso también pide criterio" },
+      preheader: { observed: "Una nota para mirar tu descanso con más honestidad y menos presión." },
+      content: { allRequiredFragmentsExact: true },
+      safetyChecks: { allSafetyGatesClosed: true, failedSafetyChecks: [] },
+    },
+    {
+      step: 4,
+      role: "invitation_or_feedback",
+      campaignId: "188673460285736734",
+      observedName: "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E04 Feedback invitation",
+      status: "draft",
+      type: "regular",
+      subject: { observed: "¿Qué notaste al probar tu descanso?" },
+      preheader: { observed: "Una pregunta pequeña para cerrar el ciclo y dejar una señal útil." },
+      content: { allRequiredFragmentsExact: true },
+      safetyChecks: { allSafetyGatesClosed: true, failedSafetyChecks: [] },
+    },
+  ],
 };
 
 const manualUiBuildReceipt = {
@@ -80,6 +132,13 @@ const manualUiBuildReceipt = {
     subscribersReadOrAssigned: false,
     groupsCreatedOrAssigned: false,
     workflowMutationsPerformed: false,
+  },
+  uiEvidence: {
+    mailerLiteAccountPlanObserved: "Growing Business",
+    editorRoute: {
+      usedEditor: "new_simple_editor",
+      customHtmlEditorStatus: "premium_upgrade_locked_on_growing_business",
+    },
   },
 };
 
@@ -133,6 +192,18 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
       currentHumanInputNeeded: "exact_seed_recipient_email_only",
       notApproval: true,
     });
+    expect(packet.uiExecutionPlan).toMatchObject({
+      status: "ui_seed_send_execution_plan_waiting_exact_seed_recipient",
+      preferredBrowser: "Safari",
+      noAlejandroUiNeededAfterExactApproval: true,
+      campaignTargetCount: 4,
+    });
+    expect(packet.uiExecutionPlan.campaignTargets.map((target) => target.campaignId)).toEqual([
+      "188672517160830964",
+      "188672844320736587",
+      "188673170016831339",
+      "188673460285736734",
+    ]);
     expect(packet.blockers).toEqual(["exact_seed_recipient_missing"]);
     expect(packet.safety).toMatchObject({
       localOnly: true,
@@ -141,6 +212,8 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
       factStoreWritePerformed: false,
     });
     expect(markdown).toContain("Human Input Needed");
+    expect(markdown).toContain("Autonomous UI Execution Plan");
+    expect(markdown).toContain("No Alejandro UI needed after exact approval: true");
     expect(markdown).toContain("exact_seed_recipient_email_only");
     expect(markdown).toContain("none - exact seed recipient is still required");
   });
@@ -165,6 +238,8 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
     expect(packet.seedIdentity.exactEmail).toBe("seed.test+descanso@example.com");
     expect(packet.approvalBoundary.stillClosedEvenAfterApproval).toContain("public_or_audience_send");
     expect(packet.approvalBoundary.requiredFreshEvidenceBeforeExecution).toContain("freshly confirm the four campaigns are still drafts and Outbox is empty");
+    expect(packet.uiExecutionPlan.status).toBe("ui_seed_send_execution_plan_ready_after_exact_approval");
+    expect(packet.uiExecutionPlan.sendDialogStopConditions).toContain("recipient field differs from the approved exact seed recipient");
     expect(packet.blockers).toEqual([]);
   });
 
@@ -197,5 +272,17 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
     expect(emailLooksValid("seed@example.com")).toBe(true);
     expect(emailLooksValid("bad <seed>@example.com")).toBe(false);
     expect(redactEmail("abraham@example.com")).toBe("ab…@example.com");
+    expect(campaignTargetsFromRealQa(realMailerLiteRenderQa)).toHaveLength(4);
+    expect(buildUiExecutionPlan({
+      realMailerLiteRenderQa,
+      manualUiBuildReceipt,
+      blockers: [],
+      ready: true,
+      waitingOnlyForSeed: false,
+    })).toMatchObject({
+      status: "ui_seed_send_execution_plan_ready_after_exact_approval",
+      preferredBrowser: "Safari",
+      campaignTargetCount: 4,
+    });
   });
 });
