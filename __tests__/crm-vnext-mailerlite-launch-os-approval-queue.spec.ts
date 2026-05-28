@@ -589,9 +589,24 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         outboxCountAfterBuild: 0,
       },
     });
+    expect(byId.get("mini_launch_email_asset_build")).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_superseded",
+      operationType: "live_mailerlite_api_builder_draft_mutation_superseded_by_manual_ui_route",
+      blockers: [],
+      evidence: {
+        apiAssetBuildSupersededByManualUi: true,
+        manualUiReceiptStatus: "manual_ui_build_receipt_executed_drafts_created_no_sends",
+        manualUiCreatedOrEditedDraftCount: 4,
+        manualUiOutboxCountAfterBuild: 0,
+        executionAdvancedPlanContentBlocker: true,
+      },
+    });
     expect(byId.get("mini_launch_seed_send")?.blockers).not.toContain("asset_build_not_executed");
     expect(byId.get("mini_launch_seed_send")?.blockers).toContain("real_mailerlite_render_qa_missing");
     expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_email_manual_ui_builder");
+    expect(queue.executiveSummary.blockedApprovalIds).not.toContain("mini_launch_email_asset_build");
   });
 
   test("adds a ready repair boundary when real MailerLite QA finds an exact-copy mismatch", () => {

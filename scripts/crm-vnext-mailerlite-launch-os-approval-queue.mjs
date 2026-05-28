@@ -386,12 +386,28 @@ const executionHasAdvancedPlanContentBlocker = (executionAttempt) =>
     ),
   );
 
+const manualUiReceiptCompleted = (receipt, targetNames) =>
+  receipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
+  && receipt?.executiveSummary?.createdOrEditedDraftCount === targetNames.length
+  && targetNames.length === 4
+  && receipt?.executiveSummary?.sendCount === 0
+  && receipt?.executiveSummary?.scheduleCount === 0
+  && receipt?.executiveSummary?.subscriberReadOrAssignmentCount === 0
+  && receipt?.executiveSummary?.groupAssignmentCount === 0
+  && receipt?.executiveSummary?.workflowAttachmentCount === 0
+  && receipt?.executiveSummary?.outboxCountAfterBuild === 0
+  && receipt?.safety?.sendsPerformed === false
+  && receipt?.safety?.groupsCreatedOrAssigned === false
+  && receipt?.safety?.workflowMutationsPerformed === false;
+
 const buildMiniLaunchEmailAssetBuildItem = ({
   scopePacket,
   payloadManifest,
   renderQa = null,
   dryRun = null,
   executionAttempt = null,
+  manualUiReceipt = null,
+  manualUiDraftRepairPacket = null,
 }) => {
   const targetNames = targetNamesFrom(scopePacket?.assetBuildScope?.assets, payloadManifest?.payloads);
   const executionStatus = executionAttempt?.status ?? null;
@@ -399,6 +415,7 @@ const buildMiniLaunchEmailAssetBuildItem = ({
   const executionMutations = countRows(executionAttempt?.assetMutations);
   const executionErrors = executionAttempt?.errors ?? [];
   const executionAdvancedPlanBlocker = executionHasAdvancedPlanContentBlocker(executionAttempt);
+  const manualUiCompleted = manualUiReceiptCompleted(manualUiReceipt, targetNames);
   const executionCompleted = executionStatus === 'executed_mini_launch_email_asset_build'
     && executionMutations === targetNames.length
     && executionAttempt?.safety?.mailerLiteAssetsCreatedOrEdited === true
@@ -444,6 +461,60 @@ const buildMiniLaunchEmailAssetBuildItem = ({
       notes: [
         'The approved draft asset-build boundary has already been used.',
         'Seed send remains a separate later approval after real MailerLite render QA.',
+      ],
+    });
+  }
+
+  if (manualUiCompleted) {
+    return buildApprovalItem({
+      id: 'mini_launch_email_asset_build',
+      title: 'Mini-launch MailerLite draft email assets',
+      lane: 'mini_launch_inteligencia_para_descansar',
+      operationType: 'live_mailerlite_api_builder_draft_mutation_superseded_by_manual_ui_route',
+      approvalType: 'reference_only_superseded',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        scopePacket: scopePacket?.status ?? null,
+        payloadManifest: payloadManifest?.status ?? null,
+        renderQa: renderQa?.status ?? null,
+        dryRun: dryRun?.status ?? null,
+        executionAttempt: executionStatus,
+        manualUiReceipt: manualUiReceipt?.status ?? null,
+        manualUiDraftRepairPacket: manualUiDraftRepairPacket?.status ?? null,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: manualUiReceipt?.stillClosedAfterThisReceipt
+        ?? scopePacket?.requestedFutureScope?.stillClosedEvenAfterThisApproval
+        ?? payloadManifest?.approvalBoundary?.stillClosedEvenAfterAssetBuildApproval
+        ?? [],
+      requiredFreshEvidence: [
+        'use the manual UI build receipt and real MailerLite render QA as current asset evidence',
+        'confirm exact seed recipient before any test send',
+      ],
+      blockers: [],
+      evidence: {
+        apiAssetBuildSupersededByManualUi: true,
+        manualUiReceiptStatus: manualUiReceipt.status,
+        manualUiCreatedOrEditedDraftCount: manualUiReceipt.executiveSummary.createdOrEditedDraftCount,
+        manualUiOutboxCountAfterBuild: manualUiReceipt.executiveSummary.outboxCountAfterBuild,
+        manualUiUsedEditor: manualUiReceipt.executiveSummary.usedEditor,
+        executionAttemptStatus: executionStatus,
+        executionAssetMutationCount: executionMutations,
+        executionAdvancedPlanContentBlocker: executionAdvancedPlanBlocker,
+        realMailerLiteRenderQaGreen: manualUiDraftRepairPacket?.executiveSummary?.realMailerLiteRenderQaStatus === 'mini_launch_real_mailerlite_render_qa_green_no_live_changes',
+        repairPacketStatus: manualUiDraftRepairPacket?.status ?? null,
+        sendsPerformed: manualUiReceipt.safety?.sendsPerformed ?? null,
+        groupsCreatedOrAssigned: manualUiReceipt.safety?.groupsCreatedOrAssigned ?? null,
+        workflowMutationsPerformed: manualUiReceipt.safety?.workflowMutationsPerformed ?? null,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The API asset-build boundary is retained as historical evidence only; the approved manual UI draft build is the current asset route.',
+        'The Advanced/API blocker should not be treated as a live operating blocker while manual UI remains the chosen route.',
+        'Revisit Advanced/API only when launch frequency or subscriber-tier economics justify the upgrade.',
+        'Seed send remains a separate later approval after real MailerLite render QA and an exact seed recipient.',
       ],
     });
   }
@@ -562,20 +633,6 @@ const buildMiniLaunchEmailAssetBuildItem = ({
     ].filter(Boolean),
   });
 };
-
-const manualUiReceiptCompleted = (receipt, targetNames) =>
-  receipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
-  && receipt?.executiveSummary?.createdOrEditedDraftCount === targetNames.length
-  && targetNames.length === 4
-  && receipt?.executiveSummary?.sendCount === 0
-  && receipt?.executiveSummary?.scheduleCount === 0
-  && receipt?.executiveSummary?.subscriberReadOrAssignmentCount === 0
-  && receipt?.executiveSummary?.groupAssignmentCount === 0
-  && receipt?.executiveSummary?.workflowAttachmentCount === 0
-  && receipt?.executiveSummary?.outboxCountAfterBuild === 0
-  && receipt?.safety?.sendsPerformed === false
-  && receipt?.safety?.groupsCreatedOrAssigned === false
-  && receipt?.safety?.workflowMutationsPerformed === false;
 
 const buildMiniLaunchEmailManualUiBuilderItem = ({ packet, receipt = null }) => {
   const targetNames = targetNamesFrom((packet?.manualUiTargetDrafts ?? []).map((row) => row?.draftName));
@@ -1313,6 +1370,8 @@ const buildApprovalQueue = ({
       renderQa: miniLaunchEmailRenderQa,
       dryRun: miniLaunchEmailAssetBuildDryRun,
       executionAttempt: miniLaunchEmailAssetBuildExecution,
+      manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
+      manualUiDraftRepairPacket: miniLaunchEmailManualUiDraftRepairPacket,
     }),
     buildMiniLaunchEmailManualUiBuilderItem({
       packet: miniLaunchEmailManualUiBuilderPacket,
