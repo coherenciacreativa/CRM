@@ -600,12 +600,16 @@ const buildMiniLaunchEmailManualUiBuilderItem = ({ packet }) => {
       apiAssetMutationCount: packet?.executiveSummary?.apiAssetMutationCount ?? null,
       canUseManualUiNow: packet?.executiveSummary?.canUseManualUiNow ?? null,
       canSendNow: packet?.executiveSummary?.canSendNow ?? null,
+      operatingPolicyStatus: packet?.operatingPolicy?.status ?? null,
+      futureAdvancedApiUpgradeTriggers: packet?.operatingPolicy?.futureAdvancedApiUpgradeTriggers ?? [],
     },
     commandAfterApproval: 'manual MailerLite UI builder work only after exact approval; prefer Safari; no sends/workflows/subscribers/groups',
     notes: [
       'Fallback for API HTML content submission blocked by the current non-Advanced MailerLite plan.',
+      packet?.operatingPolicy?.currentDecision ?? null,
+      'Future frequent launches or subscriber tier growth beyond 2,500 should trigger a fresh Advanced/API review.',
       'This approval would open only draft creation/editing in MailerLite UI; seed send remains separate.',
-    ],
+    ].filter(Boolean),
   });
 };
 

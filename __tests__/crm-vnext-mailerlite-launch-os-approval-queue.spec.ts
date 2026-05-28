@@ -188,6 +188,14 @@ const miniLaunchEmailManualUiBuilderPacket = {
     { draftName: "ML Draft · descanso · E03" },
     { draftName: "ML Draft · descanso · E04" },
   ],
+  operatingPolicy: {
+    status: "manual_ui_now_advanced_api_later_when_volume_justifies",
+    currentDecision: "Use MailerLite UI for this mini-launch draft build while the account remains on Growing Business.",
+    futureAdvancedApiUpgradeTriggers: [
+      "mini_launches_become_frequent_enough_that_manual_ui_is_a_bottleneck",
+      "active_subscriber_tier_exceeds_2500_or_pricing_tier_requires_a_fresh_plan_review",
+    ],
+  },
   safety: {
     browserOpened: false,
     mailerLiteApiCalled: false,
@@ -338,6 +346,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         htmlSourceCount: 4,
         advancedPlanApiBlockerConfirmed: true,
         apiAssetMutationCount: 0,
+        operatingPolicyStatus: "manual_ui_now_advanced_api_later_when_volume_justifies",
       },
     });
     expect(byId.get("mini_launch_seed_send")).toMatchObject({
@@ -500,6 +509,10 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.targetCount).toBe(4);
     expect(item.commandAfterApproval).toContain("prefer Safari");
     expect(item.notes.join(" ")).toContain("non-Advanced MailerLite plan");
+    expect(item.notes.join(" ")).toContain("subscriber tier growth beyond 2,500");
+    expect(item.evidence.futureAdvancedApiUpgradeTriggers).toContain(
+      "mini_launches_become_frequent_enough_that_manual_ui_is_a_bottleneck",
+    );
 
     const blocked = buildMiniLaunchEmailManualUiBuilderItem({
       packet: {

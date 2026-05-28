@@ -224,6 +224,34 @@ const buildSafety = () => ({
   tokensPrinted: false,
 });
 
+const buildOperatingPolicy = () => ({
+  status: 'manual_ui_now_advanced_api_later_when_volume_justifies',
+  currentDecision: 'Use MailerLite UI for this mini-launch draft build while the account remains on Growing Business.',
+  currentRoute: {
+    mailerLitePlan: 'Growing Business',
+    subscriberTier: '1000_to_2500',
+    buildMethod: 'manual_mailerlite_ui_builder',
+    apiHtmlContentSubmission: 'closed_on_current_plan',
+  },
+  rationale: [
+    'The account is paid, but not Advanced, so API HTML content submission is unavailable.',
+    'For the current mini-launch volume, manual UI draft creation is cheaper and proportionate.',
+    'Keeping the route explicit prevents the Advanced-plan API blocker from being treated as a surprise failure.',
+  ],
+  futureAdvancedApiUpgradeTriggers: [
+    'mini_launches_become_frequent_enough_that_manual_ui_is_a_bottleneck',
+    'active_subscriber_tier_exceeds_2500_or_pricing_tier_requires_a_fresh_plan_review',
+    'Alejandro explicitly approves moving this lane to Advanced/API for repeatable campaign creation',
+  ],
+  futureAdvancedRoute: [
+    'upgrade_or_confirm_Advanced_plan',
+    'rerun fresh MailerLite account/campaign capability check',
+    'use guarded API asset-build runner for HTML content submission',
+    'keep sends, workflows, subscribers, groups, Shopify, CRM writes, ledgers, cards, scoring and Fact Store on separate exact gates',
+  ],
+  policyIsApprovalByItself: false,
+});
+
 const buildManualUiBuilderPacket = ({
   payloadManifest,
   renderQa,
@@ -332,6 +360,7 @@ const buildManualUiBuilderPacket = ({
       'Leave CTA URLs as inert placeholders unless a separate exact non-live URL approval exists.',
       'Capture post-build evidence without subscriber rows or tokens.',
     ],
+    operatingPolicy: buildOperatingPolicy(),
     blockers: readiness.issues,
     hardStops: [
       'This packet is not approval.',
@@ -361,6 +390,14 @@ const renderMarkdown = (packet) => {
     `- Can use manual UI now: ${packet.executiveSummary.canUseManualUiNow}`,
     `- Can send now: ${packet.executiveSummary.canSendNow}`,
     `- Open live mutation gates: ${packet.executiveSummary.openLiveMutationGateCount}`,
+    '',
+    '## Operating Policy',
+    '',
+    `- Current decision: ${packet.operatingPolicy.currentDecision}`,
+    `- Current build method: ${packet.operatingPolicy.currentRoute.buildMethod}`,
+    `- Current plan posture: ${packet.operatingPolicy.currentRoute.mailerLitePlan}; API HTML content submission ${packet.operatingPolicy.currentRoute.apiHtmlContentSubmission}`,
+    '- Future Advanced/API triggers:',
+    ...packet.operatingPolicy.futureAdvancedApiUpgradeTriggers.map((trigger) => `  - ${trigger}`),
     '',
     '## Exact Approval Phrase',
     '',
@@ -476,6 +513,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 export {
   buildManualUiBuilderPacket,
   buildSafety,
+  buildOperatingPolicy,
   exactApprovalPhraseFor,
   executionHasAdvancedPlanContentBlocker,
   parseArgs,

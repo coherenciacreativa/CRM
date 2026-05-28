@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   buildManualUiBuilderPacket,
+  buildOperatingPolicy,
   exactApprovalPhraseFor,
   executionHasAdvancedPlanContentBlocker,
   parseArgs,
@@ -204,6 +205,18 @@ describe("CRM vNext MailerLite mini-launch manual UI builder packet", () => {
       mailerLiteAssetsCreatedOrEdited: false,
       sendsPerformed: false,
     });
+    expect(packet.operatingPolicy).toMatchObject({
+      status: "manual_ui_now_advanced_api_later_when_volume_justifies",
+      currentRoute: {
+        mailerLitePlan: "Growing Business",
+        subscriberTier: "1000_to_2500",
+        buildMethod: "manual_mailerlite_ui_builder",
+      },
+      policyIsApprovalByItself: false,
+    });
+    expect(packet.operatingPolicy.futureAdvancedApiUpgradeTriggers).toContain(
+      "active_subscriber_tier_exceeds_2500_or_pricing_tier_requires_a_fresh_plan_review",
+    );
   });
 
   test("blocks if the API execution had partial mutations", () => {
@@ -235,8 +248,24 @@ describe("CRM vNext MailerLite mini-launch manual UI builder packet", () => {
 
     expect(markdown).toContain("Manual UI Builder Fallback Packet");
     expect(markdown).toContain("Can use manual UI now: false");
+    expect(markdown).toContain("Operating Policy");
+    expect(markdown).toContain("Use MailerLite UI");
+    expect(markdown).toContain("mini_launches_become_frequent_enough_that_manual_ui_is_a_bottleneck");
     expect(markdown).toContain("Sin navegador abierto");
     expect(markdown).toContain("Sin MailerLite API calls");
+  });
+
+  test("documents the strategic plan route without granting execution", () => {
+    const policy = buildOperatingPolicy();
+
+    expect(policy.currentDecision).toContain("Use MailerLite UI");
+    expect(policy.futureAdvancedApiUpgradeTriggers).toContain(
+      "mini_launches_become_frequent_enough_that_manual_ui_is_a_bottleneck",
+    );
+    expect(policy.futureAdvancedApiUpgradeTriggers).toContain(
+      "active_subscriber_tier_exceeds_2500_or_pricing_tier_requires_a_fresh_plan_review",
+    );
+    expect(policy.policyIsApprovalByItself).toBe(false);
   });
 
   test("builds exact phrase from target rows and placeholders", () => {
