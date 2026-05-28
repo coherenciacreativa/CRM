@@ -22,6 +22,7 @@ const DEFAULT_ONBOARDING_V2_DESIGN = '/Users/alejandrogomez/Documents/Mantis-Rep
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_ONBOARDING_HANDOFF_POLICY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json';
@@ -50,6 +51,13 @@ const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const OBJECTIVE = 'Lleva MailerLite desde la arquitectura actual hacia un MailerLite Launch OS v0 listo para operar: preservar el onboarding productivo, disenar Onboarding v2, consolidar taxonomia de grupos/tags/recibos, preparar infraestructura para mini-lanzamientos frecuentes, coordinar con Brand Hub y CRM, documentar todo con reportes claros, validar con dry-runs y commits limpios, y detenerte a pedirme aprobacion antes de cualquier cambio vivo en MailerLite, Shopify, CRM, workflows, subscribers o envios reales.';
 
+const APPROVAL_INTAKE_READY_STATUSES = new Set([
+  'waiting_for_exact_approval_text_no_live_changes',
+  'no_exact_approval_phrase_detected_no_live_changes',
+  'approval_text_present_but_no_exact_phrase_no_live_changes',
+  'exact_approval_detected_requires_fresh_evidence_no_live_changes',
+]);
+
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs [options]
 
@@ -71,6 +79,7 @@ Options:
   --onboarding-v2-execution <path>  Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --onboarding-v2-empty-groups-packet <path> Onboarding v2 empty-groups approval packet JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET}
+  --onboarding-v2-empty-groups-execution <path> Onboarding v2 executed empty-groups receipt JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_EXECUTION}
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
   --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --onboarding-handoff-policy <path> Mini-launch to onboarding handoff policy JSON. Defaults to ${DEFAULT_ONBOARDING_HANDOFF_POLICY}
@@ -125,6 +134,7 @@ const parseArgs = (argv) => {
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     onboardingV2EmptyGroupsPacket: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET,
+    onboardingV2EmptyGroupsExecution: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_EXECUTION,
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
     onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     onboardingHandoffPolicy: DEFAULT_ONBOARDING_HANDOFF_POLICY,
@@ -177,6 +187,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-packet') options.onboardingV2EmptyGroupsPacket = argv[++index];
+    else if (arg === '--onboarding-v2-empty-groups-execution') options.onboardingV2EmptyGroupsExecution = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
     else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--onboarding-handoff-policy') options.onboardingHandoffPolicy = argv[++index];
@@ -228,6 +239,15 @@ const missingSourceDigest = (path, consultedFor) => ({
   chars: 0,
   consultedFor,
 });
+
+const uniqueMoves = (moves) => {
+  const seen = new Set();
+  return moves.filter((move) => {
+    if (!move || seen.has(move)) return false;
+    seen.add(move);
+    return true;
+  });
+};
 
 const listIncludesFragment = (items, fragment) => (items ?? [])
   .some((item) => String(item).includes(fragment));
@@ -299,6 +319,7 @@ const loadSources = async (options) => {
     ['onboardingV2Execution', options.onboardingV2Execution, 'Onboarding v2 execution gates', 'json'],
     ['onboardingV2EventContract', options.onboardingV2EventContract, 'Onboarding v2 CRM event contract', 'json'],
     ['onboardingV2EmptyGroupsPacket', options.onboardingV2EmptyGroupsPacket, 'Onboarding v2 empty-groups approval packet from fresh read-only scan', 'json', true],
+    ['onboardingV2EmptyGroupsExecution', options.onboardingV2EmptyGroupsExecution, 'Onboarding v2 empty-groups execution receipt for already-created empty groups', 'json', true],
     ['onboardingV2EmptyGroupsCreateDryRun', options.onboardingV2EmptyGroupsCreateDryRun, 'Onboarding v2 empty-groups create runner dry-run with zero mutations', 'json', true],
     ['onboardingV2FirstEmailMap', options.onboardingV2FirstEmailMap, 'Onboarding v2 first-email mapping to prevent unnecessary Sent receipts', 'json', true],
     ['onboardingHandoffPolicy', options.onboardingHandoffPolicy, 'mini-launch to onboarding handoff policy and closed routing gate', 'json'],
@@ -381,6 +402,7 @@ const buildRequirementChecks = ({
   onboardingV2Execution,
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
+  onboardingV2EmptyGroupsExecution,
   onboardingV2EmptyGroupsCreateDryRun,
   onboardingV2FirstEmailMap,
   onboardingHandoffPolicy,
@@ -794,41 +816,32 @@ const buildRequirementChecks = ({
   const approvalIntakeOpenLiveGateCount = approvalIntake?.executiveSummary?.openLiveMutationGateCount
     ?? runbook?.currentState?.approvalIntake?.openLiveMutationGateCount
     ?? null;
-  const approvalIntakeReady = [
-    'waiting_for_exact_approval_text_no_live_changes',
-    'no_exact_approval_phrase_detected_no_live_changes',
-    'exact_approval_detected_requires_fresh_evidence_no_live_changes',
-  ].includes(approvalIntakeStatus)
+  const approvalIntakeReady = APPROVAL_INTAKE_READY_STATUSES.has(approvalIntakeStatus)
     && approvalIntakeExecutionAllowedNow === false
     && approvalIntakeOpenLiveGateCount === 0;
-  const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
-    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
+  const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
+    ?? onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsTargetCount
     ?? null;
-  const v2EmptyGroupsLiveGroupsRead = onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveGroupsRead
-    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead
+  const v2EmptyGroupsLiveGroupsRead = onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead
+    ?? onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveGroupsRead
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsLiveGroupsRead
     ?? null;
-  const v2EmptyGroupsLiveAutomationsRead = onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveAutomationsRead
-    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveAutomationsRead
+  const v2EmptyGroupsLiveAutomationsRead = onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveAutomationsRead
+    ?? onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveAutomationsRead
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsLiveAutomationsRead
-    ?? null;
-  const v2EmptyGroupsBlockerCount = onboardingV2EmptyGroupsPacket?.blockers?.length
-    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length
-    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsBlockerCount
     ?? null;
   const v2EmptyGroupsCreateDryRunCreatedCount = onboardingV2EmptyGroupsCreateDryRun?.createdGroups?.length
     ?? runbook?.currentState?.onboarding?.v2EmptyGroupsCreateDryRunCreatedCount
     ?? null;
-  const v2EmptyGroupsCanAskApproval = onboardingV2EmptyGroupsPacket?.approvalGate?.canAskAlejandroForApproval
-    ?? runbook?.currentState?.onboarding?.v2EmptyGroupsCanAskApproval
+  const v2EmptyGroupsPacketCanAskApproval = onboardingV2EmptyGroupsPacket?.approvalGate?.canAskAlejandroForApproval
     ?? false;
   const v2EmptyGroupsPacketReady = onboardingV2EmptyGroupsPacket?.status === 'ready_for_exact_human_approval_to_create_empty_groups'
-    && v2EmptyGroupsTargetCount === 12
-    && v2EmptyGroupsLiveGroupsRead >= 75
-    && v2EmptyGroupsLiveAutomationsRead >= 13
-    && v2EmptyGroupsBlockerCount === 0
-    && v2EmptyGroupsCanAskApproval === true
+    && (onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount ?? v2EmptyGroupsTargetCount) === 12
+    && (onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveGroupsRead ?? v2EmptyGroupsLiveGroupsRead) >= 75
+    && (onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveAutomationsRead ?? v2EmptyGroupsLiveAutomationsRead) >= 13
+    && (onboardingV2EmptyGroupsPacket?.blockers?.length ?? 0) === 0
+    && v2EmptyGroupsPacketCanAskApproval === true
     && onboardingV2EmptyGroupsPacket?.safety?.readOnly === true
     && onboardingV2EmptyGroupsPacket?.safety?.mailerLiteApiCalled === true
     && onboardingV2EmptyGroupsPacket?.safety?.groupMutationsPerformed === false
@@ -857,16 +870,32 @@ const buildRequirementChecks = ({
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
     && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
-  const v2EmptyGroupsExecutionCompleted = onboardingV2EmptyGroupsCreateDryRun?.status === 'executed_onboarding_v2_empty_group_creation'
-    && onboardingV2EmptyGroupsCreateDryRun?.mode === 'execute_requested'
-    && onboardingV2EmptyGroupsCreateDryRun?.createdGroups?.length === 12
-    && onboardingV2EmptyGroupsCreateDryRun?.safety?.groupMutationType === 'create_empty_groups_only'
-    && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
-    && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
-    && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsExecutionCompleted = onboardingV2EmptyGroupsExecution?.status === 'executed_onboarding_v2_empty_group_creation'
+    && onboardingV2EmptyGroupsExecution?.mode === 'execute_requested'
+    && onboardingV2EmptyGroupsExecution?.createdGroups?.length === 12
+    && onboardingV2EmptyGroupsExecution?.decision?.approval?.status === 'exact_approval_phrase_matched'
+    && onboardingV2EmptyGroupsExecution?.safety?.groupMutationType === 'create_empty_groups_only'
+    && onboardingV2EmptyGroupsExecution?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsExecution?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsExecution?.safety?.subscriberAssignmentsPerformed === false
+    && onboardingV2EmptyGroupsExecution?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsAlreadyClosed = (v2EmptyGroupsExecutionCompleted && v2EmptyGroupsPostExecutionAllExist)
+    || runbook?.currentState?.onboarding?.v2EmptyGroupsLifecycleStatus === 'executed_and_verified_all_targets_exist_no_live_followup';
+  const v2EmptyGroupsBlockerCount = v2EmptyGroupsAlreadyClosed
+    ? 0
+    : onboardingV2EmptyGroupsPacket?.blockers?.length
+      ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length
+      ?? runbook?.currentState?.onboarding?.v2EmptyGroupsBlockerCount
+      ?? null;
+  const v2EmptyGroupsCanAskApproval = v2EmptyGroupsAlreadyClosed
+    ? false
+    : v2EmptyGroupsPacketCanAskApproval
+      || runbook?.currentState?.onboarding?.v2EmptyGroupsCanAskApproval
+      || false;
   const v2EmptyGroupsBoundaryClosed = v2EmptyGroupsCreateDryRunReady
     || v2EmptyGroupsPostExecutionAllExist
-    || v2EmptyGroupsExecutionCompleted;
+    || v2EmptyGroupsExecutionCompleted
+    || v2EmptyGroupsAlreadyClosed;
   const v2FirstEmailMapped = onboardingV2FirstEmailMap?.status === 'first_email_mapping_ready_no_sent_receipt'
     && onboardingV2FirstEmailMap?.decision?.recommendedPosture === 'welcome_orientation_no_sent_receipt'
     && onboardingV2FirstEmailMap?.decision?.recommendedMailerLiteSentGroup === null
@@ -981,12 +1010,16 @@ const buildRequirementChecks = ({
         `executionStatus=${onboardingV2Execution?.status ?? 'missing'}`,
         `eventContractStatus=${onboardingV2EventContract?.status ?? 'missing'}`,
         `eventCount=${onboardingV2EventContract?.eventContract?.length ?? onboardingV2EventContract?.normalizationProof?.eventsGenerated ?? 'unknown'}`,
+        `emptyGroupsLifecycleStatus=${runbook?.currentState?.onboarding?.v2EmptyGroupsLifecycleStatus ?? (v2EmptyGroupsAlreadyClosed ? 'executed_and_verified_all_targets_exist_no_live_followup' : 'pre_execution')}`,
         `emptyGroupsPacketStatus=${onboardingV2EmptyGroupsPacket?.status ?? runbook?.currentState?.onboarding?.v2EmptyGroupsPacketStatus ?? 'missing'}`,
         `emptyGroupsTargetCount=${v2EmptyGroupsTargetCount ?? 'unknown'}`,
         `emptyGroupsLiveGroupsRead=${v2EmptyGroupsLiveGroupsRead ?? 'unknown'}`,
         `emptyGroupsLiveAutomationsRead=${v2EmptyGroupsLiveAutomationsRead ?? 'unknown'}`,
         `emptyGroupsCanAskApproval=${v2EmptyGroupsCanAskApproval}`,
         `emptyGroupsBlockerCount=${v2EmptyGroupsBlockerCount ?? 'unknown'}`,
+        `emptyGroupsExecutionStatus=${onboardingV2EmptyGroupsExecution?.status ?? runbook?.currentState?.onboarding?.v2EmptyGroupsExecutionStatus ?? 'missing'}`,
+        `emptyGroupsExecutedCount=${onboardingV2EmptyGroupsExecution?.createdGroups?.length ?? runbook?.currentState?.onboarding?.v2EmptyGroupsExecutedCount ?? 'unknown'}`,
+        `emptyGroupsExecutionCompleted=${v2EmptyGroupsExecutionCompleted}`,
         `emptyGroupsCreateDryRunStatus=${onboardingV2EmptyGroupsCreateDryRun?.status ?? runbook?.currentState?.onboarding?.v2EmptyGroupsCreateDryRunStatus ?? 'missing'}`,
         `emptyGroupsCreateDryRunCreatedCount=${v2EmptyGroupsCreateDryRunCreatedCount ?? 'unknown'}`,
         `emptyGroupsPacketReady=${v2EmptyGroupsPacketReady}`,
@@ -1439,8 +1472,16 @@ const buildGoalAudit = ({
   const approvalQueueMove = approvalQueueReady
     ? 'Use the Launch OS approval queue as the single local map of exact approval phrases; it cannot approve or execute any operation by itself.'
     : 'Generate the Launch OS approval queue so exact approval boundaries are visible in one local surface.';
-  const approvalIntakeReady = values.approvalIntake?.status === 'waiting_for_exact_approval_text_no_live_changes'
-    || values.runbook?.currentState?.approvalIntake?.status === 'waiting_for_exact_approval_text_no_live_changes';
+  const approvalIntakeStatus = values.approvalIntake?.status ?? values.runbook?.currentState?.approvalIntake?.status ?? null;
+  const approvalIntakeExecutionAllowedNow = values.approvalIntake?.executiveSummary?.executionAllowedNow
+    ?? values.runbook?.currentState?.approvalIntake?.executionAllowedNow
+    ?? null;
+  const approvalIntakeOpenLiveGateCount = values.approvalIntake?.executiveSummary?.openLiveMutationGateCount
+    ?? values.runbook?.currentState?.approvalIntake?.openLiveMutationGateCount
+    ?? null;
+  const approvalIntakeReady = APPROVAL_INTAKE_READY_STATUSES.has(approvalIntakeStatus)
+    && approvalIntakeExecutionAllowedNow === false
+    && approvalIntakeOpenLiveGateCount === 0;
   const approvalIntakeMove = approvalIntakeReady
     ? 'Use the Launch OS approval intake to check any future exact human phrase locally; it still cannot execute and must require fresh evidence before any guarded runner.'
     : 'Generate the Launch OS approval intake so future exact human phrases are checked locally before any guarded runner.';
@@ -1556,7 +1597,7 @@ const buildGoalAudit = ({
       liveActionAllowedNow: false,
     },
     requirements,
-    nextMoves: [
+    nextMoves: uniqueMoves([
       ...departmentResponseMoves,
       'Use the onboarding trunk map before any v2 approval packet, seed test or mini-launch-to-onboarding route.',
       onboardingV2GroupBoundaryClosed
@@ -1577,7 +1618,7 @@ const buildGoalAudit = ({
         ? 'Use fresh read-only group scans only if later evidence changes; no --execute rerun is needed for the current two mini-launch groups.'
         : 'If the mini-launch create runner dry-run is green, stop before --execute until Alejandro gives the exact approval phrase.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
-    ],
+    ]),
     safety: {
       localOnly: true,
       externalMessagesSent: false,

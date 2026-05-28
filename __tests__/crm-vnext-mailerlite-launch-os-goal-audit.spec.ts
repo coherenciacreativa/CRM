@@ -270,6 +270,52 @@ const onboardingV2EmptyGroupsCreateDryRun = {
   },
 };
 
+const onboardingV2EmptyGroupsExecution = {
+  status: "executed_onboarding_v2_empty_group_creation",
+  mode: "execute_requested",
+  decision: {
+    approval: {
+      status: "exact_approval_phrase_matched",
+    },
+  },
+  createdGroups: Array.from({ length: 12 }, (_value, index) => ({
+    name: `CC · Onboarding v2 group ${index + 1}`,
+  })),
+  safety: {
+    groupMutationType: "create_empty_groups_only",
+    workflowMutationsPerformed: false,
+    subscriberRowsRead: false,
+    subscriberAssignmentsPerformed: false,
+    sendsPerformed: false,
+  },
+};
+
+const onboardingV2EmptyGroupsPostExecutionVerify = {
+  status: "dry_run_blocked",
+  mode: "dry_run",
+  packetSummary: {
+    targetCount: 12,
+    liveGroupsRead: 89,
+    liveAutomationsRead: 13,
+    blockers: Array.from({ length: 12 }, (_value, index) =>
+      `CC · Onboarding v2 group ${index + 1}:already_exists_in_fresh_scan`),
+  },
+  decision: {
+    targetPlan: Array.from({ length: 12 }, (_value, index) => ({
+      name: `CC · Onboarding v2 group ${index + 1}`,
+      existsInFreshScan: true,
+    })),
+  },
+  createdGroups: [],
+  safety: {
+    mode: "dry_run_only",
+    groupMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    subscriberRowsRead: false,
+    sendsPerformed: false,
+  },
+};
+
 const onboardingV2FirstEmailMap = {
   status: "first_email_mapping_ready_no_sent_receipt",
   firstEmail: {
@@ -709,6 +755,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.responseWatcher).toContain("mailerlite_mini_launch_department_review_response_watcher_inteligencia_descansar_2026-05-27.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
+    expect(parsed.onboardingV2EmptyGroupsExecution).toContain("mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json");
     expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json");
     expect(parsed.onboardingV2FirstEmailMap).toContain("mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
@@ -773,6 +820,35 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleQaPublicUseReady=false");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionStatus=brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailStyleCorrectionTestSendReady=false");
+  });
+
+  test("marks Onboarding v2 empty groups as closed after execution and fresh all-exist verify", () => {
+    const checks = buildRequirementChecks({
+      ...values,
+      runbook: {
+        currentState: {
+          onboarding: {
+            v2EmptyGroupsLifecycleStatus: "executed_and_verified_all_targets_exist_no_live_followup",
+          },
+        },
+      },
+      onboardingV2EmptyGroupsExecution,
+      onboardingV2EmptyGroupsCreateDryRun: onboardingV2EmptyGroupsPostExecutionVerify,
+    });
+    const item = checks.find((check) => check.id === "design_onboarding_v2");
+
+    expect(item.status).toBe("proven");
+    expect(item.evidence).toContain("emptyGroupsLifecycleStatus=executed_and_verified_all_targets_exist_no_live_followup");
+    expect(item.evidence).toContain("emptyGroupsLiveGroupsRead=89");
+    expect(item.evidence).toContain("emptyGroupsCanAskApproval=false");
+    expect(item.evidence).toContain("emptyGroupsBlockerCount=0");
+    expect(item.evidence).toContain("emptyGroupsExecutionStatus=executed_onboarding_v2_empty_group_creation");
+    expect(item.evidence).toContain("emptyGroupsExecutedCount=12");
+    expect(item.evidence).toContain("emptyGroupsExecutionCompleted=true");
+    expect(item.evidence).toContain("emptyGroupsCreateDryRunStatus=dry_run_blocked");
+    expect(item.evidence).toContain("emptyGroupsPostExecutionAllExist=true");
+    expect(item.evidence).toContain("emptyGroupsBoundaryClosed=true");
+    expect(item.remaining).toContain("The 12 empty v2 groups now exist; do not rerun group creation for this boundary.");
   });
 
   test("closes stale Brand candidate instructions after promoted local group dry-run", () => {
@@ -923,6 +999,13 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
           { id: "onboarding_v2_empty_group_creation", status: "reference_only_no_approval_request_now" },
         ],
       },
+      approvalIntake: {
+        status: "approval_text_present_but_no_exact_phrase_no_live_changes",
+        executiveSummary: {
+          executionAllowedNow: false,
+          openLiveMutationGateCount: 0,
+        },
+      },
     };
     const checks = buildRequirementChecks(valuesWithManualUiBuild);
     const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
@@ -953,7 +1036,10 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.nextBestMove).toContain("CRM write approval packet is the current CRM boundary");
     expect(audit.executiveSummary.nextBestMove).not.toContain("exact asset-build approval is still required");
     expect(audit.nextMoves.join(" ")).toContain("Do not rerun mini-launch empty-group creation");
+    expect(audit.nextMoves.join(" ")).toContain("Use the Launch OS approval intake");
+    expect(audit.nextMoves.join(" ")).not.toContain("Generate the Launch OS approval intake");
     expect(audit.nextMoves.join(" ")).not.toContain("If the mini-launch empty-group approval packet is ready");
+    expect(new Set(audit.nextMoves).size).toBe(audit.nextMoves.length);
   });
 
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {

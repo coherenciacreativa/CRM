@@ -23,6 +23,7 @@ const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Rep
 const DEFAULT_ONBOARDING_V2_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_execution_packet_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EVENT_CONTRACT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_event_contract_2026-05-27.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json';
+const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json';
 const DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_first_email_map_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json';
@@ -72,6 +73,7 @@ Options:
   --onboarding-v2-execution <path>   Onboarding v2 execution JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EXECUTION}
   --onboarding-v2-event-contract <path> Onboarding v2 event contract JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EVENT_CONTRACT}
   --onboarding-v2-empty-groups-packet <path> Onboarding v2 empty-groups approval packet JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET}
+  --onboarding-v2-empty-groups-execution <path> Onboarding v2 executed empty-groups receipt JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_EXECUTION}
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run JSON. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
   --onboarding-v2-first-email-map <path> Onboarding v2 first-email mapping JSON. Defaults to ${DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP}
   --mini-launch-empty-group-create-dry-run <path> Mini-launch empty group create runner dry-run JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN}
@@ -128,6 +130,7 @@ const parseArgs = (argv) => {
     onboardingV2Execution: DEFAULT_ONBOARDING_V2_EXECUTION,
     onboardingV2EventContract: DEFAULT_ONBOARDING_V2_EVENT_CONTRACT,
     onboardingV2EmptyGroupsPacket: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET,
+    onboardingV2EmptyGroupsExecution: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_EXECUTION,
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
     onboardingV2FirstEmailMap: DEFAULT_ONBOARDING_V2_FIRST_EMAIL_MAP,
     miniLaunchEmptyGroupCreateDryRun: DEFAULT_MINI_LAUNCH_EMPTY_GROUP_CREATE_DRY_RUN,
@@ -180,6 +183,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-execution') options.onboardingV2Execution = argv[++index];
     else if (arg === '--onboarding-v2-event-contract') options.onboardingV2EventContract = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-packet') options.onboardingV2EmptyGroupsPacket = argv[++index];
+    else if (arg === '--onboarding-v2-empty-groups-execution') options.onboardingV2EmptyGroupsExecution = argv[++index];
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
     else if (arg === '--onboarding-v2-first-email-map') options.onboardingV2FirstEmailMap = argv[++index];
     else if (arg === '--mini-launch-empty-group-create-dry-run') options.miniLaunchEmptyGroupCreateDryRun = argv[++index];
@@ -245,6 +249,7 @@ const loadSourceDigests = async (options) => {
     [options.onboardingV2Execution, 'onboarding v2 execution posture and protected v1'],
     [options.onboardingV2EventContract, 'onboarding v2 CRM event contract and projection boundary'],
     [options.onboardingV2EmptyGroupsPacket, 'onboarding v2 empty-groups approval packet from fresh read-only scan', true],
+    [options.onboardingV2EmptyGroupsExecution, 'onboarding v2 empty-groups execution receipt for already-created empty groups', true],
     [options.onboardingV2EmptyGroupsCreateDryRun, 'onboarding v2 empty-groups create runner dry-run with zero mutations', true],
     [options.onboardingV2FirstEmailMap, 'onboarding v2 first-email mapping to prevent unnecessary Sent receipts', true],
     [options.miniLaunchEmptyGroupCreateDryRun, 'mini-launch empty-group create runner dry-run with zero mutations', true],
@@ -409,6 +414,7 @@ const buildCurrentState = ({
   onboardingV2Execution,
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
+  onboardingV2EmptyGroupsExecution,
   onboardingV2EmptyGroupsCreateDryRun,
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
@@ -477,6 +483,54 @@ const buildCurrentState = ({
     && miniLaunchShopifyLocalBuildReceipt?.safety?.realFormsCreated === false
     && miniLaunchShopifyLocalBuildReceipt?.safety?.mailerLiteApiCalled === false
     && miniLaunchShopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
+  const v2EmptyGroupsExecutionCompleted = onboardingV2EmptyGroupsExecution?.status === 'executed_onboarding_v2_empty_group_creation'
+    && onboardingV2EmptyGroupsExecution?.mode === 'execute_requested'
+    && onboardingV2EmptyGroupsExecution?.createdGroups?.length === 12
+    && onboardingV2EmptyGroupsExecution?.decision?.approval?.status === 'exact_approval_phrase_matched'
+    && onboardingV2EmptyGroupsExecution?.safety?.groupMutationType === 'create_empty_groups_only'
+    && onboardingV2EmptyGroupsExecution?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsExecution?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsExecution?.safety?.subscriberAssignmentsPerformed === false
+    && onboardingV2EmptyGroupsExecution?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsTargetPlan = onboardingV2EmptyGroupsCreateDryRun?.decision?.targetPlan ?? [];
+  const v2EmptyGroupsPostExecutionAllExist = onboardingV2EmptyGroupsCreateDryRun?.status === 'dry_run_blocked'
+    && onboardingV2EmptyGroupsCreateDryRun?.mode === 'dry_run'
+    && onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount === 12
+    && onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead >= 89
+    && v2EmptyGroupsTargetPlan.length === 12
+    && v2EmptyGroupsTargetPlan.every((target) => target?.existsInFreshScan === true)
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.mode === 'dry_run_only'
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.groupMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.workflowMutationsPerformed === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.subscriberRowsRead === false
+    && onboardingV2EmptyGroupsCreateDryRun?.safety?.sendsPerformed === false;
+  const v2EmptyGroupsClosed = v2EmptyGroupsExecutionCompleted && v2EmptyGroupsPostExecutionAllExist;
+  const v2EmptyGroupsExistingTargetCount = v2EmptyGroupsTargetPlan
+    .filter((target) => target?.existsInFreshScan === true)
+    .length;
+  const v2EmptyGroupsAlreadyExistsBlockerCount = (onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers ?? [])
+    .filter((blocker) => String(blocker).includes('already_exists_in_fresh_scan'))
+    .length;
+  const v2EmptyGroupsTargetCount = onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
+    ?? onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
+    ?? null;
+  const v2EmptyGroupsLiveGroupsRead = onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead
+    ?? onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveGroupsRead
+    ?? null;
+  const v2EmptyGroupsLiveAutomationsRead = onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveAutomationsRead
+    ?? onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveAutomationsRead
+    ?? null;
+  const v2EmptyGroupsPacketBlockerCount = onboardingV2EmptyGroupsPacket?.blockers?.length
+    ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length
+    ?? null;
+  const approvalItemStatusById = Object.fromEntries(
+    (approvalQueue?.approvalItems ?? [])
+      .filter((item) => item?.id)
+      .map((item) => [item.id, item.status ?? null]),
+  );
+  const referenceOnlyApprovalIds = Object.entries(approvalItemStatusById)
+    .filter(([, status]) => status === 'reference_only_no_approval_request_now')
+    .map(([id]) => id);
 
   return {
     brujulaPilot: {
@@ -532,22 +586,26 @@ const buildCurrentState = ({
       v2ExecutionStatus: onboardingV2Execution?.status ?? null,
       v2EventContractStatus: onboardingV2EventContract?.status ?? null,
       v2EmptyGroupsPacketStatus: onboardingV2EmptyGroupsPacket?.status ?? null,
-      v2EmptyGroupsTargetCount: onboardingV2EmptyGroupsPacket?.sourceEvidence?.targetGroupCount
-        ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.targetCount
-        ?? null,
-      v2EmptyGroupsLiveGroupsRead: onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveGroupsRead
-        ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveGroupsRead
-        ?? null,
-      v2EmptyGroupsLiveAutomationsRead: onboardingV2EmptyGroupsPacket?.sourceEvidence?.liveAutomationsRead
-        ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.liveAutomationsRead
-        ?? null,
-      v2EmptyGroupsCanAskApproval: onboardingV2EmptyGroupsPacket?.approvalGate?.canAskAlejandroForApproval ?? false,
-      v2EmptyGroupsBlockerCount: onboardingV2EmptyGroupsPacket?.blockers?.length
-        ?? onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length
-        ?? null,
+      v2EmptyGroupsLifecycleStatus: v2EmptyGroupsClosed
+        ? 'executed_and_verified_all_targets_exist_no_live_followup'
+        : onboardingV2EmptyGroupsPacket?.status ?? onboardingV2EmptyGroupsCreateDryRun?.status ?? null,
+      v2EmptyGroupsExecutionStatus: onboardingV2EmptyGroupsExecution?.status ?? null,
+      v2EmptyGroupsExecutionMode: onboardingV2EmptyGroupsExecution?.mode ?? null,
+      v2EmptyGroupsExecutedCount: onboardingV2EmptyGroupsExecution?.createdGroups?.length ?? null,
+      v2EmptyGroupsExecutionApproved: onboardingV2EmptyGroupsExecution?.decision?.approval?.status === 'exact_approval_phrase_matched',
+      v2EmptyGroupsPostExecutionAllExist,
+      v2EmptyGroupsExistingTargetCount,
+      v2EmptyGroupsTargetCount,
+      v2EmptyGroupsLiveGroupsRead,
+      v2EmptyGroupsLiveAutomationsRead,
+      v2EmptyGroupsCanAskApproval: v2EmptyGroupsClosed
+        ? false
+        : onboardingV2EmptyGroupsPacket?.approvalGate?.canAskAlejandroForApproval ?? false,
+      v2EmptyGroupsBlockerCount: v2EmptyGroupsClosed ? 0 : v2EmptyGroupsPacketBlockerCount,
       v2EmptyGroupsCreateDryRunStatus: onboardingV2EmptyGroupsCreateDryRun?.status ?? null,
       v2EmptyGroupsCreateDryRunCreatedCount: onboardingV2EmptyGroupsCreateDryRun?.createdGroups?.length ?? null,
       v2EmptyGroupsCreateDryRunBlockerCount: onboardingV2EmptyGroupsCreateDryRun?.packetSummary?.blockers?.length ?? null,
+      v2EmptyGroupsPostExecutionVerifyAlreadyExistsBlockerCount: v2EmptyGroupsAlreadyExistsBlockerCount,
       v2FirstEmailMapStatus: onboardingV2FirstEmailMap?.status ?? null,
       v2FirstEmailSubject: onboardingV2FirstEmailMap?.firstEmail?.subject ?? null,
       v2FirstEmailRecommendedPosture: onboardingV2FirstEmailMap?.decision?.recommendedPosture ?? null,
@@ -796,6 +854,8 @@ const buildCurrentState = ({
       nextBestHumanBoundary: approvalQueue?.executiveSummary?.nextBestHumanBoundary ?? null,
       readyApprovalIds: approvalQueue?.executiveSummary?.readyApprovalIds ?? [],
       blockedApprovalIds: approvalQueue?.executiveSummary?.blockedApprovalIds ?? [],
+      referenceOnlyApprovalIds,
+      approvalItemStatusById,
     },
     approvalIntake: {
       status: approvalIntake?.status ?? null,
@@ -839,6 +899,7 @@ const buildReportMap = (sourceDigests) => {
     onboardingV2Execution: findPath('mailerlite_onboarding_v2_execution_packet_2026-05-27.json'),
     onboardingV2EventContract: findPath('mailerlite_onboarding_v2_event_contract_2026-05-27.json'),
     onboardingV2EmptyGroupsPacket: findPath('mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json'),
+    onboardingV2EmptyGroupsExecution: findPath('mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json'),
     onboardingV2EmptyGroupsCreateDryRun: findPath('mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json'),
     onboardingV2FirstEmailMap: findPath('mailerlite_onboarding_v2_first_email_map_2026-05-27.json'),
     miniLaunchEmptyGroupCreateDryRun: findPath('mailerlite_mini_launch_empty_group_create_dry_run_inteligencia_descansar_2026-05-28.json'),
@@ -951,6 +1012,15 @@ const buildApprovalMatrix = () => [
     reason: 'Review signals do not mutate CRM state.',
   },
 ];
+
+const uniqueMoves = (moves) => {
+  const seen = new Set();
+  return moves.filter((move) => {
+    if (!move || seen.has(move)) return false;
+    seen.add(move);
+    return true;
+  });
+};
 
 const buildOperatingScenarios = ({ commandCatalog }) => {
   const commandNames = new Set(commandCatalog.map((entry) => entry.name));
@@ -1110,60 +1180,79 @@ const miniLaunchEmptyGroupsAlreadyExist = (currentState) => {
 const miniLaunchManualUiBuildClosed = (currentState) => currentState?.miniLaunch?.emailManualUiBuildClosed === true;
 const miniLaunchShopifyLocalBuildClosed = (currentState) => currentState?.miniLaunch?.shopifyLocalBuildClosed === true;
 
-const buildApprovalPhaseMoves = (currentState) => [
-  'Use the Launch OS approval queue as the current source of human boundaries; do not reopen department-review collection while pendingDepartments is empty.',
-  'Use the Launch OS approval intake only when Alejandro provides exact approval text; require a single exact phrase match before any fresh-evidence plan.',
-  miniLaunchEmptyGroupsAlreadyExist(currentState)
+const buildApprovalPhaseMoves = (currentState) => {
+  const miniLaunchEmptyGroupBoundaryClosed = approvalItemStatus(currentState, 'mini_launch_empty_group_creation') === 'reference_only_no_approval_request_now'
+    || miniLaunchEmptyGroupsAlreadyExist(currentState);
+
+  return [
+    'Use the Launch OS approval queue as the current source of human boundaries; do not reopen department-review collection while pendingDepartments is empty.',
+    'Use the Launch OS approval intake only when Alejandro provides exact approval text; require a single exact phrase match before any fresh-evidence plan.',
+    miniLaunchEmptyGroupBoundaryClosed
     ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
     : 'Hold at the mini-launch empty-group create runner dry-run: it is green, createdCount remains 0, and --execute still requires the exact phrase plus a fresh group scan.',
-  miniLaunchManualUiBuildClosed(currentState)
+    miniLaunchManualUiBuildClosed(currentState)
     ? 'Mini-launch manual UI draft build is complete; use the receipt as current asset evidence and do not request duplicate API/manual asset build unless a later exact repair scope names it.'
     : 'Use the mini-launch email builder payload manifest only as local implementation input; it cannot execute MailerLite builder mutations or sends.',
-  currentState?.miniLaunch?.emailManualUiDraftRepairCanAskApproval === true
+    currentState?.miniLaunch?.emailManualUiDraftRepairCanAskApproval === true
     ? 'Current real MailerLite QA found a repairable Email 1 copy mismatch; the next useful human boundary is the exact manual UI draft repair approval, not a seed-send approval.'
     : currentState?.miniLaunch?.emailManualUiDraftRepairPacketStatus === 'mini_launch_email_manual_ui_draft_repair_packet_reference_only_no_repair_needed'
       ? 'Real MailerLite render QA is green; keep the manual UI draft repair packet as evidence only and do not ask for repair approval.'
       : 'If real MailerLite render QA is not green, generate or refresh the manual UI draft repair packet before asking for any seed-send scope.',
-  miniLaunchManualUiBuildClosed(currentState)
+    miniLaunchManualUiBuildClosed(currentState)
     ? 'Use the mini-launch seed/test QA packet before any seed/test send; it currently requires real MailerLite render QA, an exact seed recipient and an exact send approval.'
     : 'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
-  currentState?.miniLaunch?.crmWriteApprovalPacketStatus
+    currentState?.miniLaunch?.crmWriteApprovalPacketStatus
     ? currentState?.miniLaunch?.crmWritePolicyPacketReady === true
       ? 'Use the CRM write approval packet as the current CRM boundary; the CRM write policy packet is ready and consumed, so the remaining blockers are evidence, identity, aggregate review, Fact Store or future exact approval gates.'
       : 'Use the CRM write approval packet as the current CRM boundary; it cannot ask approval until real observed events, exact people and one write family are named.'
     : 'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
-  miniLaunchShopifyLocalBuildClosed(currentState)
+    miniLaunchShopifyLocalBuildClosed(currentState)
     ? 'Shopify no-live local build is complete; keep the five files inert and do not publish, preview, connect forms or call APIs without a later exact scope.'
     : 'Use the Shopify local-build request only after exact no-live scope approval, and keep placeholders inert.',
-];
+  ];
+};
 
-const buildSharedImmediateMoves = (currentState) => [
-  'Use the Brújula email style QA packet to keep functional delivery separate from public-ready creative quality.',
-  currentState?.brujulaPilot?.manualUiBuildClosed === true
-    ? 'Use the Brújula Email 1 manual UI build receipt as current draft evidence; builder creation/edit gate is closed and test send/public use still need separate exact approval.'
-    : 'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
-  currentState?.brujulaPilot?.manualUiBuildClosed === true
-    ? currentState?.brujulaPilot?.realMailerLiteRenderReady === true
-      ? 'Brújula real MailerLite render QA is green; before any Brújula test send, still require exact recipient and exact send approval.'
-      : 'Before any Brújula test send, require real MailerLite render QA on the live draft, exact recipient and exact send approval.'
-    : 'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
-  'Use the backlog board only for one additional no-live idea intake, not for live production.',
-  'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
-  'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
-  'Use the mini-launch empty-group create runner only for dry-run or post-execution no-create-needed verification unless a new exact approval boundary is opened.',
-  miniLaunchManualUiBuildClosed(currentState)
-    ? 'Use the mini-launch manual UI build receipt as the current draft state; keep the local asset plan and payload manifest as provenance, not as a new build request.'
-    : 'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
-  miniLaunchShopifyLocalBuildClosed(currentState)
-    ? 'Use the Shopify local build receipt as current Web surface evidence; preview/publish/form connection remains outside this closed local build boundary.'
-    : 'Use the Shopify local-build request as a scope boundary only; it cannot publish, preview, connect forms or call APIs.',
-  'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
-  'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
-  'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
-  'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
-  'Regenerate the validation receipt after current-turn tests so the goal audit does not depend on ephemeral CLI flags.',
-  'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
-];
+const approvalItemStatus = (currentState, id) => currentState?.approvalQueue?.approvalItemStatusById?.[id] ?? null;
+
+const buildSharedImmediateMoves = (currentState) => {
+  const miniLaunchEmptyGroupBoundaryClosed = approvalItemStatus(currentState, 'mini_launch_empty_group_creation') === 'reference_only_no_approval_request_now'
+    || miniLaunchEmptyGroupsAlreadyExist(currentState);
+  const onboardingV2GroupBoundaryClosed = approvalItemStatus(currentState, 'onboarding_v2_empty_group_creation') === 'reference_only_no_approval_request_now';
+
+  return [
+    'Use the Brújula email style QA packet to keep functional delivery separate from public-ready creative quality.',
+    currentState?.brujulaPilot?.manualUiBuildClosed === true
+      ? 'Use the Brújula Email 1 manual UI build receipt as current draft evidence; builder creation/edit gate is closed and test send/public use still need separate exact approval.'
+      : 'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
+    currentState?.brujulaPilot?.manualUiBuildClosed === true
+      ? currentState?.brujulaPilot?.realMailerLiteRenderReady === true
+        ? 'Brújula real MailerLite render QA is green; before any Brújula test send, still require exact recipient and exact send approval.'
+        : 'Before any Brújula test send, require real MailerLite render QA on the live draft, exact recipient and exact send approval.'
+      : 'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
+    'Use the backlog board only for one additional no-live idea intake, not for live production.',
+    'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
+    miniLaunchEmptyGroupBoundaryClosed
+      ? 'Mini-launch empty-group packet and create runner are evidence only now; the two groups already exist and no creation rerun is pending.'
+      : 'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
+    miniLaunchEmptyGroupBoundaryClosed
+      ? 'Use mini-launch group scans only as fresh read-only evidence if later state changes; do not rerun --execute for the current two groups.'
+      : 'Use the mini-launch empty-group create runner only for dry-run or post-execution no-create-needed verification unless a new exact approval boundary is opened.',
+    miniLaunchManualUiBuildClosed(currentState)
+      ? 'Use the mini-launch manual UI build receipt as the current draft state; keep the local asset plan and payload manifest as provenance, not as a new build request.'
+      : 'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
+    miniLaunchShopifyLocalBuildClosed(currentState)
+      ? 'Use the Shopify local build receipt as current Web surface evidence; preview/publish/form connection remains outside this closed local build boundary.'
+      : 'Use the Shopify local-build request as a scope boundary only; it cannot publish, preview, connect forms or call APIs.',
+    onboardingV2GroupBoundaryClosed
+      ? 'Treat Onboarding v2 empty-group creation as closed evidence; workflow draft, seed test and production switch remain separate approval gates.'
+      : 'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
+    'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
+    'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
+    'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
+    'Regenerate the validation receipt after current-turn tests so the goal audit does not depend on ephemeral CLI flags.',
+    'Keep every live gate closed until a later exact Alejandro approval names the action and scope.',
+  ];
+};
 
 const departmentFinalResponsesAccepted = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
@@ -1174,12 +1263,12 @@ const departmentFinalResponsesAccepted = (currentState) => {
     && ['brand', 'web_design', 'crm'].every((department) => acceptedDepartments.has(department));
 };
 
-const buildImmediateNextMoves = ({ currentState }) => [
+const buildImmediateNextMoves = ({ currentState }) => uniqueMoves([
   ...(departmentFinalResponsesAccepted(currentState)
     ? buildApprovalPhaseMoves(currentState)
     : buildDepartmentReviewCollectionMoves()),
   ...buildSharedImmediateMoves(currentState),
-];
+]);
 
 const buildRunbook = ({
   readinessBoard,
@@ -1198,6 +1287,7 @@ const buildRunbook = ({
   onboardingV2Execution,
   onboardingV2EventContract,
   onboardingV2EmptyGroupsPacket,
+  onboardingV2EmptyGroupsExecution,
   onboardingV2EmptyGroupsCreateDryRun,
   onboardingV2FirstEmailMap,
   miniLaunchEmptyGroupCreateDryRun,
@@ -1243,6 +1333,7 @@ const buildRunbook = ({
     onboardingV2Execution,
     onboardingV2EventContract,
     onboardingV2EmptyGroupsPacket,
+    onboardingV2EmptyGroupsExecution,
     onboardingV2EmptyGroupsCreateDryRun,
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
@@ -1330,6 +1421,10 @@ const renderMarkdown = (runbook) => {
     `- Onboarding v1 workflow: ${runbook.currentState.onboarding.productionV1Workflow.name ?? 'unknown'}`,
     `- Onboarding v2 status: ${runbook.currentState.onboarding.v2ExecutionStatus ?? 'unknown'}`,
     `- Onboarding v2 event contract: ${runbook.currentState.onboarding.v2EventContractStatus ?? 'unknown'}`,
+    `- Onboarding v2 empty-groups lifecycle: ${runbook.currentState.onboarding.v2EmptyGroupsLifecycleStatus ?? 'unknown'}`,
+    `- Onboarding v2 empty-groups execution: ${runbook.currentState.onboarding.v2EmptyGroupsExecutionStatus ?? 'unknown'}`,
+    `- Onboarding v2 empty-groups executed count: ${runbook.currentState.onboarding.v2EmptyGroupsExecutedCount ?? 'unknown'}`,
+    `- Onboarding v2 empty-groups post-execution all exist: ${runbook.currentState.onboarding.v2EmptyGroupsPostExecutionAllExist}`,
     `- Onboarding v2 empty-groups packet: ${runbook.currentState.onboarding.v2EmptyGroupsPacketStatus ?? 'unknown'}`,
     `- Onboarding v2 empty-groups target count: ${runbook.currentState.onboarding.v2EmptyGroupsTargetCount ?? 'unknown'}`,
     `- Onboarding v2 empty-groups live groups read: ${runbook.currentState.onboarding.v2EmptyGroupsLiveGroupsRead ?? 'unknown'}`,
@@ -1559,6 +1654,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2Execution,
     onboardingV2EventContract,
     onboardingV2EmptyGroupsPacket,
+    onboardingV2EmptyGroupsExecution,
     onboardingV2EmptyGroupsCreateDryRun,
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,
@@ -1603,6 +1699,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.onboardingV2Execution),
     readJson(options.onboardingV2EventContract),
     readOptionalJson(options.onboardingV2EmptyGroupsPacket),
+    readOptionalJson(options.onboardingV2EmptyGroupsExecution),
     readOptionalJson(options.onboardingV2EmptyGroupsCreateDryRun),
     readOptionalJson(options.onboardingV2FirstEmailMap),
     readOptionalJson(options.miniLaunchEmptyGroupCreateDryRun),
@@ -1649,6 +1746,7 @@ const buildRunbookFromFiles = async (options) => {
     onboardingV2Execution,
     onboardingV2EventContract,
     onboardingV2EmptyGroupsPacket,
+    onboardingV2EmptyGroupsExecution,
     onboardingV2EmptyGroupsCreateDryRun,
     onboardingV2FirstEmailMap,
     miniLaunchEmptyGroupCreateDryRun,

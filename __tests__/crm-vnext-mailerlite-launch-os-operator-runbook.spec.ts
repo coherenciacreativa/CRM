@@ -289,6 +289,52 @@ const onboardingV2EmptyGroupsCreateDryRun = {
   createdGroups: [],
 };
 
+const onboardingV2EmptyGroupsExecution = {
+  status: "executed_onboarding_v2_empty_group_creation",
+  mode: "execute_requested",
+  decision: {
+    approval: {
+      status: "exact_approval_phrase_matched",
+    },
+  },
+  createdGroups: Array.from({ length: 12 }, (_value, index) => ({
+    name: `CC · Onboarding v2 group ${index + 1}`,
+  })),
+  safety: {
+    groupMutationType: "create_empty_groups_only",
+    workflowMutationsPerformed: false,
+    subscriberRowsRead: false,
+    subscriberAssignmentsPerformed: false,
+    sendsPerformed: false,
+  },
+};
+
+const onboardingV2EmptyGroupsPostExecutionVerify = {
+  status: "dry_run_blocked",
+  mode: "dry_run",
+  packetSummary: {
+    targetCount: 12,
+    liveGroupsRead: 89,
+    liveAutomationsRead: 13,
+    blockers: Array.from({ length: 12 }, (_value, index) =>
+      `CC · Onboarding v2 group ${index + 1}:already_exists_in_fresh_scan`),
+  },
+  decision: {
+    targetPlan: Array.from({ length: 12 }, (_value, index) => ({
+      name: `CC · Onboarding v2 group ${index + 1}`,
+      existsInFreshScan: true,
+    })),
+  },
+  createdGroups: [],
+  safety: {
+    mode: "dry_run_only",
+    groupMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    subscriberRowsRead: false,
+    sendsPerformed: false,
+  },
+};
+
 const onboardingV2FirstEmailMap = {
   status: "first_email_mapping_ready_no_sent_receipt",
   firstEmail: {
@@ -670,6 +716,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
+    expect(parsed.onboardingV2EmptyGroupsExecution).toContain("mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json");
     expect(parsed.onboardingV2EmptyGroupsCreateDryRun).toContain("mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json");
     expect(parsed.onboardingV2FirstEmailMap).toContain("mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(parsed.miniLaunchEmailStyleQaPacket).toContain("mailerlite_mini_launch_email_style_qa_packet_inteligencia_descansar_2026-05-28.json");
@@ -860,6 +907,35 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       openLiveGateCount: 0,
       liveApprovalNeededNow: false,
     });
+  });
+
+  test("closes Onboarding v2 empty-groups approval once execution and post-verify exist", () => {
+    const state = buildCurrentState({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      onboardingV1Audit,
+      onboardingTrunkMap,
+      onboardingV2Execution,
+      onboardingV2EventContract,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsExecution,
+      onboardingV2EmptyGroupsCreateDryRun: onboardingV2EmptyGroupsPostExecutionVerify,
+      onboardingV2FirstEmailMap,
+    });
+
+    expect(state.onboarding.v2EmptyGroupsLifecycleStatus).toBe("executed_and_verified_all_targets_exist_no_live_followup");
+    expect(state.onboarding.v2EmptyGroupsExecutionStatus).toBe("executed_onboarding_v2_empty_group_creation");
+    expect(state.onboarding.v2EmptyGroupsExecutedCount).toBe(12);
+    expect(state.onboarding.v2EmptyGroupsExecutionApproved).toBe(true);
+    expect(state.onboarding.v2EmptyGroupsPostExecutionAllExist).toBe(true);
+    expect(state.onboarding.v2EmptyGroupsExistingTargetCount).toBe(12);
+    expect(state.onboarding.v2EmptyGroupsLiveGroupsRead).toBe(89);
+    expect(state.onboarding.v2EmptyGroupsCanAskApproval).toBe(false);
+    expect(state.onboarding.v2EmptyGroupsBlockerCount).toBe(0);
+    expect(state.onboarding.v2EmptyGroupsCreateDryRunStatus).toBe("dry_run_blocked");
+    expect(state.onboarding.v2EmptyGroupsCreateDryRunBlockerCount).toBe(12);
+    expect(state.onboarding.v2EmptyGroupsPostExecutionVerifyAlreadyExistsBlockerCount).toBe(12);
   });
 
   test("uses Brújula manual UI build receipt as current draft evidence", () => {
@@ -1186,6 +1262,63 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(movesText).not.toContain("createdCount remains 0");
   });
 
+  test("uses reference-only approval items to suppress closed group creation prompts", () => {
+    const runbook = buildRunbook({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      onboardingHandoffPolicy,
+      reconciliationBoard: acceptedReconciliationBoard,
+      packetsIndex: acceptedPacketsIndex,
+      responseWorkspace: acceptedResponseWorkspace,
+      finalizationPreflight: acceptedFinalizationPreflight,
+      operatorQueue: acceptedOperatorQueue,
+      requestBundle: acceptedRequestBundle,
+      responseWatcher: acceptedResponseWatcher,
+      onboardingV1Audit,
+      onboardingTrunkMap,
+      onboardingV2Execution,
+      onboardingV2EventContract,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
+      miniLaunchEmailStyleQaPacket,
+      miniLaunchLocalEmailAssetPlan,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmptyGroupCreateDryRun,
+      brujulaPlan,
+      brujulaApply,
+      brujulaEmailStyleQa,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      approvalQueue: {
+        ...approvalQueue,
+        approvalItems: [
+          { id: "mini_launch_empty_group_creation", status: "reference_only_no_approval_request_now" },
+          { id: "onboarding_v2_empty_group_creation", status: "reference_only_no_approval_request_now" },
+        ],
+      },
+      approvalIntake,
+      validationReceipt,
+      packageJson,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    const movesText = runbook.immediateNextMoves.join("\n");
+
+    expect(runbook.currentState.approvalQueue.referenceOnlyApprovalIds).toEqual([
+      "mini_launch_empty_group_creation",
+      "onboarding_v2_empty_group_creation",
+    ]);
+    expect(movesText).toContain("Mini-launch empty groups already exist");
+    expect(movesText).toContain("Treat Onboarding v2 empty-group creation as closed evidence");
+    expect(movesText).not.toContain("Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking");
+    expect(movesText).not.toContain("Hold at the mini-launch empty-group create runner dry-run");
+  });
+
   test("builds report map from consulted source paths", () => {
     const reportMap = buildReportMap([
       ...sourceDigests,
@@ -1254,6 +1387,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         present: true,
         chars: 2000,
         consultedFor: "onboarding v2 empty-groups approval packet from fresh read-only scan",
+      },
+      {
+        path: "/tmp/mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "onboarding v2 empty-groups execution receipt for already-created empty groups",
       },
       {
         path: "/tmp/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json",
@@ -1347,6 +1486,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.onboardingTrunkMap).toBe("/tmp/mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(reportMap.onboardingV2EventContract).toBe("/tmp/mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(reportMap.onboardingV2EmptyGroupsPacket).toBe("/tmp/mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
+    expect(reportMap.onboardingV2EmptyGroupsExecution).toBe("/tmp/mailerlite_onboarding_v2_empty_groups_create_EXECUTED_2026-05-28.json");
     expect(reportMap.onboardingV2EmptyGroupsCreateDryRun).toBe("/tmp/mailerlite_onboarding_v2_empty_groups_post_execution_verify_2026-05-28.json");
     expect(reportMap.onboardingV2FirstEmailMap).toBe("/tmp/mailerlite_onboarding_v2_first_email_map_2026-05-27.json");
     expect(reportMap.miniLaunchEmailAssetBuildScopePacket).toBe("/tmp/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json");
