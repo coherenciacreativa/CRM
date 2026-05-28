@@ -47,6 +47,7 @@ const DEFAULT_BRUJULA_REAL_MAILERLITE_RENDER_QA = '/Users/alejandrogomez/Documen
 const DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json';
 const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
 const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_2026-05-28.json';
+const DEFAULT_BLOCKED_GATE_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -97,6 +98,7 @@ Options:
   --brujula-email-manual-ui-build-receipt <path> Brújula Email 1 manual UI build receipt JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --approval-queue <path>            Launch OS exact approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
   --approval-intake <path>           Launch OS exact approval intake JSON. Defaults to ${DEFAULT_APPROVAL_INTAKE}
+  --blocked-gate-handoff <path>      Launch OS blocked-gate handoff JSON. Defaults to ${DEFAULT_BLOCKED_GATE_HANDOFF}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
   --out <path>                       Write JSON runbook
@@ -154,6 +156,7 @@ const parseArgs = (argv) => {
     brujulaEmailManualUiBuildReceipt: DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     approvalQueue: DEFAULT_APPROVAL_QUEUE,
     approvalIntake: DEFAULT_APPROVAL_INTAKE,
+    blockedGateHandoff: DEFAULT_BLOCKED_GATE_HANDOFF,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     out: null,
@@ -207,6 +210,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-email-manual-ui-build-receipt') options.brujulaEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
     else if (arg === '--approval-intake') options.approvalIntake = argv[++index];
+    else if (arg === '--blocked-gate-handoff') options.blockedGateHandoff = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
@@ -273,6 +277,7 @@ const loadSourceDigests = async (options) => {
     [options.brujulaEmailManualUiBuildReceipt, 'Brújula Email 1 manual UI draft build receipt and closed gates', true],
     [options.approvalQueue, 'single exact approval queue for current MailerLite Launch OS gates', true],
     [options.approvalIntake, 'local exact approval intake and fresh-evidence pre-execution plan', true],
+    [options.blockedGateHandoff, 'current blocked gates and missing inputs before any new approval request', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
   ];
@@ -438,6 +443,7 @@ const buildCurrentState = ({
   brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
+  blockedGateHandoff,
   validationReceipt,
 }) => {
   const assignedGroupNames = groupNamesFrom(brujulaApply?.assignedGroups);
@@ -531,6 +537,12 @@ const buildCurrentState = ({
   const referenceOnlyApprovalIds = Object.entries(approvalItemStatusById)
     .filter(([, status]) => status === 'reference_only_no_approval_request_now')
     .map(([id]) => id);
+  const blockedGateInputNeededIds = (blockedGateHandoff?.inputNeededNow ?? [])
+    .map((input) => input?.id)
+    .filter(Boolean);
+  const blockedGateIds = (blockedGateHandoff?.blockedGates ?? [])
+    .map((gate) => gate?.id)
+    .filter(Boolean);
 
   return {
     brujulaPilot: {
@@ -866,6 +878,18 @@ const buildCurrentState = ({
       executionAllowedNow: approvalIntake?.executiveSummary?.executionAllowedNow ?? null,
       openLiveMutationGateCount: approvalIntake?.executiveSummary?.openLiveMutationGateCount ?? null,
     },
+    blockedGateHandoff: {
+      status: blockedGateHandoff?.status ?? null,
+      readyApprovalCount: blockedGateHandoff?.executiveSummary?.readyApprovalCount ?? null,
+      blockedGateCount: blockedGateHandoff?.executiveSummary?.blockedGateCount ?? null,
+      canAskApprovalNow: blockedGateHandoff?.executiveSummary?.canAskApprovalNow ?? null,
+      inputNeededCount: blockedGateHandoff?.executiveSummary?.inputNeededCount ?? null,
+      inputNeededIds: blockedGateInputNeededIds,
+      blockedGateIds,
+      openLiveMutationGateCount: blockedGateHandoff?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextBestHumanAction: blockedGateHandoff?.executiveSummary?.nextBestHumanAction ?? null,
+      safeToIntakeOneMoreNoLiveIdea: blockedGateHandoff?.executiveSummary?.safeToIntakeOneMoreNoLiveIdea ?? null,
+    },
     validation: {
       receiptStatus: validationReceipt?.status ?? null,
       validationStatus: validationReceipt?.validationStatus ?? null,
@@ -922,6 +946,7 @@ const buildReportMap = (sourceDigests) => {
     brujulaEmailManualUiBuildReceipt: findPath('mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json'),
     approvalQueue: findPath('mailerlite_launch_os_approval_queue_2026-05-28.json'),
     approvalIntake: findPath('mailerlite_launch_os_approval_intake_2026-05-28.json'),
+    blockedGateHandoff: findPath('mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json'),
     validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-28.json'),
     packageJson: findPath('package.json'),
   };
@@ -1105,6 +1130,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
       commands: [
         command('crm:vnext:mailerlite-launch-os-approval-queue'),
         command('crm:vnext:mailerlite-launch-os-approval-intake'),
+        command('crm:vnext:mailerlite-launch-os-blocked-gate-handoff'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['all operations until their own exact phrase is supplied', 'subscriber assignment', 'workflow use', 'send', 'Shopify publish', 'CRM writes'],
     },
@@ -1180,6 +1206,14 @@ const miniLaunchEmptyGroupsAlreadyExist = (currentState) => {
 const miniLaunchManualUiBuildClosed = (currentState) => currentState?.miniLaunch?.emailManualUiBuildClosed === true;
 const miniLaunchShopifyLocalBuildClosed = (currentState) => currentState?.miniLaunch?.shopifyLocalBuildClosed === true;
 
+const buildBlockedGateHandoffMove = (currentState) => {
+  const handoff = currentState?.blockedGateHandoff;
+  if (!handoff?.status) return null;
+  const blockedGateIds = handoff.blockedGateIds.join(', ') || 'none';
+  const inputNeededIds = handoff.inputNeededIds.join(', ') || 'none';
+  return `Use the Launch OS blocked-gate handoff before asking for more approvals; blocked gates: ${blockedGateIds}; inputs needed now: ${inputNeededIds}; can ask approval now: ${handoff.canAskApprovalNow}.`;
+};
+
 const buildApprovalPhaseMoves = (currentState) => {
   const miniLaunchEmptyGroupBoundaryClosed = approvalItemStatus(currentState, 'mini_launch_empty_group_creation') === 'reference_only_no_approval_request_now'
     || miniLaunchEmptyGroupsAlreadyExist(currentState);
@@ -1187,6 +1221,7 @@ const buildApprovalPhaseMoves = (currentState) => {
   return [
     'Use the Launch OS approval queue as the current source of human boundaries; do not reopen department-review collection while pendingDepartments is empty.',
     'Use the Launch OS approval intake only when Alejandro provides exact approval text; require a single exact phrase match before any fresh-evidence plan.',
+    buildBlockedGateHandoffMove(currentState),
     miniLaunchEmptyGroupBoundaryClosed
     ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
     : 'Hold at the mini-launch empty-group create runner dry-run: it is green, createdCount remains 0, and --execute still requires the exact phrase plus a fresh group scan.',
@@ -1246,6 +1281,7 @@ const buildSharedImmediateMoves = (currentState) => {
     onboardingV2GroupBoundaryClosed
       ? 'Treat Onboarding v2 empty-group creation as closed evidence; workflow draft, seed test and production switch remain separate approval gates.'
       : 'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
+    buildBlockedGateHandoffMove(currentState),
     'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
     'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
     'Use the Onboarding v2 event contract before any future Signal Event Ledger append or CRM projection around onboarding.',
@@ -1311,6 +1347,7 @@ const buildRunbook = ({
   brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
+  blockedGateHandoff,
   validationReceipt,
   packageJson,
   sourceDigests,
@@ -1357,6 +1394,7 @@ const buildRunbook = ({
     brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
+    blockedGateHandoff,
     validationReceipt,
     responseWorkspace,
   });
@@ -1555,6 +1593,11 @@ const renderMarkdown = (runbook) => {
     `- Approval intake matched approval: ${runbook.currentState.approvalIntake.matchedApprovalId ?? 'none'}`,
     `- Approval intake can proceed to fresh evidence: ${runbook.currentState.approvalIntake.canProceedToFreshEvidence ?? 'unknown'}`,
     `- Approval intake execution allowed now: ${runbook.currentState.approvalIntake.executionAllowedNow ?? 'unknown'}`,
+    `- Blocked-gate handoff: ${runbook.currentState.blockedGateHandoff.status ?? 'missing'}`,
+    `- Blocked-gate can ask approval now: ${runbook.currentState.blockedGateHandoff.canAskApprovalNow ?? 'unknown'}`,
+    `- Blocked-gate inputs needed: ${runbook.currentState.blockedGateHandoff.inputNeededIds.join(', ') || 'none'}`,
+    `- Blocked-gate ids: ${runbook.currentState.blockedGateHandoff.blockedGateIds.join(', ') || 'none'}`,
+    `- Blocked-gate open live mutation gates: ${runbook.currentState.blockedGateHandoff.openLiveMutationGateCount ?? 'unknown'}`,
     `- Validation receipt: ${runbook.currentState.validation.receiptStatus ?? 'missing'}`,
     `- Validation status: ${runbook.currentState.validation.validationStatus ?? 'unknown'}`,
     `- Validation tests: ${runbook.currentState.validation.testCount ?? 'unknown'}`,
@@ -1678,6 +1721,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
+    blockedGateHandoff,
     validationReceipt,
     packageJson,
     sourceDigests,
@@ -1723,6 +1767,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.brujulaEmailManualUiBuildReceipt),
     readOptionalJson(options.approvalQueue),
     readOptionalJson(options.approvalIntake),
+    readOptionalJson(options.blockedGateHandoff),
     readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
     loadSourceDigests(options),
@@ -1770,6 +1815,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
+    blockedGateHandoff,
     validationReceipt,
     packageJson,
     sourceDigests,
@@ -1799,6 +1845,9 @@ const main = async () => {
     approvalQueueReadyCount: runbook.currentState.approvalQueue.readyApprovalRequestCount,
     approvalIntakeStatus: runbook.currentState.approvalIntake.status,
     approvalIntakeCanProceedToFreshEvidence: runbook.currentState.approvalIntake.canProceedToFreshEvidence,
+    blockedGateHandoffStatus: runbook.currentState.blockedGateHandoff.status,
+    blockedGateHandoffInputNeededCount: runbook.currentState.blockedGateHandoff.inputNeededCount,
+    blockedGateHandoffCanAskApprovalNow: runbook.currentState.blockedGateHandoff.canAskApprovalNow,
     pendingDepartments: runbook.currentState.miniLaunch.pendingDepartments,
     safeToIntakeOneMoreNoLiveIdea: runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea,
     out: options.out ? resolve(options.out) : null,

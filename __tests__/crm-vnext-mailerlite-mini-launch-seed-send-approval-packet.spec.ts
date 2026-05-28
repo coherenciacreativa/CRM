@@ -128,6 +128,11 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
     expect(packet.status).toBe("seed_send_approval_packet_waiting_exact_seed_recipient_no_live_changes");
     expect(packet.approvalBoundary.canAskAlejandroForApproval).toBe(false);
     expect(packet.approvalBoundary.exactApprovalPhrase).toBeNull();
+    expect(packet.inputRequest).toMatchObject({
+      status: "waiting_for_exact_seed_recipient_only",
+      currentHumanInputNeeded: "exact_seed_recipient_email_only",
+      notApproval: true,
+    });
     expect(packet.blockers).toEqual(["exact_seed_recipient_missing"]);
     expect(packet.safety).toMatchObject({
       localOnly: true,
@@ -135,6 +140,8 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
       subscriberMutationsPerformed: false,
       factStoreWritePerformed: false,
     });
+    expect(markdown).toContain("Human Input Needed");
+    expect(markdown).toContain("exact_seed_recipient_email_only");
     expect(markdown).toContain("none - exact seed recipient is still required");
   });
 
@@ -153,6 +160,7 @@ describe("CRM vNext MailerLite mini-launch seed-send approval packet", () => {
     expect(packet.approvalBoundary.canExecuteSendNow).toBe(false);
     expect(packet.approvalBoundary.exactApprovalPhrase).toContain("seed.test+descanso@example.com");
     expect(packet.approvalBoundary.exactApprovalPhrase).toContain("sin workflows");
+    expect(packet.inputRequest).toBeNull();
     expect(packet.seedIdentity.redactedEmail).toBe("se…@example.com");
     expect(packet.seedIdentity.exactEmail).toBe("seed.test+descanso@example.com");
     expect(packet.approvalBoundary.stillClosedEvenAfterApproval).toContain("public_or_audience_send");

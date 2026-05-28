@@ -46,6 +46,7 @@ const DEFAULT_BRUJULA_REAL_MAILERLITE_RENDER_QA = '/Users/alejandrogomez/Documen
 const DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json';
 const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
 const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_2026-05-28.json';
+const DEFAULT_BLOCKED_GATE_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -103,6 +104,7 @@ Options:
   --brujula-email-manual-ui-build-receipt <path> Brújula Email 1 manual UI build receipt JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --approval-queue <path>           Launch OS exact approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
   --approval-intake <path>          Launch OS exact approval intake JSON. Defaults to ${DEFAULT_APPROVAL_INTAKE}
+  --blocked-gate-handoff <path>     Launch OS blocked-gate handoff JSON. Defaults to ${DEFAULT_BLOCKED_GATE_HANDOFF}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>      Optional closeout validation status, e.g. passed
@@ -158,6 +160,7 @@ const parseArgs = (argv) => {
     brujulaEmailManualUiBuildReceipt: DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     approvalQueue: DEFAULT_APPROVAL_QUEUE,
     approvalIntake: DEFAULT_APPROVAL_INTAKE,
+    blockedGateHandoff: DEFAULT_BLOCKED_GATE_HANDOFF,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'not_supplied',
@@ -211,6 +214,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-email-manual-ui-build-receipt') options.brujulaEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
     else if (arg === '--approval-intake') options.approvalIntake = argv[++index];
+    else if (arg === '--blocked-gate-handoff') options.blockedGateHandoff = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -343,6 +347,7 @@ const loadSources = async (options) => {
     ['brujulaEmailManualUiBuildReceipt', options.brujulaEmailManualUiBuildReceipt, 'Brújula Email 1 manual UI draft build receipt and closed gates', 'json', true],
     ['approvalQueue', options.approvalQueue, 'single exact approval queue for current MailerLite Launch OS gates', 'json', true],
     ['approvalIntake', options.approvalIntake, 'local exact approval intake and fresh-evidence pre-execution plan', 'json', true],
+    ['blockedGateHandoff', options.blockedGateHandoff, 'current blocked gates and missing inputs before any new approval request', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
   ];
@@ -426,6 +431,7 @@ const buildRequirementChecks = ({
   brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
+  blockedGateHandoff,
   validationReceipt,
   brandTaxonomy,
   brandDictionary,
@@ -807,6 +813,29 @@ const buildRequirementChecks = ({
     && Number.isInteger(approvalQueueReadyCount)
     && approvalQueueReadyCount >= 1
     && approvalQueueOpenLiveGateCount === 0;
+  const blockedGateHandoffState = blockedGateHandoff ?? runbook?.currentState?.blockedGateHandoff ?? null;
+  const blockedGateHandoffStatus = blockedGateHandoffState?.status ?? null;
+  const blockedGateHandoffCanAskApprovalNow = blockedGateHandoffState?.executiveSummary?.canAskApprovalNow
+    ?? blockedGateHandoffState?.canAskApprovalNow
+    ?? null;
+  const blockedGateHandoffInputNeededCount = blockedGateHandoffState?.executiveSummary?.inputNeededCount
+    ?? blockedGateHandoffState?.inputNeededCount
+    ?? null;
+  const blockedGateHandoffOpenLiveGateCount = blockedGateHandoffState?.executiveSummary?.openLiveMutationGateCount
+    ?? blockedGateHandoffState?.openLiveMutationGateCount
+    ?? null;
+  const blockedGateHandoffInputIds = (blockedGateHandoffState?.inputNeededNow ?? [])
+    .map((input) => input?.id)
+    .filter(Boolean);
+  const effectiveBlockedGateInputIds = blockedGateHandoffInputIds.length > 0
+    ? blockedGateHandoffInputIds
+    : blockedGateHandoffState?.inputNeededIds ?? [];
+  const blockedGateHandoffGateIds = (blockedGateHandoffState?.blockedGates ?? [])
+    .map((gate) => gate?.id)
+    .filter(Boolean);
+  const effectiveBlockedGateIds = blockedGateHandoffGateIds.length > 0
+    ? blockedGateHandoffGateIds
+    : blockedGateHandoffState?.blockedGateIds ?? [];
   const approvalIntakeStatus = approvalIntake?.status
     ?? runbook?.currentState?.approvalIntake?.status
     ?? null;
@@ -1165,6 +1194,11 @@ const buildRequirementChecks = ({
         `approvalQueueBlockedCount=${approvalQueueBlockedCount ?? 'unknown'}`,
         `approvalQueueOpenLiveGateCount=${approvalQueueOpenLiveGateCount ?? 'unknown'}`,
         `approvalQueueNextBestHumanBoundary=${approvalQueueNextBestHumanBoundary ?? 'none'}`,
+        `blockedGateHandoffStatus=${blockedGateHandoffStatus ?? 'missing'}`,
+        `blockedGateHandoffCanAskApprovalNow=${blockedGateHandoffCanAskApprovalNow ?? 'unknown'}`,
+        `blockedGateHandoffInputNeededCount=${blockedGateHandoffInputNeededCount ?? 'unknown'}`,
+        `blockedGateHandoffInputIds=${effectiveBlockedGateInputIds.join('|') || 'none'}`,
+        `blockedGateHandoffGateIds=${effectiveBlockedGateIds.join('|') || 'none'}`,
         `approvalIntakeStatus=${approvalIntakeStatus ?? 'missing'}`,
         `approvalIntakeExecutionAllowedNow=${approvalIntakeExecutionAllowedNow ?? 'unknown'}`,
         `approvalIntakeOpenLiveGateCount=${approvalIntakeOpenLiveGateCount ?? 'unknown'}`,
@@ -1267,6 +1301,9 @@ const buildRequirementChecks = ({
         `approvalQueueOpenLiveGateCount=${approvalQueueOpenLiveGateCount ?? 'unknown'}`,
         `approvalIntakeStatus=${approvalIntakeStatus ?? 'missing'}`,
         `approvalIntakeReady=${approvalIntakeReady}`,
+        `blockedGateHandoffStatus=${blockedGateHandoffStatus ?? 'missing'}`,
+        `blockedGateHandoffCanAskApprovalNow=${blockedGateHandoffCanAskApprovalNow ?? 'unknown'}`,
+        `blockedGateHandoffInputNeededCount=${blockedGateHandoffInputNeededCount ?? 'unknown'}`,
         `trunkMapReady=${trunkMapReady}`,
         `requestBundleStatus=${requestBundleStatus ?? 'missing'}`,
         `responseWatcherStatus=${responseWatcherStatus ?? 'missing'}`,
@@ -1316,6 +1353,8 @@ const buildRequirementChecks = ({
         `approvalIntakeStatus=${approvalIntakeStatus ?? 'missing'}`,
         `approvalIntakeExecutionAllowedNow=${approvalIntakeExecutionAllowedNow ?? 'unknown'}`,
         `approvalIntakeOpenLiveGateCount=${approvalIntakeOpenLiveGateCount ?? 'unknown'}`,
+        `blockedGateHandoffOpenLiveGateCount=${blockedGateHandoffOpenLiveGateCount ?? 'unknown'}`,
+        `blockedGateHandoffCanAskApprovalNow=${blockedGateHandoffCanAskApprovalNow ?? 'unknown'}`,
       ],
       remaining: openLiveGates === 0
         ? ['Maintain exact approval gates for every live or live-adjacent action.']
@@ -1473,6 +1512,26 @@ const buildGoalAudit = ({
   const approvalQueueMove = approvalQueueReady
     ? 'Use the Launch OS approval queue as the single local map of exact approval phrases; it cannot approve or execute any operation by itself.'
     : 'Generate the Launch OS approval queue so exact approval boundaries are visible in one local surface.';
+  const blockedGateHandoffState = values.blockedGateHandoff ?? values.runbook?.currentState?.blockedGateHandoff ?? null;
+  const blockedGateHandoffStatus = blockedGateHandoffState?.status ?? null;
+  const blockedGateHandoffCanAskApprovalNow = blockedGateHandoffState?.executiveSummary?.canAskApprovalNow
+    ?? blockedGateHandoffState?.canAskApprovalNow
+    ?? null;
+  const blockedGateHandoffInputIdsFromPacket = (blockedGateHandoffState?.inputNeededNow ?? [])
+    .map((input) => input?.id)
+    .filter(Boolean);
+  const blockedGateHandoffInputIds = blockedGateHandoffInputIdsFromPacket.length > 0
+    ? blockedGateHandoffInputIdsFromPacket
+    : blockedGateHandoffState?.inputNeededIds ?? [];
+  const blockedGateHandoffGateIdsFromPacket = (blockedGateHandoffState?.blockedGates ?? [])
+    .map((gate) => gate?.id)
+    .filter(Boolean);
+  const blockedGateHandoffGateIds = blockedGateHandoffGateIdsFromPacket.length > 0
+    ? blockedGateHandoffGateIdsFromPacket
+    : blockedGateHandoffState?.blockedGateIds ?? [];
+  const blockedGateHandoffMove = blockedGateHandoffStatus === 'blocked_gate_handoff_ready_no_live_changes'
+    ? `Use the Launch OS blocked-gate handoff before asking for more approvals; current blocked gates ${blockedGateHandoffGateIds.join('|') || 'none'}, inputs needed now ${blockedGateHandoffInputIds.join('|') || 'none'}, canAskApprovalNow=${blockedGateHandoffCanAskApprovalNow}.`
+    : null;
   const approvalIntakeStatus = values.approvalIntake?.status ?? values.runbook?.currentState?.approvalIntake?.status ?? null;
   const approvalIntakeExecutionAllowedNow = values.approvalIntake?.executiveSummary?.executionAllowedNow
     ?? values.runbook?.currentState?.approvalIntake?.executionAllowedNow
@@ -1499,11 +1558,37 @@ const buildGoalAudit = ({
       : repairPacket
       ? `Manual UI draft repair packet exists but is not ready (${repairPacket.status ?? 'unknown'}); do not repair or ask seed-send approval until it is green.`
       : 'Generate the manual UI draft repair packet if real MailerLite render QA is blocked by exact-copy mismatch.';
+  const seedTestQaPacket = values.miniLaunchSeedTestQaPacket ?? null;
+  const seedTestQaStatus = seedTestQaPacket?.status
+    ?? values.runbook?.currentState?.miniLaunch?.seedTestQaPacketStatus
+    ?? null;
+  const seedTestQaBlockers = seedTestQaPacket?.readiness?.machineBlockersBeforeSeedSendApprovalRequest
+    ?? values.runbook?.currentState?.miniLaunch?.seedTestQaBlockersBeforeApprovalRequest
+    ?? [];
+  const seedRecipientMissingOnly = seedTestQaStatus === 'seed_test_qa_packet_updated_after_manual_ui_build_no_live_changes'
+    && seedTestQaBlockers.length === 1
+    && seedTestQaBlockers.includes('exact_seed_recipient_missing')
+    && (seedTestQaPacket?.readiness?.realMailerLiteRenderQaReady
+      ?? values.runbook?.currentState?.miniLaunch?.seedTestQaRealMailerLiteRenderQaReady
+      ?? false) === true
+    && (seedTestQaPacket?.readiness?.targetGroupsExist
+      ?? values.runbook?.currentState?.miniLaunch?.seedTestQaTargetGroupsExist
+      ?? false) === true
+    && (seedTestQaPacket?.readiness?.canAskSeedSendApprovalNow
+      ?? values.runbook?.currentState?.miniLaunch?.seedTestQaCanAskApprovalNow
+      ?? false) === false;
+  const seedRecipientMove = seedRecipientMissingOnly
+    ? 'Seed/test preflight is green except for the exact seed recipient: collect only the private seed email, regenerate the seed-send approval packet, and still do not send until fresh QA plus exact send approval exist.'
+    : seedTestQaStatus
+      ? `Use the seed/test QA packet as the seed-send boundary; current status ${seedTestQaStatus}, blockers ${seedTestQaBlockers.join('|') || 'none'}.`
+      : 'Generate the seed/test QA packet before any seed-send approval request.';
   const localEmailAssetPlanMove = localEmailAssetPlanReady
     ? manualUiBuildClosed
       ? repairPacketReady
         ? `The four mini-launch email assets are represented as MailerLite UI drafts, but real QA found a repairable mismatch. ${repairPacketMove}`
-        : 'The four mini-launch email assets are now represented as MailerLite UI drafts via the manual build receipt; use the seed/test QA packet as the preflight source and keep API asset build reference-only on Growing Business.'
+        : seedRecipientMissingOnly
+          ? `The four mini-launch email assets are now represented as MailerLite UI drafts via the manual build receipt, real MailerLite QA is green and no UI repair is pending. ${seedRecipientMove}`
+          : 'The four mini-launch email assets are now represented as MailerLite UI drafts via the manual build receipt; use the seed/test QA packet as the preflight source and keep API asset build reference-only on Growing Business.'
       : emailBuilderPayloadManifestReady
       ? emailRenderQaReady
         ? 'The email builder payload manifest and local render QA are green and represented in the approval queue as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
@@ -1527,12 +1612,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -1541,6 +1626,7 @@ const buildGoalAudit = ({
         'Treat the mini-launch empty-group creation boundary as closed: the two target groups already exist and no --execute rerun is needed.',
         approvalQueueMove,
         approvalIntakeMove,
+        blockedGateHandoffMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
         crmWriteApprovalMove,
@@ -1552,6 +1638,7 @@ const buildGoalAudit = ({
         'Do not run --execute unless Alejandro gives the exact approval phrase for the two named empty groups.',
         approvalQueueMove,
         approvalIntakeMove,
+        blockedGateHandoffMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
         crmWriteApprovalMove,
@@ -1562,6 +1649,7 @@ const buildGoalAudit = ({
         'Run the mini-launch empty-group create runner in dry-run mode only; it is not execution approval and still requires Alejandro exact phrase before --execute.',
         approvalQueueMove,
         approvalIntakeMove,
+        blockedGateHandoffMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
         crmWriteApprovalMove,
@@ -1570,6 +1658,7 @@ const buildGoalAudit = ({
       'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
       approvalQueueMove,
       approvalIntakeMove,
+      blockedGateHandoffMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
@@ -1596,6 +1685,10 @@ const buildGoalAudit = ({
       nextBestMove,
       liveApprovalNeededNow: false,
       liveActionAllowedNow: false,
+      blockedGateHandoffStatus,
+      blockedGateHandoffCanAskApprovalNow,
+      blockedGateHandoffInputIds,
+      blockedGateHandoffGateIds,
     },
     requirements,
     nextMoves: uniqueMoves([
@@ -1609,8 +1702,10 @@ const buildGoalAudit = ({
         ? 'Use the Brújula Email 1 manual UI build receipt as current draft evidence; builder edit/create is closed, and test send/public use still need separate exact approval.'
         : 'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       approvalQueueMove,
+      blockedGateHandoffMove,
       localEmailAssetPlanMove,
       repairPacketMove,
+      seedRecipientMove,
       crmWriteApprovalMove,
       emptyGroupCreateDryRunNoCreateNeeded
         ? 'Do not rerun mini-launch empty-group creation; the two target groups already exist and that boundary is closed.'

@@ -236,6 +236,30 @@ const approvalIntake = {
   },
 };
 
+const blockedGateHandoff = {
+  status: "blocked_gate_handoff_ready_no_live_changes",
+  executiveSummary: {
+    readyApprovalCount: 0,
+    blockedGateCount: 2,
+    canAskApprovalNow: false,
+    inputNeededCount: 5,
+    openLiveMutationGateCount: 0,
+    safeToIntakeOneMoreNoLiveIdea: true,
+    nextBestHumanAction: "supply_missing_inputs_before_any_new_approval_phrase",
+  },
+  blockedGates: [
+    { id: "mini_launch_seed_send" },
+    { id: "crm_signal_writes" },
+  ],
+  inputNeededNow: [
+    { id: "exact_seed_recipient", gateId: "mini_launch_seed_send" },
+    { id: "real_observed_events_file", gateId: "crm_signal_writes" },
+    { id: "exact_people", gateId: "crm_signal_writes" },
+    { id: "writable_event_screen", gateId: "crm_signal_writes" },
+    { id: "fact_store_market_review", gateId: "crm_signal_writes" },
+  ],
+};
+
 const miniLaunchEmptyGroupCreateDryRun = {
   status: "dry_run_ready_for_exact_approval",
   mode: "dry_run",
@@ -660,6 +684,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-department-review-finalize-pending": "node scripts/finalize-pending.mjs",
     "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/backlog.mjs",
     "crm:vnext:mailerlite-launch-os-approval-queue": "node scripts/approval-queue.mjs",
+    "crm:vnext:mailerlite-launch-os-blocked-gate-handoff": "node scripts/blocked-gate-handoff.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
     "crm:vnext:mailerlite-onboarding-v1-audit": "node scripts/v1.mjs",
@@ -712,6 +737,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(parsed.approvalQueue).toContain("mailerlite_launch_os_approval_queue_2026-05-28.json");
+    expect(parsed.blockedGateHandoff).toContain("mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
@@ -771,6 +797,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaEmailStyleCorrection,
       brujulaEmailRenderQa,
       approvalQueue,
+      blockedGateHandoff,
       validationReceipt,
       responseWorkspace,
       finalizationPreflight,
@@ -906,6 +933,22 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.liveGates).toMatchObject({
       openLiveGateCount: 0,
       liveApprovalNeededNow: false,
+    });
+    expect(state.blockedGateHandoff).toMatchObject({
+      status: "blocked_gate_handoff_ready_no_live_changes",
+      readyApprovalCount: 0,
+      blockedGateCount: 2,
+      canAskApprovalNow: false,
+      inputNeededCount: 5,
+      inputNeededIds: [
+        "exact_seed_recipient",
+        "real_observed_events_file",
+        "exact_people",
+        "writable_event_screen",
+        "fact_store_market_review",
+      ],
+      blockedGateIds: ["mini_launch_seed_send", "crm_signal_writes"],
+      openLiveMutationGateCount: 0,
     });
   });
 
@@ -1134,6 +1177,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaEmailRenderQa,
       approvalQueue,
       approvalIntake,
+      blockedGateHandoff,
       validationReceipt,
       packageJson,
       sourceDigests,
@@ -1148,6 +1192,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(runbook.immediateNextMoves).toEqual(buildImmediateNextMoves({ currentState: runbook.currentState }));
     expect(movesText).toContain("Launch OS approval queue");
     expect(movesText).toContain("Launch OS approval intake");
+    expect(movesText).toContain("Launch OS blocked-gate handoff");
+    expect(movesText).toContain("exact_seed_recipient");
     expect(movesText).toContain("createdCount remains 0");
     expect(movesText).not.toContain("Run no-live department reviews");
     expect(movesText).not.toContain("Create the response workspace");
@@ -1467,6 +1513,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "single exact approval queue for current MailerLite Launch OS gates",
       },
       {
+        path: "/tmp/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "current blocked gates and missing inputs before any new approval request",
+      },
+      {
         path: "/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json",
         present: true,
         chars: 2000,
@@ -1499,6 +1551,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailRenderQa).toBe("/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(reportMap.approvalQueue).toBe("/tmp/mailerlite_launch_os_approval_queue_2026-05-28.json");
+    expect(reportMap.blockedGateHandoff).toBe("/tmp/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
     expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json");
   });
 
@@ -1528,6 +1581,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       brujulaEmailStyleCorrection,
       brujulaEmailRenderQa,
       approvalQueue,
+      blockedGateHandoff,
       validationReceipt,
       packageJson,
       sourceDigests,
@@ -1560,6 +1614,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Response watcher missing final count: 3");
     expect(markdown).toContain("Response watcher final file present count: 0");
     expect(markdown).toContain("Approval queue ready requests: 5");
+    expect(markdown).toContain("Blocked-gate handoff: blocked_gate_handoff_ready_no_live_changes");
+    expect(markdown).toContain("Blocked-gate inputs needed: exact_seed_recipient");
     expect(markdown).toContain("Validation receipt: mailerlite_launch_os_validation_receipt_ready_no_live_changes");
     expect(markdown).toContain("Validation tests: 269");
     expect(markdown).toContain("Brújula email style QA: brujula_email_style_qa_yellow_no_live_changes");

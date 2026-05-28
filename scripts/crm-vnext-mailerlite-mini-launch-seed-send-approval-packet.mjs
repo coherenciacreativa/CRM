@@ -179,6 +179,29 @@ const approvalPhraseFor = ({ seedEmail, seedQa }) => {
   return `Apruebo enviar únicamente test emails desde los 4 borradores del mini-lanzamiento ${launchName} al seed recipient exacto ${seedEmail}, después de re-scan fresco y QA real verde en MailerLite, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store.`;
 };
 
+const seedRecipientInputRequest = ({ waitingOnlyForSeed, seedQa }) => {
+  if (!waitingOnlyForSeed) return null;
+  const launchName = cleanString(seedQa?.launch?.resourceName) ?? 'Inteligencia para descansar';
+  return {
+    status: 'waiting_for_exact_seed_recipient_only',
+    currentHumanInputNeeded: 'exact_seed_recipient_email_only',
+    copyPastePrompt: `Indica el seed recipient exacto para preparar el test-send del mini-lanzamiento ${launchName}. Esto NO aprueba enviar nada; solo permite regenerar el packet privado de aprobación.`,
+    notApproval: true,
+    nextLocalCommandAfterSeedRecipient: 'npm run crm:vnext:mailerlite-mini-launch-seed-send-approval-packet -- --seed-email-file <private_seed_email_file> --out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.md',
+    privacyHandling: [
+      'Prefer a private local seed-email file for the exact address.',
+      'Do not paste the exact email into public/reference reports.',
+      'Use redacted email and sha256 only in shared summaries.',
+    ],
+    stillRequiredAfterSeedRecipient: [
+      'fresh real MailerLite render QA',
+      'fresh draft/outbox/no-recipient safety scan',
+      'exact human approval phrase generated with that seed recipient',
+      'separate send receipt after any approved seed test',
+    ],
+  };
+};
+
 const buildSeedSendApprovalPacket = ({
   seedTestQaPacket,
   realMailerLiteRenderQa,
@@ -241,6 +264,7 @@ const buildSeedSendApprovalPacket = ({
       exactEmail: normalizedSeedEmail,
       handlingRule: 'Private execution packet: do not paste or forward publicly; reports may use redactedEmail only.',
     },
+    inputRequest: seedRecipientInputRequest({ waitingOnlyForSeed, seedQa: seedTestQaPacket }),
     approvalBoundary: {
       canAskAlejandroForApproval: ready,
       packetIsApprovalByItself: false,
@@ -300,6 +324,16 @@ const renderMarkdown = (packet) => [
   `Seed recipient supplied: ${packet.seedIdentity.supplied}`,
   `Seed recipient: ${packet.seedIdentity.redactedEmail ?? 'missing'}`,
   `Open live mutation gates: ${packet.executiveSummary.openLiveMutationGateCount}`,
+  '',
+  '## Human Input Needed',
+  '',
+  packet.inputRequest
+    ? [
+      `- Needed: ${packet.inputRequest.currentHumanInputNeeded}`,
+      `- Prompt: ${packet.inputRequest.copyPastePrompt}`,
+      `- This is approval: ${packet.inputRequest.notApproval ? 'false' : 'unknown'}`,
+    ].join('\n')
+    : '- none',
   '',
   '## Exact Approval Phrase',
   '',
