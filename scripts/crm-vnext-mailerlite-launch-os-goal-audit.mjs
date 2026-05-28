@@ -53,6 +53,7 @@ const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/M
 const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
 const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
 const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -118,6 +119,7 @@ Options:
   --private-input-template-pack <path> Launch OS inert private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
   --post-input-orchestrator <path> Launch OS post-input local orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
   --taxonomy-consolidation-audit <path> Launch OS taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
+  --taxonomy-refresh-handoff <path> Launch OS Brand/CRM taxonomy refresh handoff JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_HANDOFF}
   --continuation-guard <path>       Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -181,6 +183,7 @@ const parseArgs = (argv) => {
     privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
     postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
     taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
+    taxonomyRefreshHandoff: DEFAULT_TAXONOMY_REFRESH_HANDOFF,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -242,6 +245,7 @@ const parseArgs = (argv) => {
     else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
     else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
     else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
+    else if (arg === '--taxonomy-refresh-handoff') options.taxonomyRefreshHandoff = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -382,6 +386,7 @@ const loadSources = async (options) => {
     ['privateInputTemplatePack', options.privateInputTemplatePack, 'Launch OS inert private-input template pack with example files ignored by active intake', 'json', true],
     ['postInputOrchestrator', options.postInputOrchestrator, 'Launch OS post-input orchestrator with local packet regeneration plan and no execution', 'json', true],
     ['taxonomyConsolidationAudit', options.taxonomyConsolidationAudit, 'Launch OS taxonomy consolidation audit across Brand dictionary, CRM manifest and approved empty-group receipts', 'json', true],
+    ['taxonomyRefreshHandoff', options.taxonomyRefreshHandoff, 'Launch OS Brand/CRM taxonomy refresh handoff prepared from consolidation drift', 'json', true],
     ['continuationGuard', options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
@@ -473,6 +478,7 @@ const buildRequirementChecks = ({
   privateInputTemplatePack,
   postInputOrchestrator,
   taxonomyConsolidationAudit,
+  taxonomyRefreshHandoff,
   continuationGuard,
   validationReceipt,
   brandTaxonomy,
@@ -1049,6 +1055,22 @@ const buildRequirementChecks = ({
     && taxonomyConsolidationAllBrandPromoted === true
     && taxonomyConsolidationAllCrmLiveIds === true
     && taxonomyConsolidationOpenLiveGateCount === 0;
+  const taxonomyRefreshHandoffState = taxonomyRefreshHandoff
+    ?? runbook?.currentState?.taxonomyRefreshHandoff
+    ?? null;
+  const taxonomyRefreshHandoffStatus = taxonomyRefreshHandoffState?.status ?? null;
+  const taxonomyRefreshBrandPromotionDecisionCount = taxonomyRefreshHandoffState?.executiveSummary?.brandPromotionDecisionCount
+    ?? taxonomyRefreshHandoffState?.brandPromotionDecisionCount
+    ?? null;
+  const taxonomyRefreshCrmManifestPatchCount = taxonomyRefreshHandoffState?.executiveSummary?.crmManifestPatchCount
+    ?? taxonomyRefreshHandoffState?.crmManifestPatchCount
+    ?? null;
+  const taxonomyRefreshCanApplyCrmManifestPatchNow = taxonomyRefreshHandoffState?.executiveSummary?.canApplyCrmManifestPatchNow
+    ?? taxonomyRefreshHandoffState?.canApplyCrmManifestPatchNow
+    ?? null;
+  const taxonomyRefreshOpenLiveGateCount = taxonomyRefreshHandoffState?.executiveSummary?.openLiveMutationGateCount
+    ?? taxonomyRefreshHandoffState?.openLiveMutationGateCount
+    ?? null;
   const continuationGuardState = continuationGuard ?? runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardClosedBoundaryCount = continuationGuardState?.executiveSummary?.closedBoundaryCount
@@ -1327,6 +1349,11 @@ const buildRequirementChecks = ({
         `taxonomyConsolidationAllCrmLiveIds=${taxonomyConsolidationAllCrmLiveIds ?? 'unknown'}`,
         `taxonomyConsolidationCanAskApprovalNow=${taxonomyConsolidationCanAskApprovalNow ?? 'unknown'}`,
         `taxonomyConsolidationOpenLiveGateCount=${taxonomyConsolidationOpenLiveGateCount ?? 'unknown'}`,
+        `taxonomyRefreshHandoffStatus=${taxonomyRefreshHandoffStatus ?? 'missing'}`,
+        `taxonomyRefreshBrandPromotionDecisionCount=${taxonomyRefreshBrandPromotionDecisionCount ?? 'unknown'}`,
+        `taxonomyRefreshCrmManifestPatchCount=${taxonomyRefreshCrmManifestPatchCount ?? 'unknown'}`,
+        `taxonomyRefreshCanApplyCrmManifestPatchNow=${taxonomyRefreshCanApplyCrmManifestPatchNow ?? 'unknown'}`,
+        `taxonomyRefreshOpenLiveGateCount=${taxonomyRefreshOpenLiveGateCount ?? 'unknown'}`,
         `brandAcceptedLaunchGroupCandidates=${brandAcceptedLaunchGroupCandidates}`,
         `brandCandidateDecisionClosed=${brandCandidateDecisionClosed}`,
         `groupDryRunReadyForFutureEmptyGroupDecision=${launchGroupDryRunReady}`,
@@ -1338,6 +1365,7 @@ const buildRequirementChecks = ({
       remaining: taxonomyConsolidationReady && !taxonomyConsolidationComplete
         ? [
           `Live execution receipts are explicit: ${taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'} groups proven; Brand promotions needed ${taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}; CRM manifest refresh needed ${taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}.`,
+          `Taxonomy refresh handoff prepared ${taxonomyRefreshBrandPromotionDecisionCount ?? 'unknown'} Brand decisions and ${taxonomyRefreshCrmManifestPatchCount ?? 'unknown'} CRM manifest patch rows; do not apply them until Brand/CRM resolve the semantic cache boundary.`,
           'Refresh Brand dictionary and CRM manifest locally from the approved execution receipts before calling taxonomy complete; no live action or UI work is open.',
         ]
         : taxonomyConsolidationComplete
@@ -1995,6 +2023,22 @@ const buildGoalAudit = ({
     : taxonomyConsolidationAuditStatus
       ? `Use the Launch OS taxonomy consolidation audit before claiming taxonomy is complete; live groups=${taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}, Brand promotions needed=${taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}, CRM manifest refresh needed=${taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}, canAskApprovalNow=${taxonomyConsolidationCanAskApprovalNow}.`
       : 'Generate the Launch OS taxonomy consolidation audit so approved live group receipts, Brand dictionary and CRM manifest stay reconciled without reopening old UI work.';
+  const taxonomyRefreshHandoffState = values.taxonomyRefreshHandoff ?? values.runbook?.currentState?.taxonomyRefreshHandoff ?? null;
+  const taxonomyRefreshHandoffStatus = taxonomyRefreshHandoffState?.status ?? null;
+  const taxonomyRefreshBrandPromotionDecisionCount = taxonomyRefreshHandoffState?.executiveSummary?.brandPromotionDecisionCount
+    ?? taxonomyRefreshHandoffState?.brandPromotionDecisionCount
+    ?? null;
+  const taxonomyRefreshCrmManifestPatchCount = taxonomyRefreshHandoffState?.executiveSummary?.crmManifestPatchCount
+    ?? taxonomyRefreshHandoffState?.crmManifestPatchCount
+    ?? null;
+  const taxonomyRefreshCanApplyCrmManifestPatchNow = taxonomyRefreshHandoffState?.executiveSummary?.canApplyCrmManifestPatchNow
+    ?? taxonomyRefreshHandoffState?.canApplyCrmManifestPatchNow
+    ?? null;
+  const taxonomyRefreshHandoffMove = taxonomyRefreshHandoffStatus === 'taxonomy_refresh_handoff_ready_no_live_changes'
+    ? `Use the Launch OS taxonomy refresh handoff as the Brand/CRM boundary; Brand decisions=${taxonomyRefreshBrandPromotionDecisionCount ?? 'unknown'}, CRM manifest patch rows=${taxonomyRefreshCrmManifestPatchCount ?? 'unknown'}, canApplyCrmManifestPatchNow=${taxonomyRefreshCanApplyCrmManifestPatchNow}.`
+    : taxonomyRefreshHandoffStatus
+      ? `Taxonomy refresh handoff current status=${taxonomyRefreshHandoffStatus}; no live action is implied.`
+      : 'Generate the Launch OS taxonomy refresh handoff so Brand and CRM can resolve taxonomy drift without live changes.';
   const continuationGuardState = values.continuationGuard ?? values.runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardOldUiWorkClosed = continuationGuardState?.executiveSummary?.oldUiWorkClosed
@@ -2098,12 +2142,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -2119,6 +2163,7 @@ const buildGoalAudit = ({
         privateInputTemplatePackMove,
         postInputOrchestratorMove,
         taxonomyConsolidationMove,
+        taxonomyRefreshHandoffMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2138,6 +2183,7 @@ const buildGoalAudit = ({
         privateInputTemplatePackMove,
         postInputOrchestratorMove,
         taxonomyConsolidationMove,
+        taxonomyRefreshHandoffMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2156,6 +2202,7 @@ const buildGoalAudit = ({
         privateInputTemplatePackMove,
         postInputOrchestratorMove,
         taxonomyConsolidationMove,
+        taxonomyRefreshHandoffMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2172,6 +2219,7 @@ const buildGoalAudit = ({
       privateInputTemplatePackMove,
       postInputOrchestratorMove,
       taxonomyConsolidationMove,
+      taxonomyRefreshHandoffMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
@@ -2232,6 +2280,10 @@ const buildGoalAudit = ({
       taxonomyConsolidationBrandPromotionNeededCount,
       taxonomyConsolidationCrmManifestRefreshNeededCount,
       taxonomyConsolidationCanAskApprovalNow,
+      taxonomyRefreshHandoffStatus,
+      taxonomyRefreshBrandPromotionDecisionCount,
+      taxonomyRefreshCrmManifestPatchCount,
+      taxonomyRefreshCanApplyCrmManifestPatchNow,
       continuationGuardStatus,
       continuationGuardOldUiWorkClosed,
       continuationGuardClosedBoundaryCount,
@@ -2315,6 +2367,10 @@ const renderMarkdown = (audit) => {
     `- Taxonomy live evidence groups: ${audit.executiveSummary.taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}`,
     `- Taxonomy Brand promotions needed: ${audit.executiveSummary.taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}`,
     `- Taxonomy CRM manifest refresh needed: ${audit.executiveSummary.taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}`,
+    `- Taxonomy refresh handoff: ${audit.executiveSummary.taxonomyRefreshHandoffStatus ?? 'missing'}`,
+    `- Taxonomy refresh Brand decisions: ${audit.executiveSummary.taxonomyRefreshBrandPromotionDecisionCount ?? 'unknown'}`,
+    `- Taxonomy refresh CRM patch rows: ${audit.executiveSummary.taxonomyRefreshCrmManifestPatchCount ?? 'unknown'}`,
+    `- Taxonomy refresh can apply CRM patch now: ${audit.executiveSummary.taxonomyRefreshCanApplyCrmManifestPatchNow ?? 'unknown'}`,
     `- Next best move: ${audit.executiveSummary.nextBestMove}`,
     '',
     '## Requirement Audit',

@@ -51,6 +51,12 @@ const runbook = {
       crmManifestRefreshNeededCount: 14,
       canAskApprovalNow: false,
     },
+    taxonomyRefreshHandoff: {
+      status: "taxonomy_refresh_handoff_ready_no_live_changes",
+      brandPromotionDecisionCount: 14,
+      crmManifestPatchCount: 14,
+      canApplyCrmManifestPatchNow: false,
+    },
   },
 };
 
@@ -130,6 +136,15 @@ const taxonomyConsolidationAudit = {
   },
 };
 
+const taxonomyRefreshHandoff = {
+  status: "taxonomy_refresh_handoff_ready_no_live_changes",
+  executiveSummary: {
+    brandPromotionDecisionCount: 14,
+    crmManifestPatchCount: 14,
+    canApplyCrmManifestPatchNow: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -142,6 +157,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-private-input-template-pack": "node scripts/private-input-template-pack.mjs",
     "crm:vnext:mailerlite-launch-os-post-input-orchestrator": "node scripts/post-input-orchestrator.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit": "node scripts/taxonomy-consolidation-audit.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff": "node scripts/taxonomy-refresh-handoff.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -206,6 +222,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(parsed.privateInputTemplatePack).toContain("mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
     expect(parsed.postInputOrchestrator).toContain("mailerlite_launch_os_post_input_orchestrator_2026-05-28.json");
     expect(parsed.taxonomyConsolidationAudit).toContain("mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
+    expect(parsed.taxonomyRefreshHandoff).toContain("mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);
@@ -223,6 +240,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       privateInputTemplatePack,
       postInputOrchestrator,
       taxonomyConsolidationAudit,
+      taxonomyRefreshHandoff,
       onboardingTrunkMap,
       packageJson,
       sourceDigests,
@@ -262,6 +280,10 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.evidence.taxonomyConsolidationBrandPromotionNeededCount).toBe(14);
     expect(receipt.evidence.taxonomyConsolidationCrmManifestRefreshNeededCount).toBe(14);
     expect(receipt.evidence.taxonomyConsolidationCanAskApprovalNow).toBe(false);
+    expect(receipt.evidence.taxonomyRefreshHandoffStatus).toBe("taxonomy_refresh_handoff_ready_no_live_changes");
+    expect(receipt.evidence.taxonomyRefreshBrandPromotionDecisionCount).toBe(14);
+    expect(receipt.evidence.taxonomyRefreshCrmManifestPatchCount).toBe(14);
+    expect(receipt.evidence.taxonomyRefreshCanApplyCrmManifestPatchNow).toBe(false);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,

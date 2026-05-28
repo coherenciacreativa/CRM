@@ -14,6 +14,7 @@ const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/M
 const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
 const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
 const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -28,6 +29,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-private-input-template-pack.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-post-input-orchestrator.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-consolidation-audit.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-handoff.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
@@ -63,6 +65,7 @@ Options:
   --private-input-template-pack <path> Private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
   --post-input-orchestrator <path> Post-input orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
   --taxonomy-consolidation-audit <path> Taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
+  --taxonomy-refresh-handoff <path> Taxonomy refresh handoff JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_HANDOFF}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
@@ -96,6 +99,7 @@ const parseArgs = (argv) => {
     privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
     postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
     taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
+    taxonomyRefreshHandoff: DEFAULT_TAXONOMY_REFRESH_HANDOFF,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
@@ -119,6 +123,7 @@ const parseArgs = (argv) => {
     else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
     else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
     else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
+    else if (arg === '--taxonomy-refresh-handoff') options.taxonomyRefreshHandoff = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -199,6 +204,7 @@ const buildValidationReceipt = ({
   privateInputTemplatePack = null,
   postInputOrchestrator = null,
   taxonomyConsolidationAudit = null,
+  taxonomyRefreshHandoff = null,
   onboardingTrunkMap,
   packageJson,
   sourceDigests = [],
@@ -229,6 +235,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-launch-os-private-input-template-pack',
     'crm:vnext:mailerlite-launch-os-post-input-orchestrator',
     'crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit',
+    'crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff',
     'crm:vnext:mailerlite-launch-os-continuation-guard',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
@@ -366,6 +373,18 @@ const buildValidationReceipt = ({
       taxonomyConsolidationCanAskApprovalNow: taxonomyConsolidationAudit?.executiveSummary?.canAskApprovalNow
         ?? runbook?.currentState?.taxonomyConsolidationAudit?.canAskApprovalNow
         ?? null,
+      taxonomyRefreshHandoffStatus: taxonomyRefreshHandoff?.status
+        ?? runbook?.currentState?.taxonomyRefreshHandoff?.status
+        ?? null,
+      taxonomyRefreshBrandPromotionDecisionCount: taxonomyRefreshHandoff?.executiveSummary?.brandPromotionDecisionCount
+        ?? runbook?.currentState?.taxonomyRefreshHandoff?.brandPromotionDecisionCount
+        ?? null,
+      taxonomyRefreshCrmManifestPatchCount: taxonomyRefreshHandoff?.executiveSummary?.crmManifestPatchCount
+        ?? runbook?.currentState?.taxonomyRefreshHandoff?.crmManifestPatchCount
+        ?? null,
+      taxonomyRefreshCanApplyCrmManifestPatchNow: taxonomyRefreshHandoff?.executiveSummary?.canApplyCrmManifestPatchNow
+        ?? runbook?.currentState?.taxonomyRefreshHandoff?.canApplyCrmManifestPatchNow
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -390,6 +409,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     privateInputTemplatePack,
     postInputOrchestrator,
     taxonomyConsolidationAudit,
+    taxonomyRefreshHandoff,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -402,6 +422,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     readJson(options.privateInputTemplatePack),
     readJson(options.postInputOrchestrator),
     readJson(options.taxonomyConsolidationAudit),
+    readJson(options.taxonomyRefreshHandoff),
     readJson(options.onboardingTrunkMap),
     readJson(options.packageJson),
     Promise.all([
@@ -413,6 +434,7 @@ const buildValidationReceiptFromFiles = async (options) => {
       digestFor(options.privateInputTemplatePack, 'inert private-input template pack ignored by active intake'),
       digestFor(options.postInputOrchestrator, 'post-input orchestrator local packet regeneration plan and no execution'),
       digestFor(options.taxonomyConsolidationAudit, 'taxonomy consolidation audit across approved group receipts, Brand dictionary and CRM manifest'),
+      digestFor(options.taxonomyRefreshHandoff, 'taxonomy refresh handoff for Brand and CRM semantic/cache decisions'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
@@ -427,6 +449,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     privateInputTemplatePack,
     postInputOrchestrator,
     taxonomyConsolidationAudit,
+    taxonomyRefreshHandoff,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -476,6 +499,10 @@ const renderMarkdown = (receipt) => {
     `- Taxonomy live evidence groups: ${receipt.evidence.taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}`,
     `- Taxonomy Brand promotions needed: ${receipt.evidence.taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}`,
     `- Taxonomy CRM manifest refresh needed: ${receipt.evidence.taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}`,
+    `- Taxonomy refresh handoff: ${receipt.evidence.taxonomyRefreshHandoffStatus ?? 'missing'}`,
+    `- Taxonomy refresh Brand decisions: ${receipt.evidence.taxonomyRefreshBrandPromotionDecisionCount ?? 'unknown'}`,
+    `- Taxonomy refresh CRM patch rows: ${receipt.evidence.taxonomyRefreshCrmManifestPatchCount ?? 'unknown'}`,
+    `- Taxonomy refresh can apply CRM patch now: ${receipt.evidence.taxonomyRefreshCanApplyCrmManifestPatchNow ?? 'unknown'}`,
     '',
     '## Commands',
     '',

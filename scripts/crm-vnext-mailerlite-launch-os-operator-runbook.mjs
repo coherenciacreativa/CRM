@@ -54,6 +54,7 @@ const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/M
 const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
 const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
 const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -112,6 +113,7 @@ Options:
   --private-input-template-pack <path> Launch OS inert private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
   --post-input-orchestrator <path> Launch OS post-input local orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
   --taxonomy-consolidation-audit <path> Launch OS taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
+  --taxonomy-refresh-handoff <path> Launch OS Brand/CRM taxonomy refresh handoff JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_HANDOFF}
   --continuation-guard <path>        Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -177,6 +179,7 @@ const parseArgs = (argv) => {
     privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
     postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
     taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
+    taxonomyRefreshHandoff: DEFAULT_TAXONOMY_REFRESH_HANDOFF,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -238,6 +241,7 @@ const parseArgs = (argv) => {
     else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
     else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
     else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
+    else if (arg === '--taxonomy-refresh-handoff') options.taxonomyRefreshHandoff = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -312,6 +316,7 @@ const loadSourceDigests = async (options) => {
     [options.privateInputTemplatePack, 'Launch OS inert private-input template pack with example files ignored by active intake', true],
     [options.postInputOrchestrator, 'Launch OS post-input orchestrator with local packet regeneration plan and no execution', true],
     [options.taxonomyConsolidationAudit, 'Launch OS taxonomy consolidation audit across Brand dictionary, CRM manifest and approved empty-group receipts', true],
+    [options.taxonomyRefreshHandoff, 'Launch OS Brand/CRM taxonomy refresh handoff prepared from consolidation drift', true],
     [options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
@@ -485,6 +490,7 @@ const buildCurrentState = ({
   privateInputTemplatePack,
   postInputOrchestrator,
   taxonomyConsolidationAudit,
+  taxonomyRefreshHandoff,
   continuationGuard,
   validationReceipt,
 }) => {
@@ -1031,6 +1037,17 @@ const buildCurrentState = ({
       openLiveMutationGateCount: taxonomyConsolidationAudit?.executiveSummary?.openLiveMutationGateCount ?? null,
       nextSafeAction: taxonomyConsolidationAudit?.executiveSummary?.nextSafeAction ?? null,
     },
+    taxonomyRefreshHandoff: {
+      status: taxonomyRefreshHandoff?.status ?? null,
+      brandPromotionDecisionCount: taxonomyRefreshHandoff?.executiveSummary?.brandPromotionDecisionCount ?? null,
+      crmManifestPatchCount: taxonomyRefreshHandoff?.executiveSummary?.crmManifestPatchCount ?? null,
+      handoffItemCount: taxonomyRefreshHandoff?.executiveSummary?.handoffItemCount ?? null,
+      canAskApprovalNow: taxonomyRefreshHandoff?.executiveSummary?.canAskApprovalNow ?? null,
+      canApplyBrandDictionaryPatchNow: taxonomyRefreshHandoff?.executiveSummary?.canApplyBrandDictionaryPatchNow ?? null,
+      canApplyCrmManifestPatchNow: taxonomyRefreshHandoff?.executiveSummary?.canApplyCrmManifestPatchNow ?? null,
+      openLiveMutationGateCount: taxonomyRefreshHandoff?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextSafeAction: taxonomyRefreshHandoff?.executiveSummary?.nextSafeAction ?? null,
+    },
     continuationGuard: {
       status: continuationGuard?.status ?? null,
       allTrackedBoundariesClosed: continuationGuard?.executiveSummary?.allTrackedBoundariesClosed ?? null,
@@ -1108,6 +1125,7 @@ const buildReportMap = (sourceDigests) => {
     privateInputTemplatePack: findPath('mailerlite_launch_os_private_input_template_pack_2026-05-28.json'),
     postInputOrchestrator: findPath('mailerlite_launch_os_post_input_orchestrator_2026-05-28.json'),
     taxonomyConsolidationAudit: findPath('mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json'),
+    taxonomyRefreshHandoff: findPath('mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json'),
     continuationGuard: findPath('mailerlite_launch_os_continuation_guard_2026-05-28.json'),
     validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-28.json'),
     packageJson: findPath('package.json'),
@@ -1441,6 +1459,15 @@ const buildTaxonomyConsolidationMove = (currentState) => {
   return `Use the Launch OS taxonomy consolidation audit before claiming taxonomy is complete; live groups ${audit.liveEvidenceGroupCount ?? 'unknown'}, Brand promotions needed ${audit.brandPromotionNeededCount ?? 'unknown'}, CRM manifest refresh needed ${audit.crmManifestRefreshNeededCount ?? 'unknown'}, no live gates open.`;
 };
 
+const buildTaxonomyRefreshHandoffMove = (currentState) => {
+  const handoff = currentState?.taxonomyRefreshHandoff;
+  if (!handoff?.status) return 'Generate the Launch OS taxonomy refresh handoff so Brand and CRM can resolve proven live group drift without reopening UI or live MailerLite work.';
+  if (handoff.status === 'taxonomy_refresh_handoff_ready_no_live_changes') {
+    return `Use the Launch OS taxonomy refresh handoff for Brand/CRM only; Brand decisions ${handoff.brandPromotionDecisionCount ?? 'unknown'}, CRM manifest patch rows ${handoff.crmManifestPatchCount ?? 'unknown'}, can ask approval now: ${handoff.canAskApprovalNow}, can apply CRM manifest patch now: ${handoff.canApplyCrmManifestPatchNow}.`;
+  }
+  return `Taxonomy refresh handoff is not needed right now; current status: ${handoff.status}.`;
+};
+
 const buildContinuationGuardMove = (currentState) => {
   const guard = currentState?.continuationGuard;
   if (!guard?.status) return null;
@@ -1464,6 +1491,7 @@ const buildApprovalPhaseMoves = (currentState) => {
     buildPrivateInputTemplatePackMove(currentState),
     buildPostInputOrchestratorMove(currentState),
     buildTaxonomyConsolidationMove(currentState),
+    buildTaxonomyRefreshHandoffMove(currentState),
     buildContinuationGuardMove(currentState),
     miniLaunchEmptyGroupBoundaryClosed
     ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
@@ -1531,6 +1559,7 @@ const buildSharedImmediateMoves = (currentState) => {
     buildPrivateInputTemplatePackMove(currentState),
     buildPostInputOrchestratorMove(currentState),
     buildTaxonomyConsolidationMove(currentState),
+    buildTaxonomyRefreshHandoffMove(currentState),
     buildContinuationGuardMove(currentState),
     'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
     'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
@@ -1604,6 +1633,7 @@ const buildRunbook = ({
   privateInputTemplatePack,
   postInputOrchestrator,
   taxonomyConsolidationAudit,
+  taxonomyRefreshHandoff,
   continuationGuard,
   validationReceipt,
   packageJson,
@@ -1658,6 +1688,7 @@ const buildRunbook = ({
     privateInputTemplatePack,
     postInputOrchestrator,
     taxonomyConsolidationAudit,
+    taxonomyRefreshHandoff,
     continuationGuard,
     validationReceipt,
     responseWorkspace,
@@ -1891,6 +1922,10 @@ const renderMarkdown = (runbook) => {
     `- Taxonomy live evidence groups: ${runbook.currentState.taxonomyConsolidationAudit.liveEvidenceGroupCount ?? 'unknown'}`,
     `- Taxonomy Brand promotions needed: ${runbook.currentState.taxonomyConsolidationAudit.brandPromotionNeededCount ?? 'unknown'}`,
     `- Taxonomy CRM manifest refresh needed: ${runbook.currentState.taxonomyConsolidationAudit.crmManifestRefreshNeededCount ?? 'unknown'}`,
+    `- Taxonomy refresh handoff: ${runbook.currentState.taxonomyRefreshHandoff.status ?? 'missing'}`,
+    `- Taxonomy refresh Brand decisions: ${runbook.currentState.taxonomyRefreshHandoff.brandPromotionDecisionCount ?? 'unknown'}`,
+    `- Taxonomy refresh CRM patch rows: ${runbook.currentState.taxonomyRefreshHandoff.crmManifestPatchCount ?? 'unknown'}`,
+    `- Taxonomy refresh can apply CRM patch now: ${runbook.currentState.taxonomyRefreshHandoff.canApplyCrmManifestPatchNow ?? 'unknown'}`,
     `- Continuation guard: ${runbook.currentState.continuationGuard.status ?? 'missing'}`,
     `- Continuation guard closed boundaries: ${runbook.currentState.continuationGuard.closedBoundaryCount ?? 'unknown'}/${runbook.currentState.continuationGuard.trackedBoundaryCount ?? 'unknown'}`,
     `- Continuation guard old UI work closed: ${runbook.currentState.continuationGuard.oldUiWorkClosed ?? 'unknown'}`,
@@ -2026,6 +2061,7 @@ const buildRunbookFromFiles = async (options) => {
     privateInputTemplatePack,
     postInputOrchestrator,
     taxonomyConsolidationAudit,
+    taxonomyRefreshHandoff,
     continuationGuard,
     validationReceipt,
     packageJson,
@@ -2079,6 +2115,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.privateInputTemplatePack),
     readOptionalJson(options.postInputOrchestrator),
     readOptionalJson(options.taxonomyConsolidationAudit),
+    readOptionalJson(options.taxonomyRefreshHandoff),
     readOptionalJson(options.continuationGuard),
     readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
@@ -2134,6 +2171,7 @@ const buildRunbookFromFiles = async (options) => {
     privateInputTemplatePack,
     postInputOrchestrator,
     taxonomyConsolidationAudit,
+    taxonomyRefreshHandoff,
     continuationGuard,
     validationReceipt,
     packageJson,
@@ -2182,6 +2220,10 @@ const main = async () => {
     taxonomyConsolidationAuditStatus: runbook.currentState.taxonomyConsolidationAudit.status,
     taxonomyConsolidationBrandPromotionNeededCount: runbook.currentState.taxonomyConsolidationAudit.brandPromotionNeededCount,
     taxonomyConsolidationCrmManifestRefreshNeededCount: runbook.currentState.taxonomyConsolidationAudit.crmManifestRefreshNeededCount,
+    taxonomyRefreshHandoffStatus: runbook.currentState.taxonomyRefreshHandoff.status,
+    taxonomyRefreshBrandPromotionDecisionCount: runbook.currentState.taxonomyRefreshHandoff.brandPromotionDecisionCount,
+    taxonomyRefreshCrmManifestPatchCount: runbook.currentState.taxonomyRefreshHandoff.crmManifestPatchCount,
+    taxonomyRefreshCanApplyCrmManifestPatchNow: runbook.currentState.taxonomyRefreshHandoff.canApplyCrmManifestPatchNow,
     continuationGuardStatus: runbook.currentState.continuationGuard.status,
     continuationGuardOldUiWorkClosed: runbook.currentState.continuationGuard.oldUiWorkClosed,
     continuationGuardClosedBoundaryCount: runbook.currentState.continuationGuard.closedBoundaryCount,
