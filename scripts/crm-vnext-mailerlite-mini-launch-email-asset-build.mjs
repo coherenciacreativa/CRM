@@ -550,6 +550,32 @@ const classifyFailure = (status, bodyText = '') => {
   return `mailerlite_http_${status || 'unknown'}`;
 };
 
+const sanitizeApiErrorDetails = (payload) => {
+  const details = [];
+  const push = (key, value) => {
+    const text = cleanString(value);
+    if (!text) return;
+    details.push({
+      field: cleanString(key) ?? 'message',
+      message: text
+        .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email_redacted]')
+        .slice(0, 500),
+    });
+  };
+
+  push('message', payload?.message);
+  if (payload?.errors && typeof payload.errors === 'object') {
+    for (const [key, value] of Object.entries(payload.errors)) {
+      if (Array.isArray(value)) {
+        for (const item of value) push(key, item);
+      } else {
+        push(key, value);
+      }
+    }
+  }
+  return details.slice(0, 20);
+};
+
 const urlWithParams = (base, path, params = {}) => {
   const url = new URL(`${base}${path.startsWith('/') ? path : `/${path}`}`);
   for (const [key, value] of Object.entries(params)) {
@@ -585,6 +611,7 @@ const requestJson = async ({ options, key, path, method = 'GET', body = null, pa
       const error = new Error(reason);
       error.status = response.status;
       error.reason = reason;
+      error.details = sanitizeApiErrorDetails(payload);
       throw error;
     }
     return payload;
@@ -750,6 +777,7 @@ const buildRun = async (options) => {
         name: target.name,
         reason: error?.reason || error?.message || 'mailerlite_campaign_asset_build_failed',
         status: error?.status ?? null,
+        details: Array.isArray(error?.details) ? error.details : [],
       });
       break;
     }

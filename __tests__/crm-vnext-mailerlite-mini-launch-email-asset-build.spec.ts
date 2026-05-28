@@ -346,4 +346,35 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     expect(markdown).toContain("No groups created or assigned");
     expect(markdown).toContain("No Shopify/CRM live mutations");
   });
+
+  test("records sanitized MailerLite validation details in failed execution reports", () => {
+    const run = buildRunFromState({
+      scopePacket,
+      payloadManifest,
+      campaigns: [],
+      execute: true,
+      approvalPhrase: exactApprovalPhrase,
+      fromEmail: "notasdealejandro@example.com",
+      fromName: "Alejandro",
+      generatedAt: "2026-05-28T00:00:00.000Z",
+      assetMutations: [],
+      errors: [{
+        step: 1,
+        name: "ML Draft · descanso · E01 Delivery orientation",
+        reason: "mailerlite_validation_failed",
+        status: 422,
+        details: [{
+          field: "emails.0.content",
+          message: "The content field requires a paid custom HTML editor plan.",
+        }],
+      }],
+    });
+
+    expect(run.status).toBe("failed_during_mini_launch_email_asset_build");
+    expect(run.errors[0].details).toEqual([{
+      field: "emails.0.content",
+      message: "The content field requires a paid custom HTML editor plan.",
+    }]);
+    expect(run.safety.mailerLiteMutationsPerformed).toBe(false);
+  });
 });

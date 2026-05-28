@@ -213,6 +213,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailAssetBuildDryRun).toContain("mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailAssetBuildExecution).toContain("mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
@@ -373,6 +374,44 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
       targetGroupsAlreadyExist: true,
       liveGroupsRead: 89,
     });
+  });
+
+  test("blocks mini-launch email asset build after MailerLite rejects API content submission on non-Advanced plan", () => {
+    const item = buildMiniLaunchEmailAssetBuildItem({
+      scopePacket: miniLaunchEmailAssetBuildScopePacket,
+      payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
+      dryRun: miniLaunchEmailAssetBuildDryRun,
+      executionAttempt: {
+        status: "failed_during_mini_launch_email_asset_build",
+        assetMutations: [],
+        errors: [{
+          step: 1,
+          reason: "mailerlite_validation_failed",
+          status: 422,
+          details: [{
+            field: "emails.0.content",
+            message: "Content submission is only available on advanced plan.",
+          }],
+        }],
+        safety: {
+          sendsPerformed: false,
+          subscribersRead: false,
+          groupsCreatedOrAssigned: false,
+          workflowMutationsPerformed: false,
+        },
+      },
+    });
+
+    expect(item.status).toBe("prepared_but_blocked_before_approval_request");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.blockers).toContain("mailerlite_api_content_submission_requires_advanced_plan");
+    expect(item.evidence).toMatchObject({
+      executionAttemptStatus: "failed_during_mini_launch_email_asset_build",
+      executionAssetMutationCount: 0,
+      executionAdvancedPlanContentBlocker: true,
+    });
+    expect(item.notes.join(" ")).toContain("Advanced plan");
   });
 
   test("builds specific boundary items for onboarding v2, asset build and Brújula", () => {
