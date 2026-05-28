@@ -1466,7 +1466,8 @@ const buildGoalAudit = ({
     && shopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
   const brujulaManualUiBuildReceipt = values.brujulaEmailManualUiBuildReceipt ?? null;
   const brujulaManualUiBuildClosed = brujulaManualUiReceiptClosed(brujulaManualUiBuildReceipt);
-  const onboardingV2GroupBoundaryClosed = values.approvalQueue?.approvalItems?.find((item) => item.id === 'onboarding_v2_empty_group_creation')?.status === 'reference_only_no_approval_request_now';
+  const onboardingV2GroupBoundaryClosed = values.approvalQueue?.approvalItems?.find((item) => item.id === 'onboarding_v2_empty_group_creation')?.status === 'reference_only_no_approval_request_now'
+    || values.runbook?.currentState?.onboarding?.v2EmptyGroupsLifecycleStatus === 'executed_and_verified_all_targets_exist_no_live_followup';
   const approvalQueueReady = values.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes'
     || values.runbook?.currentState?.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes';
   const approvalQueueMove = approvalQueueReady
@@ -1617,7 +1618,9 @@ const buildGoalAudit = ({
       emptyGroupCreateDryRunNoCreateNeeded
         ? 'Use fresh read-only group scans only if later evidence changes; no --execute rerun is needed for the current two mini-launch groups.'
         : 'If the mini-launch create runner dry-run is green, stop before --execute until Alejandro gives the exact approval phrase.',
-      'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
+      onboardingV2GroupBoundaryClosed
+        ? 'Keep Onboarding v2 workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.'
+        : 'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
     ]),
     safety: {
       localOnly: true,
