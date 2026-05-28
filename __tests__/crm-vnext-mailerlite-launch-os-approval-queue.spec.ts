@@ -7,6 +7,7 @@ import {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchSeedSendItem,
   buildOnboardingV2EmptyGroupItem,
   buildSafety,
   parseArgs,
@@ -282,6 +283,58 @@ const miniLaunchEmailManualUiDraftRepairPacket = {
   },
 };
 
+const miniLaunchSeedTestQaPacket = {
+  status: "seed_test_qa_packet_updated_after_manual_ui_build_no_live_changes",
+  readiness: {
+    manualUiDraftsBuilt: true,
+    manualUiDraftCount: 4,
+    localRenderReady: true,
+    targetGroupsExist: true,
+    realMailerLiteRenderQaReady: true,
+    canAskSeedSendApprovalNow: false,
+    machineBlockersBeforeSeedSendApprovalRequest: ["exact_seed_recipient_missing"],
+  },
+  seedIdentity: {
+    supplied: false,
+    redactedEmail: null,
+  },
+  targetDrafts: [
+    { draftName: "ML Draft · descanso · E01" },
+    { draftName: "ML Draft · descanso · E02" },
+    { draftName: "ML Draft · descanso · E03" },
+    { draftName: "ML Draft · descanso · E04" },
+  ],
+  seedSendApprovalBoundary: {
+    canAskAlejandroForApproval: false,
+    stillClosedEvenAfterApproval: ["public_or_audience_send", "workflow_or_automation_attachment", "crm_card_write"],
+    requiredBeforeApprovalRequest: ["real MailerLite render QA green for all four UI drafts", "exact seed recipient captured in a private execution packet"],
+  },
+};
+
+const miniLaunchSeedSendApprovalPacket = {
+  status: "seed_send_approval_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    canAskAlejandroForApproval: true,
+    canExecuteSendNow: false,
+    packetIsApprovalByItself: false,
+    seedRecipientSupplied: true,
+    openLiveMutationGateCount: 0,
+  },
+  seedIdentity: {
+    supplied: true,
+    redactedEmail: "se…@example.com",
+  },
+  approvalBoundary: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canExecuteSendNow: false,
+    exactApprovalPhrase: "Apruebo enviar únicamente test emails desde los 4 borradores del mini-lanzamiento Inteligencia para descansar al seed recipient exacto seed@example.com, después de re-scan fresco y QA real verde en MailerLite, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store.",
+    allowedAfterExactApproval: ["send test emails only from the four existing mini-launch draft campaigns to the exact seed recipient"],
+    stillClosedEvenAfterApproval: ["public_or_audience_send", "workflow_or_automation_attachment", "crm_card_write"],
+    requiredFreshEvidenceBeforeExecution: ["freshly confirm the four campaigns are still drafts and Outbox is empty"],
+  },
+};
+
 const miniLaunchShopifyLocalBuildRequest = {
   status: "ready_for_human_or_web_design_scope_approval_no_live_changes",
   approvalGate: {
@@ -484,6 +537,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiBuilderPacket).toContain("mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiDraftRepairPacket).toContain("mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchSeedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
@@ -704,6 +758,59 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.canAskAlejandroNow).toBe(false);
     expect(item.blockers).toContain("manual_ui_draft_repair_gate_unexpectedly_open");
     expect(item.blockers).toContain("manual_ui_draft_repair_packet_reports_send");
+  });
+
+  test("marks seed send ready only from a private seed-send approval packet", () => {
+    const item = buildMiniLaunchSeedSendItem({
+      payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
+      manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
+      seedTestQaPacket: miniLaunchSeedTestQaPacket,
+      seedSendApprovalPacket: miniLaunchSeedSendApprovalPacket,
+    });
+
+    expect(item).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      approvalType: "exact_phrase_required",
+      operationType: "mailerLite_seed_send_after_later_exact_approval",
+      evidence: {
+        manualUiDraftsBuilt: true,
+        seedSendApprovalPacketStatus: "seed_send_approval_packet_ready_for_exact_human_approval_no_live_changes",
+        seedRecipientRedacted: "se…@example.com",
+        privateSeedApprovalPacketReady: true,
+      },
+    });
+    expect(item.exactApprovalPhrase).toContain("seed@example.com");
+    expect(item.allowedAfterExactApproval).toContain("send test emails only from the four existing mini-launch draft campaigns to the exact seed recipient");
+    expect(item.stillClosed).toContain("public_or_audience_send");
+  });
+
+  test("keeps seed send blocked when private seed packet is still waiting for recipient", () => {
+    const item = buildMiniLaunchSeedSendItem({
+      payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
+      manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
+      seedTestQaPacket: miniLaunchSeedTestQaPacket,
+      seedSendApprovalPacket: {
+        ...miniLaunchSeedSendApprovalPacket,
+        status: "seed_send_approval_packet_waiting_exact_seed_recipient_no_live_changes",
+        seedIdentity: {
+          supplied: false,
+          redactedEmail: null,
+        },
+        approvalBoundary: {
+          ...miniLaunchSeedSendApprovalPacket.approvalBoundary,
+          canAskAlejandroForApproval: false,
+          exactApprovalPhrase: null,
+        },
+      },
+    });
+
+    expect(item.status).toBe("prepared_but_blocked_before_approval_request");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.blockers).toEqual(["exact_seed_recipient_missing"]);
+    expect(item.exactApprovalPhrase).toBeNull();
   });
 
   test("uses CRM write approval packet blockers once the packet exists", () => {

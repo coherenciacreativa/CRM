@@ -42,6 +42,7 @@ const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
+const DEFAULT_BRUJULA_REAL_MAILERLITE_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_real_mailerlite_render_qa_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json';
 const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
 const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_2026-05-28.json';
@@ -90,6 +91,7 @@ Options:
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>   Brújula Email 1 local render QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
+  --brujula-real-mailerlite-render-qa <path> Brújula real MailerLite draft render QA JSON. Defaults to ${DEFAULT_BRUJULA_REAL_MAILERLITE_RENDER_QA}
   --brujula-email-manual-ui-build-receipt <path> Brújula Email 1 manual UI build receipt JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --approval-queue <path>            Launch OS exact approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
   --approval-intake <path>           Launch OS exact approval intake JSON. Defaults to ${DEFAULT_APPROVAL_INTAKE}
@@ -145,6 +147,7 @@ const parseArgs = (argv) => {
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
+    brujulaRealMailerLiteRenderQa: DEFAULT_BRUJULA_REAL_MAILERLITE_RENDER_QA,
     brujulaEmailManualUiBuildReceipt: DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     approvalQueue: DEFAULT_APPROVAL_QUEUE,
     approvalIntake: DEFAULT_APPROVAL_INTAKE,
@@ -196,6 +199,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
+    else if (arg === '--brujula-real-mailerlite-render-qa') options.brujulaRealMailerLiteRenderQa = argv[++index];
     else if (arg === '--brujula-email-manual-ui-build-receipt') options.brujulaEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
     else if (arg === '--approval-intake') options.approvalIntake = argv[++index];
@@ -260,6 +264,7 @@ const loadSourceDigests = async (options) => {
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
     [options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs'],
     [options.brujulaEmailRenderQa, 'Brújula Email 1 local render QA and preview evidence', true],
+    [options.brujulaRealMailerLiteRenderQa, 'Brújula Email 1 real MailerLite draft render QA evidence', true],
     [options.brujulaEmailManualUiBuildReceipt, 'Brújula Email 1 manual UI draft build receipt and closed gates', true],
     [options.approvalQueue, 'single exact approval queue for current MailerLite Launch OS gates', true],
     [options.approvalIntake, 'local exact approval intake and fresh-evidence pre-execution plan', true],
@@ -423,6 +428,7 @@ const buildCurrentState = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  brujulaRealMailerLiteRenderQa,
   brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
@@ -497,6 +503,11 @@ const buildCurrentState = ({
       localRenderPreviewPath: brujulaEmailRenderQa?.renderPreview?.path ?? null,
       localRenderPreviewStatus: brujulaEmailRenderQa?.renderPreview?.status ?? null,
       localRenderPreviewSize: brujulaEmailRenderQa?.renderPreview?.fileSizeBytes ?? null,
+      realMailerLiteRenderQaStatus: brujulaRealMailerLiteRenderQa?.status ?? null,
+      realMailerLiteRenderReady: brujulaRealMailerLiteRenderQa?.executiveSummary?.realMailerLiteRenderReady ?? false,
+      realMailerLiteRenderExactContent: brujulaRealMailerLiteRenderQa?.executiveSummary?.allRequiredContentExact ?? false,
+      realMailerLiteRenderSafetyClosed: brujulaRealMailerLiteRenderQa?.executiveSummary?.allSafetyGatesClosed ?? false,
+      realMailerLiteRenderBlockerCount: brujulaRealMailerLiteRenderQa?.executiveSummary?.blockerCount ?? null,
       manualUiBuildReceiptStatus: brujulaEmailManualUiBuildReceipt?.status ?? null,
       manualUiBuildClosed: brujulaManualUiBuildClosedNow,
       manualUiCampaignId: brujulaManualUiCampaignId(brujulaEmailManualUiBuildReceipt),
@@ -842,6 +853,7 @@ const buildReportMap = (sourceDigests) => {
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
     brujulaEmailStyleCorrection: findPath('mailerlite_brujula_email_style_correction_packet_2026-05-27.json'),
     brujulaEmailRenderQa: findPath('mailerlite_brujula_email_render_qa_packet_2026-05-27.json'),
+    brujulaRealMailerLiteRenderQa: findPath('mailerlite_brujula_real_mailerlite_render_qa_2026-05-28.json'),
     brujulaEmailManualUiBuildReceipt: findPath('mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json'),
     approvalQueue: findPath('mailerlite_launch_os_approval_queue_2026-05-28.json'),
     approvalIntake: findPath('mailerlite_launch_os_approval_intake_2026-05-28.json'),
@@ -1059,6 +1071,7 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-brujula-email-style-qa-packet'),
         command('crm:vnext:mailerlite-brujula-email-style-correction-packet'),
         command('crm:vnext:mailerlite-brujula-email-render-qa-packet'),
+        command('crm:vnext:mailerlite-brujula-real-mailerlite-render-qa'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['audience send', 'workflow activation', 'public launch', 'onboarding route'],
     },
@@ -1123,7 +1136,9 @@ const buildSharedImmediateMoves = (currentState) => [
     ? 'Use the Brújula Email 1 manual UI build receipt as current draft evidence; builder creation/edit gate is closed and test send/public use still need separate exact approval.'
     : 'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
   currentState?.brujulaPilot?.manualUiBuildClosed === true
-    ? 'Before any Brújula test send, require real MailerLite render QA on the live draft, exact recipient and exact send approval.'
+    ? currentState?.brujulaPilot?.realMailerLiteRenderReady === true
+      ? 'Brújula real MailerLite render QA is green; before any Brújula test send, still require exact recipient and exact send approval.'
+      : 'Before any Brújula test send, require real MailerLite render QA on the live draft, exact recipient and exact send approval.'
     : 'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
   'Use the backlog board only for one additional no-live idea intake, not for live production.',
   'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
@@ -1195,6 +1210,7 @@ const buildRunbook = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  brujulaRealMailerLiteRenderQa,
   brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
@@ -1239,6 +1255,7 @@ const buildRunbook = ({
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaRealMailerLiteRenderQa,
     brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
@@ -1299,6 +1316,8 @@ const renderMarkdown = (runbook) => {
     `- Brújula local render non-empty: ${runbook.currentState.brujulaPilot.localRenderPreviewNonEmpty}`,
     `- Brújula local render preview: ${runbook.currentState.brujulaPilot.localRenderPreviewPath ?? 'unknown'}`,
     `- Brújula local render preview size: ${runbook.currentState.brujulaPilot.localRenderPreviewSize ?? 'unknown'}`,
+    `- Brújula real MailerLite render QA: ${runbook.currentState.brujulaPilot.realMailerLiteRenderQaStatus ?? 'unknown'}`,
+    `- Brújula real MailerLite render ready: ${runbook.currentState.brujulaPilot.realMailerLiteRenderReady}`,
     `- Brújula public use ready: ${runbook.currentState.brujulaPilot.emailStyleQaPublicUseReady}`,
     `- Onboarding v1 protected: ${runbook.currentState.onboarding.productionV1Protected}`,
     `- Onboarding v1 workflow: ${runbook.currentState.onboarding.productionV1Workflow.name ?? 'unknown'}`,
@@ -1548,6 +1567,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaRealMailerLiteRenderQa,
     brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
@@ -1591,6 +1611,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.brujulaEmailStyleQa),
     readJson(options.brujulaEmailStyleCorrection),
     readOptionalJson(options.brujulaEmailRenderQa),
+    readOptionalJson(options.brujulaRealMailerLiteRenderQa),
     readOptionalJson(options.brujulaEmailManualUiBuildReceipt),
     readOptionalJson(options.approvalQueue),
     readOptionalJson(options.approvalIntake),
@@ -1636,6 +1657,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaRealMailerLiteRenderQa,
     brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
