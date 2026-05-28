@@ -57,6 +57,61 @@ const reviewPacketsIndex = {
   pendingDepartments: ["brand", "web_design", "crm"],
 };
 
+const operatorRunbook = {
+  status: "mailerlite_launch_os_operator_runbook_ready_no_live_changes",
+  currentState: {
+    approvalQueue: {
+      readyApprovalIds: [],
+      blockedApprovalIds: ["mini_launch_seed_send", "crm_signal_writes"],
+    },
+    miniLaunch: {
+      currentPilot: readinessBoard.launch,
+      acceptedFinalDepartments: ["brand", "web_design", "crm"],
+      departmentResponseStates: [
+        { department: "brand", acceptedFinalResponse: true },
+        { department: "web_design", acceptedFinalResponse: true },
+        { department: "crm", acceptedFinalResponse: true },
+      ],
+      emailManualUiBuildClosed: true,
+      emailManualUiDraftVisibleCount: 4,
+      seedTestQaRealMailerLiteRenderQaReady: true,
+      seedTestQaSeedRecipientSupplied: false,
+      seedTestQaTargetGroupsExist: true,
+      seedTestQaBlockersBeforeApprovalRequest: ["exact_seed_recipient_missing"],
+      shopifyLocalBuildClosed: true,
+      onboardingHandoffPolicyStatus: "mini_launch_onboarding_handoff_policy_ready_no_live_changes",
+    },
+  },
+};
+
+const approvalQueue = {
+  executiveSummary: {
+    readyApprovalIds: [],
+    blockedApprovalIds: ["mini_launch_seed_send", "crm_signal_writes"],
+  },
+};
+
+const seedSendApprovalPacket = {
+  status: "seed_send_approval_packet_waiting_exact_seed_recipient_no_live_changes",
+  blockers: ["exact_seed_recipient_missing"],
+  executiveSummary: {
+    seedRecipientSupplied: false,
+    realMailerLiteRenderQaReady: true,
+    targetGroupsExist: true,
+  },
+};
+
+const crmWriteApprovalPacket = {
+  status: "crm_write_approval_packet_blocked_missing_observed_events_no_live_changes",
+  executiveSummary: {
+    writePolicyPacketReady: true,
+    blockers: [
+      "real_observed_event_file_missing",
+      "exact_observed_events_missing",
+    ],
+  },
+};
+
 const sourceDigests = [
   {
     path: "/tmp/cadence.json",
@@ -78,6 +133,8 @@ describe("CRM vNext MailerLite mini-launch backlog board", () => {
     expect(parsed.cadenceBoard).toContain("mailerlite_mini_launch_cadence_board_2026-05-27.json");
     expect(parsed.readinessBoard).toContain("mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json");
     expect(parsed.reviewPacketsIndex).toContain("mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.operatorRunbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
+    expect(parsed.seedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/backlog.json");
     expect(parsed.markdownOut).toBe("/tmp/backlog.md");
   });
@@ -114,6 +171,37 @@ describe("CRM vNext MailerLite mini-launch backlog board", () => {
     expect(row.mailerlite_status).toBe("no_live_groups_or_assets");
   });
 
+  test("builds current pilot row from runbook boundaries after UI draft build", () => {
+    const row = buildCurrentPilotRow({
+      readinessBoard,
+      reviewPacketsIndex,
+      operatorRunbook,
+      approvalQueue,
+      seedSendApprovalPacket,
+      crmWriteApprovalPacket,
+    });
+
+    expect(row).toMatchObject({
+      status: "seed_test_candidate_blocked_waiting_seed_recipient",
+      brand_review_status: "accepted_final_response",
+      web_status: "accepted_local_build_closed_no_live",
+      mailerlite_status: "manual_ui_drafts_built_real_render_green_seed_send_closed",
+      crm_signal_status: "policy_ready_waiting_real_observed_events",
+      onboarding_handoff_status: "policy_ready_protected_no_auto_routing",
+      next_gate: "exact_seed_recipient_for_test_send",
+    });
+    expect(row.readiness).toMatchObject({
+      manualDraftsBuilt: true,
+      realMailerLiteRenderQaGreen: true,
+      seedRecipientSupplied: false,
+      crmWritePolicyReady: true,
+    });
+    expect(row.blockers).toEqual(expect.arrayContaining([
+      "exact_seed_recipient_missing",
+      "real_observed_event_file_missing",
+    ]));
+  });
+
   test("calculates WIP capacity for one more no-live idea only", () => {
     const row = buildCurrentPilotRow({ readinessBoard, reviewPacketsIndex });
     const snapshot = buildWipSnapshot({
@@ -123,6 +211,27 @@ describe("CRM vNext MailerLite mini-launch backlog board", () => {
 
     expect(snapshot.activeNoLivePrep).toBe(1);
     expect(snapshot.remainingNoLivePrepCapacity).toBe(1);
+    expect(snapshot.safeToIntakeOneMoreNoLiveIdea).toBe(true);
+    expect(snapshot.safeToOpenLiveAdjacentLaunch).toBe(false);
+  });
+
+  test("counts seed-test boundary as live-adjacent without opening live gates", () => {
+    const row = buildCurrentPilotRow({
+      readinessBoard,
+      reviewPacketsIndex,
+      operatorRunbook,
+      approvalQueue,
+      seedSendApprovalPacket,
+      crmWriteApprovalPacket,
+    });
+    const snapshot = buildWipSnapshot({
+      cadenceBoard,
+      backlogRows: [row],
+    });
+
+    expect(snapshot.activeNoLivePrep).toBe(0);
+    expect(snapshot.activeLiveAdjacent).toBe(1);
+    expect(snapshot.remainingLiveAdjacentCapacity).toBe(0);
     expect(snapshot.safeToIntakeOneMoreNoLiveIdea).toBe(true);
     expect(snapshot.safeToOpenLiveAdjacentLaunch).toBe(false);
   });
@@ -170,6 +279,7 @@ describe("CRM vNext MailerLite mini-launch backlog board", () => {
     expect(markdown).toContain("Mini-Launch Backlog Board");
     expect(markdown).toContain("Safe to intake one more no-live idea: true");
     expect(markdown).toContain("collect_department_reviews");
+    expect(markdown).toContain("Blocked approvals");
     expect(markdown).toContain("Sin MailerLite API calls");
     expect(buildGateDefaults().map((gate) => gate.id)).toContain("audience_launch");
     expect(buildSafety()).toMatchObject({ outboundPerformed: false });

@@ -653,7 +653,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.controlRoom).toContain("mailerlite-launch-os-v0-control-room.md");
     expect(parsed.readinessBoard).toContain("mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json");
     expect(parsed.cadenceBoard).toContain("mailerlite_mini_launch_cadence_board_2026-05-27.json");
-    expect(parsed.backlogBoard).toContain("mailerlite_mini_launch_backlog_board_2026-05-27.json");
+    expect(parsed.backlogBoard).toContain("mailerlite_mini_launch_backlog_board_2026-05-28.json");
     expect(parsed.onboardingHandoffPolicy).toContain("mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(parsed.reconciliationBoard).toContain("mailerlite_mini_launch_department_review_reconciliation_inteligencia_descansar_2026-05-27.json");
     expect(parsed.deliveryPack).toContain("mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json");
@@ -1190,7 +1190,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     const reportMap = buildReportMap([
       ...sourceDigests,
       {
-        path: "/tmp/mailerlite_mini_launch_backlog_board_2026-05-27.json",
+        path: "/tmp/mailerlite_mini_launch_backlog_board_2026-05-28.json",
         present: true,
         chars: 2000,
         consultedFor: "mini-launch idea queue and intake capacity",
@@ -1336,7 +1336,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     ]);
 
     expect(reportMap.controlRoom).toBe("/tmp/mailerlite-launch-os-v0-control-room.md");
-    expect(reportMap.backlogBoard).toBe("/tmp/mailerlite_mini_launch_backlog_board_2026-05-27.json");
+    expect(reportMap.backlogBoard).toBe("/tmp/mailerlite_mini_launch_backlog_board_2026-05-28.json");
     expect(reportMap.onboardingHandoffPolicy).toBe("/tmp/mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.departmentReviewDeliveryPack).toBe("/tmp/mailerlite_mini_launch_department_review_delivery_pack_inteligencia_descansar_2026-05-27.json");
     expect(reportMap.departmentReviewResponseWorkspace).toBe("/tmp/mailerlite_mini_launch_department_review_response_workspace_inteligencia_descansar_2026-05-27.json");

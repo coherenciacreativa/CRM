@@ -45,6 +45,7 @@ const packageJson = {
     "crm:vnext:mailerlite-brujula-real-mailerlite-render-qa": "node scripts/brujula-real-render-qa.mjs",
     "crm:vnext:mailerlite-onboarding-trunk-map": "node scripts/trunk-map.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-response-watcher": "node scripts/response-watcher.mjs",
+    "crm:vnext:mailerlite-mini-launch-backlog-board": "node scripts/backlog-board.mjs",
     "crm:vnext:mailerlite-mini-launch-local-email-asset-plan": "node scripts/local-email-asset-plan.mjs",
     "crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet": "node scripts/email-asset-build-scope.mjs",
     "crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest": "node scripts/email-builder-payload-manifest.mjs",

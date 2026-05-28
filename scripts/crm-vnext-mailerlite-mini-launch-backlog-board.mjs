@@ -7,6 +7,10 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-mini-launch-backlog-board-2026-05-2
 const DEFAULT_CADENCE_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_2026-05-27.json';
 const DEFAULT_READINESS_BOARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_REVIEW_PACKETS_INDEX = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_OPERATOR_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.json';
+const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
+const DEFAULT_SEED_SEND_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-backlog-board.mjs [options]
@@ -15,6 +19,10 @@ Options:
   --cadence-board <path>        Mini-launch cadence board JSON. Defaults to ${DEFAULT_CADENCE_BOARD}
   --readiness-board <path>      Current pilot readiness board JSON. Defaults to ${DEFAULT_READINESS_BOARD}
   --review-packets-index <path> Department review packets index JSON. Defaults to ${DEFAULT_REVIEW_PACKETS_INDEX}
+  --operator-runbook <path>     Launch OS operator runbook JSON. Defaults to ${DEFAULT_OPERATOR_RUNBOOK}
+  --approval-queue <path>       Launch OS approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
+  --seed-send-approval-packet <path> Seed send approval packet JSON. Defaults to ${DEFAULT_SEED_SEND_APPROVAL_PACKET}
+  --crm-write-approval-packet <path> CRM write approval packet JSON. Defaults to ${DEFAULT_CRM_WRITE_APPROVAL_PACKET}
   --out <path>                  Write JSON backlog board
   --markdown-out <path>         Write Markdown backlog board
   --help                        Show this help
@@ -31,6 +39,10 @@ const parseArgs = (argv) => {
     cadenceBoard: DEFAULT_CADENCE_BOARD,
     readinessBoard: DEFAULT_READINESS_BOARD,
     reviewPacketsIndex: DEFAULT_REVIEW_PACKETS_INDEX,
+    operatorRunbook: DEFAULT_OPERATOR_RUNBOOK,
+    approvalQueue: DEFAULT_APPROVAL_QUEUE,
+    seedSendApprovalPacket: DEFAULT_SEED_SEND_APPROVAL_PACKET,
+    crmWriteApprovalPacket: DEFAULT_CRM_WRITE_APPROVAL_PACKET,
     out: null,
     markdownOut: null,
     help: false,
@@ -42,6 +54,10 @@ const parseArgs = (argv) => {
     else if (arg === '--cadence-board') options.cadenceBoard = argv[++index];
     else if (arg === '--readiness-board') options.readinessBoard = argv[++index];
     else if (arg === '--review-packets-index') options.reviewPacketsIndex = argv[++index];
+    else if (arg === '--operator-runbook') options.operatorRunbook = argv[++index];
+    else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
+    else if (arg === '--seed-send-approval-packet') options.seedSendApprovalPacket = argv[++index];
+    else if (arg === '--crm-write-approval-packet') options.crmWriteApprovalPacket = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -52,24 +68,53 @@ const parseArgs = (argv) => {
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
 
+const readOptionalJson = async (path) => {
+  if (!path) return null;
+  try {
+    return JSON.parse(await readFile(resolve(path), 'utf8'));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+};
+
+const sourceDigest = async (path, consultedFor, optional = false) => {
+  if (!path) return null;
+  try {
+    const content = await readFile(resolve(path), 'utf8');
+    return {
+      path: resolve(path),
+      present: true,
+      chars: content.length,
+      consultedFor,
+    };
+  } catch (error) {
+    if (optional && error?.code === 'ENOENT') {
+      return {
+        path: resolve(path),
+        present: false,
+        chars: 0,
+        consultedFor,
+      };
+    }
+    throw error;
+  }
+};
+
 const loadSourceDigests = async (options) => {
   const sources = [
     [options.cadenceBoard, 'cadence strategy, WIP limits and backlog fields'],
     [options.readinessBoard, 'current pilot state and next no-live moves'],
     [options.reviewPacketsIndex, 'department review packet state and pending departments'],
+    [options.operatorRunbook, 'current Launch OS operator state, approval queue and pilot gates', true],
+    [options.approvalQueue, 'current approval readiness and blocked live gates', true],
+    [options.seedSendApprovalPacket, 'seed send boundary and exact-recipient blocker', true],
+    [options.crmWriteApprovalPacket, 'CRM write boundary and real-evidence blockers', true],
   ];
 
-  const digests = [];
-  for (const [path, consultedFor] of sources) {
-    const content = await readFile(resolve(path), 'utf8');
-    digests.push({
-      path: resolve(path),
-      present: true,
-      chars: content.length,
-      consultedFor,
-    });
-  }
-  return digests;
+  return (await Promise.all(sources.map(([path, consultedFor, optional]) =>
+    sourceDigest(path, consultedFor, optional)
+  ))).filter(Boolean);
 };
 
 const buildIdeaTemplate = (cadenceBoard) => {
@@ -101,6 +146,8 @@ const buildIdeaTemplate = (cadenceBoard) => {
       'department_review_pending',
       'no_live_rehearsal_ready',
       'seed_test_candidate',
+      'seed_test_candidate_blocked_waiting_seed_recipient',
+      'crm_signal_review_blocked_waiting_observed_events',
       'market_signal_review_pending',
       'continue',
       'archive',
@@ -116,32 +163,138 @@ const buildIdeaTemplate = (cadenceBoard) => {
   };
 };
 
-const buildCurrentPilotRow = ({ readinessBoard, reviewPacketsIndex }) => {
-  const launch = readinessBoard.launch ?? reviewPacketsIndex.launch ?? {};
+const acceptedDepartment = ({ runbook, department }) => {
+  const accepted = runbook?.currentState?.miniLaunch?.acceptedFinalDepartments ?? [];
+  const states = runbook?.currentState?.miniLaunch?.departmentResponseStates ?? [];
+  return accepted.includes(department)
+    || states.some((state) => state?.department === department && state?.acceptedFinalResponse === true);
+};
+
+const buildCurrentPilotStatus = ({ runbook, seedSendApprovalPacket, crmWriteApprovalPacket }) => {
+  const seedBlockers = seedSendApprovalPacket?.blockers
+    ?? runbook?.currentState?.miniLaunch?.seedTestQaBlockersBeforeApprovalRequest
+    ?? [];
+  if (seedBlockers.includes('exact_seed_recipient_missing')) {
+    return 'seed_test_candidate_blocked_waiting_seed_recipient';
+  }
+
+  if (crmWriteApprovalPacket?.status === 'crm_write_approval_packet_blocked_missing_observed_events_no_live_changes') {
+    return 'crm_signal_review_blocked_waiting_observed_events';
+  }
+
+  if (runbook?.currentState?.miniLaunch?.departmentReviewStatus === 'department_reviews_reconciled_ready_for_next_no_live_moves') {
+    return 'no_live_rehearsal_ready';
+  }
+
+  return 'department_review_pending';
+};
+
+const buildCurrentPilotRow = ({
+  readinessBoard,
+  reviewPacketsIndex,
+  operatorRunbook = null,
+  approvalQueue = null,
+  seedSendApprovalPacket = null,
+  crmWriteApprovalPacket = null,
+}) => {
+  const runbookLaunch = operatorRunbook?.currentState?.miniLaunch?.currentPilot ?? null;
+  const launch = runbookLaunch ?? readinessBoard.launch ?? reviewPacketsIndex.launch ?? {};
+  const currentStatus = buildCurrentPilotStatus({
+    runbook: operatorRunbook,
+    seedSendApprovalPacket,
+    crmWriteApprovalPacket,
+  });
+  const seedBlockers = seedSendApprovalPacket?.blockers
+    ?? operatorRunbook?.currentState?.miniLaunch?.seedTestQaBlockersBeforeApprovalRequest
+    ?? [];
+  const crmBlockers = crmWriteApprovalPacket?.executiveSummary?.blockers
+    ?? operatorRunbook?.currentState?.miniLaunch?.crmWriteApprovalBlockers
+    ?? [];
+  const readyApprovalIds = approvalQueue?.executiveSummary?.readyApprovalIds
+    ?? operatorRunbook?.currentState?.approvalQueue?.readyApprovalIds
+    ?? [];
+  const blockedApprovalIds = approvalQueue?.executiveSummary?.blockedApprovalIds
+    ?? operatorRunbook?.currentState?.approvalQueue?.blockedApprovalIds
+    ?? [];
+  const manualDraftsBuilt = operatorRunbook?.currentState?.miniLaunch?.emailManualUiBuildClosed === true
+    || operatorRunbook?.currentState?.miniLaunch?.emailManualUiDraftVisibleCount >= 4;
+  const realRenderGreen = operatorRunbook?.currentState?.miniLaunch?.seedTestQaRealMailerLiteRenderQaReady === true
+    || seedSendApprovalPacket?.executiveSummary?.realMailerLiteRenderQaReady === true;
+  const seedRecipientSupplied = seedSendApprovalPacket?.executiveSummary?.seedRecipientSupplied === true
+    || operatorRunbook?.currentState?.miniLaunch?.seedTestQaSeedRecipientSupplied === true;
+  const shopifyClosed = operatorRunbook?.currentState?.miniLaunch?.shopifyLocalBuildClosed === true;
+  const crmPolicyReady = crmWriteApprovalPacket?.executiveSummary?.writePolicyPacketReady === true;
+
   return {
     idea_id: launch.launchId ?? 'unknown_launch',
     theme: launch.resourceName ?? 'unknown',
     resource_type: launch.resourceType ?? 'unknown',
-    audience_hypothesis: 'pending_department_review',
-    public_promise: 'pending_brand_review',
+    audience_hypothesis: operatorRunbook
+      ? 'accepted_department_reviews_but_seed_audience_not_selected'
+      : 'pending_department_review',
+    public_promise: operatorRunbook
+      ? 'validated_draft_sequence_waiting_seed_recipient'
+      : 'pending_brand_review',
     learning_question: 'Can this mini-launch create useful market and relationship signals without weakening the onboarding trunk?',
-    status: 'department_review_pending',
+    status: currentStatus,
     owner: 'MailerLite Launch OS',
     evidence: [
-      '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.md',
-      '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.md',
+      operatorRunbook
+        ? '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.md'
+        : '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_inteligencia_descansar_2026-05-27.md',
+      approvalQueue
+        ? '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.md'
+        : '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_packets_index_inteligencia_descansar_2026-05-27.md',
+      seedSendApprovalPacket
+        ? '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.md'
+        : null,
+      crmWriteApprovalPacket
+        ? '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.md'
+        : null,
+    ].filter(Boolean),
+    readiness: {
+      acceptedDepartments: operatorRunbook?.currentState?.miniLaunch?.acceptedFinalDepartments ?? [],
+      manualDraftsBuilt,
+      realMailerLiteRenderQaGreen: realRenderGreen,
+      seedRecipientSupplied,
+      targetGroupsExist: seedSendApprovalPacket?.executiveSummary?.targetGroupsExist
+        ?? operatorRunbook?.currentState?.miniLaunch?.seedTestQaTargetGroupsExist
+        ?? null,
+      shopifyLocalBuildClosed: shopifyClosed,
+      crmWritePolicyReady: crmPolicyReady,
+      readyApprovalIds,
+      blockedApprovalIds,
+    },
+    blockers: [
+      ...seedBlockers,
+      ...crmBlockers,
     ],
     risk: [
       'Do not treat review packets as live approval.',
-      'Do not create launch-specific MailerLite groups before Brand response and fresh dry-run.',
+      'Do not use a seed test without exact recipient and fresh QA.',
       'Do not route participants into onboarding automatically.',
+      'Do not turn real engagement into CRM writes without observed events, exact people and one separate exact write approval.',
     ],
-    brand_review_status: reviewPacketsIndex.pendingDepartments?.includes('brand') ? 'pending' : 'unknown',
-    web_status: reviewPacketsIndex.pendingDepartments?.includes('web_design') ? 'pending' : 'unknown',
-    mailerlite_status: 'no_live_groups_or_assets',
-    crm_signal_status: reviewPacketsIndex.pendingDepartments?.includes('crm') ? 'pending' : 'unknown',
-    onboarding_handoff_status: 'protected_no_auto_routing',
-    next_gate: 'collect_department_reviews',
+    brand_review_status: acceptedDepartment({ runbook: operatorRunbook, department: 'brand' })
+      ? 'accepted_final_response'
+      : reviewPacketsIndex.pendingDepartments?.includes('brand') ? 'pending' : 'unknown',
+    web_status: acceptedDepartment({ runbook: operatorRunbook, department: 'web_design' })
+      ? shopifyClosed ? 'accepted_local_build_closed_no_live' : 'accepted_final_response'
+      : reviewPacketsIndex.pendingDepartments?.includes('web_design') ? 'pending' : 'unknown',
+    mailerlite_status: manualDraftsBuilt && realRenderGreen
+      ? 'manual_ui_drafts_built_real_render_green_seed_send_closed'
+      : 'no_live_groups_or_assets',
+    crm_signal_status: crmPolicyReady
+      ? 'policy_ready_waiting_real_observed_events'
+      : reviewPacketsIndex.pendingDepartments?.includes('crm') ? 'pending' : 'unknown',
+    onboarding_handoff_status: operatorRunbook?.currentState?.miniLaunch?.onboardingHandoffPolicyStatus === 'mini_launch_onboarding_handoff_policy_ready_no_live_changes'
+      ? 'policy_ready_protected_no_auto_routing'
+      : 'protected_no_auto_routing',
+    next_gate: operatorRunbook
+      ? seedRecipientSupplied
+        ? 'fresh_seed_send_qa_and_exact_test_send_approval'
+        : 'exact_seed_recipient_for_test_send'
+      : 'collect_department_reviews',
   };
 };
 
@@ -155,6 +308,8 @@ const buildWipSnapshot = ({ cadenceBoard, backlogRows }) => {
   ].includes(row.status)).length;
   const activeLiveAdjacent = backlogRows.filter((row) => [
     'seed_test_candidate',
+    'seed_test_candidate_blocked_waiting_seed_recipient',
+    'crm_signal_review_blocked_waiting_observed_events',
     'market_signal_review_pending',
   ].includes(row.status)).length;
 
@@ -234,6 +389,10 @@ const buildBacklogBoard = ({
   cadenceBoard,
   readinessBoard,
   reviewPacketsIndex,
+  operatorRunbook = null,
+  approvalQueue = null,
+  seedSendApprovalPacket = null,
+  crmWriteApprovalPacket = null,
   sourceDigests,
   generatedAt = new Date().toISOString(),
 }) => {
@@ -241,6 +400,10 @@ const buildBacklogBoard = ({
     buildCurrentPilotRow({
       readinessBoard,
       reviewPacketsIndex,
+      operatorRunbook,
+      approvalQueue,
+      seedSendApprovalPacket,
+      crmWriteApprovalPacket,
     }),
   ];
   const wipSnapshot = buildWipSnapshot({ cadenceBoard, backlogRows });
@@ -259,8 +422,9 @@ const buildBacklogBoard = ({
     wipSnapshot,
     gateDefaults: buildGateDefaults(),
     nextNoLiveMoves: [
-      'Collect Brand/Web/CRM reviews for the current pilot.',
-      'Allow at most one additional no-live idea intake while the current pilot waits for review responses.',
+      'Keep the current pilot parked at seed-test boundary until an exact seed recipient exists.',
+      'Keep CRM signal writes parked until real observed events and exact people exist.',
+      'Allow at most one additional no-live idea intake while the current pilot waits at approval boundaries.',
       'Do not create new MailerLite groups for a new idea before Brand candidate review and fresh dry-run.',
       'Do not promote every-3-days cadence until throughput proof criteria are met.',
     ],
@@ -308,6 +472,9 @@ const renderMarkdown = (board) => {
     lines.push(`- MailerLite status: ${row.mailerlite_status}`);
     lines.push(`- CRM signal status: ${row.crm_signal_status}`);
     lines.push(`- Onboarding handoff: ${row.onboarding_handoff_status}`);
+    lines.push(`- Ready approvals: ${row.readiness?.readyApprovalIds?.join(', ') || 'none'}`);
+    lines.push(`- Blocked approvals: ${row.readiness?.blockedApprovalIds?.join(', ') || 'none'}`);
+    lines.push(`- Blockers: ${row.blockers?.join(', ') || 'none'}`);
     lines.push('');
   }
 
@@ -363,10 +530,23 @@ const writeText = async (path, value) => {
 };
 
 const buildBoardFromFiles = async (options) => {
-  const [cadenceBoard, readinessBoard, reviewPacketsIndex, sourceDigests] = await Promise.all([
+  const [
+    cadenceBoard,
+    readinessBoard,
+    reviewPacketsIndex,
+    operatorRunbook,
+    approvalQueue,
+    seedSendApprovalPacket,
+    crmWriteApprovalPacket,
+    sourceDigests,
+  ] = await Promise.all([
     readJson(options.cadenceBoard),
     readJson(options.readinessBoard),
     readJson(options.reviewPacketsIndex),
+    readOptionalJson(options.operatorRunbook),
+    readOptionalJson(options.approvalQueue),
+    readOptionalJson(options.seedSendApprovalPacket),
+    readOptionalJson(options.crmWriteApprovalPacket),
     loadSourceDigests(options),
   ]);
 
@@ -374,6 +554,10 @@ const buildBoardFromFiles = async (options) => {
     cadenceBoard,
     readinessBoard,
     reviewPacketsIndex,
+    operatorRunbook,
+    approvalQueue,
+    seedSendApprovalPacket,
+    crmWriteApprovalPacket,
     sourceDigests,
   });
 };
@@ -411,8 +595,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 }
 
 export {
+  acceptedDepartment,
   buildBacklogBoard,
   buildCurrentPilotRow,
+  buildCurrentPilotStatus,
   buildGateDefaults,
   buildIdeaTemplate,
   buildIntakePolicy,
