@@ -454,6 +454,35 @@ const miniLaunchEmailRenderQa = {
   },
 };
 
+const miniLaunchEmailManualUiBuildReceipt = {
+  status: "manual_ui_build_receipt_executed_drafts_created_no_sends",
+  draftReceipts: [
+    { status: "draft_visible_in_mailerlite_drafts", uiVisibleInDrafts: true },
+    { status: "draft_visible_in_mailerlite_drafts", uiVisibleInDrafts: true },
+    { status: "draft_visible_in_mailerlite_drafts", uiVisibleInDrafts: true },
+    { status: "draft_visible_in_mailerlite_drafts", uiVisibleInDrafts: true },
+  ],
+  uiEvidence: {
+    mailerLiteAccountPlanObserved: "Growing Business",
+    editorRoute: {
+      usedEditor: "new_simple_editor",
+      customHtmlEditorStatus: "premium_upgrade_locked_on_growing_business",
+    },
+    futurePolicy: {
+      currentRoute: "manual_ui_for_mailerlite_draft_creation",
+    },
+  },
+  safety: {
+    sendsPerformed: false,
+    schedulesCreated: false,
+    subscribersReadOrAssigned: false,
+    groupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+  stillClosedAfterThisReceipt: ["seed_send_or_test_send"],
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/path.mjs",
@@ -469,6 +498,9 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-email-asset-build-scope-packet": "node scripts/email-asset-build-scope.mjs",
     "crm:vnext:mailerlite-mini-launch-email-builder-payload-manifest": "node scripts/email-builder-payload-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-email-render-qa-packet": "node scripts/email-render-qa.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet": "node scripts/email-manual-ui-builder-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit": "node scripts/email-manual-ui-execution-kit.mjs",
+    "crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt": "node scripts/email-manual-ui-build-receipt.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-packets": "node scripts/packets.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-intake": "node scripts/intake.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-reconciliation": "node scripts/reconciliation.mjs",
@@ -545,6 +577,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.miniLaunchEmailAssetBuildScopePacket).toContain("mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
   });
@@ -580,6 +613,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       miniLaunchEmailAssetBuildScopePacket,
       miniLaunchEmailBuilderPayloadManifest,
       miniLaunchEmailRenderQa,
+      miniLaunchEmailManualUiBuildReceipt,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -660,6 +694,14 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.emailRenderQaLocalRenderReady).toBe(true);
     expect(state.miniLaunch.emailRenderQaEmailCount).toBe(4);
     expect(state.miniLaunch.emailRenderQaRenderPreviewNonEmptyCount).toBe(4);
+    expect(state.miniLaunch.emailManualUiBuildReceiptStatus).toBe("manual_ui_build_receipt_executed_drafts_created_no_sends");
+    expect(state.miniLaunch.emailManualUiDraftVisibleCount).toBe(4);
+    expect(state.miniLaunch.emailManualUiBuildClosed).toBe(true);
+    expect(state.miniLaunch.emailManualUiPlanObserved).toBe("Growing Business");
+    expect(state.miniLaunch.emailManualUiUsedEditor).toBe("new_simple_editor");
+    expect(state.miniLaunch.emailManualUiCustomHtmlStatus).toBe("premium_upgrade_locked_on_growing_business");
+    expect(state.miniLaunch.emailManualUiCurrentRoute).toBe("manual_ui_for_mailerlite_draft_creation");
+    expect(state.miniLaunch.emailManualUiSeedSendStillClosed).toBe(true);
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
     expect(state.miniLaunch.pendingDepartments).toEqual(["brand", "web_design", "crm"]);
@@ -705,6 +747,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
 
     expect(matrix.find((gate) => gate.action === "create_mailerlite_groups")?.status).toBe("closed_until_exact_alejandro_approval");
     expect(matrix.find((gate) => gate.action === "mailerlite_email_asset_build")?.status).toBe("closed_until_exact_asset_build_scope_approval");
+    expect(matrix.find((gate) => gate.action === "mailerlite_email_manual_ui_build")?.status).toBe("closed_after_approved_execution_reference_only");
     expect(matrix.find((gate) => gate.action === "mailerlite_email_builder_payload_manifest")?.status).toBe("allowed_no_live_local_payloads_only");
     expect(matrix.find((gate) => gate.action === "department_review_requests")?.status).toBe("allowed_no_live_review_only");
     expect(matrix.find((gate) => gate.action === "crm_signal_ledger_card_scoring_fact_store")?.status).toBe("closed_until_separate_crm_approval_packet");
@@ -753,6 +796,9 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-local-email-asset-plan");
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-asset-build-scope-packet");
     expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-builder-payload-manifest");
+    expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-manual-ui-builder-packet");
+    expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-manual-ui-execution-kit");
+    expect(scenarios.find((scenario) => scenario.id === "after_brand_response")?.commands.join(" ")).toContain("mini-launch-email-manual-ui-build-receipt");
     expect(scenarios.find((scenario) => scenario.id === "approval_queue_review")?.commands.join(" ")).toContain("launch-os-approval-queue");
     expect(scenarios.find((scenario) => scenario.id === "new_mini_launch_idea")?.commands.join(" ")).toContain("onboarding-handoff-policy");
     expect(scenarios.find((scenario) => scenario.id === "onboarding_v2_lane")?.commands.join(" ")).toContain("onboarding-v2-event-contract");
@@ -865,6 +911,57 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(movesText).not.toContain("Run no-live department reviews");
     expect(movesText).not.toContain("Create the response workspace");
     expect(movesText).not.toContain("Collect final responses through the response workspace");
+  });
+
+  test("uses manual UI draft receipt as current mini-launch asset state", () => {
+    const runbook = buildRunbook({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      onboardingHandoffPolicy,
+      reconciliationBoard: acceptedReconciliationBoard,
+      packetsIndex: acceptedPacketsIndex,
+      responseWorkspace: acceptedResponseWorkspace,
+      finalizationPreflight: acceptedFinalizationPreflight,
+      operatorQueue: acceptedOperatorQueue,
+      requestBundle: acceptedRequestBundle,
+      responseWatcher: acceptedResponseWatcher,
+      onboardingV1Audit,
+      onboardingTrunkMap,
+      onboardingV2Execution,
+      onboardingV2EventContract,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      onboardingV2FirstEmailMap,
+      miniLaunchEmailStyleQaPacket,
+      miniLaunchLocalEmailAssetPlan,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailManualUiBuildReceipt,
+      brujulaPlan,
+      brujulaApply,
+      brujulaEmailStyleQa,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      approvalQueue,
+      approvalIntake,
+      validationReceipt,
+      packageJson,
+      sourceDigests,
+      generatedAt: "2026-05-27T00:00:00.000Z",
+    });
+
+    const movesText = runbook.immediateNextMoves.join("\n");
+
+    expect(runbook.currentState.miniLaunch.emailManualUiBuildClosed).toBe(true);
+    expect(runbook.currentState.miniLaunch.emailManualUiDraftVisibleCount).toBe(4);
+    expect(movesText).toContain("manual UI draft build is complete");
+    expect(movesText).toContain("use the receipt as current asset evidence");
+    expect(movesText).toContain("require real MailerLite render QA");
+    expect(movesText).toContain("manual UI build receipt as the current draft state");
+    expect(movesText).not.toContain("email builder payload manifest only as local implementation input");
+    expect(movesText).not.toContain("local email asset plan only to request exact build scope");
   });
 
   test("does not request mini-launch group execution after groups already exist", () => {
@@ -1021,6 +1118,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "mini-launch local email render QA with HTML and non-empty PNG preview evidence",
       },
       {
+        path: "/tmp/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "mini-launch manual UI draft build receipt and closed send/subscriber/workflow gates",
+      },
+      {
         path: "/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json",
         present: true,
         chars: 2000,
@@ -1069,6 +1172,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.miniLaunchEmailAssetBuildScopePacket).toBe("/tmp/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json");
     expect(reportMap.miniLaunchEmailBuilderPayloadManifest).toBe("/tmp/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(reportMap.miniLaunchEmailRenderQa).toBe("/tmp/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
+    expect(reportMap.miniLaunchEmailManualUiBuildReceipt).toBe("/tmp/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailRenderQa).toBe("/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
