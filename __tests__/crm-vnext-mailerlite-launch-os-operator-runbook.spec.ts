@@ -376,6 +376,20 @@ const privateInputTemplatePack = {
   },
 };
 
+const taxonomyConsolidationAudit = {
+  status: "taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes",
+  executiveSummary: {
+    liveEvidenceGroupCount: 19,
+    brandPromotionNeededCount: 14,
+    crmManifestRefreshNeededCount: 14,
+    allLiveEvidencePromotedInBrandDictionary: false,
+    allLiveEvidenceHasCrmLiveIds: false,
+    canAskApprovalNow: false,
+    openLiveMutationGateCount: 0,
+    nextSafeAction: "prepare_local_dictionary_and_manifest_refresh_from_live_execution_receipts",
+  },
+};
+
 const continuationGuard = {
   status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
   executiveSummary: {
@@ -845,6 +859,8 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-missing-inputs-intake": "node scripts/missing-inputs-intake.mjs",
     "crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle": "node scripts/missing-inputs-request-bundle.mjs",
     "crm:vnext:mailerlite-launch-os-private-input-template-pack": "node scripts/private-input-template-pack.mjs",
+    "crm:vnext:mailerlite-launch-os-post-input-orchestrator": "node scripts/post-input-orchestrator.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit": "node scripts/taxonomy-consolidation-audit.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -903,6 +919,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.missingInputsIntake).toContain("mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
     expect(parsed.missingInputsRequestBundle).toContain("mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json");
     expect(parsed.privateInputTemplatePack).toContain("mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
+    expect(parsed.taxonomyConsolidationAudit).toContain("mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(parsed.continuationGuard).toContain("mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
@@ -968,6 +985,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       missingInputsIntake,
       missingInputsRequestBundle,
       privateInputTemplatePack,
+      taxonomyConsolidationAudit,
       continuationGuard,
       validationReceipt,
       responseWorkspace,
@@ -1195,6 +1213,16 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       activePathCollisionCount: 0,
       createsActivePrivateInputFiles: false,
       writesRealPrivateValues: false,
+    });
+    expect(state.taxonomyConsolidationAudit).toMatchObject({
+      status: "taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes",
+      liveEvidenceGroupCount: 19,
+      brandPromotionNeededCount: 14,
+      crmManifestRefreshNeededCount: 14,
+      allLiveEvidencePromotedInBrandDictionary: false,
+      allLiveEvidenceHasCrmLiveIds: false,
+      canAskApprovalNow: false,
+      openLiveMutationGateCount: 0,
     });
     expect(state.continuationGuard).toMatchObject({
       status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
@@ -1808,6 +1836,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Launch OS inert private-input template pack with example files ignored by active intake",
       },
       {
+        path: "/tmp/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "Launch OS taxonomy consolidation audit across Brand dictionary, CRM manifest and approved empty-group receipts",
+      },
+      {
         path: "/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json",
         present: true,
         chars: 2000,
@@ -1851,6 +1885,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.missingInputsIntake).toBe("/tmp/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
     expect(reportMap.missingInputsRequestBundle).toBe("/tmp/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json");
     expect(reportMap.privateInputTemplatePack).toBe("/tmp/mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
+    expect(reportMap.taxonomyConsolidationAudit).toBe("/tmp/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(reportMap.continuationGuard).toBe("/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json");
   });
@@ -1886,6 +1921,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       missingInputsIntake,
       missingInputsRequestBundle,
       privateInputTemplatePack,
+      taxonomyConsolidationAudit,
       continuationGuard,
       validationReceipt,
       packageJson,
@@ -1934,6 +1970,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Private-input template pack: private_input_template_pack_ready_no_live_changes");
     expect(markdown).toContain("Private-input example file count: 2");
     expect(markdown).toContain("Private-input writes real values: false");
+    expect(markdown).toContain("Taxonomy consolidation audit: taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes");
+    expect(markdown).toContain("Taxonomy Brand promotions needed: 14");
     expect(markdown).toContain("Continuation guard: mailerlite_launch_os_continuation_guard_ready_no_live_changes");
     expect(markdown).toContain("Continuation guard old UI work closed: true");
     expect(markdown).toContain("Continuation guard UI action: do_not_open_ui_or_repair_drafts_without_new_concrete_mismatch");

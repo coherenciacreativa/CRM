@@ -12,6 +12,8 @@ const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Repor
 const DEFAULT_MISSING_INPUTS_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json';
 const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
+const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
+const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -24,6 +26,8 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-missing-inputs-request-bundle.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-private-input-template-pack.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-post-input-orchestrator.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-consolidation-audit.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
@@ -57,6 +61,8 @@ Options:
   --missing-inputs-intake <path>  Missing-inputs intake JSON. Defaults to ${DEFAULT_MISSING_INPUTS_INTAKE}
   --missing-inputs-request-bundle <path> Missing-inputs request bundle JSON. Defaults to ${DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE}
   --private-input-template-pack <path> Private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
+  --post-input-orchestrator <path> Post-input orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
+  --taxonomy-consolidation-audit <path> Taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
@@ -88,6 +94,8 @@ const parseArgs = (argv) => {
     missingInputsIntake: DEFAULT_MISSING_INPUTS_INTAKE,
     missingInputsRequestBundle: DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE,
     privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
+    postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
+    taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
@@ -109,6 +117,8 @@ const parseArgs = (argv) => {
     else if (arg === '--missing-inputs-intake') options.missingInputsIntake = argv[++index];
     else if (arg === '--missing-inputs-request-bundle') options.missingInputsRequestBundle = argv[++index];
     else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
+    else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
+    else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -187,6 +197,8 @@ const buildValidationReceipt = ({
   missingInputsIntake = null,
   missingInputsRequestBundle = null,
   privateInputTemplatePack = null,
+  postInputOrchestrator = null,
+  taxonomyConsolidationAudit = null,
   onboardingTrunkMap,
   packageJson,
   sourceDigests = [],
@@ -215,6 +227,8 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-launch-os-missing-inputs-intake',
     'crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle',
     'crm:vnext:mailerlite-launch-os-private-input-template-pack',
+    'crm:vnext:mailerlite-launch-os-post-input-orchestrator',
+    'crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit',
     'crm:vnext:mailerlite-launch-os-continuation-guard',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
@@ -325,6 +339,33 @@ const buildValidationReceipt = ({
       privateInputTemplatePackWritesRealPrivateValues: privateInputTemplatePack?.safety?.writesRealPrivateValues
         ?? runbook?.currentState?.privateInputTemplatePack?.writesRealPrivateValues
         ?? null,
+      postInputOrchestratorStatus: postInputOrchestrator?.status
+        ?? runbook?.currentState?.postInputOrchestrator?.status
+        ?? null,
+      postInputOrchestratorReadyCommandCount: postInputOrchestrator?.executiveSummary?.readyCommandCount
+        ?? runbook?.currentState?.postInputOrchestrator?.readyCommandCount
+        ?? null,
+      postInputOrchestratorCommandsExecuted: postInputOrchestrator?.executiveSummary?.commandsExecuted
+        ?? runbook?.currentState?.postInputOrchestrator?.commandsExecuted
+        ?? null,
+      postInputOrchestratorCanAskApprovalNow: postInputOrchestrator?.executiveSummary?.canAskApprovalNow
+        ?? runbook?.currentState?.postInputOrchestrator?.canAskApprovalNow
+        ?? null,
+      taxonomyConsolidationAuditStatus: taxonomyConsolidationAudit?.status
+        ?? runbook?.currentState?.taxonomyConsolidationAudit?.status
+        ?? null,
+      taxonomyConsolidationLiveEvidenceGroupCount: taxonomyConsolidationAudit?.executiveSummary?.liveEvidenceGroupCount
+        ?? runbook?.currentState?.taxonomyConsolidationAudit?.liveEvidenceGroupCount
+        ?? null,
+      taxonomyConsolidationBrandPromotionNeededCount: taxonomyConsolidationAudit?.executiveSummary?.brandPromotionNeededCount
+        ?? runbook?.currentState?.taxonomyConsolidationAudit?.brandPromotionNeededCount
+        ?? null,
+      taxonomyConsolidationCrmManifestRefreshNeededCount: taxonomyConsolidationAudit?.executiveSummary?.crmManifestRefreshNeededCount
+        ?? runbook?.currentState?.taxonomyConsolidationAudit?.crmManifestRefreshNeededCount
+        ?? null,
+      taxonomyConsolidationCanAskApprovalNow: taxonomyConsolidationAudit?.executiveSummary?.canAskApprovalNow
+        ?? runbook?.currentState?.taxonomyConsolidationAudit?.canAskApprovalNow
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -347,6 +388,8 @@ const buildValidationReceiptFromFiles = async (options) => {
     missingInputsIntake,
     missingInputsRequestBundle,
     privateInputTemplatePack,
+    postInputOrchestrator,
+    taxonomyConsolidationAudit,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -357,6 +400,8 @@ const buildValidationReceiptFromFiles = async (options) => {
     readJson(options.missingInputsIntake),
     readJson(options.missingInputsRequestBundle),
     readJson(options.privateInputTemplatePack),
+    readJson(options.postInputOrchestrator),
+    readJson(options.taxonomyConsolidationAudit),
     readJson(options.onboardingTrunkMap),
     readJson(options.packageJson),
     Promise.all([
@@ -366,6 +411,8 @@ const buildValidationReceiptFromFiles = async (options) => {
       digestFor(options.missingInputsIntake, 'missing-inputs intake redacted private input status'),
       digestFor(options.missingInputsRequestBundle, 'copy-ready missing-input request bundle with no approval or private file creation'),
       digestFor(options.privateInputTemplatePack, 'inert private-input template pack ignored by active intake'),
+      digestFor(options.postInputOrchestrator, 'post-input orchestrator local packet regeneration plan and no execution'),
+      digestFor(options.taxonomyConsolidationAudit, 'taxonomy consolidation audit across approved group receipts, Brand dictionary and CRM manifest'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
@@ -378,6 +425,8 @@ const buildValidationReceiptFromFiles = async (options) => {
     missingInputsIntake,
     missingInputsRequestBundle,
     privateInputTemplatePack,
+    postInputOrchestrator,
+    taxonomyConsolidationAudit,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -420,6 +469,13 @@ const renderMarkdown = (receipt) => {
     `- Private-input active path collisions: ${receipt.evidence.privateInputTemplatePackActivePathCollisionCount ?? 'unknown'}`,
     `- Private-input creates active files: ${receipt.evidence.privateInputTemplatePackCreatesActivePrivateInputFiles ?? 'unknown'}`,
     `- Private-input writes real values: ${receipt.evidence.privateInputTemplatePackWritesRealPrivateValues ?? 'unknown'}`,
+    `- Post-input orchestrator: ${receipt.evidence.postInputOrchestratorStatus ?? 'missing'}`,
+    `- Post-input ready commands: ${receipt.evidence.postInputOrchestratorReadyCommandCount ?? 'unknown'}`,
+    `- Post-input commands executed: ${receipt.evidence.postInputOrchestratorCommandsExecuted ?? 'unknown'}`,
+    `- Taxonomy consolidation audit: ${receipt.evidence.taxonomyConsolidationAuditStatus ?? 'missing'}`,
+    `- Taxonomy live evidence groups: ${receipt.evidence.taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}`,
+    `- Taxonomy Brand promotions needed: ${receipt.evidence.taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}`,
+    `- Taxonomy CRM manifest refresh needed: ${receipt.evidence.taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}`,
     '',
     '## Commands',
     '',

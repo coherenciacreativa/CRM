@@ -38,6 +38,19 @@ const runbook = {
       createsActivePrivateInputFiles: false,
       writesRealPrivateValues: false,
     },
+    postInputOrchestrator: {
+      status: "post_input_orchestrator_waiting_for_inputs_no_live_changes",
+      readyCommandCount: 0,
+      commandsExecuted: false,
+      canAskApprovalNow: false,
+    },
+    taxonomyConsolidationAudit: {
+      status: "taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes",
+      liveEvidenceGroupCount: 19,
+      brandPromotionNeededCount: 14,
+      crmManifestRefreshNeededCount: 14,
+      canAskApprovalNow: false,
+    },
   },
 };
 
@@ -98,6 +111,25 @@ const privateInputTemplatePack = {
   },
 };
 
+const postInputOrchestrator = {
+  status: "post_input_orchestrator_waiting_for_inputs_no_live_changes",
+  executiveSummary: {
+    readyCommandCount: 0,
+    commandsExecuted: false,
+    canAskApprovalNow: false,
+  },
+};
+
+const taxonomyConsolidationAudit = {
+  status: "taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes",
+  executiveSummary: {
+    liveEvidenceGroupCount: 19,
+    brandPromotionNeededCount: 14,
+    crmManifestRefreshNeededCount: 14,
+    canAskApprovalNow: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -108,6 +140,8 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-missing-inputs-intake": "node scripts/missing-inputs-intake.mjs",
     "crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle": "node scripts/missing-inputs-request-bundle.mjs",
     "crm:vnext:mailerlite-launch-os-private-input-template-pack": "node scripts/private-input-template-pack.mjs",
+    "crm:vnext:mailerlite-launch-os-post-input-orchestrator": "node scripts/post-input-orchestrator.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit": "node scripts/taxonomy-consolidation-audit.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -170,6 +204,8 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(parsed.missingInputsIntake).toContain("mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
     expect(parsed.missingInputsRequestBundle).toContain("mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json");
     expect(parsed.privateInputTemplatePack).toContain("mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
+    expect(parsed.postInputOrchestrator).toContain("mailerlite_launch_os_post_input_orchestrator_2026-05-28.json");
+    expect(parsed.taxonomyConsolidationAudit).toContain("mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);
@@ -185,6 +221,8 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       missingInputsIntake,
       missingInputsRequestBundle,
       privateInputTemplatePack,
+      postInputOrchestrator,
+      taxonomyConsolidationAudit,
       onboardingTrunkMap,
       packageJson,
       sourceDigests,
@@ -215,6 +253,15 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.evidence.privateInputTemplatePackActivePathCollisionCount).toBe(0);
     expect(receipt.evidence.privateInputTemplatePackCreatesActivePrivateInputFiles).toBe(false);
     expect(receipt.evidence.privateInputTemplatePackWritesRealPrivateValues).toBe(false);
+    expect(receipt.evidence.postInputOrchestratorStatus).toBe("post_input_orchestrator_waiting_for_inputs_no_live_changes");
+    expect(receipt.evidence.postInputOrchestratorReadyCommandCount).toBe(0);
+    expect(receipt.evidence.postInputOrchestratorCommandsExecuted).toBe(false);
+    expect(receipt.evidence.postInputOrchestratorCanAskApprovalNow).toBe(false);
+    expect(receipt.evidence.taxonomyConsolidationAuditStatus).toBe("taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes");
+    expect(receipt.evidence.taxonomyConsolidationLiveEvidenceGroupCount).toBe(19);
+    expect(receipt.evidence.taxonomyConsolidationBrandPromotionNeededCount).toBe(14);
+    expect(receipt.evidence.taxonomyConsolidationCrmManifestRefreshNeededCount).toBe(14);
+    expect(receipt.evidence.taxonomyConsolidationCanAskApprovalNow).toBe(false);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,
@@ -231,6 +278,8 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       missingInputsIntake,
       missingInputsRequestBundle,
       privateInputTemplatePack,
+      postInputOrchestrator,
+      taxonomyConsolidationAudit,
       onboardingTrunkMap,
       packageJson,
       validationStatus: "passed",
@@ -271,6 +320,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(markdown).toContain("Continuation guard");
     expect(markdown).toContain("Missing-inputs intake");
     expect(markdown).toContain("Missing-inputs request bundle");
+    expect(markdown).toContain("Taxonomy consolidation audit");
     expect(markdown).toContain("No live actions");
     expect(markdown).toContain("This receipt cannot approve live action");
   });

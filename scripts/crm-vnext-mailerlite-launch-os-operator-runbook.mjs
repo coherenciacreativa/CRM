@@ -52,6 +52,8 @@ const DEFAULT_MISSING_INPUTS_KIT = '/Users/alejandrogomez/Documents/Mantis-Repor
 const DEFAULT_MISSING_INPUTS_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json';
 const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
+const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
+const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -108,6 +110,8 @@ Options:
   --missing-inputs-intake <path>      Launch OS missing-inputs redacted intake JSON. Defaults to ${DEFAULT_MISSING_INPUTS_INTAKE}
   --missing-inputs-request-bundle <path> Launch OS copy-ready missing-input request bundle JSON. Defaults to ${DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE}
   --private-input-template-pack <path> Launch OS inert private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
+  --post-input-orchestrator <path> Launch OS post-input local orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
+  --taxonomy-consolidation-audit <path> Launch OS taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
   --continuation-guard <path>        Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -171,6 +175,8 @@ const parseArgs = (argv) => {
     missingInputsIntake: DEFAULT_MISSING_INPUTS_INTAKE,
     missingInputsRequestBundle: DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE,
     privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
+    postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
+    taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -230,6 +236,8 @@ const parseArgs = (argv) => {
     else if (arg === '--missing-inputs-intake') options.missingInputsIntake = argv[++index];
     else if (arg === '--missing-inputs-request-bundle') options.missingInputsRequestBundle = argv[++index];
     else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
+    else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
+    else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -302,6 +310,8 @@ const loadSourceDigests = async (options) => {
     [options.missingInputsIntake, 'Launch OS missing-inputs intake with redacted private input status', true],
     [options.missingInputsRequestBundle, 'Launch OS copy-ready missing-input request bundle with no approval or private file creation', true],
     [options.privateInputTemplatePack, 'Launch OS inert private-input template pack with example files ignored by active intake', true],
+    [options.postInputOrchestrator, 'Launch OS post-input orchestrator with local packet regeneration plan and no execution', true],
+    [options.taxonomyConsolidationAudit, 'Launch OS taxonomy consolidation audit across Brand dictionary, CRM manifest and approved empty-group receipts', true],
     [options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
@@ -473,6 +483,8 @@ const buildCurrentState = ({
   missingInputsIntake,
   missingInputsRequestBundle,
   privateInputTemplatePack,
+  postInputOrchestrator,
+  taxonomyConsolidationAudit,
   continuationGuard,
   validationReceipt,
 }) => {
@@ -998,6 +1010,27 @@ const buildCurrentState = ({
       createsActivePrivateInputFiles: privateInputTemplatePack?.safety?.createsActivePrivateInputFiles ?? null,
       writesRealPrivateValues: privateInputTemplatePack?.safety?.writesRealPrivateValues ?? null,
     },
+    postInputOrchestrator: {
+      status: postInputOrchestrator?.status ?? null,
+      readyInputCount: postInputOrchestrator?.executiveSummary?.readyInputCount ?? null,
+      readyCommandCount: postInputOrchestrator?.executiveSummary?.readyCommandCount ?? null,
+      allReadyCommandsAllowed: postInputOrchestrator?.executiveSummary?.allReadyCommandsAllowed ?? null,
+      canAskApprovalNow: postInputOrchestrator?.executiveSummary?.canAskApprovalNow ?? null,
+      commandsExecuted: postInputOrchestrator?.executiveSummary?.commandsExecuted ?? null,
+      openLiveMutationGateCount: postInputOrchestrator?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextSafeAction: postInputOrchestrator?.executiveSummary?.nextSafeAction ?? null,
+    },
+    taxonomyConsolidationAudit: {
+      status: taxonomyConsolidationAudit?.status ?? null,
+      liveEvidenceGroupCount: taxonomyConsolidationAudit?.executiveSummary?.liveEvidenceGroupCount ?? null,
+      brandPromotionNeededCount: taxonomyConsolidationAudit?.executiveSummary?.brandPromotionNeededCount ?? null,
+      crmManifestRefreshNeededCount: taxonomyConsolidationAudit?.executiveSummary?.crmManifestRefreshNeededCount ?? null,
+      allLiveEvidencePromotedInBrandDictionary: taxonomyConsolidationAudit?.executiveSummary?.allLiveEvidencePromotedInBrandDictionary ?? null,
+      allLiveEvidenceHasCrmLiveIds: taxonomyConsolidationAudit?.executiveSummary?.allLiveEvidenceHasCrmLiveIds ?? null,
+      canAskApprovalNow: taxonomyConsolidationAudit?.executiveSummary?.canAskApprovalNow ?? null,
+      openLiveMutationGateCount: taxonomyConsolidationAudit?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextSafeAction: taxonomyConsolidationAudit?.executiveSummary?.nextSafeAction ?? null,
+    },
     continuationGuard: {
       status: continuationGuard?.status ?? null,
       allTrackedBoundariesClosed: continuationGuard?.executiveSummary?.allTrackedBoundariesClosed ?? null,
@@ -1073,6 +1106,8 @@ const buildReportMap = (sourceDigests) => {
     missingInputsIntake: findPath('mailerlite_launch_os_missing_inputs_intake_2026-05-28.json'),
     missingInputsRequestBundle: findPath('mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json'),
     privateInputTemplatePack: findPath('mailerlite_launch_os_private_input_template_pack_2026-05-28.json'),
+    postInputOrchestrator: findPath('mailerlite_launch_os_post_input_orchestrator_2026-05-28.json'),
+    taxonomyConsolidationAudit: findPath('mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json'),
     continuationGuard: findPath('mailerlite_launch_os_continuation_guard_2026-05-28.json'),
     validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-28.json'),
     packageJson: findPath('package.json'),
@@ -1261,6 +1296,8 @@ const buildOperatingScenarios = ({ commandCatalog }) => {
         command('crm:vnext:mailerlite-launch-os-missing-inputs-intake'),
         command('crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle'),
         command('crm:vnext:mailerlite-launch-os-private-input-template-pack'),
+        command('crm:vnext:mailerlite-launch-os-post-input-orchestrator'),
+        command('crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit'),
       ].filter(Boolean),
       liveGatesRemainClosed: ['all operations until their own exact phrase is supplied', 'subscriber assignment', 'workflow use', 'send', 'Shopify publish', 'CRM writes'],
     },
@@ -1386,6 +1423,24 @@ const buildPrivateInputTemplatePackMove = (currentState) => {
   return `Refresh the Launch OS private-input template pack before using examples; current status: ${pack.status}.`;
 };
 
+const buildPostInputOrchestratorMove = (currentState) => {
+  const orchestrator = currentState?.postInputOrchestrator;
+  if (!orchestrator?.status) return 'Generate the Launch OS post-input orchestrator so future private inputs route to local packet regeneration instead of reopening closed UI work.';
+  if (orchestrator.status === 'post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes') {
+    return `Use the Launch OS post-input orchestrator to regenerate local seed/CRM packets only; ready commands ${orchestrator.readyCommandCount ?? 'unknown'}, all commands allowed: ${orchestrator.allReadyCommandsAllowed}, commands executed: ${orchestrator.commandsExecuted}.`;
+  }
+  return `Use the Launch OS post-input orchestrator as the current wait state; ready inputs ${orchestrator.readyInputCount ?? 0}, ready commands ${orchestrator.readyCommandCount ?? 0}, can ask approval now: ${orchestrator.canAskApprovalNow}, commands executed: ${orchestrator.commandsExecuted}.`;
+};
+
+const buildTaxonomyConsolidationMove = (currentState) => {
+  const audit = currentState?.taxonomyConsolidationAudit;
+  if (!audit?.status) return 'Generate the Launch OS taxonomy consolidation audit so Brand dictionary, CRM manifest and approved group receipts stay reconciled before any further live use.';
+  if (audit.status === 'taxonomy_receipts_consolidated_no_live_changes') {
+    return `Use the Launch OS taxonomy consolidation audit as current read-only taxonomy evidence; live groups ${audit.liveEvidenceGroupCount ?? 'unknown'}, Brand promotions needed 0, CRM manifest refresh needed 0.`;
+  }
+  return `Use the Launch OS taxonomy consolidation audit before claiming taxonomy is complete; live groups ${audit.liveEvidenceGroupCount ?? 'unknown'}, Brand promotions needed ${audit.brandPromotionNeededCount ?? 'unknown'}, CRM manifest refresh needed ${audit.crmManifestRefreshNeededCount ?? 'unknown'}, no live gates open.`;
+};
+
 const buildContinuationGuardMove = (currentState) => {
   const guard = currentState?.continuationGuard;
   if (!guard?.status) return null;
@@ -1407,6 +1462,8 @@ const buildApprovalPhaseMoves = (currentState) => {
     buildMissingInputsIntakeMove(currentState),
     buildMissingInputsRequestBundleMove(currentState),
     buildPrivateInputTemplatePackMove(currentState),
+    buildPostInputOrchestratorMove(currentState),
+    buildTaxonomyConsolidationMove(currentState),
     buildContinuationGuardMove(currentState),
     miniLaunchEmptyGroupBoundaryClosed
     ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
@@ -1472,6 +1529,8 @@ const buildSharedImmediateMoves = (currentState) => {
     buildMissingInputsIntakeMove(currentState),
     buildMissingInputsRequestBundleMove(currentState),
     buildPrivateInputTemplatePackMove(currentState),
+    buildPostInputOrchestratorMove(currentState),
+    buildTaxonomyConsolidationMove(currentState),
     buildContinuationGuardMove(currentState),
     'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
     'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
@@ -1543,6 +1602,8 @@ const buildRunbook = ({
   missingInputsIntake,
   missingInputsRequestBundle,
   privateInputTemplatePack,
+  postInputOrchestrator,
+  taxonomyConsolidationAudit,
   continuationGuard,
   validationReceipt,
   packageJson,
@@ -1595,6 +1656,8 @@ const buildRunbook = ({
     missingInputsIntake,
     missingInputsRequestBundle,
     privateInputTemplatePack,
+    postInputOrchestrator,
+    taxonomyConsolidationAudit,
     continuationGuard,
     validationReceipt,
     responseWorkspace,
@@ -1821,6 +1884,13 @@ const renderMarkdown = (runbook) => {
     `- Private-input active path collisions: ${runbook.currentState.privateInputTemplatePack.activePathCollisionCount ?? 'unknown'}`,
     `- Private-input creates active files: ${runbook.currentState.privateInputTemplatePack.createsActivePrivateInputFiles ?? 'unknown'}`,
     `- Private-input writes real values: ${runbook.currentState.privateInputTemplatePack.writesRealPrivateValues ?? 'unknown'}`,
+    `- Post-input orchestrator: ${runbook.currentState.postInputOrchestrator.status ?? 'missing'}`,
+    `- Post-input ready commands: ${runbook.currentState.postInputOrchestrator.readyCommandCount ?? 'unknown'}`,
+    `- Post-input commands executed: ${runbook.currentState.postInputOrchestrator.commandsExecuted ?? 'unknown'}`,
+    `- Taxonomy consolidation audit: ${runbook.currentState.taxonomyConsolidationAudit.status ?? 'missing'}`,
+    `- Taxonomy live evidence groups: ${runbook.currentState.taxonomyConsolidationAudit.liveEvidenceGroupCount ?? 'unknown'}`,
+    `- Taxonomy Brand promotions needed: ${runbook.currentState.taxonomyConsolidationAudit.brandPromotionNeededCount ?? 'unknown'}`,
+    `- Taxonomy CRM manifest refresh needed: ${runbook.currentState.taxonomyConsolidationAudit.crmManifestRefreshNeededCount ?? 'unknown'}`,
     `- Continuation guard: ${runbook.currentState.continuationGuard.status ?? 'missing'}`,
     `- Continuation guard closed boundaries: ${runbook.currentState.continuationGuard.closedBoundaryCount ?? 'unknown'}/${runbook.currentState.continuationGuard.trackedBoundaryCount ?? 'unknown'}`,
     `- Continuation guard old UI work closed: ${runbook.currentState.continuationGuard.oldUiWorkClosed ?? 'unknown'}`,
@@ -1954,6 +2024,8 @@ const buildRunbookFromFiles = async (options) => {
     missingInputsIntake,
     missingInputsRequestBundle,
     privateInputTemplatePack,
+    postInputOrchestrator,
+    taxonomyConsolidationAudit,
     continuationGuard,
     validationReceipt,
     packageJson,
@@ -2005,6 +2077,8 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.missingInputsIntake),
     readOptionalJson(options.missingInputsRequestBundle),
     readOptionalJson(options.privateInputTemplatePack),
+    readOptionalJson(options.postInputOrchestrator),
+    readOptionalJson(options.taxonomyConsolidationAudit),
     readOptionalJson(options.continuationGuard),
     readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
@@ -2058,6 +2132,8 @@ const buildRunbookFromFiles = async (options) => {
     missingInputsIntake,
     missingInputsRequestBundle,
     privateInputTemplatePack,
+    postInputOrchestrator,
+    taxonomyConsolidationAudit,
     continuationGuard,
     validationReceipt,
     packageJson,
@@ -2100,6 +2176,12 @@ const main = async () => {
     missingInputsRequestBundleRequestCount: runbook.currentState.missingInputsRequestBundle.requestCount,
     privateInputTemplatePackStatus: runbook.currentState.privateInputTemplatePack.status,
     privateInputTemplatePackExampleFileCount: runbook.currentState.privateInputTemplatePack.exampleFileCount,
+    postInputOrchestratorStatus: runbook.currentState.postInputOrchestrator.status,
+    postInputOrchestratorReadyCommandCount: runbook.currentState.postInputOrchestrator.readyCommandCount,
+    postInputOrchestratorCommandsExecuted: runbook.currentState.postInputOrchestrator.commandsExecuted,
+    taxonomyConsolidationAuditStatus: runbook.currentState.taxonomyConsolidationAudit.status,
+    taxonomyConsolidationBrandPromotionNeededCount: runbook.currentState.taxonomyConsolidationAudit.brandPromotionNeededCount,
+    taxonomyConsolidationCrmManifestRefreshNeededCount: runbook.currentState.taxonomyConsolidationAudit.crmManifestRefreshNeededCount,
     continuationGuardStatus: runbook.currentState.continuationGuard.status,
     continuationGuardOldUiWorkClosed: runbook.currentState.continuationGuard.oldUiWorkClosed,
     continuationGuardClosedBoundaryCount: runbook.currentState.continuationGuard.closedBoundaryCount,

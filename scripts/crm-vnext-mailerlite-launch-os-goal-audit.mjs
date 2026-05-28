@@ -51,6 +51,8 @@ const DEFAULT_MISSING_INPUTS_KIT = '/Users/alejandrogomez/Documents/Mantis-Repor
 const DEFAULT_MISSING_INPUTS_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json';
 const DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json';
 const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_2026-05-28.json';
+const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
+const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -114,6 +116,8 @@ Options:
   --missing-inputs-intake <path>     Launch OS missing-inputs redacted intake JSON. Defaults to ${DEFAULT_MISSING_INPUTS_INTAKE}
   --missing-inputs-request-bundle <path> Launch OS copy-ready missing-input request bundle JSON. Defaults to ${DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE}
   --private-input-template-pack <path> Launch OS inert private-input template pack JSON. Defaults to ${DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK}
+  --post-input-orchestrator <path> Launch OS post-input local orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
+  --taxonomy-consolidation-audit <path> Launch OS taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
   --continuation-guard <path>       Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -175,6 +179,8 @@ const parseArgs = (argv) => {
     missingInputsIntake: DEFAULT_MISSING_INPUTS_INTAKE,
     missingInputsRequestBundle: DEFAULT_MISSING_INPUTS_REQUEST_BUNDLE,
     privateInputTemplatePack: DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK,
+    postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
+    taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -234,6 +240,8 @@ const parseArgs = (argv) => {
     else if (arg === '--missing-inputs-intake') options.missingInputsIntake = argv[++index];
     else if (arg === '--missing-inputs-request-bundle') options.missingInputsRequestBundle = argv[++index];
     else if (arg === '--private-input-template-pack') options.privateInputTemplatePack = argv[++index];
+    else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
+    else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -372,6 +380,8 @@ const loadSources = async (options) => {
     ['missingInputsIntake', options.missingInputsIntake, 'Launch OS missing-inputs intake with redacted private input status', 'json', true],
     ['missingInputsRequestBundle', options.missingInputsRequestBundle, 'Launch OS copy-ready missing-input request bundle with no approval or private file creation', 'json', true],
     ['privateInputTemplatePack', options.privateInputTemplatePack, 'Launch OS inert private-input template pack with example files ignored by active intake', 'json', true],
+    ['postInputOrchestrator', options.postInputOrchestrator, 'Launch OS post-input orchestrator with local packet regeneration plan and no execution', 'json', true],
+    ['taxonomyConsolidationAudit', options.taxonomyConsolidationAudit, 'Launch OS taxonomy consolidation audit across Brand dictionary, CRM manifest and approved empty-group receipts', 'json', true],
     ['continuationGuard', options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
@@ -461,6 +471,8 @@ const buildRequirementChecks = ({
   missingInputsIntake,
   missingInputsRequestBundle,
   privateInputTemplatePack,
+  postInputOrchestrator,
+  taxonomyConsolidationAudit,
   continuationGuard,
   validationReceipt,
   brandTaxonomy,
@@ -982,6 +994,61 @@ const buildRequirementChecks = ({
   const privateInputTemplatePackOpenLiveGateCount = privateInputTemplatePackState?.executiveSummary?.openLiveMutationGateCount
     ?? privateInputTemplatePackState?.openLiveMutationGateCount
     ?? null;
+  const postInputOrchestratorState = postInputOrchestrator ?? runbook?.currentState?.postInputOrchestrator ?? null;
+  const postInputOrchestratorStatus = postInputOrchestratorState?.status ?? null;
+  const postInputOrchestratorReadyInputCount = postInputOrchestratorState?.executiveSummary?.readyInputCount
+    ?? postInputOrchestratorState?.readyInputCount
+    ?? null;
+  const postInputOrchestratorReadyCommandCount = postInputOrchestratorState?.executiveSummary?.readyCommandCount
+    ?? postInputOrchestratorState?.readyCommandCount
+    ?? null;
+  const postInputOrchestratorAllReadyCommandsAllowed = postInputOrchestratorState?.executiveSummary?.allReadyCommandsAllowed
+    ?? postInputOrchestratorState?.allReadyCommandsAllowed
+    ?? null;
+  const postInputOrchestratorCanAskApprovalNow = postInputOrchestratorState?.executiveSummary?.canAskApprovalNow
+    ?? postInputOrchestratorState?.canAskApprovalNow
+    ?? null;
+  const postInputOrchestratorCommandsExecuted = postInputOrchestratorState?.executiveSummary?.commandsExecuted
+    ?? postInputOrchestratorState?.commandsExecuted
+    ?? null;
+  const postInputOrchestratorOpenLiveGateCount = postInputOrchestratorState?.executiveSummary?.openLiveMutationGateCount
+    ?? postInputOrchestratorState?.openLiveMutationGateCount
+    ?? null;
+  const taxonomyConsolidationAuditState = taxonomyConsolidationAudit
+    ?? runbook?.currentState?.taxonomyConsolidationAudit
+    ?? null;
+  const taxonomyConsolidationAuditStatus = taxonomyConsolidationAuditState?.status ?? null;
+  const taxonomyConsolidationLiveEvidenceGroupCount = taxonomyConsolidationAuditState?.executiveSummary?.liveEvidenceGroupCount
+    ?? taxonomyConsolidationAuditState?.liveEvidenceGroupCount
+    ?? null;
+  const taxonomyConsolidationBrandPromotionNeededCount = taxonomyConsolidationAuditState?.executiveSummary?.brandPromotionNeededCount
+    ?? taxonomyConsolidationAuditState?.brandPromotionNeededCount
+    ?? null;
+  const taxonomyConsolidationCrmManifestRefreshNeededCount = taxonomyConsolidationAuditState?.executiveSummary?.crmManifestRefreshNeededCount
+    ?? taxonomyConsolidationAuditState?.crmManifestRefreshNeededCount
+    ?? null;
+  const taxonomyConsolidationAllBrandPromoted = taxonomyConsolidationAuditState?.executiveSummary?.allLiveEvidencePromotedInBrandDictionary
+    ?? taxonomyConsolidationAuditState?.allLiveEvidencePromotedInBrandDictionary
+    ?? null;
+  const taxonomyConsolidationAllCrmLiveIds = taxonomyConsolidationAuditState?.executiveSummary?.allLiveEvidenceHasCrmLiveIds
+    ?? taxonomyConsolidationAuditState?.allLiveEvidenceHasCrmLiveIds
+    ?? null;
+  const taxonomyConsolidationCanAskApprovalNow = taxonomyConsolidationAuditState?.executiveSummary?.canAskApprovalNow
+    ?? taxonomyConsolidationAuditState?.canAskApprovalNow
+    ?? null;
+  const taxonomyConsolidationOpenLiveGateCount = taxonomyConsolidationAuditState?.executiveSummary?.openLiveMutationGateCount
+    ?? taxonomyConsolidationAuditState?.openLiveMutationGateCount
+    ?? null;
+  const taxonomyConsolidationReady = [
+    'taxonomy_consolidation_audit_ready_with_local_dictionary_drift_no_live_changes',
+    'taxonomy_receipts_consolidated_no_live_changes',
+  ].includes(taxonomyConsolidationAuditStatus);
+  const taxonomyConsolidationComplete = taxonomyConsolidationAuditStatus === 'taxonomy_receipts_consolidated_no_live_changes'
+    && taxonomyConsolidationBrandPromotionNeededCount === 0
+    && taxonomyConsolidationCrmManifestRefreshNeededCount === 0
+    && taxonomyConsolidationAllBrandPromoted === true
+    && taxonomyConsolidationAllCrmLiveIds === true
+    && taxonomyConsolidationOpenLiveGateCount === 0;
   const continuationGuardState = continuationGuard ?? runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardClosedBoundaryCount = continuationGuardState?.executiveSummary?.closedBoundaryCount
@@ -1242,7 +1309,9 @@ const buildRequirementChecks = ({
       id: 'consolidate_taxonomy_receipts',
       requirement: 'Consolidate groups/tags/receipts with Brand Hub as canon and CRM as derived operator cache.',
       status: brandTaxonomy.includes('CC · Source') && brandDictionary.includes('CC ·')
-        ? brandCandidateDecisionClosed && launchGroupDryRunReady
+        ? taxonomyConsolidationComplete
+          ? 'proven'
+          : taxonomyConsolidationReady || (brandCandidateDecisionClosed && launchGroupDryRunReady)
           ? 'partial_ready_no_live'
           : 'partial'
         : 'not_proven',
@@ -1250,6 +1319,14 @@ const buildRequirementChecks = ({
         `brandTaxonomyChars=${brandTaxonomy.length}`,
         `brandDictionaryChars=${brandDictionary.length}`,
         `runbookCommandCount=${runbook?.commandCatalog?.length ?? 0}`,
+        `taxonomyConsolidationAuditStatus=${taxonomyConsolidationAuditStatus ?? 'missing'}`,
+        `taxonomyConsolidationLiveEvidenceGroupCount=${taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}`,
+        `taxonomyConsolidationBrandPromotionNeededCount=${taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}`,
+        `taxonomyConsolidationCrmManifestRefreshNeededCount=${taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}`,
+        `taxonomyConsolidationAllBrandPromoted=${taxonomyConsolidationAllBrandPromoted ?? 'unknown'}`,
+        `taxonomyConsolidationAllCrmLiveIds=${taxonomyConsolidationAllCrmLiveIds ?? 'unknown'}`,
+        `taxonomyConsolidationCanAskApprovalNow=${taxonomyConsolidationCanAskApprovalNow ?? 'unknown'}`,
+        `taxonomyConsolidationOpenLiveGateCount=${taxonomyConsolidationOpenLiveGateCount ?? 'unknown'}`,
         `brandAcceptedLaunchGroupCandidates=${brandAcceptedLaunchGroupCandidates}`,
         `brandCandidateDecisionClosed=${brandCandidateDecisionClosed}`,
         `groupDryRunReadyForFutureEmptyGroupDecision=${launchGroupDryRunReady}`,
@@ -1258,7 +1335,16 @@ const buildRequirementChecks = ({
         `groupDryRunStatus=${groupDryRunLane?.sourceStatus ?? 'missing'}`,
         `reconciliationActions=${reconciliationActions.map((action) => action.id).join(',') || 'none'}`,
       ],
-      remaining: brandCandidateDecisionClosed && launchGroupDryRunReady
+      remaining: taxonomyConsolidationReady && !taxonomyConsolidationComplete
+        ? [
+          `Live execution receipts are explicit: ${taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'} groups proven; Brand promotions needed ${taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}; CRM manifest refresh needed ${taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}.`,
+          'Refresh Brand dictionary and CRM manifest locally from the approved execution receipts before calling taxonomy complete; no live action or UI work is open.',
+        ]
+        : taxonomyConsolidationComplete
+        ? [
+          'Brand dictionary and CRM manifest are consolidated against approved execution receipts; keep using fresh read-only scans before any future live use.',
+        ]
+        : brandCandidateDecisionClosed && launchGroupDryRunReady
         ? launchGroupsAlreadyExist
           ? [
           'Launch Source/Delivered names are represented, dry-run validated and already live as empty MailerLite groups; this creation boundary is closed.',
@@ -1405,6 +1491,13 @@ const buildRequirementChecks = ({
         `privateInputTemplatePackWritesRealPrivateValues=${privateInputTemplatePackWritesRealPrivateValues ?? 'unknown'}`,
         `privateInputTemplatePackCanAskApprovalNow=${privateInputTemplatePackCanAskApprovalNow ?? 'unknown'}`,
         `privateInputTemplatePackOpenLiveGateCount=${privateInputTemplatePackOpenLiveGateCount ?? 'unknown'}`,
+        `postInputOrchestratorStatus=${postInputOrchestratorStatus ?? 'missing'}`,
+        `postInputOrchestratorReadyInputCount=${postInputOrchestratorReadyInputCount ?? 'unknown'}`,
+        `postInputOrchestratorReadyCommandCount=${postInputOrchestratorReadyCommandCount ?? 'unknown'}`,
+        `postInputOrchestratorAllReadyCommandsAllowed=${postInputOrchestratorAllReadyCommandsAllowed ?? 'unknown'}`,
+        `postInputOrchestratorCanAskApprovalNow=${postInputOrchestratorCanAskApprovalNow ?? 'unknown'}`,
+        `postInputOrchestratorCommandsExecuted=${postInputOrchestratorCommandsExecuted ?? 'unknown'}`,
+        `postInputOrchestratorOpenLiveGateCount=${postInputOrchestratorOpenLiveGateCount ?? 'unknown'}`,
         `continuationGuardStatus=${continuationGuardStatus ?? 'missing'}`,
         `continuationGuardClosedBoundaryCount=${continuationGuardClosedBoundaryCount ?? 'unknown'}`,
         `continuationGuardTrackedBoundaryCount=${continuationGuardTrackedBoundaryCount ?? 'unknown'}`,
@@ -1539,6 +1632,10 @@ const buildRequirementChecks = ({
         `privateInputTemplatePackCreatesActivePrivateInputFiles=${privateInputTemplatePackCreatesActivePrivateInputFiles ?? 'unknown'}`,
         `privateInputTemplatePackWritesRealPrivateValues=${privateInputTemplatePackWritesRealPrivateValues ?? 'unknown'}`,
         `privateInputTemplatePackCanAskApprovalNow=${privateInputTemplatePackCanAskApprovalNow ?? 'unknown'}`,
+        `postInputOrchestratorStatus=${postInputOrchestratorStatus ?? 'missing'}`,
+        `postInputOrchestratorReadyCommandCount=${postInputOrchestratorReadyCommandCount ?? 'unknown'}`,
+        `postInputOrchestratorCommandsExecuted=${postInputOrchestratorCommandsExecuted ?? 'unknown'}`,
+        `postInputOrchestratorCanAskApprovalNow=${postInputOrchestratorCanAskApprovalNow ?? 'unknown'}`,
         `continuationGuardStatus=${continuationGuardStatus ?? 'missing'}`,
         `continuationGuardClosedBoundaryCount=${continuationGuardClosedBoundaryCount ?? 'unknown'}`,
         `continuationGuardOldUiWorkClosed=${continuationGuardOldUiWorkClosed ?? 'unknown'}`,
@@ -1860,6 +1957,44 @@ const buildGoalAudit = ({
     : privateInputTemplatePackStatus
       ? `Refresh the Launch OS private-input template pack before using examples; current status ${privateInputTemplatePackStatus}.`
       : 'Generate the Launch OS private-input template pack so examples exist without creating active private input files.';
+  const postInputOrchestratorState = values.postInputOrchestrator ?? values.runbook?.currentState?.postInputOrchestrator ?? null;
+  const postInputOrchestratorStatus = postInputOrchestratorState?.status ?? null;
+  const postInputOrchestratorReadyCommandCount = postInputOrchestratorState?.executiveSummary?.readyCommandCount
+    ?? postInputOrchestratorState?.readyCommandCount
+    ?? null;
+  const postInputOrchestratorAllReadyCommandsAllowed = postInputOrchestratorState?.executiveSummary?.allReadyCommandsAllowed
+    ?? postInputOrchestratorState?.allReadyCommandsAllowed
+    ?? null;
+  const postInputOrchestratorCanAskApprovalNow = postInputOrchestratorState?.executiveSummary?.canAskApprovalNow
+    ?? postInputOrchestratorState?.canAskApprovalNow
+    ?? null;
+  const postInputOrchestratorCommandsExecuted = postInputOrchestratorState?.executiveSummary?.commandsExecuted
+    ?? postInputOrchestratorState?.commandsExecuted
+    ?? null;
+  const postInputOrchestratorMove = postInputOrchestratorStatus === 'post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes'
+    ? `Use the Launch OS post-input orchestrator to regenerate seed/CRM packets only; ready commands=${postInputOrchestratorReadyCommandCount ?? 'unknown'}, allReadyCommandsAllowed=${postInputOrchestratorAllReadyCommandsAllowed}, commandsExecuted=${postInputOrchestratorCommandsExecuted}.`
+    : postInputOrchestratorStatus
+      ? `Use the Launch OS post-input orchestrator as current wait state; ready commands=${postInputOrchestratorReadyCommandCount ?? 0}, canAskApprovalNow=${postInputOrchestratorCanAskApprovalNow}, commandsExecuted=${postInputOrchestratorCommandsExecuted}.`
+      : 'Generate the Launch OS post-input orchestrator so private inputs route to local packet regeneration instead of old UI work.';
+  const taxonomyConsolidationAuditState = values.taxonomyConsolidationAudit ?? values.runbook?.currentState?.taxonomyConsolidationAudit ?? null;
+  const taxonomyConsolidationAuditStatus = taxonomyConsolidationAuditState?.status ?? null;
+  const taxonomyConsolidationLiveEvidenceGroupCount = taxonomyConsolidationAuditState?.executiveSummary?.liveEvidenceGroupCount
+    ?? taxonomyConsolidationAuditState?.liveEvidenceGroupCount
+    ?? null;
+  const taxonomyConsolidationBrandPromotionNeededCount = taxonomyConsolidationAuditState?.executiveSummary?.brandPromotionNeededCount
+    ?? taxonomyConsolidationAuditState?.brandPromotionNeededCount
+    ?? null;
+  const taxonomyConsolidationCrmManifestRefreshNeededCount = taxonomyConsolidationAuditState?.executiveSummary?.crmManifestRefreshNeededCount
+    ?? taxonomyConsolidationAuditState?.crmManifestRefreshNeededCount
+    ?? null;
+  const taxonomyConsolidationCanAskApprovalNow = taxonomyConsolidationAuditState?.executiveSummary?.canAskApprovalNow
+    ?? taxonomyConsolidationAuditState?.canAskApprovalNow
+    ?? null;
+  const taxonomyConsolidationMove = taxonomyConsolidationAuditStatus === 'taxonomy_receipts_consolidated_no_live_changes'
+    ? `Use the Launch OS taxonomy consolidation audit as current read-only evidence; live groups=${taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}, Brand promotions needed=0, CRM manifest refresh needed=0.`
+    : taxonomyConsolidationAuditStatus
+      ? `Use the Launch OS taxonomy consolidation audit before claiming taxonomy is complete; live groups=${taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}, Brand promotions needed=${taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}, CRM manifest refresh needed=${taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}, canAskApprovalNow=${taxonomyConsolidationCanAskApprovalNow}.`
+      : 'Generate the Launch OS taxonomy consolidation audit so approved live group receipts, Brand dictionary and CRM manifest stay reconciled without reopening old UI work.';
   const continuationGuardState = values.continuationGuard ?? values.runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardOldUiWorkClosed = continuationGuardState?.executiveSummary?.oldUiWorkClosed
@@ -1963,12 +2098,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -1982,6 +2117,8 @@ const buildGoalAudit = ({
         missingInputsIntakeMove,
         missingInputsRequestBundleMove,
         privateInputTemplatePackMove,
+        postInputOrchestratorMove,
+        taxonomyConsolidationMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -1999,6 +2136,8 @@ const buildGoalAudit = ({
         missingInputsIntakeMove,
         missingInputsRequestBundleMove,
         privateInputTemplatePackMove,
+        postInputOrchestratorMove,
+        taxonomyConsolidationMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2015,6 +2154,8 @@ const buildGoalAudit = ({
         missingInputsIntakeMove,
         missingInputsRequestBundleMove,
         privateInputTemplatePackMove,
+        postInputOrchestratorMove,
+        taxonomyConsolidationMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2029,6 +2170,8 @@ const buildGoalAudit = ({
       missingInputsIntakeMove,
       missingInputsRequestBundleMove,
       privateInputTemplatePackMove,
+      postInputOrchestratorMove,
+      taxonomyConsolidationMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
@@ -2079,6 +2222,16 @@ const buildGoalAudit = ({
       privateInputTemplatePackActivePathCollisionCount,
       privateInputTemplatePackCreatesActivePrivateInputFiles,
       privateInputTemplatePackWritesRealPrivateValues,
+      postInputOrchestratorStatus,
+      postInputOrchestratorReadyCommandCount,
+      postInputOrchestratorAllReadyCommandsAllowed,
+      postInputOrchestratorCanAskApprovalNow,
+      postInputOrchestratorCommandsExecuted,
+      taxonomyConsolidationAuditStatus,
+      taxonomyConsolidationLiveEvidenceGroupCount,
+      taxonomyConsolidationBrandPromotionNeededCount,
+      taxonomyConsolidationCrmManifestRefreshNeededCount,
+      taxonomyConsolidationCanAskApprovalNow,
       continuationGuardStatus,
       continuationGuardOldUiWorkClosed,
       continuationGuardClosedBoundaryCount,
@@ -2101,6 +2254,8 @@ const buildGoalAudit = ({
       missingInputsIntakeMove,
       missingInputsRequestBundleMove,
       privateInputTemplatePackMove,
+      postInputOrchestratorMove,
+      taxonomyConsolidationMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       repairPacketMove,
@@ -2156,6 +2311,10 @@ const renderMarkdown = (audit) => {
     `- Ready for live operation: ${audit.executiveSummary.readyForLiveOperation}`,
     `- Live approval needed now: ${audit.executiveSummary.liveApprovalNeededNow}`,
     `- Live action allowed now: ${audit.executiveSummary.liveActionAllowedNow}`,
+    `- Taxonomy consolidation audit: ${audit.executiveSummary.taxonomyConsolidationAuditStatus ?? 'missing'}`,
+    `- Taxonomy live evidence groups: ${audit.executiveSummary.taxonomyConsolidationLiveEvidenceGroupCount ?? 'unknown'}`,
+    `- Taxonomy Brand promotions needed: ${audit.executiveSummary.taxonomyConsolidationBrandPromotionNeededCount ?? 'unknown'}`,
+    `- Taxonomy CRM manifest refresh needed: ${audit.executiveSummary.taxonomyConsolidationCrmManifestRefreshNeededCount ?? 'unknown'}`,
     `- Next best move: ${audit.executiveSummary.nextBestMove}`,
     '',
     '## Requirement Audit',
