@@ -15,6 +15,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN = '/Users/alejandrogomez/Doc
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
@@ -38,6 +39,7 @@ Options:
   --mini-launch-email-asset-build-execution <path> Mini-launch email asset-build execution attempt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION}
   --mini-launch-email-manual-ui-builder-packet <path> Mini-launch manual UI builder fallback packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET}
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI post-build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
+  --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-shopify-local-build-receipt <path> Shopify no-live local build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
@@ -77,6 +79,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailAssetBuildExecution: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION,
     miniLaunchEmailManualUiBuilderPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET,
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
+    miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
@@ -103,6 +106,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-asset-build-execution') options.miniLaunchEmailAssetBuildExecution = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-builder-packet') options.miniLaunchEmailManualUiBuilderPacket = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
+    else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
@@ -1001,14 +1005,27 @@ const buildBrujulaBuilderDraftItem = ({ correction, renderQa, manualUiReceipt = 
   });
 };
 
-const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null, manualUiReceipt = null }) => {
+const buildMiniLaunchSeedSendItem = ({
+  payloadManifest,
+  renderQa = null,
+  manualUiReceipt = null,
+  seedTestQaPacket = null,
+}) => {
   const manualUiDraftsBuilt = manualUiReceipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
     && manualUiReceipt?.executiveSummary?.createdOrEditedDraftCount === 4;
-  const blockers = [
-    ...(manualUiDraftsBuilt ? [] : ['asset_build_not_executed']),
-    'real_mailerlite_render_qa_missing',
-    'exact_seed_recipient_missing',
-  ];
+  const seedPacketBlockers = seedTestQaPacket?.readiness?.machineBlockersBeforeSeedSendApprovalRequest;
+  const seedPacketCanAsk = seedTestQaPacket?.seedSendApprovalBoundary?.canAskAlejandroForApproval === true;
+  const blockers = Array.isArray(seedPacketBlockers)
+    ? [
+      ...seedPacketBlockers,
+      ...(seedPacketCanAsk ? ['private_seed_send_approval_packet_missing'] : []),
+    ]
+    : [
+      ...(manualUiDraftsBuilt ? [] : ['asset_build_not_executed']),
+      'real_mailerlite_render_qa_missing',
+      'exact_seed_recipient_missing',
+    ];
+  const targetNames = targetNamesFrom((seedTestQaPacket?.targetDrafts ?? []).map((draft) => draft?.draftName));
 
   return buildApprovalItem({
     id: 'mini_launch_seed_send',
@@ -1022,16 +1039,17 @@ const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null, manualU
       payloadManifest: payloadManifest?.status ?? null,
       renderQa: renderQa?.status ?? null,
       manualUiReceipt: manualUiReceipt?.status ?? null,
+      seedTestQaPacket: seedTestQaPacket?.status ?? null,
     },
-    targetNames: [],
+    targetNames,
     allowedAfterExactApproval: [],
-    stillClosed: [
+    stillClosed: seedTestQaPacket?.seedSendApprovalBoundary?.stillClosedEvenAfterApproval ?? [
       'seed_send',
       'workflow_or_automation_attachment',
       'subscriber_read_assignment_or_import',
       'audience_launch',
     ],
-    requiredFreshEvidence: [
+    requiredFreshEvidence: seedTestQaPacket?.seedSendApprovalBoundary?.requiredBeforeApprovalRequest ?? [
       manualUiDraftsBuilt
         ? 'manual UI drafts exist; run real MailerLite builder/render QA on those drafts'
         : 'assets must first be built as drafts after exact asset-build or manual UI approval',
@@ -1041,6 +1059,12 @@ const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null, manualU
     evidence: {
       manualUiDraftsBuilt,
       manualUiReceiptStatus: manualUiReceipt?.status ?? null,
+      seedTestQaPacketStatus: seedTestQaPacket?.status ?? null,
+      seedRecipientSupplied: seedTestQaPacket?.seedIdentity?.supplied ?? false,
+      canAskSeedSendApprovalNow: seedTestQaPacket?.readiness?.canAskSeedSendApprovalNow ?? false,
+      realMailerLiteRenderQaReady: seedTestQaPacket?.readiness?.realMailerLiteRenderQaReady ?? false,
+      targetGroupsExist: seedTestQaPacket?.readiness?.targetGroupsExist ?? null,
+      seedPreflightBlockers: seedPacketBlockers ?? null,
       readyForSeedSendNow: payloadManifest?.executiveSummary?.readyForSeedSendNow ?? null,
       localRenderReady: renderQa?.executiveSummary?.localRenderReady ?? null,
       renderPreviewNonEmptyCount: renderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
@@ -1049,7 +1073,7 @@ const buildMiniLaunchSeedSendItem = ({ payloadManifest, renderQa = null, manualU
     commandAfterApproval: null,
     notes: [
       manualUiDraftsBuilt
-        ? 'Manual UI drafts are present; the next seed-send blocker is real MailerLite render QA plus exact seed recipient.'
+        ? 'Manual UI drafts are present; use the seed-test QA packet as the current preflight source before any send request.'
         : 'Do not ask for seed-send approval from the asset-build packet alone.',
     ],
   });
@@ -1102,6 +1126,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailAssetBuildExecution,
   miniLaunchEmailManualUiBuilderPacket,
   miniLaunchEmailManualUiBuildReceipt,
+  miniLaunchSeedTestQaPacket,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchCrmSignalProjectionPacket,
@@ -1145,6 +1170,7 @@ const buildApprovalQueue = ({
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
       renderQa: miniLaunchEmailRenderQa,
       manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
+      seedTestQaPacket: miniLaunchSeedTestQaPacket,
     }),
     buildCrmSignalWriteItem({
       packet: miniLaunchCrmSignalProjectionPacket,
@@ -1269,6 +1295,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildExecution, 'mini-launch email asset-build execution attempt'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuilderPacket, 'mini-launch manual UI builder fallback approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI post-build receipt'),
+    readOptionalJsonWithDigest(options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight packet'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildReceipt, 'Shopify no-live local build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
@@ -1290,6 +1317,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailAssetBuildExecution,
     miniLaunchEmailManualUiBuilderPacket,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchSeedTestQaPacket,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
@@ -1311,6 +1339,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailAssetBuildExecution,
     miniLaunchEmailManualUiBuilderPacket,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchSeedTestQaPacket,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,

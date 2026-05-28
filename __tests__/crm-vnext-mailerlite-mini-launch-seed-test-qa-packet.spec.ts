@@ -132,7 +132,7 @@ describe("CRM vNext MailerLite mini-launch seed-test QA packet", () => {
     const matrix = buildApprovalMatrix({ rehearsalPacket, launch, testEmailRedacted: null });
 
     expect(matrix.find((gate) => gate.id === "asset_only_seed_email_send")).toMatchObject({
-      currentStatus: "needs_seed_email_and_exact_send_approval",
+      currentStatus: "needs_seed_email_assets_render_qa_and_exact_send_approval",
       liveMutationIfApproved: true,
       approvalNeededFromAlejandro: true,
     });

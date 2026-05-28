@@ -1084,7 +1084,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(runbook.currentState.miniLaunch.emailManualUiDraftVisibleCount).toBe(4);
     expect(movesText).toContain("manual UI draft build is complete");
     expect(movesText).toContain("use the receipt as current asset evidence");
-    expect(movesText).toContain("require real MailerLite render QA");
+    expect(movesText).toContain("requires real MailerLite render QA");
     expect(movesText).toContain("manual UI build receipt as the current draft state");
     expect(movesText).toContain("Shopify no-live local build is complete");
     expect(movesText).toContain("Shopify local build receipt as current Web surface evidence");

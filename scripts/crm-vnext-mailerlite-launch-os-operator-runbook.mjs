@@ -33,6 +33,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -78,6 +79,7 @@ Options:
   --mini-launch-email-builder-payload-manifest <path> Mini-launch local builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
   --mini-launch-email-render-qa <path> Mini-launch local email render QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI draft build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
+  --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -130,6 +132,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
     miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
+    miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -178,6 +181,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
     else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
+    else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -239,6 +243,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch local builder payload manifest with exact payloads and closed execution/send gates', true],
     [options.miniLaunchEmailRenderQa, 'mini-launch local email render QA with HTML and non-empty PNG preview evidence', true],
     [options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI draft build receipt and closed send/subscriber/workflow gates', true],
+    [options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight with real-render and seed-recipient blockers', true],
     [options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
@@ -399,6 +404,7 @@ const buildCurrentState = ({
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
   miniLaunchEmailManualUiBuildReceipt,
+  miniLaunchSeedTestQaPacket,
   miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
@@ -688,6 +694,14 @@ const buildCurrentState = ({
       emailManualUiCustomHtmlStatus: miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.customHtmlEditorStatus ?? null,
       emailManualUiCurrentRoute: miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.futurePolicy?.currentRoute ?? null,
       emailManualUiSeedSendStillClosed: (miniLaunchEmailManualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send'),
+      seedTestQaPacketStatus: miniLaunchSeedTestQaPacket?.status ?? null,
+      seedTestQaCanAskApprovalNow: miniLaunchSeedTestQaPacket?.readiness?.canAskSeedSendApprovalNow ?? false,
+      seedTestQaManualUiDraftsBuilt: miniLaunchSeedTestQaPacket?.readiness?.manualUiDraftsBuilt ?? false,
+      seedTestQaLocalRenderReady: miniLaunchSeedTestQaPacket?.readiness?.localRenderReady ?? false,
+      seedTestQaRealMailerLiteRenderQaReady: miniLaunchSeedTestQaPacket?.readiness?.realMailerLiteRenderQaReady ?? false,
+      seedTestQaSeedRecipientSupplied: miniLaunchSeedTestQaPacket?.seedIdentity?.supplied ?? false,
+      seedTestQaTargetGroupsExist: miniLaunchSeedTestQaPacket?.readiness?.targetGroupsExist ?? false,
+      seedTestQaBlockersBeforeApprovalRequest: miniLaunchSeedTestQaPacket?.readiness?.machineBlockersBeforeSeedSendApprovalRequest ?? [],
       shopifyLocalBuildReceiptStatus: miniLaunchShopifyLocalBuildReceipt?.status ?? null,
       shopifyLocalBuildFileCount: miniLaunchShopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 0,
       shopifyLocalBuildClosed,
@@ -793,6 +807,7 @@ const buildReportMap = (sourceDigests) => {
     miniLaunchEmailBuilderPayloadManifest: findPath('mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailRenderQa: findPath('mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailManualUiBuildReceipt: findPath('mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json'),
+    miniLaunchSeedTestQaPacket: findPath('mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json'),
     miniLaunchShopifyLocalBuildReceipt: findPath('mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
@@ -1057,7 +1072,7 @@ const buildApprovalPhaseMoves = (currentState) => [
     ? 'Mini-launch manual UI draft build is complete; use the receipt as current asset evidence and do not request duplicate API/manual asset build unless a later exact repair scope names it.'
     : 'Use the mini-launch email builder payload manifest only as local implementation input; it cannot execute MailerLite builder mutations or sends.',
   miniLaunchManualUiBuildClosed(currentState)
-    ? 'Before any seed/test send, require real MailerLite render QA, an exact seed recipient and an exact send approval; no subscribers/workflows/groups are implied by the existing drafts.'
+    ? 'Use the mini-launch seed/test QA packet before any seed/test send; it currently requires real MailerLite render QA, an exact seed recipient and an exact send approval.'
     : 'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
   'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
   miniLaunchShopifyLocalBuildClosed(currentState)
@@ -1134,6 +1149,7 @@ const buildRunbook = ({
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
   miniLaunchEmailManualUiBuildReceipt,
+  miniLaunchSeedTestQaPacket,
   miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
@@ -1175,6 +1191,7 @@ const buildRunbook = ({
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchSeedTestQaPacket,
     miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
@@ -1318,6 +1335,11 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch manual UI editor: ${runbook.currentState.miniLaunch.emailManualUiUsedEditor ?? 'unknown'}`,
     `- Mini-launch manual UI plan observed: ${runbook.currentState.miniLaunch.emailManualUiPlanObserved ?? 'unknown'}`,
     `- Mini-launch manual UI seed send still closed: ${runbook.currentState.miniLaunch.emailManualUiSeedSendStillClosed}`,
+    `- Mini-launch seed/test QA packet: ${runbook.currentState.miniLaunch.seedTestQaPacketStatus ?? 'unknown'}`,
+    `- Mini-launch seed/test can ask approval now: ${runbook.currentState.miniLaunch.seedTestQaCanAskApprovalNow}`,
+    `- Mini-launch seed/test real MailerLite render QA ready: ${runbook.currentState.miniLaunch.seedTestQaRealMailerLiteRenderQaReady}`,
+    `- Mini-launch seed/test seed recipient supplied: ${runbook.currentState.miniLaunch.seedTestQaSeedRecipientSupplied}`,
+    `- Mini-launch seed/test blockers: ${runbook.currentState.miniLaunch.seedTestQaBlockersBeforeApprovalRequest.join(', ') || 'none'}`,
     `- Mini-launch Shopify local build receipt: ${runbook.currentState.miniLaunch.shopifyLocalBuildReceiptStatus ?? 'unknown'}`,
     `- Mini-launch Shopify local files: ${runbook.currentState.miniLaunch.shopifyLocalBuildFileCount ?? 'unknown'}`,
     `- Mini-launch Shopify local build closed: ${runbook.currentState.miniLaunch.shopifyLocalBuildClosed}`,
@@ -1466,6 +1488,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchSeedTestQaPacket,
     miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
@@ -1506,6 +1529,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchEmailBuilderPayloadManifest),
     readOptionalJson(options.miniLaunchEmailRenderQa),
     readOptionalJson(options.miniLaunchEmailManualUiBuildReceipt),
+    readOptionalJson(options.miniLaunchSeedTestQaPacket),
     readOptionalJson(options.miniLaunchShopifyLocalBuildReceipt),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
@@ -1548,6 +1572,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchSeedTestQaPacket,
     miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
