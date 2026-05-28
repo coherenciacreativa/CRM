@@ -16,6 +16,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
@@ -37,6 +38,7 @@ Options:
   --mini-launch-email-manual-ui-builder-packet <path> Mini-launch manual UI builder fallback packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET}
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI post-build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
+  --mini-launch-shopify-local-build-receipt <path> Shopify no-live local build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>                Brújula local render QA packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
@@ -74,6 +76,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailManualUiBuilderPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET,
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
+    miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
@@ -98,6 +101,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-manual-ui-builder-packet') options.miniLaunchEmailManualUiBuilderPacket = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
+    else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
@@ -679,12 +683,89 @@ const buildMiniLaunchEmailManualUiBuilderItem = ({ packet, receipt = null }) => 
   });
 };
 
-const buildShopifyLocalBuildItem = ({ request }) => {
+const shopifyLocalBuildReceiptCompleted = (receipt, targetNames) =>
+  receipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
+  && receipt?.shopifyRepo?.localFilesCreatedOrUpdated === targetNames.length
+  && receipt?.validation?.jsonTemplatesParsed === true
+  && receipt?.validation?.noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles === true
+  && receipt?.validation?.noMailerLiteScriptsFoundInNewFiles === true
+  && receipt?.validation?.noShopifyAdminApiOrPublishCommandRun === true
+  && receipt?.validation?.noRealFormAction === true
+  && receipt?.validation?.noCrmWorkflowSubscriberOrScoringTermsFoundInNewFiles === true
+  && receipt?.placeholders?.present === true
+  && receipt?.placeholders?.inert === true
+  && receipt?.safety?.shopifyApiCalled === false
+  && receipt?.safety?.shopifyPublishPerformed === false
+  && receipt?.safety?.themePushPerformed === false
+  && receipt?.safety?.realFormsCreated === false
+  && receipt?.safety?.mailerLiteApiCalled === false
+  && receipt?.safety?.crmLiveApiCalled === false
+  && receipt?.safety?.subscribersRead === false
+  && receipt?.safety?.workflowMutationsPerformed === false
+  && receipt?.safety?.sendsPerformed === false
+  && receipt?.safety?.factStoreWritePerformed === false;
+
+const buildShopifyLocalBuildItem = ({ request, receipt = null }) => {
   const suggestedFiles = targetNamesFrom(
     request?.requestedLocalScope?.files,
     request?.requestedLocalScope?.shopifyFiles,
     request?.requestedLocalScope?.proposedFiles,
   );
+  const receiptFiles = targetNamesFrom(receipt?.files);
+  const targetNames = receiptFiles.length > 0 ? receiptFiles : suggestedFiles;
+  const receiptCompleted = shopifyLocalBuildReceiptCompleted(receipt, targetNames);
+  if (receiptCompleted) {
+    return buildApprovalItem({
+      id: 'shopify_no_live_local_build',
+      title: 'Shopify local no-live build files',
+      lane: 'web_design_shopify_local_only',
+      operationType: 'local_shopify_repo_edit_already_completed',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        request: request?.status ?? null,
+        receipt: receipt?.status ?? null,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: receipt?.stillClosedAfterThisReceipt ?? [
+        'shopify_api_or_live_theme',
+        'publish',
+        'real_forms',
+        'mailerlite_live_connection',
+        'crm_live_write',
+        'subscriber_or_workflow_mutation',
+      ],
+      requiredFreshEvidence: [
+        'do not publish or connect the local files without a new exact approval',
+        'run browser/mobile QA before any future preview or publish boundary',
+      ],
+      blockers: [],
+      evidence: {
+        receiptStatus: receipt.status,
+        localFilesCreatedOrUpdated: receipt.shopifyRepo.localFilesCreatedOrUpdated,
+        placeholdersPresent: receipt.placeholders?.present ?? null,
+        placeholdersInert: receipt.placeholders?.inert ?? null,
+        jsonTemplatesParsed: receipt.validation?.jsonTemplatesParsed ?? null,
+        noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles: receipt.validation?.noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles ?? null,
+        noMailerLiteScriptsFoundInNewFiles: receipt.validation?.noMailerLiteScriptsFoundInNewFiles ?? null,
+        noShopifyAdminApiOrPublishCommandRun: receipt.validation?.noShopifyAdminApiOrPublishCommandRun ?? null,
+        noRealFormAction: receipt.validation?.noRealFormAction ?? null,
+        shopifyApiCalled: receipt.safety?.shopifyApiCalled ?? null,
+        shopifyPublishPerformed: receipt.safety?.shopifyPublishPerformed ?? null,
+        realFormsCreated: receipt.safety?.realFormsCreated ?? null,
+        mailerLiteApiCalled: receipt.safety?.mailerLiteApiCalled ?? null,
+        crmLiveApiCalled: receipt.safety?.crmLiveApiCalled ?? null,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The approved Shopify no-live local build boundary has already been used.',
+        'The five local files remain disconnected; preview/publish/form connection require separate approval.',
+      ],
+    });
+  }
+
   const blockers = [];
 
   if (request?.status !== 'ready_for_human_or_web_design_scope_approval_no_live_changes') {
@@ -897,6 +978,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailManualUiBuilderPacket,
   miniLaunchEmailManualUiBuildReceipt,
   miniLaunchShopifyLocalBuildRequest,
+  miniLaunchShopifyLocalBuildReceipt,
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
@@ -926,6 +1008,7 @@ const buildApprovalQueue = ({
     }),
     buildShopifyLocalBuildItem({
       request: miniLaunchShopifyLocalBuildRequest,
+      receipt: miniLaunchShopifyLocalBuildReceipt,
     }),
     buildBrujulaBuilderDraftItem({
       correction: brujulaEmailStyleCorrection,
@@ -1060,6 +1143,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuilderPacket, 'mini-launch manual UI builder fallback approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI post-build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
+    readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildReceipt, 'Shopify no-live local build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
     readOptionalJsonWithDigest(options.brujulaEmailRenderQa, 'Brújula local render QA packet'),
@@ -1079,6 +1163,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiBuilderPacket,
     miniLaunchEmailManualUiBuildReceipt,
     miniLaunchShopifyLocalBuildRequest,
+    miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
@@ -1098,6 +1183,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiBuilderPacket,
     miniLaunchEmailManualUiBuildReceipt,
     miniLaunchShopifyLocalBuildRequest,
+    miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,

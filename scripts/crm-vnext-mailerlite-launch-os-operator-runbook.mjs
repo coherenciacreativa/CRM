@@ -33,6 +33,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -76,6 +77,7 @@ Options:
   --mini-launch-email-builder-payload-manifest <path> Mini-launch local builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
   --mini-launch-email-render-qa <path> Mini-launch local email render QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI draft build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
+  --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -126,6 +128,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
     miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
+    miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -172,6 +175,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
     else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
+    else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -231,6 +235,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch local builder payload manifest with exact payloads and closed execution/send gates', true],
     [options.miniLaunchEmailRenderQa, 'mini-launch local email render QA with HTML and non-empty PNG preview evidence', true],
     [options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI draft build receipt and closed send/subscriber/workflow gates', true],
+    [options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -323,6 +328,7 @@ const buildCurrentState = ({
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
   miniLaunchEmailManualUiBuildReceipt,
+  miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -359,6 +365,21 @@ const buildCurrentState = ({
     && miniLaunchEmailManualUiBuildReceipt?.safety?.workflowMutationsPerformed === false
     && miniLaunchEmailManualUiBuildReceipt?.safety?.factStoreWritePerformed === false
     && (miniLaunchEmailManualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send');
+  const shopifyLocalBuildClosed = miniLaunchShopifyLocalBuildReceipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
+    && miniLaunchShopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated === 5
+    && miniLaunchShopifyLocalBuildReceipt?.validation?.jsonTemplatesParsed === true
+    && miniLaunchShopifyLocalBuildReceipt?.validation?.noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles === true
+    && miniLaunchShopifyLocalBuildReceipt?.validation?.noMailerLiteScriptsFoundInNewFiles === true
+    && miniLaunchShopifyLocalBuildReceipt?.validation?.noShopifyAdminApiOrPublishCommandRun === true
+    && miniLaunchShopifyLocalBuildReceipt?.validation?.noRealFormAction === true
+    && miniLaunchShopifyLocalBuildReceipt?.validation?.noCrmWorkflowSubscriberOrScoringTermsFoundInNewFiles === true
+    && miniLaunchShopifyLocalBuildReceipt?.placeholders?.present === true
+    && miniLaunchShopifyLocalBuildReceipt?.placeholders?.inert === true
+    && miniLaunchShopifyLocalBuildReceipt?.safety?.shopifyApiCalled === false
+    && miniLaunchShopifyLocalBuildReceipt?.safety?.shopifyPublishPerformed === false
+    && miniLaunchShopifyLocalBuildReceipt?.safety?.realFormsCreated === false
+    && miniLaunchShopifyLocalBuildReceipt?.safety?.mailerLiteApiCalled === false
+    && miniLaunchShopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
 
   return {
     brujulaPilot: {
@@ -587,6 +608,12 @@ const buildCurrentState = ({
       emailManualUiCustomHtmlStatus: miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.customHtmlEditorStatus ?? null,
       emailManualUiCurrentRoute: miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.futurePolicy?.currentRoute ?? null,
       emailManualUiSeedSendStillClosed: (miniLaunchEmailManualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send'),
+      shopifyLocalBuildReceiptStatus: miniLaunchShopifyLocalBuildReceipt?.status ?? null,
+      shopifyLocalBuildFileCount: miniLaunchShopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 0,
+      shopifyLocalBuildClosed,
+      shopifyLocalBuildNoPublish: miniLaunchShopifyLocalBuildReceipt?.safety?.shopifyPublishPerformed === false,
+      shopifyLocalBuildNoApi: miniLaunchShopifyLocalBuildReceipt?.safety?.shopifyApiCalled === false,
+      shopifyLocalBuildNoRealForms: miniLaunchShopifyLocalBuildReceipt?.safety?.realFormsCreated === false,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -686,6 +713,7 @@ const buildReportMap = (sourceDigests) => {
     miniLaunchEmailBuilderPayloadManifest: findPath('mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailRenderQa: findPath('mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json'),
     miniLaunchEmailManualUiBuildReceipt: findPath('mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json'),
+    miniLaunchShopifyLocalBuildReceipt: findPath('mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
@@ -936,6 +964,7 @@ const miniLaunchEmptyGroupsAlreadyExist = (currentState) => {
 };
 
 const miniLaunchManualUiBuildClosed = (currentState) => currentState?.miniLaunch?.emailManualUiBuildClosed === true;
+const miniLaunchShopifyLocalBuildClosed = (currentState) => currentState?.miniLaunch?.shopifyLocalBuildClosed === true;
 
 const buildApprovalPhaseMoves = (currentState) => [
   'Use the Launch OS approval queue as the current source of human boundaries; do not reopen department-review collection while pendingDepartments is empty.',
@@ -950,7 +979,9 @@ const buildApprovalPhaseMoves = (currentState) => [
     ? 'Before any seed/test send, require real MailerLite render QA, an exact seed recipient and an exact send approval; no subscribers/workflows/groups are implied by the existing drafts.'
     : 'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.',
   'Use the mini-launch CRM signal projection packet as no-live interpretation only; it cannot append ledgers, write cards, score, or touch Fact Store.',
-  'Use the Shopify local-build request only after exact no-live scope approval, and keep placeholders inert.',
+  miniLaunchShopifyLocalBuildClosed(currentState)
+    ? 'Shopify no-live local build is complete; keep the five files inert and do not publish, preview, connect forms or call APIs without a later exact scope.'
+    : 'Use the Shopify local-build request only after exact no-live scope approval, and keep placeholders inert.',
 ];
 
 const buildSharedImmediateMoves = (currentState) => [
@@ -964,6 +995,9 @@ const buildSharedImmediateMoves = (currentState) => [
   miniLaunchManualUiBuildClosed(currentState)
     ? 'Use the mini-launch manual UI build receipt as the current draft state; keep the local asset plan and payload manifest as provenance, not as a new build request.'
     : 'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
+  miniLaunchShopifyLocalBuildClosed(currentState)
+    ? 'Use the Shopify local build receipt as current Web surface evidence; preview/publish/form connection remains outside this closed local build boundary.'
+    : 'Use the Shopify local-build request as a scope boundary only; it cannot publish, preview, connect forms or call APIs.',
   'Use the fresh Onboarding v2 empty-groups packet and create dry-run before asking for exact approval to create the 12 named empty groups.',
   'Use the Onboarding v2 first-email map so Email 1 stays welcome/orientation without an unnecessary Sent receipt.',
   'Check the operating principles before routing a mini-launch toward onboarding or treating a launch asset as public-ready.',
@@ -1015,6 +1049,7 @@ const buildRunbook = ({
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
   miniLaunchEmailManualUiBuildReceipt,
+  miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -1054,6 +1089,7 @@ const buildRunbook = ({
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -1195,6 +1231,12 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch manual UI editor: ${runbook.currentState.miniLaunch.emailManualUiUsedEditor ?? 'unknown'}`,
     `- Mini-launch manual UI plan observed: ${runbook.currentState.miniLaunch.emailManualUiPlanObserved ?? 'unknown'}`,
     `- Mini-launch manual UI seed send still closed: ${runbook.currentState.miniLaunch.emailManualUiSeedSendStillClosed}`,
+    `- Mini-launch Shopify local build receipt: ${runbook.currentState.miniLaunch.shopifyLocalBuildReceiptStatus ?? 'unknown'}`,
+    `- Mini-launch Shopify local files: ${runbook.currentState.miniLaunch.shopifyLocalBuildFileCount ?? 'unknown'}`,
+    `- Mini-launch Shopify local build closed: ${runbook.currentState.miniLaunch.shopifyLocalBuildClosed}`,
+    `- Mini-launch Shopify no publish: ${runbook.currentState.miniLaunch.shopifyLocalBuildNoPublish}`,
+    `- Mini-launch Shopify no API: ${runbook.currentState.miniLaunch.shopifyLocalBuildNoApi}`,
+    `- Mini-launch Shopify no real forms: ${runbook.currentState.miniLaunch.shopifyLocalBuildNoRealForms}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
@@ -1337,6 +1379,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -1375,6 +1418,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchEmailBuilderPayloadManifest),
     readOptionalJson(options.miniLaunchEmailRenderQa),
     readOptionalJson(options.miniLaunchEmailManualUiBuildReceipt),
+    readOptionalJson(options.miniLaunchShopifyLocalBuildReceipt),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -1415,6 +1459,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
+    miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,

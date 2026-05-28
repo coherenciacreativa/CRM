@@ -248,6 +248,46 @@ const miniLaunchShopifyLocalBuildRequest = {
   },
 };
 
+const miniLaunchShopifyLocalBuildReceipt = {
+  status: "shopify_local_build_receipt_executed_files_created_no_live_changes",
+  shopifyRepo: {
+    localFilesCreatedOrUpdated: 2,
+  },
+  files: [
+    { path: "sections/landing-inteligencia-para-descansar.liquid" },
+    { path: "templates/page.landing-inteligencia-para-descansar.json" },
+  ],
+  placeholders: {
+    present: true,
+    inert: true,
+  },
+  validation: {
+    jsonTemplatesParsed: true,
+    noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles: true,
+    noMailerLiteScriptsFoundInNewFiles: true,
+    noShopifyAdminApiOrPublishCommandRun: true,
+    noRealFormAction: true,
+    noCrmWorkflowSubscriberOrScoringTermsFoundInNewFiles: true,
+  },
+  stillClosedAfterThisReceipt: [
+    "shopify_publish_or_theme_push",
+    "shopify_admin_api",
+    "real_form_connection",
+  ],
+  safety: {
+    shopifyApiCalled: false,
+    shopifyPublishPerformed: false,
+    themePushPerformed: false,
+    realFormsCreated: false,
+    mailerLiteApiCalled: false,
+    crmLiveApiCalled: false,
+    subscribersRead: false,
+    workflowMutationsPerformed: false,
+    sendsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+};
+
 const miniLaunchCrmSignalProjectionPacket = {
   status: "ready_for_no_live_signal_projection_design",
   approvalGate: {
@@ -317,6 +357,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiBuilderPacket).toContain("mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
+    expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
   });
@@ -421,6 +462,54 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(byId.get("mini_launch_seed_send")?.blockers).not.toContain("asset_build_not_executed");
     expect(byId.get("mini_launch_seed_send")?.blockers).toContain("real_mailerlite_render_qa_missing");
     expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_email_manual_ui_builder");
+  });
+
+  test("marks Shopify local build approval as completed once the local receipt exists", () => {
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchShopifyLocalBuildReceipt,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    const item = queue.approvalItems.find((approvalItem) => approvalItem.id === "shopify_no_live_local_build");
+
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("shopify_no_live_local_build");
+    expect(item).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      operationType: "local_shopify_repo_edit_already_completed",
+      approvalType: "reference_only_completed",
+      targetCount: 2,
+      evidence: {
+        receiptStatus: "shopify_local_build_receipt_executed_files_created_no_live_changes",
+        localFilesCreatedOrUpdated: 2,
+        placeholdersPresent: true,
+        placeholdersInert: true,
+        noShopifyAdminApiOrPublishCommandRun: true,
+        noRealFormAction: true,
+        shopifyApiCalled: false,
+        shopifyPublishPerformed: false,
+        realFormsCreated: false,
+        mailerLiteApiCalled: false,
+        crmLiveApiCalled: false,
+      },
+    });
+    expect(item?.stillClosed).toContain("shopify_publish_or_theme_push");
+    expect(item?.notes.join(" ")).toContain("Shopify no-live local build boundary has already been used");
   });
 
   test("blocks a mini-launch empty-group item if the create dry-run is not green", () => {

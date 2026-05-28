@@ -32,6 +32,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -75,6 +76,7 @@ Options:
   --mini-launch-email-builder-payload-manifest <path> Mini-launch local builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
   --mini-launch-email-render-qa <path> Mini-launch local email render QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI draft build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
+  --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -123,6 +125,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
     miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
+    miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -169,6 +172,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
     else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
+    else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -234,6 +238,7 @@ const loadSources = async (options) => {
     ['miniLaunchEmailBuilderPayloadManifest', options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch local builder payload manifest with exact payloads and closed execution/send gates', 'json', true],
     ['miniLaunchEmailRenderQa', options.miniLaunchEmailRenderQa, 'mini-launch local email render QA with HTML and non-empty PNG preview evidence', 'json', true],
     ['miniLaunchEmailManualUiBuildReceipt', options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI MailerLite draft build receipt and closed send/subscriber/workflow gates', 'json', true],
+    ['miniLaunchShopifyLocalBuildReceipt', options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -310,6 +315,7 @@ const buildRequirementChecks = ({
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
   miniLaunchEmailManualUiBuildReceipt,
+  miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -610,6 +616,22 @@ const buildRequirementChecks = ({
     && miniLaunchEmailManualUiBuildReceipt?.safety?.crmLiveApiCalledByThisReceipt === false
     && miniLaunchEmailManualUiBuildReceipt?.safety?.factStoreWritePerformed === false
     && (miniLaunchEmailManualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send');
+  const shopifyLocalBuildReceipt = miniLaunchShopifyLocalBuildReceipt ?? null;
+  const shopifyLocalBuildClosed = shopifyLocalBuildReceipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
+    && shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated === 5
+    && shopifyLocalBuildReceipt?.validation?.jsonTemplatesParsed === true
+    && shopifyLocalBuildReceipt?.validation?.noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles === true
+    && shopifyLocalBuildReceipt?.validation?.noMailerLiteScriptsFoundInNewFiles === true
+    && shopifyLocalBuildReceipt?.validation?.noShopifyAdminApiOrPublishCommandRun === true
+    && shopifyLocalBuildReceipt?.validation?.noRealFormAction === true
+    && shopifyLocalBuildReceipt?.validation?.noCrmWorkflowSubscriberOrScoringTermsFoundInNewFiles === true
+    && shopifyLocalBuildReceipt?.placeholders?.present === true
+    && shopifyLocalBuildReceipt?.placeholders?.inert === true
+    && shopifyLocalBuildReceipt?.safety?.shopifyApiCalled === false
+    && shopifyLocalBuildReceipt?.safety?.shopifyPublishPerformed === false
+    && shopifyLocalBuildReceipt?.safety?.realFormsCreated === false
+    && shopifyLocalBuildReceipt?.safety?.mailerLiteApiCalled === false
+    && shopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
   const approvalQueueStatus = approvalQueue?.status
     ?? runbook?.currentState?.approvalQueue?.status
     ?? null;
@@ -932,6 +954,12 @@ const buildRequirementChecks = ({
         `miniLaunchManualUiEditor=${miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.usedEditor ?? 'unknown'}`,
         `miniLaunchManualUiCustomHtmlStatus=${miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.customHtmlEditorStatus ?? 'unknown'}`,
         `miniLaunchManualUiPlanObserved=${miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.mailerLiteAccountPlanObserved ?? 'unknown'}`,
+        `shopifyLocalBuildReceiptStatus=${shopifyLocalBuildReceipt?.status ?? 'missing'}`,
+        `shopifyLocalBuildClosed=${shopifyLocalBuildClosed}`,
+        `shopifyLocalBuildFileCount=${shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 'unknown'}`,
+        `shopifyLocalBuildNoPublish=${shopifyLocalBuildReceipt?.safety?.shopifyPublishPerformed === false}`,
+        `shopifyLocalBuildNoApi=${shopifyLocalBuildReceipt?.safety?.shopifyApiCalled === false}`,
+        `shopifyLocalBuildNoRealForms=${shopifyLocalBuildReceipt?.safety?.realFormsCreated === false}`,
         `approvalQueueStatus=${approvalQueueStatus ?? 'missing'}`,
         `approvalQueueReadyCount=${approvalQueueReadyCount ?? 'unknown'}`,
         `approvalQueueBlockedCount=${approvalQueueBlockedCount ?? 'unknown'}`,
@@ -947,7 +975,9 @@ const buildRequirementChecks = ({
             ? miniLaunchEmptyGroupCreateDryRunNoCreateNeeded
               ? 'Current pilot has its two mini-launch Source/Delivered groups already present; do not rerun empty-group creation.'
               : 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite group creation is authorized yet.'
-            : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
+            : shopifyLocalBuildClosed
+              ? 'Current pilot has its Shopify no-live local files built; any preview, publish or form connection remains a separate approval boundary.'
+              : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
           miniLaunchManualUiBuildClosed
             ? 'The four mini-launch drafts already exist in MailerLite Drafts via approved manual UI build; seed/test send now remains blocked by real MailerLite render QA, exact seed recipient, and exact send approval.'
             : miniLaunchEmailStyleQaReadyForLocalAssetPlan
@@ -1196,6 +1226,22 @@ const buildGoalAudit = ({
     && manualUiBuildReceipt?.safety?.workflowMutationsPerformed === false
     && manualUiBuildReceipt?.safety?.factStoreWritePerformed === false
     && (manualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send');
+  const shopifyLocalBuildReceipt = values.miniLaunchShopifyLocalBuildReceipt ?? null;
+  const shopifyLocalBuildClosed = shopifyLocalBuildReceipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
+    && shopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated === 5
+    && shopifyLocalBuildReceipt?.validation?.jsonTemplatesParsed === true
+    && shopifyLocalBuildReceipt?.validation?.noExternalUrlsOrSubscriptionEndpointsFoundInNewFiles === true
+    && shopifyLocalBuildReceipt?.validation?.noMailerLiteScriptsFoundInNewFiles === true
+    && shopifyLocalBuildReceipt?.validation?.noShopifyAdminApiOrPublishCommandRun === true
+    && shopifyLocalBuildReceipt?.validation?.noRealFormAction === true
+    && shopifyLocalBuildReceipt?.validation?.noCrmWorkflowSubscriberOrScoringTermsFoundInNewFiles === true
+    && shopifyLocalBuildReceipt?.placeholders?.present === true
+    && shopifyLocalBuildReceipt?.placeholders?.inert === true
+    && shopifyLocalBuildReceipt?.safety?.shopifyApiCalled === false
+    && shopifyLocalBuildReceipt?.safety?.shopifyPublishPerformed === false
+    && shopifyLocalBuildReceipt?.safety?.realFormsCreated === false
+    && shopifyLocalBuildReceipt?.safety?.mailerLiteApiCalled === false
+    && shopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
   const onboardingV2GroupBoundaryClosed = values.approvalQueue?.approvalItems?.find((item) => item.id === 'onboarding_v2_empty_group_creation')?.status === 'reference_only_no_approval_request_now';
   const approvalQueueReady = values.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes'
     || values.runbook?.currentState?.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes';
@@ -1220,14 +1266,17 @@ const buildGoalAudit = ({
       ? 'The email asset-build scope packet is ready for exact human approval request only; next no-live move is the local builder payload manifest; builder execution, seed sends, workflow attachment and subscribers remain closed.'
       : 'The local email asset plan is ready for exact MailerLite asset-build scope request only; builder execution, seed sends, workflow attachment and subscribers remain closed.'
     : 'Use Email Style QA to generate the local email asset plan before requesting exact MailerLite asset-build scope; builder execution remains closed.';
+  const shopifyLocalBuildMove = shopifyLocalBuildClosed
+    ? 'The Shopify no-live local build now exists as five inert local files; publish, preview/theme push, real forms, MailerLite connection and CRM writes remain closed.'
+    : 'Shopify local-build remains a no-live approval/request boundary; do not edit, preview, publish or connect forms without exact scope approval.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${localEmailAssetPlanMove} Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} CRM signal projection remains no-live. Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} Shopify local-build and CRM signal projection remain no-live. Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} CRM signal projection remains no-live. Live actions remain closed.`
       : emptyGroupApprovalPacketReady
       ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${localEmailAssetPlanMove} Prepare the exact empty-group approval packet, scoped Shopify local-build request, and CRM signal projection packet. Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -1237,7 +1286,8 @@ const buildGoalAudit = ({
         approvalQueueMove,
         approvalIntakeMove,
         localEmailAssetPlanMove,
-        'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
+        shopifyLocalBuildMove,
+        'Prepare/maintain the CRM signal projection packet as a no-live move only.',
       ]
       : emptyGroupCreateDryRunReady
       ? [
@@ -1247,7 +1297,8 @@ const buildGoalAudit = ({
         approvalQueueMove,
         approvalIntakeMove,
         localEmailAssetPlanMove,
-        'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
+        shopifyLocalBuildMove,
+        'Prepare/maintain the CRM signal projection packet as a no-live move only.',
       ]
       : emptyGroupApprovalPacketReady
       ? [
@@ -1256,13 +1307,15 @@ const buildGoalAudit = ({
         approvalQueueMove,
         approvalIntakeMove,
         localEmailAssetPlanMove,
-        'Prepare/maintain scoped Shopify local-build and CRM signal projection packets as no-live moves only.',
+        shopifyLocalBuildMove,
+        'Prepare/maintain the CRM signal projection packet as a no-live move only.',
       ]
       : [
       'Use the accepted Brand/Web/CRM final responses as the current review baseline.',
       approvalQueueMove,
       approvalIntakeMove,
       localEmailAssetPlanMove,
+      shopifyLocalBuildMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
       'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
       'Prepare a no-live CRM signal projection packet from the CRM response; do not append ledgers, write cards, score, or touch Fact Store.',
