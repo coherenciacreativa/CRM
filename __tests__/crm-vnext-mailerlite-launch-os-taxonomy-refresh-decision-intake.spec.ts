@@ -94,8 +94,103 @@ const acceptedCrmRead = {
   error: null,
 };
 
+const acceptedBrandWorkspaceRead = {
+  present: true,
+  value: {
+    schemaVersion: "crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-2026-05-28",
+    actor: "brand",
+    reviewMode: "no_live_taxonomy_refresh",
+    liveApprovalGranted: false,
+    decisionScope: "brand_dictionary_semantic_status_only",
+    decisions: [
+      {
+        name: "CC · Source · IG onboarding",
+        liveGroupId: "188667906749367606",
+        decision: "promote_to_live_canonical",
+        finalName: "CC · Source · IG onboarding",
+        finalBrandStatus: "live_canonical",
+      },
+      {
+        name: "CC · Journey · Editorial onboarding · In progress",
+        liveGroupId: "188667906749367607",
+        decision: "promote_to_live_canonical",
+        finalName: "CC · Journey · Editorial onboarding · In progress",
+        finalBrandStatus: "live_canonical",
+      },
+    ],
+    safety: {
+      brandDictionaryMutated: false,
+      crmManifestMutated: false,
+      mailerLiteApiCalled: false,
+      shopifyApiCalled: false,
+      crmLiveApiCalled: false,
+      subscribersRead: false,
+      groupMutationsPerformed: false,
+      workflowMutationsPerformed: false,
+      sendsPerformed: false,
+      signalLedgerAppendPerformed: false,
+      crmCardMutationsPerformed: false,
+      crmScoreMutationsPerformed: false,
+      factStoreWritePerformed: false,
+      outboundPerformed: false,
+      tokensPrinted: false,
+    },
+  },
+  chars: 100,
+  error: null,
+};
+
+const acceptedCrmWorkspaceRead = {
+  present: true,
+  value: {
+    schemaVersion: "crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-2026-05-28",
+    actor: "crm",
+    reviewMode: "no_live_taxonomy_refresh",
+    liveApprovalGranted: false,
+    decisionScope: "crm_manifest_local_cache_patch_planning_only",
+    canApplyCrmManifestPatchNow: false,
+    patchRows: [
+      {
+        name: "CC · Source · IG onboarding",
+        liveGroupId: "188667906749367606",
+        decision: "prepare_local_manifest_patch_after_brand",
+        applyNow: false,
+      },
+      {
+        name: "CC · Journey · Editorial onboarding · In progress",
+        liveGroupId: "188667906749367607",
+        decision: "prepare_local_manifest_patch_after_brand",
+        applyNow: false,
+      },
+    ],
+    safety: {
+      brandDictionaryMutated: false,
+      crmManifestMutated: false,
+      mailerLiteApiCalled: false,
+      shopifyApiCalled: false,
+      crmLiveApiCalled: false,
+      subscribersRead: false,
+      groupMutationsPerformed: false,
+      workflowMutationsPerformed: false,
+      sendsPerformed: false,
+      signalLedgerAppendPerformed: false,
+      crmCardMutationsPerformed: false,
+      crmScoreMutationsPerformed: false,
+      factStoreWritePerformed: false,
+      outboundPerformed: false,
+      tokensPrinted: false,
+    },
+  },
+  chars: 100,
+  error: null,
+};
+
 describe("CRM vNext MailerLite Launch OS taxonomy refresh decision intake", () => {
   test("normalizes args and default report paths", () => {
+    const defaults = parseArgs([]);
+    expect(defaults.brandDecisionFile).toContain("mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/brand_taxonomy_refresh_response.json");
+    expect(defaults.crmDecisionFile).toContain("mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/crm_taxonomy_refresh_response.json");
+
     const parsed = parseArgs([
       "--taxonomy-refresh-handoff",
       "/tmp/handoff.json",
@@ -162,6 +257,47 @@ describe("CRM vNext MailerLite Launch OS taxonomy refresh decision intake", () =
     expect(report.executiveSummary.canApplyBrandDictionaryPatchNow).toBe(false);
     expect(report.executiveSummary.canApplyCrmManifestPatchNow).toBe(false);
     expect(report.blockers).toEqual([]);
+  });
+
+  test("accepts final response workspace files as the primary intake source", () => {
+    const report = buildTaxonomyRefreshDecisionIntake({
+      taxonomyRefreshHandoff: handoff,
+      brandDecisionRead: acceptedBrandWorkspaceRead,
+      crmDecisionRead: acceptedCrmWorkspaceRead,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(report.status).toBe("taxonomy_refresh_decision_intake_ready_for_local_patch_preview_no_live_changes");
+    expect(report.brandDecisionState.sourceFormat).toBe("response_workspace_final_file");
+    expect(report.crmDecisionState.sourceFormat).toBe("response_workspace_final_file");
+    expect(report.executiveSummary.brandDecisionRowsPresent).toBe(2);
+    expect(report.executiveSummary.crmManifestPatchRowsAccepted).toBe(2);
+    expect(report.executiveSummary.readyForLocalPatchPreview).toBe(true);
+    expect(report.executiveSummary.canApplyCrmManifestPatchNow).toBe(false);
+  });
+
+  test("blocks workspace CRM responses that attempt immediate apply", () => {
+    const report = buildTaxonomyRefreshDecisionIntake({
+      taxonomyRefreshHandoff: handoff,
+      brandDecisionRead: acceptedBrandWorkspaceRead,
+      crmDecisionRead: {
+        ...acceptedCrmWorkspaceRead,
+        value: {
+          ...acceptedCrmWorkspaceRead.value,
+          canApplyCrmManifestPatchNow: true,
+          patchRows: acceptedCrmWorkspaceRead.value.patchRows.map((row, index) => ({
+            ...row,
+            applyNow: index === 0 ? true : false,
+          })),
+        },
+      },
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(report.status).toBe("taxonomy_refresh_decision_intake_blocked_unsafe_decision_no_live_changes");
+    expect(report.executiveSummary.readyForLocalPatchPreview).toBe(false);
+    expect(report.crmDecisionState.blockers).toContain("canApplyCrmManifestPatchNow_must_be_false");
+    expect(report.crmDecisionState.blockers).toContain("row:CC · Source · IG onboarding:applyNow_must_be_false");
   });
 
   test("blocks unsafe decision files that try to convert review into live approval", () => {
