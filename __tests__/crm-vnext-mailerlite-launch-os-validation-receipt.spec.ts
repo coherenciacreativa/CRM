@@ -40,6 +40,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-approval-queue": "node scripts/approval-queue.mjs",
     "crm:vnext:mailerlite-launch-os-approval-intake": "node scripts/approval-intake.mjs",
     "crm:vnext:mailerlite-launch-os-blocked-gate-handoff": "node scripts/blocked-gate-handoff.mjs",
+    "crm:vnext:mailerlite-launch-os-missing-inputs-kit": "node scripts/missing-inputs-kit.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
     "crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt": "node scripts/brujula-manual-ui-build-receipt.mjs",
