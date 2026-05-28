@@ -102,6 +102,24 @@ const miniLaunchEmailBuilderPayloadManifest = {
   },
 };
 
+const miniLaunchEmailAssetBuildDryRun = {
+  status: "dry_run_ready_for_exact_asset_build_approval",
+  freshScan: {
+    campaignsRead: 25,
+    createDraftCount: 4,
+    updateDraftCount: 0,
+    conflictCount: 0,
+  },
+  assetMutations: [],
+  safety: {
+    mailerLiteMutationsPerformed: false,
+    mailerLiteAssetsCreatedOrEdited: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    groupsCreatedOrAssigned: false,
+  },
+};
+
 const miniLaunchShopifyLocalBuildRequest = {
   status: "ready_for_human_or_web_design_scope_approval_no_live_changes",
   approvalGate: {
@@ -160,6 +178,7 @@ const buildQueue = () => buildApprovalQueue({
   onboardingV2EmptyGroupsCreateDryRun,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailAssetBuildDryRun,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
@@ -175,6 +194,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmptyGroupPacket).toContain("mailerlite_mini_launch_empty_group_creation_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailAssetBuildDryRun).toContain("mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
@@ -215,6 +235,13 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
       exactApprovalPhrasePresent: true,
       packetIsApprovalByItself: false,
       targetCount: 4,
+      evidence: {
+        campaignsRead: 25,
+        createDraftCount: 4,
+        updateDraftCount: 0,
+        conflictCount: 0,
+        assetMutationsPerformed: false,
+      },
     });
     expect(byId.get("mini_launch_seed_send")).toMatchObject({
       status: "prepared_but_blocked_before_approval_request",

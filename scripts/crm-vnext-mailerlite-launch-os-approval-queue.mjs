@@ -10,6 +10,7 @@ const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_PACKET = '/Users/alejandrogomez/Documen
 const DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_create_dry_run_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
@@ -26,6 +27,7 @@ Options:
   --onboarding-v2-empty-groups-create-dry-run <path> Onboarding v2 empty-groups create dry-run. Defaults to ${DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN}
   --mini-launch-email-asset-build-scope-packet <path> Mini-launch email asset-build scope packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
   --mini-launch-email-builder-payload-manifest <path> Mini-launch email builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
+  --mini-launch-email-asset-build-dry-run <path> Mini-launch email asset-build dry-run. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
@@ -58,6 +60,7 @@ const parseArgs = (argv) => {
     onboardingV2EmptyGroupsCreateDryRun: DEFAULT_ONBOARDING_V2_EMPTY_GROUPS_CREATE_DRY_RUN,
     miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
+    miniLaunchEmailAssetBuildDryRun: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
@@ -77,6 +80,7 @@ const parseArgs = (argv) => {
     else if (arg === '--onboarding-v2-empty-groups-create-dry-run') options.onboardingV2EmptyGroupsCreateDryRun = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
+    else if (arg === '--mini-launch-email-asset-build-dry-run') options.miniLaunchEmailAssetBuildDryRun = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
@@ -323,7 +327,7 @@ const buildOnboardingV2EmptyGroupItem = ({ packet, dryRun }) => {
   });
 };
 
-const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest }) => {
+const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest, dryRun = null }) => {
   const targetNames = targetNamesFrom(scopePacket?.assetBuildScope?.assets, payloadManifest?.payloads);
   const blockers = [];
 
@@ -342,6 +346,18 @@ const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest }) =>
   if (payloadManifest?.approvalBoundary?.canExecuteBuilderNow !== false) {
     blockers.push('payload_manifest_build_gate_unexpectedly_open');
   }
+  if (dryRun) {
+    if (dryRun.status !== 'dry_run_ready_for_exact_asset_build_approval') {
+      blockers.push(`email_asset_build_dry_run_not_ready:${dryRun.status ?? 'missing'}`);
+    }
+    if ((dryRun.freshScan?.conflictCount ?? 0) > 0) blockers.push('email_asset_build_dry_run_has_campaign_conflicts');
+    if (countRows(dryRun.assetMutations) !== 0) blockers.push('dry_run_unexpectedly_reports_asset_mutations');
+    if (dryRun.safety?.mailerLiteMutationsPerformed !== false) blockers.push('dry_run_reports_mailerlite_mutation');
+    if (dryRun.safety?.mailerLiteAssetsCreatedOrEdited !== false) blockers.push('dry_run_reports_asset_create_or_edit');
+    if (dryRun.safety?.sendsPerformed !== false) blockers.push('dry_run_reports_send');
+    if (dryRun.safety?.subscribersRead !== false) blockers.push('dry_run_reports_subscriber_read');
+    if (dryRun.safety?.groupsCreatedOrAssigned !== false) blockers.push('dry_run_reports_group_create_or_assignment');
+  }
   if (!cleanString(scopePacket?.requestedFutureScope?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
   if (targetNames.length === 0) blockers.push('missing_asset_targets');
 
@@ -358,6 +374,7 @@ const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest }) =>
     sourceStatuses: {
       scopePacket: scopePacket?.status ?? null,
       payloadManifest: payloadManifest?.status ?? null,
+      dryRun: dryRun?.status ?? null,
     },
     targetNames,
     allowedAfterExactApproval: scopePacket?.requestedFutureScope?.allowedAfterExactApproval ?? [],
@@ -369,11 +386,19 @@ const buildMiniLaunchEmailAssetBuildItem = ({ scopePacket, payloadManifest }) =>
       payloadCount: payloadManifest?.executiveSummary?.payloadCount ?? null,
       contentBlockCount: payloadManifest?.executiveSummary?.contentBlockCount ?? null,
       placeholders: payloadManifest?.executiveSummary?.inertUrlPlaceholderCount ?? null,
+      campaignsRead: dryRun?.freshScan?.campaignsRead ?? null,
+      createDraftCount: dryRun?.freshScan?.createDraftCount ?? null,
+      updateDraftCount: dryRun?.freshScan?.updateDraftCount ?? null,
+      conflictCount: dryRun?.freshScan?.conflictCount ?? null,
+      assetMutationsPerformed: dryRun?.safety?.mailerLiteAssetsCreatedOrEdited ?? false,
       sendsAllowedNow: payloadManifest?.approvalBoundary?.canSendNow ?? null,
     },
-    commandAfterApproval: 'future MailerLite builder operation only after exact approval; no send/workflow/subscriber action',
+    commandAfterApproval: 'npm run crm:vnext:mailerlite-mini-launch-email-asset-build -- --execute --approval-phrase "<exact phrase>" --from-email "<verified sender>" --from-name "<sender name>"',
     notes: [
       'The payload manifest is local input, not approval.',
+      dryRun
+        ? 'Fresh campaign dry-run is attached; execute still needs exact approval and verified sender identity.'
+        : 'Attach a fresh email asset-build dry-run before execute.',
       'Seed send remains a later separate gate after builder/render QA.',
     ],
   });
@@ -573,6 +598,7 @@ const buildApprovalQueue = ({
   onboardingV2EmptyGroupsCreateDryRun,
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
+  miniLaunchEmailAssetBuildDryRun,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
@@ -593,6 +619,7 @@ const buildApprovalQueue = ({
     buildMiniLaunchEmailAssetBuildItem({
       scopePacket: miniLaunchEmailAssetBuildScopePacket,
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      dryRun: miniLaunchEmailAssetBuildDryRun,
     }),
     buildShopifyLocalBuildItem({
       request: miniLaunchShopifyLocalBuildRequest,
@@ -722,6 +749,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.onboardingV2EmptyGroupsCreateDryRun, 'onboarding v2 empty-groups create dry-run'),
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch email asset-build scope packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch email builder payload manifest'),
+    readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildDryRun, 'mini-launch email asset-build dry-run'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
@@ -736,6 +764,7 @@ const buildQueueFromFiles = async (options) => {
     onboardingV2EmptyGroupsCreateDryRun,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailAssetBuildDryRun,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
@@ -750,6 +779,7 @@ const buildQueueFromFiles = async (options) => {
     onboardingV2EmptyGroupsCreateDryRun,
     miniLaunchEmailAssetBuildScopePacket,
     miniLaunchEmailBuilderPayloadManifest,
+    miniLaunchEmailAssetBuildDryRun,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
