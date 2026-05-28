@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-validation-receipt-2026-05-27';
 
-const DEFAULT_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-27.json';
-const DEFAULT_GOAL_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-27.json';
+const DEFAULT_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.json';
+const DEFAULT_GOAL_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_goal_audit_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -17,6 +17,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-approval-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
+  'node --check scripts/crm-vnext-mailerlite-brujula-email-manual-ui-build-receipt.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-local-email-asset-plan.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-asset-build-scope-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs',
@@ -177,6 +178,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-launch-os-approval-intake',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
+    'crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt',
     'crm:vnext:mailerlite-onboarding-trunk-map',
     'crm:vnext:mailerlite-mini-launch-department-review-response-watcher',
     'crm:vnext:mailerlite-mini-launch-local-email-asset-plan',

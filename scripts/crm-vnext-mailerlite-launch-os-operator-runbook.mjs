@@ -39,9 +39,10 @@ const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/ma
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
+const DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json';
 const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
 const DEFAULT_APPROVAL_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_2026-05-28.json';
-const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
+const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const usage = `Usage:
@@ -83,6 +84,7 @@ Options:
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
   --brujula-email-style-correction <path> Brújula Email 1 style correction JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>   Brújula Email 1 local render QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
+  --brujula-email-manual-ui-build-receipt <path> Brújula Email 1 manual UI build receipt JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --approval-queue <path>            Launch OS exact approval queue JSON. Defaults to ${DEFAULT_APPROVAL_QUEUE}
   --approval-intake <path>           Launch OS exact approval intake JSON. Defaults to ${DEFAULT_APPROVAL_INTAKE}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
@@ -134,6 +136,7 @@ const parseArgs = (argv) => {
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
+    brujulaEmailManualUiBuildReceipt: DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     approvalQueue: DEFAULT_APPROVAL_QUEUE,
     approvalIntake: DEFAULT_APPROVAL_INTAKE,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
@@ -181,6 +184,7 @@ const parseArgs = (argv) => {
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
+    else if (arg === '--brujula-email-manual-ui-build-receipt') options.brujulaEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--approval-queue') options.approvalQueue = argv[++index];
     else if (arg === '--approval-intake') options.approvalIntake = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
@@ -241,6 +245,7 @@ const loadSourceDigests = async (options) => {
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
     [options.brujulaEmailStyleCorrection, 'Brújula Email 1 corrected local draft and builder inputs'],
     [options.brujulaEmailRenderQa, 'Brújula Email 1 local render QA and preview evidence', true],
+    [options.brujulaEmailManualUiBuildReceipt, 'Brújula Email 1 manual UI draft build receipt and closed gates', true],
     [options.approvalQueue, 'single exact approval queue for current MailerLite Launch OS gates', true],
     [options.approvalIntake, 'local exact approval intake and fresh-evidence pre-execution plan', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
@@ -301,6 +306,72 @@ const commandCatalogFrom = (packageJson) => {
 
 const groupNamesFrom = (groups) => (groups ?? []).map((group) => group.name).filter(Boolean);
 
+const isFalse = (value) => value === false;
+const anyIncludes = (items, fragments) => (items ?? [])
+  .some((item) => fragments.some((fragment) => String(item).includes(fragment)));
+const allContentChecksGreen = (checks) =>
+  Boolean(checks) && Object.values(checks).every((value) => value === true);
+const brujulaManualUiStatus = (receipt) => receipt?.status ?? null;
+const brujulaManualUiCampaignId = (receipt) =>
+  receipt?.executiveSummary?.campaignId ?? receipt?.campaign?.id ?? null;
+const brujulaManualUiCampaignName = (receipt) =>
+  receipt?.executiveSummary?.campaignName ?? receipt?.campaign?.name ?? null;
+const brujulaManualUiSubject = (receipt) =>
+  receipt?.executiveSummary?.subject ?? receipt?.campaign?.subject ?? null;
+const brujulaManualUiPreheader = (receipt) =>
+  receipt?.executiveSummary?.preheader ?? receipt?.campaign?.preheader ?? null;
+const brujulaManualUiOutboxCount = (receipt) =>
+  receipt?.executiveSummary?.outboxCountAfterBuild
+    ?? receipt?.verification?.postExecutionApiVerify?.readyOutboxCampaignsRead
+    ?? null;
+const brujulaManualUiCreatedOrEditedCount = (receipt) =>
+  receipt?.executiveSummary?.createdOrEditedDraftCount
+    ?? (receipt?.campaign?.id && receipt?.campaign?.status === 'draft' ? 1 : null);
+
+const brujulaManualUiBuildClosed = (receipt) => {
+  const status = brujulaManualUiStatus(receipt);
+  const oldSchemaClosed = status === 'brujula_email1_manual_ui_build_receipt_executed_draft_created_no_sends'
+    && brujulaManualUiCreatedOrEditedCount(receipt) === 1
+    && brujulaManualUiOutboxCount(receipt) === 0
+    && receipt?.draftReceipt?.uiVisibleInDrafts === true
+    && receipt?.draftReceipt?.recipientsEmptyObserved === true
+    && receipt?.safety?.sendsPerformed === false
+    && receipt?.safety?.schedulesCreated === false
+    && receipt?.safety?.subscribersReadOrAssigned === false
+    && receipt?.safety?.groupsCreatedOrAssigned === false
+    && receipt?.safety?.workflowMutationsPerformed === false
+    && receipt?.safety?.factStoreWritePerformed === false
+    && anyIncludes(receipt?.stillClosedAfterThisReceipt, ['test_send_or_public_send']);
+
+  const verify = receipt?.verification?.postExecutionApiVerify ?? {};
+  const greenReceiptClosed = status === 'brujula_email1_manual_ui_build_receipt_green_draft_created_no_sends'
+    && receipt?.ok === true
+    && receipt?.scope?.approvedScopeId === 'brujula_email1_builder_draft'
+    && receipt?.scope?.exactApprovalMatched === true
+    && brujulaManualUiCreatedOrEditedCount(receipt) === 1
+    && receipt?.campaign?.status === 'draft'
+    && isFalse(receipt?.campaign?.recipientsSelected)
+    && isFalse(receipt?.campaign?.groupsOrSegmentsSelected)
+    && isFalse(receipt?.campaign?.scheduled)
+    && isFalse(receipt?.campaign?.sent)
+    && verify?.status === 'post_ui_paste_verify_green'
+    && verify?.targetInDraft === true
+    && verify?.targetInReadyOutbox === false
+    && verify?.targetInSent === false
+    && allContentChecksGreen(verify?.contentChecks)
+    && receipt?.safety?.sendsPerformed === false
+    && receipt?.safety?.schedulesPerformed === false
+    && receipt?.safety?.publicCampaignPublished === false
+    && receipt?.safety?.subscriberMutationsPerformed === false
+    && receipt?.safety?.groupsCreated === false
+    && receipt?.safety?.groupAssignmentsPerformed === false
+    && receipt?.safety?.workflowMutationsPerformed === false
+    && receipt?.safety?.factStoreWritePerformed === false
+    && anyIncludes(receipt?.scope?.stillClosed, ['send_email_or_test_email', 'cards_scoring_or_fact_store_writes']);
+
+  return oldSchemaClosed || greenReceiptClosed;
+};
+
 const buildCurrentState = ({
   readinessBoard,
   cadenceBoard,
@@ -334,6 +405,7 @@ const buildCurrentState = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
   validationReceipt,
@@ -365,6 +437,7 @@ const buildCurrentState = ({
     && miniLaunchEmailManualUiBuildReceipt?.safety?.workflowMutationsPerformed === false
     && miniLaunchEmailManualUiBuildReceipt?.safety?.factStoreWritePerformed === false
     && (miniLaunchEmailManualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send');
+  const brujulaManualUiBuildClosedNow = brujulaManualUiBuildClosed(brujulaEmailManualUiBuildReceipt);
   const shopifyLocalBuildClosed = miniLaunchShopifyLocalBuildReceipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
     && miniLaunchShopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated === 5
     && miniLaunchShopifyLocalBuildReceipt?.validation?.jsonTemplatesParsed === true
@@ -406,6 +479,13 @@ const buildCurrentState = ({
       localRenderPreviewPath: brujulaEmailRenderQa?.renderPreview?.path ?? null,
       localRenderPreviewStatus: brujulaEmailRenderQa?.renderPreview?.status ?? null,
       localRenderPreviewSize: brujulaEmailRenderQa?.renderPreview?.fileSizeBytes ?? null,
+      manualUiBuildReceiptStatus: brujulaEmailManualUiBuildReceipt?.status ?? null,
+      manualUiBuildClosed: brujulaManualUiBuildClosedNow,
+      manualUiCampaignId: brujulaManualUiCampaignId(brujulaEmailManualUiBuildReceipt),
+      manualUiCampaignName: brujulaManualUiCampaignName(brujulaEmailManualUiBuildReceipt),
+      manualUiSubject: brujulaManualUiSubject(brujulaEmailManualUiBuildReceipt),
+      manualUiPreheader: brujulaManualUiPreheader(brujulaEmailManualUiBuildReceipt),
+      manualUiOutboxCount: brujulaManualUiOutboxCount(brujulaEmailManualUiBuildReceipt),
       publicUseReady: false,
     },
     onboarding: {
@@ -719,9 +799,10 @@ const buildReportMap = (sourceDigests) => {
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
     brujulaEmailStyleCorrection: findPath('mailerlite_brujula_email_style_correction_packet_2026-05-27.json'),
     brujulaEmailRenderQa: findPath('mailerlite_brujula_email_render_qa_packet_2026-05-27.json'),
+    brujulaEmailManualUiBuildReceipt: findPath('mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json'),
     approvalQueue: findPath('mailerlite_launch_os_approval_queue_2026-05-28.json'),
     approvalIntake: findPath('mailerlite_launch_os_approval_intake_2026-05-28.json'),
-    validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-27.json'),
+    validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-28.json'),
     packageJson: findPath('package.json'),
   };
 };
@@ -986,8 +1067,12 @@ const buildApprovalPhaseMoves = (currentState) => [
 
 const buildSharedImmediateMoves = (currentState) => [
   'Use the Brújula email style QA packet to keep functional delivery separate from public-ready creative quality.',
-  'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
-  'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
+  currentState?.brujulaPilot?.manualUiBuildClosed === true
+    ? 'Use the Brújula Email 1 manual UI build receipt as current draft evidence; builder creation/edit gate is closed and test send/public use still need separate exact approval.'
+    : 'Use the Brújula Email 1 correction packet as local builder input before any future exact test-send approval.',
+  currentState?.brujulaPilot?.manualUiBuildClosed === true
+    ? 'Before any Brújula test send, require real MailerLite render QA on the live draft, exact recipient and exact send approval.'
+    : 'Use the Brújula Email 1 render QA packet before any later exact MailerLite builder/test-send approval.',
   'Use the backlog board only for one additional no-live idea intake, not for live production.',
   'Use the onboarding trunk map before any mini-launch-to-onboarding route, v2 group approval packet or seed test.',
   'Use the mini-launch empty-group approval packet only as a human decision boundary; it cannot create groups by itself.',
@@ -1055,6 +1140,7 @@ const buildRunbook = ({
   brujulaEmailStyleQa,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  brujulaEmailManualUiBuildReceipt,
   approvalQueue,
   approvalIntake,
   validationReceipt,
@@ -1095,6 +1181,7 @@ const buildRunbook = ({
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
     validationReceipt,
@@ -1385,6 +1472,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
     validationReceipt,
@@ -1424,6 +1512,7 @@ const buildRunbookFromFiles = async (options) => {
     readJson(options.brujulaEmailStyleQa),
     readJson(options.brujulaEmailStyleCorrection),
     readOptionalJson(options.brujulaEmailRenderQa),
+    readOptionalJson(options.brujulaEmailManualUiBuildReceipt),
     readOptionalJson(options.approvalQueue),
     readOptionalJson(options.approvalIntake),
     readOptionalJson(options.validationReceipt),
@@ -1465,6 +1554,7 @@ const buildRunbookFromFiles = async (options) => {
     brujulaEmailStyleQa,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaEmailManualUiBuildReceipt,
     approvalQueue,
     approvalIntake,
     validationReceipt,

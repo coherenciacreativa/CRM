@@ -316,6 +316,52 @@ const brujulaEmailRenderQa = {
   },
 };
 
+const brujulaEmailManualUiBuildReceipt = {
+  status: "brujula_email1_manual_ui_build_receipt_green_draft_created_no_sends",
+  ok: true,
+  scope: {
+    approvedScopeId: "brujula_email1_builder_draft",
+    exactApprovalMatched: true,
+    stillClosed: [
+      "send_email_or_test_email",
+      "cards_scoring_or_fact_store_writes",
+    ],
+  },
+  campaign: {
+    id: "188677585118430654",
+    name: "Brújula · Email 1 corregido · Aquí está La Brújula de Claridad",
+    status: "draft",
+    subject: "Aqui esta La Brujula de Claridad",
+    recipientsSelected: false,
+    groupsOrSegmentsSelected: false,
+    scheduled: false,
+    sent: false,
+  },
+  verification: {
+    postExecutionApiVerify: {
+      status: "post_ui_paste_verify_green",
+      targetInDraft: true,
+      targetInReadyOutbox: false,
+      targetInSent: false,
+      readyOutboxCampaignsRead: 0,
+      contentChecks: {
+        hasTitle: true,
+        hasGreeting: true,
+      },
+    },
+  },
+  safety: {
+    sendsPerformed: false,
+    schedulesPerformed: false,
+    publicCampaignPublished: false,
+    subscriberMutationsPerformed: false,
+    groupsCreated: false,
+    groupAssignmentsPerformed: false,
+    workflowMutationsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+};
+
 const validationReceipt = {
   validationStatus: "passed",
   testScope: {
@@ -358,6 +404,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.brujulaEmailManualUiBuildReceipt).toContain("mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
   });
@@ -510,6 +557,46 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     });
     expect(item?.stillClosed).toContain("shopify_publish_or_theme_push");
     expect(item?.notes.join(" ")).toContain("Shopify no-live local build boundary has already been used");
+  });
+
+  test("marks Brújula builder draft approval as completed once the manual UI receipt exists", () => {
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      brujulaEmailManualUiBuildReceipt,
+      validationReceipt,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+    const item = queue.approvalItems.find((approvalItem) => approvalItem.id === "brujula_email1_builder_draft");
+
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("brujula_email1_builder_draft");
+    expect(item).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      operationType: "live_mailerlite_builder_draft_mutation_already_completed",
+      approvalType: "reference_only_completed",
+      evidence: {
+        receiptStatus: "brujula_email1_manual_ui_build_receipt_green_draft_created_no_sends",
+        campaignId: "188677585118430654",
+        createdOrEditedDraftCount: 1,
+        outboxCountAfterBuild: 0,
+        recipientsEmptyObserved: true,
+        sendsPerformed: false,
+      },
+    });
+    expect(item?.stillClosed).toContain("test_send_or_public_send");
   });
 
   test("blocks a mini-launch empty-group item if the create dry-run is not green", () => {

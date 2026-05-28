@@ -20,7 +20,8 @@ const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_render_qa_packet_2026-05-27.json';
-const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-27.json';
+const DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json';
+const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs [options]
@@ -42,6 +43,7 @@ Options:
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
   --brujula-email-render-qa <path>                Brújula local render QA packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_RENDER_QA}
+  --brujula-email-manual-ui-build-receipt <path>  Brújula Email 1 manual UI build receipt. Defaults to ${DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --validation-receipt <path>                     Validation receipt. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --out <path>                                    Write JSON queue
   --markdown-out <path>                           Write Markdown queue
@@ -80,6 +82,7 @@ const parseArgs = (argv) => {
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
     brujulaEmailRenderQa: DEFAULT_BRUJULA_EMAIL_RENDER_QA,
+    brujulaEmailManualUiBuildReceipt: DEFAULT_BRUJULA_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     out: null,
     markdownOut: null,
@@ -105,6 +108,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
     else if (arg === '--brujula-email-render-qa') options.brujulaEmailRenderQa = argv[++index];
+    else if (arg === '--brujula-email-manual-ui-build-receipt') options.brujulaEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -817,9 +821,130 @@ const buildShopifyLocalBuildItem = ({ request, receipt = null }) => {
   });
 };
 
-const buildBrujulaBuilderDraftItem = ({ correction, renderQa }) => {
+const isFalse = (value) => value === false;
+const anyIncludes = (items, fragments) => (items ?? [])
+  .some((item) => fragments.some((fragment) => String(item).includes(fragment)));
+const allContentChecksGreen = (checks) =>
+  Boolean(checks) && Object.values(checks).every((value) => value === true);
+const brujulaManualUiReceiptStatus = (receipt) => receipt?.status ?? null;
+const brujulaManualUiCampaignId = (receipt) =>
+  receipt?.executiveSummary?.campaignId ?? receipt?.campaign?.id ?? null;
+const brujulaManualUiCampaignName = (receipt) =>
+  receipt?.executiveSummary?.campaignName ?? receipt?.campaign?.name ?? null;
+const brujulaManualUiSubject = (receipt) =>
+  receipt?.executiveSummary?.subject ?? receipt?.campaign?.subject ?? null;
+const brujulaManualUiOutboxCount = (receipt) =>
+  receipt?.executiveSummary?.outboxCountAfterBuild
+    ?? receipt?.verification?.postExecutionApiVerify?.readyOutboxCampaignsRead
+    ?? null;
+const brujulaManualUiCreatedOrEditedCount = (receipt) =>
+  receipt?.executiveSummary?.createdOrEditedDraftCount
+    ?? (receipt?.campaign?.id && receipt?.campaign?.status === 'draft' ? 1 : null);
+const brujulaManualUiRecipientsEmptyObserved = (receipt) =>
+  receipt?.draftReceipt?.recipientsEmptyObserved
+    ?? (receipt?.campaign?.recipientsSelected === false && receipt?.campaign?.groupsOrSegmentsSelected === false);
+const brujulaManualUiSendsPerformed = (receipt) =>
+  receipt?.safety?.sendsPerformed ?? receipt?.campaign?.sent ?? null;
+
+const brujulaManualUiReceiptClosed = (receipt, expectedSubject) => {
+  const status = brujulaManualUiReceiptStatus(receipt);
+  const oldSchemaClosed = status === 'brujula_email1_manual_ui_build_receipt_executed_draft_created_no_sends'
+    && brujulaManualUiCreatedOrEditedCount(receipt) === 1
+    && brujulaManualUiSubject(receipt) === expectedSubject
+    && brujulaManualUiOutboxCount(receipt) === 0
+    && receipt?.draftReceipt?.uiVisibleInDrafts === true
+    && receipt?.draftReceipt?.contentCopiedFromLocalHtmlPath === true
+    && brujulaManualUiRecipientsEmptyObserved(receipt) === true
+    && receipt?.safety?.sendsPerformed === false
+    && receipt?.safety?.schedulesCreated === false
+    && receipt?.safety?.subscribersReadOrAssigned === false
+    && receipt?.safety?.groupsCreatedOrAssigned === false
+    && receipt?.safety?.workflowMutationsPerformed === false
+    && receipt?.safety?.factStoreWritePerformed === false
+    && anyIncludes(receipt?.stillClosedAfterThisReceipt, ['test_send_or_public_send']);
+
+  const verify = receipt?.verification?.postExecutionApiVerify ?? {};
+  const greenReceiptClosed = status === 'brujula_email1_manual_ui_build_receipt_green_draft_created_no_sends'
+    && receipt?.ok === true
+    && receipt?.scope?.approvedScopeId === 'brujula_email1_builder_draft'
+    && receipt?.scope?.exactApprovalMatched === true
+    && brujulaManualUiCreatedOrEditedCount(receipt) === 1
+    && brujulaManualUiSubject(receipt) === expectedSubject
+    && receipt?.campaign?.status === 'draft'
+    && isFalse(receipt?.campaign?.recipientsSelected)
+    && isFalse(receipt?.campaign?.groupsOrSegmentsSelected)
+    && isFalse(receipt?.campaign?.scheduled)
+    && isFalse(receipt?.campaign?.sent)
+    && verify?.status === 'post_ui_paste_verify_green'
+    && verify?.targetInDraft === true
+    && verify?.targetInReadyOutbox === false
+    && verify?.targetInSent === false
+    && allContentChecksGreen(verify?.contentChecks)
+    && receipt?.safety?.sendsPerformed === false
+    && receipt?.safety?.schedulesPerformed === false
+    && receipt?.safety?.publicCampaignPublished === false
+    && receipt?.safety?.subscriberMutationsPerformed === false
+    && receipt?.safety?.groupsCreated === false
+    && receipt?.safety?.groupAssignmentsPerformed === false
+    && receipt?.safety?.workflowMutationsPerformed === false
+    && receipt?.safety?.factStoreWritePerformed === false
+    && anyIncludes(receipt?.scope?.stillClosed, ['send_email_or_test_email', 'cards_scoring_or_fact_store_writes']);
+
+  return oldSchemaClosed || greenReceiptClosed;
+};
+
+const buildBrujulaBuilderDraftItem = ({ correction, renderQa, manualUiReceipt = null }) => {
   const subject = cleanString(correction?.draft?.subject) ?? 'Brújula Email 1';
   const htmlPath = cleanString(correction?.outputs?.htmlPath);
+  const receiptClosed = brujulaManualUiReceiptClosed(manualUiReceipt, subject);
+
+  if (receiptClosed) {
+    return buildApprovalItem({
+      id: 'brujula_email1_builder_draft',
+      title: 'Brújula Email 1 corrected MailerLite draft',
+      lane: 'brujula_test_pilot',
+      operationType: 'live_mailerlite_builder_draft_mutation_already_completed',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        correction: correction?.status ?? null,
+        renderQa: renderQa?.status ?? null,
+        manualUiReceipt: manualUiReceipt?.status ?? null,
+      },
+      targetNames: [subject],
+      allowedAfterExactApproval: [],
+      stillClosed: [
+        'test_send_or_public_send',
+        'workflow_activation',
+        'subscriber_or_group_mutation',
+        'shopify_publish',
+        'crm_write',
+        'fact_store_write',
+      ],
+      requiredFreshEvidence: [
+        'use the manual UI build receipt as current Brújula Email 1 draft state',
+        'run real MailerLite render QA before any test-send approval request',
+      ],
+      blockers: [],
+      evidence: {
+        receiptStatus: brujulaManualUiReceiptStatus(manualUiReceipt),
+        campaignId: brujulaManualUiCampaignId(manualUiReceipt),
+        campaignName: brujulaManualUiCampaignName(manualUiReceipt),
+        createdOrEditedDraftCount: brujulaManualUiCreatedOrEditedCount(manualUiReceipt),
+        outboxCountAfterBuild: brujulaManualUiOutboxCount(manualUiReceipt),
+        recipientsEmptyObserved: brujulaManualUiRecipientsEmptyObserved(manualUiReceipt),
+        sendsPerformed: brujulaManualUiSendsPerformed(manualUiReceipt),
+        contentChecks: manualUiReceipt?.verification?.postExecutionApiVerify?.contentChecks ?? null,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The approved Brújula Email 1 draft build boundary has already been used.',
+        'Test send, public send, workflows, subscribers, groups, Shopify, CRM and Fact Store remain separate closed gates.',
+      ],
+    });
+  }
+
   const blockers = [];
 
   if (correction?.status !== 'brujula_email1_corrected_draft_ready_for_mailerlite_builder_no_live_changes') {
@@ -982,6 +1107,7 @@ const buildApprovalQueue = ({
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
   brujulaEmailRenderQa,
+  brujulaEmailManualUiBuildReceipt,
   validationReceipt,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
@@ -1013,6 +1139,7 @@ const buildApprovalQueue = ({
     buildBrujulaBuilderDraftItem({
       correction: brujulaEmailStyleCorrection,
       renderQa: brujulaEmailRenderQa,
+      manualUiReceipt: brujulaEmailManualUiBuildReceipt,
     }),
     buildMiniLaunchSeedSendItem({
       payloadManifest: miniLaunchEmailBuilderPayloadManifest,
@@ -1147,6 +1274,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
     readOptionalJsonWithDigest(options.brujulaEmailRenderQa, 'Brújula local render QA packet'),
+    readOptionalJsonWithDigest(options.brujulaEmailManualUiBuildReceipt, 'Brújula Email 1 manual UI build receipt'),
     readOptionalJsonWithDigest(options.validationReceipt, 'latest validation receipt'),
   ]);
 
@@ -1167,6 +1295,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaEmailManualUiBuildReceipt,
     validationReceipt,
   ] = entries.map((entry) => entry.value);
 
@@ -1187,6 +1316,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
     brujulaEmailRenderQa,
+    brujulaEmailManualUiBuildReceipt,
     validationReceipt,
     sourceDigests: entries.map((entry) => entry.digest),
   });

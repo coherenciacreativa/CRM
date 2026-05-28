@@ -398,6 +398,51 @@ const brujulaEmailRenderQa = {
   },
 };
 
+const brujulaEmailManualUiBuildReceipt = {
+  status: "brujula_email1_manual_ui_build_receipt_green_draft_created_no_sends",
+  ok: true,
+  scope: {
+    approvedScopeId: "brujula_email1_builder_draft",
+    exactApprovalMatched: true,
+    stillClosed: [
+      "send_email_or_test_email",
+      "cards_scoring_or_fact_store_writes",
+    ],
+  },
+  campaign: {
+    id: "188677585118430654",
+    status: "draft",
+    subject: "Aquí está La Brújula de Claridad",
+    recipientsSelected: false,
+    groupsOrSegmentsSelected: false,
+    scheduled: false,
+    sent: false,
+  },
+  verification: {
+    postExecutionApiVerify: {
+      status: "post_ui_paste_verify_green",
+      targetInDraft: true,
+      targetInReadyOutbox: false,
+      targetInSent: false,
+      readyOutboxCampaignsRead: 0,
+      contentChecks: {
+        hasTitle: true,
+        hasGreeting: true,
+      },
+    },
+  },
+  safety: {
+    sendsPerformed: false,
+    schedulesPerformed: false,
+    publicCampaignPublished: false,
+    subscriberMutationsPerformed: false,
+    groupsCreated: false,
+    groupAssignmentsPerformed: false,
+    workflowMutationsPerformed: false,
+    factStoreWritePerformed: false,
+  },
+};
+
 const miniLaunchEmailStyleQaPacket = {
   status: "mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes",
   executiveSummary: {
@@ -610,7 +655,7 @@ const values = {
 
 const sourceDigests = [
   {
-    path: "/tmp/mailerlite_launch_os_operator_runbook_2026-05-27.json",
+    path: "/tmp/mailerlite_launch_os_operator_runbook_2026-05-28.json",
     present: true,
     chars: 1000,
     consultedFor: "operator runbook state",
@@ -626,7 +671,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
       "/tmp/audit.md",
     ]);
 
-    expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-27.json");
+    expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
     expect(parsed.controlRoom).toContain("mailerlite-launch-os-v0-control-room.md");
     expect(parsed.brandDictionary).toContain("MAILERLITE_GROUP_DICTIONARY_V0.md");
     expect(parsed.finalizationPreflight).toContain("mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
@@ -646,7 +691,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
-    expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-27.json");
+    expect(parsed.brujulaEmailManualUiBuildReceipt).toContain("mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json");
+    expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
   });
@@ -879,6 +925,22 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPreviewNonEmpty=true");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPreviewSize=56000");
     expect(byId.brujula_test_pilot_status.evidence).toContain("emailRenderQaPublicUseReady=false");
+  });
+
+  test("treats Brújula manual UI draft build receipt as a closed builder boundary", () => {
+    const checks = buildRequirementChecks({
+      ...values,
+      brujulaEmailRenderQa,
+      brujulaEmailManualUiBuildReceipt,
+    });
+    const byId = Object.fromEntries(checks.map((check) => [check.id, check]));
+
+    expect(byId.brujula_test_pilot_status.status).toBe("partial_functional_green_corrected_draft_built_in_mailerlite_needs_render_qa_and_test_send_approval");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("manualUiBuildReceiptStatus=brujula_email1_manual_ui_build_receipt_green_draft_created_no_sends");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("manualUiCampaignId=188677585118430654");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("manualUiOutboxCount=0");
+    expect(byId.brujula_test_pilot_status.evidence).toContain("manualUiBuildClosed=true");
+    expect(byId.brujula_test_pilot_status.remaining.join(" ")).toContain("manual UI build receipt as current draft evidence");
   });
 
   test("uses the persistent validation receipt when explicit validation flags are absent", () => {

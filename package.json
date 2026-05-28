@@ -39,6 +39,7 @@
     "crm:vnext:mailerlite-brujula-email-style-qa-packet": "node scripts/crm-vnext-mailerlite-brujula-email-style-qa-packet.mjs",
     "crm:vnext:mailerlite-brujula-email-style-correction-packet": "node scripts/crm-vnext-mailerlite-brujula-email-style-correction-packet.mjs",
     "crm:vnext:mailerlite-brujula-email-render-qa-packet": "node scripts/crm-vnext-mailerlite-brujula-email-render-qa-packet.mjs",
+    "crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt": "node scripts/crm-vnext-mailerlite-brujula-email-manual-ui-build-receipt.mjs",
     "crm:vnext:mailerlite-onboarding-v1-audit": "node scripts/crm-vnext-mailerlite-onboarding-v1-audit.mjs",
     "crm:vnext:mailerlite-onboarding-v2-design-packet": "node scripts/crm-vnext-mailerlite-onboarding-v2-design-packet.mjs",
     "crm:vnext:mailerlite-onboarding-v2-empty-groups-packet": "node scripts/crm-vnext-mailerlite-onboarding-v2-empty-groups-packet.mjs",

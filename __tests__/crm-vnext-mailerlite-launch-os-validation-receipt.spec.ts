@@ -41,6 +41,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-approval-intake": "node scripts/approval-intake.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
+    "crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt": "node scripts/brujula-manual-ui-build-receipt.mjs",
     "crm:vnext:mailerlite-onboarding-trunk-map": "node scripts/trunk-map.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-response-watcher": "node scripts/response-watcher.mjs",
     "crm:vnext:mailerlite-mini-launch-local-email-asset-plan": "node scripts/local-email-asset-plan.mjs",
@@ -56,7 +57,7 @@ const packageJson = {
 
 const sourceDigests = [
   {
-    path: "/tmp/mailerlite_launch_os_operator_runbook_2026-05-27.json",
+    path: "/tmp/mailerlite_launch_os_operator_runbook_2026-05-28.json",
     present: true,
     chars: 100,
     sha256: "abc",
@@ -85,8 +86,8 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       "/tmp/receipt.md",
     ]);
 
-    expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-27.json");
-    expect(parsed.goalAudit).toContain("mailerlite_launch_os_v0_goal_audit_2026-05-27.json");
+    expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
+    expect(parsed.goalAudit).toContain("mailerlite_launch_os_goal_audit_2026-05-28.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);
