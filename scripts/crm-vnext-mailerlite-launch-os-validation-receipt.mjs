@@ -17,6 +17,7 @@ const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Ma
 const DEFAULT_TAXONOMY_REFRESH_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json';
 const DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json';
 const DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
@@ -34,6 +35,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-handoff.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-decision-intake.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-workspace.mjs',
+  'node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-request-bundle.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs',
   'node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs',
@@ -72,6 +74,7 @@ Options:
   --taxonomy-refresh-handoff <path> Taxonomy refresh handoff JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_HANDOFF}
   --taxonomy-refresh-decision-intake <path> Taxonomy decision intake JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE}
   --taxonomy-refresh-response-workspace <path> Taxonomy response workspace JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE}
+  --taxonomy-refresh-response-request-bundle <path> Taxonomy response request bundle JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
@@ -108,6 +111,7 @@ const parseArgs = (argv) => {
     taxonomyRefreshHandoff: DEFAULT_TAXONOMY_REFRESH_HANDOFF,
     taxonomyRefreshDecisionIntake: DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE,
     taxonomyRefreshResponseWorkspace: DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE,
+    taxonomyRefreshResponseRequestBundle: DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
@@ -134,6 +138,7 @@ const parseArgs = (argv) => {
     else if (arg === '--taxonomy-refresh-handoff') options.taxonomyRefreshHandoff = argv[++index];
     else if (arg === '--taxonomy-refresh-decision-intake') options.taxonomyRefreshDecisionIntake = argv[++index];
     else if (arg === '--taxonomy-refresh-response-workspace') options.taxonomyRefreshResponseWorkspace = argv[++index];
+    else if (arg === '--taxonomy-refresh-response-request-bundle') options.taxonomyRefreshResponseRequestBundle = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
@@ -217,6 +222,7 @@ const buildValidationReceipt = ({
   taxonomyRefreshHandoff = null,
   taxonomyRefreshDecisionIntake = null,
   taxonomyRefreshResponseWorkspace = null,
+  taxonomyRefreshResponseRequestBundle = null,
   onboardingTrunkMap,
   packageJson,
   sourceDigests = [],
@@ -250,6 +256,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff',
     'crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake',
     'crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace',
+    'crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-request-bundle',
     'crm:vnext:mailerlite-launch-os-continuation-guard',
     'crm:vnext:mailerlite-launch-os-goal-audit',
     'crm:vnext:mailerlite-launch-os-validation-receipt',
@@ -432,6 +439,30 @@ const buildValidationReceipt = ({
       taxonomyRefreshResponseCanApplyCrmManifestPatchNow: taxonomyRefreshResponseWorkspace?.executiveSummary?.canApplyCrmManifestPatchNow
         ?? runbook?.currentState?.taxonomyRefreshResponseWorkspace?.canApplyCrmManifestPatchNow
         ?? null,
+      taxonomyRefreshResponseRequestBundleStatus: taxonomyRefreshResponseRequestBundle?.status
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.status
+        ?? null,
+      taxonomyRefreshResponseRequestCount: taxonomyRefreshResponseRequestBundle?.executiveSummary?.requestCount
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.requestCount
+        ?? null,
+      taxonomyRefreshResponseRequestPendingActorCount: taxonomyRefreshResponseRequestBundle?.executiveSummary?.pendingActorCount
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.pendingActorCount
+        ?? null,
+      taxonomyRefreshResponseRequestMissingFinalResponseCount: taxonomyRefreshResponseRequestBundle?.executiveSummary?.missingFinalResponseCount
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.missingFinalResponseCount
+        ?? null,
+      taxonomyRefreshResponseRequestCopyBlocksReady: taxonomyRefreshResponseRequestBundle?.executiveSummary?.copyBlocksReady
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.copyBlocksReady
+        ?? null,
+      taxonomyRefreshResponseRequestAsksLiveApproval: taxonomyRefreshResponseRequestBundle?.executiveSummary?.asksLiveApproval
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.asksLiveApproval
+        ?? null,
+      taxonomyRefreshResponseRequestCreatesFinalResponseFiles: taxonomyRefreshResponseRequestBundle?.executiveSummary?.createsFinalResponseFiles
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.createsFinalResponseFiles
+        ?? null,
+      taxonomyRefreshResponseRequestCanApplyCrmManifestPatchNow: taxonomyRefreshResponseRequestBundle?.executiveSummary?.canApplyCrmManifestPatchNow
+        ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.canApplyCrmManifestPatchNow
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -459,6 +490,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     taxonomyRefreshHandoff,
     taxonomyRefreshDecisionIntake,
     taxonomyRefreshResponseWorkspace,
+    taxonomyRefreshResponseRequestBundle,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -474,6 +506,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     readJson(options.taxonomyRefreshHandoff),
     readJson(options.taxonomyRefreshDecisionIntake),
     readJson(options.taxonomyRefreshResponseWorkspace),
+    readJson(options.taxonomyRefreshResponseRequestBundle),
     readJson(options.onboardingTrunkMap),
     readJson(options.packageJson),
     Promise.all([
@@ -488,6 +521,7 @@ const buildValidationReceiptFromFiles = async (options) => {
       digestFor(options.taxonomyRefreshHandoff, 'taxonomy refresh handoff for Brand and CRM semantic/cache decisions'),
       digestFor(options.taxonomyRefreshDecisionIntake, 'taxonomy decision intake for local-only Brand and CRM decisions'),
       digestFor(options.taxonomyRefreshResponseWorkspace, 'taxonomy response workspace with pending/final Brand and CRM decisions'),
+      digestFor(options.taxonomyRefreshResponseRequestBundle, 'taxonomy response request bundle for Brand/CRM final files'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
@@ -505,6 +539,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     taxonomyRefreshHandoff,
     taxonomyRefreshDecisionIntake,
     taxonomyRefreshResponseWorkspace,
+    taxonomyRefreshResponseRequestBundle,
     onboardingTrunkMap,
     packageJson,
     sourceDigests,
@@ -566,6 +601,12 @@ const renderMarkdown = (receipt) => {
     `- Taxonomy response pending actors: ${receipt.evidence.taxonomyRefreshResponsePendingActorCount ?? 'unknown'}`,
     `- Taxonomy response ready for intake: ${receipt.evidence.taxonomyRefreshResponseReadyForIntake ?? 'unknown'}`,
     `- Taxonomy response can apply CRM patch now: ${receipt.evidence.taxonomyRefreshResponseCanApplyCrmManifestPatchNow ?? 'unknown'}`,
+    `- Taxonomy response request bundle: ${receipt.evidence.taxonomyRefreshResponseRequestBundleStatus ?? 'missing'}`,
+    `- Taxonomy response request count: ${receipt.evidence.taxonomyRefreshResponseRequestCount ?? 'unknown'}`,
+    `- Taxonomy response request pending actors: ${receipt.evidence.taxonomyRefreshResponseRequestPendingActorCount ?? 'unknown'}`,
+    `- Taxonomy response request missing finals: ${receipt.evidence.taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}`,
+    `- Taxonomy response request asks live approval: ${receipt.evidence.taxonomyRefreshResponseRequestAsksLiveApproval ?? 'unknown'}`,
+    `- Taxonomy response request creates final files: ${receipt.evidence.taxonomyRefreshResponseRequestCreatesFinalResponseFiles ?? 'unknown'}`,
     '',
     '## Commands',
     '',

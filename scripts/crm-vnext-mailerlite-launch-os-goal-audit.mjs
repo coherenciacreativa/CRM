@@ -56,6 +56,7 @@ const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Ma
 const DEFAULT_TAXONOMY_REFRESH_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json';
 const DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json';
 const DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -124,6 +125,7 @@ Options:
   --taxonomy-refresh-handoff <path> Launch OS Brand/CRM taxonomy refresh handoff JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_HANDOFF}
   --taxonomy-refresh-response-workspace <path> Launch OS Brand/CRM taxonomy response workspace JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE}
   --taxonomy-refresh-decision-intake <path> Launch OS Brand/CRM taxonomy decision intake JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE}
+  --taxonomy-refresh-response-request-bundle <path> Launch OS Brand/CRM taxonomy response request bundle JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE}
   --continuation-guard <path>       Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>       Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>             package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -190,6 +192,7 @@ const parseArgs = (argv) => {
     taxonomyRefreshHandoff: DEFAULT_TAXONOMY_REFRESH_HANDOFF,
     taxonomyRefreshResponseWorkspace: DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE,
     taxonomyRefreshDecisionIntake: DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE,
+    taxonomyRefreshResponseRequestBundle: DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -254,6 +257,7 @@ const parseArgs = (argv) => {
     else if (arg === '--taxonomy-refresh-handoff') options.taxonomyRefreshHandoff = argv[++index];
     else if (arg === '--taxonomy-refresh-response-workspace') options.taxonomyRefreshResponseWorkspace = argv[++index];
     else if (arg === '--taxonomy-refresh-decision-intake') options.taxonomyRefreshDecisionIntake = argv[++index];
+    else if (arg === '--taxonomy-refresh-response-request-bundle') options.taxonomyRefreshResponseRequestBundle = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -397,6 +401,7 @@ const loadSources = async (options) => {
     ['taxonomyRefreshHandoff', options.taxonomyRefreshHandoff, 'Launch OS Brand/CRM taxonomy refresh handoff prepared from consolidation drift', 'json', true],
     ['taxonomyRefreshResponseWorkspace', options.taxonomyRefreshResponseWorkspace, 'Launch OS Brand/CRM taxonomy response workspace with pending/final file separation', 'json', true],
     ['taxonomyRefreshDecisionIntake', options.taxonomyRefreshDecisionIntake, 'Launch OS Brand/CRM taxonomy decision intake with local patch preview gate state', 'json', true],
+    ['taxonomyRefreshResponseRequestBundle', options.taxonomyRefreshResponseRequestBundle, 'Launch OS Brand/CRM taxonomy final-response request bundle with no approval or execution', 'json', true],
     ['continuationGuard', options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', 'json', true],
     ['validationReceipt', options.validationReceipt, 'persistent local validation receipt for tests/checks', 'json', true],
     ['packageJson', options.packageJson, 'available commands and local test surface', 'json'],
@@ -491,6 +496,7 @@ const buildRequirementChecks = ({
   taxonomyRefreshHandoff,
   taxonomyRefreshResponseWorkspace,
   taxonomyRefreshDecisionIntake,
+  taxonomyRefreshResponseRequestBundle,
   continuationGuard,
   validationReceipt,
   brandTaxonomy,
@@ -1139,6 +1145,31 @@ const buildRequirementChecks = ({
   const taxonomyRefreshDecisionOpenLiveGateCount = taxonomyRefreshDecisionIntakeState?.executiveSummary?.openLiveMutationGateCount
     ?? taxonomyRefreshDecisionIntakeState?.openLiveMutationGateCount
     ?? null;
+  const taxonomyRefreshResponseRequestBundleState = taxonomyRefreshResponseRequestBundle
+    ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle
+    ?? null;
+  const taxonomyRefreshResponseRequestBundleStatus = taxonomyRefreshResponseRequestBundleState?.status ?? null;
+  const taxonomyRefreshResponseRequestCount = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.requestCount
+    ?? taxonomyRefreshResponseRequestBundleState?.requestCount
+    ?? null;
+  const taxonomyRefreshResponseRequestPendingActorCount = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.pendingActorCount
+    ?? taxonomyRefreshResponseRequestBundleState?.pendingActorCount
+    ?? null;
+  const taxonomyRefreshResponseRequestMissingFinalResponseCount = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.missingFinalResponseCount
+    ?? taxonomyRefreshResponseRequestBundleState?.missingFinalResponseCount
+    ?? null;
+  const taxonomyRefreshResponseRequestCopyBlocksReady = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.copyBlocksReady
+    ?? taxonomyRefreshResponseRequestBundleState?.copyBlocksReady
+    ?? null;
+  const taxonomyRefreshResponseRequestAsksLiveApproval = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.asksLiveApproval
+    ?? taxonomyRefreshResponseRequestBundleState?.asksLiveApproval
+    ?? null;
+  const taxonomyRefreshResponseRequestCreatesFinalResponseFiles = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.createsFinalResponseFiles
+    ?? taxonomyRefreshResponseRequestBundleState?.createsFinalResponseFiles
+    ?? null;
+  const taxonomyRefreshResponseRequestCanApplyCrmManifestPatchNow = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.canApplyCrmManifestPatchNow
+    ?? taxonomyRefreshResponseRequestBundleState?.canApplyCrmManifestPatchNow
+    ?? null;
   const continuationGuardState = continuationGuard ?? runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardClosedBoundaryCount = continuationGuardState?.executiveSummary?.closedBoundaryCount
@@ -1440,6 +1471,14 @@ const buildRequirementChecks = ({
         `taxonomyRefreshDecisionCanAskApprovalNow=${taxonomyRefreshDecisionCanAskApprovalNow ?? 'unknown'}`,
         `taxonomyRefreshDecisionCanApplyCrmManifestPatchNow=${taxonomyRefreshDecisionCanApplyCrmManifestPatchNow ?? 'unknown'}`,
         `taxonomyRefreshDecisionOpenLiveGateCount=${taxonomyRefreshDecisionOpenLiveGateCount ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestBundleStatus=${taxonomyRefreshResponseRequestBundleStatus ?? 'missing'}`,
+        `taxonomyRefreshResponseRequestCount=${taxonomyRefreshResponseRequestCount ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestPendingActorCount=${taxonomyRefreshResponseRequestPendingActorCount ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestMissingFinalResponseCount=${taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestCopyBlocksReady=${taxonomyRefreshResponseRequestCopyBlocksReady ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestAsksLiveApproval=${taxonomyRefreshResponseRequestAsksLiveApproval ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestCreatesFinalResponseFiles=${taxonomyRefreshResponseRequestCreatesFinalResponseFiles ?? 'unknown'}`,
+        `taxonomyRefreshResponseRequestCanApplyCrmManifestPatchNow=${taxonomyRefreshResponseRequestCanApplyCrmManifestPatchNow ?? 'unknown'}`,
         `brandAcceptedLaunchGroupCandidates=${brandAcceptedLaunchGroupCandidates}`,
         `brandCandidateDecisionClosed=${brandCandidateDecisionClosed}`,
         `groupDryRunReadyForFutureEmptyGroupDecision=${launchGroupDryRunReady}`,
@@ -1454,6 +1493,7 @@ const buildRequirementChecks = ({
           `Taxonomy refresh handoff prepared ${taxonomyRefreshBrandPromotionDecisionCount ?? 'unknown'} Brand decisions and ${taxonomyRefreshCrmManifestPatchCount ?? 'unknown'} CRM manifest patch rows; do not apply them until Brand/CRM resolve the semantic cache boundary.`,
           `Taxonomy response workspace status: ${taxonomyRefreshResponseWorkspaceStatus ?? 'missing'}; pending actors ${taxonomyRefreshResponsePendingActorCount ?? 'unknown'}; can apply CRM manifest patch now ${taxonomyRefreshResponseCanApplyCrmManifestPatchNow ?? 'unknown'}.`,
           `Taxonomy decision intake status: ${taxonomyRefreshDecisionIntakeStatus ?? 'missing'}; Brand rows present ${taxonomyRefreshDecisionRowsPresent ?? 'unknown'}/${taxonomyRefreshDecisionRowsNeeded ?? 'unknown'}; ready for local patch preview ${taxonomyRefreshDecisionReadyForLocalPatchPreview ?? 'unknown'}.`,
+          `Taxonomy response request bundle status: ${taxonomyRefreshResponseRequestBundleStatus ?? 'missing'}; missing final responses ${taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}; asks live approval ${taxonomyRefreshResponseRequestAsksLiveApproval ?? 'unknown'}.`,
           'Refresh Brand dictionary and CRM manifest locally from the approved execution receipts before calling taxonomy complete; no live action or UI work is open.',
         ]
         : taxonomyConsolidationComplete
@@ -2183,6 +2223,28 @@ const buildGoalAudit = ({
     : taxonomyRefreshDecisionIntakeStatus
       ? `Use the Launch OS taxonomy decision intake as wait state; Brand rows present=${taxonomyRefreshDecisionRowsPresent ?? 'unknown'}/${taxonomyRefreshDecisionRowsNeeded ?? 'unknown'}, readyForLocalPatchPreview=${taxonomyRefreshDecisionReadyForLocalPatchPreview}.`
       : 'Generate the Launch OS taxonomy decision intake after Brand/CRM response workspace; it cannot ask approval or apply patches.';
+  const taxonomyRefreshResponseRequestBundleState = values.taxonomyRefreshResponseRequestBundle ?? values.runbook?.currentState?.taxonomyRefreshResponseRequestBundle ?? null;
+  const taxonomyRefreshResponseRequestBundleStatus = taxonomyRefreshResponseRequestBundleState?.status ?? null;
+  const taxonomyRefreshResponseRequestCount = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.requestCount
+    ?? taxonomyRefreshResponseRequestBundleState?.requestCount
+    ?? null;
+  const taxonomyRefreshResponseRequestPendingActorCount = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.pendingActorCount
+    ?? taxonomyRefreshResponseRequestBundleState?.pendingActorCount
+    ?? null;
+  const taxonomyRefreshResponseRequestMissingFinalResponseCount = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.missingFinalResponseCount
+    ?? taxonomyRefreshResponseRequestBundleState?.missingFinalResponseCount
+    ?? null;
+  const taxonomyRefreshResponseRequestAsksLiveApproval = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.asksLiveApproval
+    ?? taxonomyRefreshResponseRequestBundleState?.asksLiveApproval
+    ?? null;
+  const taxonomyRefreshResponseRequestCreatesFinalResponseFiles = taxonomyRefreshResponseRequestBundleState?.executiveSummary?.createsFinalResponseFiles
+    ?? taxonomyRefreshResponseRequestBundleState?.createsFinalResponseFiles
+    ?? null;
+  const taxonomyRefreshResponseRequestMove = taxonomyRefreshResponseRequestBundleStatus === 'taxonomy_refresh_response_request_bundle_ready_no_live_changes'
+    ? `Use the Launch OS taxonomy response request bundle to collect final files only; requests=${taxonomyRefreshResponseRequestCount ?? 'unknown'}, pending actors=${taxonomyRefreshResponseRequestPendingActorCount ?? 'unknown'}, missing final responses=${taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}, asksLiveApproval=${taxonomyRefreshResponseRequestAsksLiveApproval}, createsFinalResponseFiles=${taxonomyRefreshResponseRequestCreatesFinalResponseFiles}.`
+    : taxonomyRefreshResponseRequestBundleStatus
+      ? `Use taxonomy response request bundle current status=${taxonomyRefreshResponseRequestBundleStatus}; no live action is implied.`
+      : 'Generate the Launch OS taxonomy response request bundle so Brand/CRM know which final files to supply without approval or execution.';
   const continuationGuardState = values.continuationGuard ?? values.runbook?.currentState?.continuationGuard ?? null;
   const continuationGuardStatus = continuationGuardState?.status ?? null;
   const continuationGuardOldUiWorkClosed = continuationGuardState?.executiveSummary?.oldUiWorkClosed
@@ -2286,12 +2348,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -2310,6 +2372,7 @@ const buildGoalAudit = ({
         taxonomyRefreshHandoffMove,
         taxonomyRefreshResponseWorkspaceMove,
         taxonomyRefreshDecisionMove,
+        taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2332,6 +2395,7 @@ const buildGoalAudit = ({
         taxonomyRefreshHandoffMove,
         taxonomyRefreshResponseWorkspaceMove,
         taxonomyRefreshDecisionMove,
+        taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2353,6 +2417,7 @@ const buildGoalAudit = ({
         taxonomyRefreshHandoffMove,
         taxonomyRefreshResponseWorkspaceMove,
         taxonomyRefreshDecisionMove,
+        taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
@@ -2372,6 +2437,7 @@ const buildGoalAudit = ({
       taxonomyRefreshHandoffMove,
       taxonomyRefreshResponseWorkspaceMove,
       taxonomyRefreshDecisionMove,
+      taxonomyRefreshResponseRequestMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
@@ -2452,6 +2518,12 @@ const buildGoalAudit = ({
       taxonomyRefreshDecisionReadyForLocalPatchPreview,
       taxonomyRefreshDecisionCanAskApprovalNow,
       taxonomyRefreshDecisionCanApplyCrmManifestPatchNow,
+      taxonomyRefreshResponseRequestBundleStatus,
+      taxonomyRefreshResponseRequestCount,
+      taxonomyRefreshResponseRequestPendingActorCount,
+      taxonomyRefreshResponseRequestMissingFinalResponseCount,
+      taxonomyRefreshResponseRequestAsksLiveApproval,
+      taxonomyRefreshResponseRequestCreatesFinalResponseFiles,
       continuationGuardStatus,
       continuationGuardOldUiWorkClosed,
       continuationGuardClosedBoundaryCount,
@@ -2479,6 +2551,7 @@ const buildGoalAudit = ({
       taxonomyRefreshHandoffMove,
       taxonomyRefreshResponseWorkspaceMove,
       taxonomyRefreshDecisionMove,
+      taxonomyRefreshResponseRequestMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
       repairPacketMove,
@@ -2550,6 +2623,9 @@ const renderMarkdown = (audit) => {
     `- Taxonomy decision rows present: ${audit.executiveSummary.taxonomyRefreshDecisionRowsPresent ?? 'unknown'}/${audit.executiveSummary.taxonomyRefreshDecisionRowsNeeded ?? 'unknown'}`,
     `- Taxonomy decision ready for local patch preview: ${audit.executiveSummary.taxonomyRefreshDecisionReadyForLocalPatchPreview ?? 'unknown'}`,
     `- Taxonomy decision can apply CRM patch now: ${audit.executiveSummary.taxonomyRefreshDecisionCanApplyCrmManifestPatchNow ?? 'unknown'}`,
+    `- Taxonomy response request bundle: ${audit.executiveSummary.taxonomyRefreshResponseRequestBundleStatus ?? 'missing'}`,
+    `- Taxonomy response request missing finals: ${audit.executiveSummary.taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}`,
+    `- Taxonomy response request asks live approval: ${audit.executiveSummary.taxonomyRefreshResponseRequestAsksLiveApproval ?? 'unknown'}`,
     `- Next best move: ${audit.executiveSummary.nextBestMove}`,
     '',
     '## Requirement Audit',
@@ -2630,6 +2706,9 @@ const main = async () => {
     taxonomyRefreshResponseWorkspaceStatus: audit.executiveSummary.taxonomyRefreshResponseWorkspaceStatus,
     taxonomyRefreshResponsePendingActorCount: audit.executiveSummary.taxonomyRefreshResponsePendingActorCount,
     taxonomyRefreshResponseCanApplyCrmManifestPatchNow: audit.executiveSummary.taxonomyRefreshResponseCanApplyCrmManifestPatchNow,
+    taxonomyRefreshResponseRequestBundleStatus: audit.executiveSummary.taxonomyRefreshResponseRequestBundleStatus,
+    taxonomyRefreshResponseRequestMissingFinalResponseCount: audit.executiveSummary.taxonomyRefreshResponseRequestMissingFinalResponseCount,
+    taxonomyRefreshResponseRequestAsksLiveApproval: audit.executiveSummary.taxonomyRefreshResponseRequestAsksLiveApproval,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
     safety: audit.safety,

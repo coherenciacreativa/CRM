@@ -72,6 +72,16 @@ const runbook = {
       readyForIntake: false,
       canApplyCrmManifestPatchNow: false,
     },
+    taxonomyRefreshResponseRequestBundle: {
+      status: "taxonomy_refresh_response_request_bundle_ready_no_live_changes",
+      requestCount: 2,
+      pendingActorCount: 2,
+      missingFinalResponseCount: 2,
+      copyBlocksReady: true,
+      asksLiveApproval: false,
+      createsFinalResponseFiles: false,
+      canApplyCrmManifestPatchNow: false,
+    },
   },
 };
 
@@ -181,6 +191,19 @@ const taxonomyRefreshResponseWorkspace = {
   },
 };
 
+const taxonomyRefreshResponseRequestBundle = {
+  status: "taxonomy_refresh_response_request_bundle_ready_no_live_changes",
+  executiveSummary: {
+    requestCount: 2,
+    pendingActorCount: 2,
+    missingFinalResponseCount: 2,
+    copyBlocksReady: true,
+    asksLiveApproval: false,
+    createsFinalResponseFiles: false,
+    canApplyCrmManifestPatchNow: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -196,6 +219,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff": "node scripts/taxonomy-refresh-handoff.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake": "node scripts/taxonomy-refresh-decision-intake.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace": "node scripts/taxonomy-refresh-response-workspace.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-request-bundle": "node scripts/taxonomy-refresh-response-request-bundle.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -263,6 +287,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(parsed.taxonomyRefreshHandoff).toContain("mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
     expect(parsed.taxonomyRefreshDecisionIntake).toContain("mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
     expect(parsed.taxonomyRefreshResponseWorkspace).toContain("mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
+    expect(parsed.taxonomyRefreshResponseRequestBundle).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);
@@ -283,6 +308,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       taxonomyRefreshHandoff,
       taxonomyRefreshDecisionIntake,
       taxonomyRefreshResponseWorkspace,
+      taxonomyRefreshResponseRequestBundle,
       onboardingTrunkMap,
       packageJson,
       sourceDigests,
@@ -333,6 +359,13 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.evidence.taxonomyRefreshResponseWorkspaceStatus).toBe("taxonomy_refresh_response_workspace_ready_awaiting_final_responses_no_live_changes");
     expect(receipt.evidence.taxonomyRefreshResponsePendingActorCount).toBe(2);
     expect(receipt.evidence.taxonomyRefreshResponseReadyForIntake).toBe(false);
+    expect(receipt.evidence.taxonomyRefreshResponseRequestBundleStatus).toBe("taxonomy_refresh_response_request_bundle_ready_no_live_changes");
+    expect(receipt.evidence.taxonomyRefreshResponseRequestCount).toBe(2);
+    expect(receipt.evidence.taxonomyRefreshResponseRequestPendingActorCount).toBe(2);
+    expect(receipt.evidence.taxonomyRefreshResponseRequestMissingFinalResponseCount).toBe(2);
+    expect(receipt.evidence.taxonomyRefreshResponseRequestCopyBlocksReady).toBe(true);
+    expect(receipt.evidence.taxonomyRefreshResponseRequestAsksLiveApproval).toBe(false);
+    expect(receipt.evidence.taxonomyRefreshResponseRequestCreatesFinalResponseFiles).toBe(false);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,
@@ -394,6 +427,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(markdown).toContain("Taxonomy consolidation audit");
     expect(markdown).toContain("Taxonomy decision intake");
     expect(markdown).toContain("Taxonomy response workspace");
+    expect(markdown).toContain("Taxonomy response request bundle");
     expect(markdown).toContain("No live actions");
     expect(markdown).toContain("This receipt cannot approve live action");
   });
