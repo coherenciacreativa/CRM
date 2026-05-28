@@ -31,6 +31,7 @@ const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Docume
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -73,6 +74,7 @@ Options:
   --mini-launch-email-asset-build-scope-packet <path> Mini-launch exact approval scope packet for future email asset build. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET}
   --mini-launch-email-builder-payload-manifest <path> Mini-launch local builder payload manifest. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST}
   --mini-launch-email-render-qa <path> Mini-launch local email render QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
+  --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI draft build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>   Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -120,6 +122,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailAssetBuildScopePacket: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET,
     miniLaunchEmailBuilderPayloadManifest: DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST,
     miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
+    miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -165,6 +168,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-asset-build-scope-packet') options.miniLaunchEmailAssetBuildScopePacket = argv[++index];
     else if (arg === '--mini-launch-email-builder-payload-manifest') options.miniLaunchEmailBuilderPayloadManifest = argv[++index];
     else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
+    else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -229,6 +233,7 @@ const loadSources = async (options) => {
     ['miniLaunchEmailAssetBuildScopePacket', options.miniLaunchEmailAssetBuildScopePacket, 'mini-launch exact approval scope packet for future MailerLite draft email asset build; no execution', 'json', true],
     ['miniLaunchEmailBuilderPayloadManifest', options.miniLaunchEmailBuilderPayloadManifest, 'mini-launch local builder payload manifest with exact payloads and closed execution/send gates', 'json', true],
     ['miniLaunchEmailRenderQa', options.miniLaunchEmailRenderQa, 'mini-launch local email render QA with HTML and non-empty PNG preview evidence', 'json', true],
+    ['miniLaunchEmailManualUiBuildReceipt', options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI MailerLite draft build receipt and closed send/subscriber/workflow gates', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
     ['brujulaEmailStyleQa', options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria', 'json'],
@@ -304,6 +309,7 @@ const buildRequirementChecks = ({
   miniLaunchEmailAssetBuildScopePacket,
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
+  miniLaunchEmailManualUiBuildReceipt,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -587,6 +593,23 @@ const buildRequirementChecks = ({
   const miniLaunchEmailRenderQaRenderPreviewNonEmptyCount = miniLaunchEmailRenderQa?.executiveSummary?.renderPreviewNonEmptyCount
     ?? runbook?.currentState?.miniLaunch?.emailRenderQaRenderPreviewNonEmptyCount
     ?? null;
+  const miniLaunchManualUiBuildReceiptStatus = miniLaunchEmailManualUiBuildReceipt?.status ?? null;
+  const miniLaunchManualUiDraftVisibleCount = (miniLaunchEmailManualUiBuildReceipt?.draftReceipts ?? [])
+    .filter((draft) => draft?.status === 'draft_visible_in_mailerlite_drafts' && draft?.uiVisibleInDrafts === true)
+    .length;
+  const miniLaunchManualUiBuildClosed = miniLaunchManualUiBuildReceiptStatus === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
+    && miniLaunchManualUiDraftVisibleCount === 4
+    && miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.preferredBrowserUsed === 'Safari'
+    && miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.usedEditor === 'new_simple_editor'
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.mailerLiteUiDraftMutationsRecorded === true
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.sendsPerformed === false
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.schedulesCreated === false
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.subscribersReadOrAssigned === false
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.groupsCreatedOrAssigned === false
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.workflowMutationsPerformed === false
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.crmLiveApiCalledByThisReceipt === false
+    && miniLaunchEmailManualUiBuildReceipt?.safety?.factStoreWritePerformed === false
+    && (miniLaunchEmailManualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send');
   const approvalQueueStatus = approvalQueue?.status
     ?? runbook?.currentState?.approvalQueue?.status
     ?? null;
@@ -903,6 +926,12 @@ const buildRequirementChecks = ({
         `miniLaunchEmailRenderQaReady=${miniLaunchEmailRenderQaReady}`,
         `miniLaunchEmailRenderQaEmailCount=${miniLaunchEmailRenderQaEmailCount ?? 'unknown'}`,
         `miniLaunchEmailRenderQaRenderPreviewNonEmptyCount=${miniLaunchEmailRenderQaRenderPreviewNonEmptyCount ?? 'unknown'}`,
+        `miniLaunchManualUiBuildReceiptStatus=${miniLaunchManualUiBuildReceiptStatus ?? 'missing'}`,
+        `miniLaunchManualUiDraftVisibleCount=${miniLaunchManualUiDraftVisibleCount}`,
+        `miniLaunchManualUiBuildClosed=${miniLaunchManualUiBuildClosed}`,
+        `miniLaunchManualUiEditor=${miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.usedEditor ?? 'unknown'}`,
+        `miniLaunchManualUiCustomHtmlStatus=${miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.editorRoute?.customHtmlEditorStatus ?? 'unknown'}`,
+        `miniLaunchManualUiPlanObserved=${miniLaunchEmailManualUiBuildReceipt?.uiEvidence?.mailerLiteAccountPlanObserved ?? 'unknown'}`,
         `approvalQueueStatus=${approvalQueueStatus ?? 'missing'}`,
         `approvalQueueReadyCount=${approvalQueueReadyCount ?? 'unknown'}`,
         `approvalQueueBlockedCount=${approvalQueueBlockedCount ?? 'unknown'}`,
@@ -915,9 +944,13 @@ const buildRequirementChecks = ({
       remaining: pendingDepartments.length === 0 && finalizationReadyForIntake === true
         ? [
           emptyGroupApprovalPacketReady
-            ? 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite creation is authorized yet.'
+            ? miniLaunchEmptyGroupCreateDryRunNoCreateNeeded
+              ? 'Current pilot has its two mini-launch Source/Delivered groups already present; do not rerun empty-group creation.'
+              : 'Current pilot is paused at the exact empty-group approval boundary; no MailerLite group creation is authorized yet.'
             : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
-          miniLaunchEmailStyleQaReadyForLocalAssetPlan
+          miniLaunchManualUiBuildClosed
+            ? 'The four mini-launch drafts already exist in MailerLite Drafts via approved manual UI build; seed/test send now remains blocked by real MailerLite render QA, exact seed recipient, and exact send approval.'
+            : miniLaunchEmailStyleQaReadyForLocalAssetPlan
             ? miniLaunchEmailBuilderPayloadManifestReady
               ? approvalQueueReady
                 ? 'Email builder payload manifest is ready and the approval queue now centralizes exact human boundaries; MailerLite builder execution, seed send, workflows and subscribers remain closed until exact approval.'
@@ -1150,6 +1183,19 @@ const buildGoalAudit = ({
     || values.readinessBoard?.lanes?.find((lane) => lane.id === 'email_sequence')?.sourceStatus === 'email_builder_payload_manifest_ready_no_live_changes';
   const emailRenderQaReady = values.miniLaunchEmailRenderQa?.status === 'mini_launch_email_render_qa_green_no_live_changes'
     || values.runbook?.currentState?.miniLaunch?.emailRenderQaLocalRenderReady === true;
+  const manualUiBuildReceipt = values.miniLaunchEmailManualUiBuildReceipt ?? null;
+  const manualUiDraftVisibleCount = (manualUiBuildReceipt?.draftReceipts ?? [])
+    .filter((draft) => draft?.status === 'draft_visible_in_mailerlite_drafts' && draft?.uiVisibleInDrafts === true)
+    .length;
+  const manualUiBuildClosed = manualUiBuildReceipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
+    && manualUiDraftVisibleCount === 4
+    && manualUiBuildReceipt?.safety?.sendsPerformed === false
+    && manualUiBuildReceipt?.safety?.schedulesCreated === false
+    && manualUiBuildReceipt?.safety?.subscribersReadOrAssigned === false
+    && manualUiBuildReceipt?.safety?.groupsCreatedOrAssigned === false
+    && manualUiBuildReceipt?.safety?.workflowMutationsPerformed === false
+    && manualUiBuildReceipt?.safety?.factStoreWritePerformed === false
+    && (manualUiBuildReceipt?.stillClosedAfterThisReceipt ?? []).includes('seed_send_or_test_send');
   const onboardingV2GroupBoundaryClosed = values.approvalQueue?.approvalItems?.find((item) => item.id === 'onboarding_v2_empty_group_creation')?.status === 'reference_only_no_approval_request_now';
   const approvalQueueReady = values.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes'
     || values.runbook?.currentState?.approvalQueue?.status === 'mailerlite_launch_os_approval_queue_ready_no_live_changes';
@@ -1162,7 +1208,9 @@ const buildGoalAudit = ({
     ? 'Use the Launch OS approval intake to check any future exact human phrase locally; it still cannot execute and must require fresh evidence before any guarded runner.'
     : 'Generate the Launch OS approval intake so future exact human phrases are checked locally before any guarded runner.';
   const localEmailAssetPlanMove = localEmailAssetPlanReady
-    ? emailBuilderPayloadManifestReady
+    ? manualUiBuildClosed
+      ? 'The four mini-launch email assets are now represented as MailerLite UI drafts via the manual build receipt; keep API asset build reference-only on Growing Business, and keep seed sends, workflow attachment and subscribers closed until real MailerLite render QA plus exact seed recipient and exact approval.'
+      : emailBuilderPayloadManifestReady
       ? emailRenderQaReady
         ? 'The email builder payload manifest and local render QA are green and represented in the approval queue as local implementation input only; exact asset-build approval is still required and builder execution, seed sends, workflow attachment and subscribers remain closed.'
         : approvalQueueReady
@@ -1251,8 +1299,12 @@ const buildGoalAudit = ({
       'Use the Brújula Email 1 correction packet as local builder input before any future exact MailerLite edit/test-send approval.',
       approvalQueueMove,
       localEmailAssetPlanMove,
-      'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',
-      'If the mini-launch create runner dry-run is green, stop before --execute until Alejandro gives the exact approval phrase.',
+      emptyGroupCreateDryRunNoCreateNeeded
+        ? 'Do not rerun mini-launch empty-group creation; the two target groups already exist and that boundary is closed.'
+        : 'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',
+      emptyGroupCreateDryRunNoCreateNeeded
+        ? 'Use fresh read-only group scans only if later evidence changes; no --execute rerun is needed for the current two mini-launch groups.'
+        : 'If the mini-launch create runner dry-run is green, stop before --execute until Alejandro gives the exact approval phrase.',
       'Keep Onboarding v2 group creation, workflow draft, seed tests, production switch, Shopify preview/publish and CRM writes behind separate exact approvals.',
     ],
     safety: {
