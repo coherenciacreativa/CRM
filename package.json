@@ -102,6 +102,8 @@
     "crm:vnext:mailerlite-launch-os-post-input-orchestrator": "node scripts/crm-vnext-mailerlite-launch-os-post-input-orchestrator.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-consolidation-audit.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-handoff.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-workspace.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-decision-intake.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs",

@@ -55,6 +55,8 @@ const DEFAULT_PRIVATE_INPUT_TEMPLATE_PACK = '/Users/alejandrogomez/Documents/Man
 const DEFAULT_POST_INPUT_ORCHESTRATOR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_2026-05-28.json';
 const DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json';
 const DEFAULT_TAXONOMY_REFRESH_HANDOFF = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json';
+const DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json';
 const DEFAULT_CONTINUATION_GUARD = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_2026-05-28.json';
 const DEFAULT_VALIDATION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
@@ -114,6 +116,8 @@ Options:
   --post-input-orchestrator <path> Launch OS post-input local orchestrator JSON. Defaults to ${DEFAULT_POST_INPUT_ORCHESTRATOR}
   --taxonomy-consolidation-audit <path> Launch OS taxonomy consolidation audit JSON. Defaults to ${DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT}
   --taxonomy-refresh-handoff <path> Launch OS Brand/CRM taxonomy refresh handoff JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_HANDOFF}
+  --taxonomy-refresh-response-workspace <path> Launch OS Brand/CRM taxonomy response workspace JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE}
+  --taxonomy-refresh-decision-intake <path> Launch OS Brand/CRM taxonomy decision intake JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE}
   --continuation-guard <path>        Launch OS continuation guard JSON. Defaults to ${DEFAULT_CONTINUATION_GUARD}
   --validation-receipt <path>        Optional persistent validation receipt JSON. Defaults to ${DEFAULT_VALIDATION_RECEIPT}
   --package-json <path>              package.json with npm scripts. Defaults to ${DEFAULT_PACKAGE_JSON}
@@ -180,6 +184,8 @@ const parseArgs = (argv) => {
     postInputOrchestrator: DEFAULT_POST_INPUT_ORCHESTRATOR,
     taxonomyConsolidationAudit: DEFAULT_TAXONOMY_CONSOLIDATION_AUDIT,
     taxonomyRefreshHandoff: DEFAULT_TAXONOMY_REFRESH_HANDOFF,
+    taxonomyRefreshResponseWorkspace: DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE,
+    taxonomyRefreshDecisionIntake: DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE,
     continuationGuard: DEFAULT_CONTINUATION_GUARD,
     validationReceipt: DEFAULT_VALIDATION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
@@ -242,6 +248,8 @@ const parseArgs = (argv) => {
     else if (arg === '--post-input-orchestrator') options.postInputOrchestrator = argv[++index];
     else if (arg === '--taxonomy-consolidation-audit') options.taxonomyConsolidationAudit = argv[++index];
     else if (arg === '--taxonomy-refresh-handoff') options.taxonomyRefreshHandoff = argv[++index];
+    else if (arg === '--taxonomy-refresh-response-workspace') options.taxonomyRefreshResponseWorkspace = argv[++index];
+    else if (arg === '--taxonomy-refresh-decision-intake') options.taxonomyRefreshDecisionIntake = argv[++index];
     else if (arg === '--continuation-guard') options.continuationGuard = argv[++index];
     else if (arg === '--validation-receipt') options.validationReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
@@ -317,6 +325,8 @@ const loadSourceDigests = async (options) => {
     [options.postInputOrchestrator, 'Launch OS post-input orchestrator with local packet regeneration plan and no execution', true],
     [options.taxonomyConsolidationAudit, 'Launch OS taxonomy consolidation audit across Brand dictionary, CRM manifest and approved empty-group receipts', true],
     [options.taxonomyRefreshHandoff, 'Launch OS Brand/CRM taxonomy refresh handoff prepared from consolidation drift', true],
+    [options.taxonomyRefreshResponseWorkspace, 'Launch OS Brand/CRM taxonomy response workspace with pending/final file separation', true],
+    [options.taxonomyRefreshDecisionIntake, 'Launch OS Brand/CRM taxonomy decision intake with local patch preview gate state', true],
     [options.continuationGuard, 'Launch OS continuation guard with closed hito and do-not-recycle state', true],
     [options.validationReceipt, 'persistent Launch OS validation receipt', true],
     [options.packageJson, 'available local npm commands'],
@@ -491,6 +501,8 @@ const buildCurrentState = ({
   postInputOrchestrator,
   taxonomyConsolidationAudit,
   taxonomyRefreshHandoff,
+  taxonomyRefreshResponseWorkspace,
+  taxonomyRefreshDecisionIntake,
   continuationGuard,
   validationReceipt,
 }) => {
@@ -1048,6 +1060,43 @@ const buildCurrentState = ({
       openLiveMutationGateCount: taxonomyRefreshHandoff?.executiveSummary?.openLiveMutationGateCount ?? null,
       nextSafeAction: taxonomyRefreshHandoff?.executiveSummary?.nextSafeAction ?? null,
     },
+    taxonomyRefreshResponseWorkspace: {
+      status: taxonomyRefreshResponseWorkspace?.status ?? null,
+      brandDecisionRowCount: taxonomyRefreshResponseWorkspace?.executiveSummary?.brandDecisionRowCount ?? null,
+      crmManifestPatchRowCount: taxonomyRefreshResponseWorkspace?.executiveSummary?.crmManifestPatchRowCount ?? null,
+      acceptedActorCount: taxonomyRefreshResponseWorkspace?.executiveSummary?.acceptedActorCount ?? null,
+      pendingActorCount: taxonomyRefreshResponseWorkspace?.executiveSummary?.pendingActorCount ?? null,
+      readyPendingActorCount: taxonomyRefreshResponseWorkspace?.executiveSummary?.readyPendingActorCount ?? null,
+      readyForIntake: taxonomyRefreshResponseWorkspace?.executiveSummary?.readyForIntake ?? null,
+      canAskApprovalNow: taxonomyRefreshResponseWorkspace?.executiveSummary?.canAskApprovalNow ?? null,
+      canApplyBrandDictionaryPatchNow: taxonomyRefreshResponseWorkspace?.executiveSummary?.canApplyBrandDictionaryPatchNow ?? null,
+      canApplyCrmManifestPatchNow: taxonomyRefreshResponseWorkspace?.executiveSummary?.canApplyCrmManifestPatchNow ?? null,
+      openLiveMutationGateCount: taxonomyRefreshResponseWorkspace?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextSafeAction: taxonomyRefreshResponseWorkspace?.executiveSummary?.nextSafeAction ?? null,
+      acceptedActors: taxonomyRefreshResponseWorkspace?.acceptedActors ?? [],
+      pendingActors: taxonomyRefreshResponseWorkspace?.pendingActors ?? [],
+      readyPendingActors: taxonomyRefreshResponseWorkspace?.readyPendingActors ?? [],
+    },
+    taxonomyRefreshDecisionIntake: {
+      status: taxonomyRefreshDecisionIntake?.status ?? null,
+      brandDecisionStatus: taxonomyRefreshDecisionIntake?.executiveSummary?.brandDecisionStatus ?? null,
+      crmDecisionStatus: taxonomyRefreshDecisionIntake?.executiveSummary?.crmDecisionStatus ?? null,
+      brandDecisionRowsNeeded: taxonomyRefreshDecisionIntake?.executiveSummary?.brandDecisionRowsNeeded ?? null,
+      brandDecisionRowsPresent: taxonomyRefreshDecisionIntake?.executiveSummary?.brandDecisionRowsPresent ?? null,
+      brandPromoteCount: taxonomyRefreshDecisionIntake?.executiveSummary?.brandPromoteCount ?? null,
+      brandRenameCount: taxonomyRefreshDecisionIntake?.executiveSummary?.brandRenameCount ?? null,
+      brandRejectCount: taxonomyRefreshDecisionIntake?.executiveSummary?.brandRejectCount ?? null,
+      crmManifestPatchRowsNeeded: taxonomyRefreshDecisionIntake?.executiveSummary?.crmManifestPatchRowsNeeded ?? null,
+      crmManifestPatchRowsAccepted: taxonomyRefreshDecisionIntake?.executiveSummary?.crmManifestPatchRowsAccepted ?? null,
+      readyForLocalPatchPreview: taxonomyRefreshDecisionIntake?.executiveSummary?.readyForLocalPatchPreview ?? null,
+      canAskApprovalNow: taxonomyRefreshDecisionIntake?.executiveSummary?.canAskApprovalNow ?? null,
+      canApplyBrandDictionaryPatchNow: taxonomyRefreshDecisionIntake?.executiveSummary?.canApplyBrandDictionaryPatchNow ?? null,
+      canApplyCrmManifestPatchNow: taxonomyRefreshDecisionIntake?.executiveSummary?.canApplyCrmManifestPatchNow ?? null,
+      openLiveMutationGateCount: taxonomyRefreshDecisionIntake?.executiveSummary?.openLiveMutationGateCount ?? null,
+      nextSafeAction: taxonomyRefreshDecisionIntake?.executiveSummary?.nextSafeAction ?? null,
+      blockerCount: taxonomyRefreshDecisionIntake?.blockers?.length ?? null,
+      unsafeReasonCount: taxonomyRefreshDecisionIntake?.unsafeReasons?.length ?? null,
+    },
     continuationGuard: {
       status: continuationGuard?.status ?? null,
       allTrackedBoundariesClosed: continuationGuard?.executiveSummary?.allTrackedBoundariesClosed ?? null,
@@ -1126,6 +1175,8 @@ const buildReportMap = (sourceDigests) => {
     postInputOrchestrator: findPath('mailerlite_launch_os_post_input_orchestrator_2026-05-28.json'),
     taxonomyConsolidationAudit: findPath('mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json'),
     taxonomyRefreshHandoff: findPath('mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json'),
+    taxonomyRefreshResponseWorkspace: findPath('mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json'),
+    taxonomyRefreshDecisionIntake: findPath('mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json'),
     continuationGuard: findPath('mailerlite_launch_os_continuation_guard_2026-05-28.json'),
     validationReceipt: findPath('mailerlite_launch_os_validation_receipt_2026-05-28.json'),
     packageJson: findPath('package.json'),
@@ -1468,6 +1519,30 @@ const buildTaxonomyRefreshHandoffMove = (currentState) => {
   return `Taxonomy refresh handoff is not needed right now; current status: ${handoff.status}.`;
 };
 
+const buildTaxonomyRefreshResponseWorkspaceMove = (currentState) => {
+  const workspace = currentState?.taxonomyRefreshResponseWorkspace;
+  if (!workspace?.status) return 'Generate the Launch OS taxonomy response workspace so Brand/CRM decisions have final response files separate from pending drafts and no live approvals.';
+  if (workspace.status === 'taxonomy_refresh_response_workspace_ready_for_intake_no_live_changes') {
+    return `Use the Launch OS taxonomy response workspace as accepted input only for a future local patch plan; accepted actors ${workspace.acceptedActors.join(', ') || 'none'}, can apply CRM manifest patch now: ${workspace.canApplyCrmManifestPatchNow}.`;
+  }
+  if (workspace.status === 'taxonomy_refresh_response_workspace_has_ready_pending_responses_no_live_changes') {
+    return `Finalize ready pending taxonomy responses before intake; ready pending actors ${workspace.readyPendingActors.join(', ') || 'none'}, final files still required, no live gates open.`;
+  }
+  return `Use the Launch OS taxonomy response workspace to collect final Brand/CRM taxonomy decisions; pending actors ${workspace.pendingActors.join(', ') || 'unknown'}, can ask approval now: ${workspace.canAskApprovalNow}, can apply patches now: ${workspace.canApplyCrmManifestPatchNow}.`;
+};
+
+const buildTaxonomyRefreshDecisionIntakeMove = (currentState) => {
+  const intake = currentState?.taxonomyRefreshDecisionIntake;
+  if (!intake?.status) return 'Generate the Launch OS taxonomy decision intake after the response workspace so Brand/CRM decisions can be validated before any local patch preview.';
+  if (intake.status === 'taxonomy_refresh_decision_intake_ready_for_local_patch_preview_no_live_changes') {
+    return `Use taxonomy decision intake only to prepare a local patch preview; Brand decisions ${intake.brandDecisionRowsPresent ?? 'unknown'}/${intake.brandDecisionRowsNeeded ?? 'unknown'}, CRM patch rows ${intake.crmManifestPatchRowsAccepted ?? 'unknown'}/${intake.crmManifestPatchRowsNeeded ?? 'unknown'}, can apply patches now: ${intake.canApplyCrmManifestPatchNow}.`;
+  }
+  if (intake.status === 'taxonomy_refresh_decision_intake_blocked_unsafe_decision_no_live_changes') {
+    return `Stop at taxonomy decision intake: unsafe decision content found (${intake.unsafeReasonCount ?? 'unknown'} reasons); do not ask approval or apply patches.`;
+  }
+  return `Use taxonomy decision intake as the current wait state; Brand decisions ${intake.brandDecisionRowsPresent ?? 0}/${intake.brandDecisionRowsNeeded ?? 'unknown'}, CRM patch rows ${intake.crmManifestPatchRowsAccepted ?? 0}/${intake.crmManifestPatchRowsNeeded ?? 'unknown'}, blockers ${intake.blockerCount ?? 'unknown'}, can ask approval now: ${intake.canAskApprovalNow}.`;
+};
+
 const buildContinuationGuardMove = (currentState) => {
   const guard = currentState?.continuationGuard;
   if (!guard?.status) return null;
@@ -1492,6 +1567,8 @@ const buildApprovalPhaseMoves = (currentState) => {
     buildPostInputOrchestratorMove(currentState),
     buildTaxonomyConsolidationMove(currentState),
     buildTaxonomyRefreshHandoffMove(currentState),
+    buildTaxonomyRefreshResponseWorkspaceMove(currentState),
+    buildTaxonomyRefreshDecisionIntakeMove(currentState),
     buildContinuationGuardMove(currentState),
     miniLaunchEmptyGroupBoundaryClosed
     ? 'Mini-launch empty groups already exist; do not rerun --execute for that closed boundary. Continue with the next separate approval queue item.'
@@ -1634,6 +1711,8 @@ const buildRunbook = ({
   postInputOrchestrator,
   taxonomyConsolidationAudit,
   taxonomyRefreshHandoff,
+  taxonomyRefreshResponseWorkspace,
+  taxonomyRefreshDecisionIntake,
   continuationGuard,
   validationReceipt,
   packageJson,
@@ -1689,6 +1768,8 @@ const buildRunbook = ({
     postInputOrchestrator,
     taxonomyConsolidationAudit,
     taxonomyRefreshHandoff,
+    taxonomyRefreshResponseWorkspace,
+    taxonomyRefreshDecisionIntake,
     continuationGuard,
     validationReceipt,
     responseWorkspace,
@@ -1926,6 +2007,14 @@ const renderMarkdown = (runbook) => {
     `- Taxonomy refresh Brand decisions: ${runbook.currentState.taxonomyRefreshHandoff.brandPromotionDecisionCount ?? 'unknown'}`,
     `- Taxonomy refresh CRM patch rows: ${runbook.currentState.taxonomyRefreshHandoff.crmManifestPatchCount ?? 'unknown'}`,
     `- Taxonomy refresh can apply CRM patch now: ${runbook.currentState.taxonomyRefreshHandoff.canApplyCrmManifestPatchNow ?? 'unknown'}`,
+    `- Taxonomy response workspace: ${runbook.currentState.taxonomyRefreshResponseWorkspace.status ?? 'missing'}`,
+    `- Taxonomy response pending actors: ${runbook.currentState.taxonomyRefreshResponseWorkspace.pendingActors.join(', ') || 'none'}`,
+    `- Taxonomy response ready for intake: ${runbook.currentState.taxonomyRefreshResponseWorkspace.readyForIntake ?? 'unknown'}`,
+    `- Taxonomy response can apply CRM patch now: ${runbook.currentState.taxonomyRefreshResponseWorkspace.canApplyCrmManifestPatchNow ?? 'unknown'}`,
+    `- Taxonomy decision intake: ${runbook.currentState.taxonomyRefreshDecisionIntake.status ?? 'missing'}`,
+    `- Taxonomy decision rows present: ${runbook.currentState.taxonomyRefreshDecisionIntake.brandDecisionRowsPresent ?? 'unknown'}/${runbook.currentState.taxonomyRefreshDecisionIntake.brandDecisionRowsNeeded ?? 'unknown'}`,
+    `- Taxonomy decision ready for local patch preview: ${runbook.currentState.taxonomyRefreshDecisionIntake.readyForLocalPatchPreview ?? 'unknown'}`,
+    `- Taxonomy decision can apply CRM patch now: ${runbook.currentState.taxonomyRefreshDecisionIntake.canApplyCrmManifestPatchNow ?? 'unknown'}`,
     `- Continuation guard: ${runbook.currentState.continuationGuard.status ?? 'missing'}`,
     `- Continuation guard closed boundaries: ${runbook.currentState.continuationGuard.closedBoundaryCount ?? 'unknown'}/${runbook.currentState.continuationGuard.trackedBoundaryCount ?? 'unknown'}`,
     `- Continuation guard old UI work closed: ${runbook.currentState.continuationGuard.oldUiWorkClosed ?? 'unknown'}`,
@@ -2062,6 +2151,8 @@ const buildRunbookFromFiles = async (options) => {
     postInputOrchestrator,
     taxonomyConsolidationAudit,
     taxonomyRefreshHandoff,
+    taxonomyRefreshResponseWorkspace,
+    taxonomyRefreshDecisionIntake,
     continuationGuard,
     validationReceipt,
     packageJson,
@@ -2116,6 +2207,8 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.postInputOrchestrator),
     readOptionalJson(options.taxonomyConsolidationAudit),
     readOptionalJson(options.taxonomyRefreshHandoff),
+    readOptionalJson(options.taxonomyRefreshResponseWorkspace),
+    readOptionalJson(options.taxonomyRefreshDecisionIntake),
     readOptionalJson(options.continuationGuard),
     readOptionalJson(options.validationReceipt),
     readJson(options.packageJson),
@@ -2172,6 +2265,8 @@ const buildRunbookFromFiles = async (options) => {
     postInputOrchestrator,
     taxonomyConsolidationAudit,
     taxonomyRefreshHandoff,
+    taxonomyRefreshResponseWorkspace,
+    taxonomyRefreshDecisionIntake,
     continuationGuard,
     validationReceipt,
     packageJson,
@@ -2224,6 +2319,14 @@ const main = async () => {
     taxonomyRefreshBrandPromotionDecisionCount: runbook.currentState.taxonomyRefreshHandoff.brandPromotionDecisionCount,
     taxonomyRefreshCrmManifestPatchCount: runbook.currentState.taxonomyRefreshHandoff.crmManifestPatchCount,
     taxonomyRefreshCanApplyCrmManifestPatchNow: runbook.currentState.taxonomyRefreshHandoff.canApplyCrmManifestPatchNow,
+    taxonomyRefreshResponseWorkspaceStatus: runbook.currentState.taxonomyRefreshResponseWorkspace.status,
+    taxonomyRefreshResponsePendingActorCount: runbook.currentState.taxonomyRefreshResponseWorkspace.pendingActorCount,
+    taxonomyRefreshResponseReadyForIntake: runbook.currentState.taxonomyRefreshResponseWorkspace.readyForIntake,
+    taxonomyRefreshResponseCanApplyCrmManifestPatchNow: runbook.currentState.taxonomyRefreshResponseWorkspace.canApplyCrmManifestPatchNow,
+    taxonomyRefreshDecisionIntakeStatus: runbook.currentState.taxonomyRefreshDecisionIntake.status,
+    taxonomyRefreshDecisionRowsPresent: runbook.currentState.taxonomyRefreshDecisionIntake.brandDecisionRowsPresent,
+    taxonomyRefreshDecisionReadyForLocalPatchPreview: runbook.currentState.taxonomyRefreshDecisionIntake.readyForLocalPatchPreview,
+    taxonomyRefreshDecisionCanApplyCrmManifestPatchNow: runbook.currentState.taxonomyRefreshDecisionIntake.canApplyCrmManifestPatchNow,
     continuationGuardStatus: runbook.currentState.continuationGuard.status,
     continuationGuardOldUiWorkClosed: runbook.currentState.continuationGuard.oldUiWorkClosed,
     continuationGuardClosedBoundaryCount: runbook.currentState.continuationGuard.closedBoundaryCount,

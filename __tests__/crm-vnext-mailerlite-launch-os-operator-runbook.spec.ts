@@ -404,6 +404,49 @@ const taxonomyRefreshHandoff = {
   },
 };
 
+const taxonomyRefreshResponseWorkspace = {
+  status: "taxonomy_refresh_response_workspace_ready_awaiting_final_responses_no_live_changes",
+  executiveSummary: {
+    brandDecisionRowCount: 14,
+    crmManifestPatchRowCount: 14,
+    acceptedActorCount: 0,
+    pendingActorCount: 2,
+    readyPendingActorCount: 0,
+    readyForIntake: false,
+    canAskApprovalNow: false,
+    canApplyBrandDictionaryPatchNow: false,
+    canApplyCrmManifestPatchNow: false,
+    openLiveMutationGateCount: 0,
+    nextSafeAction: "collect_final_brand_and_crm_taxonomy_response_files_no_live_changes",
+  },
+  acceptedActors: [],
+  pendingActors: ["brand", "crm"],
+  readyPendingActors: [],
+};
+
+const taxonomyRefreshDecisionIntake = {
+  status: "taxonomy_refresh_decision_intake_waiting_for_brand_crm_decisions_no_live_changes",
+  executiveSummary: {
+    brandDecisionStatus: "missing_no_live_changes",
+    crmDecisionStatus: "missing_no_live_changes",
+    brandDecisionRowsNeeded: 14,
+    brandDecisionRowsPresent: 0,
+    brandPromoteCount: 0,
+    brandRenameCount: 0,
+    brandRejectCount: 0,
+    crmManifestPatchRowsNeeded: 14,
+    crmManifestPatchRowsAccepted: 0,
+    readyForLocalPatchPreview: false,
+    canAskApprovalNow: false,
+    canApplyBrandDictionaryPatchNow: false,
+    canApplyCrmManifestPatchNow: false,
+    openLiveMutationGateCount: 0,
+    nextSafeAction: "collect_brand_and_crm_taxonomy_decisions_without_live_approval",
+  },
+  blockers: ["brand_decision_file_missing", "crm_decision_file_missing"],
+  unsafeReasons: [],
+};
+
 const continuationGuard = {
   status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
   executiveSummary: {
@@ -876,6 +919,8 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-post-input-orchestrator": "node scripts/post-input-orchestrator.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit": "node scripts/taxonomy-consolidation-audit.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff": "node scripts/taxonomy-refresh-handoff.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace": "node scripts/taxonomy-refresh-response-workspace.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake": "node scripts/taxonomy-refresh-decision-intake.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
@@ -936,6 +981,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.privateInputTemplatePack).toContain("mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
     expect(parsed.taxonomyConsolidationAudit).toContain("mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(parsed.taxonomyRefreshHandoff).toContain("mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
+    expect(parsed.taxonomyRefreshResponseWorkspace).toContain("mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
+    expect(parsed.taxonomyRefreshDecisionIntake).toContain("mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
     expect(parsed.continuationGuard).toContain("mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
@@ -1003,6 +1050,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       privateInputTemplatePack,
       taxonomyConsolidationAudit,
       taxonomyRefreshHandoff,
+      taxonomyRefreshResponseWorkspace,
+      taxonomyRefreshDecisionIntake,
       continuationGuard,
       validationReceipt,
       responseWorkspace,
@@ -1250,6 +1299,27 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       canApplyBrandDictionaryPatchNow: false,
       canApplyCrmManifestPatchNow: false,
       openLiveMutationGateCount: 0,
+    });
+    expect(state.taxonomyRefreshResponseWorkspace).toMatchObject({
+      status: "taxonomy_refresh_response_workspace_ready_awaiting_final_responses_no_live_changes",
+      brandDecisionRowCount: 14,
+      crmManifestPatchRowCount: 14,
+      acceptedActorCount: 0,
+      pendingActorCount: 2,
+      readyForIntake: false,
+      canApplyCrmManifestPatchNow: false,
+      pendingActors: ["brand", "crm"],
+    });
+    expect(state.taxonomyRefreshDecisionIntake).toMatchObject({
+      status: "taxonomy_refresh_decision_intake_waiting_for_brand_crm_decisions_no_live_changes",
+      brandDecisionRowsNeeded: 14,
+      brandDecisionRowsPresent: 0,
+      crmManifestPatchRowsNeeded: 14,
+      crmManifestPatchRowsAccepted: 0,
+      readyForLocalPatchPreview: false,
+      canAskApprovalNow: false,
+      canApplyCrmManifestPatchNow: false,
+      blockerCount: 2,
     });
     expect(state.continuationGuard).toMatchObject({
       status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
@@ -1875,6 +1945,18 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Launch OS Brand/CRM taxonomy refresh handoff prepared from consolidation drift",
       },
       {
+        path: "/tmp/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "Launch OS Brand/CRM taxonomy response workspace with pending/final file separation",
+      },
+      {
+        path: "/tmp/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "Launch OS Brand/CRM taxonomy decision intake with local patch preview gate state",
+      },
+      {
         path: "/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json",
         present: true,
         chars: 2000,
@@ -1920,6 +2002,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.privateInputTemplatePack).toBe("/tmp/mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
     expect(reportMap.taxonomyConsolidationAudit).toBe("/tmp/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(reportMap.taxonomyRefreshHandoff).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
+    expect(reportMap.taxonomyRefreshResponseWorkspace).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
+    expect(reportMap.taxonomyRefreshDecisionIntake).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
     expect(reportMap.continuationGuard).toBe("/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json");
     expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json");
   });
@@ -1957,6 +2041,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       privateInputTemplatePack,
       taxonomyConsolidationAudit,
       taxonomyRefreshHandoff,
+      taxonomyRefreshResponseWorkspace,
+      taxonomyRefreshDecisionIntake,
       continuationGuard,
       validationReceipt,
       packageJson,
@@ -2010,6 +2096,11 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(markdown).toContain("Taxonomy refresh handoff: taxonomy_refresh_handoff_ready_no_live_changes");
     expect(markdown).toContain("Taxonomy refresh CRM patch rows: 14");
     expect(markdown).toContain("Taxonomy refresh can apply CRM patch now: false");
+    expect(markdown).toContain("Taxonomy response workspace: taxonomy_refresh_response_workspace_ready_awaiting_final_responses_no_live_changes");
+    expect(markdown).toContain("Taxonomy response pending actors: brand, crm");
+    expect(markdown).toContain("Taxonomy decision intake: taxonomy_refresh_decision_intake_waiting_for_brand_crm_decisions_no_live_changes");
+    expect(markdown).toContain("Taxonomy decision rows present: 0/14");
+    expect(markdown).toContain("Taxonomy decision ready for local patch preview: false");
     expect(markdown).toContain("Continuation guard: mailerlite_launch_os_continuation_guard_ready_no_live_changes");
     expect(markdown).toContain("Continuation guard old UI work closed: true");
     expect(markdown).toContain("Continuation guard UI action: do_not_open_ui_or_repair_drafts_without_new_concrete_mismatch");
