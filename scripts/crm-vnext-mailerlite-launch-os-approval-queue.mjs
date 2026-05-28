@@ -13,6 +13,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
@@ -32,6 +33,7 @@ Options:
   --mini-launch-email-render-qa <path>         Mini-launch local email render QA packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA}
   --mini-launch-email-asset-build-dry-run <path> Mini-launch email asset-build dry-run. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN}
   --mini-launch-email-asset-build-execution <path> Mini-launch email asset-build execution attempt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION}
+  --mini-launch-email-manual-ui-builder-packet <path> Mini-launch manual UI builder fallback packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
@@ -67,6 +69,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailRenderQa: DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA,
     miniLaunchEmailAssetBuildDryRun: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_DRY_RUN,
     miniLaunchEmailAssetBuildExecution: DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION,
+    miniLaunchEmailManualUiBuilderPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
@@ -89,6 +92,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-render-qa') options.miniLaunchEmailRenderQa = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-dry-run') options.miniLaunchEmailAssetBuildDryRun = argv[++index];
     else if (arg === '--mini-launch-email-asset-build-execution') options.miniLaunchEmailAssetBuildExecution = argv[++index];
+    else if (arg === '--mini-launch-email-manual-ui-builder-packet') options.miniLaunchEmailManualUiBuilderPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
@@ -535,6 +539,76 @@ const buildMiniLaunchEmailAssetBuildItem = ({
   });
 };
 
+const buildMiniLaunchEmailManualUiBuilderItem = ({ packet }) => {
+  const targetNames = targetNamesFrom((packet?.manualUiTargetDrafts ?? []).map((row) => row?.draftName));
+  const blockers = [];
+
+  if (packet?.status !== 'mini_launch_email_manual_ui_builder_packet_ready_for_exact_human_approval_no_live_changes') {
+    blockers.push(`manual_ui_builder_packet_not_ready:${packet?.status ?? 'missing'}`);
+  }
+  if (packet?.manualUiApprovalBoundary?.canAskAlejandroForApproval !== true) {
+    blockers.push('manual_ui_builder_cannot_ask_approval_now');
+  }
+  if (packet?.manualUiApprovalBoundary?.packetIsApprovalByItself !== false) {
+    blockers.push('manual_ui_builder_packet_self_authorizes_unexpectedly');
+  }
+  if (packet?.manualUiApprovalBoundary?.canUseBrowserNow !== false) {
+    blockers.push('manual_ui_browser_gate_unexpectedly_open');
+  }
+  if (packet?.manualUiApprovalBoundary?.canCreateOrEditDraftsNow !== false) {
+    blockers.push('manual_ui_draft_gate_unexpectedly_open');
+  }
+  if (packet?.executiveSummary?.advancedPlanApiBlockerConfirmed !== true) {
+    blockers.push('advanced_plan_api_blocker_not_confirmed');
+  }
+  if ((packet?.executiveSummary?.apiAssetMutationCount ?? null) !== 0) {
+    blockers.push(`api_asset_mutation_count_not_zero:${packet?.executiveSummary?.apiAssetMutationCount ?? 'missing'}`);
+  }
+  if (packet?.safety?.browserOpened !== false) blockers.push('manual_ui_packet_reports_browser_opened');
+  if (packet?.safety?.mailerLiteApiCalled !== false) blockers.push('manual_ui_packet_reports_mailerlite_api_call');
+  if (packet?.safety?.mailerLiteAssetsCreatedOrEdited !== false) blockers.push('manual_ui_packet_reports_asset_mutation');
+  if (packet?.safety?.sendsPerformed !== false) blockers.push('manual_ui_packet_reports_send');
+  if (!cleanString(packet?.manualUiApprovalBoundary?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
+  if (targetNames.length !== 4) blockers.push(`manual_ui_target_count_not_4:${targetNames.length}`);
+
+  const canAskNow = blockers.length === 0;
+
+  return buildApprovalItem({
+    id: 'mini_launch_email_manual_ui_builder',
+    title: 'Mini-launch MailerLite manual UI draft build',
+    lane: 'mini_launch_inteligencia_para_descansar',
+    operationType: 'live_mailerlite_ui_draft_mutation_after_exact_approval',
+    approvalType: 'exact_phrase_required',
+    canAskNow,
+    exactApprovalPhrase: packet?.manualUiApprovalBoundary?.exactApprovalPhrase,
+    sourceStatuses: {
+      packet: packet?.status ?? null,
+      apiExecution: packet?.sourceEvidence?.assetBuildExecutionStatus ?? null,
+      renderQa: packet?.sourceEvidence?.renderQaStatus ?? null,
+      payloadManifest: packet?.sourceEvidence?.payloadManifestStatus ?? null,
+    },
+    targetNames,
+    allowedAfterExactApproval: packet?.manualUiApprovalBoundary?.allowedAfterExactApproval ?? [],
+    stillClosed: packet?.manualUiApprovalBoundary?.stillClosedEvenAfterApproval ?? [],
+    requiredFreshEvidence: packet?.manualUiApprovalBoundary?.requiredFreshEvidenceBeforeExecution ?? [],
+    blockers,
+    evidence: {
+      targetDraftCount: packet?.executiveSummary?.targetDraftCount ?? null,
+      htmlSourceCount: packet?.executiveSummary?.htmlSourceCount ?? null,
+      localRenderReadyCount: packet?.executiveSummary?.localRenderReadyCount ?? null,
+      advancedPlanApiBlockerConfirmed: packet?.executiveSummary?.advancedPlanApiBlockerConfirmed ?? null,
+      apiAssetMutationCount: packet?.executiveSummary?.apiAssetMutationCount ?? null,
+      canUseManualUiNow: packet?.executiveSummary?.canUseManualUiNow ?? null,
+      canSendNow: packet?.executiveSummary?.canSendNow ?? null,
+    },
+    commandAfterApproval: 'manual MailerLite UI builder work only after exact approval; prefer Safari; no sends/workflows/subscribers/groups',
+    notes: [
+      'Fallback for API HTML content submission blocked by the current non-Advanced MailerLite plan.',
+      'This approval would open only draft creation/editing in MailerLite UI; seed send remains separate.',
+    ],
+  });
+};
+
 const buildShopifyLocalBuildItem = ({ request }) => {
   const suggestedFiles = targetNamesFrom(
     request?.requestedLocalScope?.files,
@@ -735,6 +809,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailRenderQa,
   miniLaunchEmailAssetBuildDryRun,
   miniLaunchEmailAssetBuildExecution,
+  miniLaunchEmailManualUiBuilderPacket,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
@@ -758,6 +833,9 @@ const buildApprovalQueue = ({
       renderQa: miniLaunchEmailRenderQa,
       dryRun: miniLaunchEmailAssetBuildDryRun,
       executionAttempt: miniLaunchEmailAssetBuildExecution,
+    }),
+    buildMiniLaunchEmailManualUiBuilderItem({
+      packet: miniLaunchEmailManualUiBuilderPacket,
     }),
     buildShopifyLocalBuildItem({
       request: miniLaunchShopifyLocalBuildRequest,
@@ -891,6 +969,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailRenderQa, 'mini-launch local email render QA packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildDryRun, 'mini-launch email asset-build dry-run'),
     readOptionalJsonWithDigest(options.miniLaunchEmailAssetBuildExecution, 'mini-launch email asset-build execution attempt'),
+    readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuilderPacket, 'mini-launch manual UI builder fallback approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
@@ -908,6 +987,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailRenderQa,
     miniLaunchEmailAssetBuildDryRun,
     miniLaunchEmailAssetBuildExecution,
+    miniLaunchEmailManualUiBuilderPacket,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
@@ -925,6 +1005,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailRenderQa,
     miniLaunchEmailAssetBuildDryRun,
     miniLaunchEmailAssetBuildExecution,
+    miniLaunchEmailManualUiBuilderPacket,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchCrmSignalProjectionPacket,
     brujulaEmailStyleCorrection,
@@ -983,6 +1064,7 @@ export {
   buildApprovalQueue,
   buildBrujulaBuilderDraftItem,
   buildMiniLaunchEmailAssetBuildItem,
+  buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
   buildOnboardingV2EmptyGroupItem,
   buildSafety,

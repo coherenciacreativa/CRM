@@ -4,6 +4,7 @@ import {
   buildApprovalQueue,
   buildBrujulaBuilderDraftItem,
   buildMiniLaunchEmailAssetBuildItem,
+  buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
   buildOnboardingV2EmptyGroupItem,
   buildSafety,
@@ -120,6 +121,26 @@ const miniLaunchEmailAssetBuildDryRun = {
   },
 };
 
+const miniLaunchEmailAssetBuildExecution = {
+  status: "failed_during_mini_launch_email_asset_build",
+  assetMutations: [],
+  errors: [{
+    step: 1,
+    reason: "mailerlite_validation_failed",
+    status: 422,
+    details: [{
+      field: "emails.0.content",
+      message: "Content submission is only available on advanced plan.",
+    }],
+  }],
+  safety: {
+    sendsPerformed: false,
+    subscribersRead: false,
+    groupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+  },
+};
+
 const miniLaunchEmailRenderQa = {
   status: "mini_launch_email_render_qa_green_no_live_changes",
   executiveSummary: {
@@ -131,6 +152,46 @@ const miniLaunchEmailRenderQa = {
   },
   safety: {
     mailerLiteApiCalled: false,
+    sendsPerformed: false,
+  },
+};
+
+const miniLaunchEmailManualUiBuilderPacket = {
+  status: "mini_launch_email_manual_ui_builder_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    targetDraftCount: 4,
+    htmlSourceCount: 4,
+    localRenderReadyCount: 4,
+    advancedPlanApiBlockerConfirmed: true,
+    apiAssetMutationCount: 0,
+    canUseManualUiNow: false,
+    canSendNow: false,
+  },
+  sourceEvidence: {
+    payloadManifestStatus: "email_builder_payload_manifest_ready_no_live_changes",
+    renderQaStatus: "mini_launch_email_render_qa_green_no_live_changes",
+    assetBuildExecutionStatus: "failed_during_mini_launch_email_asset_build",
+  },
+  manualUiApprovalBoundary: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canUseBrowserNow: false,
+    canCreateOrEditDraftsNow: false,
+    exactApprovalPhrase: "Apruebo construir manualmente en MailerLite UI únicamente estos 4 borradores.",
+    allowedAfterExactApproval: ["open_mailerlite_ui_manually_prefer_safari"],
+    stillClosedEvenAfterApproval: ["seed_send_or_test_send", "workflow_or_automation_attachment"],
+    requiredFreshEvidenceBeforeExecution: ["freshly confirm the four target draft names"],
+  },
+  manualUiTargetDrafts: [
+    { draftName: "ML Draft · descanso · E01" },
+    { draftName: "ML Draft · descanso · E02" },
+    { draftName: "ML Draft · descanso · E03" },
+    { draftName: "ML Draft · descanso · E04" },
+  ],
+  safety: {
+    browserOpened: false,
+    mailerLiteApiCalled: false,
+    mailerLiteAssetsCreatedOrEdited: false,
     sendsPerformed: false,
   },
 };
@@ -195,6 +256,8 @@ const buildQueue = () => buildApprovalQueue({
   miniLaunchEmailBuilderPayloadManifest,
   miniLaunchEmailRenderQa,
   miniLaunchEmailAssetBuildDryRun,
+  miniLaunchEmailAssetBuildExecution,
+  miniLaunchEmailManualUiBuilderPacket,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchCrmSignalProjectionPacket,
   brujulaEmailStyleCorrection,
@@ -214,6 +277,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailAssetBuildDryRun).toContain("mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailAssetBuildExecution).toContain("mailerlite_mini_launch_email_asset_build_EXECUTED_retry_with_validation_detail_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchEmailManualUiBuilderPacket).toContain("mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.out).toBe("/tmp/queue.json");
     expect(parsed.markdownOut).toBe("/tmp/queue.md");
@@ -238,19 +302,19 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
 
     expect(queue.status).toBe("mailerlite_launch_os_approval_queue_ready_no_live_changes");
     expect(queue.executiveSummary.readyApprovalRequestCount).toBe(5);
-    expect(queue.executiveSummary.blockedApprovalRequestCount).toBe(2);
+    expect(queue.executiveSummary.blockedApprovalRequestCount).toBe(3);
     expect(queue.executiveSummary.openLiveMutationGateCount).toBe(0);
     expect(queue.executiveSummary.readyApprovalIds).toEqual([
       "mini_launch_empty_group_creation",
       "onboarding_v2_empty_group_creation",
-      "mini_launch_email_asset_build",
+      "mini_launch_email_manual_ui_builder",
       "shopify_no_live_local_build",
       "brujula_email1_builder_draft",
     ]);
 
     expect(byId.get("mini_launch_email_asset_build")).toMatchObject({
-      status: "ready_for_exact_approval_request",
-      canAskAlejandroNow: true,
+      status: "prepared_but_blocked_before_approval_request",
+      canAskAlejandroNow: false,
       exactApprovalPhrasePresent: true,
       packetIsApprovalByItself: false,
       targetCount: 4,
@@ -262,6 +326,18 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         assetMutationsPerformed: false,
         localRenderReady: true,
         renderPreviewNonEmptyCount: 4,
+        executionAdvancedPlanContentBlocker: true,
+      },
+    });
+    expect(byId.get("mini_launch_email_manual_ui_builder")).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      operationType: "live_mailerlite_ui_draft_mutation_after_exact_approval",
+      evidence: {
+        targetDraftCount: 4,
+        htmlSourceCount: 4,
+        advancedPlanApiBlockerConfirmed: true,
+        apiAssetMutationCount: 0,
       },
     });
     expect(byId.get("mini_launch_seed_send")).toMatchObject({
@@ -414,6 +490,31 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.notes.join(" ")).toContain("Advanced plan");
   });
 
+  test("marks manual UI builder fallback ready only after API blocker is proven with zero mutations", () => {
+    const item = buildMiniLaunchEmailManualUiBuilderItem({
+      packet: miniLaunchEmailManualUiBuilderPacket,
+    });
+
+    expect(item.status).toBe("ready_for_exact_approval_request");
+    expect(item.canAskAlejandroNow).toBe(true);
+    expect(item.targetCount).toBe(4);
+    expect(item.commandAfterApproval).toContain("prefer Safari");
+    expect(item.notes.join(" ")).toContain("non-Advanced MailerLite plan");
+
+    const blocked = buildMiniLaunchEmailManualUiBuilderItem({
+      packet: {
+        ...miniLaunchEmailManualUiBuilderPacket,
+        executiveSummary: {
+          ...miniLaunchEmailManualUiBuilderPacket.executiveSummary,
+          advancedPlanApiBlockerConfirmed: false,
+        },
+      },
+    });
+
+    expect(blocked.status).toBe("prepared_but_blocked_before_approval_request");
+    expect(blocked.blockers).toContain("advanced_plan_api_blocker_not_confirmed");
+  });
+
   test("builds specific boundary items for onboarding v2, asset build and Brújula", () => {
     expect(buildOnboardingV2EmptyGroupItem({
       packet: onboardingV2EmptyGroupsPacket,
@@ -452,7 +553,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
 
     expect(markdown).toContain("# MailerLite Launch OS v0 - Approval Queue");
     expect(markdown).toContain("Ready approval requests: 5");
-    expect(markdown).toContain("Apruebo SOLO crear/editar como borradores");
+    expect(markdown).toContain("Apruebo construir manualmente en MailerLite UI");
     expect(markdown).toContain("This queue is not approval.");
   });
 });
