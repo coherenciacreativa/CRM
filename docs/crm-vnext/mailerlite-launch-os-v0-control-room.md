@@ -212,6 +212,55 @@ Meaning:
   - No ejecutar acciones vivas hasta aprobación explícita.
   - Cuando vuelva 5.5, revisar este checkpoint antes de continuar arquitectura o gates live.
 
+## Launch OS v0 reconciliation checkpoint - 2026-05-30
+
+- Estado:
+  - active goal
+  - local operating hardening updated
+  - not ready for live operation
+  - no live actions authorized
+
+- Evidencia local generada (reconciliación 2026-05-30, objetos persistentes ya existentes):
+  - `/Users/alejandrogomez/.openclaw-lakshmi/workspace/reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.json` (generatedAt: 2026-05-30T22:26:32.686Z al ejecutar)
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.md`
+  - `/Users/alejandrogomez/.openclaw-lakshmi/workspace/reports/mailerlite_launch_os_operator_runbook_2026-05-28.json` (generatedAt: 2026-05-30T22:26:32.920Z al ejecutar)
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.md`
+  - `/Users/alejandrogomez/.openclaw-lakshmi/workspace/reports/mailerlite_launch_os_validation_receipt_2026-05-28.json` (generatedAt: 2026-05-30T22:26:33.118Z al ejecutar)
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_2026-05-28.md`
+
+- Resultados confirmados:
+  - goal-audit: `ok=true`, `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: `liveActionAllowedNow=false`
+  - goal-audit: `readyForLiveOperation=false`
+  - operator-runbook: `ok=true`, `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`
+  - operator-runbook: `openLiveGateCount=0`
+  - validation-receipt: `ok=true`, `status=mailerlite_launch_os_validation_receipt_needs_validation_no_live_changes`
+  - validation-receipt: `liveGatesClosed=true`
+
+- Seguridad:
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - subscriber/group/workflow mutations: false
+  - sends performed: false
+  - worktree clean after reconciliation: true
+
+- Qué está probado:
+  - Síntaxis de scripts clave con `node --check` (auditoría reproducida en este ciclo).
+  - Generación local de reportes de estado para fecha de corrida 2026-05-30.
+  - Gates vivos cerrados según operator-runbook y validation-receipt.
+
+- Qué sigue parcial / pendiente:
+  - Launch OS no está listo para live operation.
+  - `validationStatus` permanece en `needs_validation`.
+  - No se autorizan envíos, workflow changes, subscriber mutations, ni cambios vivos en Shopify/CRM/MailerLite.
+  - Quedan pendientes decisiones finales de Brand/CRM para taxonomía (`taxonomy_refresh`) y faltan 5 inputs privados para pasar a bloques posteriores (sin esos archivos, no se abre nuevo camino operativo).
+
+- Próximo paso seguro:
+  - Mantener trabajo en modo local-only/reportes/revisión.
+  - No ejecutar acciones vivas hasta aprobación explícita.
+  - Re-ejecutar `missing inputs` y `taxonomy response` workspaces tan pronto como lleguen los archivos finales requeridos.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
