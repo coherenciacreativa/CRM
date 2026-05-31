@@ -7,6 +7,7 @@ import {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchMailerLiteApiInertDraftLabItem,
   buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
@@ -14,6 +15,7 @@ import {
   buildShopifyPreviewRouteItem,
   buildSafety,
   cleanupExecutionCompleted,
+  mailerLiteApiInertDraftLabCompleted,
   parseArgs,
   renderMarkdown,
 } from "../scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs";
@@ -385,6 +387,86 @@ const miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = {
     factStoreWritePerformed: false,
     tokensPrinted: false,
     exactUrlsPrinted: false,
+  },
+};
+
+const miniLaunchMailerLiteApiInertDraftLab = {
+  ok: true,
+  status: "mailerlite_api_inert_draft_lab_packet_ready_for_exact_human_approval_no_live_changes",
+  mode: "dry_run_packet_only",
+  executiveSummary: {
+    purpose: "discover_safe_api_recipe_for_truly_inert_mailerlite_drafts",
+    variantCount: 4,
+    sourceCampaignStep: 1,
+    sourceCampaignIdPresent: true,
+    disposableDraftPrefix: "[LAB NO SEND]",
+    exactApprovalPhraseAvailable: true,
+    canExecuteNow: false,
+    packetIsApprovalByItself: false,
+    blockerCount: 0,
+  },
+  variants: [
+    { id: "form_minimal_no_audience_fields", label: "Form POST, no audience fields" },
+    { id: "json_minimal_no_audience_fields", label: "JSON POST, no audience fields" },
+    { id: "json_empty_audience_arrays", label: "JSON POST, explicit empty audience arrays" },
+    { id: "form_minimal_then_put_empty_audience_arrays", label: "Form POST then JSON PUT empty audience arrays" },
+  ],
+  decision: {
+    packetIsApprovalByItself: false,
+    canExecuteNow: false,
+    exactApprovalPhrase: "Apruebo ejecutar el laboratorio API de MailerLite para crear, inspeccionar y borrar únicamente campañas borrador desechables con prefijo [LAB NO SEND] para descubrir una receta de borrador inerte, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos reales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; borrar todo lo creado al final y generar recibo local.",
+  },
+  approvalBoundary: {
+    allowedAfterExactApproval: ["create only disposable MailerLite draft campaigns prefixed [LAB NO SEND]"],
+    stillClosedEvenAfterApproval: ["editing_existing_mini_launch_drafts", "test_send_or_seed_send"],
+    requiredFreshEvidenceBeforeExecution: ["fresh source real MailerLite render QA with source campaign ID"],
+  },
+  safety: {
+    localOnly: true,
+    reportsOnly: true,
+    mode: "dry_run_packet_only",
+    mailerLiteApiCalled: false,
+    mailerLiteDraftsCreated: 0,
+    mailerLiteDraftsDeleted: 0,
+    mailerLiteMutationsPerformed: false,
+    disposableOnly: true,
+    originalDraftsEditedOrDeleted: false,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    groupsCreatedOrAssigned: false,
+    segmentsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    shopifyMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    senderValuesPrinted: false,
+    tokensPrinted: false,
+    exactPreviewUrlsPrinted: false,
+  },
+};
+
+const miniLaunchMailerLiteApiInertDraftLabCompleted = {
+  ...miniLaunchMailerLiteApiInertDraftLab,
+  status: "mailerlite_api_inert_draft_lab_completed_found_inert_recipe_no_sends",
+  mode: "execute_requested",
+  executiveSummary: {
+    ...miniLaunchMailerLiteApiInertDraftLab.executiveSummary,
+    inertVariantCount: 1,
+  },
+  safety: {
+    ...miniLaunchMailerLiteApiInertDraftLab.safety,
+    mode: "execute_requested",
+    mailerLiteApiCalled: true,
+    mailerLiteDraftsCreated: 4,
+    mailerLiteDraftsDeleted: 4,
+    mailerLiteMutationsPerformed: true,
+    allowedMutationType: "create_inspect_delete_disposable_lab_drafts_only",
   },
 };
 
@@ -780,6 +862,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiDraftRepairPacket).toContain("mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchMailerLiteApiInertDraftLab).toContain("mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchSeedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
@@ -1128,6 +1211,82 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
 
     expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_api_replacement_cleanup");
     expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_seed_inbox_correction_ui_edit");
+  });
+
+  test("marks MailerLite API inert draft lab ready and suppresses the old UI correction boundary", () => {
+    const item = buildMiniLaunchMailerLiteApiInertDraftLabItem({
+      lab: miniLaunchMailerLiteApiInertDraftLab,
+    });
+
+    expect(item).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      id: "mini_launch_mailerlite_api_inert_draft_lab",
+      operationType: "live_mailerlite_api_disposable_draft_lab_after_exact_approval",
+      targetCount: 4,
+      evidence: {
+        variantCount: 4,
+        sourceCampaignIdPresent: true,
+        disposableDraftPrefix: "[LAB NO SEND]",
+        mailerLiteApiCalled: false,
+        mailerLiteMutationsPerformedByPacket: false,
+        senderValuesPrinted: false,
+        tokensPrinted: false,
+      },
+    });
+    expect(item.exactApprovalPhrase).toContain("[LAB NO SEND]");
+    expect(item.stillClosed).toContain("editing_existing_mini_launch_drafts");
+
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: null,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+      miniLaunchMailerLiteApiInertDraftLab,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_mailerlite_api_inert_draft_lab");
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_ui_edit");
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_seed_inbox_correction_ui_edit")).toBe(false);
+  });
+
+  test("marks MailerLite API inert draft lab reference-only after completed cleanup receipt", () => {
+    expect(mailerLiteApiInertDraftLabCompleted(miniLaunchMailerLiteApiInertDraftLabCompleted)).toBe(true);
+
+    const item = buildMiniLaunchMailerLiteApiInertDraftLabItem({
+      lab: miniLaunchMailerLiteApiInertDraftLabCompleted,
+    });
+
+    expect(item).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_completed",
+      operationType: "live_mailerlite_api_disposable_draft_lab_already_completed",
+      evidence: {
+        labCompleted: true,
+        variantCount: 4,
+        inertVariantCount: 1,
+        createdCount: 4,
+        deletedCount: 4,
+        sendsPerformed: false,
+        originalDraftsEditedOrDeleted: false,
+      },
+    });
   });
 
   test("marks seed send ready only from a private seed-send approval packet", () => {

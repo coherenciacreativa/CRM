@@ -3186,3 +3186,55 @@ Next safe move:
 - Preserve the new API diagnostic as evidence.
 - Prepare a separate local decision/approval packet for clearing or neutralizing the E02/E03 recipient/basic-filter gate only if a safe API or UI route can be proven.
 - Do not edit MailerLite drafts, send tests, publish, schedule or mutate subscribers/groups/workflows until the next exact scoped approval is given and the fresh preflight is green.
+
+## Launch OS v0 MailerLite API inert draft lab packet - 2026-05-31
+
+Status: active goal, API-first correction strategy wired locally, and no live operation executed. A disposable MailerLite API laboratory packet now supersedes the old MailerLite UI correction edit as the next human boundary: the lab would create, inspect and delete only `[LAB NO SEND]` disposable drafts to discover a safe inert-draft recipe before touching any real mini-launch draft.
+
+Evidence:
+
+- API inert draft lab script: `scripts/crm-vnext-mailerlite-api-inert-draft-lab.mjs`
+- API inert draft lab test: `__tests__/crm-vnext-mailerlite-api-inert-draft-lab.spec.ts`
+- Package command: `crm:vnext:mailerlite-api-inert-draft-lab`
+- API inert draft lab packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json`
+- API inert draft lab packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.md`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- API inert draft lab packet: `status=mailerlite_api_inert_draft_lab_packet_ready_for_exact_human_approval_no_live_changes`, `mode=dry_run_packet_only`, `variantCount=4`.
+- API inert draft lab packet: `exactApprovalPhraseAvailable=true`, `canExecuteNow=false`, `packetIsApprovalByItself=false`.
+- API inert draft lab packet safety: `mailerLiteApiCalled=false`, `mailerLiteDraftsCreated=0`, `mailerLiteDraftsDeleted=0`, `mailerLiteMutationsPerformed=false`.
+- Approval queue: `readyApprovalIds=["mini_launch_mailerlite_api_inert_draft_lab"]`, `blockedApprovalIds=["crm_signal_writes"]`, `nextBestHumanBoundary=mini_launch_mailerlite_api_inert_draft_lab`, `openLiveMutationGateCount=0`.
+- Approval queue no longer includes `mini_launch_seed_inbox_correction_ui_edit` while the API inert draft lab is the active strategy boundary.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=22`, `testCount=136`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt remains `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`.
+
+What is now wired:
+
+- The lab starts with a dry-run packet only and refuses execution unless an exact approval phrase is supplied.
+- The planned execute mode may read one existing safe source draft only for sender identity reuse without printing sender values, then create/inspect/delete disposable `[LAB NO SEND]` drafts only.
+- The approval queue treats the lab as the only ready human boundary and suppresses the old UI correction boundary while this API-first route is pending.
+- The current-state refresh syntax-checks the lab script, runs its test, regenerates the lab packet, and passes it into the approval queue.
+
+Safety:
+
+- MailerLite API called by this checkpoint: false.
+- MailerLite drafts created, edited or deleted by this checkpoint: false.
+- MailerLite UI opened: false.
+- Sends, publish, schedule, subscribers, groups/segments and workflows: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Sender values, tokens and exact preview URLs printed: false.
+
+Next safe move:
+
+- Stop for Alejandro's exact `mini_launch_mailerlite_api_inert_draft_lab` approval phrase before executing the disposable API lab.
+- If approved, run only `npm run crm:vnext:mailerlite-api-inert-draft-lab -- --execute --approval-phrase "<exact phrase>"`, verify every disposable draft is deleted, and regenerate current-state evidence.
+- Do not edit existing MailerLite drafts, create real replacement drafts, send tests, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store from this lab approval.
