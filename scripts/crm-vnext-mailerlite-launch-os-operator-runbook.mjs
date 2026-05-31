@@ -39,6 +39,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET = '/Users/alejandr
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -103,6 +104,7 @@ Options:
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-seed-test-execution-receipt <path> Mini-launch completed seed/test execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
   --mini-launch-seed-inbox-qa <path> Mini-launch seed inbox QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_QA}
+  --mini-launch-seed-inbox-correction-plan <path> Mini-launch seed inbox correction plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -174,6 +176,7 @@ const parseArgs = (argv) => {
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
     miniLaunchSeedInboxQa: DEFAULT_MINI_LAUNCH_SEED_INBOX_QA,
+    miniLaunchSeedInboxCorrectionPlan: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -241,6 +244,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-qa') options.miniLaunchSeedInboxQa = argv[++index];
+    else if (arg === '--mini-launch-seed-inbox-correction-plan') options.miniLaunchSeedInboxCorrectionPlan = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -321,6 +325,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight with real-render and seed-recipient blockers', true],
     [options.miniLaunchSeedTestExecutionReceipt, 'mini-launch completed seed/test execution receipt with Gmail verification and closed public gates', true],
     [options.miniLaunchSeedInboxQa, 'mini-launch seed inbox QA with correction recommendations before public launch', true],
+    [options.miniLaunchSeedInboxCorrectionPlan, 'mini-launch seed inbox correction plan and blockers before UI edit/public launch', true],
     [options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
@@ -528,6 +533,7 @@ const buildCurrentState = ({
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedTestExecutionReceipt,
   miniLaunchSeedInboxQa,
+  miniLaunchSeedInboxCorrectionPlan,
   miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
@@ -969,6 +975,15 @@ const buildCurrentState = ({
       seedInboxQaRecommendedCorrectionIds: (miniLaunchSeedInboxQa?.recommendedCorrectionsBeforePublic ?? [])
         .map((correction) => correction?.id)
         .filter(Boolean),
+      seedInboxCorrectionPlanStatus: miniLaunchSeedInboxCorrectionPlan?.status ?? null,
+      seedInboxCorrectionPlanCorrectionCount: miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.correctionCount ?? null,
+      seedInboxCorrectionPlanRequiredInputCount: miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.requiredInputCount ?? null,
+      seedInboxCorrectionPlanCanAskMailerLiteUiEditApprovalNow: miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.canAskMailerLiteUiEditApprovalNow ?? null,
+      seedInboxCorrectionPlanCanAskPublicSendApprovalNow: miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.canAskPublicSendApprovalNow ?? null,
+      seedInboxCorrectionPlanRequiredInputIds: (miniLaunchSeedInboxCorrectionPlan?.requiredInputsBeforeUiEditApproval ?? [])
+        .map((input) => input?.id)
+        .filter(Boolean),
+      seedInboxCorrectionPlanBlockers: miniLaunchSeedInboxCorrectionPlan?.blockersBeforeAnyMailerLiteUiEditApproval ?? [],
       shopifyLocalBuildReceiptStatus: miniLaunchShopifyLocalBuildReceipt?.status ?? null,
       shopifyLocalBuildFileCount: miniLaunchShopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 0,
       shopifyLocalBuildClosed,
@@ -1252,6 +1267,7 @@ const buildReportMap = (sourceDigests) => {
     miniLaunchSeedTestQaPacket: findPath('mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json'),
     miniLaunchSeedTestExecutionReceipt: findPath('mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json'),
     miniLaunchSeedInboxQa: findPath('mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json'),
+    miniLaunchSeedInboxCorrectionPlan: findPath('mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json'),
     miniLaunchShopifyLocalBuildReceipt: findPath('mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
@@ -1545,6 +1561,11 @@ const miniLaunchSeedInboxQaCompleted = (currentState) => {
 
 const buildSeedInboxQaMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
+  if (miniLaunch.seedInboxCorrectionPlanStatus === 'seed_inbox_correction_plan_ready_no_live_changes') {
+    const blockers = (miniLaunch.seedInboxCorrectionPlanBlockers ?? []).join(', ') || 'none';
+    const requiredInputs = (miniLaunch.seedInboxCorrectionPlanRequiredInputIds ?? []).join(', ') || 'none';
+    return `Use the seed inbox correction plan as the current mini-launch boundary: ${miniLaunch.seedInboxCorrectionPlanCorrectionCount ?? 'unknown'} corrections, required inputs ${requiredInputs}, blockers ${blockers}; keep MailerLite UI edits, additional test sends and public/audience launch closed.`;
+  }
   if (miniLaunchSeedInboxQaCompleted(currentState)) {
     const correctionIds = (miniLaunch.seedInboxQaRecommendedCorrectionIds ?? []).join(', ') || 'none';
     if (miniLaunch.seedInboxQaCorrectionRecommendedBeforePublicLaunch === true) {
@@ -1826,6 +1847,7 @@ const buildRunbook = ({
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedTestExecutionReceipt,
   miniLaunchSeedInboxQa,
+  miniLaunchSeedInboxCorrectionPlan,
   miniLaunchShopifyLocalBuildReceipt,
   brujulaPlan,
   brujulaApply,
@@ -1886,6 +1908,7 @@ const buildRunbook = ({
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedTestExecutionReceipt,
     miniLaunchSeedInboxQa,
+    miniLaunchSeedInboxCorrectionPlan,
     miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
@@ -2079,6 +2102,12 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch seed inbox QA corrections recommended: ${runbook.currentState.miniLaunch.seedInboxQaCorrectionRecommendedBeforePublicLaunch ?? 'unknown'}`,
     `- Mini-launch seed inbox QA can ask public send approval now: ${runbook.currentState.miniLaunch.seedInboxQaCanAskPublicSendApprovalNow ?? 'unknown'}`,
     `- Mini-launch seed inbox QA correction ids: ${runbook.currentState.miniLaunch.seedInboxQaRecommendedCorrectionIds.join(', ') || 'none'}`,
+    `- Mini-launch seed inbox correction plan: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanStatus ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction count: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanCorrectionCount ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction required inputs: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanRequiredInputIds.join(', ') || 'none'}`,
+    `- Mini-launch seed inbox correction blockers: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanBlockers.join(', ') || 'none'}`,
+    `- Mini-launch seed inbox correction can ask UI edit approval now: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanCanAskMailerLiteUiEditApprovalNow ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction can ask public send approval now: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanCanAskPublicSendApprovalNow ?? 'unknown'}`,
     `- Mini-launch Shopify local build receipt: ${runbook.currentState.miniLaunch.shopifyLocalBuildReceiptStatus ?? 'unknown'}`,
     `- Mini-launch Shopify local files: ${runbook.currentState.miniLaunch.shopifyLocalBuildFileCount ?? 'unknown'}`,
     `- Mini-launch Shopify local build closed: ${runbook.currentState.miniLaunch.shopifyLocalBuildClosed}`,
@@ -2284,11 +2313,12 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
-    miniLaunchEmailManualUiDraftRepairPacket,
-    miniLaunchSeedTestQaPacket,
-    miniLaunchSeedTestExecutionReceipt,
-    miniLaunchSeedInboxQa,
-    miniLaunchShopifyLocalBuildReceipt,
+  miniLaunchEmailManualUiDraftRepairPacket,
+  miniLaunchSeedTestQaPacket,
+  miniLaunchSeedTestExecutionReceipt,
+  miniLaunchSeedInboxQa,
+  miniLaunchSeedInboxCorrectionPlan,
+  miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -2347,6 +2377,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchSeedTestQaPacket),
     readOptionalJson(options.miniLaunchSeedTestExecutionReceipt),
     readOptionalJson(options.miniLaunchSeedInboxQa),
+    readOptionalJson(options.miniLaunchSeedInboxCorrectionPlan),
     readOptionalJson(options.miniLaunchShopifyLocalBuildReceipt),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
@@ -2408,6 +2439,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedTestExecutionReceipt,
     miniLaunchSeedInboxQa,
+    miniLaunchSeedInboxCorrectionPlan,
     miniLaunchShopifyLocalBuildReceipt,
     brujulaPlan,
     brujulaApply,

@@ -898,6 +898,44 @@ const miniLaunchShopifyLocalBuildReceipt = {
   },
 };
 
+const miniLaunchSeedInboxQa = {
+  status: "seed_inbox_qa_completed_correction_recommended_before_public_launch_no_live_changes",
+  executiveSummary: {
+    deliveryStatus: "green",
+    readerFacingPublicReadiness: "yellow_needs_minor_footer_and_link_cleanup",
+    correctionRecommendedBeforePublicLaunch: true,
+    canAskPublicSendApprovalNow: false,
+    openCorrectionCount: 4,
+  },
+  recommendedCorrectionsBeforePublic: [
+    { id: "footer_sender_name_consistency" },
+    { id: "spanish_subscription_reason_consistency" },
+    { id: "feedback_reply_cta_cleanup" },
+    { id: "replace_inert_placeholders_before_public" },
+  ],
+};
+
+const miniLaunchSeedInboxCorrectionPlan = {
+  status: "seed_inbox_correction_plan_ready_no_live_changes",
+  executiveSummary: {
+    correctionCount: 4,
+    requiredInputCount: 2,
+    canAskMailerLiteUiEditApprovalNow: false,
+    canAskPublicSendApprovalNow: false,
+  },
+  requiredInputsBeforeUiEditApproval: [
+    { id: "final_public_links" },
+    { id: "subscription_reason_policy" },
+  ],
+  blockersBeforeAnyMailerLiteUiEditApproval: [
+    "public_readiness_yellow",
+    "final_public_links_missing",
+    "subscription_reason_policy_missing",
+    "exact_mailerlite_ui_edit_approval_missing",
+    "fresh_post_correction_qa_missing",
+  ],
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/path.mjs",
@@ -1019,6 +1057,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchSeedInboxCorrectionPlan).toContain("mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
@@ -1379,6 +1418,28 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         "fact_store_market_review",
       ],
     });
+  });
+
+  test("treats seed inbox correction plan as the current boundary before UI edits or public send", () => {
+    const state = buildCurrentState({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      miniLaunchSeedInboxQa,
+      miniLaunchSeedInboxCorrectionPlan,
+    });
+    const moves = buildImmediateNextMoves({ currentState: state }).join("\n");
+
+    expect(state.miniLaunch.seedInboxCorrectionPlanStatus).toBe("seed_inbox_correction_plan_ready_no_live_changes");
+    expect(state.miniLaunch.seedInboxCorrectionPlanCorrectionCount).toBe(4);
+    expect(state.miniLaunch.seedInboxCorrectionPlanRequiredInputIds).toEqual([
+      "final_public_links",
+      "subscription_reason_policy",
+    ]);
+    expect(state.miniLaunch.seedInboxCorrectionPlanCanAskMailerLiteUiEditApprovalNow).toBe(false);
+    expect(state.miniLaunch.seedInboxCorrectionPlanCanAskPublicSendApprovalNow).toBe(false);
+    expect(moves).toContain("Use the seed inbox correction plan as the current mini-launch boundary");
+    expect(moves).toContain("keep MailerLite UI edits, additional test sends and public/audience launch closed");
   });
 
   test("closes Onboarding v2 empty-groups approval once execution and post-verify exist", () => {

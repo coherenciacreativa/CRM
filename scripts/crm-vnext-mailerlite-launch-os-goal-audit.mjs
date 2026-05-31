@@ -37,6 +37,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET = '/Users/alejandr
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
@@ -108,6 +109,7 @@ Options:
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-seed-test-execution-receipt <path> Mini-launch completed seed/test execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
   --mini-launch-seed-inbox-qa <path> Mini-launch seed inbox QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_QA}
+  --mini-launch-seed-inbox-correction-plan <path> Mini-launch seed inbox correction plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
@@ -177,6 +179,7 @@ const parseArgs = (argv) => {
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
     miniLaunchSeedInboxQa: DEFAULT_MINI_LAUNCH_SEED_INBOX_QA,
+    miniLaunchSeedInboxCorrectionPlan: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
@@ -244,6 +247,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-qa') options.miniLaunchSeedInboxQa = argv[++index];
+    else if (arg === '--mini-launch-seed-inbox-correction-plan') options.miniLaunchSeedInboxCorrectionPlan = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
@@ -418,6 +422,7 @@ const loadSources = async (options) => {
     ['miniLaunchSeedTestQaPacket', options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight with real-render and seed-recipient blockers', 'json', true],
     ['miniLaunchSeedTestExecutionReceipt', options.miniLaunchSeedTestExecutionReceipt, 'mini-launch completed seed/test execution receipt with Gmail verification and closed public gates', 'json', true],
     ['miniLaunchSeedInboxQa', options.miniLaunchSeedInboxQa, 'mini-launch seed inbox QA with correction recommendations before public launch', 'json', true],
+    ['miniLaunchSeedInboxCorrectionPlan', options.miniLaunchSeedInboxCorrectionPlan, 'mini-launch seed inbox correction plan and blockers before UI edit/public launch', 'json', true],
     ['miniLaunchShopifyLocalBuildReceipt', options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', 'json', true],
     ['miniLaunchCrmWriteApprovalPacket', options.miniLaunchCrmWriteApprovalPacket, 'mini-launch CRM write approval packet with exact observed-events/person/write-family boundary', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
@@ -515,6 +520,7 @@ const buildRequirementChecks = ({
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedTestExecutionReceipt,
   miniLaunchSeedInboxQa,
+  miniLaunchSeedInboxCorrectionPlan,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchCrmWriteApprovalPacket,
   brujulaPlan,
@@ -897,6 +903,31 @@ const buildRequirementChecks = ({
     .filter(Boolean)
     ?? runbook?.currentState?.miniLaunch?.seedInboxQaRecommendedCorrectionIds
     ?? [];
+  const miniLaunchSeedInboxCorrectionPlanStatus = miniLaunchSeedInboxCorrectionPlan?.status
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanStatus
+    ?? null;
+  const miniLaunchSeedInboxCorrectionPlanCorrectionCount = miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.correctionCount
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanCorrectionCount
+    ?? null;
+  const miniLaunchSeedInboxCorrectionPlanRequiredInputCount = miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.requiredInputCount
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanRequiredInputCount
+    ?? null;
+  const miniLaunchSeedInboxCorrectionPlanCanAskUiEditApprovalNow = miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.canAskMailerLiteUiEditApprovalNow
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanCanAskMailerLiteUiEditApprovalNow
+    ?? null;
+  const miniLaunchSeedInboxCorrectionPlanCanAskPublicSendApprovalNow = miniLaunchSeedInboxCorrectionPlan?.executiveSummary?.canAskPublicSendApprovalNow
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanCanAskPublicSendApprovalNow
+    ?? null;
+  const miniLaunchSeedInboxCorrectionPlanRequiredInputIds = miniLaunchSeedInboxCorrectionPlan?.requiredInputsBeforeUiEditApproval
+    ?.map((input) => input?.id)
+    .filter(Boolean)
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanRequiredInputIds
+    ?? [];
+  const miniLaunchSeedInboxCorrectionPlanBlockers = miniLaunchSeedInboxCorrectionPlan?.blockersBeforeAnyMailerLiteUiEditApproval
+    ?? runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanBlockers
+    ?? [];
+  const miniLaunchSeedInboxCorrectionPlanReady =
+    miniLaunchSeedInboxCorrectionPlanStatus === 'seed_inbox_correction_plan_ready_no_live_changes';
   const miniLaunchCrmWriteApprovalPacketStatus = miniLaunchCrmWriteApprovalPacket?.status
     ?? runbook?.currentState?.miniLaunch?.crmWriteApprovalPacketStatus
     ?? null;
@@ -1680,6 +1711,13 @@ const buildRequirementChecks = ({
         `miniLaunchSeedInboxQaOpenCorrectionCount=${miniLaunchSeedInboxQaOpenCorrectionCount ?? 'unknown'}`,
         `miniLaunchSeedInboxQaCanAskPublicSendApprovalNow=${miniLaunchSeedInboxQaCanAskPublicSendApprovalNow ?? 'unknown'}`,
         `miniLaunchSeedInboxQaCorrectionIds=${miniLaunchSeedInboxQaCorrectionIds.join('|') || 'none'}`,
+        `miniLaunchSeedInboxCorrectionPlanStatus=${miniLaunchSeedInboxCorrectionPlanStatus ?? 'missing'}`,
+        `miniLaunchSeedInboxCorrectionPlanCorrectionCount=${miniLaunchSeedInboxCorrectionPlanCorrectionCount ?? 'unknown'}`,
+        `miniLaunchSeedInboxCorrectionPlanRequiredInputCount=${miniLaunchSeedInboxCorrectionPlanRequiredInputCount ?? 'unknown'}`,
+        `miniLaunchSeedInboxCorrectionPlanRequiredInputIds=${miniLaunchSeedInboxCorrectionPlanRequiredInputIds.join('|') || 'none'}`,
+        `miniLaunchSeedInboxCorrectionPlanBlockers=${miniLaunchSeedInboxCorrectionPlanBlockers.join('|') || 'none'}`,
+        `miniLaunchSeedInboxCorrectionPlanCanAskUiEditApprovalNow=${miniLaunchSeedInboxCorrectionPlanCanAskUiEditApprovalNow ?? 'unknown'}`,
+        `miniLaunchSeedInboxCorrectionPlanCanAskPublicSendApprovalNow=${miniLaunchSeedInboxCorrectionPlanCanAskPublicSendApprovalNow ?? 'unknown'}`,
         `miniLaunchCrmWriteApprovalPacketStatus=${miniLaunchCrmWriteApprovalPacketStatus ?? 'missing'}`,
         `miniLaunchCrmWriteApprovalCanAskApproval=${miniLaunchCrmWriteApprovalCanAskApproval}`,
         `miniLaunchCrmWriteApprovalExactEventCount=${miniLaunchCrmWriteApprovalExactEventCount ?? 'unknown'}`,
@@ -1772,7 +1810,9 @@ const buildRequirementChecks = ({
               : 'Current pilot can continue through no-live moves: group dry-run, exact empty-group approval packet, scoped Shopify local-build request and CRM signal projection packet.',
           miniLaunchManualUiBuildClosed
             ? miniLaunchSeedTestExecutionCompleted
-              ? 'The four mini-launch seed/test emails were already sent only to the approved seed and verified by Gmail receipts; use that receipt for inbox QA and keep any further test/public/audience send behind a new exact approval.'
+              ? miniLaunchSeedInboxCorrectionPlanReady
+                ? 'Seed inbox QA is complete and the correction plan is ready; collect final public links plus the subscription-reason policy before any MailerLite UI edit approval, additional test send or public/audience launch.'
+                : 'The four mini-launch seed/test emails were already sent only to the approved seed and verified by Gmail receipts; use that receipt for inbox QA and keep any further test/public/audience send behind a new exact approval.'
               : 'The four mini-launch drafts already exist in MailerLite Drafts via approved manual UI build; use the seed/test QA packet next because seed/test send remains blocked by real MailerLite render QA, exact seed recipient, and exact send approval.'
             : miniLaunchEmailStyleQaReadyForLocalAssetPlan
             ? miniLaunchEmailBuilderPayloadManifestReady
@@ -2426,6 +2466,31 @@ const buildGoalAudit = ({
     .filter(Boolean)
     ?? values.runbook?.currentState?.miniLaunch?.seedInboxQaRecommendedCorrectionIds
     ?? [];
+  const seedInboxCorrectionPlan = values.miniLaunchSeedInboxCorrectionPlan ?? null;
+  const seedInboxCorrectionPlanStatus = seedInboxCorrectionPlan?.status
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanStatus
+    ?? null;
+  const seedInboxCorrectionPlanCorrectionCount = seedInboxCorrectionPlan?.executiveSummary?.correctionCount
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanCorrectionCount
+    ?? null;
+  const seedInboxCorrectionPlanRequiredInputCount = seedInboxCorrectionPlan?.executiveSummary?.requiredInputCount
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanRequiredInputCount
+    ?? null;
+  const seedInboxCorrectionPlanRequiredInputIds = seedInboxCorrectionPlan?.requiredInputsBeforeUiEditApproval
+    ?.map((input) => input?.id)
+    .filter(Boolean)
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanRequiredInputIds
+    ?? [];
+  const seedInboxCorrectionPlanBlockers = seedInboxCorrectionPlan?.blockersBeforeAnyMailerLiteUiEditApproval
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanBlockers
+    ?? [];
+  const seedInboxCorrectionPlanCanAskUiEditApprovalNow = seedInboxCorrectionPlan?.executiveSummary?.canAskMailerLiteUiEditApprovalNow
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanCanAskMailerLiteUiEditApprovalNow
+    ?? null;
+  const seedInboxCorrectionPlanCanAskPublicSendApprovalNow = seedInboxCorrectionPlan?.executiveSummary?.canAskPublicSendApprovalNow
+    ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanCanAskPublicSendApprovalNow
+    ?? null;
+  const seedInboxCorrectionPlanReady = seedInboxCorrectionPlanStatus === 'seed_inbox_correction_plan_ready_no_live_changes';
   const seedRecipientMissingOnly = seedTestQaStatus === 'seed_test_qa_packet_updated_after_manual_ui_build_no_live_changes'
     && seedTestQaBlockers.length === 1
     && seedTestQaBlockers.includes('exact_seed_recipient_missing')
@@ -2439,7 +2504,9 @@ const buildGoalAudit = ({
       ?? values.runbook?.currentState?.miniLaunch?.seedTestQaCanAskApprovalNow
       ?? false) === false;
   const seedRecipientMove = seedInboxQaCompleted
-    ? seedInboxQaCorrectionRecommended === true
+    ? seedInboxCorrectionPlanReady
+      ? `Seed inbox correction plan is ready after Gmail QA: ${seedInboxCorrectionPlanCorrectionCount ?? 'unknown'} corrections, required inputs ${seedInboxCorrectionPlanRequiredInputIds.join('|') || 'none'}, blockers ${seedInboxCorrectionPlanBlockers.join('|') || 'none'}; do not edit MailerLite UI, send another test or launch publicly yet.`
+      : seedInboxQaCorrectionRecommended === true
       ? `Seed inbox QA is complete after the Gmail-verified seed send: delivery ${seedInboxQaDeliveryStatus ?? 'unknown'}, public readiness ${seedInboxQaPublicReadiness ?? 'unknown'}, corrections ${seedInboxQaCorrectionIds.join('|') || 'none'}; next safe step is a local correction plan, not public/audience launch or MailerLite UI edits.`
       : `Seed inbox QA is complete after the Gmail-verified seed send: delivery ${seedInboxQaDeliveryStatus ?? 'unknown'}, public readiness ${seedInboxQaPublicReadiness ?? 'unknown'}; public/audience launch still needs a new exact approval.`
     : seedTestExecutionDone
@@ -2661,6 +2728,13 @@ const buildGoalAudit = ({
       continuationGuardOldUiWorkClosed,
       continuationGuardClosedBoundaryCount,
       continuationGuardActiveInputIds,
+      seedInboxCorrectionPlanStatus,
+      seedInboxCorrectionPlanCorrectionCount,
+      seedInboxCorrectionPlanRequiredInputCount,
+      seedInboxCorrectionPlanRequiredInputIds,
+      seedInboxCorrectionPlanBlockers,
+      seedInboxCorrectionPlanCanAskUiEditApprovalNow,
+      seedInboxCorrectionPlanCanAskPublicSendApprovalNow,
     },
     requirements,
     nextMoves: uniqueMoves([

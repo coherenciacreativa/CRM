@@ -670,6 +670,44 @@ const miniLaunchSeedTestQaPacket = {
   },
 };
 
+const miniLaunchSeedInboxQa = {
+  status: "seed_inbox_qa_completed_correction_recommended_before_public_launch_no_live_changes",
+  executiveSummary: {
+    deliveryStatus: "green",
+    readerFacingPublicReadiness: "yellow_needs_minor_footer_and_link_cleanup",
+    correctionRecommendedBeforePublicLaunch: true,
+    openCorrectionCount: 4,
+    canAskPublicSendApprovalNow: false,
+  },
+  recommendedCorrectionsBeforePublic: [
+    { id: "footer_sender_name_consistency" },
+    { id: "spanish_subscription_reason_consistency" },
+    { id: "feedback_reply_cta_cleanup" },
+    { id: "replace_inert_placeholders_before_public" },
+  ],
+};
+
+const miniLaunchSeedInboxCorrectionPlan = {
+  status: "seed_inbox_correction_plan_ready_no_live_changes",
+  executiveSummary: {
+    correctionCount: 4,
+    requiredInputCount: 2,
+    canAskMailerLiteUiEditApprovalNow: false,
+    canAskPublicSendApprovalNow: false,
+  },
+  requiredInputsBeforeUiEditApproval: [
+    { id: "final_public_links" },
+    { id: "subscription_reason_policy" },
+  ],
+  blockersBeforeAnyMailerLiteUiEditApproval: [
+    "public_readiness_yellow",
+    "final_public_links_missing",
+    "subscription_reason_policy_missing",
+    "exact_mailerlite_ui_edit_approval_missing",
+    "fresh_post_correction_qa_missing",
+  ],
+};
+
 const miniLaunchCrmWriteApprovalPacket = {
   status: "crm_write_approval_packet_blocked_missing_observed_events_no_live_changes",
   executiveSummary: {
@@ -966,6 +1004,9 @@ const values = {
   miniLaunchEmailRenderQa: null,
   miniLaunchEmailManualUiBuildReceipt: null,
   miniLaunchSeedTestQaPacket: null,
+  miniLaunchSeedTestExecutionReceipt: null,
+  miniLaunchSeedInboxQa: null,
+  miniLaunchSeedInboxCorrectionPlan: null,
   miniLaunchCrmWriteApprovalPacket: null,
   blockedGateHandoff: null,
   missingInputsKit: null,
@@ -1020,6 +1061,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.miniLaunchEmailBuilderPayloadManifest).toContain("mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchSeedInboxCorrectionPlan).toContain("mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
@@ -1447,6 +1489,32 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.nextMoves.join(" ")).not.toContain("Generate the Launch OS approval intake");
     expect(audit.nextMoves.join(" ")).not.toContain("If the mini-launch empty-group approval packet is ready");
     expect(new Set(audit.nextMoves).size).toBe(audit.nextMoves.length);
+  });
+
+  test("surfaces seed inbox correction plan as current no-live boundary", () => {
+    const audit = buildGoalAudit({
+      values: {
+        ...values,
+        miniLaunchSeedInboxQa,
+        miniLaunchSeedInboxCorrectionPlan,
+      },
+      sourceDigests,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+    const infrastructureRequirement = audit.requirements.find(
+      (requirement) => requirement.id === "prepare_frequent_mini_launch_infrastructure",
+    );
+
+    expect(audit.executiveSummary.seedInboxCorrectionPlanStatus).toBe("seed_inbox_correction_plan_ready_no_live_changes");
+    expect(audit.executiveSummary.seedInboxCorrectionPlanRequiredInputIds).toEqual([
+      "final_public_links",
+      "subscription_reason_policy",
+    ]);
+    expect(audit.executiveSummary.seedInboxCorrectionPlanCanAskUiEditApprovalNow).toBe(false);
+    expect(audit.executiveSummary.seedInboxCorrectionPlanCanAskPublicSendApprovalNow).toBe(false);
+    expect(audit.nextMoves.join("\n")).toContain("Seed inbox correction plan is ready after Gmail QA");
+    expect(infrastructureRequirement?.evidence.join("\n")).toContain("miniLaunchSeedInboxCorrectionPlanCorrectionCount=4");
+    expect(infrastructureRequirement?.evidence.join("\n")).toContain("miniLaunchSeedInboxCorrectionPlanBlockers=public_readiness_yellow|final_public_links_missing|subscription_reason_policy_missing|exact_mailerlite_ui_edit_approval_missing|fresh_post_correction_qa_missing");
   });
 
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {

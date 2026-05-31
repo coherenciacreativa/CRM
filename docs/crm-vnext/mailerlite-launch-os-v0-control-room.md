@@ -534,6 +534,8 @@ Meaning:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
 
 - Resultados confirmados:
   - taxonomy response request bundle: `ok=true`, `status=taxonomy_refresh_response_request_bundle_ready_no_live_changes`
@@ -966,6 +968,63 @@ Meaning:
 - Próximo paso seguro:
   - Prepare a local correction plan only, using the seed inbox QA report as evidence.
   - Do not edit MailerLite UI, send again, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a new exact scope-specific approval phrase.
+
+## Launch OS v0 seed inbox correction plan checkpoint - 2026-05-31
+
+- Estado:
+  - active goal
+  - seed inbox correction plan ready
+  - local-only operating state updated
+  - not ready for live operation
+  - no live actions authorized
+  - MailerLite UI edit, additional test send and public/audience launch remain closed
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+
+- Resultados confirmados:
+  - correction-plan: `ok=true`
+  - correction-plan: `status=seed_inbox_correction_plan_ready_no_live_changes`
+  - correction-plan: `correctionCount=4`
+  - correction-plan: `requiredInputCount=2`
+  - correction-plan: `canAskMailerLiteUiEditApprovalNow=false`
+  - correction-plan: `canAskAdditionalTestSendApprovalNow=false`
+  - correction-plan: `canAskPublicSendApprovalNow=false`
+  - correction-plan blockers: `public_readiness_yellow`, `final_public_links_missing`, `subscription_reason_policy_missing`, `exact_mailerlite_ui_edit_approval_missing`, `fresh_post_correction_qa_missing`
+  - operator-runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`
+  - operator-runbook: `openLiveGateCount=0`
+  - operator-runbook: `approvalQueueReadyCount=0`
+  - operator-runbook: `blockedGateHandoffCanAskApprovalNow=false`
+  - goal-audit: `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: `readyForLiveOperation=false`
+  - goal-audit: `liveActionAllowedNow=false`
+  - validation-receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`
+  - validation-receipt: `validationStatus=passed`
+  - validation-receipt: `liveGatesClosed=true`
+
+- Qué está probado:
+  - The Gmail seed inbox QA findings now have a concrete local correction plan.
+  - The runbook and goal audit treat the correction plan as the current mini-launch boundary.
+  - Public/audience launch cannot be requested from this state.
+  - MailerLite UI edit cannot be requested from this state because the required inputs are still missing.
+  - Live gates remain closed in local evidence.
+
+- Qué sigue parcial o pendiente:
+  - Final approved public links are still missing: `result_or_resource_link`, `practice_link`, `editorial_note_link`.
+  - The footer/subscription-reason policy is still missing: keep one consistent Spanish line across E01-E04 or rely only on the platform footer.
+  - A fresh post-correction QA is still missing.
+  - Any MailerLite UI correction remains a later exact approval boundary.
+  - Any additional test send remains a later exact approval boundary.
+  - Public/audience launch, schedule, workflow/subscriber/group action, Shopify live move, CRM write, Signal Ledger append, card/scoring change and Fact Store write remain closed.
+
+- Próximo paso seguro:
+  - Collect the two missing correction inputs or prepare a local corrected payload preview only.
+  - Do not open MailerLite UI for edits, send tests, publish, schedule or mutate any live surface until a later exact scope-specific approval exists after the missing inputs and fresh QA are ready.
 
 ## Brújula pilot status
 
@@ -1817,4 +1876,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground. The Onboarding v2 architecture, disabled draft-build proposal, 12-group dry-run, guarded runner, Onboarding v2 CRM event contract, onboarding trunk map, Mini-Launch OS v0 packet, first-email mapping, concrete mini-launch rehearsal, CRM event contract, mini-launch-to-onboarding handoff policy, seed-test QA packet, Brand/email asset packet, launch group dry-run, Brand candidate review packet, full email sequence asset packet, Shopify/Web handoff packet, readiness board, cadence board, backlog board, department review dispatch, department review intake board, department review reconciliation, individual department review packets, department review delivery pack, response workspace, operator queue, request bundle, response watcher, Brújula email style QA packet, Brújula Email 1 correction packet, Brújula Email 1 local render QA packet, finalization preflight and operator runbook are now documented. The next useful move is to route the request bundle to Brand/Web/CRM, collect final responses through the response workspace, use the response watcher to confirm file presence, pass them through finalization preflight, and then run intake/reconciliation. For Brújula specifically, use the corrected Email 1 draft plus local render QA packet as builder input before any future exact MailerLite edit/test-send approval; real MailerLite render QA remains required after any builder edit. After Brand returns accepted semantic decisions, rerun the launch group dry-run before any empty-group creation approval exists. Exact approval for the 12 empty onboarding groups remains a separate lane if Alejandro wants to move it forward.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The current next safe move is to collect the final public links plus the footer/subscription-reason policy, or prepare a local corrected payload preview; do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
