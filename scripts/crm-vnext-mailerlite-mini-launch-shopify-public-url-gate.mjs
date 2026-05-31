@@ -12,6 +12,45 @@ const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/
 
 const REQUIRED_LINK_KEYS = ['result_or_resource_link', 'practice_link', 'editorial_note_link'];
 
+const TEST_VISIBILITY_TIERS = [
+  {
+    id: 'local_only',
+    label: 'Local-only build',
+    internetAccessible: false,
+    liveOrPublicBoundary: false,
+    use: 'Internal build and screenshot/render QA before any email link can be clicked.',
+  },
+  {
+    id: 'unlisted_noindex_preview',
+    label: 'Unlisted noindex preview',
+    internetAccessible: true,
+    liveOrPublicBoundary: true,
+    recommendedForMiniLaunchTests: true,
+    use: 'Seed tests and internal review links that work in real email clients without adding the page to navigation or search.',
+    requiredGuards: [
+      'not_linked_from_site_navigation',
+      'noindex_or_equivalent_search_exclusion',
+      'fresh_real_browser_qa_before_mailerlite_link_replacement',
+      'no_real_form_or_crm_connection_without_separate_approval',
+      'no_audience_send_until_mailerlite_post_correction_qa_is_green',
+    ],
+  },
+  {
+    id: 'public_unlisted_launch_route',
+    label: 'Public unlisted launch route',
+    internetAccessible: true,
+    liveOrPublicBoundary: true,
+    use: 'A real launch link for recipients, still not necessarily in site navigation or SEO.',
+  },
+  {
+    id: 'fully_public_site_surface',
+    label: 'Fully public site surface',
+    internetAccessible: true,
+    liveOrPublicBoundary: true,
+    use: 'Navigation/SEO/evergreen site placement after a separate public-site decision.',
+  },
+];
+
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs [options]
 
@@ -133,6 +172,35 @@ const normalizeSlot = (slot) => {
   };
 };
 
+const buildVisibilityPolicy = ({ publicUrlsReady }) => ({
+  id: 'mini_launch_test_visibility_policy',
+  recommendedTier: 'unlisted_noindex_preview',
+  recommendedTierLabel: 'Unlisted noindex preview',
+  allowedForMiniLaunchTestLinksAfterReceiptAndQa: true,
+  fullyPublicNavigationRequiredNow: false,
+  seoIndexingAllowedNow: false,
+  siteNavigationAllowedNow: false,
+  internetAccessibleLinksRequiredForEmailQa: true,
+  finalAudienceSendStillRequiresSeparateGate: true,
+  publicUrlsReady,
+  policyRationale: 'Mini-launch test assets need links that real email clients can open, but they do not need site navigation, SEO indexing or a fully promoted public page.',
+  departmentOwnership: {
+    lead: 'web_design',
+    coordinatedWith: ['brand', 'crm'],
+    brandRole: 'voice, claims and public-facing presentation guardrails',
+    crmRole: 'link intent, source/delivered signal design and no-live-CRM boundaries',
+  },
+  tiers: TEST_VISIBILITY_TIERS,
+  requiredReceiptFields: [
+    'route_url_or_redacted_url_hashes',
+    'visibility_tier=unlisted_noindex_preview',
+    'not_linked_from_site_navigation=true',
+    'seo_indexing_allowed=false',
+    'fresh_real_browser_qa=green',
+    'forms_and_crm_live_connections=false',
+  ],
+});
+
 const buildShopifyPublicUrlGate = ({
   assetManifest,
   shopifyLocalBuildReceipt,
@@ -167,6 +235,7 @@ const buildShopifyPublicUrlGate = ({
     : localAssetsReady && receiptReady && manifestReady
       ? 'shopify_public_url_gate_waiting_decision_no_live_changes'
       : 'shopify_public_url_gate_blocked_missing_local_evidence_no_live_changes';
+  const visibilityPolicy = buildVisibilityPolicy({ publicUrlsReady });
 
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -188,6 +257,10 @@ const buildShopifyPublicUrlGate = ({
       decisionExplanationRequiredBeforeApprovalPhrase: !publicUrlsReady,
       approvalPhraseAvailable: false,
       exactApprovalPhrasePrinted: false,
+      recommendedVisibilityTier: visibilityPolicy.recommendedTier,
+      fullyPublicNavigationRequiredNow: visibilityPolicy.fullyPublicNavigationRequiredNow,
+      seoIndexingAllowedNow: visibilityPolicy.seoIndexingAllowedNow,
+      testSafePreviewRouteAllowedByPolicy: visibilityPolicy.allowedForMiniLaunchTestLinksAfterReceiptAndQa,
       readyForShopifyPublishApprovalPhrase: false,
       readyForMiniLaunchCorrectionPreview: publicUrlsReady,
       canPublishNow: false,
@@ -198,16 +271,18 @@ const buildShopifyPublicUrlGate = ({
     publicUrlPlan: {
       source: 'asset_manifest_local_slots',
       exactUrlsStoredInReport: false,
-      proposedPublicRouteType: 'shopify_public_page_or_equivalent_public_preview_route',
+      proposedPublicRouteType: 'unlisted_noindex_preview_route_before_public_launch',
       requiresShopifyPublishOrPublicRoute: !publicUrlsReady,
       requiresFreshPublicQa: !publicUrlsReady,
       slots,
       notes: [
         'The local Shopify build supplies the three required asset slots, but local path candidates are not final public URLs.',
+        'For mini-launch tests, the recommended route is link-accessible but not placed in site navigation and not indexed for search.',
         'The practice and editorial-note links are anchor candidates; they need public page QA before any public/audience send.',
         'Alejandro should not manually invent routine links when Web/Shopify can produce a receipt.',
       ],
     },
+    visibilityPolicy,
     decisionBoundary: {
       id: 'shopify_public_url_or_publish_route',
       decisionRequired: !publicUrlsReady,
@@ -218,13 +293,14 @@ const buildShopifyPublicUrlGate = ({
       canPublishNow: false,
       packetIsApprovalByItself: false,
       currentHumanBoundary: !publicUrlsReady
-        ? 'Codex must explain the Shopify public URL decision before requesting or using any exact approval phrase.'
+        ? 'Codex must explain the unlisted/noindex preview route decision before requesting or using any exact approval phrase.'
         : 'No public URL approval phrase is needed from this gate because public URLs are already represented as ready evidence.',
-      whyThisMatters: 'Final email links must resolve publicly before corrected MailerLite drafts or audience sends can be trusted; creating those URLs can expose Shopify pages and is therefore a public/live boundary.',
+      whyThisMatters: 'Final email links must resolve in real email clients before corrected MailerLite drafts or audience sends can be trusted; the recommended test route is unlisted/noindex, but it is still internet-accessible and therefore a public/live boundary.',
     },
     stillClosedGates: [
       'shopify_publish',
       'shopify_live_theme_or_public_page_mutation',
+      'fully_public_site_navigation_or_seo_indexing',
       'shopify_api_call',
       'mailerlite_ui_edit',
       'mailerlite_test_send',
@@ -242,6 +318,7 @@ const buildShopifyPublicUrlGate = ({
       'This gate is not approval to publish Shopify, open UI, edit MailerLite drafts, send tests or send to an audience.',
       'Do not print or request an exact approval phrase until the public URL decision has been explained.',
       'Do not treat local Shopify path candidates as final public URLs.',
+      'Do not add preview pages to site navigation or SEO indexing from this gate.',
       'Do not touch subscribers, groups, workflows, CRM, Signal Ledger, cards, scoring or Fact Store from this gate.',
     ],
   };
@@ -279,6 +356,9 @@ const renderMarkdown = (report) => [
   `- Requires Alejandro manual links: ${report.executiveSummary.requiresAlejandroManualLinks}`,
   `- Decision explanation required before approval phrase: ${report.executiveSummary.decisionExplanationRequiredBeforeApprovalPhrase}`,
   `- Approval phrase available: ${report.executiveSummary.approvalPhraseAvailable}`,
+  `- Recommended visibility tier: ${report.executiveSummary.recommendedVisibilityTier}`,
+  `- Fully public navigation required now: ${report.executiveSummary.fullyPublicNavigationRequiredNow}`,
+  `- SEO indexing allowed now: ${report.executiveSummary.seoIndexingAllowedNow}`,
   `- Can publish now: ${report.executiveSummary.canPublishNow}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
   '',
@@ -295,6 +375,19 @@ const renderMarkdown = (report) => [
   `- Exact approval phrase printed: ${report.decisionBoundary.exactApprovalPhrasePrinted}`,
   `- Can ask approval now: ${report.decisionBoundary.canAskApprovalNow}`,
   `- Why: ${report.decisionBoundary.whyThisMatters}`,
+  '',
+  '## Test Visibility Policy',
+  '',
+  `- Recommended tier: ${report.visibilityPolicy.recommendedTier}`,
+  `- Internet-accessible links required for email QA: ${report.visibilityPolicy.internetAccessibleLinksRequiredForEmailQa}`,
+  `- Fully public navigation required now: ${report.visibilityPolicy.fullyPublicNavigationRequiredNow}`,
+  `- SEO indexing allowed now: ${report.visibilityPolicy.seoIndexingAllowedNow}`,
+  `- Site navigation allowed now: ${report.visibilityPolicy.siteNavigationAllowedNow}`,
+  `- Final audience send still requires separate gate: ${report.visibilityPolicy.finalAudienceSendStillRequiresSeparateGate}`,
+  `- Policy rationale: ${report.visibilityPolicy.policyRationale}`,
+  '',
+  'Required receipt fields:',
+  renderList(report.visibilityPolicy.requiredReceiptFields),
   '',
   '## Still Closed Gates',
   '',
@@ -346,6 +439,9 @@ const main = async () => {
     localAssetSlotReadyCount: report.executiveSummary.localAssetSlotReadyCount,
     publicUrlReadyCount: report.executiveSummary.publicUrlReadyCount,
     approvalPhraseAvailable: report.executiveSummary.approvalPhraseAvailable,
+    recommendedVisibilityTier: report.executiveSummary.recommendedVisibilityTier,
+    fullyPublicNavigationRequiredNow: report.executiveSummary.fullyPublicNavigationRequiredNow,
+    seoIndexingAllowedNow: report.executiveSummary.seoIndexingAllowedNow,
     decisionExplanationRequiredBeforeApprovalPhrase: report.executiveSummary.decisionExplanationRequiredBeforeApprovalPhrase,
     canPublishNow: report.executiveSummary.canPublishNow,
     out: options.out ? resolve(options.out) : null,

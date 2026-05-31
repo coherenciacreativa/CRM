@@ -2360,6 +2360,8 @@ Confirmed results:
 - Shopify public URL gate: `decisionExplanationRequiredBeforeApprovalPhrase=true`
 - Shopify public URL gate: `approvalPhraseAvailable=false`, `exactApprovalPhrasePrinted=false`
 - Shopify public URL gate: `canAskApprovalNow=false`, `canPublishNow=false`
+- Shopify public URL gate: `recommendedVisibilityTier=unlisted_noindex_preview`
+- Shopify public URL gate: `fullyPublicNavigationRequiredNow=false`, `seoIndexingAllowedNow=false`
 - Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`
 - Current-state refresh: `testFiles=13`, `testCount=82`
 - Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`
@@ -2373,6 +2375,7 @@ Safety:
 - Shopify API called: false.
 - Shopify publish performed: false.
 - Shopify live theme/page mutation performed: false.
+- Fully public site navigation/SEO indexing: false.
 - CRM live API called: false.
 - Subscribers read or mutated: false.
 - Groups, workflows, schedules, public campaigns and sends mutated: false.
@@ -2384,6 +2387,8 @@ What is proven:
 - The launch now has a local-only gate for the next public-link boundary instead of a loose memory instruction.
 - The three local asset slots are present, but none of the three final public URLs is ready.
 - The gate keeps routine link ownership with Web/Shopify, not Alejandro manual invention.
+- The recommended test visibility tier is `unlisted_noindex_preview`: links can work in real email clients without adding the page to site navigation or search indexing.
+- Web Design leads the preview route, coordinated with Brand for public presentation/claims and CRM for link intent and no-live-CRM boundaries.
 - The exact approval phrase is intentionally unavailable until Codex first explains the Shopify public URL/publish-route decision.
 - The current-state refresh runner now regenerates the Shopify public URL gate after the asset manifest and before the missing-inputs chain.
 
@@ -2392,15 +2397,24 @@ What remains partial or pending:
 - Launch OS is still not ready for live operation.
 - The three final public URLs are still missing.
 - Mini-launch correction preview remains blocked until Web/Shopify produces public URLs or a later private override exists.
-- Shopify publish/public route creation, MailerLite UI correction, test send and audience send all remain closed.
+- Shopify publish/public route creation, fully public navigation/SEO indexing, MailerLite UI correction, test send and audience send all remain closed.
 - CRM signal writes remain blocked by missing real observed events, exact people, writable-event screen and any required Fact Store review.
 
 Next safe move:
 
-- Stop at the decision boundary and explain the Shopify public URL/public-route choice before requesting or using any exact approval phrase.
-- If Alejandro later approves a scoped public URL route, generate a fresh local gate/receipt first and keep MailerLite sends/workflows/subscribers/groups/CRM closed.
+- Stop at the decision boundary and explain the unlisted/noindex preview route choice before requesting or using any exact approval phrase.
+- If Alejandro later approves a scoped preview route, generate a fresh local gate/receipt first and keep MailerLite sends/workflows/subscribers/groups/CRM closed.
 - Rerun `npm run crm:vnext:mailerlite-launch-os-current-state-refresh` after any Web/Shopify URL evidence changes.
+
+Preview visibility policy:
+
+- Recommended tier: `unlisted_noindex_preview`.
+- Internet-accessible links are allowed only because real email QA needs clickable URLs.
+- Fully public site navigation is not required now.
+- SEO indexing is not allowed now.
+- The preview route must not connect real forms, CRM live writes or MailerLite group/subscriber mutations without a later separate approval.
+- A later audience send remains a separate gate even if preview links exist.
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. The Shopify public URL gate now makes the next human boundary explicit: explain the public URL/public-route decision before any exact approval phrase, publish, UI edit or send. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. The Shopify public URL gate now makes the next human boundary explicit: explain the unlisted/noindex preview route decision before any exact approval phrase, publish, UI edit or send. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

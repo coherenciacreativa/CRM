@@ -84,6 +84,19 @@ describe("CRM vNext MailerLite mini-launch Shopify public URL gate", () => {
     expect(report.executiveSummary.approvalPhraseAvailable).toBe(false);
     expect(report.executiveSummary.exactApprovalPhrasePrinted).toBe(false);
     expect(report.executiveSummary.canPublishNow).toBe(false);
+    expect(report.executiveSummary.recommendedVisibilityTier).toBe("unlisted_noindex_preview");
+    expect(report.executiveSummary.fullyPublicNavigationRequiredNow).toBe(false);
+    expect(report.executiveSummary.seoIndexingAllowedNow).toBe(false);
+    expect(report.executiveSummary.testSafePreviewRouteAllowedByPolicy).toBe(true);
+    expect(report.visibilityPolicy).toMatchObject({
+      recommendedTier: "unlisted_noindex_preview",
+      internetAccessibleLinksRequiredForEmailQa: true,
+      fullyPublicNavigationRequiredNow: false,
+      seoIndexingAllowedNow: false,
+      siteNavigationAllowedNow: false,
+      finalAudienceSendStillRequiresSeparateGate: true,
+    });
+    expect(report.visibilityPolicy.requiredReceiptFields).toContain("visibility_tier=unlisted_noindex_preview");
     expect(report.decisionBoundary).toMatchObject({
       explanationRequiredBeforeApprovalPhrase: true,
       approvalPhraseAvailable: false,
@@ -94,7 +107,10 @@ describe("CRM vNext MailerLite mini-launch Shopify public URL gate", () => {
     expect(report.publicUrlPlan.slots.filter((slot) => slot.anchorCandidate)).toHaveLength(2);
     expect(report.blockers).toContain("shopify_public_url_decision_not_explained");
     expect(markdown).toContain("Approval phrase available: false");
+    expect(markdown).toContain("Recommended visibility tier: unlisted_noindex_preview");
+    expect(markdown).toContain("SEO indexing allowed now: false");
     expect(markdown).toContain("shopify_publish");
+    expect(report.stillClosedGates).toContain("fully_public_site_navigation_or_seo_indexing");
     expect(report.safety).toMatchObject({
       localOnly: true,
       shopifyApiCalled: false,

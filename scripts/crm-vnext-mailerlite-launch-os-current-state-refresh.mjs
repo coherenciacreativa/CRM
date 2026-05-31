@@ -855,6 +855,10 @@ const summarizeGeneratedReports = async (paths) => {
       ok: miniLaunchShopifyPublicUrlGate?.ok ?? null,
       finalPublicLinksReady: miniLaunchShopifyPublicUrlGate?.executiveSummary?.finalPublicLinksReady ?? null,
       approvalPhraseAvailable: miniLaunchShopifyPublicUrlGate?.executiveSummary?.approvalPhraseAvailable ?? null,
+      recommendedVisibilityTier: miniLaunchShopifyPublicUrlGate?.executiveSummary?.recommendedVisibilityTier ?? null,
+      fullyPublicNavigationRequiredNow:
+        miniLaunchShopifyPublicUrlGate?.executiveSummary?.fullyPublicNavigationRequiredNow ?? null,
+      seoIndexingAllowedNow: miniLaunchShopifyPublicUrlGate?.executiveSummary?.seoIndexingAllowedNow ?? null,
       decisionExplanationRequiredBeforeApprovalPhrase:
         miniLaunchShopifyPublicUrlGate?.executiveSummary?.decisionExplanationRequiredBeforeApprovalPhrase ?? null,
       canPublishNow: miniLaunchShopifyPublicUrlGate?.executiveSummary?.canPublishNow ?? null,
@@ -1029,7 +1033,7 @@ const renderMarkdown = (receipt) => [
   '',
   `- CRM write approval: status=${receipt.generatedReports.crmWriteApprovalPacket.status}, exactEventCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactEventCountReady}, exactPersonCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactPersonCountReady}`,
   `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
-  `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
+  `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, recommendedVisibilityTier=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier}, fullyPublicNavigationRequiredNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow}, seoIndexingAllowedNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
   `- operator-runbook: status=${receipt.generatedReports.operatorRunbook.status}, openLiveGateCount=${receipt.generatedReports.operatorRunbook.openLiveGateCount}`,
@@ -1154,6 +1158,10 @@ const main = async () => {
     finalPublicLinksReady: receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady,
     requiresAlejandroManualLinks: receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks,
     publicUrlGateApprovalPhraseAvailable: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable,
+    publicUrlGateRecommendedVisibilityTier: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier,
+    publicUrlGateFullyPublicNavigationRequiredNow:
+      receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow,
+    publicUrlGateSeoIndexingAllowedNow: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow,
     publicUrlGateCanPublishNow: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow,
     missingInputsIntakeStatus: receipt.generatedReports.missingInputsIntake.status,
     readyInputCount: receipt.generatedReports.missingInputsIntake.readyInputCount,
