@@ -94,6 +94,15 @@ const parseArgs = (argv) => {
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
 
+const readOptionalJson = async (path) => {
+  try {
+    return await readJson(path);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    return null;
+  }
+};
+
 const getKeychainSecret = async (service, account) => {
   try {
     const { stdout } = await execFileAsync('security', [
@@ -129,6 +138,7 @@ const classifyFailure = (status, bodyText = '') => {
   if (status === 401 || /Unauthenticated|unauthorized|token is required/i.test(text)) return 'mailerlite_unauthenticated';
   if (status === 403 || /forbidden|permission|advanced/i.test(text)) return 'mailerlite_forbidden_or_plan_limited';
   if (status === 404) return 'mailerlite_campaign_not_found';
+  if (status === 410) return 'mailerlite_campaign_gone';
   if (status === 409 || /already exists|duplicate|conflict/i.test(text)) return 'mailerlite_campaign_conflict';
   if (status === 422 || /validation|field must be|Campaign is not with status draft/i.test(text)) return 'mailerlite_validation_failed';
   if (status === 429 || /rate.?limit|too many requests/i.test(text)) return 'mailerlite_rate_limited';
@@ -223,12 +233,12 @@ const fetchCampaignStatus = async ({ options, key, id }) => {
       usedInAutomations: Boolean(campaign?.used_in_automations ?? campaign?.usedInAutomations),
     };
   } catch (error) {
-    if (error?.status === 404 || error?.reason === 'mailerlite_campaign_not_found') {
+    if (error?.status === 404 || error?.status === 410 || error?.reason === 'mailerlite_campaign_not_found' || error?.reason === 'mailerlite_campaign_gone') {
       return {
         found: false,
         id,
         name: null,
-        status: 'not_found',
+        status: error?.status === 410 || error?.reason === 'mailerlite_campaign_gone' ? 'gone' : 'not_found',
         canBeScheduled: false,
         hasBasicFilter: false,
         filterIsEmptyArray: false,
@@ -256,7 +266,58 @@ const targetsFromPacket = (packet) => (packet?.cleanupTargets ?? []).map((target
   name: cleanString(target?.name),
 }));
 
-const buildPreflight = ({ approvalPacket, currentStatuses }) => {
+const falseOrNull = (value) => value === false || value === null || value === undefined;
+
+const cleanupDeletionEvidenceSafe = (receipt, targets) => {
+  const rows = Array.isArray(receipt?.deletedDrafts) ? receipt.deletedDrafts : [];
+  const safety = receipt?.safety ?? {};
+  const targetRows = Array.isArray(targets) ? targets : [];
+  const targetIds = new Set(targetRows.map((target) => cleanString(target?.campaignId)).filter(Boolean));
+  const targetNames = new Map(targetRows.map((target) => [
+    cleanString(target?.campaignId),
+    normalizeName(target?.name),
+  ]));
+
+  if (receipt?.mode !== 'execute_requested') return false;
+  if (![
+    'seed_inbox_correction_api_replacement_cleanup_execution_partial_stopped',
+    'seed_inbox_correction_api_replacement_cleanup_execution_completed_no_sends',
+  ].includes(receipt?.status)) return false;
+  if (targetRows.length !== 2 || rows.length !== 2 || targetIds.size !== 2) return false;
+  if (safety.mailerLiteApiCalled !== true) return false;
+  if (safety.mailerLiteDraftsDeleted !== 2) return false;
+  if (safety.mailerLiteMutationsPerformed !== true) return false;
+  if (safety.allowedMutationType !== 'delete_two_unsafe_replacement_draft_campaigns_only') return false;
+  if (safety.originalDraftsEditedOrDeleted !== false) return false;
+  if (safety.campaignsCreatedOrEdited !== false) return false;
+  if (safety.campaignsPublished !== false) return false;
+  if (safety.campaignsScheduled !== false) return false;
+  if (safety.sendsPerformed !== false) return false;
+  if (safety.subscribersRead !== false) return false;
+  if (safety.subscriberMutationsPerformed !== false) return false;
+  if (safety.groupsCreatedOrAssigned !== false) return false;
+  if (safety.segmentsCreatedOrAssigned !== false) return false;
+  if (safety.workflowMutationsPerformed !== false) return false;
+  if (!falseOrNull(safety.shopifyApiCalled)) return false;
+  if (!falseOrNull(safety.shopifyMutationsPerformed)) return false;
+  if (safety.crmLiveApiCalled !== false) return false;
+  if (safety.signalLedgerAppendPerformed !== false) return false;
+  if (safety.crmCardMutationsPerformed !== false) return false;
+  if (safety.crmScoreMutationsPerformed !== false) return false;
+  if (safety.factStoreWritePerformed !== false) return false;
+  if (safety.tokensPrinted !== false) return false;
+  if (safety.exactUrlsPrinted !== false) return false;
+
+  return rows.every((row) => {
+    const id = cleanString(row?.campaignId);
+    return id
+      && targetIds.has(id)
+      && row?.deleted === true
+      && normalizeName(row?.name) === targetNames.get(id);
+  });
+};
+
+const buildPreflight = ({ approvalPacket, currentStatuses, priorDeletionEvidence = false }) => {
   const blockers = [];
   const targets = targetsFromPacket(approvalPacket);
 
@@ -276,6 +337,7 @@ const buildPreflight = ({ approvalPacket, currentStatuses }) => {
     if (!target.campaignId) blockers.push(`cleanup_target_${target.label ?? 'unknown'}_missing_campaign_id`);
     if (!target.name) blockers.push(`cleanup_target_${target.label ?? target.campaignId ?? 'unknown'}_missing_name`);
     if (!current?.found) {
+      if (priorDeletionEvidence) continue;
       blockers.push(`cleanup_target_${target.label ?? target.campaignId}_not_found`);
       continue;
     }
@@ -362,6 +424,8 @@ const buildRun = async (options) => {
   }
 
   const targets = targetsFromPacket(approvalPacket);
+  const priorReceipt = options.execute ? await readOptionalJson(options.out) : null;
+  const priorDeletionEvidence = cleanupDeletionEvidenceSafe(priorReceipt, targets);
   const preScan = [];
   const errors = [];
   for (const target of targets) {
@@ -379,7 +443,11 @@ const buildRun = async (options) => {
     }
   }
 
-  const preflight = buildPreflight({ approvalPacket, currentStatuses: preScan });
+  const preflight = buildPreflight({
+    approvalPacket,
+    currentStatuses: preScan,
+    priorDeletionEvidence,
+  });
   const approvalMatched = normalizeApprovalPhrase(options.approvalPhrase) === normalizeApprovalPhrase(buildExactApprovalPhrase());
   const approvalStatus = !options.execute
     ? 'dry_run_no_live_approval_required'
@@ -396,7 +464,23 @@ const buildRun = async (options) => {
   const deletedDrafts = [];
 
   if (options.execute && blockers.length === 0) {
+    const previousDeletedById = new Map((priorDeletionEvidence ? priorReceipt.deletedDrafts : []).map((row) => [
+      cleanString(row?.campaignId),
+      row,
+    ]));
+    const currentById = new Map(preScan.map((status) => [cleanString(status?.id), status]));
     for (const target of preflight.targets) {
+      if (priorDeletionEvidence && currentById.get(target.campaignId)?.found === false) {
+        const previous = previousDeletedById.get(target.campaignId);
+        deletedDrafts.push({
+          label: previous?.label ?? target.label,
+          campaignId: target.campaignId,
+          name: previous?.name ?? target.name,
+          deleted: true,
+          reconciledFromPreviousReceipt: true,
+        });
+        continue;
+      }
       try {
         await requestJson({ options, key: credential.key, path: `/campaigns/${target.campaignId}`, method: 'DELETE' });
         deletedDrafts.push({
@@ -482,6 +566,11 @@ const buildRun = async (options) => {
       targets: postScan,
     },
     errors,
+    reconciliation: {
+      priorExecutionReceiptUsed: priorDeletionEvidence,
+      priorExecutionReceiptStatus: priorDeletionEvidence ? priorReceipt.status : null,
+      priorExecutionReceiptOut: priorDeletionEvidence ? resolve(options.out) : null,
+    },
     safety: buildSafety({
       execute: options.execute,
       campaignsRead: preScan.length + postScan.length,
@@ -601,6 +690,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 export {
   buildPreflight,
   buildRun,
+  cleanupDeletionEvidenceSafe,
   fetchCampaignStatus,
   normalizeApprovalPhrase,
   parseArgs,

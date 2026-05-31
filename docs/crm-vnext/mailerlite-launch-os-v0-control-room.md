@@ -2934,3 +2934,47 @@ Next safe move:
 
 - Stop for Alejandro's exact cleanup approval before deleting the two unsafe replacement drafts.
 - After cleanup is approved/executed and the receipt proves the drafts are gone, regenerate current-state evidence and resume only from the restored correction boundary.
+
+## Launch OS v0 API replacement cleanup executed - 2026-05-31
+
+Status: active goal, exact cleanup approval received from Alejandro, MailerLite API cleanup executed only for the two unsafe E02/E03 API replacement drafts, and fresh post-scan now proves both replacement drafts are gone. The cleanup gate is closed and reference-only; the next human boundary is restored to the seed inbox correction edit for the four existing MailerLite drafts.
+
+Evidence:
+
+- API replacement cleanup execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- API replacement cleanup execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.md`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- Cleanup receipt: `ok=true`, `status=seed_inbox_correction_api_replacement_cleanup_execution_completed_no_sends`, `mode=execute_requested`.
+- Cleanup receipt: `deletedDraftCount=2`, `goneCount=2`, `blockerCount=0`, `errorCount=0`.
+- Cleanup receipt safety: `mailerLiteDraftsDeleted=2`, `allowedMutationType=delete_two_unsafe_replacement_draft_campaigns_only`, `originalDraftsEditedOrDeleted=false`.
+- Approval queue: cleanup item is now `reference_only_completed`.
+- Approval queue: `readyApprovalIds=["mini_launch_seed_inbox_correction_ui_edit"]`, `nextBestHumanBoundary=mini_launch_seed_inbox_correction_ui_edit`, `openLiveMutationGateCount=0`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=19`, `testCount=119`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt remains `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Operational note:
+
+- First post-delete scan returned MailerLite `410 Gone` for both deleted drafts. The cleanup runner was patched to treat `410 Gone` as absence and to reconcile safely against the partial receipt that already proved exactly two allowed deletes. A second fresh scan produced the completed receipt with no additional out-of-scope actions.
+
+Safety:
+
+- Sends performed: false.
+- Campaigns published or scheduled: false.
+- Subscribers read or mutated: false.
+- Groups/segments created or assigned: false.
+- Workflows/automations mutated: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens and exact URLs printed: false.
+
+Next safe move:
+
+- Do not create more replacement drafts.
+- Stop before editing MailerLite drafts again; the next live boundary is `mini_launch_seed_inbox_correction_ui_edit`.
+- If Alejandro approves that boundary, edit only the four existing MailerLite drafts within the existing correction packet scope, then run fresh QA before any test-send or public-send decision.

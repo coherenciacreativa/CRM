@@ -12,6 +12,7 @@ import {
 } from "../scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs";
 import {
   buildPreflight as buildCleanupPreflight,
+  cleanupDeletionEvidenceSafe,
   normalizeApprovalPhrase as normalizeCleanupApprovalPhrase,
   parseArgs as parseCleanupArgs,
 } from "../scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs";
@@ -182,6 +183,51 @@ const partialExecutionReceipt = {
     groupsCreatedOrAssigned: false,
     segmentsCreatedOrAssigned: false,
     workflowMutationsPerformed: false,
+    shopifyMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    tokensPrinted: false,
+    exactUrlsPrinted: false,
+  },
+};
+
+const partialCleanupExecutionReceipt = {
+  ok: false,
+  status: "seed_inbox_correction_api_replacement_cleanup_execution_partial_stopped",
+  mode: "execute_requested",
+  deletedDrafts: [
+    {
+      label: "E02",
+      campaignId: "new-e02",
+      name: "ML Draft · descanso · E02 · API replacement",
+      deleted: true,
+    },
+    {
+      label: "E03",
+      campaignId: "new-e03",
+      name: "ML Draft · descanso · E03 · API replacement",
+      deleted: true,
+    },
+  ],
+  safety: {
+    mailerLiteApiCalled: true,
+    mailerLiteDraftsDeleted: 2,
+    mailerLiteMutationsPerformed: true,
+    allowedMutationType: "delete_two_unsafe_replacement_draft_campaigns_only",
+    originalDraftsEditedOrDeleted: false,
+    campaignsCreatedOrEdited: false,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    groupsCreatedOrAssigned: false,
+    segmentsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    shopifyApiCalled: false,
     shopifyMutationsPerformed: false,
     crmLiveApiCalled: false,
     signalLedgerAppendPerformed: false,
@@ -378,5 +424,35 @@ describe("CRM vNext MailerLite mini-launch API replacement drafts", () => {
     const parsed = parseCleanupArgs(["--execute", "--approval-phrase", phrase]);
     expect(parsed.execute).toBe(true);
     expect(normalizeCleanupApprovalPhrase(parsed.approvalPhrase)).toBe(normalizeCleanupApprovalPhrase(phrase));
+  });
+
+  test("cleanup preflight can reconcile prior delete receipt when MailerLite now returns gone", () => {
+    const packet = buildCleanupPacket({
+      executionReceipt: partialExecutionReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+    const targets = targetRowsFrom(partialExecutionReceipt);
+
+    expect(cleanupDeletionEvidenceSafe(partialCleanupExecutionReceipt, targets)).toBe(true);
+
+    const preflight = buildCleanupPreflight({
+      approvalPacket: packet,
+      currentStatuses: [
+        {
+          found: false,
+          id: "new-e02",
+          status: "gone",
+        },
+        {
+          found: false,
+          id: "new-e03",
+          status: "gone",
+        },
+      ],
+      priorDeletionEvidence: true,
+    });
+
+    expect(preflight.canExecute).toBe(true);
+    expect(preflight.blockers).toEqual([]);
   });
 });
