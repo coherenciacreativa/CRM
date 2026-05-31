@@ -144,8 +144,14 @@ const buildPreviewRouteDecisionPacket = ({
   const publicUrlGateReady =
     shopifyPublicUrlGate?.ok === true
     && shopifyPublicUrlGate?.status === 'shopify_public_url_gate_waiting_decision_no_live_changes';
+  const previewRouteAlreadyReady =
+    shopifyPublicUrlGate?.ok === true
+    && shopifyPublicUrlGate?.status === 'shopify_public_url_gate_reference_only_public_urls_ready_no_live_changes'
+    && shopifyPublicUrlGate?.executiveSummary?.finalPublicLinksReady === true
+    && shopifyPublicUrlGate?.executiveSummary?.publicAudienceSendUrlGateReady === false;
   const readyForExplanation = publicUrlGateReady && localAssetSlotsReady && recommendedTier === 'unlisted_noindex_preview';
-  const blockers = [
+  const referenceOnlyReady = previewRouteAlreadyReady && localAssetSlotsReady && recommendedTier === 'unlisted_noindex_preview';
+  const blockers = referenceOnlyReady ? [] : [
     ...(publicUrlGateReady ? [] : ['shopify_public_url_gate_not_ready']),
     ...(localAssetSlotsReady ? [] : ['local_asset_slots_not_ready']),
     ...(recommendedTier === 'unlisted_noindex_preview' ? [] : [`unexpected_visibility_tier:${recommendedTier ?? 'missing'}`]),
@@ -155,10 +161,12 @@ const buildPreviewRouteDecisionPacket = ({
     schemaVersion: SCHEMA_VERSION,
     mode: 'local_only_mailerlite_mini_launch_shopify_preview_route_decision_packet',
     generatedAt,
-    ok: readyForExplanation,
-    status: readyForExplanation
-      ? 'shopify_preview_route_decision_ready_for_human_explanation_no_live_changes'
-      : 'shopify_preview_route_decision_blocked_no_live_changes',
+    ok: readyForExplanation || referenceOnlyReady,
+    status: referenceOnlyReady
+      ? 'shopify_preview_route_decision_reference_only_preview_urls_ready_no_live_changes'
+      : readyForExplanation
+        ? 'shopify_preview_route_decision_ready_for_human_explanation_no_live_changes'
+        : 'shopify_preview_route_decision_blocked_no_live_changes',
     launch: assetManifest?.launch ?? shopifyPublicUrlGate?.launch ?? null,
     executiveSummary: {
       recommendedDecision: 'use_unlisted_noindex_preview_route_for_test_launch_links',
@@ -167,14 +175,17 @@ const buildPreviewRouteDecisionPacket = ({
       requiredPublicUrlCount: slotScope.length,
       finalPublicLinksReady: shopifyPublicUrlGate?.executiveSummary?.finalPublicLinksReady === true,
       publicAudienceSendUrlGateReady: false,
+      previewRouteAlreadyReady: referenceOnlyReady,
       decisionExplanationReady: readyForExplanation,
-      decisionExplanationRequiredBeforeApprovalPhrase: true,
+      decisionExplanationRequiredBeforeApprovalPhrase: !referenceOnlyReady,
       exactApprovalPhraseAvailable: false,
       exactApprovalPhrasePrinted: false,
       canAskApprovalNow: false,
       canPublishNow: false,
       readyForPreviewRouteApprovalPhraseGenerationAfterHumanConfirmsDecision: readyForExplanation,
-      nextSafeAction: readyForExplanation
+      nextSafeAction: referenceOnlyReady
+        ? 'use_preview_route_execution_receipt_for_correction_preview_and_keep_mailerlite_edit_and_audience_send_closed'
+        : readyForExplanation
         ? 'explain_preview_route_decision_to_alejandro_before_generating_exact_approval_phrase'
         : 'repair_local_public_url_gate_or_asset_manifest_before_decision_explanation',
     },

@@ -298,7 +298,7 @@ const buildRedactedPayloadManifest = ({ payloadManifest, correctionState, genera
     correctionPreviewBoundary: {
       redactedOnly: true,
       exactUrlsStoredInReport: false,
-      exactUrlsRemainOnlyInPrivateCorrectionInputsFile: true,
+      exactUrlsRemainOnlyInPrivateCorrectionInputsFileOrScopedExecutionReceipt: true,
       mailerLiteUiEditApproved: false,
       additionalTestSendApproved: false,
       publicAudienceSendApproved: false,

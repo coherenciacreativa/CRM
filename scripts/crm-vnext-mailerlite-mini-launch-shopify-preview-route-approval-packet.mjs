@@ -131,6 +131,21 @@ const decisionReady = (decision) =>
   && decision?.safety?.crmLiveApiCalled === false
   && decision?.safety?.sendsPerformed === false;
 
+const decisionReferenceOnlyReady = (decision) =>
+  decision?.ok === true
+  && decision?.status === 'shopify_preview_route_decision_reference_only_preview_urls_ready_no_live_changes'
+  && decision?.executiveSummary?.previewRouteAlreadyReady === true
+  && decision?.executiveSummary?.finalPublicLinksReady === true
+  && decision?.executiveSummary?.publicAudienceSendUrlGateReady === false
+  && decision?.executiveSummary?.exactApprovalPhraseAvailable === false
+  && decision?.executiveSummary?.exactApprovalPhrasePrinted === false
+  && decision?.executiveSummary?.canAskApprovalNow === false
+  && decision?.executiveSummary?.canPublishNow === false
+  && decision?.safety?.shopifyApiCalled === false
+  && decision?.safety?.mailerLiteApiCalled === false
+  && decision?.safety?.crmLiveApiCalled === false
+  && decision?.safety?.sendsPerformed === false;
+
 const confirmationReady = ({ confirmation, decision }) =>
   confirmation?.ok === true
   && confirmation?.status === 'shopify_preview_route_decision_confirmed_by_alejandro_no_live_changes'
@@ -168,6 +183,7 @@ const buildPreviewRouteApprovalPacket = ({
 }) => {
   const safety = buildSafety();
   const decisionIsReady = decisionReady(previewRouteDecision);
+  const decisionIsReferenceOnlyReady = decisionReferenceOnlyReady(previewRouteDecision);
   const confirmationIsReady = confirmationReady({
     confirmation: decisionConfirmation,
     decision: previewRouteDecision,
@@ -175,6 +191,57 @@ const buildPreviewRouteApprovalPacket = ({
   const targetLinks = targetLinksFrom(previewRouteDecision);
   const targetLinksReady = targetLinks.length === 3
     && targetLinks.every((target) => target.nextStageAfterApprovedPreviewRoute === 'preview_url_ready');
+  if (decisionIsReferenceOnlyReady && targetLinksReady) {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      mode: 'local_only_mailerlite_mini_launch_shopify_preview_route_approval_packet',
+      generatedAt,
+      ok: true,
+      status: 'shopify_preview_route_approval_packet_reference_only_preview_route_already_ready_no_live_changes',
+      launch: previewRouteDecision?.launch ?? null,
+      executiveSummary: {
+        recommendedVisibilityTier: previewRouteDecision?.executiveSummary?.recommendedVisibilityTier ?? 'unlisted_noindex_preview',
+        humanDecisionConfirmed: true,
+        exactApprovalPhraseAvailable: false,
+        exactApprovalPhrasePrinted: false,
+        canAskApprovalNow: false,
+        canExecuteNow: false,
+        canPublishNow: false,
+        publicAudienceSendUrlGateReady: false,
+        previewRouteAlreadyReady: true,
+        nextSafeAction: 'use_preview_route_execution_receipt_for_correction_preview_and_keep_mailerlite_edit_and_audience_send_closed',
+      },
+      humanDecisionConfirmation: {
+        status: decisionConfirmation?.status ?? null,
+      },
+      targetLinks,
+      approvalBoundary: {
+        id: 'shopify_unlisted_noindex_preview_route',
+        canAskAlejandroForApproval: false,
+        canExecuteNow: false,
+        packetIsApprovalByItself: false,
+        exactApprovalPhrase: null,
+        allowedAfterExactApproval: [],
+        stillClosedEvenAfterApproval: [
+          'mailerLite_ui_edit_or_draft_mutation',
+          'public_or_audience_send',
+          'workflow_or_automation_changes',
+          'subscriber_or_group_assignments',
+          'shopify_navigation_or_seo_publish',
+          'crm_live_writes',
+          'ledger_card_scoring_or_fact_store_writes',
+        ],
+        requiredFreshEvidenceBeforeExecution: [
+          'shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json',
+          'fresh MailerLite UI edit approval before replacing draft placeholders',
+          'fresh public/audience send approval before launch',
+        ],
+      },
+      blockers: [],
+      safety,
+      sourceDigests,
+    };
+  }
   const blockers = [
     ...(decisionIsReady ? [] : [`preview_route_decision_not_ready:${previewRouteDecision?.status ?? 'missing'}`]),
     ...(confirmationIsReady ? [] : [`decision_confirmation_not_ready:${decisionConfirmation?.status ?? 'missing'}`]),

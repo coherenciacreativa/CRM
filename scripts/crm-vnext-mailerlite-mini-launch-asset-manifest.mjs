@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-mini-launch-asset-manifest-2026-05-31';
 const DEFAULT_SHOPIFY_REPO = '/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite';
 const DEFAULT_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.md';
 
@@ -55,6 +56,7 @@ const usage = `Usage:
 Options:
   --shopify-repo <path>                 Local Shopify repo. Defaults to ${DEFAULT_SHOPIFY_REPO}
   --shopify-local-build-receipt <path>  Local Shopify build receipt JSON. Defaults to ${DEFAULT_SHOPIFY_LOCAL_BUILD_RECEIPT}
+  --shopify-preview-route-execution-receipt <path> Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
   --out <path>                          Write JSON report. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                 Write Markdown report. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                                Show this help
@@ -77,6 +79,7 @@ const parseArgs = (argv) => {
   const options = {
     shopifyRepo: DEFAULT_SHOPIFY_REPO,
     shopifyLocalBuildReceipt: DEFAULT_SHOPIFY_LOCAL_BUILD_RECEIPT,
+    shopifyPreviewRouteExecutionReceipt: DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     help: false,
@@ -87,6 +90,7 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--shopify-repo') options.shopifyRepo = argv[++index];
     else if (arg === '--shopify-local-build-receipt') options.shopifyLocalBuildReceipt = argv[++index];
+    else if (arg === '--shopify-preview-route-execution-receipt') options.shopifyPreviewRouteExecutionReceipt = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -171,9 +175,35 @@ const localBuildReceiptReady = (receipt) =>
   receipt?.ok === true
   && receipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes';
 
-const buildLinkLifecycle = ({ localEvidenceReady, publicUrlReady = false }) => {
+const previewRouteExecutionReady = (receipt) =>
+  receipt?.ok === true
+  && receipt?.status === 'shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm'
+  && receipt?.executionSummary?.previewRouteReady === true
+  && receipt?.executionSummary?.publicAudienceSendUrlGateReady === false
+  && receipt?.safety?.scopedLiveShopifyMutationApproved === true
+  && receipt?.safety?.shopifyApiCalled === true
+  && receipt?.safety?.shopifyMutationsPerformed === true
+  && receipt?.safety?.siteNavigationUpdated === false
+  && receipt?.safety?.seoIndexingAllowed === false
+  && receipt?.safety?.realFormsCreated === false
+  && receipt?.safety?.mailerLiteApiCalled === false
+  && receipt?.safety?.mailerLiteMutationsPerformed === false
+  && receipt?.safety?.crmLiveApiCalled === false
+  && receipt?.safety?.sendsPerformed === false;
+
+const previewExecutionLinkByKey = (receipt) => new Map(
+  Array.isArray(receipt?.targetLinks)
+    ? receipt.targetLinks
+      .filter((link) => FINAL_PUBLIC_LINK_KEYS.includes(link?.key))
+      .map((link) => [link.key, link])
+    : [],
+);
+
+const buildLinkLifecycle = ({ localEvidenceReady, publicUrlReady = false, previewUrlReady = false }) => {
   const currentStage = publicUrlReady
-    ? 'live_url_ready'
+    ? previewUrlReady
+      ? 'preview_url_ready'
+      : 'live_url_ready'
     : localEvidenceReady
       ? 'local_candidate'
       : 'missing_local_asset';
@@ -181,8 +211,8 @@ const buildLinkLifecycle = ({ localEvidenceReady, publicUrlReady = false }) => {
     policyId: LINK_LIFECYCLE_POLICY.id,
     currentStage,
     singleSlotLifecycle: true,
-    previewUrlReady: false,
-    liveUrlReady: publicUrlReady,
+    previewUrlReady,
+    liveUrlReady: publicUrlReady && !previewUrlReady,
     previewPromotedToLive: false,
     publicAudienceSendReady: LINK_LIFECYCLE_POLICY.audienceSendAllowedStages.includes(currentStage),
     nextExpectedStage: publicUrlReady ? 'preview_promoted_to_live_or_public_send_gate' : 'preview_url_ready',
@@ -190,36 +220,45 @@ const buildLinkLifecycle = ({ localEvidenceReady, publicUrlReady = false }) => {
   };
 };
 
-const buildSlot = ({ key, receiptReady, filesByRelativePath }) => {
+const buildSlot = ({ key, receiptReady, filesByRelativePath, previewExecutionReady, previewLinksByKey }) => {
   const spec = LOCAL_SLOT_SPECS[key];
   const source = filesByRelativePath.get(spec.localSourcePath);
   const template = filesByRelativePath.get(spec.templatePath);
   const placeholderPresent = Boolean(source?.content?.includes(spec.requiredPlaceholder));
   const localEvidenceReady = receiptReady && source?.present === true && template?.present === true && placeholderPresent;
+  const previewLink = previewLinksByKey.get(key) ?? null;
+  const previewUrlReady = previewExecutionReady
+    && previewLink?.stageAfter === 'preview_url_ready'
+    && previewLink?.audienceSendReady === false
+    && cleanString(previewLink?.urlSha256);
+  const publicUrlReady = Boolean(previewUrlReady);
   const blockers = [
     ...(receiptReady ? [] : ['shopify_local_build_receipt_not_ready']),
     ...(source?.present ? [] : [`local_source_missing:${spec.localSourcePath}`]),
     ...(template?.present ? [] : [`template_missing:${spec.templatePath}`]),
     ...(placeholderPresent ? [] : [`placeholder_missing:${spec.requiredPlaceholder}`]),
-    'public_shopify_url_missing',
+    ...(publicUrlReady ? ['preview_url_not_live_or_promoted_for_audience_send'] : ['public_shopify_url_missing']),
   ];
 
   return {
     key,
     label: spec.label,
     owner: spec.owner,
-    status: localEvidenceReady
+    status: publicUrlReady
+      ? 'preview_url_ready_redacted_no_live_mailerlite_crm'
+      : localEvidenceReady
       ? 'local_asset_slot_ready_waiting_for_public_url_no_live_changes'
       : 'local_asset_slot_blocked_missing_local_evidence_no_live_changes',
     localEvidenceReady,
-    publicUrlReady: false,
-    previewUrlReady: false,
+    publicUrlReady,
+    previewUrlReady,
     liveUrlReady: false,
     previewPromotedToLive: false,
     pathCandidate: spec.pathCandidate,
-    publicUrlSha256: null,
+    publicUrlSha256: cleanString(previewLink?.urlSha256),
     exactPublicUrlStoredInReport: false,
-    linkLifecycle: buildLinkLifecycle({ localEvidenceReady }),
+    previewRouteSource: previewUrlReady ? 'shopify_preview_route_execution_receipt' : null,
+    linkLifecycle: buildLinkLifecycle({ localEvidenceReady, publicUrlReady, previewUrlReady }),
     requiredPlaceholder: spec.requiredPlaceholder,
     placeholderPresent,
     source: {
@@ -236,6 +275,7 @@ const buildSlot = ({ key, receiptReady, filesByRelativePath }) => {
 
 const buildAssetManifest = ({
   shopifyLocalBuildReceipt,
+  shopifyPreviewRouteExecutionReceipt,
   fileEvidence,
   sourceDigests = [],
   shopifyRepo = DEFAULT_SHOPIFY_REPO,
@@ -243,8 +283,11 @@ const buildAssetManifest = ({
 }) => {
   const safety = buildSafety();
   const receiptReady = localBuildReceiptReady(shopifyLocalBuildReceipt);
+  const previewExecutionReady = previewRouteExecutionReady(shopifyPreviewRouteExecutionReceipt);
+  const previewLinksByKey = previewExecutionLinkByKey(shopifyPreviewRouteExecutionReceipt);
   const filesByRelativePath = new Map(fileEvidence.map((file) => [file.relativePath, file]));
-  const slots = FINAL_PUBLIC_LINK_KEYS.map((key) => buildSlot({ key, receiptReady, filesByRelativePath }));
+  const slots = FINAL_PUBLIC_LINK_KEYS.map((key) =>
+    buildSlot({ key, receiptReady, filesByRelativePath, previewExecutionReady, previewLinksByKey }));
   const localAssetSlotReadyCount = slots.filter((slot) => slot.localEvidenceReady).length;
   const publicUrlReadyCount = slots.filter((slot) => slot.publicUrlReady).length;
   const previewUrlReadyCount = slots.filter((slot) => slot.linkLifecycle.previewUrlReady).length;
@@ -273,6 +316,8 @@ const buildAssetManifest = ({
     executiveSummary: {
       shopifyRepo: resolve(shopifyRepo),
       shopifyLocalBuildReceiptStatus: shopifyLocalBuildReceipt?.status ?? null,
+      shopifyPreviewRouteExecutionReceiptStatus: shopifyPreviewRouteExecutionReceipt?.status ?? null,
+      shopifyPreviewRouteReady: previewExecutionReady,
       localAssetSlotReadyCount,
       publicUrlReadyCount,
       previewUrlReadyCount,
@@ -300,6 +345,7 @@ const buildAssetManifest = ({
       source: 'launch_asset_manifest',
       humanInputRequired: false,
       exactUrlsStoredInReport: false,
+      urlSource: previewExecutionReady ? 'shopify_preview_route_execution_receipt_redacted_hashes' : 'local_path_candidates_only',
       requiredKeys: FINAL_PUBLIC_LINK_KEYS,
       slots,
       lifecyclePolicy: LINK_LIFECYCLE_POLICY,
@@ -332,6 +378,10 @@ const buildManifestFromFiles = async (options) => {
     options.shopifyLocalBuildReceipt,
     'local Shopify build receipt and launch identity',
   );
+  const previewRouteExecutionEntry = await readJsonWithDigest(
+    options.shopifyPreviewRouteExecutionReceipt,
+    'executed Shopify preview route receipt and redacted URL hashes',
+  );
   const paths = [...new Set(Object.values(LOCAL_SLOT_SPECS).flatMap((spec) => [spec.localSourcePath, spec.templatePath]))];
   const fileEvidence = await Promise.all(paths.map((relativePath) =>
     readLocalFileEvidence({
@@ -342,10 +392,12 @@ const buildManifestFromFiles = async (options) => {
   const publicFileEvidence = fileEvidence.map(({ content, ...file }) => file);
   return buildAssetManifest({
     shopifyLocalBuildReceipt: receiptEntry.value,
+    shopifyPreviewRouteExecutionReceipt: previewRouteExecutionEntry.value,
     fileEvidence,
     shopifyRepo: options.shopifyRepo,
     sourceDigests: [
       receiptEntry.digest,
+      previewRouteExecutionEntry.digest,
       ...publicFileEvidence,
     ],
   });

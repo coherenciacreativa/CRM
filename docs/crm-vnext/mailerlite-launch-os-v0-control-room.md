@@ -2688,6 +2688,79 @@ Next safe move:
 - If the goal continues autonomously and approval/input is needed, notify Alejandro through the main Telegram group with Mantis; use personal email only for important approval blockers or when Telegram is insufficient.
 - Do not publish, open UI, edit Shopify, edit MailerLite, send tests, connect forms or touch CRM until a later exact scope-specific approval exists.
 
+## Launch OS v0 Shopify preview route executed - 2026-05-31
+
+Status: active goal, scoped Shopify preview-route boundary executed after Alejandro exact approval, preview URLs ready for QA/correction only, not ready for public/audience send, MailerLite/CRM/live campaign gates remain closed.
+
+Evidence:
+
+- Shopify preview route execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- Shopify preview route execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.md`
+- Mini-launch asset manifest: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json`
+- Shopify public URL gate: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json`
+- Preview route decision packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json`
+- Preview route approval packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`
+- Current-state refresh validation: `testFiles=16`, `testCount=99`
+- Shopify preview route execution receipt: `status=shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm`
+- Shopify preview route execution receipt: `previewRouteReady=true`, `targetLinkCount=3`, `effectivePreviewView=lead-result-inteligencia-isolated`
+- Shopify preview route execution receipt: `publicAudienceSendUrlGateReady=false`, `canUseForLocalCorrectionPreview=true`, `canUseForPublicAudienceSend=false`
+- Asset manifest: `status=mini_launch_asset_manifest_ready_for_correction_inputs_no_live_changes`, `finalPublicLinksReady=true`, `publicAudienceSendUrlGateReady=false`
+- Shopify public URL gate: `status=shopify_public_url_gate_reference_only_public_urls_ready_no_live_changes`, `canPublishNow=false`
+- Preview route decision packet: `status=shopify_preview_route_decision_reference_only_preview_urls_ready_no_live_changes`
+- Preview route approval packet: `status=shopify_preview_route_approval_packet_reference_only_preview_route_already_ready_no_live_changes`
+- Approval queue: `readyApprovalRequestCount=0`, `readyApprovalIds=[]`, `openLiveMutationGateCount=0`
+- Missing-inputs intake: `readyForMiniLaunchCorrectionPreview=true`, `readyInputCount=2`, `inputCount=6`
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`
+
+What is proven:
+
+- The 3 mini-launch link slots now have exact-link Shopify preview URLs represented by hashes in local reports.
+- The preview route is unlisted/noindex, QA-green in automated HTML checks and Safari desktop/mobile checks, and not connected to MailerLite or CRM.
+- The old Shopify preview-route approval boundary is closed as reference-only; it must not be requested again for this hito.
+- The current system-owned link lifecycle supports local correction preview without asking Alejandro to manually invent URLs.
+
+What remains partial or pending:
+
+- Launch OS is still not ready for general live operation.
+- The preview URLs are not audience-send-ready and are not a final public launch gate.
+- MailerLite draft correction/edit approval is still separate if the 4 draft emails need placeholders replaced with these preview URLs.
+- Public/audience send approval is still separate after correction QA is green.
+- CRM signal writes remain blocked by real observed-events/evidence inputs.
+- No workflows, subscribers, groups, sends, ledgers, cards, scoring or Fact Store writes are open.
+
+Safety:
+
+- Shopify API called for this scoped execution: true.
+- Shopify mutations performed for this scoped execution: true.
+- Shopify theme published: false.
+- Site navigation updated: false.
+- SEO indexing allowed: false.
+- Real forms created: false.
+- MailerLite API/UI mutations: false.
+- MailerLite sends, schedules or campaign publish: false.
+- CRM live API called: false.
+- Subscribers/groups/workflows mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens printed in execution receipt/current reports: false.
+
+Next safe move:
+
+- Use the preview route only for local correction preview and QA.
+- If MailerLite drafts need to receive the preview URLs, stop and ask for a separate exact MailerLite UI edit/correction approval before mutating drafts.
+- If public/audience send becomes the next target, stop and require fresh QA plus a separate exact public/audience send approval.
+- Continue local-only reconciliation/reporting for CRM observed-events inputs and taxonomy refresh; do not open any live CRM/MailerLite gate without a later exact scope-specific approval.
+
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. Those URLs now use a single lifecycle per slot, so preview URLs can support QA but cannot reach public/audience send until each slot is live or intentionally promoted. The `unlisted_noindex_preview` URL decision is confirmed, and the next human boundary is now the exact scoped approval phrase for `shopify_unlisted_noindex_preview_route` if Alejandro wants to cross into Shopify preview-route execution. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, and `final_public_links` are system-owned through the Shopify preview route execution receipt rather than Alejandro manual selection. These preview URLs can support QA/correction only; public/audience send remains closed until fresh QA and a separate exact approval. The next likely human boundary is MailerLite draft correction/edit approval if we need to replace inert placeholders with the preview URLs. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM again, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

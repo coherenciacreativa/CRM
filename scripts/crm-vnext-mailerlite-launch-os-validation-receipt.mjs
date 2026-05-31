@@ -20,6 +20,7 @@ const DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Docum
 const DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const DEFAULT_COMMANDS = [
@@ -82,6 +83,7 @@ Options:
   --taxonomy-refresh-response-request-bundle <path> Taxonomy response request bundle JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
   --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
+  --mini-launch-shopify-preview-route-execution-receipt <path> Mini-launch Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
   --validation-summary <text>    Required when status is passed
@@ -120,6 +122,7 @@ const parseArgs = (argv) => {
     taxonomyRefreshResponseRequestBundle: DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
     miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
+    miniLaunchShopifyPreviewRouteExecutionReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
     validationSummary: null,
@@ -148,6 +151,7 @@ const parseArgs = (argv) => {
     else if (arg === '--taxonomy-refresh-response-request-bundle') options.taxonomyRefreshResponseRequestBundle = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
+    else if (arg === '--mini-launch-shopify-preview-route-execution-receipt') options.miniLaunchShopifyPreviewRouteExecutionReceipt = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
     else if (arg === '--validation-summary') options.validationSummary = argv[++index];
@@ -233,6 +237,7 @@ const buildValidationReceipt = ({
   taxonomyRefreshResponseRequestBundle = null,
   onboardingTrunkMap,
   miniLaunchShopifyPreviewRouteDecision = null,
+  miniLaunchShopifyPreviewRouteExecutionReceipt = null,
   packageJson,
   sourceDigests = [],
   validationStatus = 'needs_validation',
@@ -244,6 +249,21 @@ const buildValidationReceipt = ({
 }) => {
   const safety = buildSafety();
   const commandList = commands.length > 0 ? commands : DEFAULT_COMMANDS;
+  const shopifyPreviewRouteExecutionReady = miniLaunchShopifyPreviewRouteExecutionReceipt?.status === 'shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm'
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.ok === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.previewRouteReady === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.targetLinkCount === 3
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForLocalCorrectionPreview === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForPublicAudienceSend === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.scopedLiveShopifyMutationApproved === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.mailerLiteApiCalled === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.crmLiveApiCalled === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.sendsPerformed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.statusHttp200ForAll === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.noindexForAll === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.mailerLiteMatchesForAll === 0
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.externalFormActionsForAll === 0;
   const liveGatesClosed = runbook?.currentState?.liveGates?.openLiveGateCount === 0
     && (runbook?.currentState?.approvalQueue?.openLiveMutationGateCount ?? 0) === 0
     && goalAudit?.safety?.mailerLiteApiCalled === false
@@ -509,6 +529,33 @@ const buildValidationReceipt = ({
         ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteRecommendedVisibilityTier
         ?? goalAudit?.executiveSummary?.shopifyPreviewRouteVisibilityTier
         ?? null,
+      shopifyPreviewRouteExecutionReceiptStatus: miniLaunchShopifyPreviewRouteExecutionReceipt?.status
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionReceiptStatus
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionReceiptStatus
+        ?? null,
+      shopifyPreviewRouteExecutionReady: shopifyPreviewRouteExecutionReady
+        || runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionReady === true
+        || goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionReady === true,
+      shopifyPreviewRouteExecutionTargetLinkCount: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.targetLinkCount
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionTargetLinkCount
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionTargetLinkCount
+        ?? null,
+      shopifyPreviewRouteExecutionEffectivePreviewView: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.effectivePreviewView
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionEffectivePreviewView
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionEffectivePreviewView
+        ?? null,
+      shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForLocalCorrectionPreview
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview
+        ?? null,
+      shopifyPreviewRouteExecutionCanUseForPublicAudienceSend: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForPublicAudienceSend
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionCanUseForPublicAudienceSend
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionCanUseForPublicAudienceSend
+        ?? null,
+      shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -539,6 +586,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     taxonomyRefreshResponseRequestBundle,
     onboardingTrunkMap,
     miniLaunchShopifyPreviewRouteDecision,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     packageJson,
     sourceDigests,
   ] = await Promise.all([
@@ -556,6 +604,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     readJson(options.taxonomyRefreshResponseRequestBundle),
     readJson(options.onboardingTrunkMap),
     readJson(options.miniLaunchShopifyPreviewRouteDecision),
+    readJson(options.miniLaunchShopifyPreviewRouteExecutionReceipt),
     readJson(options.packageJson),
     Promise.all([
       digestFor(options.runbook, 'operator runbook state and closed gates'),
@@ -572,6 +621,7 @@ const buildValidationReceiptFromFiles = async (options) => {
       digestFor(options.taxonomyRefreshResponseRequestBundle, 'taxonomy response request bundle for Brand/CRM final files'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
       digestFor(options.miniLaunchShopifyPreviewRouteDecision, 'Shopify preview route decision boundary and closed approval phrase state'),
+      digestFor(options.miniLaunchShopifyPreviewRouteExecutionReceipt, 'Shopify preview route execution receipt with QA evidence and closed audience-send gate'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
   ]);
@@ -591,6 +641,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     taxonomyRefreshResponseRequestBundle,
     onboardingTrunkMap,
     miniLaunchShopifyPreviewRouteDecision,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     packageJson,
     sourceDigests,
     validationStatus: options.validationStatus,
@@ -664,6 +715,12 @@ const renderMarkdown = (receipt) => {
     `- Shopify preview-route exact approval phrase printed: ${receipt.evidence.shopifyPreviewRouteExactApprovalPhrasePrinted ?? 'unknown'}`,
     `- Shopify preview-route can ask approval now: ${receipt.evidence.shopifyPreviewRouteCanAskApprovalNow ?? 'unknown'}`,
     `- Shopify preview-route can publish now: ${receipt.evidence.shopifyPreviewRouteCanPublishNow ?? 'unknown'}`,
+    `- Shopify preview-route execution: ${receipt.evidence.shopifyPreviewRouteExecutionReceiptStatus ?? 'missing'}`,
+    `- Shopify preview-route execution ready: ${receipt.evidence.shopifyPreviewRouteExecutionReady ?? 'unknown'}`,
+    `- Shopify preview-route target links: ${receipt.evidence.shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}`,
+    `- Shopify preview-route effective view: ${receipt.evidence.shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}`,
+    `- Shopify preview-route can use for correction preview: ${receipt.evidence.shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview ?? 'unknown'}`,
+    `- Shopify preview-route public/audience send gate ready: ${receipt.evidence.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady ?? 'unknown'}`,
     '',
     '## Commands',
     '',

@@ -59,6 +59,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchShopifyPreviewRouteApprovalPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchShopifyPreviewRouteExecutionReceipt).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.privateObservedEventsFile).toBe(
       "/tmp/mantis-reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json",
     );
@@ -244,6 +247,16 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           canExecuteNow: false,
           canPublishNow: false,
           publicAudienceSendUrlGateReady: false,
+        },
+        miniLaunchShopifyPreviewRouteExecutionReceipt: {
+          path: paths.miniLaunchShopifyPreviewRouteExecutionReceipt,
+          markdownPath: paths.miniLaunchShopifyPreviewRouteExecutionReceiptMarkdown,
+          status: "shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm",
+          ok: true,
+          previewRouteReady: true,
+          publicAudienceSendUrlGateReady: false,
+          targetLinkCount: 3,
+          effectivePreviewView: "lead-result-inteligencia-isolated",
         },
         missingInputsKit: {
           path: paths.missingInputsKit,

@@ -42,6 +42,8 @@ const DEFAULT_MINI_LAUNCH_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Manti
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -108,6 +110,8 @@ Options:
   --mini-launch-seed-inbox-correction-plan <path> Mini-launch seed inbox correction plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
+  --mini-launch-shopify-preview-route-approval-packet <path> Mini-launch Shopify preview route exact approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET}
+  --mini-launch-shopify-preview-route-execution-receipt <path> Mini-launch Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -181,6 +185,8 @@ const parseArgs = (argv) => {
     miniLaunchSeedInboxCorrectionPlan: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
+    miniLaunchShopifyPreviewRouteApprovalPacket: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET,
+    miniLaunchShopifyPreviewRouteExecutionReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -250,6 +256,8 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-inbox-correction-plan') options.miniLaunchSeedInboxCorrectionPlan = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
+    else if (arg === '--mini-launch-shopify-preview-route-approval-packet') options.miniLaunchShopifyPreviewRouteApprovalPacket = argv[++index];
+    else if (arg === '--mini-launch-shopify-preview-route-execution-receipt') options.miniLaunchShopifyPreviewRouteExecutionReceipt = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -332,6 +340,8 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchSeedInboxCorrectionPlan, 'mini-launch seed inbox correction plan and blockers before UI edit/public launch', true],
     [options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', true],
     [options.miniLaunchShopifyPreviewRouteDecision, 'mini-launch Shopify preview route decision boundary with no approval phrase or publish', true],
+    [options.miniLaunchShopifyPreviewRouteApprovalPacket, 'mini-launch Shopify preview route exact approval packet with execution still closed', true],
+    [options.miniLaunchShopifyPreviewRouteExecutionReceipt, 'mini-launch Shopify preview route execution receipt with QA evidence and closed audience-send gate', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -541,6 +551,8 @@ const buildCurrentState = ({
   miniLaunchSeedInboxCorrectionPlan,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision,
+  miniLaunchShopifyPreviewRouteApprovalPacket,
+  miniLaunchShopifyPreviewRouteExecutionReceipt,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -620,6 +632,49 @@ const buildCurrentState = ({
     && miniLaunchShopifyPreviewRouteDecision?.safety?.mailerLiteApiCalled === false
     && miniLaunchShopifyPreviewRouteDecision?.safety?.sendsPerformed === false
     && miniLaunchShopifyPreviewRouteDecision?.safety?.exactApprovalPhrasePrinted === false;
+  const shopifyPreviewRouteApprovalPacketReady = miniLaunchShopifyPreviewRouteApprovalPacket?.status === 'shopify_preview_route_approval_packet_ready_for_exact_human_approval_no_live_changes'
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.humanDecisionConfirmed === true
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.exactApprovalPhraseAvailable === true
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.exactApprovalPhrasePrinted === true
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.canAskApprovalNow === true
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.canExecuteNow === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.canPublishNow === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.publicAudienceSendUrlGateReady === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.shopifyApiCalled === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.shopifyMutationsPerformed === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.shopifyPublishPerformed === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.mailerLiteApiCalled === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.mailerLiteMutationsPerformed === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.crmLiveApiCalled === false
+    && miniLaunchShopifyPreviewRouteApprovalPacket?.safety?.sendsPerformed === false;
+  const shopifyPreviewRouteExecutionReady = miniLaunchShopifyPreviewRouteExecutionReceipt?.status === 'shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm'
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.ok === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.previewRouteReady === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.targetLinkCount === 3
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForLocalCorrectionPreview === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForPublicAudienceSend === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.requiresSeparateMailerLiteUiEditApprovalBeforeDraftMutation === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.scopedLiveShopifyMutationApproved === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.shopifyApiCalled === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.shopifyMutationsPerformed === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.shopifyThemePublished === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.siteNavigationUpdated === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.seoIndexingAllowed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.realFormsCreated === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.mailerLiteApiCalled === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.mailerLiteMutationsPerformed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.crmLiveApiCalled === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.subscribersRead === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.subscriberMutationsPerformed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.groupMutationsPerformed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.workflowMutationsPerformed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.sendsPerformed === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.safety?.tokensPrinted === false
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.statusHttp200ForAll === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.noindexForAll === true
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.mailerLiteMatchesForAll === 0
+    && miniLaunchShopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.externalFormActionsForAll === 0;
   const v2EmptyGroupsExecutionCompleted = onboardingV2EmptyGroupsExecution?.status === 'executed_onboarding_v2_empty_group_creation'
     && onboardingV2EmptyGroupsExecution?.mode === 'execute_requested'
     && onboardingV2EmptyGroupsExecution?.createdGroups?.length === 12
@@ -1026,6 +1081,24 @@ const buildCurrentState = ({
       shopifyPreviewRouteCanPublishNow: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.canPublishNow ?? null,
       shopifyPreviewRouteRecommendedVisibilityTier: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.recommendedVisibilityTier ?? null,
       shopifyPreviewRoutePublicAudienceSendUrlGateReady: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+      shopifyPreviewRouteApprovalPacketStatus: miniLaunchShopifyPreviewRouteApprovalPacket?.status ?? null,
+      shopifyPreviewRouteApprovalPacketReady,
+      shopifyPreviewRouteApprovalHumanDecisionConfirmed: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.humanDecisionConfirmed ?? null,
+      shopifyPreviewRouteApprovalExactApprovalPhraseAvailable: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.exactApprovalPhraseAvailable ?? null,
+      shopifyPreviewRouteApprovalExactApprovalPhrasePrinted: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.exactApprovalPhrasePrinted ?? null,
+      shopifyPreviewRouteApprovalCanAskApprovalNow: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.canAskApprovalNow ?? null,
+      shopifyPreviewRouteApprovalCanExecuteNow: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.canExecuteNow ?? null,
+      shopifyPreviewRouteApprovalCanPublishNow: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.canPublishNow ?? null,
+      shopifyPreviewRouteApprovalPublicAudienceSendUrlGateReady: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+      shopifyPreviewRouteApprovalNextSafeAction: miniLaunchShopifyPreviewRouteApprovalPacket?.executiveSummary?.nextSafeAction ?? null,
+      shopifyPreviewRouteExecutionReceiptStatus: miniLaunchShopifyPreviewRouteExecutionReceipt?.status ?? null,
+      shopifyPreviewRouteExecutionReady,
+      shopifyPreviewRouteExecutionTargetLinkCount: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.targetLinkCount ?? null,
+      shopifyPreviewRouteExecutionEffectivePreviewView: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.effectivePreviewView ?? null,
+      shopifyPreviewRouteExecutionUsesViewParameter: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.effectivePreviewUrlUsesViewParameter ?? null,
+      shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForLocalCorrectionPreview ?? null,
+      shopifyPreviewRouteExecutionCanUseForPublicAudienceSend: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForPublicAudienceSend ?? null,
+      shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady: miniLaunchShopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady ?? null,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -1308,6 +1381,8 @@ const buildReportMap = (sourceDigests) => {
     miniLaunchSeedInboxCorrectionPlan: findPath('mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json'),
     miniLaunchShopifyLocalBuildReceipt: findPath('mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json'),
     miniLaunchShopifyPreviewRouteDecision: findPath('mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json'),
+    miniLaunchShopifyPreviewRouteApprovalPacket: findPath('mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json'),
+    miniLaunchShopifyPreviewRouteExecutionReceipt: findPath('mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
     brujulaTestLaneApply: findPath('mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json'),
     brujulaEmailStyleQa: findPath('mailerlite_brujula_email_style_qa_packet_2026-05-27.json'),
@@ -1592,8 +1667,12 @@ const miniLaunchEmptyGroupsAlreadyExist = (currentState) => {
 
 const miniLaunchManualUiBuildClosed = (currentState) => currentState?.miniLaunch?.emailManualUiBuildClosed === true;
 const miniLaunchShopifyLocalBuildClosed = (currentState) => currentState?.miniLaunch?.shopifyLocalBuildClosed === true;
+const miniLaunchShopifyPreviewRouteExecuted = (currentState) =>
+  currentState?.miniLaunch?.shopifyPreviewRouteExecutionReady === true;
 const miniLaunchShopifyPreviewRouteDecisionReady = (currentState) =>
   currentState?.miniLaunch?.shopifyPreviewRouteDecisionReady === true;
+const miniLaunchShopifyPreviewRouteApprovalPacketReady = (currentState) =>
+  currentState?.miniLaunch?.shopifyPreviewRouteApprovalPacketReady === true;
 const miniLaunchSeedTestCompleted = (currentState) => currentState?.miniLaunch?.seedTestExecutionCompleted === true;
 const miniLaunchSeedInboxQaCompleted = (currentState) => {
   const status = currentState?.miniLaunch?.seedInboxQaStatus;
@@ -1625,6 +1704,12 @@ const buildSeedInboxQaMove = (currentState) => {
 
 const buildShopifyPreviewRouteMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
+  if (miniLaunchShopifyPreviewRouteExecuted(currentState)) {
+    return `Shopify preview-route execution is complete and QA-green for exact-link review: target links ${miniLaunch.shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}, view ${miniLaunch.shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}, uses view parameter ${miniLaunch.shopifyPreviewRouteExecutionUsesViewParameter ?? 'unknown'}, can use for local correction preview ${miniLaunch.shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview}, public/audience send gate ready ${miniLaunch.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady}; keep MailerLite UI edits and public/audience sends behind separate exact approvals.`;
+  }
+  if (miniLaunchShopifyPreviewRouteApprovalPacketReady(currentState)) {
+    return `Shopify preview-route approval packet is ready for the exact human approval request: human decision confirmed ${miniLaunch.shopifyPreviewRouteApprovalHumanDecisionConfirmed}, exact approval phrase available ${miniLaunch.shopifyPreviewRouteApprovalExactApprovalPhraseAvailable}, can ask approval now ${miniLaunch.shopifyPreviewRouteApprovalCanAskApprovalNow}, can execute now ${miniLaunch.shopifyPreviewRouteApprovalCanExecuteNow}, can publish now ${miniLaunch.shopifyPreviewRouteApprovalCanPublishNow}; stop before any Shopify action until Alejandro supplies that exact phrase in chat.`;
+  }
   if (miniLaunchShopifyPreviewRouteDecisionReady(currentState)) {
     return `Shopify preview-route decision is ready for explanation only: recommended visibility ${miniLaunch.shopifyPreviewRouteRecommendedVisibilityTier ?? 'unknown'}, exact approval phrase available ${miniLaunch.shopifyPreviewRouteExactApprovalPhraseAvailable}, can ask approval now ${miniLaunch.shopifyPreviewRouteCanAskApprovalNow}, can publish now ${miniLaunch.shopifyPreviewRouteCanPublishNow}; explain the decision before generating any exact phrase, and keep preview/publish/forms/sends closed.`;
   }
@@ -1904,6 +1989,8 @@ const buildRunbook = ({
   miniLaunchSeedInboxCorrectionPlan,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision,
+  miniLaunchShopifyPreviewRouteApprovalPacket,
+  miniLaunchShopifyPreviewRouteExecutionReceipt,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -1966,6 +2053,8 @@ const buildRunbook = ({
     miniLaunchSeedInboxCorrectionPlan,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
+    miniLaunchShopifyPreviewRouteApprovalPacket,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -2178,6 +2267,19 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch Shopify preview-route exact approval phrase printed: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExactApprovalPhrasePrinted ?? 'unknown'}`,
     `- Mini-launch Shopify preview-route can ask approval now: ${runbook.currentState.miniLaunch.shopifyPreviewRouteCanAskApprovalNow ?? 'unknown'}`,
     `- Mini-launch Shopify preview-route can publish now: ${runbook.currentState.miniLaunch.shopifyPreviewRouteCanPublishNow ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route approval packet: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalPacketStatus ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route approval packet ready: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalPacketReady}`,
+    `- Mini-launch Shopify preview-route approval human decision confirmed: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalHumanDecisionConfirmed ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route approval exact phrase available: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalExactApprovalPhraseAvailable ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route approval can ask now: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalCanAskApprovalNow ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route approval can execute now: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalCanExecuteNow ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route approval can publish now: ${runbook.currentState.miniLaunch.shopifyPreviewRouteApprovalCanPublishNow ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route execution receipt: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExecutionReceiptStatus ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route execution ready: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExecutionReady}`,
+    `- Mini-launch Shopify preview-route target links: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route effective view: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route can use for correction preview: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview ?? 'unknown'}`,
+    `- Mini-launch Shopify preview-route public/audience send gate ready: ${runbook.currentState.miniLaunch.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
@@ -2379,13 +2481,15 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchEmailBuilderPayloadManifest,
     miniLaunchEmailRenderQa,
     miniLaunchEmailManualUiBuildReceipt,
-  miniLaunchEmailManualUiDraftRepairPacket,
-  miniLaunchSeedTestQaPacket,
-  miniLaunchSeedTestExecutionReceipt,
-  miniLaunchSeedInboxQa,
-  miniLaunchSeedInboxCorrectionPlan,
-  miniLaunchShopifyLocalBuildReceipt,
-  miniLaunchShopifyPreviewRouteDecision,
+    miniLaunchEmailManualUiDraftRepairPacket,
+    miniLaunchSeedTestQaPacket,
+    miniLaunchSeedTestExecutionReceipt,
+    miniLaunchSeedInboxQa,
+    miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchShopifyLocalBuildReceipt,
+    miniLaunchShopifyPreviewRouteDecision,
+    miniLaunchShopifyPreviewRouteApprovalPacket,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -2447,6 +2551,8 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchSeedInboxCorrectionPlan),
     readOptionalJson(options.miniLaunchShopifyLocalBuildReceipt),
     readOptionalJson(options.miniLaunchShopifyPreviewRouteDecision),
+    readOptionalJson(options.miniLaunchShopifyPreviewRouteApprovalPacket),
+    readOptionalJson(options.miniLaunchShopifyPreviewRouteExecutionReceipt),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -2510,6 +2616,8 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchSeedInboxCorrectionPlan,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
+    miniLaunchShopifyPreviewRouteApprovalPacket,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,

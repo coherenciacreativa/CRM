@@ -23,6 +23,7 @@ const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_correction_packet_2026-05-27.json';
@@ -54,6 +55,7 @@ Options:
   --mini-launch-shopify-local-build-receipt <path> Shopify no-live local build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-shopify-preview-route-decision <path> Shopify preview-route decision packet. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
   --mini-launch-shopify-preview-route-approval-packet <path> Shopify preview-route approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET}
+  --mini-launch-shopify-preview-route-execution-receipt <path> Shopify preview-route execution receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
   --mini-launch-crm-write-approval-packet <path> CRM write approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-email-style-correction <path>         Brújula corrected Email 1 packet. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION}
@@ -101,6 +103,7 @@ const parseArgs = (argv) => {
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
     miniLaunchShopifyPreviewRouteApprovalPacket: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET,
+    miniLaunchShopifyPreviewRouteExecutionReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
     miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaEmailStyleCorrection: DEFAULT_BRUJULA_EMAIL_STYLE_CORRECTION,
@@ -135,6 +138,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-approval-packet') options.miniLaunchShopifyPreviewRouteApprovalPacket = argv[++index];
+    else if (arg === '--mini-launch-shopify-preview-route-execution-receipt') options.miniLaunchShopifyPreviewRouteExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
     else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-email-style-correction') options.brujulaEmailStyleCorrection = argv[++index];
@@ -1054,14 +1058,99 @@ const shopifyPreviewRouteApprovalPacketReady = (packet) =>
   && packet?.safety?.crmLiveApiCalled === false
   && packet?.safety?.sendsPerformed === false;
 
-const buildShopifyPreviewRouteItem = ({ decision, approvalPacket = null }) => {
+const shopifyPreviewRouteExecutionReady = (receipt) =>
+  receipt?.ok === true
+  && receipt?.status === 'shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm'
+  && receipt?.executionSummary?.previewRouteReady === true
+  && receipt?.executionSummary?.targetLinkCount === 3
+  && receipt?.executionSummary?.publicAudienceSendUrlGateReady === false
+  && receipt?.executionSummary?.canUseForLocalCorrectionPreview === true
+  && receipt?.executionSummary?.canUseForPublicAudienceSend === false
+  && receipt?.executionSummary?.requiresSeparateMailerLiteUiEditApprovalBeforeDraftMutation === true
+  && receipt?.safety?.scopedLiveShopifyMutationApproved === true
+  && receipt?.safety?.shopifyApiCalled === true
+  && receipt?.safety?.shopifyMutationsPerformed === true
+  && receipt?.safety?.shopifyThemePublished === false
+  && receipt?.safety?.siteNavigationUpdated === false
+  && receipt?.safety?.seoIndexingAllowed === false
+  && receipt?.safety?.realFormsCreated === false
+  && receipt?.safety?.mailerLiteApiCalled === false
+  && receipt?.safety?.mailerLiteMutationsPerformed === false
+  && receipt?.safety?.crmLiveApiCalled === false
+  && receipt?.safety?.subscriberMutationsPerformed === false
+  && receipt?.safety?.groupMutationsPerformed === false
+  && receipt?.safety?.workflowMutationsPerformed === false
+  && receipt?.safety?.sendsPerformed === false
+  && receipt?.safety?.tokensPrinted === false
+  && receipt?.qa?.automatedHtmlQa?.statusHttp200ForAll === true
+  && receipt?.qa?.automatedHtmlQa?.noindexForAll === true
+  && receipt?.qa?.automatedHtmlQa?.mailerLiteMatchesForAll === 0
+  && receipt?.qa?.automatedHtmlQa?.externalFormActionsForAll === 0;
+
+const buildShopifyPreviewRouteItem = ({ decision, approvalPacket = null, executionReceipt = null }) => {
+  const executionReady = shopifyPreviewRouteExecutionReady(executionReceipt);
   const targetNames = targetNamesFrom(
+    (executionReceipt?.targetLinks ?? []).map((target) => target?.label ?? target?.key),
     (approvalPacket?.targetLinks ?? []).map((target) => target?.label ?? target?.key),
     (decision?.slotScope ?? []).map((slot) => slot?.label ?? slot?.key),
   );
   const decisionReady = shopifyPreviewRouteDecisionReady(decision);
   const approvalReady = shopifyPreviewRouteApprovalPacketReady(approvalPacket);
   const blockers = [];
+
+  if (executionReady) {
+    return buildApprovalItem({
+      id: 'shopify_unlisted_noindex_preview_route',
+      title: 'Shopify unlisted/noindex preview route',
+      lane: 'web_design_shopify_preview_route',
+      operationType: 'live_shopify_preview_route_already_completed_for_qa_only',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        previewRouteDecision: decision?.status ?? null,
+        approvalPacket: approvalPacket?.status ?? null,
+        executionReceipt: executionReceipt?.status ?? null,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: [
+        'mailerLite_ui_edit_or_draft_mutation',
+        'public_or_audience_send',
+        'workflow_or_automation_changes',
+        'subscriber_or_group_assignments',
+        'shopify_navigation_or_seo_publish',
+        'crm_live_writes',
+        'ledger_card_scoring_or_fact_store_writes',
+      ],
+      requiredFreshEvidence: [
+        'separate MailerLite UI edit approval before replacing draft placeholders with preview URLs',
+        'separate public/audience send approval after final QA',
+      ],
+      blockers,
+      evidence: {
+        decisionReady,
+        approvalPacketReady: approvalReady,
+        executionReceiptReady: true,
+        previewRouteReady: executionReceipt?.executionSummary?.previewRouteReady ?? null,
+        targetLinkCount: executionReceipt?.executionSummary?.targetLinkCount ?? null,
+        effectivePreviewView: executionReceipt?.executionSummary?.effectivePreviewView ?? null,
+        effectivePreviewUrlUsesViewParameter: executionReceipt?.executionSummary?.effectivePreviewUrlUsesViewParameter ?? null,
+        canUseForLocalCorrectionPreview: executionReceipt?.executionSummary?.canUseForLocalCorrectionPreview ?? null,
+        canUseForPublicAudienceSend: executionReceipt?.executionSummary?.canUseForPublicAudienceSend ?? null,
+        publicAudienceSendUrlGateReady: executionReceipt?.executionSummary?.publicAudienceSendUrlGateReady ?? null,
+        automatedHtmlQaGreen: executionReceipt?.qa?.automatedHtmlQa?.statusHttp200ForAll === true
+          && executionReceipt?.qa?.automatedHtmlQa?.noindexForAll === true
+          && executionReceipt?.qa?.automatedHtmlQa?.mailerLiteMatchesForAll === 0
+          && executionReceipt?.qa?.automatedHtmlQa?.externalFormActionsForAll === 0,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The scoped Shopify preview-route execution is already complete and QA-green for exact-link preview use.',
+        'This does not open MailerLite draft edits or audience send; those remain separate approval boundaries.',
+      ],
+    });
+  }
 
   if (!decisionReady) blockers.push(`shopify_preview_route_decision_not_ready:${decision?.status ?? 'missing'}`);
   if (approvalPacket) {
@@ -1619,6 +1708,7 @@ const buildApprovalQueue = ({
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision = null,
   miniLaunchShopifyPreviewRouteApprovalPacket = null,
+  miniLaunchShopifyPreviewRouteExecutionReceipt = null,
   miniLaunchCrmSignalProjectionPacket,
   miniLaunchCrmWriteApprovalPacket = null,
   brujulaEmailStyleCorrection,
@@ -1663,6 +1753,7 @@ const buildApprovalQueue = ({
     buildShopifyPreviewRouteItem({
       decision: miniLaunchShopifyPreviewRouteDecision,
       approvalPacket: miniLaunchShopifyPreviewRouteApprovalPacket,
+      executionReceipt: miniLaunchShopifyPreviewRouteExecutionReceipt,
     }),
     buildBrujulaBuilderDraftItem({
       correction: brujulaEmailStyleCorrection,
@@ -1811,6 +1902,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildReceipt, 'Shopify no-live local build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyPreviewRouteDecision, 'Shopify preview-route decision packet'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyPreviewRouteApprovalPacket, 'Shopify preview-route approval packet'),
+    readOptionalJsonWithDigest(options.miniLaunchShopifyPreviewRouteExecutionReceipt, 'Shopify preview-route execution receipt with QA evidence'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
     readOptionalJsonWithDigest(options.miniLaunchCrmWriteApprovalPacket, 'CRM write approval packet with exact events/people/fields boundary'),
     readOptionalJsonWithDigest(options.brujulaEmailStyleCorrection, 'Brújula corrected Email 1 packet'),
@@ -1840,6 +1932,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
     miniLaunchShopifyPreviewRouteApprovalPacket,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     miniLaunchCrmSignalProjectionPacket,
     miniLaunchCrmWriteApprovalPacket,
     brujulaEmailStyleCorrection,
@@ -1869,6 +1962,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
     miniLaunchShopifyPreviewRouteApprovalPacket,
+    miniLaunchShopifyPreviewRouteExecutionReceipt,
     miniLaunchCrmSignalProjectionPacket,
     miniLaunchCrmWriteApprovalPacket,
     brujulaEmailStyleCorrection,
@@ -1938,4 +2032,5 @@ export {
   buildSafety,
   parseArgs,
   renderMarkdown,
+  shopifyPreviewRouteExecutionReady,
 };

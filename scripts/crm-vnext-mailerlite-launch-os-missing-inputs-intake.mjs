@@ -238,6 +238,15 @@ const finalPublicLinksFromManifest = (assetManifest) => {
   return Object.keys(links).length > 0 ? links : null;
 };
 
+const finalPublicLinkHashesFromManifest = (assetManifest) => {
+  const slots = assetManifest?.finalPublicLinks?.slots;
+  if (!Array.isArray(slots)) return null;
+  const hashes = Object.fromEntries(slots
+    .map((slot) => [cleanString(slot?.key), cleanString(slot?.publicUrlSha256)])
+    .filter(([key, value]) => key && value));
+  return Object.keys(hashes).length > 0 ? hashes : null;
+};
+
 const visibilityTierFrom = (payload, assetManifest) =>
   cleanString(payload?.visibilityTier)
   ?? cleanString(payload?.visibility_tier)
@@ -266,6 +275,9 @@ const lifecycleStageFor = ({ key, payload, assetManifest, finalLinksReady, final
 
   const manifestSlot = assetManifest?.finalPublicLinks?.slots?.find((slot) => slot?.key === key);
   const manifestStage = cleanString(manifestSlot?.linkLifecycle?.currentStage);
+  if (finalLinksSource?.startsWith('launch_asset_manifest') && LINK_LIFECYCLE_POLICY.stages.includes(manifestStage)) {
+    return manifestStage;
+  }
   if (!finalLinksReady && LINK_LIFECYCLE_POLICY.stages.includes(manifestStage)) return manifestStage;
 
   if (finalLinksReady) {
@@ -351,18 +363,26 @@ const buildCorrectionInputsState = ({
     : null;
   const finalLinksFromCorrectionInputs = finalPublicLinksFrom(payload);
   const finalLinksFromAssetManifest = finalPublicLinksFromManifest(assetManifest);
+  const finalLinkHashesFromAssetManifest = finalPublicLinkHashesFromManifest(assetManifest);
+  const manifestHashReady = FINAL_PUBLIC_LINK_KEYS
+    .every((key) => cleanString(finalLinkHashesFromAssetManifest?.[key]));
   const finalLinks = finalLinksFromCorrectionInputs ?? finalLinksFromAssetManifest;
   const finalLinksSource = finalLinksFromCorrectionInputs
     ? 'correction_inputs_file'
     : finalLinksFromAssetManifest
       ? 'launch_asset_manifest'
+      : manifestHashReady
+        ? 'launch_asset_manifest_redacted_hashes'
       : assetManifest?.finalPublicLinks
         ? 'launch_asset_manifest_pending_public_urls'
         : 'missing';
-  const presentKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]));
-  const missingKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => !cleanString(finalLinks?.[key]));
+  const presentKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) =>
+    cleanString(finalLinks?.[key]) || cleanString(finalLinkHashesFromAssetManifest?.[key]));
+  const missingKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) =>
+    !cleanString(finalLinks?.[key]) && !cleanString(finalLinkHashesFromAssetManifest?.[key]));
   const invalidKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]) && !looksSafeHttpUrl(finalLinks?.[key]));
-  const finalLinksReady = Boolean(finalLinks) && missingKeys.length === 0 && invalidKeys.length === 0;
+  const exactLinksReady = Boolean(finalLinks) && missingKeys.length === 0 && invalidKeys.length === 0;
+  const finalLinksReady = exactLinksReady || (manifestHashReady && missingKeys.length === 0);
   const linkLifecycle = buildLinkLifecycleState({
     payload,
     assetManifest,
@@ -419,9 +439,12 @@ const buildCorrectionInputsState = ({
     invalidKeys,
     linkCount: finalLinksReady ? FINAL_PUBLIC_LINK_KEYS.length : presentKeys.length,
     urlSha256ByKey: Object.fromEntries(
-      FINAL_PUBLIC_LINK_KEYS
-        .filter((key) => looksSafeHttpUrl(finalLinks?.[key]))
-        .map((key) => [key, sha256(finalLinks[key])]),
+      FINAL_PUBLIC_LINK_KEYS.map((key) => [
+        key,
+        looksSafeHttpUrl(finalLinks?.[key])
+          ? sha256(finalLinks[key])
+          : cleanString(finalLinkHashesFromAssetManifest?.[key]),
+      ]).filter(([, value]) => value),
     ),
     linkLifecycle,
     publicAudienceSendReady: linkLifecycle.publicAudienceSendReady,
