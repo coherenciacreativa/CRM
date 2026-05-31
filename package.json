@@ -77,6 +77,7 @@
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.mjs",
     "crm:vnext:mailerlite-mini-launch-asset-manifest": "node scripts/crm-vnext-mailerlite-mini-launch-asset-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-public-url-gate": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs",
+    "crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-handoff-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet": "node scripts/crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-policy-packet": "node scripts/crm-vnext-mailerlite-mini-launch-crm-write-policy-packet.mjs",

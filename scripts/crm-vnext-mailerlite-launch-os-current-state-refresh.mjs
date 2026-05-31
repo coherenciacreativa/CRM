@@ -146,6 +146,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_shopify_public_url_gate',
       date,
     ),
+    miniLaunchShopifyPreviewRouteDecision: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_shopify_preview_route_decision',
+      date,
+    ),
     miniLaunchCrmWritePolicyPacket: staticReportPath(
       reportsDir,
       'mailerlite_mini_launch_crm_write_policy_packet_inteligencia_descansar_2026-05-28.json',
@@ -236,6 +241,12 @@ const validationCommands = () => [
     'syntax-check mini-launch Shopify public URL gate',
   ),
   command(
+    'node_check_mini_launch_shopify_preview_route_decision_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs'],
+    'syntax-check mini-launch Shopify preview route decision packet',
+  ),
+  command(
     'node_check_missing_inputs_intake',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs'],
@@ -299,6 +310,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-asset-manifest.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-kit.spec.ts',
@@ -499,6 +511,26 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchShopifyPublicUrlGateMarkdown,
       ],
       'regenerate current Shopify public URL gate without approval phrase or live publish',
+    ),
+    command(
+      'refresh_mini_launch_shopify_preview_route_decision',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet',
+        '--',
+        '--shopify-public-url-gate',
+        paths.miniLaunchShopifyPublicUrlGate,
+        '--asset-manifest',
+        paths.miniLaunchAssetManifest,
+        '--shopify-local-build-receipt',
+        paths.miniLaunchShopifyLocalBuildReceipt,
+        '--out',
+        paths.miniLaunchShopifyPreviewRouteDecision,
+        '--markdown-out',
+        paths.miniLaunchShopifyPreviewRouteDecisionMarkdown,
+      ],
+      'regenerate current Shopify preview route decision packet without approval phrase or live publish',
     ),
     command(
       'refresh_missing_inputs_kit',
@@ -793,6 +825,7 @@ const summarizeGeneratedReports = async (paths) => {
     blockedGateHandoff,
     miniLaunchAssetManifest,
     miniLaunchShopifyPublicUrlGate,
+    miniLaunchShopifyPreviewRouteDecision,
     missingInputsKit,
     missingInputsIntake,
     missingInputsRequestBundle,
@@ -808,6 +841,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.blockedGateHandoff),
     readOptionalJson(paths.miniLaunchAssetManifest),
     readOptionalJson(paths.miniLaunchShopifyPublicUrlGate),
+    readOptionalJson(paths.miniLaunchShopifyPreviewRouteDecision),
     readOptionalJson(paths.missingInputsKit),
     readOptionalJson(paths.missingInputsIntake),
     readOptionalJson(paths.missingInputsRequestBundle),
@@ -874,6 +908,24 @@ const summarizeGeneratedReports = async (paths) => {
       decisionExplanationRequiredBeforeApprovalPhrase:
         miniLaunchShopifyPublicUrlGate?.executiveSummary?.decisionExplanationRequiredBeforeApprovalPhrase ?? null,
       canPublishNow: miniLaunchShopifyPublicUrlGate?.executiveSummary?.canPublishNow ?? null,
+    },
+    miniLaunchShopifyPreviewRouteDecision: {
+      path: paths.miniLaunchShopifyPreviewRouteDecision,
+      markdownPath: paths.miniLaunchShopifyPreviewRouteDecisionMarkdown,
+      status: miniLaunchShopifyPreviewRouteDecision?.status ?? null,
+      ok: miniLaunchShopifyPreviewRouteDecision?.ok ?? null,
+      recommendedVisibilityTier:
+        miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.recommendedVisibilityTier ?? null,
+      decisionExplanationReady:
+        miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.decisionExplanationReady ?? null,
+      exactApprovalPhraseAvailable:
+        miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhraseAvailable ?? null,
+      exactApprovalPhrasePrinted:
+        miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhrasePrinted ?? null,
+      canAskApprovalNow: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.canAskApprovalNow ?? null,
+      canPublishNow: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.canPublishNow ?? null,
+      publicAudienceSendUrlGateReady:
+        miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
     },
     missingInputsKit: {
       path: paths.missingInputsKit,
@@ -1030,6 +1082,7 @@ const renderMarkdown = (receipt) => [
   `- Blocked-gate handoff: ${receipt.generatedReports.blockedGateHandoff.path}`,
   `- Mini-launch asset manifest: ${receipt.generatedReports.miniLaunchAssetManifest.path}`,
   `- Mini-launch Shopify public URL gate: ${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.path}`,
+  `- Mini-launch Shopify preview route decision: ${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.path}`,
   `- Missing-inputs kit: ${receipt.generatedReports.missingInputsKit.path}`,
   `- Missing-inputs intake: ${receipt.generatedReports.missingInputsIntake.path}`,
   `- Missing-inputs request bundle: ${receipt.generatedReports.missingInputsRequestBundle.path}`,
@@ -1046,6 +1099,7 @@ const renderMarkdown = (receipt) => [
   `- CRM write approval: status=${receipt.generatedReports.crmWriteApprovalPacket.status}, exactEventCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactEventCountReady}, exactPersonCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactPersonCountReady}`,
   `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady}, linkLifecyclePolicy=${receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
   `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.publicAudienceSendUrlGateReady}, noSeparateUrlSetsRequired=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.noSeparateUrlSetsRequired}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, recommendedVisibilityTier=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier}, fullyPublicNavigationRequiredNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow}, seoIndexingAllowedNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
+  `- Shopify preview route decision: status=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.status}, decisionExplanationReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.decisionExplanationReady}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhraseAvailable}, exactApprovalPhrasePrinted=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhrasePrinted}, canAskApprovalNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canAskApprovalNow}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canPublishNow}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
   `- operator-runbook: status=${receipt.generatedReports.operatorRunbook.status}, openLiveGateCount=${receipt.generatedReports.operatorRunbook.openLiveGateCount}`,
@@ -1167,6 +1221,8 @@ const main = async () => {
     crmWriteApprovalPacketStatus: receipt.generatedReports.crmWriteApprovalPacket.status,
     miniLaunchAssetManifestStatus: receipt.generatedReports.miniLaunchAssetManifest.status,
     miniLaunchShopifyPublicUrlGateStatus: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status,
+    miniLaunchShopifyPreviewRouteDecisionStatus:
+      receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.status,
     finalPublicLinksReady: receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady,
     publicAudienceSendUrlGateReady: receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady,
     linkLifecyclePolicy: receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy,
@@ -1179,6 +1235,12 @@ const main = async () => {
       receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow,
     publicUrlGateSeoIndexingAllowedNow: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow,
     publicUrlGateCanPublishNow: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow,
+    previewRouteDecisionExplanationReady:
+      receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.decisionExplanationReady,
+    previewRouteDecisionExactApprovalPhraseAvailable:
+      receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhraseAvailable,
+    previewRouteDecisionCanAskApprovalNow:
+      receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canAskApprovalNow,
     missingInputsIntakeStatus: receipt.generatedReports.missingInputsIntake.status,
     readyInputCount: receipt.generatedReports.missingInputsIntake.readyInputCount,
     inputCount: receipt.generatedReports.missingInputsIntake.inputCount,
