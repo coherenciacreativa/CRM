@@ -2101,6 +2101,62 @@ Next safe move:
 - Use the inert example template only as shape guidance, then place real values in `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json`.
 - Rerun missing-inputs intake and the correction preview runner. Stop again before any MailerLite UI edit approval.
 
+## Launch OS v0 current-state refresh checkpoint - 2026-05-31
+
+Status: active goal, current local evidence refreshed after missing-input handoff hardening, not ready for live operation, no live actions authorized.
+
+Evidence:
+
+- Refreshed operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Refreshed operator runbook markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+- Refreshed goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Refreshed goal audit markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+- Refreshed validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Refreshed validation receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+
+Confirmed results:
+
+- operator-runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`
+- operator-runbook: `openLiveGateCount=0`, `validationStatus=passed`
+- operator-runbook: `approvalQueueReadyCount=0`
+- operator-runbook: `missingInputsIntakeReadyInputCount=0`, `missingInputsIntakeReadyForMiniLaunchCorrectionPreview=false`
+- operator-runbook: `postInputOrchestratorReadyCommandCount=0`, `postInputOrchestratorCommandsExecuted=false`
+- operator-runbook: `taxonomyRefreshResponseRequestPendingActorCount=2`, `taxonomyRefreshResponseRequestMissingFinalResponseCount=2`, `taxonomyRefreshResponseRequestAsksLiveApproval=false`
+- goal-audit: `status=goal_active_not_ready_for_live_operation`
+- goal-audit: `provenCount=7`, `partialCount=3`, `blockedCount=0`
+- goal-audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- validation-receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`
+- Focused validation: 3 files / 35 tests passed plus `node --check` and `git diff --check`.
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Subscribers, groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- External messages sent: false.
+
+What is proven:
+
+- The current runbook and goal audit now point at the refreshed `current_2026-05-31` missing-input, taxonomy, continuation and validation reports.
+- Live gates remain closed even after the latest missing-input handoff hardening.
+- The active operating state is current and explicit: collect inputs/final taxonomy responses only; do not ask for live approval from this evidence.
+
+What remains partial or pending:
+
+- Launch OS is still not ready for live operation.
+- Mini-launch correction preview is still blocked by missing `final_public_links` and `subscription_reason_policy`.
+- CRM signal writes are still blocked by missing observed events, exact people, writable screen and any required Fact Store review.
+- Taxonomy refresh still needs final Brand and CRM response files before local patch preview.
+- No MailerLite UI edit, test send, public/audience send, workflow/subscriber/group mutation, Shopify/CRM live change, ledger/card/scoring/Fact Store write is authorized by this checkpoint.
+
+Next safe move:
+
+- Continue local-only collection of the six active inputs and the two taxonomy final-response files.
+- After any input file appears, rerun the relevant intake/workspace and then the current-state refresh before asking for a later exact approval.
+
 ## Current recommendation
 
 Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: collect `final_public_links` plus `subscription_reason_policy` through the request bundle before any MailerLite UI edit approval. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
