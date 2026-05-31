@@ -74,6 +74,12 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchMailerLiteApiInertDraftLab).toBe(
       "/tmp/mantis-reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchSeedInboxCorrectionApiEditDiagnostic).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.json",
+    );
+    expect(plan.paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy).toBe(
+      "/tmp/mantis-reports/mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.privateObservedEventsFile).toBe(
       "/tmp/mantis-reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json",
     );
@@ -96,6 +102,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-inert-draft-lab.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-asset-manifest");
@@ -105,6 +112,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-api-inert-draft-lab");
+    expect(commands).toContain("crm:vnext:mailerlite-api-existing-draft-update-strategy-packet");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-approval-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle");
@@ -123,6 +131,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json");
     expect(commands).toContain("mailerlite_launch_os_approval_intake_current_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json");
@@ -350,6 +359,20 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           mailerLiteDraftsDeleted: 0,
           senderValuesPrinted: false,
           tokensPrinted: false,
+        },
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
+          path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+          markdownPath: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategyMarkdown,
+          status: "mailerlite_api_existing_draft_update_strategy_blocked_existing_drafts_not_inert_no_live_changes",
+          ok: true,
+          apiConnectionStableForRead: true,
+          apiExistingDraftUpdateRecommendedNow: false,
+          apiCreateRealDraftsRecommendedNow: false,
+          allApiPayloadReady: true,
+          allDraftsInertByApi: false,
+          blockerCount: 1,
+          mailerLiteApiCalled: false,
+          mailerLiteMutationsPerformed: false,
         },
         missingInputsKit: {
           path: paths.missingInputsKit,

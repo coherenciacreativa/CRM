@@ -3286,3 +3286,56 @@ Next safe move:
 - Do not repeat the completed API lab.
 - Do not use API campaign creation for real `Inteligencia para descansar` replacement drafts from this evidence.
 - Either stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before any UI edit, or prepare a new local-only API research/packet if trying another MailerLite API route.
+
+## Launch OS v0 MailerLite API existing-draft update strategy - 2026-05-31
+
+Status: active goal, API-first path investigated further after Alejandro asked not to abandon the Advanced-plan leverage. MailerLite API read-only connectivity is stable and the corrected payload is ready, but the current existing E02/E03 drafts are not safe API edit targets because MailerLite still reports their recipient/schedule gate as open. Keep API as a strong read/QA path and future update path, but do not mutate these drafts by API until a fresh preflight proves every target draft is inert.
+
+Evidence:
+
+- Read-only API edit diagnostic: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.json`
+- API existing-draft update strategy packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json`
+- API existing-draft update strategy packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.md`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Official source interpretation:
+
+- MailerLite Campaigns API docs: `https://developers.mailerlite.com/docs/campaigns`
+- MailerLite MCP campaign tools: `https://developers.mailerlite.com/mcp/`
+- Official docs support campaign creation, draft updates, separate scheduling, and Advanced-plan content fields.
+- Official docs do not expose a documented `no audience`, `empty recipient`, or `unschedulable draft` creation flag.
+
+Confirmed results:
+
+- Read-only API diagnostic: `campaignReadCount=4`, `apiErrorCount=0`, `allCorrectedHtmlReady=true`, `allApiPayloadReady=true`.
+- Read-only API diagnostic: `allDraftsInertByApi=false`, `apiEditCandidate=false`, `blockerCount=8`.
+- Strategy packet: `status=mailerlite_api_existing_draft_update_strategy_blocked_existing_drafts_not_inert_no_live_changes`.
+- Strategy packet: `apiConnectionStableForRead=true`, `apiExistingDraftUpdateRecommendedNow=false`, `apiCreateRealDraftsRecommendedNow=false`.
+- Draft safety: E01/E04 are closed by current diagnostic; E02/E03 fail `filter_absent_or_null`, `no_basic_filter`, `recipients_missing`, and `cannot_schedule_without_recipients`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=23`, `testCount=140`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+
+Safety:
+
+- Strategy packet MailerLite API called: false.
+- Read-only diagnostic MailerLite API called: true, only `GET /campaigns/{id}` for the 4 existing drafts.
+- MailerLite mutations performed: false.
+- Sends, publish, schedule, subscribers, groups/segments and workflows: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens and exact preview URLs printed/stored in shared reports: false.
+
+Decision:
+
+- Do not abandon MailerLite API broadly.
+- Do not use API-created real replacement drafts from the current lab evidence.
+- Do not API-edit current E02/E03 while MailerLite reports their audience/schedule gate as open.
+- Keep API for high-leverage read-only QA, verification, cleanup, and future content-only updates when a preflight proves target drafts are inert.
+- The current safe mutation boundary remains the already-prepared `mini_launch_seed_inbox_correction_ui_edit` route unless a later local-only packet discovers a safe way to close E02/E03's gate without manual UI.
+
+Next safe move:
+
+- If choosing speed over further API research for this mini-launch, stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before any MailerLite UI edit.
+- If continuing API research, keep it local/read-only or disposable-lab-only, and produce a new exact approval packet before any mutation.

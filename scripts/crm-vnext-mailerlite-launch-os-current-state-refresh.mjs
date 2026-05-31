@@ -210,6 +210,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
       reportsDir,
       `mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_${date}.json`,
     ),
+    miniLaunchSeedInboxCorrectionApiEditDiagnostic: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic',
+      date,
+    ),
     miniLaunchRealMailerLiteRenderQaBeforeSeedSendLatest: staticReportPath(
       reportsDir,
       `mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_${date}-latest.json`,
@@ -217,6 +222,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
     miniLaunchMailerLiteApiInertDraftLab: miniLaunchReportPath(
       reportsDir,
       'mailerlite_api_inert_draft_lab',
+      date,
+    ),
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategy: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_api_existing_draft_update_strategy',
       date,
     ),
     privateSeedEmailFile: privateReportPath(
@@ -387,6 +397,12 @@ const validationCommands = () => [
     'syntax-check MailerLite API inert draft lab packet/runner',
   ),
   command(
+    'node_check_mailerlite_api_existing_draft_update_strategy_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs'],
+    'syntax-check MailerLite API existing draft update strategy packet',
+  ),
+  command(
     'node_check_mini_launch_email_render_qa_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs'],
@@ -452,6 +468,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement.spec.ts',
       '__tests__/crm-vnext-mailerlite-api-inert-draft-lab.spec.ts',
+      '__tests__/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-kit.spec.ts',
@@ -734,6 +751,28 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current MailerLite API inert draft lab packet without executing the lab',
     )]),
     command(
+      'refresh_mini_launch_mailerlite_api_existing_draft_update_strategy',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-api-existing-draft-update-strategy-packet',
+        '--',
+        '--api-edit-diagnostic',
+        paths.miniLaunchSeedInboxCorrectionApiEditDiagnostic,
+        '--api-inert-draft-lab',
+        paths.miniLaunchMailerLiteApiInertDraftLab,
+        '--ui-edit-approval-packet',
+        paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+        '--api-replacement-cleanup-receipt',
+        paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+        '--out',
+        paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+        '--markdown-out',
+        paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategyMarkdown,
+      ],
+      'regenerate local MailerLite API existing-draft update strategy without calling live APIs',
+    ),
+    command(
       'refresh_approval_queue',
       'npm',
       [
@@ -756,6 +795,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
         '--mini-launch-mailerlite-api-inert-draft-lab',
         paths.miniLaunchMailerLiteApiInertDraftLab,
+        '--mini-launch-mailerlite-api-existing-draft-update-strategy',
+        paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
         '--mini-launch-crm-signal-projection-packet',
         paths.miniLaunchCrmSignalProjectionPacket,
         '--mini-launch-crm-write-approval-packet',
@@ -1112,6 +1153,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
     miniLaunchMailerLiteApiInertDraftLab,
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
     missingInputsKit,
     missingInputsIntake,
     missingInputsRequestBundle,
@@ -1137,6 +1179,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt),
     readOptionalJson(paths.miniLaunchMailerLiteApiInertDraftLab),
+    readOptionalJson(paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy),
     readOptionalJson(paths.missingInputsKit),
     readOptionalJson(paths.missingInputsIntake),
     readOptionalJson(paths.missingInputsRequestBundle),
@@ -1360,6 +1403,28 @@ const summarizeGeneratedReports = async (paths) => {
       senderValuesPrinted: miniLaunchMailerLiteApiInertDraftLab?.safety?.senderValuesPrinted ?? null,
       tokensPrinted: miniLaunchMailerLiteApiInertDraftLab?.safety?.tokensPrinted ?? null,
     },
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
+      path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+      markdownPath: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategyMarkdown,
+      status: miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.status ?? null,
+      ok: miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.ok ?? null,
+      apiConnectionStableForRead:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.executiveSummary?.apiConnectionStableForRead ?? null,
+      apiExistingDraftUpdateRecommendedNow:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.executiveSummary?.apiExistingDraftUpdateRecommendedNow ?? null,
+      apiCreateRealDraftsRecommendedNow:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.executiveSummary?.apiCreateRealDraftsRecommendedNow ?? null,
+      allApiPayloadReady:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.executiveSummary?.allApiPayloadReady ?? null,
+      allDraftsInertByApi:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.executiveSummary?.allDraftsInertByApi ?? null,
+      blockerCount:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.executiveSummary?.blockerCount ?? null,
+      mailerLiteApiCalled:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.safety?.mailerLiteApiCalled ?? null,
+      mailerLiteMutationsPerformed:
+        miniLaunchMailerLiteApiExistingDraftUpdateStrategy?.safety?.mailerLiteMutationsPerformed ?? null,
+    },
     missingInputsKit: {
       path: paths.missingInputsKit,
       markdownPath: paths.missingInputsKitMarkdown,
@@ -1522,6 +1587,7 @@ const renderMarkdown = (receipt) => [
   `- Mini-launch email render QA: ${receipt.generatedReports.miniLaunchEmailRenderQa.path}`,
   `- Mini-launch correction UI edit approval packet: ${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.path}`,
   `- Mini-launch MailerLite API inert draft lab: ${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.path}`,
+  `- Mini-launch MailerLite API existing-draft update strategy: ${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.path}`,
   `- Missing-inputs kit: ${receipt.generatedReports.missingInputsKit.path}`,
   `- Missing-inputs intake: ${receipt.generatedReports.missingInputsIntake.path}`,
   `- Missing-inputs request bundle: ${receipt.generatedReports.missingInputsRequestBundle.path}`,
@@ -1546,6 +1612,7 @@ const renderMarkdown = (receipt) => [
   `- mini-launch correction UI edit approval packet: status=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.status}, canAskAlejandroForApproval=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.canAskAlejandroForApproval}, targetDraftCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.targetDraftCount}, localRenderReady=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.localRenderReady}, blockerCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.blockerCount}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.publicAudienceSendUrlGateReady}`,
   `- mini-launch correction UI edit execution kit: status=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.status}, targetDraftCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.targetDraftCount}, htmlSourceReadyCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.htmlSourceReadyCount}, previewReadyCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.previewReadyCount}, canOpenBrowserNow=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.canOpenBrowserNow}, canEditDraftsNow=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.canEditDraftsNow}, blockerCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.blockerCount}`,
   `- MailerLite API inert draft lab: status=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.status}, mode=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.mode}, variantCount=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.variantCount}, inertVariantCount=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.inertVariantCount}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.exactApprovalPhraseAvailable}, canExecuteNow=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.canExecuteNow}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.mailerLiteApiCalled}`,
+  `- MailerLite API existing-draft update strategy: status=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.status}, apiConnectionStableForRead=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiConnectionStableForRead}, allApiPayloadReady=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.allApiPayloadReady}, allDraftsInertByApi=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.allDraftsInertByApi}, apiExistingDraftUpdateRecommendedNow=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiExistingDraftUpdateRecommendedNow}, apiCreateRealDraftsRecommendedNow=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiCreateRealDraftsRecommendedNow}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.mailerLiteApiCalled}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
   `- operator-runbook: status=${receipt.generatedReports.operatorRunbook.status}, openLiveGateCount=${receipt.generatedReports.operatorRunbook.openLiveGateCount}`,
@@ -1721,6 +1788,14 @@ const main = async () => {
       receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.exactApprovalPhraseAvailable,
     miniLaunchMailerLiteApiInertDraftLabMailerLiteApiCalled:
       receipt.generatedReports.miniLaunchMailerLiteApiInertDraftLab.mailerLiteApiCalled,
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategyStatus:
+      receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.status,
+    miniLaunchMailerLiteApiExistingDraftUpdateRecommendedNow:
+      receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiExistingDraftUpdateRecommendedNow,
+    miniLaunchMailerLiteApiCreateRealDraftsRecommendedNow:
+      receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiCreateRealDraftsRecommendedNow,
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategyMailerLiteApiCalled:
+      receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.mailerLiteApiCalled,
     missingInputsIntakeStatus: receipt.generatedReports.missingInputsIntake.status,
     readyInputCount: receipt.generatedReports.missingInputsIntake.readyInputCount,
     inputCount: receipt.generatedReports.missingInputsIntake.inputCount,

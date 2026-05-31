@@ -20,6 +20,7 @@ const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET = '/User
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_MAILERLITE_API_INERT_DRAFT_LAB = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_MAILERLITE_API_EXISTING_DRAFT_UPDATE_STRATEGY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
@@ -56,6 +57,7 @@ Options:
   --mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet <path> Mini-launch unsafe API replacement cleanup approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_APPROVAL_PACKET}
   --mini-launch-seed-inbox-correction-api-replacement-cleanup-execution-receipt <path> Mini-launch unsafe API replacement cleanup execution receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_EXECUTION_RECEIPT}
   --mini-launch-mailerlite-api-inert-draft-lab <path> Mini-launch MailerLite API inert draft lab packet or receipt. Defaults to ${DEFAULT_MINI_LAUNCH_MAILERLITE_API_INERT_DRAFT_LAB}
+  --mini-launch-mailerlite-api-existing-draft-update-strategy <path> Mini-launch MailerLite API existing draft update strategy packet. Defaults to ${DEFAULT_MINI_LAUNCH_MAILERLITE_API_EXISTING_DRAFT_UPDATE_STRATEGY}
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-seed-send-approval-packet <path> Mini-launch private seed-send approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET}
   --mini-launch-seed-test-execution-receipt <path> Completed seed/test execution receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
@@ -108,6 +110,7 @@ const parseArgs = (argv) => {
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_APPROVAL_PACKET,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_EXECUTION_RECEIPT,
     miniLaunchMailerLiteApiInertDraftLab: DEFAULT_MINI_LAUNCH_MAILERLITE_API_INERT_DRAFT_LAB,
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategy: DEFAULT_MINI_LAUNCH_MAILERLITE_API_EXISTING_DRAFT_UPDATE_STRATEGY,
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchSeedSendApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET,
     miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
@@ -147,6 +150,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet') options.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-correction-api-replacement-cleanup-execution-receipt') options.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-mailerlite-api-inert-draft-lab') options.miniLaunchMailerLiteApiInertDraftLab = argv[++index];
+    else if (arg === '--mini-launch-mailerlite-api-existing-draft-update-strategy') options.miniLaunchMailerLiteApiExistingDraftUpdateStrategy = argv[++index];
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-seed-send-approval-packet') options.miniLaunchSeedSendApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
@@ -1295,6 +1299,66 @@ const buildMiniLaunchMailerLiteApiInertDraftLabItem = ({ lab }) => {
   });
 };
 
+const buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem = ({ packet }) => {
+  const targetNames = targetNamesFrom((packet?.localEvidenceInterpretation?.readOnlyExistingDraftDiagnostic?.draftSafety ?? [])
+    .map((draft) => `E${String(draft?.step).padStart(2, '0')}`));
+  const apiExistingDraftUpdateRecommendedNow =
+    packet?.executiveSummary?.apiExistingDraftUpdateRecommendedNow === true;
+  const apiCreateRealDraftsRecommendedNow =
+    packet?.executiveSummary?.apiCreateRealDraftsRecommendedNow === true;
+
+  return buildApprovalItem({
+    id: 'mini_launch_mailerlite_api_existing_draft_update_strategy',
+    title: 'MailerLite API existing-draft update strategy',
+    lane: 'mini_launch_inteligencia_para_descansar',
+    operationType: 'reference_only_mailerlite_api_existing_draft_update_strategy',
+    approvalType: 'reference_only_strategy',
+    canAskNow: false,
+    exactApprovalPhrase: null,
+    sourceStatuses: {
+      strategyPacket: packet?.status ?? null,
+      apiEditDiagnostic: packet?.executiveSummary?.apiEditDiagnosticStatus ?? null,
+    },
+    targetNames,
+    allowedAfterExactApproval: [],
+    stillClosed: [
+      'api_edit_without_separate_exact_approval_packet',
+      'api_create_real_replacement_drafts',
+      'test_send_or_seed_send',
+      'public_or_audience_send',
+      'subscriber_workflow_group_or_segment_mutations',
+      'shopify_or_crm_mutation',
+      'ledger_card_scoring_or_fact_store_writes',
+    ],
+    requiredFreshEvidence: packet?.decisionBoundary?.beforeAnyFutureApiMutation ?? [],
+    blockers: [],
+    evidence: {
+      apiConnectionStableForRead: packet?.executiveSummary?.apiConnectionStableForRead ?? null,
+      allApiPayloadReady: packet?.executiveSummary?.allApiPayloadReady ?? null,
+      allDraftsInertByApi: packet?.executiveSummary?.allDraftsInertByApi ?? null,
+      apiEditCandidate: packet?.executiveSummary?.apiEditCandidate ?? null,
+      apiExistingDraftUpdateRecommendedNow,
+      apiCreateRealDraftsRecommendedNow,
+      blockerCount: packet?.executiveSummary?.blockerCount ?? null,
+      blockerIds: packet?.blockers ?? [],
+      exactApprovalPhraseAvailable: packet?.decisionBoundary?.exactApprovalPhraseAvailable ?? null,
+      mailerLiteApiCalledByPacket: packet?.safety?.mailerLiteApiCalled ?? null,
+      mailerLiteMutationsPerformedByPacket: packet?.safety?.mailerLiteMutationsPerformed ?? null,
+      tokensPrinted: packet?.safety?.tokensPrinted ?? null,
+      exactUrlsPrinted: packet?.safety?.exactUrlsPrinted ?? null,
+    },
+    commandAfterApproval: null,
+    notes: [
+      apiExistingDraftUpdateRecommendedNow
+        ? 'API existing-draft updates may be worth a separate approval packet, but this strategy packet is not that approval.'
+        : 'Current E02/E03 metadata is not inert enough for an API edit; keep API for read-only QA and future checks.',
+      apiCreateRealDraftsRecommendedNow
+        ? 'Review this unexpected result before using API-created real replacement drafts.'
+        : 'The current disposable lab did not find a safe API recipe for creating real replacement drafts.',
+    ],
+  });
+};
+
 const shopifyLocalBuildReceiptCompleted = (receipt, targetNames) =>
   receipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
   && receipt?.shopifyRepo?.localFilesCreatedOrUpdated === targetNames.length
@@ -2102,6 +2166,7 @@ const buildApprovalQueue = ({
   miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = null,
   miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt = null,
   miniLaunchMailerLiteApiInertDraftLab = null,
+  miniLaunchMailerLiteApiExistingDraftUpdateStrategy = null,
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedSendApprovalPacket = null,
   miniLaunchSeedTestExecutionReceipt = null,
@@ -2165,6 +2230,11 @@ const buildApprovalQueue = ({
       : null,
     cleanupItem,
     !cleanupRequiresAttention && apiLabItem,
+    !cleanupRequiresAttention && !apiLabRequiresAttention && miniLaunchMailerLiteApiExistingDraftUpdateStrategy
+      ? buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem({
+        packet: miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+      })
+      : null,
     !cleanupRequiresAttention && !apiLabRequiresAttention && miniLaunchSeedInboxCorrectionUiEditApprovalPacket
       ? buildMiniLaunchSeedInboxCorrectionUiEditItem({
         packet: miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
@@ -2324,6 +2394,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket, 'mini-launch unsafe API replacement cleanup approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt, 'mini-launch unsafe API replacement cleanup execution receipt'),
     readOptionalJsonWithDigest(options.miniLaunchMailerLiteApiInertDraftLab, 'mini-launch MailerLite API inert draft lab packet or receipt'),
+    readOptionalJsonWithDigest(options.miniLaunchMailerLiteApiExistingDraftUpdateStrategy, 'mini-launch MailerLite API existing draft update strategy packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedSendApprovalPacket, 'mini-launch private seed-send approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestExecutionReceipt, 'completed mini-launch seed/test execution receipt'),
@@ -2358,6 +2429,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
     miniLaunchMailerLiteApiInertDraftLab,
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
     miniLaunchSeedTestExecutionReceipt,
@@ -2392,6 +2464,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
     miniLaunchMailerLiteApiInertDraftLab,
+    miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
     miniLaunchSeedTestExecutionReceipt,
@@ -2463,6 +2536,7 @@ export {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem,
   buildMiniLaunchMailerLiteApiInertDraftLabItem,
   buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,

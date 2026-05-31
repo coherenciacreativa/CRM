@@ -7,6 +7,7 @@ import {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem,
   buildMiniLaunchMailerLiteApiInertDraftLabItem,
   buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
@@ -507,6 +508,50 @@ const miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt = {
     crmCardMutationsPerformed: false,
     crmScoreMutationsPerformed: false,
     factStoreWritePerformed: false,
+    tokensPrinted: false,
+    exactUrlsPrinted: false,
+  },
+};
+
+const miniLaunchMailerLiteApiExistingDraftUpdateStrategy = {
+  ok: true,
+  status: "mailerlite_api_existing_draft_update_strategy_blocked_existing_drafts_not_inert_no_live_changes",
+  executiveSummary: {
+    apiConnectionStableForRead: true,
+    apiEditDiagnosticStatus: "seed_inbox_correction_api_edit_diagnostic_blocked_or_needs_ui_no_live_changes",
+    apiReadCampaignCount: 4,
+    apiReadErrorCount: 0,
+    allCorrectedHtmlReady: true,
+    allApiPayloadReady: true,
+    allDraftsInertByApi: false,
+    apiEditCandidate: false,
+    apiLabCompleted: true,
+    apiLabReadyToUseCreateRecipeForRealDrafts: false,
+    cleanupDone: true,
+    uiEditPacketReady: true,
+    apiCreateRealDraftsRecommendedNow: false,
+    apiExistingDraftUpdateRecommendedNow: false,
+    currentRecommendedRoute: "do_not_mutate_existing_e02_e03_by_api_until_recipient_gate_is_closed_or_use_existing_ui_edit_route",
+    blockerCount: 1,
+  },
+  localEvidenceInterpretation: {
+    readOnlyExistingDraftDiagnostic: {
+      draftSafety: [
+        { step: 1, safetyClosed: true, failedSafetyChecks: [], apiPayloadReady: true },
+        { step: 2, safetyClosed: false, failedSafetyChecks: ["recipients_missing"], apiPayloadReady: true },
+        { step: 3, safetyClosed: false, failedSafetyChecks: ["recipients_missing"], apiPayloadReady: true },
+        { step: 4, safetyClosed: true, failedSafetyChecks: [], apiPayloadReady: true },
+      ],
+    },
+  },
+  decisionBoundary: {
+    exactApprovalPhraseAvailable: false,
+    beforeAnyFutureApiMutation: ["fresh read-only MailerLite re-scan by campaign id"],
+  },
+  blockers: ["existing_drafts_not_all_inert_by_api"],
+  safety: {
+    mailerLiteApiCalled: false,
+    mailerLiteMutationsPerformed: false,
     tokensPrinted: false,
     exactUrlsPrinted: false,
   },
@@ -1292,6 +1337,62 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         originalDraftsEditedOrDeleted: false,
       },
     });
+  });
+
+  test("surfaces MailerLite API existing-draft strategy as reference-only when E02/E03 are not inert", () => {
+    const item = buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem({
+      packet: miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+    });
+
+    expect(item).toMatchObject({
+      id: "mini_launch_mailerlite_api_existing_draft_update_strategy",
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_strategy",
+      operationType: "reference_only_mailerlite_api_existing_draft_update_strategy",
+      evidence: {
+        apiConnectionStableForRead: true,
+        allApiPayloadReady: true,
+        allDraftsInertByApi: false,
+        apiExistingDraftUpdateRecommendedNow: false,
+        apiCreateRealDraftsRecommendedNow: false,
+        blockerCount: 1,
+        mailerLiteApiCalledByPacket: false,
+        mailerLiteMutationsPerformedByPacket: false,
+      },
+    });
+    expect(item.targetNames).toEqual(["E01", "E02", "E03", "E04"]);
+    expect(item.evidence.blockerIds).toContain("existing_drafts_not_all_inert_by_api");
+    expect(item.stillClosed).toContain("api_edit_without_separate_exact_approval_packet");
+
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchEmailManualUiBuildReceipt,
+      miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: null,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+      miniLaunchMailerLiteApiInertDraftLab: miniLaunchMailerLiteApiInertDraftLabCompleted,
+      miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_mailerlite_api_existing_draft_update_strategy")).toBe(true);
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_mailerlite_api_existing_draft_update_strategy");
+    expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_seed_inbox_correction_ui_edit");
   });
 
   test("marks seed send ready only from a private seed-send approval packet", () => {
