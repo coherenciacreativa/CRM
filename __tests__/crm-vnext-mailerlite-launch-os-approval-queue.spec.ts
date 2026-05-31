@@ -10,6 +10,7 @@ import {
   buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem,
   buildMiniLaunchMailerLiteApiInertDraftLabItem,
   buildMiniLaunchMailerLiteApiNullAudienceLabItem,
+  buildMiniLaunchNullAudienceReplacementItem,
   buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
@@ -19,6 +20,7 @@ import {
   cleanupExecutionCompleted,
   mailerLiteApiInertDraftLabCompleted,
   mailerLiteApiNullAudienceLabCompleted,
+  nullAudienceReplacementExecutionCompleted,
   parseArgs,
   renderMarkdown,
 } from "../scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs";
@@ -584,6 +586,115 @@ const miniLaunchMailerLiteApiNullAudienceLabCompleted = {
   },
 };
 
+const miniLaunchNullAudienceReplacementApprovalPacket = {
+  ok: true,
+  status: "mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    canAskAlejandroForApproval: true,
+    replacementTargetCount: 4,
+    safetyGroupName: "CC · Safety · Null audience · DO NOT SEND",
+    safetyGroupActiveCountObserved: 0,
+    nullAudienceRecipeReady: true,
+    localRenderReady: true,
+    redCheckCount: 0,
+    finalPublicLinksReady: true,
+    publicAudienceSendUrlGateReady: false,
+    sourceCampaignIdCount: 4,
+    blockerCount: 0,
+  },
+  replacementTargets: [
+    { step: 1, label: "E01", replacementDraftName: "Draft E01 · API Null Audience replacement" },
+    { step: 2, label: "E02", replacementDraftName: "Draft E02 · API Null Audience replacement" },
+    { step: 3, label: "E03", replacementDraftName: "Draft E03 · API Null Audience replacement" },
+    { step: 4, label: "E04", replacementDraftName: "Draft E04 · API Null Audience replacement" },
+  ],
+  decision: {
+    packetIsApprovalByItself: false,
+    canCreateReplacementDraftsNow: false,
+    exactApprovalPhrase: "Apruebo crear por API únicamente 4 nuevos borradores de reemplazo del mini-lanzamiento Inteligencia para descansar en MailerLite, asignados solo al grupo vacío de seguridad CC · Safety · Null audience · DO NOT SEND con active_count=0, usando los 4 HTML locales QA-green y reemplazando en memoria solo los tokens redacted final_public_link_ready_redacted:* por las URLs preview unlisted/noindex ya registradas en el Shopify preview route execution receipt, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar cualquier borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si cualquier borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.",
+    allowedAfterExactApproval: ["create exactly 4 new MailerLite draft campaigns assigned only to the empty Null Audience safety group"],
+    stillClosedEvenAfterApproval: ["sending_test_or_public_email", "subscriber_read_import_assignment_or_mutation"],
+    requiredFreshEvidenceBeforeExecution: ["fresh MailerLite group scan confirms the Null Audience safety group exists and active_count=0"],
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    mailerLiteMutationsPerformed: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    groupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    shopifyMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    factStoreWritePerformed: false,
+    exactUrlsPrinted: false,
+    senderValuesPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
+const miniLaunchNullAudienceReplacementExecutionReceiptCompleted = {
+  ok: true,
+  status: "mailerlite_null_audience_replacement_execution_completed_no_sends",
+  mode: "execute_requested",
+  createdDrafts: [
+    { label: "E01", name: "Draft E01 · API Null Audience replacement" },
+    { label: "E02", name: "Draft E02 · API Null Audience replacement" },
+    { label: "E03", name: "Draft E03 · API Null Audience replacement" },
+    { label: "E04", name: "Draft E04 · API Null Audience replacement" },
+  ],
+  postCreateQa: {
+    replacementDraftCount: 4,
+    nullAudienceSafeCount: 4,
+    contentGreenCount: 4,
+  },
+  cleanup: {
+    attempted: false,
+  },
+  preflight: {
+    safetyGroupName: "CC · Safety · Null audience · DO NOT SEND",
+    safetyGroupActiveCount: 0,
+  },
+  safety: {
+    mailerLiteApiCalled: true,
+    mailerLiteDraftsCreated: 4,
+    mailerLiteDraftsDeletedByFailureCleanup: 0,
+    oldDraftsEdited: false,
+    oldDraftsDeletedOrArchived: false,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    additionalGroupsCreatedOrAssigned: false,
+    nonNullAudienceGroupsAssigned: false,
+    segmentsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    shopifyMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    factStoreWritePerformed: false,
+    exactUrlsPrinted: false,
+    senderValuesPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
+const miniLaunchNullAudienceReplacementPreflightReceipt = {
+  ok: true,
+  status: "mailerlite_null_audience_replacement_preflight_ready_for_exact_approval",
+  mode: "read_only_preflight",
+  createdDrafts: [],
+  decision: {
+    blockers: [],
+  },
+  safety: {
+    mailerLiteApiCalled: true,
+    mailerLiteDraftsCreated: 0,
+    sendsPerformed: false,
+    tokensPrinted: false,
+  },
+};
+
 const miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt = {
   ok: true,
   status: "seed_inbox_correction_api_replacement_cleanup_execution_completed_no_sends",
@@ -1021,6 +1132,9 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchMailerLiteApiInertDraftLab).toContain("mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchMailerLiteApiNullAudienceLab).toContain("mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchNullAudienceReplacementApprovalPacket).toContain("mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchNullAudienceReplacementExecutionReceipt).toContain("mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchSeedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
@@ -1530,6 +1644,96 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
         realCampaignAudienceAssignmentsPerformed: false,
       },
     });
+  });
+
+  test("marks Null Audience replacement drafts as the next API approval boundary", () => {
+    const item = buildMiniLaunchNullAudienceReplacementItem({
+      packet: miniLaunchNullAudienceReplacementApprovalPacket,
+      executionReceipt: miniLaunchNullAudienceReplacementPreflightReceipt,
+    });
+
+    expect(item).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      id: "mini_launch_mailerlite_api_null_audience_replacement_drafts",
+      operationType: "live_mailerlite_api_null_audience_replacement_drafts_after_exact_approval",
+      targetCount: 4,
+      evidence: {
+        replacementTargetCount: 4,
+        safetyGroupName: "CC · Safety · Null audience · DO NOT SEND",
+        safetyGroupActiveCountObserved: 0,
+        nullAudienceRecipeReady: true,
+        localRenderReady: true,
+        publicAudienceSendUrlGateReady: false,
+        mailerLiteApiCalledByPacket: false,
+        readOnlyPreflightStatus: "mailerlite_null_audience_replacement_preflight_ready_for_exact_approval",
+        readOnlyPreflightBlockerCount: 0,
+      },
+    });
+    expect(item.exactApprovalPhrase).toContain("4 nuevos borradores de reemplazo");
+    expect(item.commandAfterApproval).toContain("mailerlite-mini-launch-null-audience-replacement-create");
+
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: null,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+      miniLaunchMailerLiteApiInertDraftLab: miniLaunchMailerLiteApiInertDraftLabCompleted,
+      miniLaunchMailerLiteApiNullAudienceLab: miniLaunchMailerLiteApiNullAudienceLabCompleted,
+      miniLaunchNullAudienceReplacementApprovalPacket,
+      miniLaunchNullAudienceReplacementExecutionReceipt: miniLaunchNullAudienceReplacementPreflightReceipt,
+      miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_mailerlite_api_null_audience_replacement_drafts");
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_ui_edit");
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_mailerlite_api_existing_draft_update_strategy")).toBe(false);
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_seed_inbox_correction_ui_edit")).toBe(false);
+  });
+
+  test("marks Null Audience replacement drafts reference-only after completed execution", () => {
+    expect(nullAudienceReplacementExecutionCompleted(miniLaunchNullAudienceReplacementExecutionReceiptCompleted)).toBe(true);
+
+    const item = buildMiniLaunchNullAudienceReplacementItem({
+      packet: miniLaunchNullAudienceReplacementApprovalPacket,
+      executionReceipt: miniLaunchNullAudienceReplacementExecutionReceiptCompleted,
+    });
+
+    expect(item).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_completed",
+      operationType: "live_mailerlite_api_null_audience_replacement_drafts_already_completed",
+      evidence: {
+        completed: true,
+        createdDraftCount: 4,
+        nullAudienceSafeCount: 4,
+        contentGreenCount: 4,
+        safetyGroupName: "CC · Safety · Null audience · DO NOT SEND",
+        safetyGroupActiveCount: 0,
+        sendsPerformed: false,
+        campaignsPublished: false,
+        campaignsScheduled: false,
+        oldDraftsEdited: false,
+        tokensPrinted: false,
+      },
+    });
+    expect(item.exactApprovalPhrase).toBeNull();
   });
 
   test("surfaces MailerLite API existing-draft strategy as reference-only when E02/E03 are not inert", () => {

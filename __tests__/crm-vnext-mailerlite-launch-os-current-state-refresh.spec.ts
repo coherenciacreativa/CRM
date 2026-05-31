@@ -77,6 +77,12 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchMailerLiteApiNullAudienceLab).toBe(
       "/tmp/mantis-reports/mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchNullAudienceReplacementApprovalPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
+    expect(plan.paths.miniLaunchNullAudienceReplacementExecutionReceipt).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchSeedInboxCorrectionApiEditDiagnostic).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -106,6 +112,8 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-inert-draft-lab.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-null-audience-lab.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
@@ -117,6 +125,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-api-inert-draft-lab");
     expect(commands).toContain("crm:vnext:mailerlite-api-null-audience-lab");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-null-audience-replacement-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-api-existing-draft-update-strategy-packet");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-approval-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
@@ -137,6 +146,8 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json");
     expect(commands).toContain("mailerlite_launch_os_approval_intake_current_2026-05-31.json");
@@ -385,6 +396,41 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           mailerLiteDraftsDeleted: 0,
           senderValuesPrinted: false,
           safetyGroupIdPrinted: false,
+          tokensPrinted: false,
+        },
+        miniLaunchNullAudienceReplacementApprovalPacket: {
+          path: paths.miniLaunchNullAudienceReplacementApprovalPacket,
+          markdownPath: paths.miniLaunchNullAudienceReplacementApprovalPacketMarkdown,
+          status: "mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes",
+          ok: true,
+          canAskAlejandroForApproval: true,
+          replacementTargetCount: 4,
+          nullAudienceRecipeReady: true,
+          safetyGroupActiveCountObserved: 0,
+          localRenderReady: true,
+          redCheckCount: 0,
+          publicAudienceSendUrlGateReady: false,
+          sourceCampaignIdCount: 4,
+          blockerCount: 0,
+          mailerLiteApiCalled: false,
+          mailerLiteMutationsPerformed: false,
+          exactUrlsPrinted: false,
+          tokensPrinted: false,
+        },
+        miniLaunchNullAudienceReplacementExecutionReceipt: {
+          path: paths.miniLaunchNullAudienceReplacementExecutionReceipt,
+          markdownPath: paths.miniLaunchNullAudienceReplacementExecutionReceiptMarkdown,
+          status: "mailerlite_null_audience_replacement_preflight_ready_for_exact_approval",
+          ok: true,
+          mode: "read_only_preflight",
+          createdDraftCount: 0,
+          nullAudienceSafeCount: null,
+          contentGreenCount: null,
+          cleanupAttempted: null,
+          blockerCount: 0,
+          mailerLiteApiCalled: true,
+          mailerLiteDraftsCreated: 0,
+          sendsPerformed: false,
           tokensPrinted: false,
         },
         miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
