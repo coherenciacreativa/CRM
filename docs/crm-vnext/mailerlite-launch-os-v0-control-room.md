@@ -896,6 +896,77 @@ Meaning:
   - Continue with inbox QA/correction planning for the four seed emails, or collect the four CRM inputs before regenerating any CRM-write approval packet.
   - Before any public/audience send, workflow/subscriber/group action, Shopify live move, CRM write, Signal Ledger append, card/scoring change or Fact Store write, stop and request one exact scope-specific approval phrase.
 
+## Launch OS v0 seed inbox QA checkpoint - 2026-05-31
+
+- Estado:
+  - active goal
+  - seed inbox QA completed from Gmail read-only readback
+  - seed delivery evidence is green: 4/4 approved test emails arrived
+  - reader-facing public readiness is yellow, with minor cleanup required before public/audience use
+  - no MailerLite UI edit, additional send, public/audience send or workflow/subscriber/group action is authorized by this checkpoint
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+
+- Resultados confirmados:
+  - seed inbox QA: `status=seed_inbox_qa_completed_correction_recommended_before_public_launch_no_live_changes`
+  - seed inbox QA: `deliveryStatus=green`
+  - seed inbox QA: `receivedExpectedMessages=4/4`
+  - seed inbox QA: `readerFacingPublicReadiness=yellow_needs_minor_footer_and_link_cleanup`
+  - seed inbox QA: `correctionRecommendedBeforePublicLaunch=true`
+  - seed inbox QA: `canAskPublicSendApprovalNow=false`
+  - operator-runbook: `seedInboxQaStatus=seed_inbox_qa_completed_correction_recommended_before_public_launch_no_live_changes`
+  - operator-runbook: `seedInboxQaCanAskPublicSendApprovalNow=false`
+  - goal-audit: still `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: seed inbox QA is now the current next mini-launch asset move, not the old seed-send approval
+  - validation-receipt: `liveGatesClosed=true`, `validationStatus=needs_validation`
+
+- QA findings before public/audience launch:
+  - E01 needs footer/subscription-reason consistency with E02-E04.
+  - E02, E03 and E04 need duplicate standalone sender-name cleanup after the signoff.
+  - E04 needs the raw `reply` CTA token replaced with polished reply behavior or copy.
+  - E01-E03 still need final approved links to replace inert placeholders before any public/audience send.
+
+- Seguridad:
+  - Gmail access used by this QA: read-only
+  - full seed recipient printed: false
+  - full email bodies stored in the QA report: false
+  - MailerLite UI opened by this QA: false
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - subscriber/group/workflow mutations: false
+  - MailerLite sends performed by this QA: false
+  - public/audience send performed: false
+  - Signal Ledger append: false
+  - CRM card/scoring mutation: false
+  - Fact Store write: false
+
+- Qué está probado:
+  - The approved seed-send route produced four inbox-visible test emails.
+  - The message bodies are coherent enough for seed review.
+  - Public launch should not proceed directly from this state because link/footer/CTA cleanup remains.
+  - The refreshed runbook and goal audit now treat inbox QA as completed and route the next safe move to local correction planning.
+
+- Qué sigue parcial o pendiente:
+  - Prepare a local correction plan for the four QA findings.
+  - MailerLite UI edits remain a separate approval boundary.
+  - Any additional test send remains a separate approval boundary.
+  - Public/audience launch remains closed.
+  - CRM signal writes still need the four active CRM inputs before any write approval packet can be regenerated.
+  - Taxonomy refresh still needs final Brand/CRM taxonomy response files.
+
+- Próximo paso seguro:
+  - Prepare a local correction plan only, using the seed inbox QA report as evidence.
+  - Do not edit MailerLite UI, send again, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a new exact scope-specific approval phrase.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
