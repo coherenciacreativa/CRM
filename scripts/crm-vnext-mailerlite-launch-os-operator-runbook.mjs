@@ -920,6 +920,15 @@ const buildCurrentState = ({
       emailRenderQaEmailCount: miniLaunchEmailRenderQa?.executiveSummary?.emailCount ?? null,
       emailRenderQaHtmlWrittenCount: miniLaunchEmailRenderQa?.executiveSummary?.htmlWrittenCount ?? null,
       emailRenderQaRenderPreviewNonEmptyCount: miniLaunchEmailRenderQa?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
+      emailRenderQaRawReplyDestinationRenderedCount: (miniLaunchEmailRenderQa?.emailQa ?? [])
+        .filter((email) => email?.staticQa?.rawReplyDestinationRendered === true)
+        .length,
+      emailRenderQaReplyCtaRawDestinationClean: (miniLaunchEmailRenderQa?.emailQa ?? [])
+        .some((email) => email?.staticQa?.hasReplyCta === true)
+        ? (miniLaunchEmailRenderQa?.emailQa ?? [])
+          .filter((email) => email?.staticQa?.hasReplyCta === true)
+          .every((email) => email?.staticQa?.rawReplyDestinationRendered === false)
+        : null,
       emailRenderQaPublicUseReady: miniLaunchEmailRenderQa?.executiveSummary?.publicUseReady ?? false,
       emailRenderQaMailerLiteBuilderReady: miniLaunchEmailRenderQa?.executiveSummary?.mailerLiteBuilderReady ?? false,
       emailRenderQaSeedSendReady: miniLaunchEmailRenderQa?.executiveSummary?.seedSendReady ?? false,
@@ -2074,6 +2083,8 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch email render local ready: ${runbook.currentState.miniLaunch.emailRenderQaLocalRenderReady}`,
     `- Mini-launch email render count: ${runbook.currentState.miniLaunch.emailRenderQaEmailCount ?? 'unknown'}`,
     `- Mini-launch email render non-empty previews: ${runbook.currentState.miniLaunch.emailRenderQaRenderPreviewNonEmptyCount ?? 'unknown'}`,
+    `- Mini-launch email render raw reply destination count: ${runbook.currentState.miniLaunch.emailRenderQaRawReplyDestinationRenderedCount ?? 'unknown'}`,
+    `- Mini-launch email render reply CTA raw destination clean: ${runbook.currentState.miniLaunch.emailRenderQaReplyCtaRawDestinationClean ?? 'unknown'}`,
     `- Mini-launch manual UI build receipt: ${runbook.currentState.miniLaunch.emailManualUiBuildReceiptStatus ?? 'unknown'}`,
     `- Mini-launch manual UI drafts visible: ${runbook.currentState.miniLaunch.emailManualUiDraftVisibleCount ?? 'unknown'}`,
     `- Mini-launch manual UI build closed: ${runbook.currentState.miniLaunch.emailManualUiBuildClosed}`,

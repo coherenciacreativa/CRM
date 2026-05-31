@@ -307,8 +307,7 @@ const buildHtmlForPayload = (payload) => {
       const placeholder = cleanString(block?.placeholder?.value) ?? cleanString(block?.destination) ?? 'inert_placeholder';
       lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span><br><span class="placeholder-note">${escape(placeholder)}</span></p>`);
     } else if (block.type === 'reply_cta') {
-      const destination = cleanString(block?.destination) ?? 'reply_to_email';
-      lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span><br><span class="placeholder-note">${escape(destination)}</span></p>`);
+      lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span></p>`);
     } else {
       for (const paragraph of text.split('\n').map(cleanString).filter(Boolean)) {
         lines.push(`      <p>${escape(paragraph)}</p>`);

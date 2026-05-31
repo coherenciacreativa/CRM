@@ -1026,6 +1026,69 @@ Meaning:
   - Collect the two missing correction inputs or prepare a local corrected payload preview only.
   - Do not open MailerLite UI for edits, send tests, publish, schedule or mutate any live surface until a later exact scope-specific approval exists after the missing inputs and fresh QA are ready.
 
+## Launch OS v0 reply CTA local render hardening checkpoint - 2026-05-31
+
+- Estado:
+  - active goal
+  - local render hardening updated after seed inbox QA
+  - local preview green
+  - not ready for live operation
+  - no live actions authorized
+  - MailerLite UI edit, additional test send and public/audience launch remain closed
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31/`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+- Resultados confirmados:
+  - render QA: `status=mini_launch_email_render_qa_green_no_live_changes`
+  - render QA: `localRenderReady=true`
+  - render QA: `emailCount=4`
+  - render QA: `renderPreviewNonEmptyCount=4`
+  - render QA: `redCheckCount=0`
+  - render QA E04: `reply_cta_no_raw_destination_token=green`
+  - render QA E04: `rawReplyDestinationRendered=false`
+  - operator-runbook: `emailRenderQaRawReplyDestinationRenderedCount=0`
+  - operator-runbook: `emailRenderQaReplyCtaRawDestinationClean=true`
+  - operator-runbook: `openLiveGateCount=0`
+  - goal-audit: `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: `readyForLiveOperation=false`
+  - goal-audit: `liveActionAllowedNow=false`
+  - validation-receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`
+  - validation-receipt: `validationStatus=passed`
+  - validation-receipt: `liveGatesClosed=true`
+
+- Seguridad:
+  - MailerLite UI opened: false
+  - MailerLite API called by render QA: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - subscriber/group/workflow mutations: false
+  - sends performed: false
+  - Signal Ledger/card/scoring/Fact Store writes: false
+  - full seed recipient printed: false
+
+- Qué está probado:
+  - The local HTML generator no longer renders the raw `reply` destination token under the E04 reply CTA.
+  - The local render QA now checks this explicitly with `reply_cta_no_raw_destination_token`.
+  - The local preview path stays no-live: no scripts, no live links, no send/schedule/workflow/subscriber/group mutation.
+
+- Qué sigue parcial o pendiente:
+  - This hardens the local preview only; it does not edit the existing MailerLite UI draft.
+  - Final approved public links are still missing: `result_or_resource_link`, `practice_link`, `editorial_note_link`.
+  - The footer/subscription-reason policy is still missing: keep one consistent Spanish line across E01-E04 or rely only on the platform footer.
+  - A fresh post-correction QA is still missing after any future MailerLite UI edit.
+  - Public/audience launch, schedule, workflow/subscriber/group action, Shopify live move, CRM write, Signal Ledger append, card/scoring change and Fact Store write remain closed.
+
+- Próximo paso seguro:
+  - Keep the new local render QA as preview evidence.
+  - Collect final public links plus footer/subscription policy before asking for any exact MailerLite UI edit approval.
+  - Do not send another test or launch publicly until after a future scoped UI correction, fresh QA and a separate exact send approval.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
@@ -1876,4 +1939,4 @@ Non-goals:
 
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The current next safe move is to collect the final public links plus the footer/subscription-reason policy, or prepare a local corrected payload preview; do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The current next safe move is to collect the final public links plus the footer/subscription-reason policy before any MailerLite UI edit approval; do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

@@ -815,6 +815,9 @@ const miniLaunchEmailRenderQa = {
     mailerLiteBuilderReady: false,
     seedSendReady: false,
   },
+  emailQa: [
+    { step: 4, staticQa: { hasReplyCta: true, rawReplyDestinationRendered: false } },
+  ],
 };
 
 const miniLaunchEmailManualUiBuildReceipt = {
@@ -1189,6 +1192,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.emailRenderQaLocalRenderReady).toBe(true);
     expect(state.miniLaunch.emailRenderQaEmailCount).toBe(4);
     expect(state.miniLaunch.emailRenderQaRenderPreviewNonEmptyCount).toBe(4);
+    expect(state.miniLaunch.emailRenderQaRawReplyDestinationRenderedCount).toBe(0);
+    expect(state.miniLaunch.emailRenderQaReplyCtaRawDestinationClean).toBe(true);
     expect(state.miniLaunch.emailManualUiBuildReceiptStatus).toBe("manual_ui_build_receipt_executed_drafts_created_no_sends");
     expect(state.miniLaunch.emailManualUiDraftVisibleCount).toBe(4);
     expect(state.miniLaunch.emailManualUiBuildClosed).toBe(true);

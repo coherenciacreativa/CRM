@@ -140,11 +140,16 @@ const expectedUrlPlaceholdersFor = (target) => (target.contentBlocks ?? [])
 const hasReplyCtaFor = (target) => (target.contentBlocks ?? [])
   .some((block) => block?.type === 'reply_cta');
 
+const rendersRawReplyDestination = (html) =>
+  /<span class="placeholder-note">\s*reply\s*<\/span>/i.test(String(html ?? ''));
+
 const buildStaticChecksForEmail = ({ target, html }) => {
   const publicTextScan = scanPublicText(html);
   const urlPlaceholders = expectedUrlPlaceholdersFor(target);
   const missingPlaceholders = urlPlaceholders.filter((placeholder) => !html.includes(placeholder));
   const blueHits = defaultBlueHits(html);
+  const hasReplyCta = hasReplyCtaFor(target);
+  const rawReplyDestinationRendered = hasReplyCta && rendersRawReplyDestination(html);
   const checks = [
     {
       id: 'html_document_basics',
@@ -188,14 +193,21 @@ const buildStaticChecksForEmail = ({ target, html }) => {
     },
     {
       id: 'placeholder_boundary',
-      status: missingPlaceholders.length === 0 && (urlPlaceholders.length > 0 || hasReplyCtaFor(target))
+      status: missingPlaceholders.length === 0 && (urlPlaceholders.length > 0 || hasReplyCta)
         ? 'green'
         : 'red',
       evidence: urlPlaceholders.length
         ? `URL placeholders present=${urlPlaceholders.length}; missing=${missingPlaceholders.length}.`
-        : hasReplyCtaFor(target)
+        : hasReplyCta
           ? 'Reply CTA is text-only and does not require a URL placeholder.'
           : 'No CTA boundary found.',
+    },
+    {
+      id: 'reply_cta_no_raw_destination_token',
+      status: hasReplyCta && rawReplyDestinationRendered ? 'red' : 'green',
+      evidence: hasReplyCta
+        ? `Reply CTA raw destination token rendered=${rawReplyDestinationRendered}.`
+        : 'No reply CTA in this email.',
     },
     {
       id: 'public_copy_boundary',
@@ -216,7 +228,8 @@ const buildStaticChecksForEmail = ({ target, html }) => {
     publicTextScan,
     expectedUrlPlaceholders: urlPlaceholders,
     missingPlaceholders,
-    hasReplyCta: hasReplyCtaFor(target),
+    hasReplyCta,
+    rawReplyDestinationRendered,
     greenCount: checks.filter((check) => check.status === 'green').length,
     redCount: checks.filter((check) => check.status === 'red').length,
     yellowCount: checks.filter((check) => String(check.status).startsWith('yellow')).length,

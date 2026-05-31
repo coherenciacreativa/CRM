@@ -192,6 +192,8 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(generatedEmails[0].staticQa.missingPlaceholders).toEqual([]);
     expect(generatedEmails[3].staticQa.hasReplyCta).toBe(true);
     expect(generatedEmails[3].staticQa.expectedUrlPlaceholders).toEqual([]);
+    expect(generatedEmails[3].staticQa.rawReplyDestinationRendered).toBe(false);
+    expect(generatedEmails[3].html).not.toContain('<span class="placeholder-note">reply</span>');
     expect(generatedEmails[3].staticQa.redCount).toBe(0);
   });
 

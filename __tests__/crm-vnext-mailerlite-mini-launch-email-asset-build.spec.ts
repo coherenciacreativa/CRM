@@ -331,6 +331,20 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     expect(html).not.toContain("<script");
   });
 
+  test("renders reply CTA without exposing the raw reply destination token", () => {
+    const html = buildHtmlForPayload({
+      ...payloads[3],
+      contentBlocks: [
+        { type: "paragraph", text: "Puedes responder con una linea." },
+        { type: "reply_cta", text: "Responder con una linea", destination: "reply" },
+      ],
+    });
+
+    expect(html).toContain("Responder con una linea");
+    expect(html).not.toContain('<span class="placeholder-note">reply</span>');
+    expect(html).not.toContain(">reply<");
+  });
+
   test("renders markdown with all closed gates", () => {
     const run = buildRunFromState({
       scopePacket,
