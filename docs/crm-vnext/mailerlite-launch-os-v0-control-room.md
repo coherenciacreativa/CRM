@@ -599,6 +599,90 @@ Meaning:
   - After both files exist, rerun the response workspace scan, decision intake, taxonomy request bundle, operator runbook, goal audit and validation receipt.
   - Do not ask for or execute live mutation until a fresh local patch preview proves exactly what would change and Alejandro approves that exact scope.
 
+## Launch OS v0 MailerLite read-only evidence refresh - 2026-05-31
+
+- Estado:
+  - active goal
+  - Alejandro authorized repeated MailerLite consultation for goal progress
+  - fresh MailerLite read-only evidence collected
+  - operator runbook / goal audit / validation receipt refreshed against current read evidence
+  - not ready for live operation
+  - no live mutations authorized
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_healthcheck_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_healthcheck_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v1_audit_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_group_dry_run_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_fresh_dry_run_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_empty_group_create_fresh_dry_run_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_fresh_dry_run_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_empty_groups_fresh_dry_run_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+
+- Resultados confirmados:
+  - MailerLite healthcheck: `ok=true`, `status=ok`
+  - MailerLite healthcheck: `totalChecks=4`, `blocked=0`
+  - MailerLite healthcheck: cursor scan read `2` pages / `1373` subscribers without printing subscriber rows
+  - onboarding v1 audit: `ok=true`, `status=completed_read_only_audit`
+  - onboarding v1 audit: workflow `Onboarding flow` remains `enabled=true`, `complete=true`, `broken=false`
+  - onboarding v1 audit: workflow has `stepsCount=27`, `emailSequenceCount=11`
+  - onboarding v1 audit: read `89` groups, `13` automations, `24` fields, `8` segments and `12` forms
+  - mini-launch group dry-run: `ok=true`, `status=mini_launch_groups_already_exist_no_create_needed`
+  - mini-launch group dry-run: `groupsAlreadyLiveCount=2`, `safeEmptyCreateTargetCount=0`
+  - mini-launch empty-group create dry-run: `ok=true`, `status=dry_run_no_create_needed_targets_already_exist`
+  - mini-launch empty-group create dry-run: `targetGroupsExistingCount=2`, `targetGroupsMissingCount=0`, `createdCount=0`
+  - onboarding v2 empty-groups fresh dry-run: `status=dry_run_blocked` because all 12 targets already exist in the fresh scan
+  - onboarding v2 empty-groups fresh dry-run: `createdCount=0`
+  - operator-runbook: `ok=true`, `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`
+  - operator-runbook: `openLiveGateCount=0`
+  - goal-audit: `ok=true`, `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: `provenCount=6`, `partialCount=4`, `blockedCount=0`
+  - goal-audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+  - validation-receipt: `ok=true`, `status=mailerlite_launch_os_validation_receipt_needs_validation_no_live_changes`
+  - validation-receipt: `validationStatus=needs_validation`, `liveGatesClosed=true`
+
+- Seguridad:
+  - MailerLite API read-only calls performed: true
+  - MailerLite mutations performed: false
+  - group mutations / creations performed: false
+  - subscriber rows printed: false
+  - subscriber assignments/imports/mutations: false
+  - workflows/automations changed: false
+  - sends performed: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - Signal Event Ledger append: false
+  - CRM card/scoring mutations: false
+  - Fact Store writes: false
+  - outbound performed: false
+  - tokens printed: false
+
+- Decisión operativa:
+  - No approval is pending for mini-launch empty group creation: the 2 target groups already exist.
+  - No approval is pending for Onboarding v2 empty group creation: the 12 target groups already exist.
+  - The meaningful next approval is not group creation; it will be either a seed-send approval or a CRM write approval, but neither is ready to ask yet.
+
+- Qué sigue pendiente antes de poder pedir aprobación live útil:
+  - Exact seed recipient for the mini-launch seed send.
+  - Real observed events file for CRM signal writes.
+  - Exact people / CRM identities attached to those observed events.
+  - Writable-event screen confirming which observed events are eligible to become CRM writes.
+  - Human market review if future Fact Store writes are requested.
+  - Brand and CRM final taxonomy response files for semantic/cache consolidation; these are not live approval.
+
+- Próximo paso seguro:
+  - Collect the missing inputs and taxonomy final response files.
+  - Continue using MailerLite read-only refreshes whenever live evidence may have drifted.
+  - Before seed send, CRM write, audience send, workflow/subscriber mutation, Shopify publish, or Fact Store write, stop and request one exact scope-specific approval phrase.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
