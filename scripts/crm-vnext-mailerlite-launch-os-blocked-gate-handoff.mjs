@@ -298,19 +298,25 @@ const buildBlockedGateHandoff = ({
 }) => {
   const itemsById = approvalItemsById(approvalQueue);
   const sourcePaths = Object.fromEntries(sourceDigests.map((digest) => [digest.id, digest.path]));
+  const seedApprovalItem = itemsById.get('mini_launch_seed_send');
+  const crmApprovalItem = itemsById.get('crm_signal_writes');
   const blockedGates = [
-    buildSeedBlockedGate({
-      approvalItem: itemsById.get('mini_launch_seed_send'),
+    seedApprovalItem?.status === 'reference_only_no_approval_request_now'
+      ? null
+      : buildSeedBlockedGate({
+      approvalItem: seedApprovalItem,
       seedTestQa,
       seedSendApproval,
       sourcePaths,
     }),
-    buildCrmBlockedGate({
-      approvalItem: itemsById.get('crm_signal_writes'),
+    crmApprovalItem?.status === 'reference_only_no_approval_request_now'
+      ? null
+      : buildCrmBlockedGate({
+      approvalItem: crmApprovalItem,
       crmWriteApproval,
       sourcePaths,
     }),
-  ];
+  ].filter(Boolean);
   const inputNeededNow = blockedGates.flatMap((gate) => gate.inputNeededNow.map((input) => ({
     gateId: gate.id,
     ...input,

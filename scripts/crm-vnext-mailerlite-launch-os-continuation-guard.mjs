@@ -130,6 +130,26 @@ const buildClosedBoundaries = ({ runbook }) => {
       doNotReopenUnless: 'A new QA packet reports missing fragments or a named draft needs repair.',
     }),
     boolClosedBoundary({
+      id: 'mini_launch_seed_test_execution',
+      label: 'Mini-launch approved seed/test send',
+      closed: miniLaunch.seedTestExecutionCompleted === true
+        && miniLaunch.seedTestExecutionObservedMessageCount === 4
+        && miniLaunch.seedTestExecutionExpectedMessageCount === 4
+        && miniLaunch.seedTestExecutionPublicSendPerformed === false
+        && miniLaunch.seedTestExecutionAudienceSendPerformed === false
+        && miniLaunch.seedTestExecutionOutboxCount === 0,
+      evidence: [
+        `seedTestExecutionReceiptStatus=${miniLaunch.seedTestExecutionReceiptStatus ?? 'missing'}`,
+        `seedTestExecutionCompleted=${miniLaunch.seedTestExecutionCompleted ?? 'unknown'}`,
+        `seedTestExecutionObservedMessageCount=${miniLaunch.seedTestExecutionObservedMessageCount ?? 'unknown'}`,
+        `seedTestExecutionExpectedMessageCount=${miniLaunch.seedTestExecutionExpectedMessageCount ?? 'unknown'}`,
+        `seedTestExecutionPublicSendPerformed=${miniLaunch.seedTestExecutionPublicSendPerformed ?? 'unknown'}`,
+        `seedTestExecutionAudienceSendPerformed=${miniLaunch.seedTestExecutionAudienceSendPerformed ?? 'unknown'}`,
+        `seedTestExecutionOutboxCount=${miniLaunch.seedTestExecutionOutboxCount ?? 'unknown'}`,
+      ],
+      doNotReopenUnless: 'Alejandro gives a new exact send scope or inbox QA finds a concrete issue that requires a new correction/test boundary.',
+    }),
+    boolClosedBoundary({
       id: 'brujula_email1_manual_ui_draft_build',
       label: 'Brújula Email 1 corrected MailerLite UI draft',
       closed: brujula.manualUiBuildClosed === true
@@ -268,6 +288,12 @@ const buildRecycledActionBlocks = () => [
       'mini_launch_empty_group_creation',
       'onboarding_v2_empty_group_creation',
     ],
+  },
+  {
+    id: 'do_not_request_completed_seed_send_approval_again',
+    status: 'blocked_until_new_exact_send_scope',
+    reason: 'The approved mini-launch seed/test send is closed evidence once the Gmail receipt shows four messages to the approved seed and no public/audience send.',
+    appliesTo: ['mini_launch_seed_send', 'mini_launch_seed_test_execution'],
   },
   {
     id: 'do_not_request_seed_send_approval_without_seed_recipient',

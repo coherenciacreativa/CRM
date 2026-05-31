@@ -364,7 +364,9 @@ const stateFromInputs = ({ kit, seedState, observedState }) => {
       blockers: factReady ? [] : ['fact_store_market_review_missing_or_not_reviewed'],
     },
   ];
-  return states;
+  return byId.size > 0
+    ? states.filter((state) => byId.has(state.id))
+    : states;
 };
 
 const buildSafety = () => ({
@@ -412,10 +414,14 @@ const buildMissingInputsIntake = ({
   const readyInputCount = inputStates.filter((state) => state.status.startsWith('ready')).length;
   const presentInputCount = inputStates.filter((state) =>
     !['missing_no_live_changes', 'not_ready_no_live_changes'].includes(state.status)).length;
-  const readyForSeedApprovalPacket = seedState.valid;
+  const readyForSeedApprovalPacket = inputStates
+    .some((state) => state.id === 'exact_seed_recipient' && state.status.startsWith('ready'));
   const readyForCrmWritePacketRegeneration = observedState.file.present && observedState.file.parsed;
-  const readyForCrmApprovalRequest = ['real_observed_events_file', 'exact_people', 'writable_event_screen']
-    .every((id) => inputStates.find((state) => state.id === id)?.status.startsWith('ready'));
+  const crmApprovalInputStates = ['real_observed_events_file', 'exact_people', 'writable_event_screen']
+    .map((id) => inputStates.find((state) => state.id === id))
+    .filter(Boolean);
+  const readyForCrmApprovalRequest = crmApprovalInputStates.length > 0
+    && crmApprovalInputStates.every((state) => state.status.startsWith('ready'));
   const blockerIds = inputStates
     .filter((state) => !state.status.startsWith('ready'))
     .map((state) => state.id);

@@ -18,6 +18,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_inteligencia_descansar_2026-05-28.json';
@@ -46,6 +47,7 @@ Options:
   --mini-launch-email-manual-ui-draft-repair-packet <path> Mini-launch manual UI draft repair approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET}
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-seed-send-approval-packet <path> Mini-launch private seed-send approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET}
+  --mini-launch-seed-test-execution-receipt <path> Completed seed/test execution receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
   --mini-launch-shopify-local-build-request <path> Shopify no-live local build request. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST}
   --mini-launch-shopify-local-build-receipt <path> Shopify no-live local build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-crm-signal-projection-packet <path> CRM signal projection packet. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET}
@@ -90,6 +92,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailManualUiDraftRepairPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET,
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchSeedSendApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET,
+    miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
     miniLaunchShopifyLocalBuildRequest: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_REQUEST,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchCrmSignalProjectionPacket: DEFAULT_MINI_LAUNCH_CRM_SIGNAL_PROJECTION_PACKET,
@@ -121,6 +124,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-manual-ui-draft-repair-packet') options.miniLaunchEmailManualUiDraftRepairPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-seed-send-approval-packet') options.miniLaunchSeedSendApprovalPacket = argv[++index];
+    else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-request') options.miniLaunchShopifyLocalBuildRequest = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-crm-signal-projection-packet') options.miniLaunchCrmSignalProjectionPacket = argv[++index];
@@ -1088,6 +1092,34 @@ const brujulaManualUiReceiptClosed = (receipt, expectedSubject) => {
   return oldSchemaClosed || greenReceiptClosed;
 };
 
+const seedTestExecutionCompleted = (receipt) =>
+  receipt?.ok === true
+  && receipt?.status === 'seed_test_execution_completed_verified_by_gmail_no_public_send'
+  && receipt?.gmailVerification?.observedTestMessageCount === 4
+  && receipt?.gmailVerification?.expectedTestMessageCount === 4
+  && receipt?.gmailVerification?.allSubjectsMatchedExpected === true
+  && receipt?.gmailVerification?.allRecipientsMatchedApprovedSeedRecipient === true
+  && receipt?.uiExecution?.verificationEmail?.sentOnlyToApprovedSeedRecipient === true
+  && receipt?.uiExecution?.verificationEmail?.completed === true
+  && receipt?.uiExecution?.outboxCountObservedAfterExecution === 0
+  && receipt?.safety?.testEmailsSentToSeedRecipientCount === 4
+  && receipt?.safety?.verificationEmailSentToSeedRecipientCount === 1
+  && receipt?.safety?.publicCampaignSendPerformed === false
+  && receipt?.safety?.audienceSendPerformed === false
+  && receipt?.safety?.subscribersCreatedOrImported === false
+  && receipt?.safety?.subscribersAssignedOutsideSeedRecipient === false
+  && receipt?.safety?.groupsCreatedOrAssigned === false
+  && receipt?.safety?.workflowsOrAutomationsCreatedOrEditedOrActivated === false
+  && receipt?.safety?.campaignsPublished === false
+  && receipt?.safety?.campaignsScheduled === false
+  && receipt?.safety?.shopifyFilesChangedByThisExecution === false
+  && receipt?.safety?.crmLiveApiCalled === false
+  && receipt?.safety?.signalLedgerAppendPerformed === false
+  && receipt?.safety?.crmCardMutationsPerformed === false
+  && receipt?.safety?.crmScoreMutationsPerformed === false
+  && receipt?.safety?.factStoreWritePerformed === false
+  && receipt?.safety?.secretsOrVerificationTokensPrinted === false;
+
 const buildBrujulaBuilderDraftItem = ({ correction, renderQa, realMailerLiteRenderQa = null, manualUiReceipt = null }) => {
   const subject = cleanString(correction?.draft?.subject) ?? 'Brújula Email 1';
   const htmlPath = cleanString(correction?.outputs?.htmlPath);
@@ -1208,6 +1240,7 @@ const buildMiniLaunchSeedSendItem = ({
   manualUiReceipt = null,
   seedTestQaPacket = null,
   seedSendApprovalPacket = null,
+  seedTestExecutionReceipt = null,
 }) => {
   const manualUiDraftsBuilt = manualUiReceipt?.status === 'manual_ui_build_receipt_executed_drafts_created_no_sends'
     && manualUiReceipt?.executiveSummary?.createdOrEditedDraftCount === 4;
@@ -1239,7 +1272,75 @@ const buildMiniLaunchSeedSendItem = ({
       'exact_seed_recipient_missing',
       ...privateSeedBlockers,
     ])];
-  const targetNames = targetNamesFrom((seedTestQaPacket?.targetDrafts ?? []).map((draft) => draft?.draftName));
+  const executionCompleted = seedTestExecutionCompleted(seedTestExecutionReceipt);
+  const targetNames = targetNamesFrom(
+    (seedTestQaPacket?.targetDrafts ?? []).map((draft) => draft?.draftName),
+    (seedTestExecutionReceipt?.uiExecution?.campaigns ?? []).map((campaign) => campaign?.draftName),
+  );
+
+  if (executionCompleted) {
+    return buildApprovalItem({
+      id: 'mini_launch_seed_send',
+      title: 'Mini-launch seed/test send',
+      lane: 'mini_launch_inteligencia_para_descansar',
+      operationType: 'mailerLite_seed_test_completed_reference_only',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        payloadManifest: payloadManifest?.status ?? null,
+        renderQa: renderQa?.status ?? null,
+        manualUiReceipt: manualUiReceipt?.status ?? null,
+        seedTestQaPacket: seedTestQaPacket?.status ?? null,
+        seedSendApprovalPacket: seedSendApprovalPacket?.status ?? null,
+        seedTestExecutionReceipt: seedTestExecutionReceipt.status,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: seedTestExecutionReceipt?.remainingClosedGates ?? [
+        'public_or_audience_send',
+        'publish_or_schedule',
+        'workflow_or_automation_attachment',
+        'subscriber_import_assignment_or_mutation',
+        'group_creation_or_assignment',
+        'shopify_preview_publish_or_form_connection',
+        'crm_signal_ledger_append',
+        'crm_card_write',
+        'crm_scoring',
+        'fact_store_write',
+      ],
+      requiredFreshEvidence: [
+        'use the seed-test execution receipt as completed evidence',
+        'perform human inbox QA before any correction or public/audience launch boundary',
+        'require a new exact approval before any additional test send or audience send',
+      ],
+      blockers: [],
+      evidence: {
+        seedTestExecutionCompleted: true,
+        seedRecipientRedacted: seedTestExecutionReceipt.seedRecipient?.redactedEmail ?? seedSendApprovalPacket?.seedIdentity?.redactedEmail ?? null,
+        observedTestMessageCount: seedTestExecutionReceipt.gmailVerification.observedTestMessageCount,
+        expectedTestMessageCount: seedTestExecutionReceipt.gmailVerification.expectedTestMessageCount,
+        allSubjectsMatchedExpected: seedTestExecutionReceipt.gmailVerification.allSubjectsMatchedExpected,
+        allRecipientsMatchedApprovedSeedRecipient: seedTestExecutionReceipt.gmailVerification.allRecipientsMatchedApprovedSeedRecipient,
+        verificationEmailSentToSeedRecipientCount: seedTestExecutionReceipt.safety.verificationEmailSentToSeedRecipientCount,
+        testEmailsSentToSeedRecipientCount: seedTestExecutionReceipt.safety.testEmailsSentToSeedRecipientCount,
+        outboxCountAfterExecution: seedTestExecutionReceipt.uiExecution.outboxCountObservedAfterExecution,
+        draftsTabCountAfterExecution: seedTestExecutionReceipt.uiExecution.draftsTabCountObservedAfterExecution ?? null,
+        browser: seedTestExecutionReceipt.uiExecution.browser ?? null,
+        publicCampaignSendPerformed: seedTestExecutionReceipt.safety.publicCampaignSendPerformed,
+        audienceSendPerformed: seedTestExecutionReceipt.safety.audienceSendPerformed,
+        subscribersCreatedOrImported: seedTestExecutionReceipt.safety.subscribersCreatedOrImported,
+        groupsCreatedOrAssigned: seedTestExecutionReceipt.safety.groupsCreatedOrAssigned,
+        workflowsOrAutomationsCreatedOrEditedOrActivated: seedTestExecutionReceipt.safety.workflowsOrAutomationsCreatedOrEditedOrActivated,
+        secretsOrVerificationTokensPrinted: seedTestExecutionReceipt.safety.secretsOrVerificationTokensPrinted,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The exact seed/test approval boundary has already been used and verified by Gmail receipts.',
+        'This is not approval for public/audience sends, schedules, workflows, subscribers, groups, Shopify, CRM, ledgers, cards, scoring or Fact Store.',
+      ],
+    });
+  }
 
   return buildApprovalItem({
     id: 'mini_launch_seed_send',
@@ -1398,6 +1499,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailManualUiDraftRepairPacket = null,
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedSendApprovalPacket = null,
+  miniLaunchSeedTestExecutionReceipt = null,
   miniLaunchShopifyLocalBuildRequest,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchCrmSignalProjectionPacket,
@@ -1453,6 +1555,7 @@ const buildApprovalQueue = ({
       manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
       seedTestQaPacket: miniLaunchSeedTestQaPacket,
       seedSendApprovalPacket: miniLaunchSeedSendApprovalPacket,
+      seedTestExecutionReceipt: miniLaunchSeedTestExecutionReceipt,
     }),
     buildCrmSignalWriteItem({
       packet: miniLaunchCrmSignalProjectionPacket,
@@ -1487,6 +1590,7 @@ const buildApprovalQueue = ({
       'Only exact approval phrases can open the single named operation they describe.',
       'A group approval never authorizes subscribers, workflows or sends.',
       'An asset-build approval never authorizes seed sends, workflow attachment or audience launch.',
+      'A completed seed/test send never authorizes any later public/audience send or workflow/subscriber mutation.',
       'A Shopify local-build approval never authorizes publish, API calls, real forms or MailerLite/CRM live writes.',
       'CRM signal writes require a separate exact CRM write approval packet.',
     ],
@@ -1581,6 +1685,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiDraftRepairPacket, 'mini-launch manual UI draft repair approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedSendApprovalPacket, 'mini-launch private seed-send approval packet'),
+    readOptionalJsonWithDigest(options.miniLaunchSeedTestExecutionReceipt, 'completed mini-launch seed/test execution receipt'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildRequest, 'Shopify no-live local build request'),
     readOptionalJsonWithDigest(options.miniLaunchShopifyLocalBuildReceipt, 'Shopify no-live local build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchCrmSignalProjectionPacket, 'CRM signal projection packet'),
@@ -1607,6 +1712,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiDraftRepairPacket,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
+    miniLaunchSeedTestExecutionReceipt,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
@@ -1633,6 +1739,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiDraftRepairPacket,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
+    miniLaunchSeedTestExecutionReceipt,
     miniLaunchShopifyLocalBuildRequest,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchCrmSignalProjectionPacket,
