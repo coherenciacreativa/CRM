@@ -11,6 +11,7 @@ const DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Docum
 const DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json';
 const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json';
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.md';
+const MANTIS_REPORTS_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-request-bundle.mjs [options]
@@ -113,6 +114,33 @@ const buildSafety = () => ({
 
 const getWorkingCopy = (workspace, actor) => (workspace?.workingCopies ?? []).find((copy) => copy.actor === actor) ?? null;
 
+const reportDateFromGeneratedAt = (generatedAt) => {
+  if (typeof generatedAt !== 'string') return 'current';
+  const match = generatedAt.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match?.[1] ?? 'current';
+};
+
+const currentReportPath = ({ stem, generatedAt, extension }) => `${MANTIS_REPORTS_DIR}/${stem}_current_${reportDateFromGeneratedAt(generatedAt)}.${extension}`;
+
+const buildFollowUpReportPaths = ({ generatedAt, requestBundlePath }) => ({
+  taxonomyResponseWorkspaceJson: currentReportPath({ stem: 'mailerlite_launch_os_taxonomy_refresh_response_workspace', generatedAt, extension: 'json' }),
+  taxonomyResponseWorkspaceMarkdown: currentReportPath({ stem: 'mailerlite_launch_os_taxonomy_refresh_response_workspace', generatedAt, extension: 'md' }),
+  taxonomyDecisionIntakeJson: currentReportPath({ stem: 'mailerlite_launch_os_taxonomy_refresh_decision_intake', generatedAt, extension: 'json' }),
+  taxonomyDecisionIntakeMarkdown: currentReportPath({ stem: 'mailerlite_launch_os_taxonomy_refresh_decision_intake', generatedAt, extension: 'md' }),
+  operatorRunbookJson: currentReportPath({ stem: 'mailerlite_launch_os_operator_runbook', generatedAt, extension: 'json' }),
+  operatorRunbookMarkdown: currentReportPath({ stem: 'mailerlite_launch_os_operator_runbook', generatedAt, extension: 'md' }),
+  goalAuditJson: currentReportPath({ stem: 'mailerlite_launch_os_v0_goal_audit', generatedAt, extension: 'json' }),
+  goalAuditMarkdown: currentReportPath({ stem: 'mailerlite_launch_os_v0_goal_audit', generatedAt, extension: 'md' }),
+  validationReceiptJson: currentReportPath({ stem: 'mailerlite_launch_os_validation_receipt', generatedAt, extension: 'json' }),
+  validationReceiptMarkdown: currentReportPath({ stem: 'mailerlite_launch_os_validation_receipt', generatedAt, extension: 'md' }),
+  requestBundleJson: requestBundlePath ? resolve(requestBundlePath) : '<current_taxonomy_response_request_bundle_json>',
+  requestBundleMarkdown: requestBundlePath
+    ? resolve(requestBundlePath).replace(/\.json$/u, '.md')
+    : '<current_taxonomy_response_request_bundle_md>',
+});
+
+const pathOrPlaceholder = (path, placeholder) => (path ? resolve(path) : placeholder);
+
 const actorState = ({ workspace, intake, actor }) => {
   const finalState = workspace?.finalResponseState?.[actor] ?? {};
   const pendingState = workspace?.pendingResponseState?.[actor] ?? {};
@@ -190,15 +218,28 @@ const buildRequest = ({ actor, workspace, intake }) => {
   };
 };
 
-const buildCommands = (workspace) => ({
-  refreshWorkspaceWithoutWritingPending: workspace?.commands?.rescanFinalResponses ?? 'npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace -- --no-write-pending',
-  runDecisionIntake: 'npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake',
-  refreshControlRoomAfterResponses: [
-    'node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs --out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.json --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_2026-05-28.md',
-    'node scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs --out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.json --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.md',
-    'node scripts/crm-vnext-mailerlite-launch-os-validation-receipt.mjs',
-  ],
-});
+const buildCommands = (workspace, { generatedAt, requestBundlePath, taxonomyRefreshHandoffPath } = {}) => {
+  const reportPaths = buildFollowUpReportPaths({ generatedAt, requestBundlePath });
+  const brandWorkingCopy = getWorkingCopy(workspace, 'brand');
+  const crmWorkingCopy = getWorkingCopy(workspace, 'crm');
+  const brandFinalResponsePath = pathOrPlaceholder(brandWorkingCopy?.finalResponsePath, '<brand_taxonomy_final_response_json>');
+  const crmFinalResponsePath = pathOrPlaceholder(crmWorkingCopy?.finalResponsePath, '<crm_taxonomy_final_response_json>');
+  const responsesDir = brandWorkingCopy?.pendingPath
+    ? dirname(resolve(brandWorkingCopy.pendingPath))
+    : '<taxonomy_refresh_responses_dir>';
+  const handoffPath = pathOrPlaceholder(taxonomyRefreshHandoffPath, DEFAULT_TAXONOMY_REFRESH_HANDOFF);
+
+  return {
+    refreshWorkspaceWithoutWritingPending: `npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace -- --responses-dir ${responsesDir} --no-write-pending --out ${reportPaths.taxonomyResponseWorkspaceJson} --markdown-out ${reportPaths.taxonomyResponseWorkspaceMarkdown}`,
+    runDecisionIntake: `npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake -- --taxonomy-refresh-handoff ${handoffPath} --brand-decision-file ${brandFinalResponsePath} --crm-decision-file ${crmFinalResponsePath} --out ${reportPaths.taxonomyDecisionIntakeJson} --markdown-out ${reportPaths.taxonomyDecisionIntakeMarkdown}`,
+    refreshRequestBundleAfterIntake: `npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-request-bundle -- --taxonomy-refresh-handoff ${handoffPath} --taxonomy-refresh-response-workspace ${reportPaths.taxonomyResponseWorkspaceJson} --taxonomy-refresh-decision-intake ${reportPaths.taxonomyDecisionIntakeJson} --out ${reportPaths.requestBundleJson} --markdown-out ${reportPaths.requestBundleMarkdown}`,
+    refreshControlRoomAfterResponses: [
+      `npm run crm:vnext:mailerlite-launch-os-operator-runbook -- --taxonomy-refresh-response-workspace ${reportPaths.taxonomyResponseWorkspaceJson} --taxonomy-refresh-decision-intake ${reportPaths.taxonomyDecisionIntakeJson} --taxonomy-refresh-response-request-bundle ${reportPaths.requestBundleJson} --out ${reportPaths.operatorRunbookJson} --markdown-out ${reportPaths.operatorRunbookMarkdown}`,
+      `npm run crm:vnext:mailerlite-launch-os-goal-audit -- --runbook ${reportPaths.operatorRunbookJson} --taxonomy-refresh-response-workspace ${reportPaths.taxonomyResponseWorkspaceJson} --taxonomy-refresh-decision-intake ${reportPaths.taxonomyDecisionIntakeJson} --taxonomy-refresh-response-request-bundle ${reportPaths.requestBundleJson} --out ${reportPaths.goalAuditJson} --markdown-out ${reportPaths.goalAuditMarkdown}`,
+      `npm run crm:vnext:mailerlite-launch-os-validation-receipt -- --runbook ${reportPaths.operatorRunbookJson} --goal-audit ${reportPaths.goalAuditJson} --taxonomy-refresh-response-workspace ${reportPaths.taxonomyResponseWorkspaceJson} --taxonomy-refresh-decision-intake ${reportPaths.taxonomyDecisionIntakeJson} --taxonomy-refresh-response-request-bundle ${reportPaths.requestBundleJson} --out ${reportPaths.validationReceiptJson} --markdown-out ${reportPaths.validationReceiptMarkdown}`,
+    ],
+  };
+};
 
 const buildTaxonomyRefreshResponseRequestBundle = ({
   taxonomyRefreshHandoff,
@@ -206,6 +247,8 @@ const buildTaxonomyRefreshResponseRequestBundle = ({
   taxonomyRefreshDecisionIntake,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
+  requestBundlePath = null,
+  taxonomyRefreshHandoffPath = null,
 }) => {
   const requests = ['brand', 'crm'].map((actor) => buildRequest({
     actor,
@@ -254,7 +297,7 @@ const buildTaxonomyRefreshResponseRequestBundle = ({
       nextSafeAction: 'collect_taxonomy_final_responses_without_live_approval_or_execution',
     },
     requests,
-    commands: buildCommands(taxonomyRefreshResponseWorkspace),
+    commands: buildCommands(taxonomyRefreshResponseWorkspace, { generatedAt, requestBundlePath, taxonomyRefreshHandoffPath }),
     hardStops: [
       'This request bundle is not approval.',
       '*.pending.json files are working copies only; final response files must be saved without the .pending suffix.',
@@ -290,6 +333,8 @@ const buildTaxonomyRefreshResponseRequestBundleFromFiles = async (options) => {
     taxonomyRefreshResponseWorkspace,
     taxonomyRefreshDecisionIntake,
     sourceDigests,
+    requestBundlePath: options.out,
+    taxonomyRefreshHandoffPath: options.taxonomyRefreshHandoff,
   });
 };
 
@@ -343,6 +388,7 @@ const renderMarkdown = (bundle) => {
   lines.push('```bash');
   lines.push(bundle.commands.refreshWorkspaceWithoutWritingPending);
   lines.push(bundle.commands.runDecisionIntake);
+  lines.push(bundle.commands.refreshRequestBundleAfterIntake);
   for (const command of bundle.commands.refreshControlRoomAfterResponses) lines.push(command);
   lines.push('```');
   lines.push('');

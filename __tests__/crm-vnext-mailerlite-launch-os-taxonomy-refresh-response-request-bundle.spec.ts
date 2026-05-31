@@ -163,4 +163,24 @@ describe("CRM vNext MailerLite Launch OS taxonomy response request bundle", () =
       createsFinalResponseFiles: false,
     });
   });
+
+  test("builds follow-up report commands from the generated date and request bundle path", () => {
+    const bundle = buildTaxonomyRefreshResponseRequestBundle({
+      taxonomyRefreshHandoff: handoff,
+      taxonomyRefreshResponseWorkspace: responseWorkspace,
+      taxonomyRefreshDecisionIntake: decisionIntake,
+      generatedAt: "2026-05-31T12:00:00.000Z",
+      requestBundlePath: "/tmp/taxonomy-response-request-current.json",
+    });
+    const commands = bundle.commands.refreshControlRoomAfterResponses.join("\n");
+
+    expect(bundle.commands.refreshWorkspaceWithoutWritingPending).toContain("mailerlite_launch_os_taxonomy_refresh_response_workspace_current_2026-05-31.json");
+    expect(bundle.commands.runDecisionIntake).toContain("mailerlite_launch_os_taxonomy_refresh_decision_intake_current_2026-05-31.json");
+    expect(bundle.commands.refreshRequestBundleAfterIntake).toContain("/tmp/taxonomy-response-request-current.json");
+    expect(commands).toContain("mailerlite_launch_os_operator_runbook_current_2026-05-31.json");
+    expect(commands).toContain("mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json");
+    expect(commands).toContain("mailerlite_launch_os_validation_receipt_current_2026-05-31.json");
+    expect(commands).toContain("--taxonomy-refresh-response-request-bundle /tmp/taxonomy-response-request-current.json");
+    expect(commands).not.toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
+  });
 });

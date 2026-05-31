@@ -516,6 +516,89 @@ Meaning:
   - Collect missing inputs and taxonomy final responses as local-only data; do not convert them into execution approval.
   - Before any seed send, CRM write, Shopify live move, MailerLite builder/edit/send/workflow/subscriber action, or Fact Store write, stop and explain the exact decision, scope, evidence and approval phrase.
 
+## Launch OS v0 taxonomy response request refresh - 2026-05-31
+
+- Estado:
+  - active goal
+  - taxonomy response request bundle refreshed from current local evidence
+  - operator runbook / goal audit / validation receipt refreshed against the current request bundle
+  - not ready for live operation
+  - no live actions authorized
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+
+- Resultados confirmados:
+  - taxonomy response request bundle: `ok=true`, `status=taxonomy_refresh_response_request_bundle_ready_no_live_changes`
+  - taxonomy response request bundle: `requestCount=2`
+  - taxonomy response request bundle: `pendingActors=brand, crm`
+  - taxonomy response request bundle: `missingFinalResponseActors=brand, crm`
+  - taxonomy response request bundle: `copyBlocksReady=true`
+  - taxonomy response request bundle: `asksApproval=false`
+  - taxonomy response request bundle: `asksLiveApproval=false`
+  - taxonomy response request bundle: `createsFinalResponseFiles=false`
+  - taxonomy response request bundle: `canApplyCrmManifestPatchNow=false`
+  - taxonomy response request bundle: `openLiveMutationGateCount=0`
+  - operator-runbook: `ok=true`, `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`
+  - operator-runbook: source digest now includes `mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json`
+  - operator-runbook: `openLiveGateCount=0`
+  - goal-audit: `ok=true`, `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: source digest now includes `mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json`
+  - goal-audit: `provenCount=6`, `partialCount=4`, `blockedCount=0`
+  - goal-audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+  - validation-receipt: `ok=true`, `status=mailerlite_launch_os_validation_receipt_needs_validation_no_live_changes`
+  - validation-receipt: source digest now includes `mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json`
+  - validation-receipt: `validationStatus=needs_validation`, `liveGatesClosed=true`
+
+- Seguridad:
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - external messages sent: false
+  - final response files created: false
+  - Brand dictionary mutated: false
+  - CRM manifest mutated: false
+  - subscriber/group/workflow mutations: false
+  - sends performed: false
+  - Signal Event Ledger append: false
+  - CRM card/scoring mutations: false
+  - Fact Store writes: false
+  - tokens printed: false
+
+- Qué cambió:
+  - The taxonomy response request bundle now emits current follow-up command paths derived from the run date and generated bundle path instead of hardcoded 2026-05-28 runbook/audit/receipt outputs.
+  - The bundle still asks only for local final response files from Brand and CRM; it does not ask for live approval or execution.
+
+- Validación local:
+  - `node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-request-bundle.mjs`
+  - `node --check __tests__/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-request-bundle.spec.ts`
+  - `node --check scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-launch-os-validation-receipt.mjs`
+  - `npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-request-bundle` with current 2026-05-31 local-only report paths
+  - `npm run crm:vnext:mailerlite-launch-os-operator-runbook` with current 2026-05-31 local-only report paths
+  - `npm run crm:vnext:mailerlite-launch-os-goal-audit` with current 2026-05-31 local-only report paths
+  - `npm run crm:vnext:mailerlite-launch-os-validation-receipt` with current 2026-05-31 local-only report paths
+  - `git diff --check`
+
+- Qué sigue parcial / pendiente:
+  - Brand still needs to provide `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/brand_taxonomy_refresh_response.json`.
+  - CRM still needs to provide `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/crm_taxonomy_refresh_response.json`.
+  - Those files are semantic/cache responses only; they are not live approval, do not apply Brand dictionary patches, and do not apply CRM manifest patches.
+  - Launch OS remains `not ready for live operation`; `validationStatus` remains `needs_validation`.
+
+- Próximo paso seguro:
+  - Collect Brand and CRM taxonomy final response files only.
+  - After both files exist, rerun the response workspace scan, decision intake, taxonomy request bundle, operator runbook, goal audit and validation receipt.
+  - Do not ask for or execute live mutation until a fresh local patch preview proves exactly what would change and Alejandro approves that exact scope.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
