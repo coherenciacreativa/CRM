@@ -65,6 +65,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchEmailRenderQa).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchSeedInboxCorrectionUiEditExecutionKit).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.privateObservedEventsFile).toBe(
       "/tmp/mantis-reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json",
     );
@@ -82,6 +85,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
@@ -90,6 +94,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-public-url-gate");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle");
@@ -104,6 +109,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_confirmation_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json");
@@ -291,6 +297,19 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           localRenderReady: true,
           blockerCount: 0,
           publicAudienceSendUrlGateReady: false,
+        },
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit: {
+          path: paths.miniLaunchSeedInboxCorrectionUiEditExecutionKit,
+          markdownPath: paths.miniLaunchSeedInboxCorrectionUiEditExecutionKitMarkdown,
+          status: "seed_inbox_correction_ui_edit_execution_kit_ready_no_live_changes",
+          ok: true,
+          targetDraftCount: 4,
+          htmlSourceReadyCount: 4,
+          previewReadyCount: 4,
+          canOpenBrowserNow: false,
+          canEditDraftsNow: false,
+          canSendNow: false,
+          blockerCount: 0,
         },
         missingInputsKit: {
           path: paths.missingInputsKit,

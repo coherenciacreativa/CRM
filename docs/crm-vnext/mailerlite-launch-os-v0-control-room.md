@@ -2978,3 +2978,43 @@ Next safe move:
 - Do not create more replacement drafts.
 - Stop before editing MailerLite drafts again; the next live boundary is `mini_launch_seed_inbox_correction_ui_edit`.
 - If Alejandro approves that boundary, edit only the four existing MailerLite drafts within the existing correction packet scope, then run fresh QA before any test-send or public-send decision.
+
+## Launch OS v0 seed inbox correction UI edit execution kit - 2026-05-31
+
+Status: active goal, cleanup gate closed, local-only execution kit generated for the restored MailerLite UI correction boundary. The kit does not approve, open UI, edit drafts or call live APIs; it prepares the operator route, per-draft checklist and post-edit receipt template for the four existing `Inteligencia para descansar` drafts.
+
+Evidence:
+
+- UI edit execution kit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit_current_inteligencia_descansar_2026-05-31.json`
+- UI edit execution kit markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+
+Confirmed results:
+
+- UI edit execution kit: `status=seed_inbox_correction_ui_edit_execution_kit_ready_no_live_changes`, `targetDraftCount=4`, `htmlSourceReadyCount=4`, `previewReadyCount=4`, `blockerCount=0`.
+- UI edit execution kit: `canOpenBrowserNow=false`, `canEditDraftsNow=false`, `canSendNow=false`, `canPublishOrScheduleNow=false`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=20`, `testCount=124`.
+- Approval queue: `readyApprovalIds=["mini_launch_seed_inbox_correction_ui_edit"]`, `nextBestHumanBoundary=mini_launch_seed_inbox_correction_ui_edit`, `openLiveMutationGateCount=0`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+
+What is now wired:
+
+- Package script: `crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit`.
+- Current-state refresh now syntax-checks and regenerates the execution kit.
+- Focused validation now includes the execution kit spec.
+- The kit captures the exact UI route: Safari preferred, edit only the four existing drafts, copy QA-green corrected local HTML, replace only the named inert placeholders with scoped Shopify preview URLs, then produce a receipt before any QA/test-send/public-send decision.
+
+Safety:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite mutations performed: false.
+- Sends, publish, schedule, subscribers, groups/segments and workflows: false.
+- Shopify/CRM live changes, ledgers, cards, scoring and Fact Store writes: false.
+- Tokens and exact URLs printed: false.
+
+Next safe move:
+
+- Stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before opening MailerLite UI or editing drafts.
+- After that approval only, run approval intake, execute the kit manually in MailerLite UI within scope, write a receipt, and run real MailerLite render QA before any test-send approval.

@@ -192,6 +192,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet',
       date,
     ),
+    miniLaunchSeedInboxCorrectionUiEditExecutionKit: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit',
+      date,
+    ),
     miniLaunchSeedInboxCorrectionApiReplacementExecutionReceipt: staticReportPath(
       reportsDir,
       `mailerlite_mini_launch_seed_inbox_correction_api_replacement_execution_receipt_current_inteligencia_descansar_${date}.json`,
@@ -312,6 +317,12 @@ const validationCommands = () => [
     'syntax-check mini-launch seed inbox correction UI edit approval packet',
   ),
   command(
+    'node_check_mini_launch_seed_inbox_correction_ui_edit_execution_kit',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.mjs'],
+    'syntax-check mini-launch seed inbox correction UI edit execution kit',
+  ),
+  command(
     'node_check_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs'],
@@ -385,6 +396,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-approval-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
@@ -614,6 +626,26 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacketMarkdown,
       ],
       'regenerate current MailerLite UI correction-edit approval packet from local QA evidence only',
+    ),
+    command(
+      'refresh_mini_launch_seed_inbox_correction_ui_edit_execution_kit',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit',
+        '--',
+        '--approval-packet',
+        paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+        '--correction-preview',
+        paths.miniLaunchSeedInboxCorrectionPreview,
+        '--email-render-qa',
+        paths.miniLaunchEmailRenderQa,
+        '--out',
+        paths.miniLaunchSeedInboxCorrectionUiEditExecutionKit,
+        '--markdown-out',
+        paths.miniLaunchSeedInboxCorrectionUiEditExecutionKitMarkdown,
+      ],
+      'regenerate current MailerLite UI correction-edit execution kit without opening UI',
     ),
     command(
       'refresh_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
@@ -987,6 +1019,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchShopifyPreviewRouteExecutionReceipt,
     miniLaunchEmailRenderQa,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+    miniLaunchSeedInboxCorrectionUiEditExecutionKit,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
     missingInputsKit,
@@ -1009,6 +1042,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchShopifyPreviewRouteExecutionReceipt),
     readOptionalJson(paths.miniLaunchEmailRenderQa),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket),
+    readOptionalJson(paths.miniLaunchSeedInboxCorrectionUiEditExecutionKit),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt),
     readOptionalJson(paths.missingInputsKit),
@@ -1156,6 +1190,26 @@ const summarizeGeneratedReports = async (paths) => {
         miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.blockerCount ?? null,
       publicAudienceSendUrlGateReady:
         miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+    },
+    miniLaunchSeedInboxCorrectionUiEditExecutionKit: {
+      path: paths.miniLaunchSeedInboxCorrectionUiEditExecutionKit,
+      markdownPath: paths.miniLaunchSeedInboxCorrectionUiEditExecutionKitMarkdown,
+      status: miniLaunchSeedInboxCorrectionUiEditExecutionKit?.status ?? null,
+      ok: miniLaunchSeedInboxCorrectionUiEditExecutionKit?.ok ?? null,
+      targetDraftCount:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.targetDraftCount ?? null,
+      htmlSourceReadyCount:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.htmlSourceReadyCount ?? null,
+      previewReadyCount:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.previewReadyCount ?? null,
+      canOpenBrowserNow:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.canOpenBrowserNow ?? null,
+      canEditDraftsNow:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.canEditDraftsNow ?? null,
+      canSendNow:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.canSendNow ?? null,
+      blockerCount:
+        miniLaunchSeedInboxCorrectionUiEditExecutionKit?.executiveSummary?.blockerCount ?? null,
     },
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: {
       path: paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
@@ -1367,6 +1421,7 @@ const renderMarkdown = (receipt) => [
   `- Shopify preview route execution receipt: status=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.status}, previewRouteReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.previewRouteReady}, targetLinkCount=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.targetLinkCount}, effectivePreviewView=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.effectivePreviewView}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.publicAudienceSendUrlGateReady}`,
   `- mini-launch email render QA: status=${receipt.generatedReports.miniLaunchEmailRenderQa.status}, localRenderReady=${receipt.generatedReports.miniLaunchEmailRenderQa.localRenderReady}, emailCount=${receipt.generatedReports.miniLaunchEmailRenderQa.emailCount}, renderPreviewNonEmptyCount=${receipt.generatedReports.miniLaunchEmailRenderQa.renderPreviewNonEmptyCount}, redCheckCount=${receipt.generatedReports.miniLaunchEmailRenderQa.redCheckCount}, publicUseReady=${receipt.generatedReports.miniLaunchEmailRenderQa.publicUseReady}, seedSendReady=${receipt.generatedReports.miniLaunchEmailRenderQa.seedSendReady}`,
   `- mini-launch correction UI edit approval packet: status=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.status}, canAskAlejandroForApproval=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.canAskAlejandroForApproval}, targetDraftCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.targetDraftCount}, localRenderReady=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.localRenderReady}, blockerCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.blockerCount}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditApprovalPacket.publicAudienceSendUrlGateReady}`,
+  `- mini-launch correction UI edit execution kit: status=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.status}, targetDraftCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.targetDraftCount}, htmlSourceReadyCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.htmlSourceReadyCount}, previewReadyCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.previewReadyCount}, canOpenBrowserNow=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.canOpenBrowserNow}, canEditDraftsNow=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.canEditDraftsNow}, blockerCount=${receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.blockerCount}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
   `- operator-runbook: status=${receipt.generatedReports.operatorRunbook.status}, openLiveGateCount=${receipt.generatedReports.operatorRunbook.openLiveGateCount}`,
@@ -1522,6 +1577,12 @@ const main = async () => {
       receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.previewRouteReady,
     previewRouteExecutionPublicAudienceSendUrlGateReady:
       receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.publicAudienceSendUrlGateReady,
+    miniLaunchSeedInboxCorrectionUiEditExecutionKitStatus:
+      receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.status,
+    miniLaunchSeedInboxCorrectionUiEditExecutionKitReady:
+      receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.ok,
+    miniLaunchSeedInboxCorrectionUiEditExecutionKitBlockerCount:
+      receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.blockerCount,
     missingInputsIntakeStatus: receipt.generatedReports.missingInputsIntake.status,
     readyInputCount: receipt.generatedReports.missingInputsIntake.readyInputCount,
     inputCount: receipt.generatedReports.missingInputsIntake.inputCount,
