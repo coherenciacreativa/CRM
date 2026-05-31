@@ -261,6 +261,70 @@ Meaning:
   - No ejecutar acciones vivas hasta aprobación explícita.
   - Re-ejecutar `missing inputs` y `taxonomy response` workspaces tan pronto como lleguen los archivos finales requeridos.
 
+## Launch OS v0 department reconciliation checkpoint - 2026-05-31
+
+- Estado:
+  - active goal
+  - local-only department reconciliation updated
+  - Brand/Web Design/CRM final no-live responses accepted
+  - not ready for live operation
+  - no live actions authorized
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_finalization_preflight_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_watcher_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_response_watcher_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_intake_board_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_intake_board_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_department_review_reconciliation_current_inteligencia_descansar_2026-05-31.md`
+
+- Resultados confirmados:
+  - finalization-preflight: `ok=true`, `status=department_final_responses_ready_for_intake_no_live_changes`
+  - finalization-preflight: `readyForIntake=true`
+  - finalization-preflight: accepted departments are `brand`, `web_design`, `crm`
+  - response-watcher: `ok=true`, `status=department_review_response_watcher_ready_for_intake_no_live_changes`
+  - response-watcher: missing final departments: `[]`
+  - intake-board: `ok=true`, `status=department_reviews_ready_for_no_live_reconciliation`
+  - intake-board: `liveGateOpenCount=0`
+  - reconciliation: `ok=true`, `status=department_reviews_reconciled_ready_for_next_no_live_moves`
+  - reconciliation: `openLiveGateCount=0`
+  - reconciliation: `actionCount=5`
+
+- Qué cambió frente al checkpoint anterior:
+  - El cuello de botella de respuestas finales Brand/Web Design/CRM ya no está abierto para `Inteligencia para descansar`.
+  - Las respuestas finales aceptadas desbloquean solo planificación/reconciliación no-viva.
+  - El Control Room deja constancia de que la aceptación de Brand/Web/CRM no equivale a permiso de creación de grupos, edición de Shopify, sends, workflows, subscribers ni CRM writes.
+
+- Próximos movimientos no-vivos permitidos:
+  - `sequence_ready_for_email_style_qa_or_asset_plan`
+  - `rerun_group_dry_run`
+  - `prepare_scoped_shopify_local_build_request`
+  - `signal_boundaries_ready_for_future_no_live_projection_packet`
+  - `onboarding_protection_confirmed`
+
+- Seguridad:
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - browser used: false
+  - subscribers read or mutated: false
+  - groups/workflows/forms created or edited: false
+  - sends performed: false
+  - Signal Event Ledger append: false
+  - card writes/scoring/Fact Store/outbound: false
+
+- Qué sigue parcial / pendiente:
+  - Launch OS no está listo para live operation.
+  - Los próximos pasos siguen siendo planes, dry-runs, QA local y reportes.
+  - Cualquier creación real de grupos, edición real en MailerLite UI/API, publicación/conexión Shopify, seed send, workflow/subscriber mutation o CRM write sigue requiriendo aprobación explícita separada.
+  - Los cinco inputs privados de bloques posteriores siguen siendo un límite separado si el siguiente camino necesita datos observados/personas reales.
+
+- Próximo paso seguro:
+  - Avanzar solo con los movimientos no-vivos listados arriba.
+  - Antes de abrir cualquier gate vivo, explicar la decisión, el alcance exacto, los riesgos y la frase de aprobación requerida.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
