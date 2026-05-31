@@ -28,6 +28,8 @@ const PLACEHOLDERS = [
 ];
 
 const EXPECTED_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 nuevos borradores de reemplazo Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco y QA real verde en MailerLite, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier borrador no sigue en draft, no apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND, tiene placeholders pendientes o falla QA, detenerse y reportar.';
+const EXPECTED_E04_RESEND_APPROVAL_PHRASE = 'Apruebo reenviar únicamente un test email del borrador E04 corregido Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, no tiene placeholders ni tokens redacted pendientes, sin reenviar E01-E03, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si el recipient no queda exactamente en el seed o cualquier QA falla, detenerse y reportar.';
+const DEFAULT_TARGET_LABELS = ['E01', 'E02', 'E03', 'E04'];
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs [options]
@@ -36,6 +38,7 @@ Options:
   --replacement-receipt <path>  Null Audience replacement execution receipt. Defaults to ${DEFAULT_REPLACEMENT_RECEIPT}
   --execute                     Send the four approved MailerLite test emails. Without this, run read-only preflight only.
   --record-ui-sent              Record UI-assisted test sends after fresh API QA. Does not call a send endpoint.
+  --target-labels <csv>         Optional subset of replacement drafts to send/record. Defaults to E01,E02,E03,E04.
   --ui-sent-labels <csv>        Required with --record-ui-sent. Expected: E01,E02,E03,E04.
   --approval-phrase <text>      Exact approval phrase required with --execute.
   --seed-email <email>          Exact seed recipient. Defaults to the approved seed email.
@@ -101,6 +104,7 @@ const parseArgs = (argv) => {
     replacementReceipt: DEFAULT_REPLACEMENT_RECEIPT,
     execute: false,
     recordUiSent: false,
+    targetLabels: DEFAULT_TARGET_LABELS,
     uiSentLabels: [],
     approvalPhrase: null,
     seedEmail: DEFAULT_SEED_EMAIL,
@@ -119,6 +123,9 @@ const parseArgs = (argv) => {
     else if (arg === '--replacement-receipt') options.replacementReceipt = argv[++index];
     else if (arg === '--execute') options.execute = true;
     else if (arg === '--record-ui-sent') options.recordUiSent = true;
+    else if (arg === '--target-labels') {
+      options.targetLabels = (argv[++index] ?? '').split(',').map(cleanString).filter(Boolean);
+    }
     else if (arg === '--ui-sent-labels') {
       options.uiSentLabels = (argv[++index] ?? '').split(',').map(cleanString).filter(Boolean);
     }
@@ -136,6 +143,10 @@ const parseArgs = (argv) => {
   options.apiBase = cleanString(options.apiBase)?.replace(/\/+$/u, '');
   if (options.apiBase !== DEFAULT_API_BASE) throw new Error(`unsafe_api_base_not_mailerlite:${options.apiBase}`);
   if (options.execute && options.recordUiSent) throw new Error('execute_and_record_ui_sent_are_mutually_exclusive');
+  options.targetLabels = [...new Set(options.targetLabels.map(cleanString).filter(Boolean))];
+  const unsupportedLabels = options.targetLabels.filter((label) => !DEFAULT_TARGET_LABELS.includes(label));
+  if (unsupportedLabels.length) throw new Error(`unsupported_target_labels:${unsupportedLabels.join(',')}`);
+  if (!options.targetLabels.length) throw new Error('target_labels_required');
   options.timeoutMs = Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : 30_000;
   options.seedEmail = normalizeEmail(options.seedEmail);
   return options;
@@ -405,11 +416,17 @@ const replacementReceiptGreen = (receipt) =>
   && receipt?.safety?.exactUrlsPrinted === false
   && receipt?.safety?.tokensPrinted === false;
 
-const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEmail, execute, approvalPhrase }) => {
+const targetLabelsAreE04Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E04';
+const expectedApprovalPhraseFor = (targetLabels = DEFAULT_TARGET_LABELS) =>
+  targetLabelsAreE04Only(targetLabels) ? EXPECTED_E04_RESEND_APPROVAL_PHRASE : EXPECTED_APPROVAL_PHRASE;
+
+const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEmail, execute, approvalPhrase, targetLabels = DEFAULT_TARGET_LABELS }) => {
   const blockers = [];
-  const approvalMatched = normalizeApprovalPhrase(approvalPhrase) === normalizeApprovalPhrase(EXPECTED_APPROVAL_PHRASE);
+  const expectedApprovalPhrase = expectedApprovalPhraseFor(targetLabels);
+  const approvalMatched = normalizeApprovalPhrase(approvalPhrase) === normalizeApprovalPhrase(expectedApprovalPhrase);
   const expectedSeed = normalizeEmail(DEFAULT_SEED_EMAIL);
   const normalizedSeed = normalizeEmail(seedEmail);
+  const targetLabelSet = new Set(targetLabels);
 
   if (!replacementReceiptGreen(replacementReceipt)) blockers.push('replacement_receipt_not_green_or_missing');
   if (!emailLooksValid(normalizedSeed)) blockers.push('seed_email_invalid');
@@ -436,7 +453,9 @@ const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEm
   }
 
   const qaRowsByLabel = new Map((replacementReceipt?.postCreateQa?.rows ?? []).map((row) => [cleanString(row?.label), row]));
-  const targets = (replacementReceipt?.createdDrafts ?? []).map((created) => {
+  const targets = (replacementReceipt?.createdDrafts ?? [])
+    .filter((created) => targetLabelSet.has(cleanString(created?.label)))
+    .map((created) => {
     const label = cleanString(created?.label);
     const name = cleanString(created?.name);
     const matches = campaignsByName.get(normalizeName(name)) ?? [];
@@ -491,10 +510,12 @@ const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEm
       _campaignIdForRun: id,
     };
   });
-  if (targets.length !== 4) blockers.push(`target_count_not_4:${targets.length}`);
+  if (targets.length !== targetLabels.length) blockers.push(`target_count_not_${targetLabels.length}:${targets.length}`);
 
   return {
     approvalMatched,
+    expectedApprovalPhraseSha256: sha256(expectedApprovalPhrase),
+    targetLabels,
     seed: {
       redacted: redactEmail(normalizedSeed),
       sha256: normalizedSeed ? sha256(normalizedSeed) : null,
@@ -593,7 +614,7 @@ const buildSafety = ({
   mailerLiteTestEmailsSent: testEmailsSent,
   mailerLiteMutationsPerformed: (execute || recordUiSent) && testEmailsSent > 0,
   allowedMutationType: (execute || recordUiSent) && testEmailsSent > 0
-    ? 'send_four_test_emails_only_to_exact_seed_recipient_from_null_audience_replacement_drafts'
+    ? 'send_scoped_test_emails_only_to_exact_seed_recipient_from_null_audience_replacement_drafts'
     : null,
   testSendExecutionChannel: recordUiSent
     ? 'mailerlite_ui_manual_assisted'
@@ -683,13 +704,14 @@ const buildRun = async (options) => {
     seedEmail: options.seedEmail,
     execute: executionRequested,
     approvalPhrase: options.approvalPhrase,
+    targetLabels: options.targetLabels,
   });
   const sentTests = [];
   const errors = [];
   let recipe = null;
 
   if (options.recordUiSent && preflight.blockers.length === 0) {
-    const expectedLabels = ['E01', 'E02', 'E03', 'E04'];
+    const expectedLabels = preflight.targetLabels;
     const providedLabels = [...new Set(options.uiSentLabels)];
     if (expectedLabels.some((label) => !providedLabels.includes(label)) || providedLabels.length !== expectedLabels.length) {
       preflight.blockers.push(`ui_sent_labels_not_exact:${providedLabels.join('|') || 'none'}`);
@@ -806,7 +828,8 @@ const buildRun = async (options) => {
               : 'blocked_missing_exact_approval_phrase',
       },
       canExecute: executionRequested && preflight.blockers.length === 0,
-      expectedPhraseSha256: sha256(EXPECTED_APPROVAL_PHRASE),
+      expectedPhraseSha256: preflight.expectedApprovalPhraseSha256,
+      targetLabels: preflight.targetLabels,
       exactApprovalPhrasePrinted: false,
       blockers: preflight.blockers,
     },
@@ -870,6 +893,7 @@ const renderMarkdown = (run) => [
   '',
   `- Seed recipient: ${run.seedRecipient.redacted}`,
   `- Seed recipient printed raw: ${run.seedRecipient.printed}`,
+  `- Target labels: ${(run.decision.targetLabels ?? DEFAULT_TARGET_LABELS).join(', ')}`,
   '',
   '## Preflight',
   '',
@@ -973,8 +997,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 
 export {
   EXPECTED_APPROVAL_PHRASE,
+  EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
   buildRun,
+  expectedApprovalPhraseFor,
   htmlStats,
   normalizeApprovalPhrase,
   parseArgs,

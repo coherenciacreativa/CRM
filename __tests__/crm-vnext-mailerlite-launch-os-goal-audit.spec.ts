@@ -687,6 +687,21 @@ const miniLaunchSeedInboxQa = {
   ],
 };
 
+const miniLaunchNullAudienceSeedInboxQa = {
+  ok: false,
+  status: "mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed",
+  deliverySummary: {
+    seedInboxQaGreen: false,
+    deliveredToApprovedSeed: 3,
+    expectedSeedMessages: 4,
+    newCorrectedMessagesFoundOutsideApprovedSeed: 1,
+  },
+  decision: {
+    needsHumanApprovalBeforeAnyAdditionalSend: true,
+    recommendedNextBoundary: "approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan",
+  },
+};
+
 const miniLaunchSeedInboxCorrectionPlan = {
   status: "seed_inbox_correction_plan_ready_no_live_changes",
   executiveSummary: {
@@ -1053,6 +1068,7 @@ const values = {
   miniLaunchSeedTestQaPacket: null,
   miniLaunchSeedTestExecutionReceipt: null,
   miniLaunchSeedInboxQa: null,
+  miniLaunchNullAudienceSeedInboxQa: null,
   miniLaunchSeedInboxCorrectionPlan: null,
   miniLaunchShopifyLocalBuildReceipt: null,
   miniLaunchShopifyPreviewRouteDecision: null,
@@ -1574,6 +1590,41 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.nextMoves.join("\n")).toContain("Seed inbox correction plan is ready after Gmail QA");
     expect(infrastructureRequirement?.evidence.join("\n")).toContain("miniLaunchSeedInboxCorrectionPlanCorrectionCount=4");
     expect(infrastructureRequirement?.evidence.join("\n")).toContain("miniLaunchSeedInboxCorrectionPlanBlockers=public_readiness_yellow|final_public_links_missing|subscription_reason_policy_missing|exact_mailerlite_ui_edit_approval_missing|fresh_post_correction_qa_missing");
+  });
+
+  test("prioritizes partial Null Audience seed inbox QA over older UI-edit boundaries", () => {
+    const audit = buildGoalAudit({
+      values: {
+        ...values,
+        reconciliationBoard: reconciliationBoardAfterResponses,
+        responseWorkspace: responseWorkspaceAfterResponses,
+        finalizationPreflight: finalizationPreflightAfterResponses,
+        miniLaunchEmailStyleQaPacket,
+        miniLaunchLocalEmailAssetPlan,
+        miniLaunchEmailAssetBuildScopePacket,
+        miniLaunchEmailBuilderPayloadManifest,
+        miniLaunchEmailRenderQa,
+        miniLaunchEmailManualUiBuildReceipt,
+        miniLaunchSeedTestQaPacket,
+        miniLaunchSeedInboxQa,
+        miniLaunchNullAudienceSeedInboxQa,
+        miniLaunchSeedInboxCorrectionPlan,
+      },
+      sourceDigests,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+    const infrastructureRequirement = audit.requirements.find(
+      (requirement) => requirement.id === "prepare_frequent_mini_launch_infrastructure",
+    );
+
+    expect(audit.executiveSummary.nullAudienceSeedInboxQaPartialE04).toBe(true);
+    expect(audit.executiveSummary.nullAudienceSeedInboxQaDeliveredToApprovedSeed).toBe(3);
+    expect(audit.executiveSummary.nullAudienceSeedInboxQaExpectedSeedMessages).toBe(4);
+    expect(audit.executiveSummary.nextBestMove).toContain("Null Audience seed inbox QA is partial");
+    expect(audit.executiveSummary.nextBestMove).toContain("exact E04-only resend phrase");
+    expect(infrastructureRequirement?.evidence.join("\n")).toContain(
+      "miniLaunchNullAudienceSeedInboxQaStatus=mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed",
+    );
   });
 
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {

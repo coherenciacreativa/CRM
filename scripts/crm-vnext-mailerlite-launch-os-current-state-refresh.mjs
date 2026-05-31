@@ -239,6 +239,10 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
       date,
     ),
+    miniLaunchNullAudienceSeedInboxQa: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json',
+    ),
     miniLaunchMailerLiteApiExistingDraftUpdateStrategy: miniLaunchReportPath(
       reportsDir,
       'mailerlite_api_existing_draft_update_strategy',
@@ -456,6 +460,12 @@ const validationCommands = () => [
     'syntax-check mini-launch MailerLite API Null Audience replacement create runner',
   ),
   command(
+    'node_check_mini_launch_null_audience_seed_test_send',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs'],
+    'syntax-check mini-launch MailerLite Null Audience seed-test send runner',
+  ),
+  command(
     'node_check_mailerlite_api_existing_draft_update_strategy_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs'],
@@ -529,6 +539,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-api-inert-draft-lab.spec.ts',
       '__tests__/crm-vnext-mailerlite-api-null-audience-lab.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts',
       '__tests__/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
@@ -557,6 +568,8 @@ const currentStateArgs = (paths) => [
   paths.miniLaunchEmailRenderQa,
   '--mini-launch-seed-inbox-correction-ui-edit-approval-packet',
   paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+  '--mini-launch-null-audience-seed-inbox-qa',
+  paths.miniLaunchNullAudienceSeedInboxQa,
   '--mini-launch-shopify-preview-route-decision',
   paths.miniLaunchShopifyPreviewRouteDecision,
   '--mini-launch-shopify-preview-route-execution-receipt',
@@ -902,6 +915,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchNullAudienceReplacementApprovalPacket,
         '--mini-launch-null-audience-replacement-execution-receipt',
         paths.miniLaunchNullAudienceReplacementExecutionReceipt,
+        '--mini-launch-null-audience-seed-inbox-qa',
+        paths.miniLaunchNullAudienceSeedInboxQa,
         '--mini-launch-mailerlite-api-existing-draft-update-strategy',
         paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
         '--mini-launch-crm-signal-projection-packet',
@@ -1263,6 +1278,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchMailerLiteApiNullAudienceLab,
     miniLaunchNullAudienceReplacementApprovalPacket,
     miniLaunchNullAudienceReplacementExecutionReceipt,
+    miniLaunchNullAudienceSeedInboxQa,
     miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
     missingInputsKit,
     missingInputsIntake,
@@ -1292,6 +1308,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchMailerLiteApiNullAudienceLab),
     readOptionalJson(paths.miniLaunchNullAudienceReplacementApprovalPacket),
     readOptionalJson(paths.miniLaunchNullAudienceReplacementExecutionReceipt),
+    readOptionalJson(paths.miniLaunchNullAudienceSeedInboxQa),
     readOptionalJson(paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy),
     readOptionalJson(paths.missingInputsKit),
     readOptionalJson(paths.missingInputsIntake),
@@ -1593,6 +1610,28 @@ const summarizeGeneratedReports = async (paths) => {
       sendsPerformed: miniLaunchNullAudienceReplacementExecutionReceipt?.safety?.sendsPerformed ?? null,
       tokensPrinted: miniLaunchNullAudienceReplacementExecutionReceipt?.safety?.tokensPrinted ?? null,
     },
+    miniLaunchNullAudienceSeedInboxQa: {
+      path: paths.miniLaunchNullAudienceSeedInboxQa,
+      markdownPath: paths.miniLaunchNullAudienceSeedInboxQaMarkdown,
+      status: miniLaunchNullAudienceSeedInboxQa?.status ?? null,
+      ok: miniLaunchNullAudienceSeedInboxQa?.ok ?? null,
+      seedInboxQaGreen:
+        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen ?? null,
+      deliveredToApprovedSeed:
+        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
+      expectedSeedMessages:
+        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
+      correctedOutsideSeedCount:
+        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.newCorrectedMessagesFoundOutsideApprovedSeed ?? null,
+      needsHumanApprovalBeforeAdditionalSend:
+        miniLaunchNullAudienceSeedInboxQa?.decision?.needsHumanApprovalBeforeAnyAdditionalSend ?? null,
+      recommendedNextBoundary:
+        miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary ?? null,
+      gmailReadOnly:
+        miniLaunchNullAudienceSeedInboxQa?.safety?.gmailReadOnly ?? null,
+      sendsPerformedByQa:
+        miniLaunchNullAudienceSeedInboxQa?.safety?.mailerLiteSendsPerformedByThisQa ?? null,
+    },
     miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
       path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
       markdownPath: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategyMarkdown,
@@ -1697,6 +1736,9 @@ const summarizeGeneratedReports = async (paths) => {
   };
 };
 
+const generatedReportReady = (report) => report.ok === true
+  || report.status === 'mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed';
+
 const buildRefreshReceipt = ({
   options,
   paths,
@@ -1710,7 +1752,7 @@ const buildRefreshReceipt = ({
   const commandResults = [...validationResults, ...reportResults];
   const generatedReportSet = Object.values(generatedReports);
   const ok = commandResults.every((result) => result.ok)
-    && generatedReportSet.every((report) => report.ok === true)
+    && generatedReportSet.every(generatedReportReady)
     && generatedReports.operatorRunbook.ok === true
     && generatedReports.goalAudit.ok === true
     && generatedReports.validationReceipt.ok === true
@@ -1780,6 +1822,7 @@ const renderMarkdown = (receipt) => [
   `- Mini-launch MailerLite API Null Audience lab: ${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.path}`,
   `- Mini-launch MailerLite API Null Audience replacement approval packet: ${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.path}`,
   `- Mini-launch MailerLite API Null Audience replacement execution receipt/preflight: ${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.path}`,
+  `- Mini-launch MailerLite Null Audience seed inbox QA: ${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.path}`,
   `- Mini-launch MailerLite API existing-draft update strategy: ${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.path}`,
   `- Missing-inputs kit: ${receipt.generatedReports.missingInputsKit.path}`,
   `- Missing-inputs intake: ${receipt.generatedReports.missingInputsIntake.path}`,
@@ -1808,6 +1851,7 @@ const renderMarkdown = (receipt) => [
   `- MailerLite API Null Audience lab: status=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.status}, mode=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.mode}, safetyGroup=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.safetyGroupName}, safetyGroupActiveCountObserved=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.safetyGroupActiveCountObserved}, variantCount=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.variantCount}, safeNullAudienceVariantCount=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.safeNullAudienceVariantCount}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.exactApprovalPhraseAvailable}, readyToUseNullAudienceRecipeForRealDrafts=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.readyToUseNullAudienceRecipeForRealDrafts}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchMailerLiteApiNullAudienceLab.mailerLiteApiCalled}`,
   `- MailerLite API Null Audience replacement approval packet: status=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.status}, canAskAlejandroForApproval=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.canAskAlejandroForApproval}, replacementTargetCount=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.replacementTargetCount}, nullAudienceRecipeReady=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.nullAudienceRecipeReady}, localRenderReady=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.localRenderReady}, blockerCount=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.blockerCount}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchNullAudienceReplacementApprovalPacket.mailerLiteApiCalled}`,
   `- MailerLite API Null Audience replacement execution receipt/preflight: status=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.status}, mode=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.mode}, createdDraftCount=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.createdDraftCount}, nullAudienceSafeCount=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.nullAudienceSafeCount}, contentGreenCount=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.contentGreenCount}, blockerCount=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.blockerCount}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.mailerLiteApiCalled}`,
+  `- MailerLite Null Audience seed inbox QA: status=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.status}, seedInboxQaGreen=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.seedInboxQaGreen}, deliveredToApprovedSeed=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.deliveredToApprovedSeed}/${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.expectedSeedMessages}, correctedOutsideSeedCount=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.correctedOutsideSeedCount}, nextBoundary=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.recommendedNextBoundary}`,
   `- MailerLite API existing-draft update strategy: status=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.status}, apiConnectionStableForRead=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiConnectionStableForRead}, allApiPayloadReady=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.allApiPayloadReady}, allDraftsInertByApi=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.allDraftsInertByApi}, apiExistingDraftUpdateRecommendedNow=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiExistingDraftUpdateRecommendedNow}, apiCreateRealDraftsRecommendedNow=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiCreateRealDraftsRecommendedNow}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.mailerLiteApiCalled}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
@@ -2010,6 +2054,16 @@ const main = async () => {
       receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.mode,
     miniLaunchNullAudienceReplacementExecutionCreatedDraftCount:
       receipt.generatedReports.miniLaunchNullAudienceReplacementExecutionReceipt.createdDraftCount,
+    miniLaunchNullAudienceSeedInboxQaStatus:
+      receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.status,
+    miniLaunchNullAudienceSeedInboxQaGreen:
+      receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.seedInboxQaGreen,
+    miniLaunchNullAudienceSeedInboxDeliveredToApprovedSeed:
+      receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.deliveredToApprovedSeed,
+    miniLaunchNullAudienceSeedInboxExpectedSeedMessages:
+      receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.expectedSeedMessages,
+    miniLaunchNullAudienceSeedInboxNextBoundary:
+      receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.recommendedNextBoundary,
     miniLaunchMailerLiteApiExistingDraftUpdateStrategyStatus:
       receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.status,
     miniLaunchMailerLiteApiExistingDraftUpdateRecommendedNow:

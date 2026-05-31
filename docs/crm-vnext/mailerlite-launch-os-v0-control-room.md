@@ -3678,3 +3678,54 @@ Next safe move:
 - Ask Alejandro for a narrow E04-only test resend approval after fresh MailerLite API re-scan confirms E04 remains draft, Null Audience-only, placeholder-free and safe.
 - If approved, resend only corrected E04 to the exact approved seed recipient, then rerun Gmail seed inbox QA.
 - Continue blocking public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.
+
+## Launch OS v0 E04-only Null Audience seed resend boundary wired - 2026-05-31
+
+Status: active goal, local-only control-plane wiring updated after the partial Null Audience seed inbox QA. The current human boundary is now narrow and explicit: only the corrected E04 test email may be resent to the approved seed recipient after a fresh MailerLite API safety re-scan and exact approval. No send, API mutation, UI mutation or live action was performed by this checkpoint.
+
+Evidence:
+
+- Current approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Null Audience seed inbox QA report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`
+
+Confirmed results:
+
+- Approval queue: `readyApprovalRequestCount=1`, `readyApprovalIds=mini_launch_null_audience_e04_seed_resend`.
+- Approval queue: `blockedApprovalIds=crm_signal_writes`, `openLiveMutationGateCount=0`.
+- Operator runbook: `nullAudienceSeedInboxQaStatus=mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed`.
+- Goal audit: `nullAudienceSeedInboxQaPartialE04=true`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Goal audit next move now includes: `Null Audience seed inbox QA is partial: 3/4 corrected messages reached the approved seed... ask only for the exact E04-only resend phrase before any additional test send.`
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=26`, `testCount=163`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`.
+- Seed-test send runner now supports `--target-labels E04` and uses a separate exact phrase for the E04-only resend boundary.
+
+Safety:
+
+- MailerLite API called by this checkpoint: false.
+- MailerLite UI opened by this checkpoint: false.
+- MailerLite sends performed by this checkpoint: false.
+- Audience sends, publish, schedule: false/false/false.
+- Subscribers read or mutated: false/false.
+- Groups, segments, workflows and automations mutated: false.
+- Shopify API called or mutated by this checkpoint: false/false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Raw recipients, raw group/campaign IDs, exact preview URLs, sender values and tokens printed: false.
+
+Decision:
+
+- Treat the old all-four seed-send boundary as used and closed.
+- Treat the current inbox QA as partial, not green.
+- Do not resend E01, E02 or E03.
+- Do not request public/audience launch approval from this state.
+- The next exact human approval, if Alejandro wants to continue, is only for an E04-only test resend to the approved seed recipient after fresh API QA.
+
+Next safe move:
+
+- Stop at the exact E04-only resend approval boundary before any additional MailerLite send.
+- If that exact approval is later provided, run only the E04-scoped seed-test send/record path, rerun Gmail seed inbox QA and regenerate the local receipts.
+- Continue blocking public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.

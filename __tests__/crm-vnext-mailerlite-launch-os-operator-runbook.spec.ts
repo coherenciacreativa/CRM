@@ -938,6 +938,25 @@ const miniLaunchSeedInboxQa = {
   ],
 };
 
+const miniLaunchNullAudienceSeedInboxQa = {
+  ok: false,
+  status: "mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed",
+  deliverySummary: {
+    seedInboxQaGreen: false,
+    deliveredToApprovedSeed: 3,
+    expectedSeedMessages: 4,
+    newCorrectedMessagesFoundOutsideApprovedSeed: 1,
+  },
+  decision: {
+    needsHumanApprovalBeforeAnyAdditionalSend: true,
+    recommendedNextBoundary: "approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan",
+  },
+  safety: {
+    gmailReadOnly: true,
+    mailerLiteSendsPerformedByThisQa: false,
+  },
+};
+
 const miniLaunchSeedInboxCorrectionPlan = {
   status: "seed_inbox_correction_plan_ready_no_live_changes",
   executiveSummary: {
@@ -1478,6 +1497,28 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.seedInboxCorrectionPlanCanAskPublicSendApprovalNow).toBe(false);
     expect(moves).toContain("Use the seed inbox correction plan as the current mini-launch boundary");
     expect(moves).toContain("keep MailerLite UI edits, additional test sends and public/audience launch closed");
+  });
+
+  test("treats partial Null Audience seed inbox QA as the current E04-only resend boundary", () => {
+    const state = buildCurrentState({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      miniLaunchSeedInboxQa,
+      miniLaunchNullAudienceSeedInboxQa,
+      miniLaunchSeedInboxCorrectionPlan,
+    });
+    const moves = buildImmediateNextMoves({ currentState: state }).join("\n");
+
+    expect(state.miniLaunch.nullAudienceSeedInboxQaStatus).toBe(
+      "mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed",
+    );
+    expect(state.miniLaunch.nullAudienceSeedInboxQaGreen).toBe(false);
+    expect(state.miniLaunch.nullAudienceSeedInboxQaDeliveredToApprovedSeed).toBe(3);
+    expect(state.miniLaunch.nullAudienceSeedInboxQaExpectedSeedMessages).toBe(4);
+    expect(state.miniLaunch.nullAudienceSeedInboxQaNeedsHumanApprovalBeforeAdditionalSend).toBe(true);
+    expect(moves).toContain("Null Audience seed inbox QA is partial");
+    expect(moves).toContain("do not resend, publish or audience-send until Alejandro gives the exact E04-only phrase");
   });
 
   test("closes Onboarding v2 empty-groups approval once execution and post-verify exist", () => {

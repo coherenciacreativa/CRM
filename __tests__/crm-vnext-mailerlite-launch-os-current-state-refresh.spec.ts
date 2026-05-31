@@ -83,6 +83,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchNullAudienceReplacementExecutionReceipt).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchNullAudienceSeedInboxQa).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchSeedInboxCorrectionApiEditDiagnostic).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -114,6 +117,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-api-null-audience-lab.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
@@ -148,6 +152,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json");
     expect(commands).toContain("mailerlite_launch_os_approval_intake_current_2026-05-31.json");
@@ -432,6 +437,20 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           mailerLiteDraftsCreated: 0,
           sendsPerformed: false,
           tokensPrinted: false,
+        },
+        miniLaunchNullAudienceSeedInboxQa: {
+          path: paths.miniLaunchNullAudienceSeedInboxQa,
+          markdownPath: paths.miniLaunchNullAudienceSeedInboxQaMarkdown,
+          status: "mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed",
+          ok: false,
+          seedInboxQaGreen: false,
+          deliveredToApprovedSeed: 3,
+          expectedSeedMessages: 4,
+          correctedOutsideSeedCount: 1,
+          needsHumanApprovalBeforeAdditionalSend: true,
+          recommendedNextBoundary: "approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan",
+          gmailReadOnly: true,
+          sendsPerformedByQa: false,
         },
         miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
           path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,

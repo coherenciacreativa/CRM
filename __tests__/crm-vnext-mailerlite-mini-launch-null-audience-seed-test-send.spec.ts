@@ -2,7 +2,9 @@ import { describe, expect, test } from "vitest";
 
 import {
   EXPECTED_APPROVAL_PHRASE,
+  EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
+  expectedApprovalPhraseFor,
   htmlStats,
   normalizeApprovalPhrase,
   parseArgs,
@@ -103,6 +105,23 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(options.uiSentLabels).toEqual(["E01", "E02", "E03", "E04"]);
   });
 
+  test("supports an E04-only resend boundary with its own exact phrase", () => {
+    const options = parseArgs([
+      "--target-labels",
+      "E04",
+      "--record-ui-sent",
+      "--ui-sent-labels",
+      "E04",
+      "--approval-phrase",
+      EXPECTED_E04_RESEND_APPROVAL_PHRASE,
+    ]);
+
+    expect(options.targetLabels).toEqual(["E04"]);
+    expect(options.uiSentLabels).toEqual(["E04"]);
+    expect(expectedApprovalPhraseFor(options.targetLabels)).toBe(EXPECTED_E04_RESEND_APPROVAL_PHRASE);
+    expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("sin reenviar E01-E03");
+  });
+
   test("accepts a completed replacement receipt and green fresh campaign scan", () => {
     const details = new Map(campaigns.map((row) => [row.id, row]));
     const preflight = buildPreflight({
@@ -123,6 +142,25 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(preflight.targets.every((target) => target.nullAudienceSafe)).toBe(true);
     expect(preflight.targets.every((target) => target.contentMatchesCreationReceipt)).toBe(true);
     expect(preflight.targets.every((target) => target.placeholderCount === 0)).toBe(true);
+  });
+
+  test("limits fresh preflight to E04 when the E04-only resend phrase is supplied", () => {
+    const details = new Map(campaigns.map((row) => [row.id, row]));
+    const preflight = buildPreflight({
+      replacementReceipt,
+      groups: [safetyGroup],
+      campaigns,
+      details,
+      seedEmail: "saludoalsol+seedmail@gmail.com",
+      execute: true,
+      targetLabels: ["E04"],
+      approvalPhrase: EXPECTED_E04_RESEND_APPROVAL_PHRASE,
+    });
+
+    expect(preflight.blockers).toEqual([]);
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.targetLabels).toEqual(["E04"]);
+    expect(preflight.targets.map((target) => target.label)).toEqual(["E04"]);
   });
 
   test("blocks if any replacement draft is not constrained to the empty safety group", () => {
