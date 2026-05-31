@@ -683,6 +683,75 @@ Meaning:
   - Continue using MailerLite read-only refreshes whenever live evidence may have drifted.
   - Before seed send, CRM write, audience send, workflow/subscriber mutation, Shopify publish, or Fact Store write, stop and request one exact scope-specific approval phrase.
 
+## Launch OS v0 seed-send approval boundary - 2026-05-31
+
+- Estado:
+  - active goal
+  - exact seed recipient received and stored as a private local input
+  - seed-send approval packet is ready for exact human approval
+  - approval queue now has one ready approval request: `mini_launch_seed_send`
+  - no test email has been sent
+  - no live action is executable without the next exact approval phrase
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_seed_recipient_inteligencia_descansar.txt`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+
+- Resultados confirmados:
+  - missing-inputs intake: `status=missing_inputs_intake_partial_no_live_changes`
+  - missing-inputs intake: `presentInputCount=1`, `readyInputCount=1`
+  - missing-inputs intake: `readyForSeedApprovalPacket=true`, `canAskApprovalNow=false`
+  - post-input orchestrator: `status=post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes`
+  - post-input orchestrator: `readyCommandCount=1`, `commandsExecuted=false`
+  - seed-send approval packet: `status=seed_send_approval_packet_ready_for_exact_human_approval_no_live_changes`
+  - seed-send approval packet: `canAskAlejandroForApproval=true`, `canExecuteSendNow=false`, `blockerCount=0`
+  - approval queue: `readyApprovalRequestCount=1`, `readyApprovalIds=mini_launch_seed_send`
+  - approval queue: `blockedApprovalIds=crm_signal_writes`, `openLiveMutationGateCount=0`
+  - operator-runbook: `approvalQueueReadyCount=1`, `validationStatus=needs_validation`
+  - goal-audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+  - validation-receipt: `validationStatus=needs_validation`, `liveGatesClosed=true`
+
+- Seguridad:
+  - MailerLite API called by seed/input packets: false
+  - MailerLite sends performed: false
+  - MailerLite subscribers read or mutated: false
+  - MailerLite groups/workflows/automations changed: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - Signal Ledger append: false
+  - CRM card/scoring mutation: false
+  - Fact Store write: false
+  - outbound performed: false
+  - exact seed value is kept in the private local input/approval packet; shared summaries use redaction
+
+- Validación:
+  - `node --check` passed for seed-send approval packet, missing-inputs intake, post-input orchestrator, approval queue, operator runbook, goal audit, validation receipt and continuation guard.
+  - Vitest environment remains unresolved in this Mac session: `vitest --version` only completed after temporarily disabling `fsevents`; a focused spec run still timed out.
+  - Because of that local test-runner issue, validation remains `needs_validation` even though local packet generation and syntax checks passed.
+
+- Decisión humana real:
+  - The next useful live-adjacent approval is now ready: approve or reject the scoped mini-launch seed test.
+  - Approval would authorize only test emails from the four existing draft campaigns to the exact seed recipient after a fresh read-only/render QA scan.
+  - Even after approval, public/audience sends, schedules, workflow/automation attachment, subscriber import/non-seed assignment, group creation/assignment, Shopify, CRM ledgers/cards/scoring and Fact Store remain closed.
+
+- Próximo paso seguro:
+  - Ask Alejandro for the exact seed-send approval phrase.
+  - If approved, rerun fresh MailerLite render/read-only checks before opening the UI.
+  - Stop immediately if the UI exposes audience, workflow, schedule, group, segment or public-send controls in the send path.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
