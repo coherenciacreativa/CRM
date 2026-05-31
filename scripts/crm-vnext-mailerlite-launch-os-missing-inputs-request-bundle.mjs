@@ -129,7 +129,7 @@ const requestMetadata = {
     audience: 'Codex/Mantis local operator',
     targetField: 'local CRM write packet evidence',
     copyReadyText: (request) =>
-      `Cuando el JSON privado exista en ${request.templatePathSuggestion}, rerunear el intake y el packet CRM local para confirmar que los eventos son writable: launchId correcto, campos completos, identidad exacta y cero muestras. Esto no ejecuta escrituras CRM.`,
+      `Cuando el JSON privado de eventos observados exista, rerunear el packet CRM local para confirmar que los eventos son writable: launchId correcto, campos completos, identidad exacta y cero muestras. Evidencia esperada: ${request.templatePathSuggestion}. Comando local sugerido: ${request.nextLocalCommandAfterInput ?? 'rerun CRM write approval packet'}. Esto no ejecuta escrituras CRM.`,
     collectionRule: 'Use local packet regeneration only; writable means eligible for a later approval packet, not authorized to write.',
   },
   fact_store_market_review: {
@@ -182,6 +182,7 @@ const buildRequestBlock = ({ request, state, handoffInput }) => {
     approvalEffect: request.approvalEffect ?? state?.approvalEffect ?? 'does_not_approve_execution',
     statusNow: state?.status ?? 'unknown_no_live_changes',
     blockers: state?.blockers ?? [],
+    nextLocalCommandAfterInput: request.nextLocalCommandAfterInput ?? null,
   };
 
   return {
@@ -194,7 +195,6 @@ const buildRequestBlock = ({ request, state, handoffInput }) => {
     createsPrivateFile: false,
     asksApproval: false,
     canExecuteAfterCollection: false,
-    nextLocalCommandAfterInput: request.nextLocalCommandAfterInput ?? null,
   };
 };
 
@@ -222,6 +222,9 @@ const buildPostInputCommands = ({ missingInputsKit, missingInputsIntake }) => un
     : null,
   missingInputsIntake?.executiveSummary?.readyForCrmWritePacketRegeneration === true
     ? missingInputsIntake?.postInputCommands?.crmWriteApprovalPacket
+    : null,
+  missingInputsIntake?.executiveSummary?.readyForMiniLaunchCorrectionPreview === true
+    ? missingInputsIntake?.postInputCommands?.miniLaunchCorrectionPreview
     : null,
 ]).filter(Boolean);
 

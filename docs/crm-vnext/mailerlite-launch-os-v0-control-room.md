@@ -2049,6 +2049,58 @@ Next safe move:
 - Rerun missing-inputs intake, then run the correction preview runner. If it becomes green, run local render/text QA on the redacted payload preview.
 - Stop before asking for any MailerLite UI edit, additional test send or public/audience send approval.
 
+## Launch OS v0 missing-input request handoff hardening checkpoint - 2026-05-31
+
+Status: active goal, local-only missing-input handoff hardened, correction preview still blocked by missing private inputs, no live actions authorized.
+
+Evidence:
+
+- Refreshed missing-inputs request bundle: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json`
+- Refreshed missing-inputs request bundle markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.md`
+- Refreshed private-input template pack: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_current_2026-05-31.json`
+- Refreshed private-input template pack markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_current_2026-05-31.md`
+- Inert example templates directory: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_templates_current_2026-05-31/`
+- Refreshed validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- missing-inputs request bundle: `status=missing_inputs_request_bundle_ready_no_live_changes`
+- missing-inputs request bundle: `requestCount=6`, `copyBlocksReady=true`
+- missing-inputs request bundle: `asksApproval=false`, `createsPrivateFiles=false`, `canAskApprovalNow=false`
+- missing-inputs request bundle now names the local correction-preview command only after `readyForMiniLaunchCorrectionPreview=true`.
+- missing-inputs request bundle now clarifies `writable_event_screen` as derived local CRM packet evidence, not a private JSON path.
+- private-input template pack: `status=private_input_template_pack_ready_no_live_changes`
+- private-input template pack: `writesInertExampleFiles=true`, `createsActivePrivateInputFiles=false`, `writesRealPrivateValues=false`
+- validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`
+- Focused validation: 2 files / 9 tests passed plus `node --check` and `git diff --check`.
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Subscribers, groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Exact private values, exact identities and final public URLs printed in reports: false.
+
+What is proven:
+
+- The missing-input request bundle remains a collection aid only, not an approval packet.
+- The private template pack can now give inert `.example` scaffolds without creating active private input files.
+- Once `final_public_links` and `subscription_reason_policy` are supplied, the request/intake chain has an explicit local path to the correction preview runner.
+
+What remains partial or pending:
+
+- The active private correction-input JSON is still missing.
+- The local correction preview remains blocked until the three final links and one subscription policy value exist.
+- No MailerLite UI edit, additional test send, public/audience send, workflow/subscriber/group mutation, Shopify/CRM live change, ledger/card/scoring/Fact Store write is authorized by this checkpoint.
+
+Next safe move:
+
+- Use the inert example template only as shape guidance, then place real values in `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json`.
+- Rerun missing-inputs intake and the correction preview runner. Stop again before any MailerLite UI edit approval.
+
 ## Current recommendation
 
 Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: collect `final_public_links` plus `subscription_reason_policy` through the request bundle before any MailerLite UI edit approval. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

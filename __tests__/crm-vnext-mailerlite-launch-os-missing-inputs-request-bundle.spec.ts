@@ -44,6 +44,7 @@ const missingInputsKit = {
       gateId: "crm_signal_writes",
       templatePathSuggestion: "/tmp/private/observed_events.json",
       approvalEffect: "does_not_approve_crm_writes",
+      nextLocalCommandAfterInput: "npm run crm -- --observed-events-file /tmp/private/observed_events.json",
     },
     {
       id: "fact_store_market_review",
@@ -77,6 +78,7 @@ const missingInputsIntake = {
     inputCount: 7,
     readyInputCount: 0,
     canAskApprovalNow: false,
+    readyForMiniLaunchCorrectionPreview: false,
     blockerIds: [
       "exact_seed_recipient",
       "real_observed_events_file",
@@ -96,6 +98,24 @@ const missingInputsIntake = {
     { id: "final_public_links", gateId: "mini_launch_seed_inbox_correction", status: "missing_no_live_changes", blockers: ["correction_inputs_file_missing"] },
     { id: "subscription_reason_policy", gateId: "mini_launch_seed_inbox_correction", status: "missing_no_live_changes", blockers: ["subscription_reason_policy_missing"] },
   ],
+};
+
+const readyCorrectionIntake = {
+  ...missingInputsIntake,
+  status: "missing_inputs_intake_partial_no_live_changes",
+  executiveSummary: {
+    ...missingInputsIntake.executiveSummary,
+    readyInputCount: 2,
+    readyForMiniLaunchCorrectionPreview: true,
+  },
+  postInputCommands: {
+    miniLaunchCorrectionPreview: "npm run preview -- --correction-inputs-file /tmp/private/correction-inputs.json",
+  },
+  inputStates: missingInputsIntake.inputStates.map((state) =>
+    ["final_public_links", "subscription_reason_policy"].includes(state.id)
+      ? { ...state, status: "ready_redacted_no_live_changes", blockers: [] }
+      : state,
+  ),
 };
 
 const blockedGateHandoff = {
@@ -173,6 +193,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
     expect(serialized).toContain("no aprueba test send");
     expect(serialized).toContain("no ejecuta escrituras CRM");
     expect(serialized).toContain("no aprueba editar MailerLite UI");
+    expect(serialized).toContain("Comando local sugerido: npm run crm -- --observed-events-file /tmp/private/observed_events.json");
     expect(serialized).toContain("include_once_in_all_emails");
     expect(serialized).toContain("remove_custom_line_and_rely_on_platform_footer");
     expect(serialized).toContain("/tmp/private/observed_events.json");
@@ -183,6 +204,28 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
     expect(serialized).not.toContain("sample@example.invalid");
     expect(serialized).not.toContain("sample_handle");
     expect(serialized).not.toContain("https://example.com/result");
+  });
+
+  test("adds correction preview command only after correction inputs are ready", () => {
+    const waitingBundle = buildMissingInputsRequestBundle({
+      missingInputsKit,
+      missingInputsIntake,
+      blockedGateHandoff,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+    const readyBundle = buildMissingInputsRequestBundle({
+      missingInputsKit,
+      missingInputsIntake: readyCorrectionIntake,
+      blockedGateHandoff,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    expect(waitingBundle.postInputCommands).not.toContain("npm run preview -- --correction-inputs-file /tmp/private/correction-inputs.json");
+    expect(readyBundle.postInputCommands).toContain("npm run preview -- --correction-inputs-file /tmp/private/correction-inputs.json");
+    expect(readyBundle.executiveSummary.asksApproval).toBe(false);
+    expect(readyBundle.executiveSummary.canAskApprovalNow).toBe(false);
+    expect(readyBundle.safety.mailerLiteApiCalled).toBe(false);
+    expect(readyBundle.safety.sendsPerformed).toBe(false);
   });
 
   test("renders markdown with hard stops and safety boundaries", () => {
