@@ -12,6 +12,8 @@ const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlit
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_kit_2026-05-28.md';
 const DEFAULT_PRIVATE_SEED_EMAIL_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_seed_recipient_inteligencia_descansar.txt';
 const DEFAULT_OBSERVED_EVENTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_CORRECTION_INPUTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-missing-inputs-kit.mjs [options]
@@ -23,6 +25,8 @@ Options:
   --runbook <path>              Operator runbook JSON. Defaults to ${DEFAULT_RUNBOOK}
   --private-seed-email-file <path> Suggested private seed email file. Defaults to ${DEFAULT_PRIVATE_SEED_EMAIL_FILE}
   --observed-events-file <path> Suggested private observed events file. Defaults to ${DEFAULT_OBSERVED_EVENTS_FILE}
+  --seed-inbox-correction-plan <path> Seed inbox correction plan JSON. Defaults to ${DEFAULT_SEED_INBOX_CORRECTION_PLAN}
+  --correction-inputs-file <path> Suggested private correction inputs file. Defaults to ${DEFAULT_CORRECTION_INPUTS_FILE}
   --out <path>                  Write JSON kit. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>         Write Markdown kit. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                        Show this help
@@ -51,6 +55,8 @@ const parseArgs = (argv) => {
     runbook: DEFAULT_RUNBOOK,
     privateSeedEmailFile: DEFAULT_PRIVATE_SEED_EMAIL_FILE,
     observedEventsFile: DEFAULT_OBSERVED_EVENTS_FILE,
+    seedInboxCorrectionPlan: DEFAULT_SEED_INBOX_CORRECTION_PLAN,
+    correctionInputsFile: DEFAULT_CORRECTION_INPUTS_FILE,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     help: false,
@@ -65,6 +71,8 @@ const parseArgs = (argv) => {
     else if (arg === '--runbook') options.runbook = argv[++index];
     else if (arg === '--private-seed-email-file') options.privateSeedEmailFile = argv[++index];
     else if (arg === '--observed-events-file') options.observedEventsFile = argv[++index];
+    else if (arg === '--seed-inbox-correction-plan') options.seedInboxCorrectionPlan = argv[++index];
+    else if (arg === '--correction-inputs-file') options.correctionInputsFile = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -117,6 +125,8 @@ const buildSafety = () => ({
 });
 
 const inputById = (handoff) => new Map((handoff?.inputNeededNow ?? []).map((input) => [input.id, input]));
+const correctionInputById = (seedInboxCorrectionPlan) =>
+  new Map((seedInboxCorrectionPlan?.requiredInputsBeforeUiEditApproval ?? []).map((input) => [input.id, input]));
 
 const seedApprovalCommand = (seedSendApproval) =>
   seedSendApproval?.inputRequest?.nextLocalCommandAfterSeedRecipient
@@ -125,7 +135,74 @@ const seedApprovalCommand = (seedSendApproval) =>
 const crmApprovalCommand = (observedEventsFile) =>
   `npm run crm:vnext:mailerlite-mini-launch-crm-write-approval-packet -- --observed-events-file ${observedEventsFile} --out ${DEFAULT_CRM_WRITE_APPROVAL} --markdown-out ${markdownPathFor(DEFAULT_CRM_WRITE_APPROVAL)}`;
 
-const buildInputRequests = ({ handoff, seedSendApproval, crmWriteApproval, privateSeedEmailFile, observedEventsFile }) => {
+const correctionIntakeCommand = (correctionInputsFile) =>
+  `npm run crm:vnext:mailerlite-launch-os-missing-inputs-intake -- --correction-inputs-file ${correctionInputsFile}`;
+
+const buildCorrectionInputSpecs = ({ seedInboxCorrectionPlan, correctionInputsFile }) => {
+  const inputs = correctionInputById(seedInboxCorrectionPlan);
+  const requestedIds = unique((seedInboxCorrectionPlan?.requiredInputsBeforeUiEditApproval ?? []).map((input) => input.id));
+
+  const knownSpecs = [
+    {
+      id: 'final_public_links',
+      gateId: 'mini_launch_seed_inbox_correction',
+      label: inputs.get('final_public_links')?.label ?? 'Final approved public links',
+      requiredFor: inputs.get('final_public_links')?.requiredFor
+        ?? 'Replacing inert placeholders before any public/audience send.',
+      acceptableForm: inputs.get('final_public_links')?.acceptableForm
+        ?? '{ result_or_resource_link, practice_link, editorial_note_link }',
+      privacy: 'private_or_internal_evidence',
+      captureMode: 'correction_inputs_json.finalPublicLinks',
+      templatePathSuggestion: correctionInputsFile,
+      sampleOnly: false,
+      mustReplaceBeforeUse: true,
+      nextLocalCommandAfterInput: correctionIntakeCommand(correctionInputsFile),
+      approvalEffect: 'does_not_approve_mailerlite_ui_edit_test_send_or_public_send',
+    },
+    {
+      id: 'subscription_reason_policy',
+      gateId: 'mini_launch_seed_inbox_correction',
+      label: inputs.get('subscription_reason_policy')?.label ?? 'Footer/subscription-reason policy',
+      requiredFor: inputs.get('subscription_reason_policy')?.requiredFor
+        ?? 'Making the Spanish subscription-reason line consistent across E01-E04.',
+      acceptableForm: inputs.get('subscription_reason_policy')?.acceptableForm
+        ?? 'include_once_in_all_emails or remove_custom_line_and_rely_on_platform_footer',
+      privacy: 'internal_decision',
+      captureMode: 'correction_inputs_json.subscriptionReasonPolicy',
+      templatePathSuggestion: correctionInputsFile,
+      sampleOnly: false,
+      mustReplaceBeforeUse: false,
+      nextLocalCommandAfterInput: correctionIntakeCommand(correctionInputsFile),
+      approvalEffect: 'does_not_approve_mailerlite_ui_edit_test_send_or_public_send',
+    },
+  ];
+
+  const knownById = new Map(knownSpecs.map((spec) => [spec.id, spec]));
+  return requestedIds.map((id) => knownById.get(id) ?? {
+    id,
+    gateId: 'mini_launch_seed_inbox_correction',
+    label: inputs.get(id)?.label ?? id,
+    requiredFor: inputs.get(id)?.requiredFor ?? 'Mini-launch seed inbox correction input.',
+    acceptableForm: inputs.get(id)?.acceptableForm ?? 'Private/internal correction input.',
+    privacy: 'private_or_internal_evidence',
+    captureMode: `correction_inputs_json.${id}`,
+    templatePathSuggestion: correctionInputsFile,
+    sampleOnly: false,
+    mustReplaceBeforeUse: true,
+    nextLocalCommandAfterInput: correctionIntakeCommand(correctionInputsFile),
+    approvalEffect: 'does_not_approve_mailerlite_ui_edit_test_send_or_public_send',
+  });
+};
+
+const buildInputRequests = ({
+  handoff,
+  seedSendApproval,
+  crmWriteApproval,
+  seedInboxCorrectionPlan,
+  privateSeedEmailFile,
+  observedEventsFile,
+  correctionInputsFile = DEFAULT_CORRECTION_INPUTS_FILE,
+}) => {
   const inputs = inputById(handoff);
   const acceptedObservedEventsShape = crmWriteApproval?.observedEventInputContract?.acceptedShape
     ?? '{ events: [ { eventKind, sourceKind, channel, sourceId, observedAt, metrics.launchId, email|instagramHandle|personId, evidenceSourcePath } ] }';
@@ -212,11 +289,15 @@ const buildInputRequests = ({ handoff, seedSendApproval, crmWriteApproval, priva
     },
   ];
 
-  const neededIds = unique((handoff?.inputNeededNow ?? []).map((input) => input.id));
-  return specs.filter((spec) => neededIds.includes(spec.id));
+  const correctionSpecs = buildCorrectionInputSpecs({ seedInboxCorrectionPlan, correctionInputsFile });
+  const neededIds = unique([
+    ...(handoff?.inputNeededNow ?? []).map((input) => input.id),
+    ...correctionSpecs.map((input) => input.id),
+  ]);
+  return [...specs, ...correctionSpecs].filter((spec) => neededIds.includes(spec.id));
 };
 
-const buildTemplates = ({ privateSeedEmailFile, observedEventsFile }) => ({
+const buildTemplates = ({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }) => ({
   seedRecipientFile: {
     pathSuggestion: privateSeedEmailFile,
     kitCreatesFile: false,
@@ -246,6 +327,25 @@ const buildTemplates = ({ privateSeedEmailFile, observedEventsFile }) => ({
       ],
     },
   },
+  correctionInputsFile: {
+    pathSuggestion: correctionInputsFile,
+    kitCreatesFile: false,
+    sampleOnly: false,
+    mustReplaceBeforeUse: true,
+    doNotPasteExactUrlsInSharedReports: true,
+    template: {
+      finalPublicLinks: {
+        result_or_resource_link: 'https://...',
+        practice_link: 'https://...',
+        editorial_note_link: 'https://...',
+      },
+      subscriptionReasonPolicy: 'include_once_in_all_emails',
+      allowedSubscriptionReasonPolicies: [
+        'include_once_in_all_emails',
+        'remove_custom_line_and_rely_on_platform_footer',
+      ],
+    },
+  },
   factStoreMarketReview: {
     pathSuggestion: observedEventsFile,
     kitCreatesFile: false,
@@ -264,9 +364,10 @@ const buildTemplates = ({ privateSeedEmailFile, observedEventsFile }) => ({
   },
 });
 
-const buildPostInputCommands = ({ privateSeedEmailFile, observedEventsFile }) => [
+const buildPostInputCommands = ({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }) => [
   seedApprovalCommand({}).replace('<private_seed_email_file>', privateSeedEmailFile),
   crmApprovalCommand(observedEventsFile),
+  correctionIntakeCommand(correctionInputsFile),
   `npm run crm:vnext:mailerlite-launch-os-blocked-gate-handoff -- --out ${DEFAULT_BLOCKED_GATE_HANDOFF} --markdown-out ${markdownPathFor(DEFAULT_BLOCKED_GATE_HANDOFF)}`,
   `npm run crm:vnext:mailerlite-launch-os-operator-runbook -- --out ${DEFAULT_RUNBOOK} --markdown-out ${markdownPathFor(DEFAULT_RUNBOOK)}`,
   'npm run crm:vnext:mailerlite-launch-os-goal-audit -- --out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.json --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_2026-05-28.md',
@@ -277,21 +378,26 @@ const buildMissingInputsKit = ({
   handoff,
   seedSendApproval,
   crmWriteApproval,
+  seedInboxCorrectionPlan,
   runbook,
   sourceDigests = [],
   privateSeedEmailFile = DEFAULT_PRIVATE_SEED_EMAIL_FILE,
   observedEventsFile = DEFAULT_OBSERVED_EVENTS_FILE,
+  correctionInputsFile = DEFAULT_CORRECTION_INPUTS_FILE,
   generatedAt = new Date().toISOString(),
 }) => {
   const inputRequests = buildInputRequests({
     handoff,
     seedSendApproval,
     crmWriteApproval,
+    seedInboxCorrectionPlan,
     privateSeedEmailFile,
     observedEventsFile,
+    correctionInputsFile,
   });
   const seedInputCount = inputRequests.filter((input) => input.gateId === 'mini_launch_seed_send').length;
   const crmInputCount = inputRequests.filter((input) => input.gateId === 'crm_signal_writes').length;
+  const correctionInputCount = inputRequests.filter((input) => input.gateId === 'mini_launch_seed_inbox_correction').length;
   const safety = buildSafety();
 
   return {
@@ -310,18 +416,21 @@ const buildMissingInputsKit = ({
       openLiveMutationGateCount: handoff?.executiveSummary?.openLiveMutationGateCount ?? 0,
       seedInputCount,
       crmInputCount,
+      correctionInputCount,
       privateInputCount: inputRequests.filter((input) => input.privacy.includes('private')).length,
       kitCreatesPrivateFiles: false,
       kitAsksApproval: false,
       nextSafeAction: 'collect_missing_inputs_without_approval_or_execution',
     },
     inputRequests,
-    templates: buildTemplates({ privateSeedEmailFile, observedEventsFile }),
-    postInputCommands: buildPostInputCommands({ privateSeedEmailFile, observedEventsFile }),
+    templates: buildTemplates({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }),
+    postInputCommands: buildPostInputCommands({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }),
     hardStops: [
       'This kit is not an approval phrase and cannot execute any send or write.',
       'Do not create the private seed recipient file from this kit unless Alejandro supplies the exact address.',
       'Do not treat sample observed events, sample people or sample aggregate facts as writable evidence.',
+      'Do not paste full final public URLs into shared reports; use the private correction inputs file and redacted intake.',
+      'Final public links and subscription policy inputs do not approve MailerLite UI edits, test sends, public sends or audience sends.',
       'After inputs exist, rerun the relevant approval packet, blocked-gate handoff, runbook, goal audit and validation receipt.',
       'Seed-send still requires fresh real MailerLite QA plus a separate exact approval phrase.',
       'CRM writes still require real observed events, exact people, selected write family and a separate exact approval phrase.',
@@ -393,25 +502,30 @@ const buildFromFiles = async (options) => {
     seedSendApprovalEntry,
     crmWriteApprovalEntry,
     runbookEntry,
+    seedInboxCorrectionPlanEntry,
   ] = await Promise.all([
     readJsonWithDigest(options.blockedGateHandoff, 'blocked gates and exact input ids'),
     readJsonWithDigest(options.seedSendApproval, 'seed-send exact-recipient boundary and UI execution plan'),
     readJsonWithDigest(options.crmWriteApproval, 'CRM observed-events and exact-people boundary'),
     readJsonWithDigest(options.runbook, 'operator runbook current no-live posture'),
+    readJsonWithDigest(options.seedInboxCorrectionPlan, 'mini-launch seed inbox correction inputs and blockers'),
   ]);
 
   return buildMissingInputsKit({
     handoff: handoffEntry.value,
     seedSendApproval: seedSendApprovalEntry.value,
     crmWriteApproval: crmWriteApprovalEntry.value,
+    seedInboxCorrectionPlan: seedInboxCorrectionPlanEntry.value,
     runbook: runbookEntry.value,
     privateSeedEmailFile: options.privateSeedEmailFile,
     observedEventsFile: options.observedEventsFile,
+    correctionInputsFile: options.correctionInputsFile,
     sourceDigests: [
       { id: 'blockedGateHandoff', ...handoffEntry.digest },
       { id: 'seedSendApproval', ...seedSendApprovalEntry.digest },
       { id: 'crmWriteApproval', ...crmWriteApprovalEntry.digest },
       { id: 'runbook', ...runbookEntry.digest },
+      { id: 'seedInboxCorrectionPlan', ...seedInboxCorrectionPlanEntry.digest },
     ],
   });
 };
@@ -431,6 +545,7 @@ const main = async () => {
     status: kit.status,
     generatedAt: kit.generatedAt,
     inputCount: kit.executiveSummary.inputCount,
+    correctionInputCount: kit.executiveSummary.correctionInputCount,
     canAskApprovalNow: kit.executiveSummary.canAskApprovalNow,
     openLiveMutationGateCount: kit.executiveSummary.openLiveMutationGateCount,
     out: options.out ? resolve(options.out) : null,

@@ -11,7 +11,7 @@ import {
 const missingInputsKit = {
   status: "missing_inputs_kit_ready_no_live_changes",
   executiveSummary: {
-    inputCount: 5,
+    inputCount: 7,
     canAskApprovalNow: false,
     kitCreatesPrivateFiles: false,
     kitAsksApproval: false,
@@ -51,6 +51,19 @@ const missingInputsKit = {
       templatePathSuggestion: "/tmp/private/observed_events.json",
       approvalEffect: "does_not_approve_fact_store_write",
     },
+    {
+      id: "final_public_links",
+      gateId: "mini_launch_seed_inbox_correction",
+      templatePathSuggestion: "/tmp/private/correction-inputs.json",
+      approvalEffect: "does_not_approve_mailerlite_ui_edit_test_send_or_public_send",
+      nextLocalCommandAfterInput: "npm run intake -- --correction-inputs-file /tmp/private/correction-inputs.json",
+    },
+    {
+      id: "subscription_reason_policy",
+      gateId: "mini_launch_seed_inbox_correction",
+      templatePathSuggestion: "/tmp/private/correction-inputs.json",
+      approvalEffect: "does_not_approve_mailerlite_ui_edit_test_send_or_public_send",
+    },
   ],
   postInputCommands: [
     "npm run seed -- --seed-email-file /tmp/private/mailerlite_seed_recipient.txt",
@@ -61,7 +74,7 @@ const missingInputsKit = {
 const missingInputsIntake = {
   status: "missing_inputs_intake_waiting_for_inputs_no_live_changes",
   executiveSummary: {
-    inputCount: 5,
+    inputCount: 7,
     readyInputCount: 0,
     canAskApprovalNow: false,
     blockerIds: [
@@ -70,6 +83,8 @@ const missingInputsIntake = {
       "exact_people",
       "writable_event_screen",
       "fact_store_market_review",
+      "final_public_links",
+      "subscription_reason_policy",
     ],
   },
   inputStates: [
@@ -78,6 +93,8 @@ const missingInputsIntake = {
     { id: "exact_people", gateId: "crm_signal_writes", status: "missing_no_live_changes", blockers: ["exact_people_missing_from_observed_events"] },
     { id: "writable_event_screen", gateId: "crm_signal_writes", status: "missing_no_live_changes", blockers: ["writable_event_screen_not_green"] },
     { id: "fact_store_market_review", gateId: "crm_signal_writes", status: "missing_no_live_changes", blockers: ["fact_store_market_review_missing_or_not_reviewed"] },
+    { id: "final_public_links", gateId: "mini_launch_seed_inbox_correction", status: "missing_no_live_changes", blockers: ["correction_inputs_file_missing"] },
+    { id: "subscription_reason_policy", gateId: "mini_launch_seed_inbox_correction", status: "missing_no_live_changes", blockers: ["subscription_reason_policy_missing"] },
   ],
 };
 
@@ -89,6 +106,8 @@ const blockedGateHandoff = {
     { id: "exact_people", gateId: "crm_signal_writes" },
     { id: "writable_event_screen", gateId: "crm_signal_writes" },
     { id: "fact_store_market_review", gateId: "crm_signal_writes" },
+    { id: "final_public_links", gateId: "mini_launch_seed_inbox_correction" },
+    { id: "subscription_reason_policy", gateId: "mini_launch_seed_inbox_correction" },
   ],
 };
 
@@ -108,7 +127,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
     expect(parsed.markdownOut).toBe("/tmp/request-bundle.md");
   });
 
-  test("builds five copy-ready requests without approval or private file creation", () => {
+  test("builds copy-ready requests without approval or private file creation", () => {
     const bundle = buildMissingInputsRequestBundle({
       missingInputsKit,
       missingInputsIntake,
@@ -117,7 +136,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
     });
 
     expect(bundle.status).toBe("missing_inputs_request_bundle_ready_no_live_changes");
-    expect(bundle.executiveSummary.requestCount).toBe(5);
+    expect(bundle.executiveSummary.requestCount).toBe(7);
     expect(bundle.executiveSummary.copyBlocksReady).toBe(true);
     expect(bundle.executiveSummary.requestIds).toEqual([
       "exact_seed_recipient",
@@ -125,6 +144,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
       "exact_people",
       "writable_event_screen",
       "fact_store_market_review",
+      "final_public_links",
+      "subscription_reason_policy",
     ]);
     expect(bundle.executiveSummary.createsPrivateFiles).toBe(false);
     expect(bundle.executiveSummary.asksApproval).toBe(false);
@@ -151,12 +172,17 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
 
     expect(serialized).toContain("no aprueba test send");
     expect(serialized).toContain("no ejecuta escrituras CRM");
+    expect(serialized).toContain("no aprueba editar MailerLite UI");
+    expect(serialized).toContain("include_once_in_all_emails");
+    expect(serialized).toContain("remove_custom_line_and_rely_on_platform_footer");
     expect(serialized).toContain("/tmp/private/observed_events.json");
+    expect(serialized).toContain("/tmp/private/correction-inputs.json");
     expect(serialized).not.toContain("seed.person@example.com");
     expect(serialized).not.toContain("private.person@example.com");
     expect(serialized).not.toContain("real_person@example.com");
     expect(serialized).not.toContain("sample@example.invalid");
     expect(serialized).not.toContain("sample_handle");
+    expect(serialized).not.toContain("https://example.com/result");
   });
 
   test("renders markdown with hard stops and safety boundaries", () => {

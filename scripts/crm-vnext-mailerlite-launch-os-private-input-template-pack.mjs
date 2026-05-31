@@ -103,8 +103,22 @@ const observedEventsExample = {
   },
 };
 
+const correctionInputsExample = {
+  finalPublicLinks: {
+    result_or_resource_link: 'https://replace-with-final-result-or-resource-link.example.invalid',
+    practice_link: 'https://replace-with-final-practice-link.example.invalid',
+    editorial_note_link: 'https://replace-with-final-editorial-note-link.example.invalid',
+  },
+  subscriptionReasonPolicy: 'include_once_in_all_emails',
+  allowedSubscriptionReasonPolicies: [
+    'include_once_in_all_emails',
+    'remove_custom_line_and_rely_on_platform_footer',
+  ],
+};
+
 const exampleContentFor = (input) => {
   if (input.id === 'exact_seed_recipient') return seedExample;
+  if (input.gateId === 'mini_launch_seed_inbox_correction') return `${JSON.stringify(correctionInputsExample, null, 2)}\n`;
   if (input.gateId === 'crm_signal_writes') return `${JSON.stringify(observedEventsExample, null, 2)}\n`;
   return `${JSON.stringify({ replace: 'with_real_input_only_after_it_exists' }, null, 2)}\n`;
 };
@@ -192,6 +206,7 @@ const buildPrivateInputTemplatePack = ({
       'Example files are inert scaffolds, not private input files.',
       'Do not rename .example files into active inputs unless the real value exists.',
       'Do not use example identities, example facts or .invalid emails as launch evidence.',
+      'Do not paste final public URLs into shared reports; real correction inputs belong in the private active path only.',
       'This template pack is not approval for seed sends, CRM writes, Fact Store writes or live operations.',
       'After real inputs exist, rerun missing-inputs intake and the relevant approval packet before any execution.',
     ],

@@ -333,6 +333,9 @@ const buildValidationReceipt = ({
       missingInputsIntakeReadyInputCount: missingInputsIntake?.executiveSummary?.readyInputCount
         ?? runbook?.currentState?.missingInputsIntake?.readyInputCount
         ?? null,
+      missingInputsIntakeReadyForMiniLaunchCorrectionPreview: missingInputsIntake?.executiveSummary?.readyForMiniLaunchCorrectionPreview
+        ?? runbook?.currentState?.missingInputsIntake?.readyForMiniLaunchCorrectionPreview
+        ?? null,
       missingInputsIntakeFullPrivateValuesStored: missingInputsIntake?.executiveSummary?.fullPrivateValuesStoredInReport
         ?? runbook?.currentState?.missingInputsIntake?.fullPrivateValuesStoredInReport
         ?? null,
@@ -575,6 +578,7 @@ const renderMarkdown = (receipt) => {
     `- Old UI work closed: ${receipt.evidence.continuationGuardOldUiWorkClosed ?? 'unknown'}`,
     `- Missing-inputs intake: ${receipt.evidence.missingInputsIntakeStatus ?? 'missing'}`,
     `- Missing-inputs intake ready: ${receipt.evidence.missingInputsIntakeReadyInputCount ?? 'unknown'}`,
+    `- Missing-inputs intake ready for mini-launch correction preview: ${receipt.evidence.missingInputsIntakeReadyForMiniLaunchCorrectionPreview ?? 'unknown'}`,
     `- Missing-inputs intake full private values stored: ${receipt.evidence.missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
     `- Missing-inputs request bundle: ${receipt.evidence.missingInputsRequestBundleStatus ?? 'missing'}`,
     `- Missing-inputs request count: ${receipt.evidence.missingInputsRequestBundleRequestCount ?? 'unknown'}`,

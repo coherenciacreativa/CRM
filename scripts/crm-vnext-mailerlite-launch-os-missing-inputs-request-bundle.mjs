@@ -24,7 +24,7 @@ Options:
   --help                           Show this help
 
 Local-only request bundle for MailerLite Launch OS missing inputs. It turns the
-current five missing-input specs into copy-ready request blocks. It does not
+current missing-input specs into copy-ready request blocks. It does not
 create private files, ask for approval, open UI, call APIs, read subscribers,
 mutate groups/workflows/cards/scoring/Fact Store, send emails or print private
 values.`;
@@ -140,6 +140,22 @@ const requestMetadata = {
       `Si la familia de escritura futura incluye Fact Store, necesito una revision humana de hechos agregados en ${request.templatePathSuggestion}: hechos exactos, evidenceEventIds y estado reviewed. Esto no escribe Fact Store y no reemplaza una aprobacion posterior.`,
     collectionRule: 'Required only for a future Fact Store write family; keep exact facts in private/internal evidence.',
   },
+  final_public_links: {
+    title: 'Final approved public links',
+    audience: 'Alejandro or launch operator',
+    targetField: 'private correction inputs JSON',
+    copyReadyText: (request) =>
+      `Necesito los 3 links publicos finales aprobados en ${request.templatePathSuggestion}: result_or_resource_link, practice_link y editorial_note_link. Esto solo habilita preview/correccion local redacted; no aprueba editar MailerLite UI, reenviar tests, publicar, programar, enviar a audiencia, tocar subscribers, grupos, workflows, Shopify, CRM, ledgers, cards, scoring ni Fact Store.`,
+    collectionRule: 'Supply final links in the private correction inputs JSON; shared reports may store hashes only, never full URLs.',
+  },
+  subscription_reason_policy: {
+    title: 'Footer/subscription-reason policy',
+    audience: 'Alejandro or launch operator',
+    targetField: 'private correction inputs JSON',
+    copyReadyText: (request) =>
+      `Necesito escoger una politica para la linea de razon de suscripcion en ${request.templatePathSuggestion}: include_once_in_all_emails o remove_custom_line_and_rely_on_platform_footer. Esto no aprueba editar MailerLite UI, reenviar tests, publicar, programar, enviar a audiencia ni tocar ningun sistema vivo.`,
+    collectionRule: 'Choose exactly one allowed policy value; this is an input decision, not approval for execution.',
+  },
 };
 
 const byId = (items = []) => new Map(items.filter((item) => item?.id).map((item) => [item.id, item]));
@@ -246,8 +262,9 @@ const buildMissingInputsRequestBundle = ({
     postInputCommands: buildPostInputCommands({ missingInputsKit, missingInputsIntake }),
     hardStops: [
       'This request bundle is not approval.',
-      'Do not paste private emails, exact people or exact facts into public reports.',
+      'Do not paste private emails, exact people, exact facts or final public URLs into public reports.',
       'Supplying inputs does not authorize seed sends, CRM writes, group assignments, workflows, subscribers or public sends.',
+      'Supplying final public links or subscription policy does not authorize MailerLite UI edits, test sends, public sends or audience sends.',
       'No live MailerLite, Shopify, CRM, UI, API, ledger, card, scoring or Fact Store action is allowed from this bundle.',
       'After inputs exist, rerun the redacted intake and regenerate the relevant packets locally before asking for any later exact approval.',
     ],

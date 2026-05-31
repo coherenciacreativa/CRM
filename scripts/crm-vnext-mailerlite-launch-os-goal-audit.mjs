@@ -1027,6 +1027,9 @@ const buildRequirementChecks = ({
   const missingInputsKitCrmInputCount = missingInputsKitState?.executiveSummary?.crmInputCount
     ?? missingInputsKitState?.crmInputCount
     ?? null;
+  const missingInputsKitCorrectionInputCount = missingInputsKitState?.executiveSummary?.correctionInputCount
+    ?? missingInputsKitState?.correctionInputCount
+    ?? null;
   const missingInputsKitCanAskApprovalNow = missingInputsKitState?.executiveSummary?.canAskApprovalNow
     ?? missingInputsKitState?.canAskApprovalNow
     ?? null;
@@ -1064,6 +1067,9 @@ const buildRequirementChecks = ({
     ?? null;
   const missingInputsIntakeReadyForCrmApprovalRequest = missingInputsIntakeState?.executiveSummary?.readyForCrmApprovalRequest
     ?? missingInputsIntakeState?.readyForCrmApprovalRequest
+    ?? null;
+  const missingInputsIntakeReadyForMiniLaunchCorrectionPreview = missingInputsIntakeState?.executiveSummary?.readyForMiniLaunchCorrectionPreview
+    ?? missingInputsIntakeState?.readyForMiniLaunchCorrectionPreview
     ?? null;
   const missingInputsIntakeFactStoreReviewReady = missingInputsIntakeState?.executiveSummary?.factStoreReviewReady
     ?? missingInputsIntakeState?.factStoreReviewReady
@@ -1748,6 +1754,7 @@ const buildRequirementChecks = ({
         `missingInputsKitInputCount=${missingInputsKitInputCount ?? 'unknown'}`,
         `missingInputsKitSeedInputCount=${missingInputsKitSeedInputCount ?? 'unknown'}`,
         `missingInputsKitCrmInputCount=${missingInputsKitCrmInputCount ?? 'unknown'}`,
+        `missingInputsKitCorrectionInputCount=${missingInputsKitCorrectionInputCount ?? 'unknown'}`,
         `missingInputsKitCanAskApprovalNow=${missingInputsKitCanAskApprovalNow ?? 'unknown'}`,
         `missingInputsKitCreatesPrivateFiles=${missingInputsKitCreatesPrivateFiles ?? 'unknown'}`,
         `missingInputsKitAsksApproval=${missingInputsKitAsksApproval ?? 'unknown'}`,
@@ -1760,6 +1767,7 @@ const buildRequirementChecks = ({
         `missingInputsIntakeReadyForSeedApprovalPacket=${missingInputsIntakeReadyForSeedApprovalPacket ?? 'unknown'}`,
         `missingInputsIntakeReadyForCrmWritePacketRegeneration=${missingInputsIntakeReadyForCrmWritePacketRegeneration ?? 'unknown'}`,
         `missingInputsIntakeReadyForCrmApprovalRequest=${missingInputsIntakeReadyForCrmApprovalRequest ?? 'unknown'}`,
+        `missingInputsIntakeReadyForMiniLaunchCorrectionPreview=${missingInputsIntakeReadyForMiniLaunchCorrectionPreview ?? 'unknown'}`,
         `missingInputsIntakeFactStoreReviewReady=${missingInputsIntakeFactStoreReviewReady ?? 'unknown'}`,
         `missingInputsIntakeCanAskApprovalNow=${missingInputsIntakeCanAskApprovalNow ?? 'unknown'}`,
         `missingInputsIntakeFullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored ?? 'unknown'}`,
@@ -2167,6 +2175,9 @@ const buildGoalAudit = ({
   const missingInputsKitInputCount = missingInputsKitState?.executiveSummary?.inputCount
     ?? missingInputsKitState?.inputCount
     ?? null;
+  const missingInputsKitCorrectionInputCount = missingInputsKitState?.executiveSummary?.correctionInputCount
+    ?? missingInputsKitState?.correctionInputCount
+    ?? null;
   const missingInputsKitInputIdsFromPacket = (missingInputsKitState?.inputRequests ?? [])
     .map((input) => input?.id)
     .filter(Boolean);
@@ -2198,13 +2209,16 @@ const buildGoalAudit = ({
   const missingInputsIntakeFullPrivateValuesStored = missingInputsIntakeState?.executiveSummary?.fullPrivateValuesStoredInReport
     ?? missingInputsIntakeState?.fullPrivateValuesStoredInReport
     ?? null;
+  const missingInputsIntakeReadyForMiniLaunchCorrectionPreview = missingInputsIntakeState?.executiveSummary?.readyForMiniLaunchCorrectionPreview
+    ?? missingInputsIntakeState?.readyForMiniLaunchCorrectionPreview
+    ?? null;
   const missingInputsIntakeNextSafeAction = missingInputsIntakeState?.executiveSummary?.nextSafeAction
     ?? missingInputsIntakeState?.nextSafeAction
     ?? null;
   const missingInputsIntakeMove = missingInputsIntakeStatus === 'missing_inputs_intake_waiting_for_inputs_no_live_changes'
-    ? `Use the Launch OS missing-inputs intake as redacted current state; ready inputs ${missingInputsIntakeReadyInputCount ?? 0}/${missingInputsIntakeInputCount ?? 'unknown'}, present inputs ${missingInputsIntakePresentInputCount ?? 0}, canAskApprovalNow=${missingInputsIntakeCanAskApprovalNow}.`
+    ? `Use the Launch OS missing-inputs intake as redacted current state; ready inputs ${missingInputsIntakeReadyInputCount ?? 0}/${missingInputsIntakeInputCount ?? 'unknown'}, present inputs ${missingInputsIntakePresentInputCount ?? 0}, readyForMiniLaunchCorrectionPreview=${missingInputsIntakeReadyForMiniLaunchCorrectionPreview}, canAskApprovalNow=${missingInputsIntakeCanAskApprovalNow}.`
     : missingInputsIntakeStatus === 'missing_inputs_intake_partial_no_live_changes'
-      ? `Use the Launch OS missing-inputs intake before regenerating seed/CRM packets; ready inputs ${missingInputsIntakeReadyInputCount ?? 0}/${missingInputsIntakeInputCount ?? 'unknown'}, fullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored}.`
+      ? `Use the Launch OS missing-inputs intake before regenerating seed/CRM/correction packets; ready inputs ${missingInputsIntakeReadyInputCount ?? 0}/${missingInputsIntakeInputCount ?? 'unknown'}, readyForMiniLaunchCorrectionPreview=${missingInputsIntakeReadyForMiniLaunchCorrectionPreview}, fullPrivateValuesStored=${missingInputsIntakeFullPrivateValuesStored}.`
       : missingInputsIntakeStatus === 'missing_inputs_intake_all_inputs_ready_no_live_changes'
         ? `Use the Launch OS missing-inputs intake to regenerate seed/CRM packets without execution; all ${missingInputsIntakeInputCount ?? 'current'} inputs are ready, canAskApprovalNow=${missingInputsIntakeCanAskApprovalNow}.`
         : missingInputsIntakeStatus
@@ -2671,10 +2685,12 @@ const buildGoalAudit = ({
       blockedGateHandoffGateIds,
       missingInputsKitStatus,
       missingInputsKitInputCount,
+      missingInputsKitCorrectionInputCount,
       missingInputsKitInputIds,
       missingInputsIntakeStatus,
       missingInputsIntakeInputCount,
       missingInputsIntakeReadyInputCount,
+      missingInputsIntakeReadyForMiniLaunchCorrectionPreview,
       missingInputsIntakeCanAskApprovalNow,
       missingInputsIntakeFullPrivateValuesStored,
       missingInputsRequestBundleStatus,
@@ -2833,6 +2849,8 @@ const renderMarkdown = (audit) => {
     `- Taxonomy response request bundle: ${audit.executiveSummary.taxonomyRefreshResponseRequestBundleStatus ?? 'missing'}`,
     `- Taxonomy response request missing finals: ${audit.executiveSummary.taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}`,
     `- Taxonomy response request asks live approval: ${audit.executiveSummary.taxonomyRefreshResponseRequestAsksLiveApproval ?? 'unknown'}`,
+    `- Missing-inputs correction inputs: ${audit.executiveSummary.missingInputsKitCorrectionInputCount ?? 'unknown'}`,
+    `- Ready for mini-launch correction preview: ${audit.executiveSummary.missingInputsIntakeReadyForMiniLaunchCorrectionPreview ?? 'unknown'}`,
     `- Next best move: ${audit.executiveSummary.nextBestMove}`,
     '',
     '## Requirement Audit',

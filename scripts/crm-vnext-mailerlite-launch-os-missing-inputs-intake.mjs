@@ -11,6 +11,12 @@ const DEFAULT_OPERATOR_RUNBOOK = '/Users/alejandrogomez/Documents/Mantis-Reports
 const DEFAULT_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_PRIVATE_SEED_EMAIL_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_seed_recipient_inteligencia_descansar.txt';
 const DEFAULT_OBSERVED_EVENTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_CORRECTION_INPUTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json';
+const FINAL_PUBLIC_LINK_KEYS = ['result_or_resource_link', 'practice_link', 'editorial_note_link'];
+const ALLOWED_SUBSCRIPTION_REASON_POLICIES = [
+  'include_once_in_all_emails',
+  'remove_custom_line_and_rely_on_platform_footer',
+];
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs [options]
@@ -21,6 +27,7 @@ Options:
   --crm-write-approval-packet <path> CRM write approval packet JSON. Defaults to ${DEFAULT_CRM_WRITE_APPROVAL_PACKET}
   --seed-email-file <path>          Private seed email file. Defaults to ${DEFAULT_PRIVATE_SEED_EMAIL_FILE}
   --observed-events-file <path>     Private observed events JSON. Defaults to ${DEFAULT_OBSERVED_EVENTS_FILE}
+  --correction-inputs-file <path>    Private correction inputs JSON. Defaults to ${DEFAULT_CORRECTION_INPUTS_FILE}
   --out <path>                      Write JSON intake report
   --markdown-out <path>             Write Markdown intake report
   --help                            Show this help
@@ -39,6 +46,7 @@ const parseArgs = (argv) => {
     crmWriteApprovalPacket: DEFAULT_CRM_WRITE_APPROVAL_PACKET,
     seedEmailFile: DEFAULT_PRIVATE_SEED_EMAIL_FILE,
     observedEventsFile: DEFAULT_OBSERVED_EVENTS_FILE,
+    correctionInputsFile: DEFAULT_CORRECTION_INPUTS_FILE,
     out: null,
     markdownOut: null,
     help: false,
@@ -52,6 +60,7 @@ const parseArgs = (argv) => {
     else if (arg === '--crm-write-approval-packet') options.crmWriteApprovalPacket = argv[++index];
     else if (arg === '--seed-email-file') options.seedEmailFile = argv[++index];
     else if (arg === '--observed-events-file') options.observedEventsFile = argv[++index];
+    else if (arg === '--correction-inputs-file') options.correctionInputsFile = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -142,6 +151,18 @@ const redactEmail = (email) => {
 
 const sha256 = (value) => createHash('sha256').update(String(value)).digest('hex');
 
+const looksSafeHttpUrl = (value) => {
+  const candidate = cleanString(value);
+  if (!candidate) return false;
+  if (candidate.includes('placeholder') || /[<>\s]/.test(candidate)) return false;
+  try {
+    const url = new URL(candidate);
+    return ['http:', 'https:'].includes(url.protocol) && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 const buildSeedState = ({ path, read }) => {
   const raw = read.present ? cleanString(read.content) : null;
   const normalized = normalizeEmail(raw);
@@ -171,6 +192,97 @@ const buildSeedState = ({ path, read }) => {
     candidateCount,
     blockers,
     nextLocalCommandAllowed: valid,
+  };
+};
+
+const finalPublicLinksFrom = (payload) =>
+  payload?.finalPublicLinks
+  ?? payload?.final_public_links
+  ?? payload?.links
+  ?? null;
+
+const subscriptionReasonPolicyFrom = (payload) =>
+  cleanString(payload?.subscriptionReasonPolicy)
+  ?? cleanString(payload?.subscription_reason_policy)
+  ?? cleanString(payload?.subscriptionReason?.policy)
+  ?? cleanString(payload?.policy)
+  ?? null;
+
+const buildCorrectionInputsState = ({ path, read }) => {
+  const payload = read.present && read.value ? read.value : null;
+  const finalLinks = finalPublicLinksFrom(payload);
+  const presentKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]));
+  const missingKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => !cleanString(finalLinks?.[key]));
+  const invalidKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]) && !looksSafeHttpUrl(finalLinks?.[key]));
+  const finalLinksReady = read.present && !read.error && missingKeys.length === 0 && invalidKeys.length === 0;
+  const policy = subscriptionReasonPolicyFrom(payload);
+  const policyValid = Boolean(policy) && ALLOWED_SUBSCRIPTION_REASON_POLICIES.includes(policy);
+  const parsed = read.present && !read.error && Boolean(read.value);
+
+  const fileBlockers = [
+    ...(read.present ? [] : ['correction_inputs_file_missing']),
+    ...(read.error ? [read.error] : []),
+    ...(read.present && !parsed ? ['correction_inputs_file_invalid_or_empty'] : []),
+  ];
+  const finalPublicLinks = {
+    id: 'final_public_links',
+    status: finalLinksReady
+      ? 'ready_redacted_no_live_changes'
+      : read.present
+        ? 'present_invalid_no_live_changes'
+        : 'missing_no_live_changes',
+    present: read.present && Boolean(finalLinks),
+    valid: finalLinksReady,
+    path,
+    requiredKeys: FINAL_PUBLIC_LINK_KEYS,
+    presentKeys,
+    missingKeys,
+    invalidKeys,
+    linkCount: finalLinksReady ? FINAL_PUBLIC_LINK_KEYS.length : presentKeys.length,
+    urlSha256ByKey: Object.fromEntries(
+      FINAL_PUBLIC_LINK_KEYS
+        .filter((key) => looksSafeHttpUrl(finalLinks?.[key]))
+        .map((key) => [key, sha256(finalLinks[key])]),
+    ),
+    exactUrlsStoredInReport: false,
+    blockers: [
+      ...fileBlockers,
+      ...missingKeys.map((key) => `missing_${key}`),
+      ...invalidKeys.map((key) => `invalid_or_placeholder_${key}`),
+    ],
+  };
+  const subscriptionReasonPolicy = {
+    id: 'subscription_reason_policy',
+    status: policyValid
+      ? 'ready_no_live_changes'
+      : read.present
+        ? 'present_invalid_no_live_changes'
+        : 'missing_no_live_changes',
+    present: read.present && Boolean(policy),
+    valid: policyValid,
+    path,
+    policy: policyValid ? policy : null,
+    allowedPolicies: ALLOWED_SUBSCRIPTION_REASON_POLICIES,
+    policyStoredInReport: policyValid,
+    blockers: [
+      ...fileBlockers,
+      ...(policy ? [] : ['subscription_reason_policy_missing']),
+      ...(policy && !policyValid ? ['subscription_reason_policy_not_allowed'] : []),
+    ],
+  };
+
+  return {
+    file: {
+      path,
+      present: read.present,
+      parsed,
+      chars: read.chars ?? 0,
+      exactPayloadStoredInReport: false,
+      blockers: fileBlockers,
+    },
+    finalPublicLinks,
+    subscriptionReasonPolicy,
+    readyForMiniLaunchCorrectionPreview: finalPublicLinks.valid && subscriptionReasonPolicy.valid,
   };
 };
 
@@ -311,7 +423,7 @@ const buildObservedState = ({ path, read, launchId }) => {
   };
 };
 
-const stateFromInputs = ({ kit, seedState, observedState }) => {
+const stateFromInputs = ({ kit, seedState, observedState, correctionState }) => {
   const byId = new Map((kit?.inputRequests ?? []).map((input) => [input.id, input]));
   const eventFileReady = observedState.file.present && observedState.file.parsed && observedState.observedEvents.eventCount > 0;
   const exactPeopleReady = observedState.observedEvents.exactPersonCount > 0;
@@ -363,6 +475,24 @@ const stateFromInputs = ({ kit, seedState, observedState }) => {
       requiredOnlyForFactStoreWrite: true,
       blockers: factReady ? [] : ['fact_store_market_review_missing_or_not_reviewed'],
     },
+    {
+      id: 'final_public_links',
+      gateId: byId.get('final_public_links')?.gateId ?? 'mini_launch_seed_inbox_correction',
+      status: correctionState.finalPublicLinks.status,
+      readyForPacketRegeneration: correctionState.finalPublicLinks.valid,
+      approvalEffect: byId.get('final_public_links')?.approvalEffect
+        ?? 'does_not_approve_mailerlite_ui_edit_test_send_or_public_send',
+      blockers: correctionState.finalPublicLinks.blockers,
+    },
+    {
+      id: 'subscription_reason_policy',
+      gateId: byId.get('subscription_reason_policy')?.gateId ?? 'mini_launch_seed_inbox_correction',
+      status: correctionState.subscriptionReasonPolicy.status,
+      readyForPacketRegeneration: correctionState.subscriptionReasonPolicy.valid,
+      approvalEffect: byId.get('subscription_reason_policy')?.approvalEffect
+        ?? 'does_not_approve_mailerlite_ui_edit_test_send_or_public_send',
+      blockers: correctionState.subscriptionReasonPolicy.blockers,
+    },
   ];
   return byId.size > 0
     ? states.filter((state) => byId.has(state.id))
@@ -401,6 +531,8 @@ const buildMissingInputsIntake = ({
   seedEmailFile,
   observedEventsRead,
   observedEventsFile,
+  correctionInputsRead = { present: false, value: null, error: null, chars: 0 },
+  correctionInputsFile = DEFAULT_CORRECTION_INPUTS_FILE,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
 }) => {
@@ -410,7 +542,8 @@ const buildMissingInputsIntake = ({
   const launchId = launch?.launchId ?? null;
   const seedState = buildSeedState({ path: seedEmailFile, read: seedEmailRead });
   const observedState = buildObservedState({ path: observedEventsFile, read: observedEventsRead, launchId });
-  const inputStates = stateFromInputs({ kit: missingInputsKit, seedState, observedState });
+  const correctionState = buildCorrectionInputsState({ path: correctionInputsFile, read: correctionInputsRead });
+  const inputStates = stateFromInputs({ kit: missingInputsKit, seedState, observedState, correctionState });
   const readyInputCount = inputStates.filter((state) => state.status.startsWith('ready')).length;
   const presentInputCount = inputStates.filter((state) =>
     !['missing_no_live_changes', 'not_ready_no_live_changes'].includes(state.status)).length;
@@ -422,6 +555,11 @@ const buildMissingInputsIntake = ({
     .filter(Boolean);
   const readyForCrmApprovalRequest = crmApprovalInputStates.length > 0
     && crmApprovalInputStates.every((state) => state.status.startsWith('ready'));
+  const correctionInputStates = ['final_public_links', 'subscription_reason_policy']
+    .map((id) => inputStates.find((state) => state.id === id))
+    .filter(Boolean);
+  const readyForMiniLaunchCorrectionPreview = correctionInputStates.length > 0
+    && correctionInputStates.every((state) => state.status.startsWith('ready'));
   const blockerIds = inputStates
     .filter((state) => !state.status.startsWith('ready'))
     .map((state) => state.id);
@@ -446,11 +584,14 @@ const buildMissingInputsIntake = ({
       readyForSeedApprovalPacket,
       readyForCrmWritePacketRegeneration,
       readyForCrmApprovalRequest,
+      readyForMiniLaunchCorrectionPreview,
       factStoreReviewReady: observedState.factReview.ready,
       fullPrivateValuesStoredInReport: false,
       canAskApprovalNow: false,
       openLiveMutationGateCount: 0,
-      nextSafeAction: readyForSeedApprovalPacket || readyForCrmWritePacketRegeneration
+      nextSafeAction: readyForMiniLaunchCorrectionPreview
+        ? 'prepare_local_corrected_payload_preview_without_ui_or_send'
+        : readyForSeedApprovalPacket || readyForCrmWritePacketRegeneration
         ? 'regenerate_relevant_packet_without_execution_or_approval'
         : 'collect_missing_inputs_without_approval_or_execution',
     },
@@ -458,6 +599,12 @@ const buildMissingInputsIntake = ({
     seedRecipient: seedState,
     observedEvents: observedState.observedEvents,
     factStoreMarketReview: observedState.factReview,
+    correctionInputs: {
+      file: correctionState.file,
+      finalPublicLinks: correctionState.finalPublicLinks,
+      subscriptionReasonPolicy: correctionState.subscriptionReasonPolicy,
+      readyForMiniLaunchCorrectionPreview: correctionState.readyForMiniLaunchCorrectionPreview,
+    },
     postInputCommands: {
       seedApprovalPacket: readyForSeedApprovalPacket
         ? missingInputsKit?.inputRequests?.find((input) => input.id === 'exact_seed_recipient')?.nextLocalCommandAfterInput ?? null
@@ -465,11 +612,16 @@ const buildMissingInputsIntake = ({
       crmWriteApprovalPacket: readyForCrmWritePacketRegeneration
         ? missingInputsKit?.inputRequests?.find((input) => input.id === 'real_observed_events_file')?.nextLocalCommandAfterInput ?? null
         : null,
+      miniLaunchCorrectionIntake: correctionInputStates.length > 0
+        ? missingInputsKit?.inputRequests?.find((input) => input.id === 'final_public_links')?.nextLocalCommandAfterInput ?? null
+        : null,
     },
     hardStops: [
       'This intake report is not approval.',
       'Presence of private inputs does not authorize sends or writes.',
+      'Final public links and subscription policy presence does not authorize MailerLite UI edits, test sends, public sends or audience sends.',
       'Full seed email, exact people and exact facts are not printed in this report.',
+      'Full final public URLs are not printed in this report.',
       'Do not touch live MailerLite, Shopify, CRM, subscribers, workflows, sends, ledgers, cards, scoring or Fact Store from this intake.',
     ],
     sourceDigests,
@@ -488,12 +640,13 @@ const writeJson = async (path, value) => {
 };
 
 const buildMissingInputsIntakeFromFiles = async (options) => {
-  const [missingInputsKit, operatorRunbook, crmWriteApprovalPacket, seedEmailRead, observedEventsRead] = await Promise.all([
+  const [missingInputsKit, operatorRunbook, crmWriteApprovalPacket, seedEmailRead, observedEventsRead, correctionInputsRead] = await Promise.all([
     readJson(options.missingInputsKit),
     readJson(options.operatorRunbook),
     readJson(options.crmWriteApprovalPacket),
     readOptionalText(options.seedEmailFile),
     readOptionalJson(options.observedEventsFile),
+    readOptionalJson(options.correctionInputsFile),
   ]);
   const sourceDigests = [
     await publicDigest(options.missingInputsKit, 'missing-inputs kit and expected private input specs'),
@@ -501,6 +654,7 @@ const buildMissingInputsIntakeFromFiles = async (options) => {
     await publicDigest(options.crmWriteApprovalPacket, 'current CRM write approval boundary and launch id'),
     privateSourceStatus({ path: options.seedEmailFile, read: seedEmailRead, consultedFor: 'private seed recipient file presence and validation only' }),
     privateSourceStatus({ path: options.observedEventsFile, read: observedEventsRead, consultedFor: 'private observed events file presence and shape validation only' }),
+    privateSourceStatus({ path: options.correctionInputsFile, read: correctionInputsRead, consultedFor: 'private final public links and subscription policy validation only' }),
   ];
 
   return buildMissingInputsIntake({
@@ -511,6 +665,8 @@ const buildMissingInputsIntakeFromFiles = async (options) => {
     seedEmailFile: options.seedEmailFile,
     observedEventsRead,
     observedEventsFile: options.observedEventsFile,
+    correctionInputsRead,
+    correctionInputsFile: options.correctionInputsFile,
     sourceDigests,
   });
 };
@@ -531,6 +687,7 @@ const renderMarkdown = (report) => {
     `- Ready for seed packet regeneration: ${report.executiveSummary.readyForSeedApprovalPacket}`,
     `- Ready for CRM packet regeneration: ${report.executiveSummary.readyForCrmWritePacketRegeneration}`,
     `- Ready for CRM approval request: ${report.executiveSummary.readyForCrmApprovalRequest}`,
+    `- Ready for mini-launch correction preview: ${report.executiveSummary.readyForMiniLaunchCorrectionPreview}`,
     `- Can ask approval now: ${report.executiveSummary.canAskApprovalNow}`,
     `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
     '',
@@ -549,6 +706,8 @@ const renderMarkdown = (report) => {
   lines.push(`- Seed exact value stored in report: ${report.seedRecipient.exactValueStoredInReport}`);
   lines.push(`- Observed exact identities stored in report: ${report.observedEvents.fullIdentitiesStoredInReport}`);
   lines.push(`- Exact facts stored in report: ${report.factStoreMarketReview.exactFactsStoredInReport}`);
+  lines.push(`- Final public URLs stored in report: ${report.correctionInputs.finalPublicLinks.exactUrlsStoredInReport}`);
+  lines.push(`- Final public link hashes: ${Object.keys(report.correctionInputs.finalPublicLinks.urlSha256ByKey).join(', ') || 'none'}`);
   lines.push('', '## Hard Stops', '');
   lines.push(renderList(report.hardStops));
   lines.push('', '## Safety', '');
@@ -580,6 +739,7 @@ const main = async () => {
     presentInputCount: report.executiveSummary.presentInputCount,
     readyForSeedApprovalPacket: report.executiveSummary.readyForSeedApprovalPacket,
     readyForCrmWritePacketRegeneration: report.executiveSummary.readyForCrmWritePacketRegeneration,
+    readyForMiniLaunchCorrectionPreview: report.executiveSummary.readyForMiniLaunchCorrectionPreview,
     canAskApprovalNow: report.executiveSummary.canAskApprovalNow,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
@@ -595,6 +755,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 }
 
 export {
+  buildCorrectionInputsState,
   buildMissingInputsIntake,
   buildMissingInputsIntakeFromFiles,
   buildObservedState,

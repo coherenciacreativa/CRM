@@ -313,6 +313,19 @@ const buildRecycledActionBlocks = () => [
     ],
   },
   {
+    id: 'do_not_request_mailerlite_ui_correction_without_links_policy_fresh_qa',
+    status: 'blocked_until_final_links_subscription_policy_and_fresh_qa_exist',
+    reason: 'The mini-launch seed inbox QA is yellow, but UI correction work still needs final public links, a subscription-reason policy and fresh local QA before any exact UI edit or resend approval can be useful.',
+    appliesTo: [
+      'final_public_links',
+      'subscription_reason_policy',
+      'mini_launch_seed_inbox_correction',
+      'mailerlite_ui_draft_edit',
+      'additional_test_send',
+      'public_or_audience_send',
+    ],
+  },
+  {
     id: 'do_not_treat_approval_packets_as_execution',
     status: 'always_blocked_without_exact_fresh_scope',
     reason: 'Packets, queues, guards and receipts are local evidence only. They cannot approve or execute live actions.',
@@ -404,6 +417,7 @@ const buildContinuationGuard = ({
       'Do not rerun execute paths for groups that current fresh scans say already exist.',
       'Do not ask seed-send approval before exact_seed_recipient exists.',
       'Do not ask CRM write approval before real events, exact people and writable screens exist.',
+      'Do not ask MailerLite UI correction, additional test send or public/audience send approval before final_public_links, subscription_reason_policy and fresh post-correction QA exist.',
       'Do not touch live MailerLite, Shopify, CRM, workflows, subscribers, sends, ledgers, cards, scoring or Fact Store without a later exact approval.',
     ],
     sourceDigests,

@@ -68,6 +68,24 @@ const crmWriteApproval = {
   },
 };
 
+const seedInboxCorrectionPlan = {
+  status: "seed_inbox_correction_plan_ready_no_live_changes",
+  requiredInputsBeforeUiEditApproval: [
+    {
+      id: "final_public_links",
+      label: "Final approved public links",
+      requiredFor: "Replacing inert placeholders before any public/audience send.",
+      acceptableForm: "{ result_or_resource_link, practice_link, editorial_note_link }",
+    },
+    {
+      id: "subscription_reason_policy",
+      label: "Footer/subscription-reason policy",
+      requiredFor: "Making the Spanish subscription-reason line consistent across E01-E04.",
+      acceptableForm: "include_once_in_all_emails or remove_custom_line_and_rely_on_platform_footer",
+    },
+  ],
+};
+
 const runbook = {
   status: "mailerlite_launch_os_operator_runbook_ready_no_live_changes",
 };
@@ -83,6 +101,10 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       "/tmp/private/seed.txt",
       "--observed-events-file",
       "/tmp/private/events.json",
+      "--seed-inbox-correction-plan",
+      "/tmp/correction-plan.json",
+      "--correction-inputs-file",
+      "/tmp/private/correction-inputs.json",
       "--out",
       "/tmp/kit.json",
       "--markdown-out",
@@ -92,6 +114,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
     expect(parsed.blockedGateHandoff).toContain("mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
     expect(parsed.privateSeedEmailFile).toBe("/tmp/private/seed.txt");
     expect(parsed.observedEventsFile).toBe("/tmp/private/events.json");
+    expect(parsed.seedInboxCorrectionPlan).toBe("/tmp/correction-plan.json");
+    expect(parsed.correctionInputsFile).toBe("/tmp/private/correction-inputs.json");
     expect(parsed.out).toBe("/tmp/kit.json");
     expect(markdownPathFor("/tmp/report.json")).toBe("/tmp/report.md");
   });
@@ -101,8 +125,10 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       handoff,
       seedSendApproval,
       crmWriteApproval,
+      seedInboxCorrectionPlan,
       privateSeedEmailFile: "/tmp/private/seed.txt",
       observedEventsFile: "/tmp/private/events.json",
+      correctionInputsFile: "/tmp/private/correction-inputs.json",
     });
 
     expect(inputRequests.map((input) => input.id)).toEqual([
@@ -111,6 +137,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       "exact_people",
       "writable_event_screen",
       "fact_store_market_review",
+      "final_public_links",
+      "subscription_reason_policy",
     ]);
     expect(inputRequests.find((input) => input.id === "exact_seed_recipient")).toMatchObject({
       privacy: "private",
@@ -123,6 +151,12 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       mustReplaceBeforeUse: true,
       approvalEffect: "does_not_approve_crm_writes",
     });
+    expect(inputRequests.find((input) => input.id === "final_public_links")).toMatchObject({
+      gateId: "mini_launch_seed_inbox_correction",
+      captureMode: "correction_inputs_json.finalPublicLinks",
+      templatePathSuggestion: "/tmp/private/correction-inputs.json",
+      approvalEffect: "does_not_approve_mailerlite_ui_edit_test_send_or_public_send",
+    });
   });
 
   test("builds a no-live kit with templates, commands and hard stops", () => {
@@ -130,19 +164,22 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       handoff,
       seedSendApproval,
       crmWriteApproval,
+      seedInboxCorrectionPlan,
       runbook,
       sourceDigests,
       privateSeedEmailFile: "/tmp/private/seed.txt",
       observedEventsFile: "/tmp/private/events.json",
+      correctionInputsFile: "/tmp/private/correction-inputs.json",
       generatedAt: "2026-05-28T00:00:00.000Z",
     });
     const markdown = renderMarkdown(kit);
 
     expect(kit.status).toBe("missing_inputs_kit_ready_no_live_changes");
     expect(kit.executiveSummary).toMatchObject({
-      inputCount: 5,
+      inputCount: 7,
       seedInputCount: 1,
       crmInputCount: 4,
+      correctionInputCount: 2,
       canAskApprovalNow: false,
       kitCreatesPrivateFiles: false,
       kitAsksApproval: false,
@@ -150,8 +187,10 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
     });
     expect(kit.postInputCommands.join(" ")).toContain("--markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.md");
     expect(kit.templates.observedEventsFile.sampleOnly).toBe(true);
+    expect(kit.templates.correctionInputsFile.template.allowedSubscriptionReasonPolicies).toContain("include_once_in_all_emails");
     expect(markdown).toContain("Missing Inputs Kit");
     expect(markdown).toContain("This kit is not an approval phrase");
+    expect(markdown).toContain("Final public links and subscription policy inputs do not approve MailerLite UI edits");
     expect(markdown).toContain("Sends performed: false");
   });
 

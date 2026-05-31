@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  buildCorrectionInputsState,
   buildMissingInputsIntake,
   buildObservedState,
   buildSeedState,
@@ -40,6 +41,25 @@ const missingInputsKit = {
       id: "fact_store_market_review",
       gateId: "crm_signal_writes",
       approvalEffect: "does_not_approve_fact_store_write",
+    },
+  ],
+};
+
+const missingInputsKitWithCorrection = {
+  ...missingInputsKit,
+  inputRequests: [
+    ...missingInputsKit.inputRequests,
+    {
+      id: "final_public_links",
+      gateId: "mini_launch_seed_inbox_correction",
+      approvalEffect: "does_not_approve_mailerlite_ui_edit_test_send_or_public_send",
+      nextLocalCommandAfterInput: "npm run intake -- --correction-inputs-file /tmp/private/correction-inputs.json",
+    },
+    {
+      id: "subscription_reason_policy",
+      gateId: "mini_launch_seed_inbox_correction",
+      approvalEffect: "does_not_approve_mailerlite_ui_edit_test_send_or_public_send",
+      nextLocalCommandAfterInput: "npm run intake -- --correction-inputs-file /tmp/private/correction-inputs.json",
     },
   ],
 };
@@ -110,6 +130,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
       "/tmp/private/seed.txt",
       "--observed-events-file",
       "/tmp/private/events.json",
+      "--correction-inputs-file",
+      "/tmp/private/correction-inputs.json",
       "--out",
       "/tmp/intake.json",
       "--markdown-out",
@@ -121,6 +143,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(parsed.crmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.seedEmailFile).toBe("/tmp/private/seed.txt");
     expect(parsed.observedEventsFile).toBe("/tmp/private/events.json");
+    expect(parsed.correctionInputsFile).toBe("/tmp/private/correction-inputs.json");
     expect(parsed.out).toBe("/tmp/intake.json");
     expect(parsed.markdownOut).toBe("/tmp/intake.md");
   });
@@ -238,5 +261,65 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(markdown).toContain("Can ask approval now: false");
     expect(JSON.stringify(report)).not.toContain("seed.person@example.com");
     expect(JSON.stringify(report)).not.toContain("private.person@example.com");
+  });
+
+  test("validates correction inputs while hashing final URLs only", () => {
+    const correctionPayload = {
+      finalPublicLinks: {
+        result_or_resource_link: "https://example.com/result",
+        practice_link: "https://example.com/practice",
+        editorial_note_link: "https://example.com/editorial",
+      },
+      subscriptionReasonPolicy: "include_once_in_all_emails",
+    };
+    const correctionState = buildCorrectionInputsState({
+      path: "/tmp/private/correction-inputs.json",
+      read: {
+        present: true,
+        value: correctionPayload,
+        error: null,
+        chars: 200,
+      },
+    });
+    const report = buildMissingInputsIntake({
+      missingInputsKit: missingInputsKitWithCorrection,
+      operatorRunbook,
+      crmWriteApprovalPacket,
+      seedEmailRead: {
+        present: true,
+        content: "seed.person@example.com\n",
+        error: null,
+      },
+      seedEmailFile: "/tmp/private/seed.txt",
+      observedEventsRead: {
+        present: true,
+        value: validObservedEventsPayload,
+        error: null,
+        chars: 100,
+      },
+      observedEventsFile: "/tmp/private/events.json",
+      correctionInputsRead: {
+        present: true,
+        value: correctionPayload,
+        error: null,
+        chars: 200,
+      },
+      correctionInputsFile: "/tmp/private/correction-inputs.json",
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+    const serialized = JSON.stringify(report);
+
+    expect(correctionState.readyForMiniLaunchCorrectionPreview).toBe(true);
+    expect(correctionState.finalPublicLinks.urlSha256ByKey.result_or_resource_link).toHaveLength(64);
+    expect(correctionState.finalPublicLinks.exactUrlsStoredInReport).toBe(false);
+    expect(report.executiveSummary.inputCount).toBe(7);
+    expect(report.executiveSummary.readyInputCount).toBe(7);
+    expect(report.executiveSummary.readyForMiniLaunchCorrectionPreview).toBe(true);
+    expect(report.executiveSummary.nextSafeAction).toBe("prepare_local_corrected_payload_preview_without_ui_or_send");
+    expect(report.postInputCommands.miniLaunchCorrectionIntake).toContain("--correction-inputs-file /tmp/private/correction-inputs.json");
+    expect(report.correctionInputs.subscriptionReasonPolicy.policy).toBe("include_once_in_all_emails");
+    expect(serialized).not.toContain("https://example.com/result");
+    expect(serialized).not.toContain("https://example.com/practice");
+    expect(serialized).not.toContain("https://example.com/editorial");
   });
 });
