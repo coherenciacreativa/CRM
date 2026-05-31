@@ -203,6 +203,18 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(readiness.ok).toBe(true);
     expect(readiness.issues).toEqual([]);
 
+    const redactedCorrectionPreviewReadiness = buildSourceReadiness({
+      payloadManifest: {
+        ...payloadManifest,
+        status: "email_builder_payload_manifest_redacted_after_seed_inbox_correction_preview_no_live_changes",
+        mode: "local_only_redacted_seed_inbox_correction_payload_manifest",
+      },
+      assetBuildDryRun,
+    });
+
+    expect(redactedCorrectionPreviewReadiness.ok).toBe(true);
+    expect(redactedCorrectionPreviewReadiness.issues).toEqual([]);
+
     const blocked = buildSourceReadiness({
       payloadManifest,
       assetBuildDryRun: {

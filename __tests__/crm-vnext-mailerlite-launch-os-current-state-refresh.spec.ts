@@ -62,6 +62,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchShopifyPreviewRouteExecutionReceipt).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchEmailRenderQa).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.privateObservedEventsFile).toBe(
       "/tmp/mantis-reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json",
     );
@@ -78,6 +81,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-asset-manifest.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-asset-manifest");
@@ -96,6 +100,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_confirmation_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json");
     expect(commands).toContain("--no-write-examples");
@@ -257,6 +262,30 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           publicAudienceSendUrlGateReady: false,
           targetLinkCount: 3,
           effectivePreviewView: "lead-result-inteligencia-isolated",
+        },
+        miniLaunchEmailRenderQa: {
+          path: paths.miniLaunchEmailRenderQa,
+          markdownPath: paths.miniLaunchEmailRenderQaMarkdown,
+          status: "mini_launch_email_render_qa_green_no_live_changes",
+          ok: true,
+          localRenderReady: true,
+          emailCount: 4,
+          renderPreviewNonEmptyCount: 4,
+          redCheckCount: 0,
+          publicUseReady: false,
+          mailerLiteBuilderReady: false,
+          seedSendReady: false,
+        },
+        miniLaunchSeedInboxCorrectionUiEditApprovalPacket: {
+          path: paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+          markdownPath: paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacketMarkdown,
+          status: "seed_inbox_correction_ui_edit_approval_packet_ready_for_exact_human_approval_no_live_changes",
+          ok: true,
+          canAskAlejandroForApproval: true,
+          targetDraftCount: 4,
+          localRenderReady: true,
+          blockerCount: 0,
+          publicAudienceSendUrlGateReady: false,
         },
         missingInputsKit: {
           path: paths.missingInputsKit,

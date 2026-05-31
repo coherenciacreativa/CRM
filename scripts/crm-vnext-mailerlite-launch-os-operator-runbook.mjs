@@ -33,13 +33,14 @@ const DEFAULT_MINI_LAUNCH_EMAIL_STYLE_QA_PACKET = '/Users/alejandrogomez/Documen
 const DEFAULT_MINI_LAUNCH_LOCAL_EMAIL_ASSET_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_BUILDER_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_inteligencia_descansar_2026-05-28.json';
-const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_EMAIL_RENDER_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json';
@@ -108,6 +109,7 @@ Options:
   --mini-launch-seed-test-execution-receipt <path> Mini-launch completed seed/test execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
   --mini-launch-seed-inbox-qa <path> Mini-launch seed inbox QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_QA}
   --mini-launch-seed-inbox-correction-plan <path> Mini-launch seed inbox correction plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN}
+  --mini-launch-seed-inbox-correction-ui-edit-approval-packet <path> Mini-launch seed inbox correction UI edit approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
   --mini-launch-shopify-preview-route-approval-packet <path> Mini-launch Shopify preview route exact approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET}
@@ -183,6 +185,7 @@ const parseArgs = (argv) => {
     miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
     miniLaunchSeedInboxQa: DEFAULT_MINI_LAUNCH_SEED_INBOX_QA,
     miniLaunchSeedInboxCorrectionPlan: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
     miniLaunchShopifyPreviewRouteApprovalPacket: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET,
@@ -254,6 +257,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-qa') options.miniLaunchSeedInboxQa = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-correction-plan') options.miniLaunchSeedInboxCorrectionPlan = argv[++index];
+    else if (arg === '--mini-launch-seed-inbox-correction-ui-edit-approval-packet') options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-approval-packet') options.miniLaunchShopifyPreviewRouteApprovalPacket = argv[++index];
@@ -338,6 +342,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchSeedTestExecutionReceipt, 'mini-launch completed seed/test execution receipt with Gmail verification and closed public gates', true],
     [options.miniLaunchSeedInboxQa, 'mini-launch seed inbox QA with correction recommendations before public launch', true],
     [options.miniLaunchSeedInboxCorrectionPlan, 'mini-launch seed inbox correction plan and blockers before UI edit/public launch', true],
+    [options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket, 'mini-launch seed inbox correction UI edit approval packet with exact MailerLite draft edit boundary', true],
     [options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', true],
     [options.miniLaunchShopifyPreviewRouteDecision, 'mini-launch Shopify preview route decision boundary with no approval phrase or publish', true],
     [options.miniLaunchShopifyPreviewRouteApprovalPacket, 'mini-launch Shopify preview route exact approval packet with execution still closed', true],
@@ -549,6 +554,7 @@ const buildCurrentState = ({
   miniLaunchSeedTestExecutionReceipt,
   miniLaunchSeedInboxQa,
   miniLaunchSeedInboxCorrectionPlan,
+  miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision,
   miniLaunchShopifyPreviewRouteApprovalPacket,
@@ -1066,6 +1072,17 @@ const buildCurrentState = ({
         .map((input) => input?.id)
         .filter(Boolean),
       seedInboxCorrectionPlanBlockers: miniLaunchSeedInboxCorrectionPlan?.blockersBeforeAnyMailerLiteUiEditApproval ?? [],
+      seedInboxCorrectionUiEditApprovalPacketStatus: miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.status ?? null,
+      seedInboxCorrectionUiEditCanAskApproval:
+        miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.canAskAlejandroForApproval ?? null,
+      seedInboxCorrectionUiEditTargetDraftCount:
+        miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.targetDraftCount ?? null,
+      seedInboxCorrectionUiEditLocalRenderReady:
+        miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.emailRenderLocalReady ?? null,
+      seedInboxCorrectionUiEditBlockerCount:
+        miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.blockerCount ?? null,
+      seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady:
+        miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
       shopifyLocalBuildReceiptStatus: miniLaunchShopifyLocalBuildReceipt?.status ?? null,
       shopifyLocalBuildFileCount: miniLaunchShopifyLocalBuildReceipt?.shopifyRepo?.localFilesCreatedOrUpdated ?? 0,
       shopifyLocalBuildClosed,
@@ -1678,9 +1695,17 @@ const miniLaunchSeedInboxQaCompleted = (currentState) => {
   const status = currentState?.miniLaunch?.seedInboxQaStatus;
   return typeof status === 'string' && status.startsWith('seed_inbox_qa_completed');
 };
+const miniLaunchSeedInboxCorrectionUiEditApprovalPacketReady = (currentState) =>
+  currentState?.miniLaunch?.seedInboxCorrectionUiEditApprovalPacketStatus === 'seed_inbox_correction_ui_edit_approval_packet_ready_for_exact_human_approval_no_live_changes'
+  && currentState?.miniLaunch?.seedInboxCorrectionUiEditCanAskApproval === true
+  && currentState?.miniLaunch?.seedInboxCorrectionUiEditBlockerCount === 0
+  && currentState?.miniLaunch?.seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady === false;
 
 const buildSeedInboxQaMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
+  if (miniLaunchSeedInboxCorrectionUiEditApprovalPacketReady(currentState)) {
+    return `Use the seed inbox correction UI edit approval packet as the current human boundary: target drafts ${miniLaunch.seedInboxCorrectionUiEditTargetDraftCount ?? 'unknown'}, local render ready ${miniLaunch.seedInboxCorrectionUiEditLocalRenderReady}, blockers ${miniLaunch.seedInboxCorrectionUiEditBlockerCount ?? 'unknown'}, public/audience send URL gate ready ${miniLaunch.seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady}; do not open MailerLite UI or edit drafts until Alejandro gives the exact scoped approval phrase.`;
+  }
   if (miniLaunch.seedInboxCorrectionPlanStatus === 'seed_inbox_correction_plan_ready_no_live_changes') {
     const blockers = (miniLaunch.seedInboxCorrectionPlanBlockers ?? []).join(', ') || 'none';
     const requiredInputs = (miniLaunch.seedInboxCorrectionPlanRequiredInputIds ?? []).join(', ') || 'none';
@@ -1987,6 +2012,7 @@ const buildRunbook = ({
   miniLaunchSeedTestExecutionReceipt,
   miniLaunchSeedInboxQa,
   miniLaunchSeedInboxCorrectionPlan,
+  miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision,
   miniLaunchShopifyPreviewRouteApprovalPacket,
@@ -2051,6 +2077,7 @@ const buildRunbook = ({
     miniLaunchSeedTestExecutionReceipt,
     miniLaunchSeedInboxQa,
     miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
     miniLaunchShopifyPreviewRouteApprovalPacket,
@@ -2255,6 +2282,12 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch seed inbox correction blockers: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanBlockers.join(', ') || 'none'}`,
     `- Mini-launch seed inbox correction can ask UI edit approval now: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanCanAskMailerLiteUiEditApprovalNow ?? 'unknown'}`,
     `- Mini-launch seed inbox correction can ask public send approval now: ${runbook.currentState.miniLaunch.seedInboxCorrectionPlanCanAskPublicSendApprovalNow ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction UI edit approval packet: ${runbook.currentState.miniLaunch.seedInboxCorrectionUiEditApprovalPacketStatus ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction UI edit can ask approval: ${runbook.currentState.miniLaunch.seedInboxCorrectionUiEditCanAskApproval ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction UI edit target drafts: ${runbook.currentState.miniLaunch.seedInboxCorrectionUiEditTargetDraftCount ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction UI edit local render ready: ${runbook.currentState.miniLaunch.seedInboxCorrectionUiEditLocalRenderReady ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction UI edit blockers: ${runbook.currentState.miniLaunch.seedInboxCorrectionUiEditBlockerCount ?? 'unknown'}`,
+    `- Mini-launch seed inbox correction UI edit public/audience URL gate ready: ${runbook.currentState.miniLaunch.seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady ?? 'unknown'}`,
     `- Mini-launch Shopify local build receipt: ${runbook.currentState.miniLaunch.shopifyLocalBuildReceiptStatus ?? 'unknown'}`,
     `- Mini-launch Shopify local files: ${runbook.currentState.miniLaunch.shopifyLocalBuildFileCount ?? 'unknown'}`,
     `- Mini-launch Shopify local build closed: ${runbook.currentState.miniLaunch.shopifyLocalBuildClosed}`,
@@ -2486,6 +2519,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchSeedTestExecutionReceipt,
     miniLaunchSeedInboxQa,
     miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
     miniLaunchShopifyPreviewRouteApprovalPacket,
@@ -2549,6 +2583,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchSeedTestExecutionReceipt),
     readOptionalJson(options.miniLaunchSeedInboxQa),
     readOptionalJson(options.miniLaunchSeedInboxCorrectionPlan),
+    readOptionalJson(options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket),
     readOptionalJson(options.miniLaunchShopifyLocalBuildReceipt),
     readOptionalJson(options.miniLaunchShopifyPreviewRouteDecision),
     readOptionalJson(options.miniLaunchShopifyPreviewRouteApprovalPacket),
@@ -2614,6 +2649,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchSeedTestExecutionReceipt,
     miniLaunchSeedInboxQa,
     miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
     miniLaunchShopifyPreviewRouteApprovalPacket,

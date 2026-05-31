@@ -7,6 +7,7 @@ import {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
   buildOnboardingV2EmptyGroupItem,
   buildShopifyPreviewRouteItem,
@@ -281,6 +282,47 @@ const miniLaunchEmailManualUiDraftRepairPacket = {
     groupsCreatedOrAssigned: false,
     workflowMutationsPerformed: false,
     factStoreWritePerformed: false,
+  },
+};
+
+const miniLaunchSeedInboxCorrectionUiEditApprovalPacket = {
+  status: "seed_inbox_correction_ui_edit_approval_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    canAskAlejandroForApproval: true,
+    targetDraftCount: 4,
+    correctionPreviewStatus: "seed_inbox_correction_preview_ready_no_live_changes",
+    emailRenderQaStatus: "mini_launch_email_render_qa_green_no_live_changes",
+    emailRenderLocalReady: true,
+    renderPreviewNonEmptyCount: 4,
+    redCheckCount: 0,
+    manualUiBuildReceiptStatus: "manual_ui_build_receipt_executed_drafts_created_no_sends",
+    shopifyPreviewRouteExecutionStatus: "shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm",
+    publicAudienceSendUrlGateReady: false,
+  },
+  targetDrafts: [
+    { step: 1, draftName: "ML Draft · descanso · E01" },
+    { step: 2, draftName: "ML Draft · descanso · E02" },
+    { step: 3, draftName: "ML Draft · descanso · E03" },
+    { step: 4, draftName: "ML Draft · descanso · E04" },
+  ],
+  decision: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canEditDraftsNow: false,
+    exactApprovalPhrase: "Apruebo editar manualmente en MailerLite UI únicamente los 4 borradores existentes del mini-lanzamiento Inteligencia para descansar para aplicar el payload corregido local QA-green y reemplazar solo los placeholders inertes result_or_resource_link_placeholder, practice_link_placeholder y editorial_note_link_placeholder por las 3 URLs preview unlisted/noindex registradas en el Shopify preview route execution receipt, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos, sin Shopify adicional, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store.",
+  },
+  approvalBoundary: {
+    allowedAfterExactApproval: ["edit_only_the_four_existing_target_drafts"],
+    stillClosedEvenAfterApproval: ["test_send_or_seed_send", "public_or_audience_send"],
+    requiredFreshEvidenceBeforeExecution: ["freshly confirm the four target drafts are still visible"],
+  },
+  blockers: [],
+  safety: {
+    exactUrlsStoredInReport: false,
+    exactUrlsPrinted: false,
+    mailerLiteUiOpened: false,
+    mailerLiteMutationsPerformed: false,
+    sendsPerformed: false,
   },
 };
 
@@ -866,6 +908,29 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.canAskAlejandroNow).toBe(false);
     expect(item.blockers).toContain("manual_ui_draft_repair_gate_unexpectedly_open");
     expect(item.blockers).toContain("manual_ui_draft_repair_packet_reports_send");
+  });
+
+  test("marks seed inbox correction UI edit as the next exact approval boundary", () => {
+    const item = buildMiniLaunchSeedInboxCorrectionUiEditItem({
+      packet: miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+    });
+
+    expect(item).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      id: "mini_launch_seed_inbox_correction_ui_edit",
+      operationType: "live_mailerlite_ui_existing_draft_correction_edit_after_exact_approval",
+      targetCount: 4,
+      evidence: {
+        localRenderReady: true,
+        redCheckCount: 0,
+        publicAudienceSendUrlGateReady: false,
+        exactUrlsStoredInReport: false,
+        sendsPerformed: false,
+      },
+    });
+    expect(item.exactApprovalPhrase).toContain("sin enviar correos");
+    expect(item.stillClosed).toContain("test_send_or_seed_send");
   });
 
   test("marks seed send ready only from a private seed-send approval packet", () => {

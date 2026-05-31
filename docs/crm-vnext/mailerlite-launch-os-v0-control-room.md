@@ -2761,6 +2761,71 @@ Next safe move:
 - If public/audience send becomes the next target, stop and require fresh QA plus a separate exact public/audience send approval.
 - Continue local-only reconciliation/reporting for CRM observed-events inputs and taxonomy refresh; do not open any live CRM/MailerLite gate without a later exact scope-specific approval.
 
+## Launch OS v0 seed inbox correction UI edit approval wired - 2026-05-31
+
+Status: active goal, correction preview/local render QA green, Shopify preview URLs ready for correction preview only, exact MailerLite draft correction UI edit approval packet ready, public/audience send still closed, Launch OS not ready for general live operation.
+
+Evidence:
+
+- Seed inbox correction preview: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+- Seed inbox correction preview markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md`
+- Redacted corrected payload manifest: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.redacted.json`
+- Post-correction local render QA: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+- Post-correction local render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md`
+- Post-correction local render QA previews: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31/`
+- Seed inbox correction UI edit approval packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet_current_inteligencia_descansar_2026-05-31.json`
+- Seed inbox correction UI edit approval packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet_current_inteligencia_descansar_2026-05-31.md`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=18`, `testCount=111`
+- Correction preview: `status=seed_inbox_correction_preview_ready_no_live_changes`, `finalPublicLinksReady=true`, `subscriptionReasonPolicyReady=true`
+- Correction preview: `canAskMailerLiteUiEditApprovalNow=false`, `canAskPublicSendApprovalNow=false`
+- Local render QA: `status=mini_launch_email_render_qa_green_no_live_changes`, `localRenderReady=true`, `emailCount=4`, `renderPreviewNonEmptyCount=4`
+- Local render QA: `publicUseReady=false`, `mailerLiteBuilderReady=false`, `seedSendReady=false`
+- UI edit approval packet: `status=seed_inbox_correction_ui_edit_approval_packet_ready_for_exact_human_approval_no_live_changes`
+- UI edit approval packet: `canAskAlejandroForApproval=true`, `targetDraftCount=4`, `blockerCount=0`, `publicAudienceSendUrlGateReady=false`
+- Approval queue: `readyApprovalRequestCount=1`, `readyApprovalIds=["mini_launch_seed_inbox_correction_ui_edit"]`, `nextBestHumanBoundary=mini_launch_seed_inbox_correction_ui_edit`, `openLiveMutationGateCount=0`
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`
+
+What is proven:
+
+- The corrected four-email payload has a local QA-green render path with non-empty HTML/PNG previews.
+- The system-owned Shopify preview URLs can be used for local correction preview without asking Alejandro to manually invent links.
+- The approval queue now names the exact next human boundary: edit only the four existing MailerLite drafts to apply the corrected payload and replace only the three inert placeholders.
+- The Shopify preview route was created through the approved scoped Web Design/Shopify API path; future Shopify/Web Design mutations should prefer API automation where exact scope approval exists, with UI reserved for visual QA or fallback.
+
+What remains partial or pending:
+
+- MailerLite UI draft edits have not been approved or executed yet.
+- Test sends, public/audience sends, campaign publish/schedule, workflows, subscribers and groups remain closed even after this approval boundary.
+- The Shopify preview URLs are QA/correction URLs only and are not public/audience-send-ready.
+- CRM signal writes remain blocked by real observed-events/evidence inputs.
+- Launch OS remains not ready for general live operation.
+
+Safety:
+
+- Current refresh and approval packet MailerLite API called: false.
+- Current refresh and approval packet MailerLite UI opened: false.
+- Current refresh and approval packet Shopify API called: false.
+- MailerLite mutations, sends, schedules, publish, subscribers, groups and workflows: false.
+- CRM live API, Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Exact URLs stored/printed in the approval packet: false.
+- Tokens printed: false.
+
+Next safe move:
+
+- Stop at Alejandro's exact approval phrase before opening MailerLite UI or editing drafts.
+- If approved, use Safari/MailerLite UI only to edit the four existing drafts within the packet scope, then record a local execution receipt and rerun real MailerLite render QA before any further test-send approval.
+- Do not ask again for the already-closed Shopify preview route approval; that boundary is reference-only now.
+
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, and `final_public_links` are system-owned through the Shopify preview route execution receipt rather than Alejandro manual selection. These preview URLs can support QA/correction only; public/audience send remains closed until fresh QA and a separate exact approval. The next likely human boundary is MailerLite draft correction/edit approval if we need to replace inert placeholders with the preview URLs. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM again, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in correction mode. The four MailerLite seed tests were delivered and Gmail-verified, seed inbox QA marked public readiness yellow, and the corrected local render QA is now green for all four emails. The missing-inputs system tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, and `final_public_links` are system-owned through the Shopify preview route execution receipt rather than Alejandro manual selection. The next human boundary is now explicit: `mini_launch_seed_inbox_correction_ui_edit`, to edit only the four existing MailerLite drafts and replace only the inert placeholders with the preview URLs. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM again, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

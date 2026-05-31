@@ -17,6 +17,10 @@ const DEFAULT_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports
 const DEFAULT_ASSET_BUILD_DRY_RUN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_RENDER_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28';
 const MIN_RENDER_PREVIEW_BYTES = 5000;
+const ACCEPTED_PAYLOAD_MANIFEST_STATUSES = new Set([
+  'email_builder_payload_manifest_ready_no_live_changes',
+  'email_builder_payload_manifest_redacted_after_seed_inbox_correction_preview_no_live_changes',
+]);
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs [options]
@@ -329,7 +333,7 @@ const writeLocalHtmlForTargets = async ({ payloadManifest, renderDir }) => {
 
 const buildSourceReadiness = ({ payloadManifest, assetBuildDryRun }) => {
   const issues = [];
-  if (payloadManifest?.status !== 'email_builder_payload_manifest_ready_no_live_changes') {
+  if (!ACCEPTED_PAYLOAD_MANIFEST_STATUSES.has(payloadManifest?.status)) {
     issues.push(`payload_manifest_not_ready:${payloadManifest?.status ?? 'missing'}`);
   }
   if (payloadManifest?.approvalBoundary?.manifestIsApprovalByItself !== false) {

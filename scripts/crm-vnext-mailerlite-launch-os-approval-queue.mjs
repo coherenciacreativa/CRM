@@ -16,6 +16,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_ASSET_BUILD_EXECUTION = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
@@ -48,6 +49,7 @@ Options:
   --mini-launch-email-manual-ui-builder-packet <path> Mini-launch manual UI builder fallback packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET}
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI post-build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --mini-launch-email-manual-ui-draft-repair-packet <path> Mini-launch manual UI draft repair approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET}
+  --mini-launch-seed-inbox-correction-ui-edit-approval-packet <path> Mini-launch seed inbox correction UI edit approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET}
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-seed-send-approval-packet <path> Mini-launch private seed-send approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET}
   --mini-launch-seed-test-execution-receipt <path> Completed seed/test execution receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
@@ -96,6 +98,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailManualUiBuilderPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET,
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     miniLaunchEmailManualUiDraftRepairPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET,
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchSeedSendApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET,
     miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
@@ -131,6 +134,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-manual-ui-builder-packet') options.miniLaunchEmailManualUiBuilderPacket = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-draft-repair-packet') options.miniLaunchEmailManualUiDraftRepairPacket = argv[++index];
+    else if (arg === '--mini-launch-seed-inbox-correction-ui-edit-approval-packet') options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-seed-send-approval-packet') options.miniLaunchSeedSendApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
@@ -185,7 +189,7 @@ const targetNamesFrom = (...values) => [...new Set(values
   .flatMap((value) => Array.isArray(value) ? value : [])
   .map((row) => typeof row === 'string'
     ? cleanString(row)
-    : cleanString(row?.name ?? row?.mailerLiteAssetNameDraft ?? row?.path))
+    : cleanString(row?.name ?? row?.draftName ?? row?.mailerLiteAssetNameDraft ?? row?.path))
   .filter(Boolean))];
 
 const buildSafety = () => ({
@@ -894,6 +898,69 @@ const buildMiniLaunchEmailManualUiDraftRepairItem = ({ packet }) => {
     notes: [
       'This approval would repair an existing draft-copy mismatch, not create new assets.',
       'Seed/test send remains separate and still requires green real MailerLite render QA plus exact seed recipient and exact send approval.',
+    ],
+  });
+};
+
+const buildMiniLaunchSeedInboxCorrectionUiEditItem = ({ packet }) => {
+  const targetNames = targetNamesFrom(packet?.targetDrafts);
+  const blockers = [...(packet?.blockers ?? [])];
+
+  if (packet?.status !== 'seed_inbox_correction_ui_edit_approval_packet_ready_for_exact_human_approval_no_live_changes') {
+    blockers.push(`correction_ui_edit_packet_not_ready:${packet?.status ?? 'missing'}`);
+  }
+  if (packet?.executiveSummary?.canAskAlejandroForApproval !== true) blockers.push('correction_ui_edit_packet_cannot_ask_approval_now');
+  if (packet?.decision?.packetIsApprovalByItself !== false) blockers.push('correction_ui_edit_packet_self_authorizes_unexpectedly');
+  if (packet?.decision?.canEditDraftsNow !== false) blockers.push('correction_ui_edit_gate_unexpectedly_open');
+  if (!cleanString(packet?.decision?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
+  if ((packet?.executiveSummary?.targetDraftCount ?? 0) !== 4) blockers.push(`correction_ui_edit_target_count_not_4:${packet?.executiveSummary?.targetDraftCount ?? 'missing'}`);
+  if (packet?.executiveSummary?.emailRenderLocalReady !== true) blockers.push('correction_ui_edit_local_render_not_ready');
+  if ((packet?.executiveSummary?.redCheckCount ?? 0) !== 0) blockers.push('correction_ui_edit_render_red_checks_present');
+  if (packet?.executiveSummary?.publicAudienceSendUrlGateReady !== false) blockers.push('correction_ui_edit_public_url_gate_unexpectedly_ready');
+  if (packet?.safety?.exactUrlsStoredInReport !== false) blockers.push('correction_ui_edit_packet_stores_exact_urls');
+  if (packet?.safety?.exactUrlsPrinted !== false) blockers.push('correction_ui_edit_packet_prints_exact_urls');
+  if (packet?.safety?.mailerLiteUiOpened !== false) blockers.push('correction_ui_edit_packet_reports_ui_opened');
+  if (packet?.safety?.mailerLiteMutationsPerformed !== false) blockers.push('correction_ui_edit_packet_reports_mailerlite_mutation');
+  if (packet?.safety?.sendsPerformed !== false) blockers.push('correction_ui_edit_packet_reports_send');
+
+  const canAskNow = blockers.length === 0;
+
+  return buildApprovalItem({
+    id: 'mini_launch_seed_inbox_correction_ui_edit',
+    title: 'Mini-launch MailerLite draft correction UI edit',
+    lane: 'mini_launch_inteligencia_para_descansar',
+    operationType: 'live_mailerlite_ui_existing_draft_correction_edit_after_exact_approval',
+    approvalType: 'exact_phrase_required',
+    canAskNow,
+    exactApprovalPhrase: packet?.decision?.exactApprovalPhrase,
+    sourceStatuses: {
+      correctionUiEditApprovalPacket: packet?.status ?? null,
+      correctionPreview: packet?.executiveSummary?.correctionPreviewStatus ?? null,
+      emailRenderQa: packet?.executiveSummary?.emailRenderQaStatus ?? null,
+      manualUiBuildReceipt: packet?.executiveSummary?.manualUiBuildReceiptStatus ?? null,
+      shopifyPreviewRouteExecution: packet?.executiveSummary?.shopifyPreviewRouteExecutionStatus ?? null,
+    },
+    targetNames,
+    allowedAfterExactApproval: packet?.approvalBoundary?.allowedAfterExactApproval ?? [],
+    stillClosed: packet?.approvalBoundary?.stillClosedEvenAfterApproval ?? [],
+    requiredFreshEvidence: packet?.approvalBoundary?.requiredFreshEvidenceBeforeExecution ?? [],
+    blockers,
+    evidence: {
+      targetDraftCount: packet?.executiveSummary?.targetDraftCount ?? null,
+      localRenderReady: packet?.executiveSummary?.emailRenderLocalReady ?? null,
+      renderPreviewNonEmptyCount: packet?.executiveSummary?.renderPreviewNonEmptyCount ?? null,
+      redCheckCount: packet?.executiveSummary?.redCheckCount ?? null,
+      publicAudienceSendUrlGateReady: packet?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+      exactUrlsStoredInReport: packet?.safety?.exactUrlsStoredInReport ?? null,
+      exactUrlsPrinted: packet?.safety?.exactUrlsPrinted ?? null,
+      sendsPerformed: packet?.safety?.sendsPerformed ?? null,
+      mailerLiteMutationsPerformed: packet?.safety?.mailerLiteMutationsPerformed ?? null,
+    },
+    commandAfterApproval: 'manual MailerLite UI correction edit only after exact approval; prefer Safari; no sends/workflows/subscribers/groups',
+    notes: [
+      'This approval would edit existing MailerLite drafts only; it does not send another test.',
+      'The three preview URLs remain QA/correction links only and are not audience-send-ready.',
+      'After editing, run real MailerLite render QA before any later test-send approval.',
     ],
   });
 };
@@ -1701,6 +1768,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailManualUiBuilderPacket,
   miniLaunchEmailManualUiBuildReceipt,
   miniLaunchEmailManualUiDraftRepairPacket = null,
+  miniLaunchSeedInboxCorrectionUiEditApprovalPacket = null,
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedSendApprovalPacket = null,
   miniLaunchSeedTestExecutionReceipt = null,
@@ -1744,6 +1812,11 @@ const buildApprovalQueue = ({
     miniLaunchEmailManualUiDraftRepairPacket
       ? buildMiniLaunchEmailManualUiDraftRepairItem({
         packet: miniLaunchEmailManualUiDraftRepairPacket,
+      })
+      : null,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket
+      ? buildMiniLaunchSeedInboxCorrectionUiEditItem({
+        packet: miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
       })
       : null,
     buildShopifyLocalBuildItem({
@@ -1895,6 +1968,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuilderPacket, 'mini-launch manual UI builder fallback approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI post-build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiDraftRepairPacket, 'mini-launch manual UI draft repair approval packet'),
+    readOptionalJsonWithDigest(options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket, 'mini-launch seed inbox correction UI edit approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedSendApprovalPacket, 'mini-launch private seed-send approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestExecutionReceipt, 'completed mini-launch seed/test execution receipt'),
@@ -1925,6 +1999,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiBuilderPacket,
     miniLaunchEmailManualUiBuildReceipt,
     miniLaunchEmailManualUiDraftRepairPacket,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
     miniLaunchSeedTestExecutionReceipt,
@@ -1955,6 +2030,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiBuilderPacket,
     miniLaunchEmailManualUiBuildReceipt,
     miniLaunchEmailManualUiDraftRepairPacket,
+    miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
     miniLaunchSeedTestExecutionReceipt,
@@ -2026,6 +2102,7 @@ export {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
   buildOnboardingV2EmptyGroupItem,
   buildShopifyPreviewRouteItem,
