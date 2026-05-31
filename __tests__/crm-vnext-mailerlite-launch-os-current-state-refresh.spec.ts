@@ -50,6 +50,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchShopifyPublicUrlGate).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchPublicLaunchReadinessPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchShopifyPreviewRouteDecision).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -107,6 +110,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-launch-os-current-state-refresh.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-asset-manifest.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.mjs");
@@ -123,6 +127,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-asset-manifest");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-public-url-gate");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit");
@@ -141,6 +146,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-validation-receipt");
     expect(commands).toContain("mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_confirmation_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json");
@@ -451,6 +457,26 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           recommendedNextBoundary: "approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan",
           gmailReadOnly: true,
           sendsPerformedByQa: false,
+        },
+        miniLaunchPublicLaunchReadinessPacket: {
+          path: paths.miniLaunchPublicLaunchReadinessPacket,
+          markdownPath: paths.miniLaunchPublicLaunchReadinessPacketMarkdown,
+          status: "mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes",
+          ok: true,
+          seedInboxQaGreen: true,
+          nullAudienceReplacementDraftsReady: true,
+          previewLinksReady: true,
+          finalPublicLinksReady: true,
+          publicAudienceSendUrlGateReady: false,
+          publicAudienceScopeReady: false,
+          crmObservedEventsReady: false,
+          readyForExactPublicSendApproval: false,
+          liveActionAllowedNow: false,
+          blockerCount: 7,
+          mailerLiteApiCalled: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          recipientsPrinted: false,
         },
         miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
           path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,

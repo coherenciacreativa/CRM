@@ -48,6 +48,7 @@ const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -125,6 +126,7 @@ Options:
   --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
   --mini-launch-shopify-preview-route-approval-packet <path> Mini-launch Shopify preview route exact approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET}
   --mini-launch-shopify-preview-route-execution-receipt <path> Mini-launch Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
+  --mini-launch-public-launch-readiness-packet <path> Mini-launch public launch readiness JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET}
   --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -200,6 +202,7 @@ const parseArgs = (argv) => {
     miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
     miniLaunchShopifyPreviewRouteApprovalPacket: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET,
     miniLaunchShopifyPreviewRouteExecutionReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
+    miniLaunchPublicLaunchReadinessPacket: DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET,
     miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -273,6 +276,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-approval-packet') options.miniLaunchShopifyPreviewRouteApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-execution-receipt') options.miniLaunchShopifyPreviewRouteExecutionReceipt = argv[++index];
+    else if (arg === '--mini-launch-public-launch-readiness-packet') options.miniLaunchPublicLaunchReadinessPacket = argv[++index];
     else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -453,6 +457,7 @@ const loadSources = async (options) => {
     ['miniLaunchShopifyPreviewRouteDecision', options.miniLaunchShopifyPreviewRouteDecision, 'mini-launch Shopify preview route decision boundary with no approval phrase or publish', 'json', true],
     ['miniLaunchShopifyPreviewRouteApprovalPacket', options.miniLaunchShopifyPreviewRouteApprovalPacket, 'mini-launch Shopify preview route exact approval packet with execution still closed', 'json', true],
     ['miniLaunchShopifyPreviewRouteExecutionReceipt', options.miniLaunchShopifyPreviewRouteExecutionReceipt, 'mini-launch Shopify preview route execution receipt with QA evidence and closed audience-send gate', 'json', true],
+    ['miniLaunchPublicLaunchReadinessPacket', options.miniLaunchPublicLaunchReadinessPacket, 'mini-launch public launch readiness after green Null Audience seed QA', 'json', true],
     ['miniLaunchCrmWriteApprovalPacket', options.miniLaunchCrmWriteApprovalPacket, 'mini-launch CRM write approval packet with exact observed-events/person/write-family boundary', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
@@ -2766,6 +2771,30 @@ const buildGoalAudit = ({
     && nullAudienceSeedInboxQaDeliveredToApprovedSeed === 3
     && nullAudienceSeedInboxQaExpectedSeedMessages === 4
     && nullAudienceSeedInboxQaNeedsHumanApproval === true;
+  const publicLaunchReadinessPacket = values.miniLaunchPublicLaunchReadinessPacket ?? null;
+  const publicLaunchReadinessPacketStatus = publicLaunchReadinessPacket?.status
+    ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessPacketStatus
+    ?? null;
+  const publicLaunchReadinessReadyForExactApproval =
+    publicLaunchReadinessPacket?.executiveSummary?.readyForExactPublicSendApproval
+    ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessReadyForExactApproval
+    ?? null;
+  const publicLaunchReadinessPublicAudienceSendUrlGateReady =
+    publicLaunchReadinessPacket?.executiveSummary?.publicAudienceSendUrlGateReady
+    ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessPublicAudienceSendUrlGateReady
+    ?? null;
+  const publicLaunchReadinessPublicAudienceScopeReady =
+    publicLaunchReadinessPacket?.executiveSummary?.publicAudienceScopeReady
+    ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessPublicAudienceScopeReady
+    ?? null;
+  const publicLaunchReadinessCrmObservedEventsReady =
+    publicLaunchReadinessPacket?.executiveSummary?.crmObservedEventsReady
+    ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessCrmObservedEventsReady
+    ?? null;
+  const publicLaunchReadinessBlockerCount =
+    publicLaunchReadinessPacket?.executiveSummary?.blockerCount
+    ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessBlockerCount
+    ?? null;
   const seedInboxCorrectionPlan = values.miniLaunchSeedInboxCorrectionPlan ?? null;
   const seedInboxCorrectionPlanStatus = seedInboxCorrectionPlan?.status
     ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanStatus
@@ -2836,6 +2865,8 @@ const buildGoalAudit = ({
       ?? false) === false;
   const seedRecipientMove = nullAudienceSeedInboxQaPartialE04
     ? `Null Audience seed inbox QA is partial: ${nullAudienceSeedInboxQaDeliveredToApprovedSeed}/${nullAudienceSeedInboxQaExpectedSeedMessages} corrected messages reached the approved seed, corrected E04 was found outside the seed (${nullAudienceSeedInboxQaCorrectedOutsideSeedCount ?? 'unknown'}), and the next human boundary is ${nullAudienceSeedInboxQaRecommendedNextBoundary ?? 'approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan'}; ask only for the exact E04-only resend phrase before any additional test send.`
+    : publicLaunchReadinessPacketStatus === 'mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes'
+    ? `Seed inbox QA is green and public-launch readiness is explicit: readyForExactPublicSendApproval=${publicLaunchReadinessReadyForExactApproval}, publicAudienceSendUrlGateReady=${publicLaunchReadinessPublicAudienceSendUrlGateReady}, publicAudienceScopeReady=${publicLaunchReadinessPublicAudienceScopeReady}, crmObservedEventsReady=${publicLaunchReadinessCrmObservedEventsReady}, blockers=${publicLaunchReadinessBlockerCount ?? 'unknown'}; keep public/audience send approval closed.`
     : seedInboxCorrectionUiEditApprovalPacketReady
     ? `Seed inbox correction UI edit approval packet is ready: target drafts ${seedInboxCorrectionUiEditTargetDraftCount ?? 'unknown'}, local render ready ${seedInboxCorrectionUiEditLocalRenderReady}, blockers ${seedInboxCorrectionUiEditBlockerCount ?? 'unknown'}, public/audience URL gate ready ${seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady}; stop at Alejandro exact-phrase boundary before opening MailerLite UI or editing drafts.`
     : seedInboxQaCompleted
@@ -2874,7 +2905,9 @@ const buildGoalAudit = ({
     ? 'The Shopify no-live local build now exists as five inert local files; publish, preview/theme push, real forms, MailerLite connection and CRM writes remain closed.'
     : 'Shopify local-build remains a no-live approval/request boundary; do not edit, preview, publish or connect forms without exact scope approval.';
   const shopifyPreviewRouteMove = shopifyPreviewRouteExecutionReady
-    ? `The Shopify preview-route execution receipt is green for exact-link QA: status ${shopifyPreviewRouteExecutionReceiptStatus ?? 'unknown'}, target links ${shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}, view ${shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}, local correction preview ${shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview}, public/audience send ${shopifyPreviewRouteExecutionCanUseForPublicAudienceSend}; next boundary is MailerLite draft correction/edit approval, not another Shopify preview-route approval.`
+    ? publicLaunchReadinessPacketStatus === 'mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes'
+      ? `The Shopify preview-route execution receipt is green for exact-link QA: status ${shopifyPreviewRouteExecutionReceiptStatus ?? 'unknown'}, target links ${shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}, view ${shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}, local correction preview ${shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview}, public/audience send ${shopifyPreviewRouteExecutionCanUseForPublicAudienceSend}; it is now input to the public-launch readiness packet, not a MailerLite draft correction/edit boundary.`
+      : `The Shopify preview-route execution receipt is green for exact-link QA: status ${shopifyPreviewRouteExecutionReceiptStatus ?? 'unknown'}, target links ${shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}, view ${shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}, local correction preview ${shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview}, public/audience send ${shopifyPreviewRouteExecutionCanUseForPublicAudienceSend}; keep MailerLite draft correction/edit and public/audience send behind separate exact approvals.`
     : shopifyPreviewRouteDecisionReady
       ? `The Shopify preview-route decision is ready for explanation only: visibility tier ${shopifyPreviewRouteVisibilityTier ?? 'unknown'}, explanationReady=${shopifyPreviewRouteDecisionExplanationReady}, exactApprovalPhraseAvailable=${shopifyPreviewRouteExactApprovalPhraseAvailable}, exactApprovalPhrasePrinted=${shopifyPreviewRouteExactApprovalPhrasePrinted}, canAskApprovalNow=${shopifyPreviewRouteCanAskApprovalNow}, canPublishNow=${shopifyPreviewRouteCanPublishNow}; explain this boundary before generating any exact approval phrase.`
       : shopifyPreviewRouteDecisionStatus
@@ -3091,6 +3124,12 @@ const buildGoalAudit = ({
       nullAudienceSeedInboxQaNeedsHumanApproval,
       nullAudienceSeedInboxQaRecommendedNextBoundary,
       nullAudienceSeedInboxQaPartialE04,
+      publicLaunchReadinessPacketStatus,
+      publicLaunchReadinessReadyForExactApproval,
+      publicLaunchReadinessPublicAudienceSendUrlGateReady,
+      publicLaunchReadinessPublicAudienceScopeReady,
+      publicLaunchReadinessCrmObservedEventsReady,
+      publicLaunchReadinessBlockerCount,
       seedInboxCorrectionUiEditApprovalPacketStatus,
       seedInboxCorrectionUiEditApprovalPacketReady,
       seedInboxCorrectionUiEditCanAskApproval,
@@ -3218,6 +3257,12 @@ const renderMarkdown = (audit) => {
     `- Seed inbox correction UI edit approval packet ready: ${audit.executiveSummary.seedInboxCorrectionUiEditApprovalPacketReady ?? 'unknown'}`,
     `- Seed inbox correction UI edit target drafts: ${audit.executiveSummary.seedInboxCorrectionUiEditTargetDraftCount ?? 'unknown'}`,
     `- Seed inbox correction UI edit blockers: ${audit.executiveSummary.seedInboxCorrectionUiEditBlockerCount ?? 'unknown'}`,
+    `- Public launch readiness packet: ${audit.executiveSummary.publicLaunchReadinessPacketStatus ?? 'missing'}`,
+    `- Public launch ready for exact approval: ${audit.executiveSummary.publicLaunchReadinessReadyForExactApproval ?? 'unknown'}`,
+    `- Public launch URL gate ready: ${audit.executiveSummary.publicLaunchReadinessPublicAudienceSendUrlGateReady ?? 'unknown'}`,
+    `- Public launch audience scope ready: ${audit.executiveSummary.publicLaunchReadinessPublicAudienceScopeReady ?? 'unknown'}`,
+    `- Public launch CRM observed events ready: ${audit.executiveSummary.publicLaunchReadinessCrmObservedEventsReady ?? 'unknown'}`,
+    `- Public launch blocker count: ${audit.executiveSummary.publicLaunchReadinessBlockerCount ?? 'unknown'}`,
     `- Shopify preview-route execution: ${audit.executiveSummary.shopifyPreviewRouteExecutionReceiptStatus ?? 'missing'}`,
     `- Shopify preview-route execution ready: ${audit.executiveSummary.shopifyPreviewRouteExecutionReady ?? 'unknown'}`,
     `- Shopify preview-route target links: ${audit.executiveSummary.shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}`,

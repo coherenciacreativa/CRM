@@ -3836,3 +3836,51 @@ Next safe move:
 - Continue from local-only current-state, approval queue, runbook, goal audit and validation receipt.
 - Review the green seed inbox QA and decide the next launch-readiness packet locally before any public/audience send approval.
 - Stop before any public/audience send, publish/schedule, workflow, subscriber, Shopify live, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 public launch readiness packet wired - 2026-06-01
+
+Status: active goal, local-only control-plane wiring updated after green Null Audience seed inbox QA. The mini-launch now has an explicit public-launch readiness packet so green seed tests are treated as QA evidence, not as permission to request or execute a public/audience send. Launch OS remains not ready for live operation and no live action is authorized by this checkpoint.
+
+Evidence:
+
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public launch readiness packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public launch readiness packet: `status=mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes`.
+- Public launch readiness packet: `seedInboxQaGreen=true`, `nullAudienceReplacementDraftsReady=true`, `previewLinksReady=true`.
+- Public launch readiness packet: `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `crmObservedEventsReady=false`.
+- Public launch readiness packet: `readyForExactPublicSendApproval=false`, `liveActionAllowedNow=false`, `blockerCount=12`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=27`, `testCount=167`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- Public launch readiness packet is local-only and reports-only.
+- Current-state refresh safety reports: `mailerLiteApiCalled=false`, `shopifyApiCalled=false`, `crmLiveApiCalled=false`.
+- UI opened: false.
+- Subscriber/group/workflow mutations: false.
+- Sends performed: false.
+- Shopify publish/forms, CRM writes, ledgers, cards, scoring and Fact Store writes: false.
+- Raw recipients, raw group/campaign IDs, exact preview URLs, sender values and tokens printed in repo docs: false.
+
+Decision:
+
+- Green seed inbox QA is not a live launch gate.
+- The stale "edit MailerLite drafts through UI" boundary is no longer the next launch move after the Null Audience replacement path and E04 resend closure.
+- Shopify preview-route execution is now treated as input to public-launch readiness, not as a reason to reopen MailerLite draft correction/edit.
+- Public/audience launch remains blocked until URL lifecycle, audience scope, CRM observed-event readiness and exact live approval are all present.
+
+Next safe move:
+
+- Continue local-only with readiness/reporting work that reduces the public launch blockers.
+- Do not ask for public/audience send approval until the public launch readiness packet reports `readyForExactPublicSendApproval=true`.
+- Stop before any public/audience send, publish/schedule, workflow, subscriber, Shopify live, CRM write, ledger, card, scoring or Fact Store action.

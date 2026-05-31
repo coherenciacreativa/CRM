@@ -91,6 +91,7 @@
     "crm:vnext:mailerlite-api-existing-draft-update-strategy-packet": "node scripts/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-asset-manifest": "node scripts/crm-vnext-mailerlite-mini-launch-asset-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-public-url-gate": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs",
+    "crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet": "node scripts/crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-handoff-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs",
