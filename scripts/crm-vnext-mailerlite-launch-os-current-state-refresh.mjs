@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -263,6 +263,37 @@ const buildReportPaths = ({ date, reportsDir }) => {
 const command = (id, bin, args, purpose) => ({ id, bin, args, purpose });
 const formatCommand = ({ bin, args }) => [bin, ...args].join(' ');
 const optionalExistingArg = (flag, path) => (existsSync(path) ? [flag, path] : []);
+const readOptionalJsonSync = (path) => {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+};
+
+const mailerLiteApiInertDraftLabExecutionReceiptPresent = (path) => {
+  const lab = readOptionalJsonSync(path);
+  return lab?.ok === true
+    && typeof lab?.status === 'string'
+    && lab.status.startsWith('mailerlite_api_inert_draft_lab_completed_')
+    && lab?.mode === 'execute_requested'
+    && lab?.executiveSummary?.cleanupComplete === true
+    && lab?.safety?.mailerLiteApiCalled === true
+    && lab?.safety?.mailerLiteMutationsPerformed === true
+    && lab?.safety?.originalDraftsEditedOrDeleted === false
+    && lab?.safety?.sendsPerformed === false
+    && lab?.safety?.campaignsPublished === false
+    && lab?.safety?.campaignsScheduled === false
+    && lab?.safety?.subscribersRead === false
+    && lab?.safety?.subscriberMutationsPerformed === false
+    && lab?.safety?.groupsCreatedOrAssigned === false
+    && lab?.safety?.segmentsCreatedOrAssigned === false
+    && lab?.safety?.workflowMutationsPerformed === false
+    && lab?.safety?.shopifyMutationsPerformed === false
+    && lab?.safety?.crmLiveApiCalled === false
+    && lab?.safety?.tokensPrinted === false;
+};
 
 const validationCommands = () => [
   command(
@@ -686,7 +717,7 @@ const buildReportCommands = (paths, validationResult) => {
       ],
       'regenerate local approval packet for cleaning unsafe API replacement drafts without deleting anything',
     ),
-    command(
+    ...(mailerLiteApiInertDraftLabExecutionReceiptPresent(paths.miniLaunchMailerLiteApiInertDraftLab) ? [] : [command(
       'refresh_mini_launch_mailerlite_api_inert_draft_lab',
       'npm',
       [
@@ -701,7 +732,7 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchMailerLiteApiInertDraftLabMarkdown,
       ],
       'regenerate current MailerLite API inert draft lab packet without executing the lab',
-    ),
+    )]),
     command(
       'refresh_approval_queue',
       'npm',

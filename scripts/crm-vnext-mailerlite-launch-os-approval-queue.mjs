@@ -1137,12 +1137,15 @@ const mailerLiteApiInertDraftLabCompleted = (lab) =>
   && lab.status.startsWith('mailerlite_api_inert_draft_lab_completed_')
   && lab?.mode === 'execute_requested'
   && lab?.executiveSummary?.variantCount === countRows(lab?.variants)
-  && (lab?.executiveSummary?.inertVariantCount ?? 0) > 0
+  && lab?.executiveSummary?.createdCount === lab?.executiveSummary?.variantCount
+  && lab?.executiveSummary?.deletedCount === lab?.executiveSummary?.variantCount
+  && lab?.executiveSummary?.goneCount === lab?.executiveSummary?.variantCount
+  && lab?.executiveSummary?.cleanupComplete === true
   && lab?.safety?.mailerLiteApiCalled === true
   && lab?.safety?.mailerLiteDraftsCreated === lab?.executiveSummary?.variantCount
   && lab?.safety?.mailerLiteDraftsDeleted === lab?.executiveSummary?.variantCount
   && lab?.safety?.mailerLiteMutationsPerformed === true
-  && lab?.safety?.allowedMutationType === 'create_inspect_delete_disposable_lab_drafts_only'
+  && lab?.safety?.allowedMutationType === 'create_inspect_delete_disposable_lab_draft_campaigns_only'
   && lab?.safety?.disposableOnly === true
   && lab?.safety?.originalDraftsEditedOrDeleted === false
   && lab?.safety?.campaignsPublished === false
@@ -1199,6 +1202,8 @@ const buildMiniLaunchMailerLiteApiInertDraftLabItem = ({ lab }) => {
         labCompleted: true,
         variantCount: lab?.executiveSummary?.variantCount ?? null,
         inertVariantCount: lab?.executiveSummary?.inertVariantCount ?? null,
+        readyToUseApiRecipeForRealDrafts: lab?.executiveSummary?.readyToUseApiRecipeForRealDrafts ?? null,
+        cleanupComplete: lab?.executiveSummary?.cleanupComplete ?? null,
         createdCount: lab?.safety?.mailerLiteDraftsCreated ?? null,
         deletedCount: lab?.safety?.mailerLiteDraftsDeleted ?? null,
         sendsPerformed: lab?.safety?.sendsPerformed ?? null,
@@ -1209,7 +1214,9 @@ const buildMiniLaunchMailerLiteApiInertDraftLabItem = ({ lab }) => {
       commandAfterApproval: null,
       notes: [
         'The disposable API lab has already run and cleaned itself up.',
-        'This receipt is recipe evidence only; it does not authorize editing real launch drafts.',
+        lab?.executiveSummary?.readyToUseApiRecipeForRealDrafts === true
+          ? 'This receipt is recipe evidence only; it does not authorize editing real launch drafts.'
+          : 'No safe inert API creation recipe was found; do not use this API creation route for real launch drafts.',
       ],
     });
   }

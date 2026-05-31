@@ -3238,3 +3238,51 @@ Next safe move:
 - Stop for Alejandro's exact `mini_launch_mailerlite_api_inert_draft_lab` approval phrase before executing the disposable API lab.
 - If approved, run only `npm run crm:vnext:mailerlite-api-inert-draft-lab -- --execute --approval-phrase "<exact phrase>"`, verify every disposable draft is deleted, and regenerate current-state evidence.
 - Do not edit existing MailerLite drafts, create real replacement drafts, send tests, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store from this lab approval.
+
+## Launch OS v0 MailerLite API inert draft lab executed - 2026-05-31
+
+Status: active goal, exact lab approval received from Alejandro, MailerLite API disposable draft laboratory executed and fully cleaned up. The API path is stable for creating/reading/deleting disposable draft campaigns, but the tested payload shapes did not produce a safe inert draft recipe; every created draft remained schedulable with a basic filter. Do not use this API creation route for real mini-launch drafts.
+
+Evidence:
+
+- API inert draft lab execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json`
+- API inert draft lab execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.md`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- API inert draft lab: `status=mailerlite_api_inert_draft_lab_completed_no_inert_recipe_found_no_sends`.
+- API inert draft lab: `variantRunCount=4`, `inertVariantCount=0`, `createdCount=4`, `deletedCount=4`, `goneCount=4`, `cleanupComplete=true`, `errorCount=0`.
+- API inert draft lab: `readyToUseApiRecipeForRealDrafts=false`.
+- All four variants observed the same non-inert metadata after creation: `filterState=array:0`, `hasBasicFilter=true`, `canBeScheduled=true`, `missingData=[]`.
+- Approval queue: API lab item is now `reference_only_completed`; no repeat approval is needed for this lab.
+- Approval queue: `readyApprovalIds=["mini_launch_seed_inbox_correction_ui_edit"]`, `blockedApprovalIds=["crm_signal_writes"]`, `openLiveMutationGateCount=0`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=22`, `testCount=136`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+
+Safety:
+
+- MailerLite API called: true, only within the exact approved disposable lab scope.
+- Disposable MailerLite drafts created/deleted/gone: `4/4/4`.
+- Original mini-launch drafts edited or deleted: false.
+- Sends, publish, schedule, subscribers, groups/segments and workflows: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Sender values, tokens and exact preview URLs printed: false.
+
+What this means:
+
+- The MailerLite API can be used for controlled diagnostics and cleanup.
+- Campaign creation through the tested API shapes is not safe enough for real launch drafts because it creates schedulable draft campaigns even with empty/no audience fields.
+- The UI correction boundary is still the known safe next mutation path unless a later local-only investigation finds a different API endpoint/recipe and produces a new exact approval packet.
+
+Next safe move:
+
+- Do not repeat the completed API lab.
+- Do not use API campaign creation for real `Inteligencia para descansar` replacement drafts from this evidence.
+- Either stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before any UI edit, or prepare a new local-only API research/packet if trying another MailerLite API route.

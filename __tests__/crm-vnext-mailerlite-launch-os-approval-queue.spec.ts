@@ -458,6 +458,11 @@ const miniLaunchMailerLiteApiInertDraftLabCompleted = {
   executiveSummary: {
     ...miniLaunchMailerLiteApiInertDraftLab.executiveSummary,
     inertVariantCount: 1,
+    createdCount: 4,
+    deletedCount: 4,
+    goneCount: 4,
+    cleanupComplete: true,
+    readyToUseApiRecipeForRealDrafts: true,
   },
   safety: {
     ...miniLaunchMailerLiteApiInertDraftLab.safety,
@@ -466,7 +471,7 @@ const miniLaunchMailerLiteApiInertDraftLabCompleted = {
     mailerLiteDraftsCreated: 4,
     mailerLiteDraftsDeleted: 4,
     mailerLiteMutationsPerformed: true,
-    allowedMutationType: "create_inspect_delete_disposable_lab_drafts_only",
+    allowedMutationType: "create_inspect_delete_disposable_lab_draft_campaigns_only",
   },
 };
 
