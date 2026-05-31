@@ -77,6 +77,7 @@
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.mjs",
+    "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-create": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-create.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs",

@@ -3018,3 +3018,35 @@ Next safe move:
 
 - Stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before opening MailerLite UI or editing drafts.
 - After that approval only, run approval intake, execute the kit manually in MailerLite UI within scope, write a receipt, and run real MailerLite render QA before any test-send approval.
+
+## Launch OS v0 seed inbox correction UI edit receipt guard - 2026-05-31
+
+Status: active goal, local-only receipt guard added for the future MailerLite UI correction edit. This does not execute the edit; it defines the evidence required after the four existing drafts are edited so the system can prove the drafts stayed unsent, unpublished, unscheduled and unattached before any next QA/test-send/public-send boundary.
+
+Evidence:
+
+- Receipt script: `scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.mjs`
+- Receipt package command: `crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt`
+- Receipt tests: `__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.spec.ts`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=21`, `testCount=129`.
+- The focused validation suite now syntax-checks the receipt script and includes its spec.
+- The receipt requires approval intake to match `mini_launch_seed_inbox_correction_ui_edit`.
+- The receipt keeps `public_audience_send`, `seed_send_or_test_send`, publish, schedule, workflows, subscribers, groups/segments, Shopify, CRM, ledgers, cards, scoring and Fact Store closed after the edit.
+
+Safety:
+
+- MailerLite UI opened by this checkpoint: false.
+- MailerLite API called by this checkpoint: false.
+- MailerLite mutations performed by this checkpoint: false.
+- Sends, publish, schedule, subscribers, groups/segments and workflows: false.
+- Shopify/CRM live changes, ledgers, cards, scoring and Fact Store writes: false.
+- Tokens and exact URLs printed: false.
+
+Next safe move:
+
+- Stop for Alejandro's exact UI edit approval phrase before opening MailerLite UI or editing drafts.
+- After the UI edit, run the receipt script with operator-observed evidence before asking for real MailerLite render QA or any later test-send approval.

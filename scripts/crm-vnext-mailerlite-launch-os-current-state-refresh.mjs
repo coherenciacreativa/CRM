@@ -323,6 +323,12 @@ const validationCommands = () => [
     'syntax-check mini-launch seed inbox correction UI edit execution kit',
   ),
   command(
+    'node_check_mini_launch_seed_inbox_correction_ui_edit_receipt',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.mjs'],
+    'syntax-check mini-launch seed inbox correction UI edit receipt',
+  ),
+  command(
     'node_check_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs'],
@@ -397,6 +403,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
