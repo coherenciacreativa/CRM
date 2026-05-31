@@ -3399,3 +3399,68 @@ Next safe move:
 - If approved, run only `npm run crm:vnext:mailerlite-api-null-audience-lab -- --execute --approval-phrase "<exact phrase>"`.
 - After execution, verify any disposable `[LAB NULL AUDIENCE]` campaigns are deleted, the safety group exists only with `active_count=0`, no sends occurred, and regenerate current-state evidence.
 - Do not edit real launch drafts or send anything from this lab approval.
+
+## Launch OS v0 MailerLite API Null Audience lab executed - 2026-05-31
+
+Status: active goal, exact Null Audience lab approval received from Alejandro, disposable API lab executed, and current-state evidence regenerated. The lab found a usable API-heavy safety recipe for future frequent launches: draft campaigns may remain schedulable in MailerLite, but they can be constrained to a dedicated empty safety group with `active_count=0` while still being created/inspected/deleted by API.
+
+Evidence:
+
+- API Null Audience lab execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json`
+- API Null Audience lab execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Null Audience lab: `status=mailerlite_api_null_audience_lab_completed_null_audience_recipe_found_no_sends`.
+- Null Audience lab: `mode=execute_requested`, `ok=true`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`.
+- Safety group `active_count` observed: `0`.
+- Safety group created by lab: `true`.
+- Variant count: `2`.
+- Safe Null Audience variant count: `2`.
+- Ready to use Null Audience recipe for real drafts: `true`.
+- MailerLite groups read: `90`.
+- MailerLite disposable draft campaigns created/deleted: `2/2`.
+- Disposable campaign audience assigned only to Null Audience group: `true`.
+- Original or real launch drafts edited/deleted: `false`.
+- Real campaign audience assignments performed: `false`.
+- Campaigns published/scheduled/sent: `false/false/false`.
+- Subscribers read/mutated: `false/false`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=24`, `testCount=147`.
+- Current-state refresh: `miniLaunchMailerLiteApiNullAudienceLabReadyToUseRecipe=true`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `validationStatus=passed`, `liveGatesClosed=true`.
+
+Safety:
+
+- MailerLite API called: true, only inside the exact approved disposable Null Audience lab scope.
+- Allowed mutation type: create or use the empty safety group, then create/inspect/delete disposable lab campaigns only.
+- MailerLite safety groups created: 1.
+- MailerLite draft campaigns created/deleted: 2/2.
+- Original mini-launch drafts edited or deleted: false.
+- Real launch drafts created or edited: false.
+- Sends, publish, schedule: false/false/false.
+- Subscribers read or mutated: false.
+- Additional groups, segments, workflows and automations mutated: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Sender values, safety group ID, subscriber rows, exact preview URLs and tokens printed: false.
+
+Decision:
+
+- Treat Null Audience as the preferred API safety model for the next real MailerLite draft-construction experiment.
+- Do not rely on impossible/no-recipient draft states as the safety boundary.
+- Do not edit existing E02/E03 by API while their recipient/schedule gate remains open.
+- Do not send, publish, schedule, attach workflows, mutate subscribers, or touch CRM/Shopify from this lab result alone.
+
+Next safe move:
+
+- Prepare a new exact approval packet for creating real replacement mini-launch drafts by API assigned only to `CC · Safety · Null audience · DO NOT SEND`, with corrected content and preview URLs, no sends, no publish, no schedule, no workflows, no subscribers, and post-create QA.
+- Stop for Alejandro's exact approval phrase before any real draft creation or existing draft mutation.
