@@ -1092,7 +1092,7 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
       "/tmp/audit.md",
     ]);
 
-    expect(parsed.runbook).toContain("mailerlite_launch_os_operator_runbook_2026-05-28.json");
+    expect(parsed.runbook).toMatch(/mailerlite_launch_os_operator_runbook_current_\d{4}-\d{2}-\d{2}\.json$/u);
     expect(parsed.controlRoom).toContain("mailerlite-launch-os-v0-control-room.md");
     expect(parsed.brandDictionary).toContain("MAILERLITE_GROUP_DICTIONARY_V0.md");
     expect(parsed.finalizationPreflight).toContain("mailerlite_mini_launch_department_review_finalization_preflight_inteligencia_descansar_2026-05-27.json");
@@ -1118,18 +1118,20 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailManualUiBuildReceipt).toContain("mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json");
-    expect(parsed.blockedGateHandoff).toContain("mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
-    expect(parsed.missingInputsKit).toContain("mailerlite_launch_os_missing_inputs_kit_2026-05-28.json");
-    expect(parsed.missingInputsIntake).toContain("mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
-    expect(parsed.missingInputsRequestBundle).toContain("mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json");
-    expect(parsed.privateInputTemplatePack).toContain("mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
+    expect(parsed.approvalQueue).toMatch(/mailerlite_launch_os_approval_queue_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.approvalIntake).toMatch(/mailerlite_launch_os_approval_intake_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.blockedGateHandoff).toMatch(/mailerlite_launch_os_blocked_gate_handoff_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.missingInputsKit).toMatch(/mailerlite_launch_os_missing_inputs_kit_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.missingInputsIntake).toMatch(/mailerlite_launch_os_missing_inputs_intake_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.missingInputsRequestBundle).toMatch(/mailerlite_launch_os_missing_inputs_request_bundle_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.privateInputTemplatePack).toMatch(/mailerlite_launch_os_private_input_template_pack_current_\d{4}-\d{2}-\d{2}\.json$/u);
     expect(parsed.taxonomyConsolidationAudit).toContain("mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(parsed.taxonomyRefreshHandoff).toContain("mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
     expect(parsed.taxonomyRefreshResponseWorkspace).toContain("mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
     expect(parsed.taxonomyRefreshDecisionIntake).toContain("mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
-    expect(parsed.taxonomyRefreshResponseRequestBundle).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json");
-    expect(parsed.continuationGuard).toContain("mailerlite_launch_os_continuation_guard_2026-05-28.json");
-    expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
+    expect(parsed.taxonomyRefreshResponseRequestBundle).toMatch(/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.continuationGuard).toMatch(/mailerlite_launch_os_continuation_guard_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.validationReceipt).toMatch(/mailerlite_launch_os_validation_receipt_current_\d{4}-\d{2}-\d{2}\.json$/u);
     expect(parsed.out).toBe("/tmp/audit.json");
     expect(parsed.markdownOut).toBe("/tmp/audit.md");
   });

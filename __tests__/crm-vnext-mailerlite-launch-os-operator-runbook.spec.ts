@@ -1056,19 +1056,20 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.brujulaEmailStyleQa).toContain("mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(parsed.brujulaEmailStyleCorrection).toContain("mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(parsed.brujulaEmailRenderQa).toContain("mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
-    expect(parsed.approvalQueue).toContain("mailerlite_launch_os_approval_queue_2026-05-28.json");
-    expect(parsed.blockedGateHandoff).toContain("mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
-    expect(parsed.missingInputsKit).toContain("mailerlite_launch_os_missing_inputs_kit_2026-05-28.json");
-    expect(parsed.missingInputsIntake).toContain("mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
-    expect(parsed.missingInputsRequestBundle).toContain("mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json");
-    expect(parsed.privateInputTemplatePack).toContain("mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
+    expect(parsed.approvalQueue).toMatch(/mailerlite_launch_os_approval_queue_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.approvalIntake).toMatch(/mailerlite_launch_os_approval_intake_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.blockedGateHandoff).toMatch(/mailerlite_launch_os_blocked_gate_handoff_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.missingInputsKit).toMatch(/mailerlite_launch_os_missing_inputs_kit_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.missingInputsIntake).toMatch(/mailerlite_launch_os_missing_inputs_intake_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.missingInputsRequestBundle).toMatch(/mailerlite_launch_os_missing_inputs_request_bundle_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.privateInputTemplatePack).toMatch(/mailerlite_launch_os_private_input_template_pack_current_\d{4}-\d{2}-\d{2}\.json$/u);
     expect(parsed.taxonomyConsolidationAudit).toContain("mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(parsed.taxonomyRefreshHandoff).toContain("mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
     expect(parsed.taxonomyRefreshResponseWorkspace).toContain("mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
     expect(parsed.taxonomyRefreshDecisionIntake).toContain("mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
-    expect(parsed.taxonomyRefreshResponseRequestBundle).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json");
-    expect(parsed.continuationGuard).toContain("mailerlite_launch_os_continuation_guard_2026-05-28.json");
-    expect(parsed.validationReceipt).toContain("mailerlite_launch_os_validation_receipt_2026-05-28.json");
+    expect(parsed.taxonomyRefreshResponseRequestBundle).toMatch(/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.continuationGuard).toMatch(/mailerlite_launch_os_continuation_guard_current_\d{4}-\d{2}-\d{2}\.json$/u);
+    expect(parsed.validationReceipt).toMatch(/mailerlite_launch_os_validation_receipt_current_\d{4}-\d{2}-\d{2}\.json$/u);
     expect(parsed.onboardingTrunkMap).toContain("mailerlite_onboarding_trunk_map_2026-05-27.json");
     expect(parsed.onboardingV2EventContract).toContain("mailerlite_onboarding_v2_event_contract_2026-05-27.json");
     expect(parsed.onboardingV2EmptyGroupsPacket).toContain("mailerlite_onboarding_v2_empty_groups_dry_run_packet_2026-05-27.json");
@@ -2083,37 +2084,43 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Brújula Email 1 local render QA and preview evidence",
       },
       {
-        path: "/tmp/mailerlite_launch_os_approval_queue_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_approval_queue_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "single exact approval queue for current MailerLite Launch OS gates",
       },
       {
-        path: "/tmp/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_approval_intake_current_2026-05-31.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "local exact approval intake and fresh-evidence pre-execution plan",
+      },
+      {
+        path: "/tmp/mailerlite_launch_os_blocked_gate_handoff_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "current blocked gates and missing inputs before any new approval request",
       },
       {
-        path: "/tmp/mailerlite_launch_os_missing_inputs_kit_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_missing_inputs_kit_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "Launch OS missing-inputs kit with capture specs and post-input commands",
       },
       {
-        path: "/tmp/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "Launch OS missing-inputs intake with redacted private input status",
       },
       {
-        path: "/tmp/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "Launch OS copy-ready missing-input request bundle with no approval or private file creation",
       },
       {
-        path: "/tmp/mailerlite_launch_os_private_input_template_pack_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_private_input_template_pack_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "Launch OS inert private-input template pack with example files ignored by active intake",
@@ -2143,19 +2150,19 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "Launch OS Brand/CRM taxonomy decision intake with local patch preview gate state",
       },
       {
-        path: "/tmp/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "Launch OS Brand/CRM taxonomy final-response request bundle with no approval or execution",
       },
       {
-        path: "/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_continuation_guard_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "Launch OS continuation guard with closed hito and do-not-recycle state",
       },
       {
-        path: "/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json",
+        path: "/tmp/mailerlite_launch_os_validation_receipt_current_2026-05-31.json",
         present: true,
         chars: 2000,
         consultedFor: "persistent Launch OS validation receipt",
@@ -2188,19 +2195,20 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailRenderQa).toBe("/tmp/mailerlite_brujula_email_render_qa_packet_2026-05-27.json");
-    expect(reportMap.approvalQueue).toBe("/tmp/mailerlite_launch_os_approval_queue_2026-05-28.json");
-    expect(reportMap.blockedGateHandoff).toBe("/tmp/mailerlite_launch_os_blocked_gate_handoff_2026-05-28.json");
-    expect(reportMap.missingInputsKit).toBe("/tmp/mailerlite_launch_os_missing_inputs_kit_2026-05-28.json");
-    expect(reportMap.missingInputsIntake).toBe("/tmp/mailerlite_launch_os_missing_inputs_intake_2026-05-28.json");
-    expect(reportMap.missingInputsRequestBundle).toBe("/tmp/mailerlite_launch_os_missing_inputs_request_bundle_2026-05-28.json");
-    expect(reportMap.privateInputTemplatePack).toBe("/tmp/mailerlite_launch_os_private_input_template_pack_2026-05-28.json");
+    expect(reportMap.approvalQueue).toBe("/tmp/mailerlite_launch_os_approval_queue_current_2026-05-31.json");
+    expect(reportMap.approvalIntake).toBe("/tmp/mailerlite_launch_os_approval_intake_current_2026-05-31.json");
+    expect(reportMap.blockedGateHandoff).toBe("/tmp/mailerlite_launch_os_blocked_gate_handoff_current_2026-05-31.json");
+    expect(reportMap.missingInputsKit).toBe("/tmp/mailerlite_launch_os_missing_inputs_kit_current_2026-05-31.json");
+    expect(reportMap.missingInputsIntake).toBe("/tmp/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json");
+    expect(reportMap.missingInputsRequestBundle).toBe("/tmp/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json");
+    expect(reportMap.privateInputTemplatePack).toBe("/tmp/mailerlite_launch_os_private_input_template_pack_current_2026-05-31.json");
     expect(reportMap.taxonomyConsolidationAudit).toBe("/tmp/mailerlite_launch_os_taxonomy_consolidation_audit_2026-05-28.json");
     expect(reportMap.taxonomyRefreshHandoff).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_handoff_2026-05-28.json");
     expect(reportMap.taxonomyRefreshResponseWorkspace).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
     expect(reportMap.taxonomyRefreshDecisionIntake).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
-    expect(reportMap.taxonomyRefreshResponseRequestBundle).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json");
-    expect(reportMap.continuationGuard).toBe("/tmp/mailerlite_launch_os_continuation_guard_2026-05-28.json");
-    expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_2026-05-28.json");
+    expect(reportMap.taxonomyRefreshResponseRequestBundle).toBe("/tmp/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json");
+    expect(reportMap.continuationGuard).toBe("/tmp/mailerlite_launch_os_continuation_guard_current_2026-05-31.json");
+    expect(reportMap.validationReceipt).toBe("/tmp/mailerlite_launch_os_validation_receipt_current_2026-05-31.json");
   });
 
   test("renders operator runbook with next moves and approval matrix", () => {

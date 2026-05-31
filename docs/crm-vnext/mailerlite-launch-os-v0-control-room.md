@@ -3050,3 +3050,53 @@ Next safe move:
 
 - Stop for Alejandro's exact UI edit approval phrase before opening MailerLite UI or editing drafts.
 - After the UI edit, run the receipt script with operator-observed evidence before asking for real MailerLite render QA or any later test-send approval.
+
+## Launch OS v0 current approval-intake path hardening - 2026-05-31
+
+Status: active goal, local-only control-plane hardening completed. Approval intake, operator runbook and goal audit defaults now point at the current dated Launch OS reports instead of the older 2026-05-28 approval intake/queue files. The runbook report map now prefers current core reports while retaining legacy fallback matching for historical evidence. No live actions are authorized or performed by this checkpoint.
+
+Evidence:
+
+- Approval intake script: `scripts/crm-vnext-mailerlite-launch-os-approval-intake.mjs`
+- Operator runbook script: `scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs`
+- Goal audit script: `scripts/crm-vnext-mailerlite-launch-os-goal-audit.mjs`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Approval intake: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_current_2026-05-31.json`
+
+Confirmed results:
+
+- Syntax checks passed for approval intake, operator runbook and goal audit.
+- Focused validation passed for `3 files / 40 tests`.
+- Current-state refresh passed with `testFiles=21`, `testCount=129`.
+- Current-state refresh status: `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Operator runbook status: `mailerlite_launch_os_operator_runbook_ready_no_live_changes`.
+- Approval queue status: `mailerlite_launch_os_approval_queue_ready_no_live_changes`.
+- Approval queue current boundary: `readyApprovalIds=["mini_launch_seed_inbox_correction_ui_edit"]`, `nextBestHumanBoundary=mini_launch_seed_inbox_correction_ui_edit`, `openLiveMutationGateCount=0`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt remains `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`.
+
+What changed:
+
+- Standalone approval-intake runs default to `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_<date>.json`.
+- Standalone operator-runbook runs default to current approval queue/intake, blocked-gate handoff, missing-input reports, post-input orchestrator, taxonomy response request bundle, continuation guard and validation receipt.
+- Standalone goal-audit runs default to the current operator runbook and current Launch OS control-plane reports.
+- The runbook report map now records current paths such as `mailerlite_launch_os_approval_intake_current_2026-05-31.json` instead of silently losing them because it only recognized `2026-05-28` filenames.
+
+Safety:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Subscribers read or mutated: false.
+- Groups/segments/workflows mutated: false.
+- Sends, publish and schedule: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens, secrets and exact preview URLs printed: false.
+
+Next safe move:
+
+- Keep the restored current boundary: stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before opening MailerLite UI or editing any draft.
+- After any local input/report change, rerun `npm run crm:vnext:mailerlite-launch-os-current-state-refresh` so the runbook/audit/receipt remain anchored to current evidence.

@@ -80,7 +80,7 @@ describe("CRM vNext MailerLite Launch OS approval intake", () => {
   test("normalizes default args and mutually exclusive approval inputs", () => {
     const parsed = parseArgs(["--approval-text", "hola", "--out", "/tmp/intake.json", "--markdown-out", "/tmp/intake.md"]);
 
-    expect(parsed.approvalQueue).toContain("mailerlite_launch_os_approval_queue_2026-05-28.json");
+    expect(parsed.approvalQueue).toMatch(/mailerlite_launch_os_approval_queue_current_\d{4}-\d{2}-\d{2}\.json$/u);
     expect(parsed.approvalText).toBe("hola");
     expect(parsed.out).toBe("/tmp/intake.json");
     expect(parsed.markdownOut).toBe("/tmp/intake.md");

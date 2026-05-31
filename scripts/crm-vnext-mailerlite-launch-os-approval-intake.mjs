@@ -5,7 +5,10 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-launch-os-approval-intake-2026-05-28';
-const DEFAULT_APPROVAL_QUEUE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_2026-05-28.json';
+const DEFAULT_REPORTS_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports';
+const todayIsoDate = () => new Date().toISOString().slice(0, 10);
+const currentLaunchOsReportPath = (name) => `${DEFAULT_REPORTS_DIR}/${name}_current_${todayIsoDate()}.json`;
+const DEFAULT_APPROVAL_QUEUE = currentLaunchOsReportPath('mailerlite_launch_os_approval_queue');
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-approval-intake.mjs [options]
