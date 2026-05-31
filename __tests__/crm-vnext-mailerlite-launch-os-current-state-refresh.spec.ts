@@ -74,6 +74,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchMailerLiteApiInertDraftLab).toBe(
       "/tmp/mantis-reports/mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchMailerLiteApiNullAudienceLab).toBe(
+      "/tmp/mantis-reports/mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchSeedInboxCorrectionApiEditDiagnostic).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -102,6 +105,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-inert-draft-lab.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-api-null-audience-lab.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
@@ -112,6 +116,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-api-inert-draft-lab");
+    expect(commands).toContain("crm:vnext:mailerlite-api-null-audience-lab");
     expect(commands).toContain("crm:vnext:mailerlite-api-existing-draft-update-strategy-packet");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-approval-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
@@ -131,6 +136,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_inert_draft_lab_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_api_existing_draft_update_strategy_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json");
     expect(commands).toContain("mailerlite_launch_os_approval_intake_current_2026-05-31.json");
@@ -358,6 +364,27 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           mailerLiteDraftsCreated: 0,
           mailerLiteDraftsDeleted: 0,
           senderValuesPrinted: false,
+          tokensPrinted: false,
+        },
+        miniLaunchMailerLiteApiNullAudienceLab: {
+          path: paths.miniLaunchMailerLiteApiNullAudienceLab,
+          markdownPath: paths.miniLaunchMailerLiteApiNullAudienceLabMarkdown,
+          status: "mailerlite_api_null_audience_lab_packet_ready_for_exact_human_approval_no_live_changes",
+          ok: true,
+          mode: "dry_run_packet_only",
+          safetyGroupName: "CC · Safety · Null audience · DO NOT SEND",
+          safetyGroupActiveCountObserved: null,
+          variantCount: 2,
+          safeNullAudienceVariantCount: null,
+          readyToUseNullAudienceRecipeForRealDrafts: null,
+          exactApprovalPhraseAvailable: true,
+          canExecuteNow: false,
+          mailerLiteApiCalled: false,
+          mailerLiteSafetyGroupsCreated: 0,
+          mailerLiteDraftsCreated: 0,
+          mailerLiteDraftsDeleted: 0,
+          senderValuesPrinted: false,
+          safetyGroupIdPrinted: false,
           tokensPrinted: false,
         },
         miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
