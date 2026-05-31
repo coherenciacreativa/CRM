@@ -2829,3 +2829,64 @@ Next safe move:
 ## Current recommendation
 
 Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in correction mode. The four MailerLite seed tests were delivered and Gmail-verified, seed inbox QA marked public readiness yellow, and the corrected local render QA is now green for all four emails. The missing-inputs system tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, and `final_public_links` are system-owned through the Shopify preview route execution receipt rather than Alejandro manual selection. The next human boundary is now explicit: `mini_launch_seed_inbox_correction_ui_edit`, to edit only the four existing MailerLite drafts and replace only the inert placeholders with the preview URLs. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM again, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+
+## Launch OS v0 API replacement cleanup boundary - 2026-05-31
+
+Status: active goal, MailerLite API replacement route attempted after Alejandro's exact scoped approval, two E02/E03 replacement drafts were created, post-scan found them content-correct but not inert, and the system stopped before any send/publish/schedule/workflow/subscriber/group/segment action. Current next human boundary is cleanup of those two unsafe replacement drafts only.
+
+Evidence:
+
+- API replacement approval packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.json`
+- API replacement execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- API replacement cleanup approval packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json`
+- API replacement cleanup dry-run receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- API replacement execution receipt: `createdDraftCount=2`, `inertDraftCount=0`, `sendsPerformed=false`, `campaignsPublished=false`, `campaignsScheduled=false`, `subscribersRead=false`, `groupsCreatedOrAssigned=false`, `segmentsCreatedOrAssigned=false`, `workflowMutationsPerformed=false`.
+- API replacement post-scan: both replacement drafts are `status=draft`, `contentHasExpectedUrl=true`, `contentHasPlaceholder=false`, but `canBeScheduled=true` and `hasBasicFilter=true`; therefore they are not safe to treat as inert no-recipient drafts.
+- Cleanup approval packet: `status=seed_inbox_correction_api_replacement_cleanup_approval_packet_ready_for_exact_human_approval_no_live_changes`, `canAskAlejandroForApproval=true`, `cleanupTargetCount=2`, `blockerCount=0`.
+- Cleanup dry-run receipt: `status=seed_inbox_correction_api_replacement_cleanup_dry_run_ready_for_exact_approval`, `deletedDraftCount=0`, `blockerCount=0`, `errorCount=0`.
+- Approval queue: `readyApprovalRequestCount=1`, `readyApprovalIds=["mini_launch_seed_inbox_correction_api_replacement_cleanup"]`, `nextBestHumanBoundary=mini_launch_seed_inbox_correction_api_replacement_cleanup`, `openLiveMutationGateCount=0`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=19`, `testCount=118`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+What is proven:
+
+- The old E02/E03 drafts were left intact.
+- The two API replacement drafts are the only cleanup targets.
+- The cleanup approval packet is local-only and does not authorize itself.
+- The cleanup runner exists and is dry-run/read-only by default; it requires the exact approval phrase before deleting anything.
+- The old MailerLite UI correction boundary is suppressed while unsafe API replacement drafts exist, so future continuations should not ask for the UI edit until cleanup is closed.
+
+What remains partial or pending:
+
+- The two unsafe API replacement drafts still exist in MailerLite until Alejandro gives exact cleanup approval.
+- MailerLite draft correction is not complete.
+- Public/audience send, seed resend, publish/schedule, workflows, subscribers, groups/segments, Shopify changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.
+- CRM signal writes remain blocked by real observed-events/evidence inputs.
+- Launch OS remains not ready for general live operation.
+
+Safety:
+
+- MailerLite API was called for the approved replacement creation and read-only cleanup dry-run.
+- MailerLite drafts created by the approved replacement attempt: 2.
+- MailerLite drafts deleted so far: 0.
+- Sends performed: false.
+- Campaigns published or scheduled: false.
+- Subscriber/group/segment/workflow mutations: false.
+- Shopify/CRM live changes during this checkpoint: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens and exact URLs printed: false.
+
+Next safe move:
+
+- Stop for Alejandro's exact cleanup approval before deleting the two unsafe replacement drafts.
+- If approved, run only `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete -- --execute --approval-phrase "<exact phrase>"`, then re-scan and regenerate the approval queue/runbook/goal audit/validation receipt.
+- Do not attempt more MailerLite draft correction, UI work, test sends or public sends until the cleanup receipt proves those two unsafe replacement drafts are gone.

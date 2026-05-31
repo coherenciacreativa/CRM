@@ -7,6 +7,7 @@ import {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
   buildOnboardingV2EmptyGroupItem,
@@ -323,6 +324,66 @@ const miniLaunchSeedInboxCorrectionUiEditApprovalPacket = {
     mailerLiteUiOpened: false,
     mailerLiteMutationsPerformed: false,
     sendsPerformed: false,
+  },
+};
+
+const miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = {
+  status: "seed_inbox_correction_api_replacement_cleanup_approval_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    canAskAlejandroForApproval: true,
+    cleanupTargetCount: 2,
+    createdDraftCount: 2,
+    inertDraftCount: 0,
+    allOldDraftsLeftIntact: true,
+    executionReceiptStatus: "seed_inbox_correction_api_replacement_execution_partial_created_drafts_not_inert_stopped",
+    executionReceiptOk: false,
+    blockerCount: 0,
+  },
+  cleanupTargets: [
+    {
+      label: "E02",
+      campaignId: "new-e02",
+      name: "ML Draft · descanso · E02 · API replacement",
+      canBeScheduled: true,
+      hasBasicFilter: true,
+      oldDraftLeftIntact: true,
+    },
+    {
+      label: "E03",
+      campaignId: "new-e03",
+      name: "ML Draft · descanso · E03 · API replacement",
+      canBeScheduled: true,
+      hasBasicFilter: true,
+      oldDraftLeftIntact: true,
+    },
+  ],
+  decision: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canDeleteNow: false,
+    canCreateReplacementDraftsNow: false,
+    canEditExistingDraftsNow: false,
+    canSendNow: false,
+    exactApprovalPhrase: "Apruebo eliminar por API únicamente los 2 borradores de reemplazo E02 y E03 creados en MailerLite durante la ruta API fallida del mini-lanzamiento Inteligencia para descansar, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store, con re-scan fresco posterior y recibo local.",
+  },
+  approvalBoundary: {
+    allowedAfterExactApproval: ["delete_only_the_two_named_api_replacement_drafts_created_by_the_failed_route"],
+    stillClosedEvenAfterApproval: ["creating_new_replacement_drafts", "test_send_or_seed_send"],
+    requiredFreshEvidenceBeforeExecution: ["freshly scan MailerLite and confirm both cleanup targets still exist as draft campaigns"],
+  },
+  blockers: [],
+  safety: {
+    mailerLiteApiCalled: false,
+    mailerLiteMutationsPerformed: false,
+    mailerLiteDraftsDeleted: 0,
+    sendsPerformed: false,
+    subscriberMutationsPerformed: false,
+    groupsCreatedOrAssigned: false,
+    segmentsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    tokensPrinted: false,
+    exactUrlsPrinted: false,
   },
 };
 
@@ -679,6 +740,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiBuilderPacket).toContain("mailerlite_mini_launch_email_manual_ui_builder_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiDraftRepairPacket).toContain("mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchSeedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
@@ -931,6 +993,54 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     });
     expect(item.exactApprovalPhrase).toContain("sin enviar correos");
     expect(item.stillClosed).toContain("test_send_or_seed_send");
+  });
+
+  test("marks unsafe API replacement cleanup as the current boundary before UI correction", () => {
+    const cleanupItem = buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem({
+      packet: miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+    });
+
+    expect(cleanupItem).toMatchObject({
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      id: "mini_launch_seed_inbox_correction_api_replacement_cleanup",
+      operationType: "live_mailerlite_api_delete_only_unsafe_replacement_drafts_after_exact_approval",
+      targetCount: 2,
+      evidence: {
+        cleanupTargetCount: 2,
+        createdDraftCount: 2,
+        inertDraftCount: 0,
+        allOldDraftsLeftIntact: true,
+        sendsPerformed: false,
+      },
+    });
+    expect(cleanupItem.exactApprovalPhrase).toContain("Apruebo eliminar por API únicamente los 2 borradores");
+    expect(cleanupItem.stillClosed).toContain("creating_new_replacement_drafts");
+
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_seed_inbox_correction_api_replacement_cleanup");
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_ui_edit");
+    expect(queue.executiveSummary.nextBestHumanBoundary).toBe("mini_launch_empty_group_creation");
   });
 
   test("marks seed send ready only from a private seed-send approval packet", () => {

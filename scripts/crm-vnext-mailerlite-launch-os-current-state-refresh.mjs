@@ -192,6 +192,15 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet',
       date,
     ),
+    miniLaunchSeedInboxCorrectionApiReplacementExecutionReceipt: staticReportPath(
+      reportsDir,
+      `mailerlite_mini_launch_seed_inbox_correction_api_replacement_execution_receipt_current_inteligencia_descansar_${date}.json`,
+    ),
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
+      date,
+    ),
     privateSeedEmailFile: privateReportPath(
       reportsDir,
       'mailerlite_seed_recipient_inteligencia_descansar.txt',
@@ -299,6 +308,18 @@ const validationCommands = () => [
     'syntax-check mini-launch seed inbox correction UI edit approval packet',
   ),
   command(
+    'node_check_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs'],
+    'syntax-check mini-launch unsafe API replacement cleanup approval packet',
+  ),
+  command(
+    'node_check_mini_launch_seed_inbox_correction_api_replacement_cleanup_delete',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs'],
+    'syntax-check mini-launch unsafe API replacement cleanup delete runner',
+  ),
+  command(
     'node_check_mini_launch_email_render_qa_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs'],
@@ -360,6 +381,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-approval-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-kit.spec.ts',
@@ -590,6 +612,22 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current MailerLite UI correction-edit approval packet from local QA evidence only',
     ),
     command(
+      'refresh_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet',
+        '--',
+        '--execution-receipt',
+        paths.miniLaunchSeedInboxCorrectionApiReplacementExecutionReceipt,
+        '--out',
+        paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+        '--markdown-out',
+        paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacketMarkdown,
+      ],
+      'regenerate local approval packet for cleaning unsafe API replacement drafts without deleting anything',
+    ),
+    command(
       'refresh_approval_queue',
       'npm',
       [
@@ -606,6 +644,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchShopifyPreviewRouteExecutionReceipt,
         '--mini-launch-seed-inbox-correction-ui-edit-approval-packet',
         paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+        '--mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet',
+        paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
         '--mini-launch-crm-signal-projection-packet',
         paths.miniLaunchCrmSignalProjectionPacket,
         '--mini-launch-crm-write-approval-packet',
@@ -941,6 +981,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchShopifyPreviewRouteExecutionReceipt,
     miniLaunchEmailRenderQa,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     missingInputsKit,
     missingInputsIntake,
     missingInputsRequestBundle,
@@ -961,6 +1002,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchShopifyPreviewRouteExecutionReceipt),
     readOptionalJson(paths.miniLaunchEmailRenderQa),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket),
+    readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket),
     readOptionalJson(paths.missingInputsKit),
     readOptionalJson(paths.missingInputsIntake),
     readOptionalJson(paths.missingInputsRequestBundle),
@@ -1106,6 +1148,22 @@ const summarizeGeneratedReports = async (paths) => {
         miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.blockerCount ?? null,
       publicAudienceSendUrlGateReady:
         miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+    },
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: {
+      path: paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+      markdownPath: paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacketMarkdown,
+      status: miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.status ?? null,
+      ok: miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.ok ?? null,
+      canAskAlejandroForApproval:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.canAskAlejandroForApproval ?? null,
+      cleanupTargetCount:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.cleanupTargetCount ?? null,
+      createdDraftCount:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.createdDraftCount ?? null,
+      inertDraftCount:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.inertDraftCount ?? null,
+      blockerCount:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.blockerCount ?? null,
     },
     missingInputsKit: {
       path: paths.missingInputsKit,

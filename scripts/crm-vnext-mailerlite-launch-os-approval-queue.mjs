@@ -17,6 +17,7 @@ const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILDER_PACKET = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_qa_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json';
@@ -50,6 +51,7 @@ Options:
   --mini-launch-email-manual-ui-build-receipt <path> Mini-launch manual UI post-build receipt. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT}
   --mini-launch-email-manual-ui-draft-repair-packet <path> Mini-launch manual UI draft repair approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET}
   --mini-launch-seed-inbox-correction-ui-edit-approval-packet <path> Mini-launch seed inbox correction UI edit approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET}
+  --mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet <path> Mini-launch unsafe API replacement cleanup approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_APPROVAL_PACKET}
   --mini-launch-seed-test-qa-packet <path> Mini-launch seed/test QA preflight packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET}
   --mini-launch-seed-send-approval-packet <path> Mini-launch private seed-send approval packet. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET}
   --mini-launch-seed-test-execution-receipt <path> Completed seed/test execution receipt. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT}
@@ -99,6 +101,7 @@ const parseArgs = (argv) => {
     miniLaunchEmailManualUiBuildReceipt: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_BUILD_RECEIPT,
     miniLaunchEmailManualUiDraftRepairPacket: DEFAULT_MINI_LAUNCH_EMAIL_MANUAL_UI_DRAFT_REPAIR_PACKET,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET,
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_API_REPLACEMENT_CLEANUP_APPROVAL_PACKET,
     miniLaunchSeedTestQaPacket: DEFAULT_MINI_LAUNCH_SEED_TEST_QA_PACKET,
     miniLaunchSeedSendApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_SEND_APPROVAL_PACKET,
     miniLaunchSeedTestExecutionReceipt: DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT,
@@ -135,6 +138,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-email-manual-ui-build-receipt') options.miniLaunchEmailManualUiBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-email-manual-ui-draft-repair-packet') options.miniLaunchEmailManualUiDraftRepairPacket = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-correction-ui-edit-approval-packet') options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket = argv[++index];
+    else if (arg === '--mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet') options.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-qa-packet') options.miniLaunchSeedTestQaPacket = argv[++index];
     else if (arg === '--mini-launch-seed-send-approval-packet') options.miniLaunchSeedSendApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-seed-test-execution-receipt') options.miniLaunchSeedTestExecutionReceipt = argv[++index];
@@ -965,6 +969,76 @@ const buildMiniLaunchSeedInboxCorrectionUiEditItem = ({ packet }) => {
   });
 };
 
+const buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem = ({ packet }) => {
+  const targetNames = targetNamesFrom((packet?.cleanupTargets ?? []).map((target) =>
+    target?.name && target?.campaignId
+      ? `${target.name} (${target.campaignId})`
+      : target?.name ?? target?.campaignId,
+  ));
+  const blockers = [...(packet?.blockers ?? [])];
+
+  if (packet?.status !== 'seed_inbox_correction_api_replacement_cleanup_approval_packet_ready_for_exact_human_approval_no_live_changes') {
+    blockers.push(`api_replacement_cleanup_packet_not_ready:${packet?.status ?? 'missing'}`);
+  }
+  if (packet?.executiveSummary?.canAskAlejandroForApproval !== true) blockers.push('api_replacement_cleanup_cannot_ask_approval_now');
+  if (packet?.decision?.packetIsApprovalByItself !== false) blockers.push('api_replacement_cleanup_packet_self_authorizes_unexpectedly');
+  if (packet?.decision?.canDeleteNow !== false) blockers.push('api_replacement_cleanup_delete_gate_unexpectedly_open');
+  if (packet?.decision?.canCreateReplacementDraftsNow !== false) blockers.push('api_replacement_cleanup_create_gate_unexpectedly_open');
+  if (packet?.decision?.canEditExistingDraftsNow !== false) blockers.push('api_replacement_cleanup_edit_gate_unexpectedly_open');
+  if (packet?.decision?.canSendNow !== false) blockers.push('api_replacement_cleanup_send_gate_unexpectedly_open');
+  if (!cleanString(packet?.decision?.exactApprovalPhrase)) blockers.push('missing_exact_approval_phrase');
+  if ((packet?.executiveSummary?.cleanupTargetCount ?? 0) !== 2) blockers.push(`api_replacement_cleanup_target_count_not_2:${packet?.executiveSummary?.cleanupTargetCount ?? 'missing'}`);
+  if (packet?.executiveSummary?.inertDraftCount !== 0) blockers.push(`api_replacement_cleanup_inert_count_not_zero:${packet?.executiveSummary?.inertDraftCount ?? 'missing'}`);
+  if (packet?.safety?.mailerLiteApiCalled !== false) blockers.push('api_replacement_cleanup_packet_reports_mailerlite_api_call');
+  if (packet?.safety?.mailerLiteMutationsPerformed !== false) blockers.push('api_replacement_cleanup_packet_reports_mailerlite_mutation');
+  if (packet?.safety?.mailerLiteDraftsDeleted !== 0) blockers.push('api_replacement_cleanup_packet_reports_deleted_drafts');
+  if (packet?.safety?.sendsPerformed !== false) blockers.push('api_replacement_cleanup_packet_reports_send');
+  if (packet?.safety?.subscriberMutationsPerformed !== false) blockers.push('api_replacement_cleanup_packet_reports_subscriber_mutation');
+  if (packet?.safety?.groupsCreatedOrAssigned !== false) blockers.push('api_replacement_cleanup_packet_reports_group_mutation');
+  if (packet?.safety?.segmentsCreatedOrAssigned !== false) blockers.push('api_replacement_cleanup_packet_reports_segment_mutation');
+  if (packet?.safety?.workflowMutationsPerformed !== false) blockers.push('api_replacement_cleanup_packet_reports_workflow_mutation');
+  if (packet?.safety?.factStoreWritePerformed !== false) blockers.push('api_replacement_cleanup_packet_reports_fact_store_write');
+  if (packet?.safety?.tokensPrinted !== false) blockers.push('api_replacement_cleanup_packet_prints_tokens');
+  if (packet?.safety?.exactUrlsPrinted !== false) blockers.push('api_replacement_cleanup_packet_prints_exact_urls');
+
+  const canAskNow = blockers.length === 0;
+
+  return buildApprovalItem({
+    id: 'mini_launch_seed_inbox_correction_api_replacement_cleanup',
+    title: 'Mini-launch MailerLite unsafe API replacement draft cleanup',
+    lane: 'mini_launch_inteligencia_para_descansar',
+    operationType: 'live_mailerlite_api_delete_only_unsafe_replacement_drafts_after_exact_approval',
+    approvalType: 'exact_phrase_required',
+    canAskNow,
+    exactApprovalPhrase: packet?.decision?.exactApprovalPhrase,
+    sourceStatuses: {
+      cleanupApprovalPacket: packet?.status ?? null,
+      executionReceipt: packet?.executiveSummary?.executionReceiptStatus ?? null,
+    },
+    targetNames,
+    allowedAfterExactApproval: packet?.approvalBoundary?.allowedAfterExactApproval ?? [],
+    stillClosed: packet?.approvalBoundary?.stillClosedEvenAfterApproval ?? [],
+    requiredFreshEvidence: packet?.approvalBoundary?.requiredFreshEvidenceBeforeExecution ?? [],
+    blockers,
+    evidence: {
+      cleanupTargetCount: packet?.executiveSummary?.cleanupTargetCount ?? null,
+      createdDraftCount: packet?.executiveSummary?.createdDraftCount ?? null,
+      inertDraftCount: packet?.executiveSummary?.inertDraftCount ?? null,
+      allOldDraftsLeftIntact: packet?.executiveSummary?.allOldDraftsLeftIntact ?? null,
+      executionReceiptOk: packet?.executiveSummary?.executionReceiptOk ?? null,
+      executionReceiptStatus: packet?.executiveSummary?.executionReceiptStatus ?? null,
+      sendsPerformed: packet?.safety?.sendsPerformed ?? null,
+      mailerLiteMutationsPerformedByPacket: packet?.safety?.mailerLiteMutationsPerformed ?? null,
+    },
+    commandAfterApproval: 'npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete -- --execute --approval-phrase "<exact phrase>"',
+    notes: [
+      'This cleanup approval exists because the API-created replacement drafts are content-correct but not inert: MailerLite reports canBeScheduled=true and hasBasicFilter=true.',
+      'This boundary must be resolved before any further draft correction/test-send/public-send work for the mini-launch.',
+      'The original E02/E03 drafts are explicitly left intact.',
+    ],
+  });
+};
+
 const shopifyLocalBuildReceiptCompleted = (receipt, targetNames) =>
   receipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes'
   && receipt?.shopifyRepo?.localFilesCreatedOrUpdated === targetNames.length
@@ -1769,6 +1843,7 @@ const buildApprovalQueue = ({
   miniLaunchEmailManualUiBuildReceipt,
   miniLaunchEmailManualUiDraftRepairPacket = null,
   miniLaunchSeedInboxCorrectionUiEditApprovalPacket = null,
+  miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = null,
   miniLaunchSeedTestQaPacket,
   miniLaunchSeedSendApprovalPacket = null,
   miniLaunchSeedTestExecutionReceipt = null,
@@ -1787,6 +1862,14 @@ const buildApprovalQueue = ({
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
 }) => {
+  const cleanupItem = miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket
+    ? buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem({
+      packet: miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+    })
+    : null;
+  const cleanupRequiresAttention = cleanupItem
+    && ['ready_for_exact_approval_request', 'prepared_but_blocked_before_approval_request'].includes(cleanupItem.status);
+
   const approvalItems = [
     buildMiniLaunchEmptyGroupItem({
       packet: miniLaunchEmptyGroupPacket,
@@ -1814,7 +1897,8 @@ const buildApprovalQueue = ({
         packet: miniLaunchEmailManualUiDraftRepairPacket,
       })
       : null,
-    miniLaunchSeedInboxCorrectionUiEditApprovalPacket
+    cleanupItem,
+    !cleanupRequiresAttention && miniLaunchSeedInboxCorrectionUiEditApprovalPacket
       ? buildMiniLaunchSeedInboxCorrectionUiEditItem({
         packet: miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
       })
@@ -1969,6 +2053,7 @@ const buildQueueFromFiles = async (options) => {
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiBuildReceipt, 'mini-launch manual UI post-build receipt'),
     readOptionalJsonWithDigest(options.miniLaunchEmailManualUiDraftRepairPacket, 'mini-launch manual UI draft repair approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket, 'mini-launch seed inbox correction UI edit approval packet'),
+    readOptionalJsonWithDigest(options.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket, 'mini-launch unsafe API replacement cleanup approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestQaPacket, 'mini-launch seed/test QA preflight packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedSendApprovalPacket, 'mini-launch private seed-send approval packet'),
     readOptionalJsonWithDigest(options.miniLaunchSeedTestExecutionReceipt, 'completed mini-launch seed/test execution receipt'),
@@ -2000,6 +2085,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiBuildReceipt,
     miniLaunchEmailManualUiDraftRepairPacket,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
     miniLaunchSeedTestExecutionReceipt,
@@ -2031,6 +2117,7 @@ const buildQueueFromFiles = async (options) => {
     miniLaunchEmailManualUiBuildReceipt,
     miniLaunchEmailManualUiDraftRepairPacket,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
     miniLaunchSeedTestQaPacket,
     miniLaunchSeedSendApprovalPacket,
     miniLaunchSeedTestExecutionReceipt,
@@ -2102,6 +2189,7 @@ export {
   buildMiniLaunchEmailManualUiDraftRepairItem,
   buildMiniLaunchEmailManualUiBuilderItem,
   buildMiniLaunchEmptyGroupItem,
+  buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
   buildOnboardingV2EmptyGroupItem,
