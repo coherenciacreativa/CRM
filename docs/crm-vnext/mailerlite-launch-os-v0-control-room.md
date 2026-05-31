@@ -2214,6 +2214,72 @@ Next safe move:
 - Continue collecting missing inputs and taxonomy final-response files in local-only mode.
 - Stop before any future live gate, exact approval phrase or mutation.
 
+## Launch OS v0 upstream current-state refresh hardening checkpoint - 2026-05-31
+
+Status: active goal, current-state refresh runner hardened to refresh upstream local packets before final runbook/audit/receipt, not ready for live operation, no live actions authorized.
+
+Evidence:
+
+- Script: `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current CRM write approval packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json`
+- Current approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current blocked-gate handoff: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_blocked_gate_handoff_current_2026-05-31.json`
+- Current missing-inputs kit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_kit_current_2026-05-31.json`
+- Current missing-inputs intake: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json`
+- Current missing-inputs request bundle: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json`
+- Current private-input template pack: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_private_input_template_pack_current_2026-05-31.json`
+- Current post-input orchestrator: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_current_2026-05-31.json`
+- Current continuation guard: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- current-state-refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`
+- current-state-refresh: `testFiles=11`, `testCount=75`
+- CRM write approval packet: `status=crm_write_approval_packet_blocked_missing_observed_events_no_live_changes`, `exactEventCountReady=0`, `exactPersonCountReady=0`
+- missing-inputs intake: `status=missing_inputs_intake_waiting_for_inputs_no_live_changes`, `readyInputCount=0`, `inputCount=6`
+- missing-inputs intake: `readyForCrmApprovalRequest=false`, `readyForMiniLaunchCorrectionPreview=false`
+- continuation-guard: `status=mailerlite_launch_os_continuation_guard_ready_no_live_changes`, `openLiveMutationGateCount=0`
+- operator-runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`, `validationStatus=passed`
+- goal-audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- validation-receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Subscribers read or mutated: false.
+- Groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens printed: false.
+
+What is proven:
+
+- The current-state refresh runner now regenerates the upstream local state chain before final runbook/audit/receipt: CRM write approval packet, approval queue, blocked-gate handoff, missing-inputs kit/intake/request bundle, private-input template pack, post-input orchestrator and continuation guard.
+- Missing private observed events no longer fail the CRM packet refresh; the runner omits the optional private observed-events argument until that file exists, and the missing-inputs intake keeps the absence as a blocker.
+- Seed/internal QA/verification events are explicitly rejected as real CRM observations for ledger/card/scoring/Fact Store readiness.
+- The refresh receipt now records upstream report statuses, not only final runbook/audit/receipt status.
+
+What remains partial or pending:
+
+- Launch OS is still not ready for live operation.
+- CRM signal writes remain blocked by missing real observed events, exact people, writable-event screen and any required Fact Store review.
+- Mini-launch correction preview remains blocked by missing `final_public_links` and `subscription_reason_policy`.
+- Taxonomy refresh still needs final Brand and CRM response files before any local patch preview.
+- No MailerLite UI edit, test send, public/audience send, workflow/subscriber/group mutation, Shopify/CRM live change, ledger/card/scoring/Fact Store write is authorized by this checkpoint.
+
+Next safe move:
+
+- Continue local-only input collection and use `npm run crm:vnext:mailerlite-launch-os-current-state-refresh` after any input/report change.
+- If a private observed-events file appears, the runner may consume it locally and must still stop before any CRM write approval phrase or mutation.
+- Stop before any future live gate, exact approval phrase or mutation.
+
 ## Current recommendation
 
 Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: collect `final_public_links` plus `subscription_reason_policy` through the request bundle before any MailerLite UI edit approval. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

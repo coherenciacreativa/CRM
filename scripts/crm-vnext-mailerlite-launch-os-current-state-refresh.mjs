@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,15 +23,19 @@ Options:
   --help                    Show this help
 
 Local-only current-state refresh runner. It runs syntax checks, focused tests,
-then regenerates the Launch OS operator runbook, goal audit, validation receipt
-and a refresh receipt. It never calls MailerLite, Shopify or CRM live APIs,
-opens UI, reads or mutates subscribers, creates groups, edits workflows, sends
-emails, appends ledgers, writes cards, changes scoring, writes Fact Store, or
-prints tokens.`;
+then regenerates the upstream local packets that feed the Launch OS operator
+runbook, goal audit, continuation guard, validation receipt and refresh receipt.
+It never calls MailerLite, Shopify or CRM live APIs, opens UI, reads or mutates
+subscribers, creates groups, edits workflows, sends emails, appends ledgers,
+writes cards, changes scoring, writes Fact Store, or prints tokens.`;
 
 const todayIsoDate = () => new Date().toISOString().slice(0, 10);
 const mdPathFor = (path) => path.replace(/\.json$/u, '.md');
 const reportPath = (reportsDir, name, date) => resolve(reportsDir, `${name}_current_${date}.json`);
+const miniLaunchReportPath = (reportsDir, name, date) =>
+  resolve(reportsDir, `${name}_current_inteligencia_descansar_${date}.json`);
+const staticReportPath = (reportsDir, fileName) => resolve(reportsDir, fileName);
+const privateReportPath = (reportsDir, fileName) => resolve(reportsDir, 'private', fileName);
 
 const parseArgs = (argv) => {
   const options = {
@@ -105,6 +110,58 @@ const safetyClosed = (safety) => [
 
 const buildReportPaths = ({ date, reportsDir }) => {
   const paths = {
+    miniLaunchCrmSignalProjectionPacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_crm_signal_projection_packet',
+      date,
+    ),
+    miniLaunchCrmWriteApprovalPacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_crm_write_approval_packet',
+      date,
+    ),
+    miniLaunchEventContract: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_event_contract_inteligencia_descansar_2026-05-27.json',
+    ),
+    miniLaunchManualUiBuildReceipt: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json',
+    ),
+    miniLaunchEmptyGroupCreateExecution: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_empty_group_create_execution_inteligencia_descansar_2026-05-28.json',
+    ),
+    miniLaunchShopifyLocalBuildReceipt: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json',
+    ),
+    miniLaunchCrmWritePolicyPacket: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_crm_write_policy_packet_inteligencia_descansar_2026-05-28.json',
+    ),
+    miniLaunchSeedSendApprovalPacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_seed_send_approval_packet',
+      date,
+    ),
+    miniLaunchSeedInboxCorrectionPlan: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json',
+    ),
+    privateSeedEmailFile: privateReportPath(
+      reportsDir,
+      'mailerlite_seed_recipient_inteligencia_descansar.txt',
+    ),
+    privateObservedEventsFile: privateReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json',
+    ),
+    privateCorrectionInputsFile: privateReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json',
+    ),
+    privateInputExamplesDir: resolve(reportsDir, `mailerlite_launch_os_private_input_templates_current_${date}`),
     approvalQueue: reportPath(reportsDir, 'mailerlite_launch_os_approval_queue', date),
     approvalIntake: reportPath(reportsDir, 'mailerlite_launch_os_approval_intake', date),
     blockedGateHandoff: reportPath(reportsDir, 'mailerlite_launch_os_blocked_gate_handoff', date),
@@ -126,15 +183,16 @@ const buildReportPaths = ({ date, reportsDir }) => {
   };
 
   return Object.fromEntries(
-    Object.entries(paths).flatMap(([key, jsonPath]) => [
-      [key, jsonPath],
-      [`${key}Markdown`, mdPathFor(jsonPath)],
+    Object.entries(paths).flatMap(([key, value]) => [
+      [key, value],
+      ...(String(value).endsWith('.json') ? [[`${key}Markdown`, mdPathFor(value)]] : []),
     ]),
   );
 };
 
 const command = (id, bin, args, purpose) => ({ id, bin, args, purpose });
 const formatCommand = ({ bin, args }) => [bin, ...args].join(' ');
+const optionalExistingArg = (flag, path) => (existsSync(path) ? [flag, path] : []);
 
 const validationCommands = () => [
   command(
@@ -142,6 +200,48 @@ const validationCommands = () => [
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs'],
     'syntax-check current-state refresh runner',
+  ),
+  command(
+    'node_check_crm_write_approval_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs'],
+    'syntax-check mini-launch CRM write approval packet',
+  ),
+  command(
+    'node_check_missing_inputs_kit',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-launch-os-missing-inputs-kit.mjs'],
+    'syntax-check missing-inputs kit',
+  ),
+  command(
+    'node_check_missing_inputs_intake',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs'],
+    'syntax-check missing-inputs intake',
+  ),
+  command(
+    'node_check_missing_inputs_request_bundle',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-launch-os-missing-inputs-request-bundle.mjs'],
+    'syntax-check missing-inputs request bundle',
+  ),
+  command(
+    'node_check_private_input_template_pack',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-launch-os-private-input-template-pack.mjs'],
+    'syntax-check private-input template pack',
+  ),
+  command(
+    'node_check_post_input_orchestrator',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-launch-os-post-input-orchestrator.mjs'],
+    'syntax-check post-input orchestrator',
+  ),
+  command(
+    'node_check_continuation_guard',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs'],
+    'syntax-check continuation guard',
   ),
   command(
     'node_check_operator_runbook',
@@ -169,6 +269,13 @@ const validationCommands = () => [
       'vitest',
       'run',
       '__tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-kit.spec.ts',
+      '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-intake.spec.ts',
+      '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-request-bundle.spec.ts',
+      '__tests__/crm-vnext-mailerlite-launch-os-private-input-template-pack.spec.ts',
+      '__tests__/crm-vnext-mailerlite-launch-os-post-input-orchestrator.spec.ts',
+      '__tests__/crm-vnext-mailerlite-launch-os-continuation-guard.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-operator-runbook.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-goal-audit.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-validation-receipt.spec.ts',
@@ -180,6 +287,10 @@ const validationCommands = () => [
 const currentStateArgs = (paths) => [
   '--approval-queue',
   paths.approvalQueue,
+  '--mini-launch-crm-write-approval-packet',
+  paths.miniLaunchCrmWriteApprovalPacket,
+  '--mini-launch-seed-inbox-correction-plan',
+  paths.miniLaunchSeedInboxCorrectionPlan,
   '--approval-intake',
   paths.approvalIntake,
   '--blocked-gate-handoff',
@@ -206,7 +317,7 @@ const buildValidationSummary = (validationResult) => {
   if (!validationResult.runValidation) return 'Validation skipped by operator; report regeneration remained local-only.';
   return [
     'Local current-state refresh validation passed:',
-    'node --check for current-state refresh, operator runbook, goal audit and validation receipt;',
+    'node --check for current-state refresh, upstream missing-input packets, continuation guard, operator runbook, goal audit and validation receipt;',
     `focused Vitest ${validationResult.testFiles ?? 'unknown'} files / ${validationResult.testCount ?? 'unknown'} tests;`,
     'no live actions.',
   ].join(' ');
@@ -252,12 +363,202 @@ const buildReportCommands = (paths, validationResult) => {
 
   return [
     command(
+      'refresh_mini_launch_crm_write_approval_packet',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-crm-write-approval-packet',
+        '--',
+        '--signal-projection-packet',
+        paths.miniLaunchCrmSignalProjectionPacket,
+        '--event-contract',
+        paths.miniLaunchEventContract,
+        '--manual-ui-build-receipt',
+        paths.miniLaunchManualUiBuildReceipt,
+        '--group-create-execution',
+        paths.miniLaunchEmptyGroupCreateExecution,
+        '--shopify-local-build-receipt',
+        paths.miniLaunchShopifyLocalBuildReceipt,
+        '--write-policy-packet',
+        paths.miniLaunchCrmWritePolicyPacket,
+        ...optionalExistingArg('--observed-events-file', paths.privateObservedEventsFile),
+        '--out',
+        paths.miniLaunchCrmWriteApprovalPacket,
+        '--markdown-out',
+        paths.miniLaunchCrmWriteApprovalPacketMarkdown,
+      ],
+      'regenerate current mini-launch CRM write approval packet from local evidence only',
+    ),
+    command(
+      'refresh_approval_queue',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-approval-queue',
+        '--',
+        '--mini-launch-seed-send-approval-packet',
+        paths.miniLaunchSeedSendApprovalPacket,
+        '--mini-launch-crm-signal-projection-packet',
+        paths.miniLaunchCrmSignalProjectionPacket,
+        '--mini-launch-crm-write-approval-packet',
+        paths.miniLaunchCrmWriteApprovalPacket,
+        '--validation-receipt',
+        paths.validationReceipt,
+        '--out',
+        paths.approvalQueue,
+        '--markdown-out',
+        paths.approvalQueueMarkdown,
+      ],
+      'regenerate current Launch OS approval queue report',
+    ),
+    command(
+      'refresh_blocked_gate_handoff',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-blocked-gate-handoff',
+        '--',
+        '--approval-queue',
+        paths.approvalQueue,
+        '--runbook',
+        paths.operatorRunbook,
+        '--goal-audit',
+        paths.goalAudit,
+        '--seed-send-approval',
+        paths.miniLaunchSeedSendApprovalPacket,
+        '--crm-write-approval',
+        paths.miniLaunchCrmWriteApprovalPacket,
+        '--out',
+        paths.blockedGateHandoff,
+        '--markdown-out',
+        paths.blockedGateHandoffMarkdown,
+      ],
+      'regenerate current blocked-gate handoff from refreshed local approval queue',
+    ),
+    command(
+      'refresh_missing_inputs_kit',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-missing-inputs-kit',
+        '--',
+        '--blocked-gate-handoff',
+        paths.blockedGateHandoff,
+        '--seed-send-approval',
+        paths.miniLaunchSeedSendApprovalPacket,
+        '--crm-write-approval',
+        paths.miniLaunchCrmWriteApprovalPacket,
+        '--runbook',
+        paths.operatorRunbook,
+        '--seed-inbox-correction-plan',
+        paths.miniLaunchSeedInboxCorrectionPlan,
+        '--private-seed-email-file',
+        paths.privateSeedEmailFile,
+        '--observed-events-file',
+        paths.privateObservedEventsFile,
+        '--correction-inputs-file',
+        paths.privateCorrectionInputsFile,
+        '--out',
+        paths.missingInputsKit,
+        '--markdown-out',
+        paths.missingInputsKitMarkdown,
+      ],
+      'regenerate current missing-inputs kit without creating private inputs',
+    ),
+    command(
+      'refresh_missing_inputs_intake',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-missing-inputs-intake',
+        '--',
+        '--missing-inputs-kit',
+        paths.missingInputsKit,
+        '--operator-runbook',
+        paths.operatorRunbook,
+        '--crm-write-approval-packet',
+        paths.miniLaunchCrmWriteApprovalPacket,
+        '--seed-email-file',
+        paths.privateSeedEmailFile,
+        '--observed-events-file',
+        paths.privateObservedEventsFile,
+        '--correction-inputs-file',
+        paths.privateCorrectionInputsFile,
+        '--out',
+        paths.missingInputsIntake,
+        '--markdown-out',
+        paths.missingInputsIntakeMarkdown,
+      ],
+      'regenerate current missing-inputs intake and redacted private-input readiness',
+    ),
+    command(
+      'refresh_missing_inputs_request_bundle',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle',
+        '--',
+        '--missing-inputs-kit',
+        paths.missingInputsKit,
+        '--missing-inputs-intake',
+        paths.missingInputsIntake,
+        '--blocked-gate-handoff',
+        paths.blockedGateHandoff,
+        '--out',
+        paths.missingInputsRequestBundle,
+        '--markdown-out',
+        paths.missingInputsRequestBundleMarkdown,
+      ],
+      'regenerate current copy-ready missing-input request bundle',
+    ),
+    command(
+      'refresh_private_input_template_pack',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-private-input-template-pack',
+        '--',
+        '--missing-inputs-kit',
+        paths.missingInputsKit,
+        '--examples-dir',
+        paths.privateInputExamplesDir,
+        '--no-write-examples',
+        '--out',
+        paths.privateInputTemplatePack,
+        '--markdown-out',
+        paths.privateInputTemplatePackMarkdown,
+      ],
+      'regenerate current inert private-input template pack report without writing example files',
+    ),
+    command(
+      'refresh_post_input_orchestrator',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-post-input-orchestrator',
+        '--',
+        '--missing-inputs-intake',
+        paths.missingInputsIntake,
+        '--missing-inputs-request-bundle',
+        paths.missingInputsRequestBundle,
+        '--private-input-template-pack',
+        paths.privateInputTemplatePack,
+        '--out',
+        paths.postInputOrchestrator,
+        '--markdown-out',
+        paths.postInputOrchestratorMarkdown,
+      ],
+      'regenerate current post-input local orchestrator report',
+    ),
+    command(
       'refresh_operator_runbook',
       'npm',
       [
         'run',
         'crm:vnext:mailerlite-launch-os-operator-runbook',
         '--',
+        '--mini-launch-crm-signal-projection-packet',
+        paths.miniLaunchCrmSignalProjectionPacket,
         ...currentStateArgs(paths),
         '--out',
         paths.operatorRunbook,
@@ -286,6 +587,28 @@ const buildReportCommands = (paths, validationResult) => {
         paths.goalAuditMarkdown,
       ],
       'regenerate current Launch OS goal audit report',
+    ),
+    command(
+      'refresh_continuation_guard',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-continuation-guard',
+        '--',
+        '--runbook',
+        paths.operatorRunbook,
+        '--goal-audit',
+        paths.goalAudit,
+        '--missing-inputs-kit',
+        paths.missingInputsKit,
+        '--validation-receipt',
+        paths.validationReceipt,
+        '--out',
+        paths.continuationGuard,
+        '--markdown-out',
+        paths.continuationGuardMarkdown,
+      ],
+      'regenerate current continuation guard after refreshed runbook and goal audit',
     ),
     command(
       'refresh_validation_receipt',
@@ -395,13 +718,111 @@ const readOptionalJson = async (path) => {
 };
 
 const summarizeGeneratedReports = async (paths) => {
-  const [runbook, goalAudit, validationReceipt] = await Promise.all([
+  const [
+    crmWriteApprovalPacket,
+    approvalQueue,
+    blockedGateHandoff,
+    missingInputsKit,
+    missingInputsIntake,
+    missingInputsRequestBundle,
+    privateInputTemplatePack,
+    postInputOrchestrator,
+    continuationGuard,
+    runbook,
+    goalAudit,
+    validationReceipt,
+  ] = await Promise.all([
+    readOptionalJson(paths.miniLaunchCrmWriteApprovalPacket),
+    readOptionalJson(paths.approvalQueue),
+    readOptionalJson(paths.blockedGateHandoff),
+    readOptionalJson(paths.missingInputsKit),
+    readOptionalJson(paths.missingInputsIntake),
+    readOptionalJson(paths.missingInputsRequestBundle),
+    readOptionalJson(paths.privateInputTemplatePack),
+    readOptionalJson(paths.postInputOrchestrator),
+    readOptionalJson(paths.continuationGuard),
     readOptionalJson(paths.operatorRunbook),
     readOptionalJson(paths.goalAudit),
     readOptionalJson(paths.validationReceipt),
   ]);
 
   return {
+    crmWriteApprovalPacket: {
+      path: paths.miniLaunchCrmWriteApprovalPacket,
+      markdownPath: paths.miniLaunchCrmWriteApprovalPacketMarkdown,
+      status: crmWriteApprovalPacket?.status ?? null,
+      ok: crmWriteApprovalPacket?.ok ?? null,
+      exactEventCountReady: crmWriteApprovalPacket?.executiveSummary?.exactEventCountReady ?? null,
+      exactPersonCountReady: crmWriteApprovalPacket?.executiveSummary?.exactPersonCountReady ?? null,
+      internalSeedOrQaCount: crmWriteApprovalPacket?.approvalBoundary?.observedEventsSummary?.internalSeedOrQaCount ?? null,
+    },
+    approvalQueue: {
+      path: paths.approvalQueue,
+      markdownPath: paths.approvalQueueMarkdown,
+      status: approvalQueue?.status ?? null,
+      ok: approvalQueue?.ok ?? null,
+      readyApprovalRequestCount: approvalQueue?.executiveSummary?.readyApprovalRequestCount ?? null,
+      blockedApprovalRequestCount: approvalQueue?.executiveSummary?.blockedApprovalRequestCount ?? null,
+      openLiveMutationGateCount: approvalQueue?.executiveSummary?.openLiveMutationGateCount ?? null,
+    },
+    blockedGateHandoff: {
+      path: paths.blockedGateHandoff,
+      markdownPath: paths.blockedGateHandoffMarkdown,
+      status: blockedGateHandoff?.status ?? null,
+      ok: blockedGateHandoff?.ok ?? null,
+      inputNeededCount: blockedGateHandoff?.executiveSummary?.inputNeededCount ?? null,
+      openLiveMutationGateCount: blockedGateHandoff?.executiveSummary?.openLiveMutationGateCount ?? null,
+    },
+    missingInputsKit: {
+      path: paths.missingInputsKit,
+      markdownPath: paths.missingInputsKitMarkdown,
+      status: missingInputsKit?.status ?? null,
+      ok: missingInputsKit?.ok ?? null,
+      inputCount: missingInputsKit?.executiveSummary?.inputCount ?? null,
+      openLiveMutationGateCount: missingInputsKit?.executiveSummary?.openLiveMutationGateCount ?? null,
+    },
+    missingInputsIntake: {
+      path: paths.missingInputsIntake,
+      markdownPath: paths.missingInputsIntakeMarkdown,
+      status: missingInputsIntake?.status ?? null,
+      ok: missingInputsIntake?.ok ?? null,
+      readyInputCount: missingInputsIntake?.executiveSummary?.readyInputCount ?? null,
+      inputCount: missingInputsIntake?.executiveSummary?.inputCount ?? null,
+      readyForCrmApprovalRequest: missingInputsIntake?.executiveSummary?.readyForCrmApprovalRequest ?? null,
+      readyForMiniLaunchCorrectionPreview: missingInputsIntake?.executiveSummary?.readyForMiniLaunchCorrectionPreview ?? null,
+    },
+    missingInputsRequestBundle: {
+      path: paths.missingInputsRequestBundle,
+      markdownPath: paths.missingInputsRequestBundleMarkdown,
+      status: missingInputsRequestBundle?.status ?? null,
+      ok: missingInputsRequestBundle?.ok ?? null,
+      requestCount: missingInputsRequestBundle?.executiveSummary?.requestCount ?? null,
+      canAskApprovalNow: missingInputsRequestBundle?.executiveSummary?.canAskApprovalNow ?? null,
+    },
+    privateInputTemplatePack: {
+      path: paths.privateInputTemplatePack,
+      markdownPath: paths.privateInputTemplatePackMarkdown,
+      status: privateInputTemplatePack?.status ?? null,
+      ok: privateInputTemplatePack?.ok ?? null,
+      templateCount: privateInputTemplatePack?.executiveSummary?.templateCount ?? null,
+      writeExamples: privateInputTemplatePack?.executiveSummary?.writeExamples ?? null,
+    },
+    postInputOrchestrator: {
+      path: paths.postInputOrchestrator,
+      markdownPath: paths.postInputOrchestratorMarkdown,
+      status: postInputOrchestrator?.status ?? null,
+      ok: postInputOrchestrator?.ok ?? null,
+      readyCommandCount: postInputOrchestrator?.executiveSummary?.readyCommandCount ?? null,
+      commandsExecuted: postInputOrchestrator?.executiveSummary?.commandsExecuted ?? null,
+    },
+    continuationGuard: {
+      path: paths.continuationGuard,
+      markdownPath: paths.continuationGuardMarkdown,
+      status: continuationGuard?.status ?? null,
+      ok: continuationGuard?.ok ?? null,
+      openLiveMutationGateCount: continuationGuard?.executiveSummary?.openLiveMutationGateCount ?? null,
+      oldUiWorkClosed: continuationGuard?.executiveSummary?.oldUiWorkClosed ?? null,
+    },
     operatorRunbook: {
       path: paths.operatorRunbook,
       markdownPath: paths.operatorRunbookMarkdown,
@@ -445,7 +866,9 @@ const buildRefreshReceipt = ({
 }) => {
   const safety = buildSafety();
   const commandResults = [...validationResults, ...reportResults];
+  const generatedReportSet = Object.values(generatedReports);
   const ok = commandResults.every((result) => result.ok)
+    && generatedReportSet.every((report) => report.ok === true)
     && generatedReports.operatorRunbook.ok === true
     && generatedReports.goalAudit.ok === true
     && generatedReports.validationReceipt.ok === true
@@ -500,6 +923,15 @@ const renderMarkdown = (receipt) => [
   '',
   '## Generated Reports',
   '',
+  `- CRM write approval packet: ${receipt.generatedReports.crmWriteApprovalPacket.path}`,
+  `- Approval queue: ${receipt.generatedReports.approvalQueue.path}`,
+  `- Blocked-gate handoff: ${receipt.generatedReports.blockedGateHandoff.path}`,
+  `- Missing-inputs kit: ${receipt.generatedReports.missingInputsKit.path}`,
+  `- Missing-inputs intake: ${receipt.generatedReports.missingInputsIntake.path}`,
+  `- Missing-inputs request bundle: ${receipt.generatedReports.missingInputsRequestBundle.path}`,
+  `- Private-input template pack: ${receipt.generatedReports.privateInputTemplatePack.path}`,
+  `- Post-input orchestrator: ${receipt.generatedReports.postInputOrchestrator.path}`,
+  `- Continuation guard: ${receipt.generatedReports.continuationGuard.path}`,
   `- Operator runbook: ${receipt.generatedReports.operatorRunbook.path}`,
   `- Goal audit: ${receipt.generatedReports.goalAudit.path}`,
   `- Validation receipt: ${receipt.generatedReports.validationReceipt.path}`,
@@ -507,6 +939,9 @@ const renderMarkdown = (receipt) => [
   '',
   '## Confirmed Results',
   '',
+  `- CRM write approval: status=${receipt.generatedReports.crmWriteApprovalPacket.status}, exactEventCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactEventCountReady}, exactPersonCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactPersonCountReady}`,
+  `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
+  `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
   `- operator-runbook: status=${receipt.generatedReports.operatorRunbook.status}, openLiveGateCount=${receipt.generatedReports.operatorRunbook.openLiveGateCount}`,
   `- goal-audit: status=${receipt.generatedReports.goalAudit.status}, readyForLiveOperation=${receipt.generatedReports.goalAudit.readyForLiveOperation}, liveActionAllowedNow=${receipt.generatedReports.goalAudit.liveActionAllowedNow}`,
   `- validation-receipt: status=${receipt.generatedReports.validationReceipt.status}, validationStatus=${receipt.generatedReports.validationReceipt.validationStatus}, liveGatesClosed=${receipt.generatedReports.validationReceipt.liveGatesClosed}`,
@@ -623,6 +1058,11 @@ const main = async () => {
     generatedAt: receipt.generatedAt,
     testFiles: receipt.validation.testFiles,
     testCount: receipt.validation.testCount,
+    crmWriteApprovalPacketStatus: receipt.generatedReports.crmWriteApprovalPacket.status,
+    missingInputsIntakeStatus: receipt.generatedReports.missingInputsIntake.status,
+    readyInputCount: receipt.generatedReports.missingInputsIntake.readyInputCount,
+    inputCount: receipt.generatedReports.missingInputsIntake.inputCount,
+    continuationGuardStatus: receipt.generatedReports.continuationGuard.status,
     operatorRunbookStatus: receipt.generatedReports.operatorRunbook.status,
     openLiveGateCount: receipt.generatedReports.operatorRunbook.openLiveGateCount,
     goalAuditStatus: receipt.generatedReports.goalAudit.status,

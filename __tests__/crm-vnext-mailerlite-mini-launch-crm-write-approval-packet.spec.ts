@@ -134,6 +134,18 @@ const realObservedEvent = {
   evidenceSourcePath: "/tmp/read-only-mailerlite-scan.json",
 };
 
+const internalSeedQaEvent = {
+  eventKind: "content_sent",
+  sourceKind: "mailerlite_seed_test",
+  channel: "email",
+  sourceId: "mailerlite:draft:E01:test-send",
+  observedAt: generatedAt,
+  email: "seed.person@example.com",
+  metrics: { launchId },
+  evidenceSourcePath: "/tmp/mailerlite_mini_launch_seed_test_execution_receipt.json",
+  tags: ["seed_test", "internal_qa"],
+};
+
 describe("CRM vNext MailerLite mini-launch CRM write approval packet", () => {
   test("normalizes default args and optional observed events file", () => {
     const parsed = parseArgs([
@@ -161,20 +173,23 @@ describe("CRM vNext MailerLite mini-launch CRM write approval packet", () => {
       label: "sample@example.invalid",
     });
     expect(isWritableObservedEvent(sample, launchId)).toBe(false);
+    expect(isWritableObservedEvent(internalSeedQaEvent, launchId)).toBe(false);
     expect(isWritableObservedEvent(realObservedEvent, launchId)).toBe(true);
   });
 
   test("summarizes exact writable event and person counts", () => {
     const summary = summarizeObservedEvents([
       eventContract.sampleSignalEvents[0],
+      internalSeedQaEvent,
       realObservedEvent,
     ], launchId);
 
     expect(summary).toMatchObject({
       supplied: true,
-      total: 2,
+      total: 3,
       writableCount: 1,
-      rejectedCount: 1,
+      rejectedCount: 2,
+      internalSeedOrQaCount: 1,
       exactPersonCount: 1,
       exactPeople: ["persona@example.com"],
       allWritable: false,

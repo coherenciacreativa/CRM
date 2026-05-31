@@ -41,6 +41,12 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.operatorRunbook).toBe(
       "/tmp/mantis-reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchCrmWriteApprovalPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
+    expect(plan.paths.privateObservedEventsFile).toBe(
+      "/tmp/mantis-reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json",
+    );
     expect(plan.paths.goalAudit).toBe(
       "/tmp/mantis-reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json",
     );
@@ -51,13 +57,20 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
       "/tmp/mantis-reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json",
     );
     expect(commands).toContain("crm-vnext-mailerlite-launch-os-current-state-refresh.mjs");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
+    expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle");
+    expect(commands).toContain("crm:vnext:mailerlite-launch-os-post-input-orchestrator");
+    expect(commands).toContain("crm:vnext:mailerlite-launch-os-continuation-guard");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-operator-runbook");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-goal-audit");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-validation-receipt");
+    expect(commands).toContain("mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json");
-    expect(commands).not.toContain("--write");
-    expect(commands).not.toContain("--execute");
+    expect(commands).toContain("--no-write-examples");
+    expect(commands).not.toMatch(/(^|\s)--write(\s|$)/u);
+    expect(commands).not.toMatch(/(^|\s)--execute(\s|$)/u);
     expect(assertLocalOnlyCommandPlan(plan)).toBe(true);
   });
 
@@ -127,6 +140,82 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
         testCount: 45,
       },
       generatedReports: {
+        crmWriteApprovalPacket: {
+          path: paths.miniLaunchCrmWriteApprovalPacket,
+          markdownPath: paths.miniLaunchCrmWriteApprovalPacketMarkdown,
+          status: "crm_write_approval_packet_blocked_missing_observed_events_no_live_changes",
+          ok: true,
+          exactEventCountReady: 0,
+          exactPersonCountReady: 0,
+          internalSeedOrQaCount: 0,
+        },
+        approvalQueue: {
+          path: paths.approvalQueue,
+          markdownPath: paths.approvalQueueMarkdown,
+          status: "mailerlite_launch_os_approval_queue_ready_no_live_changes",
+          ok: true,
+          readyApprovalRequestCount: 0,
+          blockedApprovalRequestCount: 1,
+          openLiveMutationGateCount: 0,
+        },
+        blockedGateHandoff: {
+          path: paths.blockedGateHandoff,
+          markdownPath: paths.blockedGateHandoffMarkdown,
+          status: "blocked_gate_handoff_ready_no_live_changes",
+          ok: true,
+          inputNeededCount: 6,
+          openLiveMutationGateCount: 0,
+        },
+        missingInputsKit: {
+          path: paths.missingInputsKit,
+          markdownPath: paths.missingInputsKitMarkdown,
+          status: "missing_inputs_kit_ready_no_live_changes",
+          ok: true,
+          inputCount: 6,
+          openLiveMutationGateCount: 0,
+        },
+        missingInputsIntake: {
+          path: paths.missingInputsIntake,
+          markdownPath: paths.missingInputsIntakeMarkdown,
+          status: "missing_inputs_intake_waiting_for_inputs_no_live_changes",
+          ok: true,
+          readyInputCount: 0,
+          inputCount: 6,
+          readyForCrmApprovalRequest: false,
+          readyForMiniLaunchCorrectionPreview: false,
+        },
+        missingInputsRequestBundle: {
+          path: paths.missingInputsRequestBundle,
+          markdownPath: paths.missingInputsRequestBundleMarkdown,
+          status: "missing_inputs_request_bundle_ready_no_live_changes",
+          ok: true,
+          requestCount: 6,
+          canAskApprovalNow: false,
+        },
+        privateInputTemplatePack: {
+          path: paths.privateInputTemplatePack,
+          markdownPath: paths.privateInputTemplatePackMarkdown,
+          status: "private_input_template_pack_ready_no_live_changes",
+          ok: true,
+          templateCount: 6,
+          writeExamples: false,
+        },
+        postInputOrchestrator: {
+          path: paths.postInputOrchestrator,
+          markdownPath: paths.postInputOrchestratorMarkdown,
+          status: "post_input_orchestrator_waiting_for_inputs_no_live_changes",
+          ok: true,
+          readyCommandCount: 0,
+          commandsExecuted: false,
+        },
+        continuationGuard: {
+          path: paths.continuationGuard,
+          markdownPath: paths.continuationGuardMarkdown,
+          status: "mailerlite_launch_os_continuation_guard_ready_no_live_changes",
+          ok: true,
+          openLiveMutationGateCount: 0,
+          oldUiWorkClosed: true,
+        },
         operatorRunbook: {
           path: paths.operatorRunbook,
           markdownPath: paths.operatorRunbookMarkdown,

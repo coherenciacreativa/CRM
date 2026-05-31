@@ -132,8 +132,8 @@ const seedApprovalCommand = (seedSendApproval) =>
   seedSendApproval?.inputRequest?.nextLocalCommandAfterSeedRecipient
   ?? `npm run crm:vnext:mailerlite-mini-launch-seed-send-approval-packet -- --seed-email-file <private_seed_email_file> --out ${DEFAULT_SEED_SEND_APPROVAL} --markdown-out ${markdownPathFor(DEFAULT_SEED_SEND_APPROVAL)}`;
 
-const crmApprovalCommand = (observedEventsFile) =>
-  `npm run crm:vnext:mailerlite-mini-launch-crm-write-approval-packet -- --observed-events-file ${observedEventsFile} --out ${DEFAULT_CRM_WRITE_APPROVAL} --markdown-out ${markdownPathFor(DEFAULT_CRM_WRITE_APPROVAL)}`;
+const crmApprovalCommand = (observedEventsFile, crmWriteApprovalPath = DEFAULT_CRM_WRITE_APPROVAL) =>
+  `npm run crm:vnext:mailerlite-mini-launch-crm-write-approval-packet -- --observed-events-file ${observedEventsFile} --out ${crmWriteApprovalPath} --markdown-out ${markdownPathFor(crmWriteApprovalPath)}`;
 
 const correctionIntakeCommand = (correctionInputsFile) =>
   `npm run crm:vnext:mailerlite-launch-os-missing-inputs-intake -- --correction-inputs-file ${correctionInputsFile}`;
@@ -201,6 +201,7 @@ const buildInputRequests = ({
   seedInboxCorrectionPlan,
   privateSeedEmailFile,
   observedEventsFile,
+  crmWriteApprovalPath = DEFAULT_CRM_WRITE_APPROVAL,
   correctionInputsFile = DEFAULT_CORRECTION_INPUTS_FILE,
 }) => {
   const inputs = inputById(handoff);
@@ -236,7 +237,7 @@ const buildInputRequests = ({
       templatePathSuggestion: observedEventsFile,
       sampleOnly: true,
       mustReplaceBeforeUse: true,
-      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile),
+      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile, crmWriteApprovalPath),
       approvalEffect: 'does_not_approve_crm_writes',
     },
     {
@@ -252,7 +253,7 @@ const buildInputRequests = ({
       templatePathSuggestion: observedEventsFile,
       sampleOnly: true,
       mustReplaceBeforeUse: true,
-      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile),
+      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile, crmWriteApprovalPath),
       approvalEffect: 'does_not_approve_crm_writes',
     },
     {
@@ -265,10 +266,10 @@ const buildInputRequests = ({
         ?? 'Rerun CRM write approval packet after observed events exist.',
       privacy: 'derived_no_live_report',
       captureMode: 'rerun_crm_write_approval_packet',
-      templatePathSuggestion: DEFAULT_CRM_WRITE_APPROVAL,
+      templatePathSuggestion: crmWriteApprovalPath,
       sampleOnly: false,
       mustReplaceBeforeUse: false,
-      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile),
+      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile, crmWriteApprovalPath),
       approvalEffect: 'does_not_approve_crm_writes',
     },
     {
@@ -284,7 +285,7 @@ const buildInputRequests = ({
       templatePathSuggestion: observedEventsFile,
       sampleOnly: true,
       mustReplaceBeforeUse: true,
-      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile),
+      nextLocalCommandAfterInput: crmApprovalCommand(observedEventsFile, crmWriteApprovalPath),
       approvalEffect: 'does_not_approve_fact_store_write',
     },
   ];
@@ -364,9 +365,14 @@ const buildTemplates = ({ privateSeedEmailFile, observedEventsFile, correctionIn
   },
 });
 
-const buildPostInputCommands = ({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }) => [
+const buildPostInputCommands = ({
+  privateSeedEmailFile,
+  observedEventsFile,
+  crmWriteApprovalPath = DEFAULT_CRM_WRITE_APPROVAL,
+  correctionInputsFile,
+}) => [
   seedApprovalCommand({}).replace('<private_seed_email_file>', privateSeedEmailFile),
-  crmApprovalCommand(observedEventsFile),
+  crmApprovalCommand(observedEventsFile, crmWriteApprovalPath),
   correctionIntakeCommand(correctionInputsFile),
   `npm run crm:vnext:mailerlite-launch-os-blocked-gate-handoff -- --out ${DEFAULT_BLOCKED_GATE_HANDOFF} --markdown-out ${markdownPathFor(DEFAULT_BLOCKED_GATE_HANDOFF)}`,
   `npm run crm:vnext:mailerlite-launch-os-operator-runbook -- --out ${DEFAULT_RUNBOOK} --markdown-out ${markdownPathFor(DEFAULT_RUNBOOK)}`,
@@ -383,6 +389,7 @@ const buildMissingInputsKit = ({
   sourceDigests = [],
   privateSeedEmailFile = DEFAULT_PRIVATE_SEED_EMAIL_FILE,
   observedEventsFile = DEFAULT_OBSERVED_EVENTS_FILE,
+  crmWriteApprovalPath = DEFAULT_CRM_WRITE_APPROVAL,
   correctionInputsFile = DEFAULT_CORRECTION_INPUTS_FILE,
   generatedAt = new Date().toISOString(),
 }) => {
@@ -393,6 +400,7 @@ const buildMissingInputsKit = ({
     seedInboxCorrectionPlan,
     privateSeedEmailFile,
     observedEventsFile,
+    crmWriteApprovalPath,
     correctionInputsFile,
   });
   const seedInputCount = inputRequests.filter((input) => input.gateId === 'mini_launch_seed_send').length;
@@ -424,7 +432,12 @@ const buildMissingInputsKit = ({
     },
     inputRequests,
     templates: buildTemplates({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }),
-    postInputCommands: buildPostInputCommands({ privateSeedEmailFile, observedEventsFile, correctionInputsFile }),
+    postInputCommands: buildPostInputCommands({
+      privateSeedEmailFile,
+      observedEventsFile,
+      crmWriteApprovalPath,
+      correctionInputsFile,
+    }),
     hardStops: [
       'This kit is not an approval phrase and cannot execute any send or write.',
       'Do not create the private seed recipient file from this kit unless Alejandro supplies the exact address.',
@@ -519,6 +532,7 @@ const buildFromFiles = async (options) => {
     runbook: runbookEntry.value,
     privateSeedEmailFile: options.privateSeedEmailFile,
     observedEventsFile: options.observedEventsFile,
+    crmWriteApprovalPath: options.crmWriteApproval,
     correctionInputsFile: options.correctionInputsFile,
     sourceDigests: [
       { id: 'blockedGateHandoff', ...handoffEntry.digest },

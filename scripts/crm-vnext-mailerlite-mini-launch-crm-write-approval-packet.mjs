@@ -152,6 +152,23 @@ const isSampleIdentity = (identity) =>
   || identity.instagramHandle === 'sample_handle'
   || identity.personId === 'sample_person';
 
+const normalizedEventSignals = (event) => [
+  event?.sourceKind,
+  event?.audienceScope,
+  event?.recipientScope,
+  event?.executionScope,
+  event?.evidenceSourcePath,
+  event?.testMode === true ? 'test_mode_true' : null,
+  event?.internalQa === true ? 'internal_qa_true' : null,
+  event?.seedTest === true ? 'seed_test_true' : null,
+  ...(Array.isArray(event?.tags) ? event.tags : []),
+].map(cleanString).filter(Boolean).map((value) => value.toLowerCase());
+
+const isInternalSeedOrQaEvent = (event) =>
+  normalizedEventSignals(event).some((value) =>
+    /(^|[_:/.-])(seed|seed-test|seed_test|test-mode|test_mode|internal-qa|internal_qa|qa|verification)([_:/.-]|$)/u
+      .test(value));
+
 const isWritableObservedEvent = (event, launchId) => {
   const identity = identityForEvent(event);
   return cleanString(event?.eventKind)
@@ -160,7 +177,8 @@ const isWritableObservedEvent = (event, launchId) => {
     && cleanString(event?.sourceId)
     && cleanString(event?.observedAt)
     && eventLaunchId(event) === launchId
-    && !isSampleIdentity(identity);
+    && !isSampleIdentity(identity)
+    && !isInternalSeedOrQaEvent(event);
 };
 
 const observedEventsFrom = (payload) => {
@@ -194,6 +212,7 @@ const summarizeObservedEvents = (events, launchId) => {
     total: events.length,
     writableCount: writable.length,
     rejectedCount: rejected.length,
+    internalSeedOrQaCount: events.filter(isInternalSeedOrQaEvent).length,
     exactPersonCount: identities.length,
     exactPeople: identities,
     eventKinds,
@@ -517,6 +536,8 @@ const buildCrmWriteApprovalPacket = ({
         'email or instagramHandle or personId',
         'evidenceSourcePath or equivalent provenance',
       ],
+      internalSeedOrQaEventsWritable: false,
+      internalSeedOrQaRule: 'Seed tests, internal QA, verification emails and Gmail readback reports are evidence for QA receipts only; they are not real CRM observed events for ledger/card/scoring/Fact Store writes.',
     },
     writeFamilies,
     approvalBoundary,

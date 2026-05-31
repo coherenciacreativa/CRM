@@ -123,6 +123,33 @@ const validObservedEventsPayload = {
   },
 };
 
+const internalSeedObservedEventsPayload = {
+  events: [
+    {
+      eventKind: "content_sent",
+      sourceKind: "mailerlite_seed_test",
+      channel: "email",
+      sourceId: "mailerlite:draft:E01:test-send",
+      observedAt: "2026-05-31T01:28:34.000Z",
+      metrics: {
+        launchId: "mini_2026_06_rehearsal_inteligencia_para_descansar",
+      },
+      email: "seed.person@example.com",
+      evidenceSourcePath: "/Users/example/mailerlite_mini_launch_seed_test_execution_receipt.json",
+      tags: ["seed_test", "internal_qa"],
+    },
+  ],
+  factStoreMarketReview: {
+    reviewed: true,
+    facts: [
+      {
+        factKind: "aggregate_launch_signal",
+        summary: "Internal seed test arrived.",
+      },
+    ],
+  },
+};
+
 describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
   test("normalizes default args and private paths", () => {
     const parsed = parseArgs([
@@ -225,6 +252,44 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
       ready: true,
       exactFactsStoredInReport: false,
     });
+  });
+
+  test("rejects internal seed QA events as real CRM observations", () => {
+    const summary = summarizeObservedEvents({
+      payload: internalSeedObservedEventsPayload,
+      launchId: "mini_2026_06_rehearsal_inteligencia_para_descansar",
+    });
+    const report = buildMissingInputsIntake({
+      missingInputsKit,
+      operatorRunbook,
+      crmWriteApprovalPacket,
+      seedEmailRead: {
+        present: true,
+        content: "seed.person@example.com\n",
+        error: null,
+      },
+      seedEmailFile: "/tmp/private/seed.txt",
+      observedEventsRead: {
+        present: true,
+        value: internalSeedObservedEventsPayload,
+        error: null,
+        chars: 100,
+      },
+      observedEventsFile: "/tmp/private/events.json",
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(summary.eventCount).toBe(1);
+    expect(summary.writableCount).toBe(0);
+    expect(summary.rejectedCount).toBe(1);
+    expect(summary.exactPersonCount).toBe(0);
+    expect(summary.events[0].issues).toContain("internal_seed_or_qa_event_not_real_crm_observation");
+    expect(report.executiveSummary.readyForCrmWritePacketRegeneration).toBe(true);
+    expect(report.executiveSummary.readyForCrmApprovalRequest).toBe(false);
+    expect(report.inputStates.find((state) => state.id === "writable_event_screen")?.blockers).toContain(
+      "writable_event_screen_not_green",
+    );
+    expect(JSON.stringify(report)).not.toContain("seed.person@example.com");
   });
 
   test("marks all inputs ready when redacted seed and observed events are valid", () => {

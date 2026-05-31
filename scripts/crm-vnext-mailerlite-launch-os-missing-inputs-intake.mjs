@@ -319,6 +319,23 @@ const isSampleIdentity = (identity) =>
   || identity.value === 'sample_handle'
   || identity.value === 'sample_person';
 
+const normalizedEventSignals = (event) => [
+  event?.sourceKind,
+  event?.audienceScope,
+  event?.recipientScope,
+  event?.executionScope,
+  event?.evidenceSourcePath,
+  event?.testMode === true ? 'test_mode_true' : null,
+  event?.internalQa === true ? 'internal_qa_true' : null,
+  event?.seedTest === true ? 'seed_test_true' : null,
+  ...(Array.isArray(event?.tags) ? event.tags : []),
+].map(cleanString).filter(Boolean).map((value) => value.toLowerCase());
+
+const isInternalSeedOrQaEvent = (event) =>
+  normalizedEventSignals(event).some((value) =>
+    /(^|[_:/.-])(seed|seed-test|seed_test|test-mode|test_mode|internal-qa|internal_qa|qa|verification)([_:/.-]|$)/u
+      .test(value));
+
 const requiredEventFields = ['eventKind', 'sourceKind', 'channel', 'sourceId', 'observedAt'];
 
 const eventIssues = (event, launchId) => {
@@ -330,6 +347,7 @@ const eventIssues = (event, launchId) => {
     ...(eventLaunchId(event) === launchId ? [] : ['launch_id_mismatch_or_missing']),
     ...(identity.value ? [] : ['exact_identity_missing']),
     ...(isSampleIdentity(identity) ? ['sample_or_placeholder_identity'] : []),
+    ...(isInternalSeedOrQaEvent(event) ? ['internal_seed_or_qa_event_not_real_crm_observation'] : []),
   ];
 };
 
