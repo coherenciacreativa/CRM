@@ -317,6 +317,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(report.executiveSummary.readyForMiniLaunchCorrectionPreview).toBe(true);
     expect(report.executiveSummary.nextSafeAction).toBe("prepare_local_corrected_payload_preview_without_ui_or_send");
     expect(report.postInputCommands.miniLaunchCorrectionIntake).toContain("--correction-inputs-file /tmp/private/correction-inputs.json");
+    expect(report.postInputCommands.miniLaunchCorrectionPreview).toContain("mailerlite-mini-launch-seed-inbox-correction-preview");
+    expect(report.postInputCommands.miniLaunchCorrectionPreview).toContain("--correction-inputs-file /tmp/private/correction-inputs.json");
     expect(report.correctionInputs.subscriptionReasonPolicy.policy).toBe("include_once_in_all_emails");
     expect(serialized).not.toContain("https://example.com/result");
     expect(serialized).not.toContain("https://example.com/practice");

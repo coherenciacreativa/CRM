@@ -1995,6 +1995,60 @@ Next safe move:
 - Collect the correction inputs through the missing-inputs request bundle, then rerun the redacted intake.
 - If those correction inputs become ready, prepare only a local corrected payload preview; stop again before any MailerLite UI edit, test send or public/audience send approval.
 
+## Launch OS v0 seed inbox correction preview runner checkpoint - 2026-05-31
+
+Status: active goal, local-only correction preview runner added, preview currently blocked by missing inputs, no live actions authorized.
+
+Evidence:
+
+- Correction preview report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+- Correction preview markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md`
+- Refreshed missing-inputs intake: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json`
+- Refreshed post-input orchestrator: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_current_2026-05-31.json`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.mjs`
+- Package command: `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview`
+
+Confirmed results:
+
+- correction-preview: `status=seed_inbox_correction_preview_blocked_missing_inputs_no_live_changes`
+- correction-preview: `finalPublicLinksReady=false`
+- correction-preview: `subscriptionReasonPolicyReady=false`
+- correction-preview: `redactedPayloadManifestWritten=false`
+- correction-preview: `canAskMailerLiteUiEditApprovalNow=false`
+- correction-preview: `canAskPublicSendApprovalNow=false`
+- missing-inputs intake: `readyForMiniLaunchCorrectionPreview=false`
+- post-input orchestrator: `readyForMiniLaunchCorrectionPreview=false`, `readyCommandCount=0`
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Subscribers, groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Exact final public URLs stored in shared report: false.
+
+What is proven:
+
+- The system now has a local-only correction preview lane between input intake and any future MailerLite UI edit approval.
+- When the private correction inputs are missing, the runner blocks and writes only a redacted report.
+- The post-input orchestrator can expose the correction preview command only after `readyForMiniLaunchCorrectionPreview=true`.
+- Focused validation passed for the correction preview, missing-inputs intake, post-input orchestrator and validation receipt tests: 4 files / 19 tests.
+
+What remains partial or pending:
+
+- The preview is not ready because `final_public_links` and `subscription_reason_policy` are still missing.
+- No redacted corrected payload manifest has been written yet.
+- No MailerLite UI edit approval is askable yet.
+- No additional test send or public/audience send approval is askable yet.
+
+Next safe move:
+
+- Collect `result_or_resource_link`, `practice_link`, `editorial_note_link` and one subscription policy value in the private correction-input JSON.
+- Rerun missing-inputs intake, then run the correction preview runner. If it becomes green, run local render/text QA on the redacted payload preview.
+- Stop before asking for any MailerLite UI edit, additional test send or public/audience send approval.
+
 ## Current recommendation
 
 Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: collect `final_public_links` plus `subscription_reason_policy` through the request bundle before any MailerLite UI edit approval. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

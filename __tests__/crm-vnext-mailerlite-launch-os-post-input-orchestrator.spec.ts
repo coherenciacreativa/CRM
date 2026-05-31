@@ -24,11 +24,13 @@ const waitingIntake = {
     readyInputCount: 0,
     readyForSeedApprovalPacket: false,
     readyForCrmWritePacketRegeneration: false,
+    readyForMiniLaunchCorrectionPreview: false,
     canAskApprovalNow: false,
   },
   postInputCommands: {
     seedApprovalPacket: null,
     crmWriteApprovalPacket: null,
+    miniLaunchCorrectionPreview: null,
   },
 };
 
@@ -39,11 +41,13 @@ const readyIntake = {
     readyInputCount: 5,
     readyForSeedApprovalPacket: true,
     readyForCrmWritePacketRegeneration: true,
+    readyForMiniLaunchCorrectionPreview: true,
     canAskApprovalNow: false,
   },
   postInputCommands: {
     seedApprovalPacket: "npm run crm:vnext:mailerlite-mini-launch-seed-send-approval-packet -- --seed-email-file /tmp/private/seed.txt --out /tmp/seed.json",
     crmWriteApprovalPacket: "npm run crm:vnext:mailerlite-mini-launch-crm-write-approval-packet -- --observed-events-file /tmp/private/events.json --out /tmp/crm.json",
+    miniLaunchCorrectionPreview: "npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview -- --correction-inputs-file /tmp/private/correction-inputs.json",
   },
 };
 
@@ -102,16 +106,17 @@ describe("CRM vNext MailerLite Launch OS post-input orchestrator", () => {
       generatedAt: "2026-05-28T00:00:00.000Z",
     });
 
-    expect(actionPlan.readyCommandCount).toBe(2);
+    expect(actionPlan.readyCommandCount).toBe(3);
     expect(actionPlan.allReadyCommandsAllowed).toBe(true);
     expect(actionPlan.commands.map((command) => command.id)).toEqual([
       "regenerate_seed_send_approval_packet",
       "regenerate_crm_write_approval_packet",
+      "prepare_mini_launch_seed_inbox_correction_preview",
     ]);
     expect(report.status).toBe("post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes");
     expect(report.executiveSummary).toMatchObject({
       readyInputCount: 5,
-      readyCommandCount: 2,
+      readyCommandCount: 3,
       canAskApprovalNow: false,
       commandsExecuted: false,
       nextSafeAction: "operator_may_run_listed_local_packet_regeneration_commands_then_refresh_control_room",
@@ -121,6 +126,7 @@ describe("CRM vNext MailerLite Launch OS post-input orchestrator", () => {
 
   test("rejects non-whitelisted command families", () => {
     expect(commandAllowed("npm run crm:vnext:mailerlite-mini-launch-seed-send-approval-packet -- --seed-email-file /tmp/seed.txt")).toBe(true);
+    expect(commandAllowed("npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview -- --correction-inputs-file /tmp/private/correction-inputs.json")).toBe(true);
     expect(commandAllowed("npm run crm:vnext:mailerlite-mini-launch-empty-group-create -- --execute")).toBe(false);
     expect(commandAllowed("curl https://example.com")).toBe(false);
     expect(buildSafety()).toMatchObject({

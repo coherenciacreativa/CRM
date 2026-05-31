@@ -201,6 +201,9 @@ const finalPublicLinksFrom = (payload) =>
   ?? payload?.links
   ?? null;
 
+const correctionPreviewCommand = (correctionInputsFile) =>
+  `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview -- --correction-inputs-file ${correctionInputsFile}`;
+
 const subscriptionReasonPolicyFrom = (payload) =>
   cleanString(payload?.subscriptionReasonPolicy)
   ?? cleanString(payload?.subscription_reason_policy)
@@ -614,6 +617,9 @@ const buildMissingInputsIntake = ({
         : null,
       miniLaunchCorrectionIntake: correctionInputStates.length > 0
         ? missingInputsKit?.inputRequests?.find((input) => input.id === 'final_public_links')?.nextLocalCommandAfterInput ?? null
+        : null,
+      miniLaunchCorrectionPreview: readyForMiniLaunchCorrectionPreview
+        ? correctionPreviewCommand(correctionInputsFile)
         : null,
     },
     hardStops: [

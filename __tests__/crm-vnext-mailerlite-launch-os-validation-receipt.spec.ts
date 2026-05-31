@@ -241,6 +241,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-seed-send-approval-packet": "node scripts/seed-send-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/seed-test-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-plan": "node scripts/seed-inbox-correction-plan.mjs",
+    "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview": "node scripts/seed-inbox-correction-preview.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-policy-packet": "node scripts/crm-write-policy-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-write-approval-packet.mjs",
   },

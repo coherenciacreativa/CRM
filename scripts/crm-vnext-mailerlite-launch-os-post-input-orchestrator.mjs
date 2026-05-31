@@ -93,6 +93,7 @@ const commandAllowed = (command) => {
   const allowedScripts = [
     'crm:vnext:mailerlite-mini-launch-seed-send-approval-packet',
     'crm:vnext:mailerlite-mini-launch-crm-write-approval-packet',
+    'crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview',
     'crm:vnext:mailerlite-launch-os-missing-inputs-intake',
     'crm:vnext:mailerlite-launch-os-blocked-gate-handoff',
     'crm:vnext:mailerlite-launch-os-operator-runbook',
@@ -106,6 +107,7 @@ const buildActionPlan = ({ intake }) => {
   const commands = [];
   const seedCommand = intake?.postInputCommands?.seedApprovalPacket ?? null;
   const crmCommand = intake?.postInputCommands?.crmWriteApprovalPacket ?? null;
+  const miniLaunchCorrectionCommand = intake?.postInputCommands?.miniLaunchCorrectionPreview ?? null;
 
   if (intake?.executiveSummary?.readyForSeedApprovalPacket === true && seedCommand) {
     commands.push({
@@ -125,6 +127,17 @@ const buildActionPlan = ({ intake }) => {
       command: crmCommand,
       allowedByOrchestrator: commandAllowed(crmCommand),
       effect: 'local_packet_regeneration_only',
+      stillRequiresLaterApproval: true,
+    });
+  }
+
+  if (intake?.executiveSummary?.readyForMiniLaunchCorrectionPreview === true && miniLaunchCorrectionCommand) {
+    commands.push({
+      id: 'prepare_mini_launch_seed_inbox_correction_preview',
+      gateId: 'mini_launch_seed_inbox_correction',
+      command: miniLaunchCorrectionCommand,
+      allowedByOrchestrator: commandAllowed(miniLaunchCorrectionCommand),
+      effect: 'local_redacted_corrected_payload_preview_only',
       stillRequiresLaterApproval: true,
     });
   }
@@ -179,6 +192,7 @@ const buildPostInputOrchestrator = ({
       readyInputCount,
       readyForSeedApprovalPacket: intake?.executiveSummary?.readyForSeedApprovalPacket ?? false,
       readyForCrmWritePacketRegeneration: intake?.executiveSummary?.readyForCrmWritePacketRegeneration ?? false,
+      readyForMiniLaunchCorrectionPreview: intake?.executiveSummary?.readyForMiniLaunchCorrectionPreview ?? false,
       readyCommandCount: actionPlan.readyCommandCount,
       allReadyCommandsAllowed: actionPlan.allReadyCommandsAllowed,
       canAskApprovalNow: false,
@@ -191,7 +205,8 @@ const buildPostInputOrchestrator = ({
     actionPlan,
     hardStops: [
       'This orchestrator report does not execute commands.',
-      'Packet regeneration is not approval for seed sends or CRM writes.',
+      'Packet regeneration is not approval for seed sends, CRM writes or MailerLite UI edits.',
+      'A correction preview is not approval for another test send or public/audience send.',
       'Do not run listed commands if the intake still reports missing or invalid private inputs.',
       'Do not paste exact private seed emails, people or facts into shared reports.',
       'Live MailerLite, Shopify, CRM, subscriber, workflow, send, ledger, card, scoring and Fact Store actions remain closed.',
@@ -209,6 +224,7 @@ const renderMarkdown = (report) => [
   `Generated: ${report.generatedAt}`,
   `Status: ${report.status}`,
   `Inputs ready: ${report.executiveSummary.readyInputCount}/${report.executiveSummary.inputCount ?? 'unknown'}`,
+  `Ready for mini-launch correction preview: ${report.executiveSummary.readyForMiniLaunchCorrectionPreview}`,
   `Ready commands: ${report.executiveSummary.readyCommandCount}`,
   `Can ask approval now: ${report.executiveSummary.canAskApprovalNow}`,
   `Commands executed: ${report.executiveSummary.commandsExecuted}`,
