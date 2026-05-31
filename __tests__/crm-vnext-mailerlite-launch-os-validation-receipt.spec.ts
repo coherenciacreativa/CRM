@@ -223,6 +223,7 @@ const packageJson = {
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-goal-audit": "node scripts/audit.mjs",
     "crm:vnext:mailerlite-launch-os-validation-receipt": "node scripts/validation-receipt.mjs",
+    "crm:vnext:mailerlite-launch-os-current-state-refresh": "node scripts/current-state-refresh.mjs",
     "crm:vnext:mailerlite-brujula-email-manual-ui-build-receipt": "node scripts/brujula-manual-ui-build-receipt.mjs",
     "crm:vnext:mailerlite-brujula-real-mailerlite-render-qa": "node scripts/brujula-real-render-qa.mjs",
     "crm:vnext:mailerlite-onboarding-trunk-map": "node scripts/trunk-map.mjs",
