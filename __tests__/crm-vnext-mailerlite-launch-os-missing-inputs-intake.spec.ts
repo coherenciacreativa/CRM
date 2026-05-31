@@ -159,6 +159,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
       "/tmp/private/events.json",
       "--correction-inputs-file",
       "/tmp/private/correction-inputs.json",
+      "--launch-asset-manifest",
+      "/tmp/asset-manifest.json",
       "--out",
       "/tmp/intake.json",
       "--markdown-out",
@@ -171,6 +173,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(parsed.seedEmailFile).toBe("/tmp/private/seed.txt");
     expect(parsed.observedEventsFile).toBe("/tmp/private/events.json");
     expect(parsed.correctionInputsFile).toBe("/tmp/private/correction-inputs.json");
+    expect(parsed.launchAssetManifest).toBe("/tmp/asset-manifest.json");
     expect(parsed.out).toBe("/tmp/intake.json");
     expect(parsed.markdownOut).toBe("/tmp/intake.md");
   });
@@ -388,5 +391,92 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(serialized).not.toContain("https://example.com/result");
     expect(serialized).not.toContain("https://example.com/practice");
     expect(serialized).not.toContain("https://example.com/editorial");
+  });
+
+  test("uses launch asset manifest to default footer policy without asking Alejandro for routine links", () => {
+    const launchAssetManifest = {
+      status: "mini_launch_asset_manifest_waiting_for_web_public_urls_no_live_changes",
+      executiveSummary: {
+        finalPublicLinksReady: false,
+        requiresAlejandroManualLinks: false,
+        subscriptionReasonPolicy: "remove_custom_line_and_rely_on_platform_footer",
+      },
+      finalPublicLinks: {
+        status: "system_pending_public_urls_no_live_changes",
+        blockers: ["public_shopify_url_missing"],
+      },
+      subscriptionReasonPolicy: {
+        status: "ready_no_live_changes",
+        policy: "remove_custom_line_and_rely_on_platform_footer",
+      },
+    };
+    const correctionState = buildCorrectionInputsState({
+      path: "/tmp/private/correction-inputs.json",
+      read: {
+        present: false,
+        value: null,
+        error: null,
+        chars: 0,
+      },
+      launchAssetManifestRead: {
+        present: true,
+        value: launchAssetManifest,
+        error: null,
+        chars: 400,
+      },
+      launchAssetManifestFile: "/tmp/asset-manifest.json",
+    });
+    const report = buildMissingInputsIntake({
+      missingInputsKit: missingInputsKitWithCorrection,
+      operatorRunbook,
+      crmWriteApprovalPacket,
+      seedEmailRead: {
+        present: true,
+        content: "seed.person@example.com\n",
+        error: null,
+      },
+      seedEmailFile: "/tmp/private/seed.txt",
+      observedEventsRead: {
+        present: true,
+        value: validObservedEventsPayload,
+        error: null,
+        chars: 100,
+      },
+      observedEventsFile: "/tmp/private/events.json",
+      correctionInputsRead: {
+        present: false,
+        value: null,
+        error: null,
+        chars: 0,
+      },
+      correctionInputsFile: "/tmp/private/correction-inputs.json",
+      launchAssetManifestRead: {
+        present: true,
+        value: launchAssetManifest,
+        error: null,
+        chars: 400,
+      },
+      launchAssetManifestFile: "/tmp/asset-manifest.json",
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(correctionState.finalPublicLinks.status).toBe("system_pending_public_urls_no_live_changes");
+    expect(correctionState.finalPublicLinks.source).toBe("launch_asset_manifest_pending_public_urls");
+    expect(correctionState.finalPublicLinks.humanInputRequired).toBe(false);
+    expect(correctionState.subscriptionReasonPolicy.status).toBe("ready_no_live_changes");
+    expect(correctionState.subscriptionReasonPolicy.policy).toBe("remove_custom_line_and_rely_on_platform_footer");
+    expect(correctionState.subscriptionReasonPolicy.humanInputRequired).toBe(false);
+    expect(report.executiveSummary.readyInputCount).toBe(6);
+    expect(report.executiveSummary.readyForMiniLaunchCorrectionPreview).toBe(false);
+    expect(report.executiveSummary.nextSafeAction).toBe(
+      "wait_for_web_or_shopify_publish_receipt_public_urls_without_approval_or_execution",
+    );
+    expect(report.inputStates.find((state) => state.id === "final_public_links")?.status).toBe(
+      "system_pending_public_urls_no_live_changes",
+    );
+    expect(report.inputStates.find((state) => state.id === "subscription_reason_policy")?.status).toBe(
+      "ready_no_live_changes",
+    );
+    expect(report.correctionInputs.launchAssetManifest.requiresAlejandroManualLinks).toBe(false);
   });
 });

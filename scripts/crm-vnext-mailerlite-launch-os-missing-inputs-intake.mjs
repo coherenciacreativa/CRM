@@ -12,6 +12,7 @@ const DEFAULT_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Manti
 const DEFAULT_PRIVATE_SEED_EMAIL_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_seed_recipient_inteligencia_descansar.txt';
 const DEFAULT_OBSERVED_EVENTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_CORRECTION_INPUTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_LAUNCH_ASSET_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json';
 const FINAL_PUBLIC_LINK_KEYS = ['result_or_resource_link', 'practice_link', 'editorial_note_link'];
 const ALLOWED_SUBSCRIPTION_REASON_POLICIES = [
   'include_once_in_all_emails',
@@ -28,6 +29,7 @@ Options:
   --seed-email-file <path>          Private seed email file. Defaults to ${DEFAULT_PRIVATE_SEED_EMAIL_FILE}
   --observed-events-file <path>     Private observed events JSON. Defaults to ${DEFAULT_OBSERVED_EVENTS_FILE}
   --correction-inputs-file <path>    Private correction inputs JSON. Defaults to ${DEFAULT_CORRECTION_INPUTS_FILE}
+  --launch-asset-manifest <path>     Local launch asset manifest JSON. Defaults to ${DEFAULT_LAUNCH_ASSET_MANIFEST}
   --out <path>                      Write JSON intake report
   --markdown-out <path>             Write Markdown intake report
   --help                            Show this help
@@ -47,6 +49,7 @@ const parseArgs = (argv) => {
     seedEmailFile: DEFAULT_PRIVATE_SEED_EMAIL_FILE,
     observedEventsFile: DEFAULT_OBSERVED_EVENTS_FILE,
     correctionInputsFile: DEFAULT_CORRECTION_INPUTS_FILE,
+    launchAssetManifest: DEFAULT_LAUNCH_ASSET_MANIFEST,
     out: null,
     markdownOut: null,
     help: false,
@@ -61,6 +64,7 @@ const parseArgs = (argv) => {
     else if (arg === '--seed-email-file') options.seedEmailFile = argv[++index];
     else if (arg === '--observed-events-file') options.observedEventsFile = argv[++index];
     else if (arg === '--correction-inputs-file') options.correctionInputsFile = argv[++index];
+    else if (arg === '--launch-asset-manifest') options.launchAssetManifest = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -126,6 +130,15 @@ const privateSourceStatus = ({ path, read, consultedFor }) => ({
   private: true,
   chars: read.chars ?? (read.content?.length ?? 0),
   sha256: null,
+  consultedFor,
+  error: read.error ?? null,
+});
+
+const localReportSourceStatus = ({ path, read, consultedFor }) => ({
+  path: resolve(path),
+  present: read.present,
+  private: false,
+  chars: read.chars ?? 0,
   consultedFor,
   error: read.error ?? null,
 });
@@ -201,8 +214,24 @@ const finalPublicLinksFrom = (payload) =>
   ?? payload?.links
   ?? null;
 
-const correctionPreviewCommand = (correctionInputsFile) =>
-  `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview -- --correction-inputs-file ${correctionInputsFile}`;
+const finalPublicLinksFromManifest = (assetManifest) => {
+  const direct = assetManifest?.finalPublicLinks?.links
+    ?? assetManifest?.finalPublicLinks?.exactLinks
+    ?? assetManifest?.finalPublicLinks?.urlByKey
+    ?? assetManifest?.exactFinalPublicLinks
+    ?? null;
+  if (direct) return direct;
+
+  const slots = assetManifest?.finalPublicLinks?.slots;
+  if (!Array.isArray(slots)) return null;
+  const links = Object.fromEntries(slots
+    .map((slot) => [cleanString(slot?.key), cleanString(slot?.publicUrl)])
+    .filter(([key, value]) => key && value));
+  return Object.keys(links).length > 0 ? links : null;
+};
+
+const correctionPreviewCommand = (correctionInputsFile, launchAssetManifest = DEFAULT_LAUNCH_ASSET_MANIFEST) =>
+  `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview -- --correction-inputs-file ${correctionInputsFile} --launch-asset-manifest ${launchAssetManifest}`;
 
 const subscriptionReasonPolicyFrom = (payload) =>
   cleanString(payload?.subscriptionReasonPolicy)
@@ -211,14 +240,44 @@ const subscriptionReasonPolicyFrom = (payload) =>
   ?? cleanString(payload?.policy)
   ?? null;
 
-const buildCorrectionInputsState = ({ path, read }) => {
+const subscriptionReasonPolicyFromManifest = (assetManifest) =>
+  cleanString(assetManifest?.subscriptionReasonPolicy?.policy)
+  ?? cleanString(assetManifest?.subscriptionReasonPolicy)
+  ?? cleanString(assetManifest?.executiveSummary?.subscriptionReasonPolicy)
+  ?? null;
+
+const buildCorrectionInputsState = ({
+  path,
+  read,
+  launchAssetManifestRead = { present: false, value: null, error: null, chars: 0 },
+  launchAssetManifestFile = DEFAULT_LAUNCH_ASSET_MANIFEST,
+}) => {
   const payload = read.present && read.value ? read.value : null;
-  const finalLinks = finalPublicLinksFrom(payload);
+  const assetManifest = launchAssetManifestRead.present && !launchAssetManifestRead.error
+    ? launchAssetManifestRead.value
+    : null;
+  const finalLinksFromCorrectionInputs = finalPublicLinksFrom(payload);
+  const finalLinksFromAssetManifest = finalPublicLinksFromManifest(assetManifest);
+  const finalLinks = finalLinksFromCorrectionInputs ?? finalLinksFromAssetManifest;
+  const finalLinksSource = finalLinksFromCorrectionInputs
+    ? 'correction_inputs_file'
+    : finalLinksFromAssetManifest
+      ? 'launch_asset_manifest'
+      : assetManifest?.finalPublicLinks
+        ? 'launch_asset_manifest_pending_public_urls'
+        : 'missing';
   const presentKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]));
   const missingKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => !cleanString(finalLinks?.[key]));
   const invalidKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]) && !looksSafeHttpUrl(finalLinks?.[key]));
-  const finalLinksReady = read.present && !read.error && missingKeys.length === 0 && invalidKeys.length === 0;
-  const policy = subscriptionReasonPolicyFrom(payload);
+  const finalLinksReady = Boolean(finalLinks) && missingKeys.length === 0 && invalidKeys.length === 0;
+  const policyFromCorrectionInputs = subscriptionReasonPolicyFrom(payload);
+  const policyFromManifest = subscriptionReasonPolicyFromManifest(assetManifest);
+  const policy = policyFromCorrectionInputs ?? policyFromManifest;
+  const policySource = policyFromCorrectionInputs
+    ? 'correction_inputs_file'
+    : policyFromManifest
+      ? 'launch_asset_manifest_default'
+      : 'missing';
   const policyValid = Boolean(policy) && ALLOWED_SUBSCRIPTION_REASON_POLICIES.includes(policy);
   const parsed = read.present && !read.error && Boolean(read.value);
 
@@ -227,16 +286,34 @@ const buildCorrectionInputsState = ({ path, read }) => {
     ...(read.error ? [read.error] : []),
     ...(read.present && !parsed ? ['correction_inputs_file_invalid_or_empty'] : []),
   ];
+  const manifestBlockers = assetManifest?.finalPublicLinks?.blockers ?? [];
+  const finalPublicLinkBlockers = finalLinksReady
+    ? []
+    : finalLinksSource === 'launch_asset_manifest_pending_public_urls'
+      ? [
+        ...(launchAssetManifestRead.error ? [launchAssetManifestRead.error] : []),
+        ...manifestBlockers,
+        ...missingKeys.map((key) => `missing_${key}`),
+        ...invalidKeys.map((key) => `invalid_or_placeholder_${key}`),
+      ]
+      : [
+        ...fileBlockers,
+        ...missingKeys.map((key) => `missing_${key}`),
+        ...invalidKeys.map((key) => `invalid_or_placeholder_${key}`),
+      ];
   const finalPublicLinks = {
     id: 'final_public_links',
     status: finalLinksReady
       ? 'ready_redacted_no_live_changes'
-      : read.present
-        ? 'present_invalid_no_live_changes'
-        : 'missing_no_live_changes',
-    present: read.present && Boolean(finalLinks),
+      : finalLinksSource === 'launch_asset_manifest_pending_public_urls'
+        ? 'system_pending_public_urls_no_live_changes'
+        : read.present
+          ? 'present_invalid_no_live_changes'
+          : 'missing_no_live_changes',
+    source: finalLinksSource,
+    present: Boolean(finalLinks) || finalLinksSource === 'launch_asset_manifest_pending_public_urls',
     valid: finalLinksReady,
-    path,
+    path: finalLinksSource.startsWith('launch_asset_manifest') ? launchAssetManifestFile : path,
     requiredKeys: FINAL_PUBLIC_LINK_KEYS,
     presentKeys,
     missingKeys,
@@ -248,30 +325,36 @@ const buildCorrectionInputsState = ({ path, read }) => {
         .map((key) => [key, sha256(finalLinks[key])]),
     ),
     exactUrlsStoredInReport: false,
-    blockers: [
-      ...fileBlockers,
-      ...missingKeys.map((key) => `missing_${key}`),
-      ...invalidKeys.map((key) => `invalid_or_placeholder_${key}`),
-    ],
+    humanInputRequired: finalLinksSource === 'missing',
+    blockers: finalPublicLinkBlockers,
   };
+  const policyBlockers = policyValid
+    ? []
+    : policySource === 'launch_asset_manifest_default'
+      ? ['subscription_reason_policy_not_allowed']
+      : [
+        ...fileBlockers,
+        ...(policy ? [] : ['subscription_reason_policy_missing']),
+        ...(policy && !policyValid ? ['subscription_reason_policy_not_allowed'] : []),
+      ];
   const subscriptionReasonPolicy = {
     id: 'subscription_reason_policy',
     status: policyValid
       ? 'ready_no_live_changes'
-      : read.present
+      : policySource === 'launch_asset_manifest_default'
         ? 'present_invalid_no_live_changes'
-        : 'missing_no_live_changes',
-    present: read.present && Boolean(policy),
+        : read.present
+          ? 'present_invalid_no_live_changes'
+          : 'missing_no_live_changes',
+    source: policySource,
+    present: Boolean(policy),
     valid: policyValid,
-    path,
+    path: policySource.startsWith('launch_asset_manifest') ? launchAssetManifestFile : path,
     policy: policyValid ? policy : null,
     allowedPolicies: ALLOWED_SUBSCRIPTION_REASON_POLICIES,
     policyStoredInReport: policyValid,
-    blockers: [
-      ...fileBlockers,
-      ...(policy ? [] : ['subscription_reason_policy_missing']),
-      ...(policy && !policyValid ? ['subscription_reason_policy_not_allowed'] : []),
-    ],
+    humanInputRequired: policySource === 'missing',
+    blockers: policyBlockers,
   };
 
   return {
@@ -285,6 +368,15 @@ const buildCorrectionInputsState = ({ path, read }) => {
     },
     finalPublicLinks,
     subscriptionReasonPolicy,
+    launchAssetManifest: {
+      path: launchAssetManifestFile,
+      present: launchAssetManifestRead.present,
+      parsed: launchAssetManifestRead.present && !launchAssetManifestRead.error && Boolean(launchAssetManifestRead.value),
+      status: assetManifest?.status ?? null,
+      finalPublicLinksReady: assetManifest?.executiveSummary?.finalPublicLinksReady ?? null,
+      requiresAlejandroManualLinks: assetManifest?.executiveSummary?.requiresAlejandroManualLinks ?? null,
+      error: launchAssetManifestRead.error ?? null,
+    },
     readyForMiniLaunchCorrectionPreview: finalPublicLinks.valid && subscriptionReasonPolicy.valid,
   };
 };
@@ -554,6 +646,8 @@ const buildMissingInputsIntake = ({
   observedEventsFile,
   correctionInputsRead = { present: false, value: null, error: null, chars: 0 },
   correctionInputsFile = DEFAULT_CORRECTION_INPUTS_FILE,
+  launchAssetManifestRead = { present: false, value: null, error: null, chars: 0 },
+  launchAssetManifestFile = DEFAULT_LAUNCH_ASSET_MANIFEST,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
 }) => {
@@ -563,7 +657,12 @@ const buildMissingInputsIntake = ({
   const launchId = launch?.launchId ?? null;
   const seedState = buildSeedState({ path: seedEmailFile, read: seedEmailRead });
   const observedState = buildObservedState({ path: observedEventsFile, read: observedEventsRead, launchId });
-  const correctionState = buildCorrectionInputsState({ path: correctionInputsFile, read: correctionInputsRead });
+  const correctionState = buildCorrectionInputsState({
+    path: correctionInputsFile,
+    read: correctionInputsRead,
+    launchAssetManifestRead,
+    launchAssetManifestFile,
+  });
   const inputStates = stateFromInputs({ kit: missingInputsKit, seedState, observedState, correctionState });
   const readyInputCount = inputStates.filter((state) => state.status.startsWith('ready')).length;
   const presentInputCount = inputStates.filter((state) =>
@@ -581,6 +680,8 @@ const buildMissingInputsIntake = ({
     .filter(Boolean);
   const readyForMiniLaunchCorrectionPreview = correctionInputStates.length > 0
     && correctionInputStates.every((state) => state.status.startsWith('ready'));
+  const waitingForWebPublicUrls =
+    correctionState.finalPublicLinks.status === 'system_pending_public_urls_no_live_changes';
   const blockerIds = inputStates
     .filter((state) => !state.status.startsWith('ready'))
     .map((state) => state.id);
@@ -612,6 +713,8 @@ const buildMissingInputsIntake = ({
       openLiveMutationGateCount: 0,
       nextSafeAction: readyForMiniLaunchCorrectionPreview
         ? 'prepare_local_corrected_payload_preview_without_ui_or_send'
+        : waitingForWebPublicUrls
+          ? 'wait_for_web_or_shopify_publish_receipt_public_urls_without_approval_or_execution'
         : readyForSeedApprovalPacket || readyForCrmWritePacketRegeneration
         ? 'regenerate_relevant_packet_without_execution_or_approval'
         : 'collect_missing_inputs_without_approval_or_execution',
@@ -624,6 +727,7 @@ const buildMissingInputsIntake = ({
       file: correctionState.file,
       finalPublicLinks: correctionState.finalPublicLinks,
       subscriptionReasonPolicy: correctionState.subscriptionReasonPolicy,
+      launchAssetManifest: correctionState.launchAssetManifest,
       readyForMiniLaunchCorrectionPreview: correctionState.readyForMiniLaunchCorrectionPreview,
     },
     postInputCommands: {
@@ -637,7 +741,7 @@ const buildMissingInputsIntake = ({
         ? missingInputsKit?.inputRequests?.find((input) => input.id === 'final_public_links')?.nextLocalCommandAfterInput ?? null
         : null,
       miniLaunchCorrectionPreview: readyForMiniLaunchCorrectionPreview
-        ? correctionPreviewCommand(correctionInputsFile)
+        ? correctionPreviewCommand(correctionInputsFile, launchAssetManifestFile)
         : null,
     },
     hardStops: [
@@ -664,13 +768,22 @@ const writeJson = async (path, value) => {
 };
 
 const buildMissingInputsIntakeFromFiles = async (options) => {
-  const [missingInputsKit, operatorRunbook, crmWriteApprovalPacket, seedEmailRead, observedEventsRead, correctionInputsRead] = await Promise.all([
+  const [
+    missingInputsKit,
+    operatorRunbook,
+    crmWriteApprovalPacket,
+    seedEmailRead,
+    observedEventsRead,
+    correctionInputsRead,
+    launchAssetManifestRead,
+  ] = await Promise.all([
     readJson(options.missingInputsKit),
     readJson(options.operatorRunbook),
     readJson(options.crmWriteApprovalPacket),
     readOptionalText(options.seedEmailFile),
     readOptionalJson(options.observedEventsFile),
     readOptionalJson(options.correctionInputsFile),
+    readOptionalJson(options.launchAssetManifest),
   ]);
   const sourceDigests = [
     await publicDigest(options.missingInputsKit, 'missing-inputs kit and expected private input specs'),
@@ -679,6 +792,7 @@ const buildMissingInputsIntakeFromFiles = async (options) => {
     privateSourceStatus({ path: options.seedEmailFile, read: seedEmailRead, consultedFor: 'private seed recipient file presence and validation only' }),
     privateSourceStatus({ path: options.observedEventsFile, read: observedEventsRead, consultedFor: 'private observed events file presence and shape validation only' }),
     privateSourceStatus({ path: options.correctionInputsFile, read: correctionInputsRead, consultedFor: 'private final public links and subscription policy validation only' }),
+    localReportSourceStatus({ path: options.launchAssetManifest, read: launchAssetManifestRead, consultedFor: 'system-owned local asset slots and footer policy defaults' }),
   ];
 
   return buildMissingInputsIntake({
@@ -691,6 +805,8 @@ const buildMissingInputsIntakeFromFiles = async (options) => {
     observedEventsFile: options.observedEventsFile,
     correctionInputsRead,
     correctionInputsFile: options.correctionInputsFile,
+    launchAssetManifestRead,
+    launchAssetManifestFile: options.launchAssetManifest,
     sourceDigests,
   });
 };

@@ -105,6 +105,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       "/tmp/correction-plan.json",
       "--correction-inputs-file",
       "/tmp/private/correction-inputs.json",
+      "--launch-asset-manifest",
+      "/tmp/asset-manifest.json",
       "--out",
       "/tmp/kit.json",
       "--markdown-out",
@@ -116,6 +118,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
     expect(parsed.observedEventsFile).toBe("/tmp/private/events.json");
     expect(parsed.seedInboxCorrectionPlan).toBe("/tmp/correction-plan.json");
     expect(parsed.correctionInputsFile).toBe("/tmp/private/correction-inputs.json");
+    expect(parsed.launchAssetManifest).toBe("/tmp/asset-manifest.json");
     expect(parsed.out).toBe("/tmp/kit.json");
     expect(markdownPathFor("/tmp/report.json")).toBe("/tmp/report.md");
   });
@@ -129,6 +132,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       privateSeedEmailFile: "/tmp/private/seed.txt",
       observedEventsFile: "/tmp/private/events.json",
       correctionInputsFile: "/tmp/private/correction-inputs.json",
+      launchAssetManifest: "/tmp/asset-manifest.json",
     });
 
     expect(inputRequests.map((input) => input.id)).toEqual([
@@ -153,8 +157,10 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
     });
     expect(inputRequests.find((input) => input.id === "final_public_links")).toMatchObject({
       gateId: "mini_launch_seed_inbox_correction",
-      captureMode: "correction_inputs_json.finalPublicLinks",
+      captureMode: "launch_asset_manifest.finalPublicLinks_or_correction_inputs_json.finalPublicLinks",
       templatePathSuggestion: "/tmp/private/correction-inputs.json",
+      manifestPathSuggestion: "/tmp/asset-manifest.json",
+      humanInputRequiredByDefault: false,
       approvalEffect: "does_not_approve_mailerlite_ui_edit_test_send_or_public_send",
     });
   });
@@ -170,6 +176,7 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
       privateSeedEmailFile: "/tmp/private/seed.txt",
       observedEventsFile: "/tmp/private/events.json",
       correctionInputsFile: "/tmp/private/correction-inputs.json",
+      launchAssetManifest: "/tmp/asset-manifest.json",
       generatedAt: "2026-05-28T00:00:00.000Z",
     });
     const markdown = renderMarkdown(kit);
@@ -187,6 +194,8 @@ describe("CRM vNext MailerLite Launch OS missing-inputs kit", () => {
     });
     expect(kit.postInputCommands.join(" ")).toContain("--markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.md");
     expect(kit.templates.observedEventsFile.sampleOnly).toBe(true);
+    expect(kit.templates.correctionInputsFile.defaultSource).toBe("launch_asset_manifest_before_private_override");
+    expect(kit.templates.correctionInputsFile.template.subscriptionReasonPolicy).toBe("remove_custom_line_and_rely_on_platform_footer");
     expect(kit.templates.correctionInputsFile.template.allowedSubscriptionReasonPolicies).toContain("include_once_in_all_emails");
     expect(markdown).toContain("Missing Inputs Kit");
     expect(markdown).toContain("This kit is not an approval phrase");

@@ -2280,6 +2280,66 @@ Next safe move:
 - If a private observed-events file appears, the runner may consume it locally and must still stop before any CRM write approval phrase or mutation.
 - Stop before any future live gate, exact approval phrase or mutation.
 
+## Launch OS v0 asset manifest checkpoint - 2026-05-31
+
+Status: active goal, local-only asset manifest added, routine link/footer decisions moved out of Alejandro input, not ready for live operation, no live actions authorized.
+
+Evidence:
+
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-asset-manifest.mjs`
+- Package command: `npm run crm:vnext:mailerlite-mini-launch-asset-manifest`
+- Current asset manifest: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json`
+- Current asset manifest markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.md`
+- Current missing-inputs intake: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- asset-manifest: `status=mini_launch_asset_manifest_waiting_for_web_public_urls_no_live_changes`
+- asset-manifest: `localAssetSlotReadyCount=3`, `publicUrlReadyCount=0`, `requiredPublicUrlCount=3`
+- asset-manifest: `finalPublicLinksReady=false`, `requiresAlejandroManualLinks=false`
+- asset-manifest: `subscriptionReasonPolicyReady=true`, `subscriptionReasonPolicy=remove_custom_line_and_rely_on_platform_footer`
+- missing-inputs intake: `status=missing_inputs_intake_partial_no_live_changes`, `readyInputCount=1`, `inputCount=6`
+- missing-inputs intake: `final_public_links.status=system_pending_public_urls_no_live_changes`, `final_public_links.humanInputRequired=false`
+- current-state-refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`
+- current-state-refresh: `testFiles=12`, `testCount=79`
+- operator-runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`
+- goal-audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- validation-receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- Shopify publish performed: false.
+- CRM live API called: false.
+- Subscribers read or mutated: false.
+- Groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens printed: false.
+
+What is proven:
+
+- The local Shopify build already provides the three required asset slots for `result_or_resource_link`, `practice_link` and `editorial_note_link`; all three are local-ready placeholders waiting for public URLs.
+- The missing-inputs intake no longer treats `subscription_reason_policy` as a human decision; it defaults to `remove_custom_line_and_rely_on_platform_footer`.
+- The missing-inputs intake no longer treats `final_public_links` as Alejandro manual input by default; ownership is now `web_design_or_shopify_publish_receipt`.
+- The current-state refresh runner now regenerates the asset manifest before missing-inputs kit/intake, runbook, goal audit and validation receipt.
+
+What remains partial or pending:
+
+- Launch OS is still not ready for live operation.
+- The three final public URLs are still not ready because the Shopify/Web public URL or publish receipt is missing.
+- Mini-launch correction preview remains blocked until Web/Shopify produces public URLs or a later private override exists.
+- CRM signal writes remain blocked by missing real observed events, exact people, writable-event screen and any required Fact Store review.
+- No MailerLite UI edit, test send, public/audience send, workflow/subscriber/group mutation, Shopify/CRM live change, ledger/card/scoring/Fact Store write is authorized by this checkpoint.
+
+Next safe move:
+
+- Keep the launch watcher paused or quiet while working in this active local session.
+- Prepare the next Web/Shopify public URL gate or receipt in local-only mode, then stop before any publish/live action or exact approval phrase.
+- Rerun `npm run crm:vnext:mailerlite-launch-os-current-state-refresh` after any Web/Shopify URL evidence changes.
+
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: collect `final_public_links` plus `subscription_reason_policy` through the request bundle before any MailerLite UI edit approval. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

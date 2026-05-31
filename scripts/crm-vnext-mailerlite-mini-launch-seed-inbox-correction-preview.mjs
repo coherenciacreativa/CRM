@@ -10,6 +10,7 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-mini-launch-seed-inbox-correction-p
 const DEFAULT_PAYLOAD_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_CORRECTION_INPUTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_LAUNCH_ASSET_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md';
 const DEFAULT_REDACTED_PAYLOAD_MANIFEST_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.redacted.json';
@@ -29,6 +30,7 @@ Options:
   --payload-manifest <path>                 Email builder payload manifest JSON. Defaults to ${DEFAULT_PAYLOAD_MANIFEST}
   --correction-plan <path>                  Seed inbox correction plan JSON. Defaults to ${DEFAULT_CORRECTION_PLAN}
   --correction-inputs-file <path>           Private correction inputs JSON. Defaults to ${DEFAULT_CORRECTION_INPUTS_FILE}
+  --launch-asset-manifest <path>            Local launch asset manifest JSON. Defaults to ${DEFAULT_LAUNCH_ASSET_MANIFEST}
   --out <path>                              Write public/redacted JSON report. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                     Write public/redacted Markdown report. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --redacted-payload-manifest-out <path>    Write redacted payload manifest only when inputs are ready. Defaults to ${DEFAULT_REDACTED_PAYLOAD_MANIFEST_OUTPUT}
@@ -54,6 +56,7 @@ const parseArgs = (argv) => {
     payloadManifest: DEFAULT_PAYLOAD_MANIFEST,
     correctionPlan: DEFAULT_CORRECTION_PLAN,
     correctionInputsFile: DEFAULT_CORRECTION_INPUTS_FILE,
+    launchAssetManifest: DEFAULT_LAUNCH_ASSET_MANIFEST,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     redactedPayloadManifestOut: DEFAULT_REDACTED_PAYLOAD_MANIFEST_OUTPUT,
@@ -67,6 +70,7 @@ const parseArgs = (argv) => {
     else if (arg === '--payload-manifest') options.payloadManifest = argv[++index];
     else if (arg === '--correction-plan') options.correctionPlan = argv[++index];
     else if (arg === '--correction-inputs-file') options.correctionInputsFile = argv[++index];
+    else if (arg === '--launch-asset-manifest') options.launchAssetManifest = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else if (arg === '--redacted-payload-manifest-out') options.redactedPayloadManifestOut = argv[++index];
@@ -329,6 +333,8 @@ const buildSeedInboxCorrectionPreview = ({
 }) => {
   const blockers = buildBlockers({ payloadManifest, correctionPlan, correctionState });
   const ready = blockers.length === 0;
+  const waitingForWebPublicUrls =
+    correctionState.finalPublicLinks.status === 'system_pending_public_urls_no_live_changes';
   const redactedPayloadManifest = ready
     ? buildRedactedPayloadManifest({ payloadManifest, correctionState, generatedAt })
     : null;
@@ -341,7 +347,9 @@ const buildSeedInboxCorrectionPreview = ({
     ok: ready,
     status: ready
       ? 'seed_inbox_correction_preview_ready_no_live_changes'
-      : 'seed_inbox_correction_preview_blocked_missing_inputs_no_live_changes',
+      : waitingForWebPublicUrls
+        ? 'seed_inbox_correction_preview_waiting_for_web_public_urls_no_live_changes'
+        : 'seed_inbox_correction_preview_blocked_missing_inputs_no_live_changes',
     launch: correctionPlan?.launch ?? payloadManifest?.launch ?? null,
     executiveSummary: {
       correctionPlanStatus: correctionPlan?.status ?? null,
@@ -359,7 +367,9 @@ const buildSeedInboxCorrectionPreview = ({
       canAskPublicSendApprovalNow: false,
       nextSafeAction: ready
         ? 'run_local_render_or_text_qa_on_redacted_payload_preview_before_any_ui_edit_approval'
-        : 'collect_final_public_links_and_subscription_reason_policy_without_approval_or_execution',
+        : waitingForWebPublicUrls
+          ? 'wait_for_web_or_shopify_publish_receipt_public_urls_without_approval_or_execution'
+          : 'collect_final_public_links_and_subscription_reason_policy_without_approval_or_execution',
     },
     previewRows,
     redactedPayloadManifest,
@@ -442,14 +452,17 @@ const writeText = async (path, content) => {
 };
 
 const buildPreviewFromFiles = async (options) => {
-  const [payloadManifestEntry, correctionPlanEntry, correctionInputsEntry] = await Promise.all([
+  const [payloadManifestEntry, correctionPlanEntry, correctionInputsEntry, launchAssetManifestEntry] = await Promise.all([
     readJsonWithDigest(options.payloadManifest, 'current email builder payload manifest'),
     readJsonWithDigest(options.correctionPlan, 'seed inbox correction plan and required input ids'),
     readOptionalJsonWithDigest(options.correctionInputsFile, 'private final public links and subscription policy validation only'),
+    readOptionalJsonWithDigest(options.launchAssetManifest, 'system-owned launch asset manifest and footer policy defaults'),
   ]);
   const correctionState = buildCorrectionInputsState({
     path: options.correctionInputsFile,
     read: correctionInputsEntry.read,
+    launchAssetManifestRead: launchAssetManifestEntry.read,
+    launchAssetManifestFile: options.launchAssetManifest,
   });
   return buildSeedInboxCorrectionPreview({
     payloadManifest: payloadManifestEntry.value,
@@ -459,6 +472,7 @@ const buildPreviewFromFiles = async (options) => {
       payloadManifestEntry.digest,
       correctionPlanEntry.digest,
       correctionInputsEntry.digest,
+      launchAssetManifestEntry.digest,
     ],
     redactedPayloadManifestOut: options.redactedPayloadManifestOut,
   });

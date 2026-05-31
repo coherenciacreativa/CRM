@@ -44,6 +44,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchCrmWriteApprovalPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchAssetManifest).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.privateObservedEventsFile).toBe(
       "/tmp/mantis-reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json",
     );
@@ -57,7 +60,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
       "/tmp/mantis-reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json",
     );
     expect(commands).toContain("crm-vnext-mailerlite-launch-os-current-state-refresh.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-asset-manifest.mjs");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-asset-manifest");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-post-input-orchestrator");
@@ -165,6 +170,15 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           ok: true,
           inputNeededCount: 6,
           openLiveMutationGateCount: 0,
+        },
+        miniLaunchAssetManifest: {
+          path: paths.miniLaunchAssetManifest,
+          markdownPath: paths.miniLaunchAssetManifestMarkdown,
+          status: "mini_launch_asset_manifest_waiting_for_web_public_urls_no_live_changes",
+          ok: true,
+          finalPublicLinksReady: false,
+          requiresAlejandroManualLinks: false,
+          subscriptionReasonPolicy: "remove_custom_line_and_rely_on_platform_footer",
         },
         missingInputsKit: {
           path: paths.missingInputsKit,

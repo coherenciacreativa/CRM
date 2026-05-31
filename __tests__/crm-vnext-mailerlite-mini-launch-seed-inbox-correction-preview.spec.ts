@@ -164,11 +164,14 @@ describe("CRM vNext MailerLite mini-launch seed inbox correction preview", () =>
       "/tmp/payload.json",
       "--correction-inputs-file",
       "/tmp/private/correction-inputs.json",
+      "--launch-asset-manifest",
+      "/tmp/asset-manifest.json",
       "--no-redacted-payload-manifest",
     ]);
 
     expect(parsed.payloadManifest).toBe("/tmp/payload.json");
     expect(parsed.correctionInputsFile).toBe("/tmp/private/correction-inputs.json");
+    expect(parsed.launchAssetManifest).toBe("/tmp/asset-manifest.json");
     expect(parsed.writeRedactedPayloadManifest).toBe(false);
     expect(parsed.out).toContain("mailerlite_mini_launch_seed_inbox_correction_preview");
   });
@@ -201,6 +204,53 @@ describe("CRM vNext MailerLite mini-launch seed inbox correction preview", () =>
       sendsPerformed: false,
       factStoreWritePerformed: false,
     });
+  });
+
+  test("names Web public URL wait when asset manifest owns the link slots", () => {
+    const manifestState = buildCorrectionInputsState({
+      path: "/tmp/private/correction-inputs.json",
+      read: {
+        present: false,
+        value: null,
+        error: null,
+        chars: 0,
+      },
+      launchAssetManifestRead: {
+        present: true,
+        value: {
+          status: "mini_launch_asset_manifest_waiting_for_web_public_urls_no_live_changes",
+          executiveSummary: {
+            finalPublicLinksReady: false,
+            requiresAlejandroManualLinks: false,
+            subscriptionReasonPolicy: "remove_custom_line_and_rely_on_platform_footer",
+          },
+          finalPublicLinks: {
+            status: "system_pending_public_urls_no_live_changes",
+            blockers: ["public_shopify_url_missing"],
+          },
+          subscriptionReasonPolicy: {
+            policy: "remove_custom_line_and_rely_on_platform_footer",
+          },
+        },
+        error: null,
+        chars: 300,
+      },
+      launchAssetManifestFile: "/tmp/asset-manifest.json",
+    });
+    const report = buildSeedInboxCorrectionPreview({
+      payloadManifest,
+      correctionPlan,
+      correctionState: manifestState,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(report.status).toBe("seed_inbox_correction_preview_waiting_for_web_public_urls_no_live_changes");
+    expect(report.executiveSummary.subscriptionReasonPolicyReady).toBe(true);
+    expect(report.executiveSummary.subscriptionReasonPolicy).toBe("remove_custom_line_and_rely_on_platform_footer");
+    expect(report.executiveSummary.nextSafeAction).toBe(
+      "wait_for_web_or_shopify_publish_receipt_public_urls_without_approval_or_execution",
+    );
+    expect(manifestState.finalPublicLinks.humanInputRequired).toBe(false);
   });
 
   test("builds redacted corrected payload preview without storing exact URLs", () => {
