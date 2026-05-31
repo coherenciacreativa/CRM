@@ -752,6 +752,72 @@ Meaning:
   - If approved, rerun fresh MailerLite render/read-only checks before opening the UI.
   - Stop immediately if the UI exposes audience, workflow, schedule, group, segment or public-send controls in the send path.
 
+## Launch OS v0 seed-test execution checkpoint - 2026-05-31
+
+- Estado:
+  - active goal
+  - MailerLite seed-recipient verification completed
+  - four approved mini-launch test emails sent only to the exact seed recipient
+  - Gmail receipt verification passed for all four `[Test]` messages
+  - not ready for public/audience launch
+  - no further live action is authorized by this checkpoint
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_fresh_dry_run_after_seed_verify_before_seed_send_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_fresh_dry_run_after_seed_verify_before_seed_send_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_real_mailerlite_render_qa_after_seed_verify_before_seed_send_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_real_mailerlite_render_qa_after_seed_verify_before_seed_send_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_test_execution_receipt_inteligencia_descansar_2026-05-31.md`
+
+- Resultados confirmados:
+  - pre-send asset dry-run: `ok=true`, `targetCampaignsExistingCount=4`, `targetCampaignsMissingCount=0`, `blockerCount=0`, `errorsCount=0`
+  - pre-send real MailerLite render QA: `ok=true`, `draftCount=4`, `allRequiredContentExact=true`, `allSafetyGatesClosed=true`
+  - seed execution receipt: `ok=true`, `status=seed_test_execution_completed_verified_by_gmail_no_public_send`
+  - MailerLite UI: recipient verification completed; no verification link/token stored or printed
+  - MailerLite UI after execution: Drafts `10`, Outbox `0`
+  - Gmail receipt verification: 4 expected `[Test]` messages found for the approved seed recipient
+
+- Test emails verified in Gmail:
+  - E01 Delivery orientation: `[Test] Tu lectura: qué tipo de descanso está pidiendo tu mente`
+  - E02 Practice: `[Test] Una práctica pequeña para descansar sin exigirte calma`
+  - E03 Editorial depth: `[Test] El descanso también pide criterio`
+  - E04 Feedback invitation: `[Test] ¿Qué notaste al probar tu descanso?`
+
+- Seguridad:
+  - MailerLite API called by this execution: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - public/audience send performed: false
+  - verification emails sent to approved seed recipient: `1`
+  - test emails sent to approved seed recipient: `4`
+  - subscribers created/imported/assigned outside seed: false
+  - groups created/assigned: false
+  - workflows or automations created/edited/activated: false
+  - campaigns published/scheduled: false
+  - Shopify files changed by this execution: false
+  - Signal Ledger append: false
+  - CRM card/scoring mutation: false
+  - Fact Store write: false
+
+- Qué está probado:
+  - The four existing MailerLite drafts can send test emails to the verified seed recipient.
+  - Gmail independently received all four seed test messages.
+  - The UI test-send route works under the current Growing Business plan without upgrading or using the MailerLite API.
+
+- Qué sigue parcial o pendiente:
+  - Human inbox QA still needs to review the received seed emails as reader-facing artifacts.
+  - Public/audience launch remains closed.
+  - Workflow/automation use remains closed.
+  - Subscriber import or non-seed assignment remains closed.
+  - Group creation/assignment remains closed.
+  - Shopify live publish/form connection remains closed.
+  - CRM live writes, Signal Ledger append, card/scoring and Fact Store remain closed.
+
+- Próximo paso seguro:
+  - Review the four seed emails in the seed inbox and decide whether copy/rendering is acceptable, needs correction, or should be archived.
+  - Before any public/audience send, workflow/subscriber/group action, Shopify live move, CRM write, Signal Ledger append, card/scoring change or Fact Store write, stop and request one exact scope-specific approval phrase.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
