@@ -422,7 +422,7 @@ Meaning:
   - email builder payload manifest: `canExecuteBuilderNow=false`
   - email builder payload manifest: `readyForSeedSendNow=false`
   - readiness board: `ok=true`, `status=mini_launch_readiness_board_ready_no_live_changes`
-  - readiness board: `overallState=ready_for_department_reviews_not_ready_for_live_operation`
+  - readiness board: `overallState=email_builder_payload_manifest_ready_not_ready_for_live_operation`
   - readiness board: `readyNoLiveLaneCount=12`
   - readiness board: `liveMutationGateOpenCount=0`
   - readiness board: `noImmediateAlejandroLiveApprovalNeeded=true`
@@ -443,7 +443,7 @@ Meaning:
   - The exact approval phrase for the future MailerLite builder step exists inside the asset-build scope packet, but the packet is not approval by itself.
   - The payload manifest is local implementation input only; it must not be treated as permission to create/edit MailerLite assets.
   - Even after a future exact asset-build approval, seed sends, workflow attachment, subscriber reads/assignment/import, group creation/assignment, Shopify preview/publish/form connection, CRM ledger/card/scoring and Fact Store writes remain closed.
-  - The readiness board still labels the general state as `ready_for_department_reviews_not_ready_for_live_operation`, while its operative lanes now include the current asset scope, payload manifest, Shopify handoff and CRM signal projection evidence.
+  - The readiness board now names the current no-live phase from the latest email builder payload manifest instead of the older department-review phase.
   - The mini-launch empty groups are recorded as already existing in the readiness board; do not rerun `--execute` for that boundary.
 
 - Próximo paso seguro:

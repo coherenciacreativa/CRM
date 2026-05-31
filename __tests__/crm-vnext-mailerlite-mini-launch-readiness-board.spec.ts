@@ -669,6 +669,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
     });
     const queues = buildDepartmentQueues({ lanes: board.lanes });
 
+    expect(board.executiveSummary.overallState).toBe("department_reviews_reconciled_ready_for_local_asset_planning_not_ready_for_live_operation");
     expect(board.executiveSummary.nextBestNoLiveMoves[0]).toContain("Email sequence Brand review is closed");
     expect(queues.brand.join(" ")).toContain("Brand sequence approval is closed");
     expect(queues.crm.join(" ")).toContain("Email Style QA is ready for local asset planning only");
@@ -688,6 +689,7 @@ describe("CRM vNext MailerLite mini-launch readiness board", () => {
       generatedAt: "2026-05-27T00:00:00.000Z",
     });
 
+    expect(board.executiveSummary.overallState).toBe("email_builder_payload_manifest_ready_not_ready_for_live_operation");
     expect(board.executiveSummary.nextBestNoLiveMoves[0]).toContain("Email builder payload manifest is ready");
     expect(buildDepartmentQueues({ lanes: board.lanes }).crm.join(" ")).toContain("Email builder payload manifest is ready");
     expect(board.operatorWarnings).toContain("Do not treat the email builder payload manifest as MailerLite builder execution; it is local input only.");

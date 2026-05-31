@@ -846,6 +846,23 @@ const nextBestNoLiveMovesFor = ({ lanes }) => {
   return moves;
 };
 
+const overallStateFor = ({ lanes }) => {
+  const emailSequenceStatus = lanes.find((lane) => lane.id === 'email_sequence')?.sourceStatus;
+  if (emailSequenceStatus === 'email_builder_payload_manifest_ready_no_live_changes') {
+    return 'email_builder_payload_manifest_ready_not_ready_for_live_operation';
+  }
+  if (emailSequenceStatus === 'email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes') {
+    return 'email_asset_build_scope_ready_for_exact_approval_not_ready_for_live_operation';
+  }
+  if (emailSequenceStatus === 'mini_launch_local_email_asset_plan_ready_no_live_changes') {
+    return 'local_email_asset_plan_ready_not_ready_for_live_operation';
+  }
+  if (emailSequenceStatus === 'mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes') {
+    return 'department_reviews_reconciled_ready_for_local_asset_planning_not_ready_for_live_operation';
+  }
+  return 'ready_for_department_reviews_not_ready_for_live_operation';
+};
+
 const buildReadinessBoard = ({
   onboardingExecutionPacket,
   rehearsalPacket,
@@ -900,7 +917,7 @@ const buildReadinessBoard = ({
     status: 'mini_launch_readiness_board_ready_no_live_changes',
     launch,
     executiveSummary: {
-      overallState: 'ready_for_department_reviews_not_ready_for_live_operation',
+      overallState: overallStateFor({ lanes }),
       readyNoLiveLaneCount: readyNoLiveLanes.length,
       liveGateOpenCount: liveGateMatrix.filter((gate) => gate.status === 'open_no_live').length,
       liveMutationGateOpenCount: liveGateMatrix.filter((gate) => gate.status === 'open_no_live' && gate.needsAlejandroApprovalNow).length,
