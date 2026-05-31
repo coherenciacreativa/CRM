@@ -451,6 +451,71 @@ Meaning:
   - If moving into MailerLite builder becomes the next step, stop first and explain the exact asset-build decision, scope, risks and approval phrase.
   - Do not seed-send, attach workflows, read/assign subscribers, create groups, publish/connect Shopify, append CRM ledgers, write cards, change scoring or touch Fact Store without separate explicit approval.
 
+## Launch OS v0 current audit refresh - 2026-05-31
+
+- Estado:
+  - active goal
+  - current operator runbook regenerated from the latest mini-launch readiness board
+  - current goal audit regenerated from the latest no-live evidence
+  - current validation receipt regenerated with honest validation status
+  - not ready for live operation
+  - no live actions authorized
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+
+- Resultados confirmados:
+  - operator-runbook: `ok=true`, `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`
+  - operator-runbook: `currentState.liveGates.openLiveGateCount=0`
+  - operator-runbook: `currentState.liveGates.liveApprovalNeededNow=false`
+  - operator-runbook: `currentState.validation.validationStatus=needs_validation`
+  - operator-runbook: `currentState.miniLaunch.pendingDepartments=[]`
+  - operator-runbook: `currentState.miniLaunch.readinessState=email_builder_payload_manifest_ready_not_ready_for_live_operation`
+  - operator-runbook: `currentState.miniLaunch.emailManualUiBuildReceiptStatus=manual_ui_build_receipt_executed_drafts_created_no_sends`
+  - operator-runbook: `currentState.miniLaunch.shopifyLocalBuildReceiptStatus=shopify_local_build_receipt_executed_files_created_no_live_changes`
+  - goal-audit: `ok=true`, `status=goal_active_not_ready_for_live_operation`
+  - goal-audit: `requirementCount=10`
+  - goal-audit: `provenCount=6`
+  - goal-audit: `partialCount=4`
+  - goal-audit: `blockedCount=0`
+  - goal-audit: `readyForLiveOperation=false`
+  - goal-audit: `liveActionAllowedNow=false`
+  - goal-audit: `taxonomyRefreshResponsePendingActorCount=2`
+  - goal-audit: `taxonomyRefreshResponseRequestMissingFinalResponseCount=2`
+  - validation-receipt: `ok=true`, `status=mailerlite_launch_os_validation_receipt_needs_validation_no_live_changes`
+  - validation-receipt: `validationStatus=needs_validation`
+  - validation-receipt: `testScope.commandCount=7`
+  - validation-receipt: `evidence.liveGatesClosed=true`
+
+- Seguridad:
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - subscribers read or mutated: false
+  - group/workflow mutations: false
+  - sends performed: false
+  - Signal Event Ledger append: false
+  - CRM card/scoring mutations: false
+  - Fact Store writes: false
+  - tokens printed: false
+
+- Notas de decisión:
+  - Full live operation remains unproven because the current validation receipt is `needs_validation`; local syntax checks and report generation passed, but Vitest is still unavailable in this environment because the runner hangs even on `--version`.
+  - No immediate live approval is needed now. The approval queue has no ready approval request; seed send and CRM signal writes are blocked before approval request.
+  - The safe human-input lane is missing-input collection only: `exact_seed_recipient`, `real_observed_events_file`, `exact_people`, `writable_event_screen`, `fact_store_market_review`.
+  - The taxonomy refresh lane is waiting on final Brand and CRM taxonomy response files for 14 Brand promotion decisions and 14 CRM manifest patch rows; this is not live approval and does not apply patches.
+  - Mini-launch empty group creation, Onboarding v2 empty group creation, Shopify no-live local build, manual UI draft build and department final-response collection are closed boundaries unless new concrete evidence changes them.
+
+- Próximo paso seguro:
+  - Keep operating from the approval queue, blocked-gate handoff, missing-inputs kit, taxonomy response request bundle and continuation guard.
+  - Collect missing inputs and taxonomy final responses as local-only data; do not convert them into execution approval.
+  - Before any seed send, CRM write, Shopify live move, MailerLite builder/edit/send/workflow/subscriber action, or Fact Store write, stop and explain the exact decision, scope, evidence and approval phrase.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
