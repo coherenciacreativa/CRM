@@ -325,6 +325,68 @@ Meaning:
   - Avanzar solo con los movimientos no-vivos listados arriba.
   - Antes de abrir cualquier gate vivo, explicar la decisión, el alcance exacto, los riesgos y la frase de aprobación requerida.
 
+## Launch OS v0 no-live follow-up packets - 2026-05-31
+
+- Estado:
+  - active goal
+  - department reconciliation follow-up packets generated
+  - email-style QA and local asset planning advanced
+  - Shopify/Web handoff refreshed as local-only
+  - CRM signal projection packet refreshed as local-only
+  - no live actions authorized
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_style_qa_packet_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_local_email_asset_plan_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_handoff_packet_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_signal_projection_packet_current_inteligencia_descansar_2026-05-31.md`
+
+- Resultados confirmados:
+  - email-style QA: `ok=true`, `status=mini_launch_email_style_qa_ready_for_local_asset_plan_no_live_changes`
+  - email-style QA: `brandSequenceApprovedNoLive=true`
+  - email-style QA: `readyForLocalAssetPlanNow=true`
+  - email-style QA: `readyForMailerLiteAssetBuildNow=false`
+  - email-style QA: `readyForSeedSendNow=false`
+  - local email asset plan: `ok=true`, `status=mini_launch_local_email_asset_plan_ready_no_live_changes`
+  - local email asset plan: `assetCount=4`
+  - local email asset plan: `readyForExactAssetBuildScopeRequestNow=true`
+  - local email asset plan: `readyForMailerLiteAssetBuildNow=false`
+  - Shopify handoff: `ok=true`, `status=shopify_handoff_packet_ready_for_web_design_review_no_live_changes`
+  - Shopify handoff: `readyForShopifyRepoEditNow=false`
+  - Shopify handoff: `readyForShopifyPreviewNow=false`
+  - Shopify handoff: `readyForFormConnectionNow=false`
+  - Shopify handoff: `readyForPublishNow=false`
+  - CRM signal projection: `ok=true`, `status=ready_for_no_live_signal_projection_design`
+  - CRM signal projection: `signalsGenerated=6`
+  - CRM signal projection: `storeOnlyNowCount=11`
+  - CRM signal projection: `canAppendSignalLedgerNow=false`
+
+- Seguridad:
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - browser used: false
+  - subscribers read or mutated: false
+  - groups/workflows/forms/assets created or edited: false
+  - sends performed: false
+  - Signal Event Ledger append: false
+  - card writes/scoring/Fact Store/outbound: false
+
+- Notas de decisión:
+  - `rerun_group_dry_run` remains a next no-live move, but it was intentionally not executed in this follow-up because the script performs a MailerLite read-only live group scan.
+  - The group dry-run is mutation-safe, but it still touches live MailerLite state; ask Alejandro before running it unless a later operating rule explicitly authorizes read-only MailerLite scans.
+  - The local email asset plan can support a future exact MailerLite asset-build scope request, but it does not authorize creating/editing drafts in MailerLite.
+  - Shopify remains handoff/review only; no repo files were written and no preview/publish/form connection is allowed.
+  - CRM projection remains design/proof only; no Signal Event Ledger append, card write, scoring or Fact Store write is allowed.
+
+- Próximo paso seguro:
+  - Prepare an exact no-live MailerLite asset-build scope request from the local asset plan, or ask Alejandro whether to authorize the read-only MailerLite group dry-run.
+  - Keep live group creation, MailerLite asset editing, seed sends, Shopify repo edits/previews, CRM ledger/card/scoring/Fact Store writes and workflow/subscriber mutations behind separate approval gates.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
