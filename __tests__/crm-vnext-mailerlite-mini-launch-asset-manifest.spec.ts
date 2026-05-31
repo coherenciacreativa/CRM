@@ -75,6 +75,10 @@ describe("CRM vNext MailerLite mini-launch asset manifest", () => {
     expect(report.status).toBe("mini_launch_asset_manifest_waiting_for_web_public_urls_no_live_changes");
     expect(report.executiveSummary.localAssetSlotReadyCount).toBe(3);
     expect(report.executiveSummary.finalPublicLinksReady).toBe(false);
+    expect(report.executiveSummary.linkLifecyclePolicy).toBe("single_slot_preview_to_live_lifecycle");
+    expect(report.executiveSummary.previewUrlReadyCount).toBe(0);
+    expect(report.executiveSummary.liveUrlReadyCount).toBe(0);
+    expect(report.executiveSummary.publicAudienceSendUrlGateReady).toBe(false);
     expect(report.executiveSummary.requiresAlejandroManualLinks).toBe(false);
     expect(report.subscriptionReasonPolicy).toMatchObject({
       status: "ready_no_live_changes",
@@ -88,7 +92,15 @@ describe("CRM vNext MailerLite mini-launch asset manifest", () => {
       "editorial_note_link",
     ]);
     expect(report.finalPublicLinks.slots.every((slot) => slot.humanInputRequired === false)).toBe(true);
+    expect(report.finalPublicLinks.lifecyclePolicy).toMatchObject({
+      singleSlotLifecycle: true,
+      noSeparateUrlSetsRequired: true,
+      audienceSendAllowedStages: ["live_url_ready", "preview_promoted_to_live"],
+    });
+    expect(report.finalPublicLinks.slots.every((slot) => slot.linkLifecycle.currentStage === "local_candidate")).toBe(true);
     expect(report.finalPublicLinks.blockers).toContain("public_shopify_url_missing");
+    expect(markdown).toContain("Link lifecycle policy: single_slot_preview_to_live_lifecycle");
+    expect(markdown).toContain("Audience-send URL gate ready: false");
     expect(markdown).toContain("Requires Alejandro manual links: false");
     expect(report.safety).toMatchObject({
       localOnly: true,

@@ -260,6 +260,9 @@ const redactPayloadForPreview = ({ payload, correctionState }) => {
     correctionPreview: {
       finalPublicLinkKey: linkKey,
       finalPublicLinkSha256: linkHash,
+      finalPublicLinkLifecycleStage: linkKey
+        ? correctionState.finalPublicLinks.linkLifecycle.slots.find((slot) => slot.key === linkKey)?.currentStage ?? null
+        : null,
       exactUrlStoredHere: false,
       subscriptionReasonPolicy: policy,
       footerPolicyApplied: policy,
@@ -280,6 +283,11 @@ const buildRedactedPayloadManifest = ({ payloadManifest, correctionState, genera
     executiveSummary: {
       ...(payloadManifest?.executiveSummary ?? {}),
       finalPublicLinkReadyRedactedCount: FINAL_PUBLIC_LINK_KEYS.length,
+      publicAudienceSendUrlGateReady: correctionState.finalPublicLinks.publicAudienceSendReady,
+      previewOnlyLinkCount: correctionState.finalPublicLinks.linkLifecycle.previewUrlReadyCount,
+      liveOrPromotedLinkCount:
+        correctionState.finalPublicLinks.linkLifecycle.liveUrlReadyCount
+        + correctionState.finalPublicLinks.linkLifecycle.previewPromotedToLiveCount,
       subscriptionReasonPolicy: correctionState.subscriptionReasonPolicy.policy,
       exactUrlsStoredInReport: false,
       canExecuteBuilderNow: false,
@@ -294,6 +302,8 @@ const buildRedactedPayloadManifest = ({ payloadManifest, correctionState, genera
       mailerLiteUiEditApproved: false,
       additionalTestSendApproved: false,
       publicAudienceSendApproved: false,
+      publicAudienceSendUrlGateReady: correctionState.finalPublicLinks.publicAudienceSendReady,
+      blockersBeforeAudienceSend: correctionState.finalPublicLinks.blockersBeforeAudienceSend,
     },
   };
 };
@@ -306,6 +316,7 @@ const buildPreviewRows = ({ redactedPayloadManifest }) =>
     subject: payload.subject,
     finalPublicLinkKey: payload.correctionPreview?.finalPublicLinkKey ?? null,
     finalPublicLinkSha256: payload.correctionPreview?.finalPublicLinkSha256 ?? null,
+    finalPublicLinkLifecycleStage: payload.correctionPreview?.finalPublicLinkLifecycleStage ?? null,
     exactUrlStoredHere: false,
     subscriptionReasonPolicy: payload.correctionPreview?.subscriptionReasonPolicy ?? null,
     footerPolicyApplied: payload.correctionPreview?.footerPolicyApplied ?? null,
@@ -357,6 +368,11 @@ const buildSeedInboxCorrectionPreview = ({
       finalPublicLinksReady: correctionState.finalPublicLinks.valid,
       finalPublicLinkCount: correctionState.finalPublicLinks.linkCount,
       finalPublicUrlHashesByKey: correctionState.finalPublicLinks.urlSha256ByKey,
+      publicAudienceSendUrlGateReady: correctionState.finalPublicLinks.publicAudienceSendReady,
+      previewOnlyLinkCount: correctionState.finalPublicLinks.linkLifecycle.previewUrlReadyCount,
+      liveOrPromotedLinkCount:
+        correctionState.finalPublicLinks.linkLifecycle.liveUrlReadyCount
+        + correctionState.finalPublicLinks.linkLifecycle.previewPromotedToLiveCount,
       exactUrlsStoredInReport: false,
       subscriptionReasonPolicyReady: correctionState.subscriptionReasonPolicy.valid,
       subscriptionReasonPolicy: correctionState.subscriptionReasonPolicy.policy,
@@ -377,6 +393,7 @@ const buildSeedInboxCorrectionPreview = ({
     hardStops: [
       'This preview is not approval for MailerLite UI edits.',
       'Final links being present does not approve another test send or a public/audience send.',
+      'Preview-only links can support correction preview/test QA, but they must be promoted or replaced in the same slots before audience send.',
       'Use exact URLs only from the private correction inputs file at a later approved UI-edit boundary.',
       'Shared reports and redacted payload manifests must store hashes/redacted tokens only, never full final URLs.',
       'Do not touch subscribers, groups, workflows, Shopify, CRM, Signal Ledger, cards, scoring or Fact Store.',
@@ -397,6 +414,9 @@ const renderMarkdown = (report) => [
   '## Summary',
   '',
   `- Final public links ready: ${report.executiveSummary.finalPublicLinksReady}`,
+  `- Public audience-send URL gate ready: ${report.executiveSummary.publicAudienceSendUrlGateReady}`,
+  `- Preview-only link count: ${report.executiveSummary.previewOnlyLinkCount}`,
+  `- Live/promoted link count: ${report.executiveSummary.liveOrPromotedLinkCount}`,
   `- Final public URL hashes: ${Object.keys(report.executiveSummary.finalPublicUrlHashesByKey ?? {}).join(', ') || 'none'}`,
   `- Exact URLs stored in report: ${report.executiveSummary.exactUrlsStoredInReport}`,
   `- Subscription policy ready: ${report.executiveSummary.subscriptionReasonPolicyReady}`,
@@ -409,7 +429,7 @@ const renderMarkdown = (report) => [
   '## Preview Rows',
   '',
   renderList(report.previewRows.map((row) =>
-    `E${row.step} ${row.role}: linkKey=${row.finalPublicLinkKey ?? 'none'}, hash=${row.finalPublicLinkSha256 ?? 'none'}, policy=${row.subscriptionReasonPolicy ?? 'missing'}`)),
+    `E${row.step} ${row.role}: linkKey=${row.finalPublicLinkKey ?? 'none'}, stage=${row.finalPublicLinkLifecycleStage ?? 'none'}, hash=${row.finalPublicLinkSha256 ?? 'none'}, policy=${row.subscriptionReasonPolicy ?? 'missing'}`)),
   '',
   '## Blockers',
   '',

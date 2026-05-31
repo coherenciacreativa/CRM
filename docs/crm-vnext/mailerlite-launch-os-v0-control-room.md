@@ -2415,6 +2415,78 @@ Preview visibility policy:
 - The preview route must not connect real forms, CRM live writes or MailerLite group/subscriber mutations without a later separate approval.
 - A later audience send remains a separate gate even if preview links exist.
 
+## Launch OS v0 link lifecycle guard checkpoint - 2026-05-31
+
+Status: active goal, single-slot preview-to-live lifecycle wired into local gates, not ready for live operation, no live actions authorized.
+
+Evidence:
+
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-asset-manifest.mjs`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs`
+- Script: `scripts/crm-vnext-mailerlite-launch-os-missing-inputs-intake.mjs`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.mjs`
+- Script: `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+- Current asset manifest: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json`
+- Current Shopify public URL gate: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json`
+- Current missing-inputs intake: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_intake_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Link lifecycle policy: `single_slot_preview_to_live_lifecycle`
+- Link lifecycle stages: `local_candidate`, `preview_url_ready`, `live_url_ready`, `preview_promoted_to_live`
+- Link lifecycle guard: `noSeparateUrlSetsRequired=true`
+- Preview/test QA allowed stages: `preview_url_ready`, `live_url_ready`, `preview_promoted_to_live`
+- Audience/public send allowed stages: `live_url_ready`, `preview_promoted_to_live`
+- Asset manifest: `finalPublicLinksReady=false`, `publicAudienceSendUrlGateReady=false`
+- Asset manifest: `localAssetSlotReadyCount=3`, `publicUrlReadyCount=0`, `requiresAlejandroManualLinks=false`
+- Shopify public URL gate: `finalPublicLinksReady=false`, `publicAudienceSendUrlGateReady=false`, `canPublishNow=false`
+- Shopify public URL gate: `recommendedVisibilityTier=unlisted_noindex_preview`, `fullyPublicNavigationRequiredNow=false`, `seoIndexingAllowedNow=false`
+- Missing-inputs intake: `status=missing_inputs_intake_partial_no_live_changes`, `readyInputCount=1`, `inputCount=6`
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=14`, `testCount=90`
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- Shopify publish performed: false.
+- Shopify live theme/page mutation performed: false.
+- Fully public site navigation/SEO indexing: false.
+- CRM live API called: false.
+- Subscribers read or mutated: false.
+- Groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens printed: false.
+
+What is proven:
+
+- The launch now uses one set of final-public-link slots instead of two separate preview/live URL lists.
+- Each slot matures through the same lifecycle: local asset candidate, preview URL, live URL or intentionally promoted preview URL.
+- Preview URLs may unblock correction preview and real email-client QA, but they do not unlock a public/audience send.
+- Before any audience send, every preview URL must be promoted to live intentionally or replaced by a live URL in the same slot.
+- The current-state refresh runner validates the lifecycle guard and the seed inbox correction preview script in the focused suite.
+
+What remains partial or pending:
+
+- Launch OS is still not ready for live operation.
+- The three final public URLs are still missing.
+- The preview route has not been created or published.
+- Mini-launch correction preview remains blocked until Web/Shopify produces URLs or a later private correction input file exists.
+- MailerLite UI correction, test send, public/audience send, workflow/subscriber/group mutation, Shopify/CRM live change, ledger/card/scoring/Fact Store write all remain closed.
+- The big goal text does not need an edit for this; the operational guard belongs here, in reports, and in local scripts.
+
+Next safe move:
+
+- Resume the paused goal from this checkpoint after the commit if Alejandro wants to continue.
+- If continuing in this thread, prepare the next Web/Shopify preview-route decision in local-only mode and stop before any exact approval phrase or publish action.
+- Rerun `npm run crm:vnext:mailerlite-launch-os-current-state-refresh` after any Web/Shopify URL evidence changes.
+
 ## Current recommendation
 
-Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has now been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. The Shopify public URL gate now makes the next human boundary explicit: explain the unlisted/noindex preview route decision before any exact approval phrase, publish, UI edit or send. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.
+Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. Those URLs now use a single lifecycle per slot, so preview URLs can support QA but cannot reach public/audience send until each slot is live or intentionally promoted. The next human boundary is the Web/Shopify unlisted/noindex preview-route decision before any exact approval phrase, publish, UI edit or send. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

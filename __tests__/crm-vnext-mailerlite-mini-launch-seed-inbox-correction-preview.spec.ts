@@ -284,6 +284,40 @@ describe("CRM vNext MailerLite mini-launch seed inbox correction preview", () =>
     expect(serialized).not.toContain("https://example.com/editorial");
   });
 
+  test("allows preview-only URLs for correction QA while blocking audience-send readiness", () => {
+    const previewOnlyState = buildCorrectionInputsState({
+      path: "/tmp/private/correction-inputs.json",
+      read: {
+        present: true,
+        value: {
+          ...correctionPayload,
+          visibilityTier: "unlisted_noindex_preview",
+          subscriptionReasonPolicy: "remove_custom_line_and_rely_on_platform_footer",
+        },
+        error: null,
+        chars: 240,
+      },
+    });
+    const report = buildSeedInboxCorrectionPreview({
+      payloadManifest,
+      correctionPlan,
+      correctionState: previewOnlyState,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+    const serialized = JSON.stringify(report);
+
+    expect(report.status).toBe("seed_inbox_correction_preview_ready_no_live_changes");
+    expect(report.executiveSummary.finalPublicLinksReady).toBe(true);
+    expect(report.executiveSummary.publicAudienceSendUrlGateReady).toBe(false);
+    expect(report.executiveSummary.previewOnlyLinkCount).toBe(3);
+    expect(report.executiveSummary.liveOrPromotedLinkCount).toBe(0);
+    expect(report.previewRows[0].finalPublicLinkLifecycleStage).toBe("preview_url_ready");
+    expect(report.redactedPayloadManifest?.correctionPreviewBoundary.blockersBeforeAudienceSend).toContain(
+      "result_or_resource_link_not_live_or_promoted:preview_url_ready",
+    );
+    expect(serialized).not.toContain("https://example.com/result");
+  });
+
   test("can render a platform-footer-only redacted preview variant", () => {
     const removePolicyState = buildCorrectionInputsState({
       path: "/tmp/private/correction-inputs.json",

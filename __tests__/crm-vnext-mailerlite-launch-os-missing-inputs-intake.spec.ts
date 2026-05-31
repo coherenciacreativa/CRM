@@ -150,6 +150,15 @@ const internalSeedObservedEventsPayload = {
   },
 };
 
+const correctionPayload = {
+  finalPublicLinks: {
+    result_or_resource_link: "https://example.com/result",
+    practice_link: "https://example.com/practice",
+    editorial_note_link: "https://example.com/editorial",
+  },
+  subscriptionReasonPolicy: "include_once_in_all_emails",
+};
+
 describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
   test("normalizes default args and private paths", () => {
     const parsed = parseArgs([
@@ -332,14 +341,6 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
   });
 
   test("validates correction inputs while hashing final URLs only", () => {
-    const correctionPayload = {
-      finalPublicLinks: {
-        result_or_resource_link: "https://example.com/result",
-        practice_link: "https://example.com/practice",
-        editorial_note_link: "https://example.com/editorial",
-      },
-      subscriptionReasonPolicy: "include_once_in_all_emails",
-    };
     const correctionState = buildCorrectionInputsState({
       path: "/tmp/private/correction-inputs.json",
       read: {
@@ -380,9 +381,13 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(correctionState.readyForMiniLaunchCorrectionPreview).toBe(true);
     expect(correctionState.finalPublicLinks.urlSha256ByKey.result_or_resource_link).toHaveLength(64);
     expect(correctionState.finalPublicLinks.exactUrlsStoredInReport).toBe(false);
+    expect(correctionState.finalPublicLinks.linkLifecycle.noSeparateUrlSetsRequired).toBe(true);
+    expect(correctionState.finalPublicLinks.linkLifecycle.publicAudienceSendReady).toBe(true);
+    expect(correctionState.finalPublicLinks.linkLifecycle.slots.every((slot) => slot.currentStage === "live_url_ready")).toBe(true);
     expect(report.executiveSummary.inputCount).toBe(7);
     expect(report.executiveSummary.readyInputCount).toBe(7);
     expect(report.executiveSummary.readyForMiniLaunchCorrectionPreview).toBe(true);
+    expect(report.executiveSummary.publicAudienceSendUrlGateReady).toBe(true);
     expect(report.executiveSummary.nextSafeAction).toBe("prepare_local_corrected_payload_preview_without_ui_or_send");
     expect(report.postInputCommands.miniLaunchCorrectionIntake).toContain("--correction-inputs-file /tmp/private/correction-inputs.json");
     expect(report.postInputCommands.miniLaunchCorrectionPreview).toContain("mailerlite-mini-launch-seed-inbox-correction-preview");
@@ -463,11 +468,17 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
     expect(correctionState.finalPublicLinks.status).toBe("system_pending_public_urls_no_live_changes");
     expect(correctionState.finalPublicLinks.source).toBe("launch_asset_manifest_pending_public_urls");
     expect(correctionState.finalPublicLinks.humanInputRequired).toBe(false);
+    expect(correctionState.finalPublicLinks.linkLifecycle.noSeparateUrlSetsRequired).toBe(true);
+    expect(correctionState.finalPublicLinks.linkLifecycle.publicAudienceSendReady).toBe(false);
+    expect(correctionState.finalPublicLinks.blockersBeforeAudienceSend).toContain(
+      "result_or_resource_link_not_live_or_promoted:missing_local_asset",
+    );
     expect(correctionState.subscriptionReasonPolicy.status).toBe("ready_no_live_changes");
     expect(correctionState.subscriptionReasonPolicy.policy).toBe("remove_custom_line_and_rely_on_platform_footer");
     expect(correctionState.subscriptionReasonPolicy.humanInputRequired).toBe(false);
     expect(report.executiveSummary.readyInputCount).toBe(6);
     expect(report.executiveSummary.readyForMiniLaunchCorrectionPreview).toBe(false);
+    expect(report.executiveSummary.publicAudienceSendUrlGateReady).toBe(false);
     expect(report.executiveSummary.nextSafeAction).toBe(
       "wait_for_web_or_shopify_publish_receipt_public_urls_without_approval_or_execution",
     );
@@ -478,5 +489,32 @@ describe("CRM vNext MailerLite Launch OS missing-inputs intake", () => {
       "ready_no_live_changes",
     );
     expect(report.correctionInputs.launchAssetManifest.requiresAlejandroManualLinks).toBe(false);
+  });
+
+  test("treats unlisted preview URLs as correction-ready but not audience-send-ready", () => {
+    const previewPayload = {
+      ...correctionPayload,
+      visibilityTier: "unlisted_noindex_preview",
+      subscriptionReasonPolicy: "remove_custom_line_and_rely_on_platform_footer",
+    };
+    const correctionState = buildCorrectionInputsState({
+      path: "/tmp/private/correction-inputs.json",
+      read: {
+        present: true,
+        value: previewPayload,
+        error: null,
+        chars: 200,
+      },
+    });
+
+    expect(correctionState.finalPublicLinks.valid).toBe(true);
+    expect(correctionState.readyForMiniLaunchCorrectionPreview).toBe(true);
+    expect(correctionState.finalPublicLinks.linkLifecycle.noSeparateUrlSetsRequired).toBe(true);
+    expect(correctionState.finalPublicLinks.linkLifecycle.previewUrlReadyCount).toBe(3);
+    expect(correctionState.finalPublicLinks.linkLifecycle.liveUrlReadyCount).toBe(0);
+    expect(correctionState.finalPublicLinks.linkLifecycle.publicAudienceSendReady).toBe(false);
+    expect(correctionState.finalPublicLinks.blockersBeforeAudienceSend).toContain(
+      "result_or_resource_link_not_live_or_promoted:preview_url_ready",
+    );
   });
 });

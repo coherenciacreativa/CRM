@@ -11,6 +11,16 @@ const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlit
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.md';
 
 const FINAL_PUBLIC_LINK_KEYS = ['result_or_resource_link', 'practice_link', 'editorial_note_link'];
+const LINK_LIFECYCLE_POLICY = {
+  id: 'single_slot_preview_to_live_lifecycle',
+  singleSlotLifecycle: true,
+  noSeparateUrlSetsRequired: true,
+  stages: ['local_candidate', 'preview_url_ready', 'live_url_ready', 'preview_promoted_to_live'],
+  previewQaAllowedStages: ['preview_url_ready', 'live_url_ready', 'preview_promoted_to_live'],
+  audienceSendAllowedStages: ['live_url_ready', 'preview_promoted_to_live'],
+  defaultNextStage: 'preview_url_ready',
+  rationale: 'Each link slot matures from local candidate to preview URL and then either live URL or preview-promoted-to-live; this avoids creating two independent URL sets.',
+};
 
 const LOCAL_SLOT_SPECS = {
   result_or_resource_link: {
@@ -161,6 +171,25 @@ const localBuildReceiptReady = (receipt) =>
   receipt?.ok === true
   && receipt?.status === 'shopify_local_build_receipt_executed_files_created_no_live_changes';
 
+const buildLinkLifecycle = ({ localEvidenceReady, publicUrlReady = false }) => {
+  const currentStage = publicUrlReady
+    ? 'live_url_ready'
+    : localEvidenceReady
+      ? 'local_candidate'
+      : 'missing_local_asset';
+  return {
+    policyId: LINK_LIFECYCLE_POLICY.id,
+    currentStage,
+    singleSlotLifecycle: true,
+    previewUrlReady: false,
+    liveUrlReady: publicUrlReady,
+    previewPromotedToLive: false,
+    publicAudienceSendReady: LINK_LIFECYCLE_POLICY.audienceSendAllowedStages.includes(currentStage),
+    nextExpectedStage: publicUrlReady ? 'preview_promoted_to_live_or_public_send_gate' : 'preview_url_ready',
+    noSeparateUrlSetRequired: true,
+  };
+};
+
 const buildSlot = ({ key, receiptReady, filesByRelativePath }) => {
   const spec = LOCAL_SLOT_SPECS[key];
   const source = filesByRelativePath.get(spec.localSourcePath);
@@ -184,9 +213,13 @@ const buildSlot = ({ key, receiptReady, filesByRelativePath }) => {
       : 'local_asset_slot_blocked_missing_local_evidence_no_live_changes',
     localEvidenceReady,
     publicUrlReady: false,
+    previewUrlReady: false,
+    liveUrlReady: false,
+    previewPromotedToLive: false,
     pathCandidate: spec.pathCandidate,
     publicUrlSha256: null,
     exactPublicUrlStoredInReport: false,
+    linkLifecycle: buildLinkLifecycle({ localEvidenceReady }),
     requiredPlaceholder: spec.requiredPlaceholder,
     placeholderPresent,
     source: {
@@ -214,6 +247,10 @@ const buildAssetManifest = ({
   const slots = FINAL_PUBLIC_LINK_KEYS.map((key) => buildSlot({ key, receiptReady, filesByRelativePath }));
   const localAssetSlotReadyCount = slots.filter((slot) => slot.localEvidenceReady).length;
   const publicUrlReadyCount = slots.filter((slot) => slot.publicUrlReady).length;
+  const previewUrlReadyCount = slots.filter((slot) => slot.linkLifecycle.previewUrlReady).length;
+  const liveUrlReadyCount = slots.filter((slot) => slot.linkLifecycle.liveUrlReady).length;
+  const previewPromotedToLiveCount = slots.filter((slot) => slot.linkLifecycle.previewPromotedToLive).length;
+  const publicAudienceSendReadyCount = slots.filter((slot) => slot.linkLifecycle.publicAudienceSendReady).length;
   const blockers = [...new Set(slots.flatMap((slot) => slot.blockers))];
   const localAssetsReady = localAssetSlotReadyCount === FINAL_PUBLIC_LINK_KEYS.length;
   const readyForCorrectionInputs = publicUrlReadyCount === FINAL_PUBLIC_LINK_KEYS.length;
@@ -238,8 +275,14 @@ const buildAssetManifest = ({
       shopifyLocalBuildReceiptStatus: shopifyLocalBuildReceipt?.status ?? null,
       localAssetSlotReadyCount,
       publicUrlReadyCount,
+      previewUrlReadyCount,
+      liveUrlReadyCount,
+      previewPromotedToLiveCount,
+      publicAudienceSendReadyCount,
       requiredPublicUrlCount: FINAL_PUBLIC_LINK_KEYS.length,
       finalPublicLinksReady: readyForCorrectionInputs,
+      publicAudienceSendUrlGateReady: publicAudienceSendReadyCount === FINAL_PUBLIC_LINK_KEYS.length,
+      linkLifecyclePolicy: LINK_LIFECYCLE_POLICY.id,
       requiresAlejandroManualLinks: false,
       finalLinkOwner: 'web_design_or_shopify_publish_receipt',
       subscriptionReasonPolicyReady: true,
@@ -259,6 +302,9 @@ const buildAssetManifest = ({
       exactUrlsStoredInReport: false,
       requiredKeys: FINAL_PUBLIC_LINK_KEYS,
       slots,
+      lifecyclePolicy: LINK_LIFECYCLE_POLICY,
+      publicAudienceSendUrlGateReady: publicAudienceSendReadyCount === FINAL_PUBLIC_LINK_KEYS.length,
+      audienceSendAllowedStages: LINK_LIFECYCLE_POLICY.audienceSendAllowedStages,
       blockers,
     },
     subscriptionReasonPolicy: {
@@ -318,7 +364,11 @@ const renderMarkdown = (report) => [
   `- Final public links ready: ${report.executiveSummary.finalPublicLinksReady}`,
   `- Local asset slots ready: ${report.executiveSummary.localAssetSlotReadyCount}/${report.executiveSummary.requiredPublicUrlCount}`,
   `- Public URLs ready: ${report.executiveSummary.publicUrlReadyCount}/${report.executiveSummary.requiredPublicUrlCount}`,
+  `- Preview URLs ready: ${report.executiveSummary.previewUrlReadyCount}/${report.executiveSummary.requiredPublicUrlCount}`,
+  `- Live URLs ready/promoted: ${report.executiveSummary.liveUrlReadyCount + report.executiveSummary.previewPromotedToLiveCount}/${report.executiveSummary.requiredPublicUrlCount}`,
+  `- Audience-send URL gate ready: ${report.executiveSummary.publicAudienceSendUrlGateReady}`,
   `- Requires Alejandro manual links: ${report.executiveSummary.requiresAlejandroManualLinks}`,
+  `- Link lifecycle policy: ${report.executiveSummary.linkLifecyclePolicy}`,
   `- Final link owner: ${report.executiveSummary.finalLinkOwner}`,
   `- Subscription policy: ${report.executiveSummary.subscriptionReasonPolicy}`,
   `- Ready for correction preview: ${report.executiveSummary.readyForMiniLaunchCorrectionPreview}`,
@@ -327,7 +377,7 @@ const renderMarkdown = (report) => [
   '## Link Slots',
   '',
   renderList(report.finalPublicLinks.slots.map((slot) =>
-    `${slot.key}: ${slot.status}, candidate=${slot.pathCandidate}, publicUrlReady=${slot.publicUrlReady}, owner=${slot.owner}`)),
+    `${slot.key}: ${slot.status}, stage=${slot.linkLifecycle.currentStage}, candidate=${slot.pathCandidate}, publicUrlReady=${slot.publicUrlReady}, owner=${slot.owner}`)),
   '',
   '## Blockers',
   '',

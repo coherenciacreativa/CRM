@@ -14,6 +14,14 @@ const DEFAULT_OBSERVED_EVENTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Rep
 const DEFAULT_CORRECTION_INPUTS_FILE = '/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_correction_inputs_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_LAUNCH_ASSET_MANIFEST = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json';
 const FINAL_PUBLIC_LINK_KEYS = ['result_or_resource_link', 'practice_link', 'editorial_note_link'];
+const LINK_LIFECYCLE_POLICY = {
+  id: 'single_slot_preview_to_live_lifecycle',
+  singleSlotLifecycle: true,
+  noSeparateUrlSetsRequired: true,
+  stages: ['local_candidate', 'preview_url_ready', 'live_url_ready', 'preview_promoted_to_live'],
+  previewQaAllowedStages: ['preview_url_ready', 'live_url_ready', 'preview_promoted_to_live'],
+  audienceSendAllowedStages: ['live_url_ready', 'preview_promoted_to_live'],
+};
 const ALLOWED_SUBSCRIPTION_REASON_POLICIES = [
   'include_once_in_all_emails',
   'remove_custom_line_and_rely_on_platform_footer',
@@ -230,6 +238,91 @@ const finalPublicLinksFromManifest = (assetManifest) => {
   return Object.keys(links).length > 0 ? links : null;
 };
 
+const visibilityTierFrom = (payload, assetManifest) =>
+  cleanString(payload?.visibilityTier)
+  ?? cleanString(payload?.visibility_tier)
+  ?? cleanString(payload?.finalPublicLinks?.visibilityTier)
+  ?? cleanString(payload?.final_public_links?.visibility_tier)
+  ?? cleanString(payload?.linkVisibility?.tier)
+  ?? cleanString(assetManifest?.visibilityPolicy?.recommendedTier)
+  ?? null;
+
+const stageForVisibilityTier = (visibilityTier) => {
+  if (visibilityTier === 'unlisted_noindex_preview') return 'preview_url_ready';
+  if (visibilityTier === 'public_unlisted_launch_route' || visibilityTier === 'fully_public_site_surface') {
+    return 'live_url_ready';
+  }
+  return 'live_url_ready';
+};
+
+const lifecycleStageFor = ({ key, payload, assetManifest, finalLinksReady, finalLinksSource, visibilityTier }) => {
+  const directLifecycle = payload?.linkLifecycle?.[key]
+    ?? payload?.finalPublicLinkLifecycle?.[key]
+    ?? payload?.finalPublicLinks?.lifecycle?.[key]
+    ?? payload?.final_public_links?.lifecycle?.[key]
+    ?? null;
+  const directStage = cleanString(directLifecycle?.currentStage ?? directLifecycle?.stage);
+  if (LINK_LIFECYCLE_POLICY.stages.includes(directStage)) return directStage;
+
+  const manifestSlot = assetManifest?.finalPublicLinks?.slots?.find((slot) => slot?.key === key);
+  const manifestStage = cleanString(manifestSlot?.linkLifecycle?.currentStage);
+  if (!finalLinksReady && LINK_LIFECYCLE_POLICY.stages.includes(manifestStage)) return manifestStage;
+
+  if (finalLinksReady) {
+    return finalLinksSource === 'correction_inputs_file'
+      ? stageForVisibilityTier(visibilityTier)
+      : 'live_url_ready';
+  }
+
+  return manifestSlot?.localEvidenceReady === true ? 'local_candidate' : 'missing_local_asset';
+};
+
+const buildLinkLifecycleState = ({ payload, assetManifest, finalLinksReady, finalLinksSource }) => {
+  const visibilityTier = visibilityTierFrom(payload, assetManifest);
+  const slots = FINAL_PUBLIC_LINK_KEYS.map((key) => {
+    const currentStage = lifecycleStageFor({
+      key,
+      payload,
+      assetManifest,
+      finalLinksReady,
+      finalLinksSource,
+      visibilityTier,
+    });
+    const previewUrlReady = currentStage === 'preview_url_ready';
+    const liveUrlReady = currentStage === 'live_url_ready';
+    const previewPromotedToLive = currentStage === 'preview_promoted_to_live';
+    return {
+      key,
+      currentStage,
+      visibilityTier,
+      previewUrlReady,
+      liveUrlReady,
+      previewPromotedToLive,
+      publicAudienceSendReady:
+        finalLinksReady === true && LINK_LIFECYCLE_POLICY.audienceSendAllowedStages.includes(currentStage),
+      noSeparateUrlSetRequired: true,
+    };
+  });
+  const publicAudienceSendReady = slots.every((slot) => slot.publicAudienceSendReady);
+  return {
+    policy: assetManifest?.finalPublicLinks?.lifecyclePolicy ?? LINK_LIFECYCLE_POLICY,
+    visibilityTier,
+    noSeparateUrlSetsRequired: true,
+    slots,
+    previewUrlReadyCount: slots.filter((slot) => slot.previewUrlReady).length,
+    liveUrlReadyCount: slots.filter((slot) => slot.liveUrlReady).length,
+    previewPromotedToLiveCount: slots.filter((slot) => slot.previewPromotedToLive).length,
+    publicAudienceSendReadyCount: slots.filter((slot) => slot.publicAudienceSendReady).length,
+    publicAudienceSendReady,
+    blockersBeforeAudienceSend: publicAudienceSendReady
+      ? []
+      : slots
+        .filter((slot) => !slot.publicAudienceSendReady)
+        .map((slot) => `${slot.key}_not_live_or_promoted:${slot.currentStage}`),
+    rule: 'Audience send requires each slot to be live_url_ready or preview_promoted_to_live; preview_url_ready is sufficient for correction preview but not for live audience send.',
+  };
+};
+
 const correctionPreviewCommand = (correctionInputsFile, launchAssetManifest = DEFAULT_LAUNCH_ASSET_MANIFEST) =>
   `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview -- --correction-inputs-file ${correctionInputsFile} --launch-asset-manifest ${launchAssetManifest}`;
 
@@ -270,6 +363,12 @@ const buildCorrectionInputsState = ({
   const missingKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => !cleanString(finalLinks?.[key]));
   const invalidKeys = FINAL_PUBLIC_LINK_KEYS.filter((key) => cleanString(finalLinks?.[key]) && !looksSafeHttpUrl(finalLinks?.[key]));
   const finalLinksReady = Boolean(finalLinks) && missingKeys.length === 0 && invalidKeys.length === 0;
+  const linkLifecycle = buildLinkLifecycleState({
+    payload,
+    assetManifest,
+    finalLinksReady,
+    finalLinksSource,
+  });
   const policyFromCorrectionInputs = subscriptionReasonPolicyFrom(payload);
   const policyFromManifest = subscriptionReasonPolicyFromManifest(assetManifest);
   const policy = policyFromCorrectionInputs ?? policyFromManifest;
@@ -324,6 +423,9 @@ const buildCorrectionInputsState = ({
         .filter((key) => looksSafeHttpUrl(finalLinks?.[key]))
         .map((key) => [key, sha256(finalLinks[key])]),
     ),
+    linkLifecycle,
+    publicAudienceSendReady: linkLifecycle.publicAudienceSendReady,
+    blockersBeforeAudienceSend: linkLifecycle.blockersBeforeAudienceSend,
     exactUrlsStoredInReport: false,
     humanInputRequired: finalLinksSource === 'missing',
     blockers: finalPublicLinkBlockers,
@@ -707,6 +809,9 @@ const buildMissingInputsIntake = ({
       readyForCrmWritePacketRegeneration,
       readyForCrmApprovalRequest,
       readyForMiniLaunchCorrectionPreview,
+      publicAudienceSendUrlGateReady: correctionState.finalPublicLinks.publicAudienceSendReady,
+      finalPublicLinkLifecyclePolicy: correctionState.finalPublicLinks.linkLifecycle.policy.id,
+      finalPublicLinkNoSeparateUrlSetsRequired: correctionState.finalPublicLinks.linkLifecycle.noSeparateUrlSetsRequired,
       factStoreReviewReady: observedState.factReview.ready,
       fullPrivateValuesStoredInReport: false,
       canAskApprovalNow: false,
@@ -748,6 +853,7 @@ const buildMissingInputsIntake = ({
       'This intake report is not approval.',
       'Presence of private inputs does not authorize sends or writes.',
       'Final public links and subscription policy presence does not authorize MailerLite UI edits, test sends, public sends or audience sends.',
+      'Preview URLs must be promoted to live or replaced in the same link slots before any public/audience send.',
       'Full seed email, exact people and exact facts are not printed in this report.',
       'Full final public URLs are not printed in this report.',
       'Do not touch live MailerLite, Shopify, CRM, subscribers, workflows, sends, ledgers, cards, scoring or Fact Store from this intake.',
@@ -828,6 +934,9 @@ const renderMarkdown = (report) => {
     `- Ready for CRM packet regeneration: ${report.executiveSummary.readyForCrmWritePacketRegeneration}`,
     `- Ready for CRM approval request: ${report.executiveSummary.readyForCrmApprovalRequest}`,
     `- Ready for mini-launch correction preview: ${report.executiveSummary.readyForMiniLaunchCorrectionPreview}`,
+    `- Public audience-send URL gate ready: ${report.executiveSummary.publicAudienceSendUrlGateReady}`,
+    `- Link lifecycle policy: ${report.executiveSummary.finalPublicLinkLifecyclePolicy}`,
+    `- No separate URL sets required: ${report.executiveSummary.finalPublicLinkNoSeparateUrlSetsRequired}`,
     `- Can ask approval now: ${report.executiveSummary.canAskApprovalNow}`,
     `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
     '',
@@ -848,6 +957,8 @@ const renderMarkdown = (report) => {
   lines.push(`- Exact facts stored in report: ${report.factStoreMarketReview.exactFactsStoredInReport}`);
   lines.push(`- Final public URLs stored in report: ${report.correctionInputs.finalPublicLinks.exactUrlsStoredInReport}`);
   lines.push(`- Final public link hashes: ${Object.keys(report.correctionInputs.finalPublicLinks.urlSha256ByKey).join(', ') || 'none'}`);
+  lines.push(`- Final public link lifecycle stages: ${report.correctionInputs.finalPublicLinks.linkLifecycle.slots.map((slot) => `${slot.key}:${slot.currentStage}`).join(', ') || 'none'}`);
+  lines.push(`- Audience-send blockers: ${report.correctionInputs.finalPublicLinks.blockersBeforeAudienceSend.join(', ') || 'none'}`);
   lines.push('', '## Hard Stops', '');
   lines.push(renderList(report.hardStops));
   lines.push('', '## Safety', '');

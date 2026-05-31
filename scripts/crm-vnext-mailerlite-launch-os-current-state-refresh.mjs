@@ -242,6 +242,12 @@ const validationCommands = () => [
     'syntax-check missing-inputs intake',
   ),
   command(
+    'node_check_mini_launch_seed_inbox_correction_preview',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.mjs'],
+    'syntax-check mini-launch seed inbox correction preview',
+  ),
+  command(
     'node_check_missing_inputs_request_bundle',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-launch-os-missing-inputs-request-bundle.mjs'],
@@ -293,6 +299,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-asset-manifest.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-kit.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-intake.spec.ts',
@@ -845,6 +852,8 @@ const summarizeGeneratedReports = async (paths) => {
       status: miniLaunchAssetManifest?.status ?? null,
       ok: miniLaunchAssetManifest?.ok ?? null,
       finalPublicLinksReady: miniLaunchAssetManifest?.executiveSummary?.finalPublicLinksReady ?? null,
+      publicAudienceSendUrlGateReady: miniLaunchAssetManifest?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+      linkLifecyclePolicy: miniLaunchAssetManifest?.executiveSummary?.linkLifecyclePolicy ?? null,
       requiresAlejandroManualLinks: miniLaunchAssetManifest?.executiveSummary?.requiresAlejandroManualLinks ?? null,
       subscriptionReasonPolicy: miniLaunchAssetManifest?.executiveSummary?.subscriptionReasonPolicy ?? null,
     },
@@ -854,6 +863,9 @@ const summarizeGeneratedReports = async (paths) => {
       status: miniLaunchShopifyPublicUrlGate?.status ?? null,
       ok: miniLaunchShopifyPublicUrlGate?.ok ?? null,
       finalPublicLinksReady: miniLaunchShopifyPublicUrlGate?.executiveSummary?.finalPublicLinksReady ?? null,
+      publicAudienceSendUrlGateReady:
+        miniLaunchShopifyPublicUrlGate?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+      noSeparateUrlSetsRequired: miniLaunchShopifyPublicUrlGate?.executiveSummary?.noSeparateUrlSetsRequired ?? null,
       approvalPhraseAvailable: miniLaunchShopifyPublicUrlGate?.executiveSummary?.approvalPhraseAvailable ?? null,
       recommendedVisibilityTier: miniLaunchShopifyPublicUrlGate?.executiveSummary?.recommendedVisibilityTier ?? null,
       fullyPublicNavigationRequiredNow:
@@ -1032,8 +1044,8 @@ const renderMarkdown = (receipt) => [
   '## Confirmed Results',
   '',
   `- CRM write approval: status=${receipt.generatedReports.crmWriteApprovalPacket.status}, exactEventCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactEventCountReady}, exactPersonCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactPersonCountReady}`,
-  `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
-  `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, recommendedVisibilityTier=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier}, fullyPublicNavigationRequiredNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow}, seoIndexingAllowedNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
+  `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady}, linkLifecyclePolicy=${receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
+  `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.publicAudienceSendUrlGateReady}, noSeparateUrlSetsRequired=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.noSeparateUrlSetsRequired}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, recommendedVisibilityTier=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier}, fullyPublicNavigationRequiredNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow}, seoIndexingAllowedNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
   `- operator-runbook: status=${receipt.generatedReports.operatorRunbook.status}, openLiveGateCount=${receipt.generatedReports.operatorRunbook.openLiveGateCount}`,
@@ -1156,8 +1168,12 @@ const main = async () => {
     miniLaunchAssetManifestStatus: receipt.generatedReports.miniLaunchAssetManifest.status,
     miniLaunchShopifyPublicUrlGateStatus: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status,
     finalPublicLinksReady: receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady,
+    publicAudienceSendUrlGateReady: receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady,
+    linkLifecyclePolicy: receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy,
     requiresAlejandroManualLinks: receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks,
     publicUrlGateApprovalPhraseAvailable: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable,
+    publicUrlGatePublicAudienceSendUrlGateReady:
+      receipt.generatedReports.miniLaunchShopifyPublicUrlGate.publicAudienceSendUrlGateReady,
     publicUrlGateRecommendedVisibilityTier: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier,
     publicUrlGateFullyPublicNavigationRequiredNow:
       receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow,

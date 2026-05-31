@@ -23,6 +23,16 @@ const localSlot = (key: string, pathCandidate: string) => ({
   status: "local_asset_slot_ready_waiting_for_public_url_no_live_changes",
   localEvidenceReady: true,
   publicUrlReady: false,
+  linkLifecycle: {
+    policyId: "single_slot_preview_to_live_lifecycle",
+    currentStage: "local_candidate",
+    singleSlotLifecycle: true,
+    previewUrlReady: false,
+    liveUrlReady: false,
+    previewPromotedToLive: false,
+    publicAudienceSendReady: false,
+    noSeparateUrlSetRequired: true,
+  },
   pathCandidate,
   publicUrlSha256: null,
   exactPublicUrlStoredInReport: false,
@@ -84,6 +94,16 @@ describe("CRM vNext MailerLite mini-launch Shopify public URL gate", () => {
     expect(report.executiveSummary.approvalPhraseAvailable).toBe(false);
     expect(report.executiveSummary.exactApprovalPhrasePrinted).toBe(false);
     expect(report.executiveSummary.canPublishNow).toBe(false);
+    expect(report.executiveSummary.linkLifecyclePolicy).toBe("single_slot_preview_to_live_lifecycle");
+    expect(report.executiveSummary.noSeparateUrlSetsRequired).toBe(true);
+    expect(report.executiveSummary.publicAudienceSendUrlGateReady).toBe(false);
+    expect(report.linkLifecycleGuard).toMatchObject({
+      noSeparateUrlSetsRequired: true,
+      publicAudienceSendReady: false,
+    });
+    expect(report.linkLifecycleGuard.blockersBeforeAudienceSend).toContain(
+      "result_or_resource_link_not_live_or_promoted:local_candidate",
+    );
     expect(report.executiveSummary.recommendedVisibilityTier).toBe("unlisted_noindex_preview");
     expect(report.executiveSummary.fullyPublicNavigationRequiredNow).toBe(false);
     expect(report.executiveSummary.seoIndexingAllowedNow).toBe(false);
@@ -107,6 +127,8 @@ describe("CRM vNext MailerLite mini-launch Shopify public URL gate", () => {
     expect(report.publicUrlPlan.slots.filter((slot) => slot.anchorCandidate)).toHaveLength(2);
     expect(report.blockers).toContain("shopify_public_url_decision_not_explained");
     expect(markdown).toContain("Approval phrase available: false");
+    expect(markdown).toContain("No separate URL sets required: true");
+    expect(markdown).toContain("Audience-send URL gate ready: false");
     expect(markdown).toContain("Recommended visibility tier: unlisted_noindex_preview");
     expect(markdown).toContain("SEO indexing allowed now: false");
     expect(markdown).toContain("shopify_publish");

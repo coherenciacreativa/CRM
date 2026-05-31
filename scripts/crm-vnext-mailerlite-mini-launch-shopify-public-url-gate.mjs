@@ -11,6 +11,14 @@ const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlit
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.md';
 
 const REQUIRED_LINK_KEYS = ['result_or_resource_link', 'practice_link', 'editorial_note_link'];
+const LINK_LIFECYCLE_POLICY = {
+  id: 'single_slot_preview_to_live_lifecycle',
+  singleSlotLifecycle: true,
+  noSeparateUrlSetsRequired: true,
+  stages: ['local_candidate', 'preview_url_ready', 'live_url_ready', 'preview_promoted_to_live'],
+  previewQaAllowedStages: ['preview_url_ready', 'live_url_ready', 'preview_promoted_to_live'],
+  audienceSendAllowedStages: ['live_url_ready', 'preview_promoted_to_live'],
+};
 
 const TEST_VISIBILITY_TIERS = [
   {
@@ -149,9 +157,43 @@ const assetManifestReady = (manifest) =>
   && manifest?.mode === 'local_only_mailerlite_mini_launch_asset_manifest'
   && Array.isArray(manifest?.finalPublicLinks?.slots);
 
+const normalizeLifecycle = ({ lifecycle, localEvidenceReady, publicUrlReady }) => {
+  const rawStage = cleanString(lifecycle?.currentStage);
+  const currentStage = LINK_LIFECYCLE_POLICY.stages.includes(rawStage)
+    ? rawStage
+    : publicUrlReady
+      ? 'live_url_ready'
+      : localEvidenceReady
+        ? 'local_candidate'
+        : 'missing_local_asset';
+  const previewUrlReady = lifecycle?.previewUrlReady === true || currentStage === 'preview_url_ready';
+  const liveUrlReady = lifecycle?.liveUrlReady === true || currentStage === 'live_url_ready';
+  const previewPromotedToLive =
+    lifecycle?.previewPromotedToLive === true || currentStage === 'preview_promoted_to_live';
+
+  return {
+    policyId: cleanString(lifecycle?.policyId) ?? LINK_LIFECYCLE_POLICY.id,
+    currentStage,
+    singleSlotLifecycle: lifecycle?.singleSlotLifecycle !== false,
+    previewUrlReady,
+    liveUrlReady,
+    previewPromotedToLive,
+    publicAudienceSendReady:
+      publicUrlReady === true && LINK_LIFECYCLE_POLICY.audienceSendAllowedStages.includes(currentStage),
+    nextExpectedStage: cleanString(lifecycle?.nextExpectedStage)
+      ?? (currentStage === 'preview_url_ready' ? 'live_url_ready_or_preview_promoted_to_live' : 'preview_url_ready'),
+    noSeparateUrlSetRequired: lifecycle?.noSeparateUrlSetRequired !== false,
+  };
+};
+
 const normalizeSlot = (slot) => {
   const key = cleanString(slot?.key);
   const pathCandidate = cleanString(slot?.pathCandidate);
+  const lifecycle = normalizeLifecycle({
+    lifecycle: slot?.linkLifecycle,
+    localEvidenceReady: slot?.localEvidenceReady === true,
+    publicUrlReady: slot?.publicUrlReady === true,
+  });
   return {
     key,
     label: cleanString(slot?.label),
@@ -162,12 +204,17 @@ const normalizeSlot = (slot) => {
         : 'local_asset_or_public_url_missing_no_live_changes',
     localEvidenceReady: slot?.localEvidenceReady === true,
     publicUrlReady: slot?.publicUrlReady === true,
+    previewUrlReady: lifecycle.previewUrlReady,
+    liveUrlReady: lifecycle.liveUrlReady,
+    previewPromotedToLive: lifecycle.previewPromotedToLive,
+    publicAudienceSendReady: lifecycle.publicAudienceSendReady,
     pathCandidate,
     anchorCandidate: Boolean(pathCandidate?.includes('#')),
     publicUrlSha256: cleanString(slot?.publicUrlSha256),
     exactPublicUrlStoredInReport: slot?.exactPublicUrlStoredInReport === true,
     owner: cleanString(slot?.owner) ?? 'web_design_or_shopify_publish_receipt',
     nextOwner: cleanString(slot?.nextOwner) ?? 'web_design_or_shopify_publish_receipt',
+    linkLifecycle: lifecycle,
     blockers: Array.isArray(slot?.blockers) ? slot.blockers.map(cleanString).filter(Boolean) : [],
   };
 };
@@ -216,7 +263,12 @@ const buildShopifyPublicUrlGate = ({
   });
   const localAssetSlotReadyCount = slots.filter((slot) => slot.localEvidenceReady).length;
   const publicUrlReadyCount = slots.filter((slot) => slot.publicUrlReady).length;
+  const previewUrlReadyCount = slots.filter((slot) => slot.previewUrlReady).length;
+  const liveUrlReadyCount = slots.filter((slot) => slot.liveUrlReady).length;
+  const previewPromotedToLiveCount = slots.filter((slot) => slot.previewPromotedToLive).length;
+  const publicAudienceSendReadyCount = slots.filter((slot) => slot.publicAudienceSendReady).length;
   const publicUrlsReady = publicUrlReadyCount === REQUIRED_LINK_KEYS.length;
+  const publicAudienceSendReady = publicAudienceSendReadyCount === REQUIRED_LINK_KEYS.length;
   const localAssetsReady = localAssetSlotReadyCount === REQUIRED_LINK_KEYS.length;
   const blockers = [
     ...(manifestReady ? [] : ['asset_manifest_missing_or_invalid']),
@@ -252,8 +304,15 @@ const buildShopifyPublicUrlGate = ({
       finalPublicLinksReady: publicUrlsReady,
       localAssetSlotReadyCount,
       publicUrlReadyCount,
+      previewUrlReadyCount,
+      liveUrlReadyCount,
+      previewPromotedToLiveCount,
+      publicAudienceSendReadyCount,
       requiredPublicUrlCount: REQUIRED_LINK_KEYS.length,
       requiresAlejandroManualLinks: false,
+      linkLifecyclePolicy: LINK_LIFECYCLE_POLICY.id,
+      noSeparateUrlSetsRequired: true,
+      publicAudienceSendUrlGateReady: publicAudienceSendReady,
       decisionExplanationRequiredBeforeApprovalPhrase: !publicUrlsReady,
       approvalPhraseAvailable: false,
       exactApprovalPhrasePrinted: false,
@@ -275,6 +334,8 @@ const buildShopifyPublicUrlGate = ({
       requiresShopifyPublishOrPublicRoute: !publicUrlsReady,
       requiresFreshPublicQa: !publicUrlsReady,
       slots,
+      lifecyclePolicy: assetManifest?.finalPublicLinks?.lifecyclePolicy ?? LINK_LIFECYCLE_POLICY,
+      publicAudienceSendUrlGateReady: publicAudienceSendReady,
       notes: [
         'The local Shopify build supplies the three required asset slots, but local path candidates are not final public URLs.',
         'For mini-launch tests, the recommended route is link-accessible but not placed in site navigation and not indexed for search.',
@@ -283,6 +344,19 @@ const buildShopifyPublicUrlGate = ({
       ],
     },
     visibilityPolicy,
+    linkLifecycleGuard: {
+      policy: assetManifest?.finalPublicLinks?.lifecyclePolicy ?? LINK_LIFECYCLE_POLICY,
+      slotStateSource: 'same_final_public_link_slots',
+      noSeparateUrlSetsRequired: true,
+      publicAudienceSendReady,
+      publicAudienceSendReadyCount,
+      blockersBeforeAudienceSend: publicAudienceSendReady
+        ? []
+        : slots
+          .filter((slot) => !slot.publicAudienceSendReady)
+          .map((slot) => `${slot.key}_not_live_or_promoted:${slot.linkLifecycle.currentStage}`),
+      rule: 'Before any audience send, each existing preview URL must either be promoted to live intentionally or replaced by a live URL in the same slot.',
+    },
     decisionBoundary: {
       id: 'shopify_public_url_or_publish_route',
       decisionRequired: !publicUrlsReady,
@@ -353,6 +427,10 @@ const renderMarkdown = (report) => [
   `- Final public links ready: ${report.executiveSummary.finalPublicLinksReady}`,
   `- Local asset slots ready: ${report.executiveSummary.localAssetSlotReadyCount}/${report.executiveSummary.requiredPublicUrlCount}`,
   `- Public URLs ready: ${report.executiveSummary.publicUrlReadyCount}/${report.executiveSummary.requiredPublicUrlCount}`,
+  `- Link lifecycle policy: ${report.executiveSummary.linkLifecyclePolicy}`,
+  `- Preview URLs ready: ${report.executiveSummary.previewUrlReadyCount}/${report.executiveSummary.requiredPublicUrlCount}`,
+  `- Live URLs ready/promoted: ${report.executiveSummary.liveUrlReadyCount + report.executiveSummary.previewPromotedToLiveCount}/${report.executiveSummary.requiredPublicUrlCount}`,
+  `- Audience-send URL gate ready: ${report.executiveSummary.publicAudienceSendUrlGateReady}`,
   `- Requires Alejandro manual links: ${report.executiveSummary.requiresAlejandroManualLinks}`,
   `- Decision explanation required before approval phrase: ${report.executiveSummary.decisionExplanationRequiredBeforeApprovalPhrase}`,
   `- Approval phrase available: ${report.executiveSummary.approvalPhraseAvailable}`,
@@ -365,7 +443,15 @@ const renderMarkdown = (report) => [
   '## Link Slots',
   '',
   renderList(report.publicUrlPlan.slots.map((slot) =>
-    `${slot.key}: ${slot.status}, candidate=${slot.pathCandidate}, anchorCandidate=${slot.anchorCandidate}, publicUrlReady=${slot.publicUrlReady}`)),
+    `${slot.key}: ${slot.status}, stage=${slot.linkLifecycle.currentStage}, candidate=${slot.pathCandidate}, anchorCandidate=${slot.anchorCandidate}, publicUrlReady=${slot.publicUrlReady}`)),
+  '',
+  '## Link Lifecycle Guard',
+  '',
+  `- No separate URL sets required: ${report.linkLifecycleGuard.noSeparateUrlSetsRequired}`,
+  `- Public audience-send URL gate ready: ${report.linkLifecycleGuard.publicAudienceSendReady}`,
+  `- Rule: ${report.linkLifecycleGuard.rule}`,
+  'Blockers before audience send:',
+  renderList(report.linkLifecycleGuard.blockersBeforeAudienceSend),
   '',
   '## Decision Boundary',
   '',
@@ -438,6 +524,8 @@ const main = async () => {
     finalPublicLinksReady: report.executiveSummary.finalPublicLinksReady,
     localAssetSlotReadyCount: report.executiveSummary.localAssetSlotReadyCount,
     publicUrlReadyCount: report.executiveSummary.publicUrlReadyCount,
+    publicAudienceSendUrlGateReady: report.executiveSummary.publicAudienceSendUrlGateReady,
+    noSeparateUrlSetsRequired: report.executiveSummary.noSeparateUrlSetsRequired,
     approvalPhraseAvailable: report.executiveSummary.approvalPhraseAvailable,
     recommendedVisibilityTier: report.executiveSummary.recommendedVisibilityTier,
     fullyPublicNavigationRequiredNow: report.executiveSummary.fullyPublicNavigationRequiredNow,
