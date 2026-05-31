@@ -2559,6 +2559,69 @@ Next safe move:
 - If Alejandro confirms the decision, generate a separate exact approval phrase for the scoped preview route only.
 - Do not publish, open UI, edit Shopify, edit MailerLite, send tests, connect forms or touch CRM until that later exact approval exists.
 
+## Launch OS v0 preview route boundary propagated - 2026-05-31
+
+Status: active goal, preview-route boundary now visible in current runbook/audit/validation receipt, not ready for live operation, no live actions authorized, no exact approval phrase printed.
+
+Evidence:
+
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Operator runbook markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.md`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Goal audit markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.md`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Validation receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+
+Confirmed results:
+
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`
+- Current-state refresh validation: `testFiles=15`, `testCount=95`
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`
+- Operator runbook: `shopifyPreviewRouteDecisionStatus=shopify_preview_route_decision_ready_for_human_explanation_no_live_changes`
+- Operator runbook: `shopifyPreviewRouteCanAskApprovalNow=false`, `shopifyPreviewRouteCanPublishNow=false`
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`
+- Goal audit: `shopifyPreviewRouteDecisionReady=true`, `shopifyPreviewRouteExactApprovalPhraseAvailable=false`, `shopifyPreviewRouteExactApprovalPhrasePrinted=false`
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`
+- Validation receipt: `shopifyPreviewRouteCanAskApprovalNow=false`, `shopifyPreviewRouteCanPublishNow=false`
+
+What is proven:
+
+- The preview-route decision packet is no longer isolated in the current-state refresh receipt; it is now consumed by the operator runbook, goal audit and validation receipt.
+- The active Launch OS surfaces agree that the recommended tier is `unlisted_noindex_preview`.
+- The active Launch OS surfaces agree that the exact approval phrase is not available or printed yet.
+- The active Launch OS surfaces agree that preview/publish/form/MailerLite send/CRM live action remains closed.
+
+What remains partial or pending:
+
+- Launch OS is still not ready for live operation.
+- The exact preview-route approval phrase has not been generated.
+- Shopify preview route creation/publish has not been approved or executed.
+- Final public links remain unavailable for audience use.
+- MailerLite UI correction, additional tests, public/audience send, workflow/subscriber/group mutation, Shopify/CRM live change, ledger/card/scoring/Fact Store write all remain closed.
+
+Safety:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- Shopify publish performed: false.
+- Shopify live theme/page mutation performed: false.
+- CRM live API called: false.
+- Subscribers read or mutated: false.
+- Groups, workflows, schedules, public campaigns and sends mutated: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Exact approval phrase printed: false.
+- Tokens printed: false.
+
+Next safe move:
+
+- Resume the paused goal from this checkpoint if Alejandro wants to continue.
+- Explain the preview-route decision boundary before generating any exact approval phrase.
+- Do not edit the big goal prompt for this hito; the existing goal already contains the right live-action guard, and this preview-route lifecycle belongs in the operational reports/scripts.
+- Do not publish, open UI, edit Shopify, edit MailerLite, send tests, connect forms or touch CRM until a later exact scope-specific approval exists.
+
 ## Current recommendation
 
 Keep Brújula as the controlled proving ground and keep the `Inteligencia para descansar` mini-launch in local correction mode. The four MailerLite seed tests were delivered and Gmail-verified, but seed inbox QA marked public readiness yellow. The local render preview has been hardened so E04 no longer renders the raw `reply` destination token, with render QA green and `emailRenderQaRawReplyDestinationRenderedCount=0`. The missing-inputs system now tracks the current correction boundary directly: `subscription_reason_policy` is resolved by the asset manifest default, while `final_public_links` are system-owned and waiting for Web/Shopify public URLs rather than Alejandro manual selection. Those URLs now use a single lifecycle per slot, so preview URLs can support QA but cannot reach public/audience send until each slot is live or intentionally promoted. The next human boundary is now explicit: explain the `unlisted_noindex_preview` route decision, then only if Alejandro confirms, generate the exact scoped approval phrase. Do not edit MailerLite UI, send another test, publish, schedule, attach workflows, mutate subscribers/groups, touch Shopify/CRM, append ledgers, write cards/scoring or write Fact Store without a later exact scope-specific approval. Separately, CRM signal writes still need the active CRM inputs, and taxonomy refresh still needs final Brand/CRM taxonomy responses before any local patch preview.

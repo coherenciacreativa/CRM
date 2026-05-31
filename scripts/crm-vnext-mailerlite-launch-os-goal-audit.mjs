@@ -39,6 +39,7 @@ const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -111,6 +112,7 @@ Options:
   --mini-launch-seed-inbox-qa <path> Mini-launch seed inbox QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_QA}
   --mini-launch-seed-inbox-correction-plan <path> Mini-launch seed inbox correction plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
+  --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
   --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -181,6 +183,7 @@ const parseArgs = (argv) => {
     miniLaunchSeedInboxQa: DEFAULT_MINI_LAUNCH_SEED_INBOX_QA,
     miniLaunchSeedInboxCorrectionPlan: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
+    miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
     miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -249,6 +252,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-inbox-qa') options.miniLaunchSeedInboxQa = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-correction-plan') options.miniLaunchSeedInboxCorrectionPlan = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
+    else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
     else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -424,6 +428,7 @@ const loadSources = async (options) => {
     ['miniLaunchSeedInboxQa', options.miniLaunchSeedInboxQa, 'mini-launch seed inbox QA with correction recommendations before public launch', 'json', true],
     ['miniLaunchSeedInboxCorrectionPlan', options.miniLaunchSeedInboxCorrectionPlan, 'mini-launch seed inbox correction plan and blockers before UI edit/public launch', 'json', true],
     ['miniLaunchShopifyLocalBuildReceipt', options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', 'json', true],
+    ['miniLaunchShopifyPreviewRouteDecision', options.miniLaunchShopifyPreviewRouteDecision, 'mini-launch Shopify preview route decision boundary with no approval phrase or publish', 'json', true],
     ['miniLaunchCrmWriteApprovalPacket', options.miniLaunchCrmWriteApprovalPacket, 'mini-launch CRM write approval packet with exact observed-events/person/write-family boundary', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
@@ -522,6 +527,7 @@ const buildRequirementChecks = ({
   miniLaunchSeedInboxQa,
   miniLaunchSeedInboxCorrectionPlan,
   miniLaunchShopifyLocalBuildReceipt,
+  miniLaunchShopifyPreviewRouteDecision,
   miniLaunchCrmWriteApprovalPacket,
   brujulaPlan,
   brujulaApply,
@@ -974,6 +980,19 @@ const buildRequirementChecks = ({
     && shopifyLocalBuildReceipt?.safety?.realFormsCreated === false
     && shopifyLocalBuildReceipt?.safety?.mailerLiteApiCalled === false
     && shopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
+  const shopifyPreviewRouteDecision = miniLaunchShopifyPreviewRouteDecision ?? null;
+  const shopifyPreviewRouteDecisionReady = shopifyPreviewRouteDecision?.status === 'shopify_preview_route_decision_ready_for_human_explanation_no_live_changes'
+    && shopifyPreviewRouteDecision?.executiveSummary?.decisionExplanationReady === true
+    && shopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhraseAvailable === false
+    && shopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhrasePrinted === false
+    && shopifyPreviewRouteDecision?.executiveSummary?.canAskApprovalNow === false
+    && shopifyPreviewRouteDecision?.executiveSummary?.canPublishNow === false
+    && shopifyPreviewRouteDecision?.executiveSummary?.publicAudienceSendUrlGateReady === false
+    && shopifyPreviewRouteDecision?.safety?.shopifyApiCalled === false
+    && shopifyPreviewRouteDecision?.safety?.shopifyRepoFilesWritten === false
+    && shopifyPreviewRouteDecision?.safety?.mailerLiteApiCalled === false
+    && shopifyPreviewRouteDecision?.safety?.sendsPerformed === false
+    && shopifyPreviewRouteDecision?.safety?.exactApprovalPhrasePrinted === false;
   const approvalQueueStatus = approvalQueue?.status
     ?? runbook?.currentState?.approvalQueue?.status
     ?? null;
@@ -1740,6 +1759,14 @@ const buildRequirementChecks = ({
         `shopifyLocalBuildNoPublish=${shopifyLocalBuildReceipt?.safety?.shopifyPublishPerformed === false}`,
         `shopifyLocalBuildNoApi=${shopifyLocalBuildReceipt?.safety?.shopifyApiCalled === false}`,
         `shopifyLocalBuildNoRealForms=${shopifyLocalBuildReceipt?.safety?.realFormsCreated === false}`,
+        `shopifyPreviewRouteDecisionStatus=${shopifyPreviewRouteDecision?.status ?? 'missing'}`,
+        `shopifyPreviewRouteDecisionReady=${shopifyPreviewRouteDecisionReady}`,
+        `shopifyPreviewRouteDecisionExplanationReady=${shopifyPreviewRouteDecision?.executiveSummary?.decisionExplanationReady ?? 'unknown'}`,
+        `shopifyPreviewRouteExactApprovalPhraseAvailable=${shopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhraseAvailable ?? 'unknown'}`,
+        `shopifyPreviewRouteExactApprovalPhrasePrinted=${shopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhrasePrinted ?? 'unknown'}`,
+        `shopifyPreviewRouteCanAskApprovalNow=${shopifyPreviewRouteDecision?.executiveSummary?.canAskApprovalNow ?? 'unknown'}`,
+        `shopifyPreviewRouteCanPublishNow=${shopifyPreviewRouteDecision?.executiveSummary?.canPublishNow ?? 'unknown'}`,
+        `shopifyPreviewRoutePublicAudienceSendUrlGateReady=${shopifyPreviewRouteDecision?.executiveSummary?.publicAudienceSendUrlGateReady ?? 'unknown'}`,
         `approvalQueueStatus=${approvalQueueStatus ?? 'missing'}`,
         `approvalQueueReadyCount=${approvalQueueReadyCount ?? 'unknown'}`,
         `approvalQueueBlockedCount=${approvalQueueBlockedCount ?? 'unknown'}`,
@@ -2141,6 +2168,30 @@ const buildGoalAudit = ({
     && shopifyLocalBuildReceipt?.safety?.realFormsCreated === false
     && shopifyLocalBuildReceipt?.safety?.mailerLiteApiCalled === false
     && shopifyLocalBuildReceipt?.safety?.crmLiveApiCalled === false;
+  const shopifyPreviewRouteDecision = values.miniLaunchShopifyPreviewRouteDecision ?? null;
+  const shopifyPreviewRouteDecisionReady = shopifyPreviewRouteDecision?.status === 'shopify_preview_route_decision_ready_for_human_explanation_no_live_changes'
+    || values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteDecisionReady === true;
+  const shopifyPreviewRouteDecisionStatus = shopifyPreviewRouteDecision?.status
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteDecisionStatus
+    ?? null;
+  const shopifyPreviewRouteDecisionExplanationReady = shopifyPreviewRouteDecision?.executiveSummary?.decisionExplanationReady
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteDecisionExplanationReady
+    ?? null;
+  const shopifyPreviewRouteExactApprovalPhraseAvailable = shopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhraseAvailable
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExactApprovalPhraseAvailable
+    ?? null;
+  const shopifyPreviewRouteExactApprovalPhrasePrinted = shopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhrasePrinted
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExactApprovalPhrasePrinted
+    ?? null;
+  const shopifyPreviewRouteCanAskApprovalNow = shopifyPreviewRouteDecision?.executiveSummary?.canAskApprovalNow
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteCanAskApprovalNow
+    ?? null;
+  const shopifyPreviewRouteCanPublishNow = shopifyPreviewRouteDecision?.executiveSummary?.canPublishNow
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteCanPublishNow
+    ?? null;
+  const shopifyPreviewRouteVisibilityTier = shopifyPreviewRouteDecision?.executiveSummary?.recommendedVisibilityTier
+    ?? values.runbook?.currentState?.miniLaunch?.shopifyPreviewRouteRecommendedVisibilityTier
+    ?? null;
   const brujulaManualUiBuildReceipt = values.brujulaEmailManualUiBuildReceipt ?? null;
   const brujulaManualUiBuildClosed = brujulaManualUiReceiptClosed(brujulaManualUiBuildReceipt);
   const onboardingV2GroupBoundaryClosed = values.approvalQueue?.approvalItems?.find((item) => item.id === 'onboarding_v2_empty_group_creation')?.status === 'reference_only_no_approval_request_now'
@@ -2552,6 +2603,11 @@ const buildGoalAudit = ({
   const shopifyLocalBuildMove = shopifyLocalBuildClosed
     ? 'The Shopify no-live local build now exists as five inert local files; publish, preview/theme push, real forms, MailerLite connection and CRM writes remain closed.'
     : 'Shopify local-build remains a no-live approval/request boundary; do not edit, preview, publish or connect forms without exact scope approval.';
+  const shopifyPreviewRouteMove = shopifyPreviewRouteDecisionReady
+    ? `The Shopify preview-route decision is ready for explanation only: visibility tier ${shopifyPreviewRouteVisibilityTier ?? 'unknown'}, explanationReady=${shopifyPreviewRouteDecisionExplanationReady}, exactApprovalPhraseAvailable=${shopifyPreviewRouteExactApprovalPhraseAvailable}, exactApprovalPhrasePrinted=${shopifyPreviewRouteExactApprovalPhrasePrinted}, canAskApprovalNow=${shopifyPreviewRouteCanAskApprovalNow}, canPublishNow=${shopifyPreviewRouteCanPublishNow}; explain this boundary before generating any exact approval phrase.`
+    : shopifyPreviewRouteDecisionStatus
+      ? `Refresh the Shopify preview-route decision packet before any exact public-link approval phrase; current status ${shopifyPreviewRouteDecisionStatus}, canPublishNow=${shopifyPreviewRouteCanPublishNow ?? 'unknown'}.`
+      : 'Generate the Shopify preview-route decision packet before any exact public-link approval phrase; preview/publish/forms/sends remain closed.';
   const crmWriteApprovalPacket = values.miniLaunchCrmWriteApprovalPacket ?? null;
   const crmWritePolicyPacketReady = crmWriteApprovalPacket?.executiveSummary?.writePolicyPacketReady === true;
   const crmWritePolicyResolvedBlockers = crmWriteApprovalPacket?.policyEffect?.resolvedPolicyBlockers ?? [];
@@ -2562,12 +2618,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
       ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -2590,6 +2646,7 @@ const buildGoalAudit = ({
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
+        shopifyPreviewRouteMove,
         crmWriteApprovalMove,
       ]
       : emptyGroupCreateDryRunReady
@@ -2613,6 +2670,7 @@ const buildGoalAudit = ({
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
+        shopifyPreviewRouteMove,
         crmWriteApprovalMove,
       ]
       : emptyGroupApprovalPacketReady
@@ -2635,6 +2693,7 @@ const buildGoalAudit = ({
         continuationGuardMove,
         localEmailAssetPlanMove,
         shopifyLocalBuildMove,
+        shopifyPreviewRouteMove,
         crmWriteApprovalMove,
       ]
       : [
@@ -2655,6 +2714,7 @@ const buildGoalAudit = ({
       continuationGuardMove,
       localEmailAssetPlanMove,
       shopifyLocalBuildMove,
+      shopifyPreviewRouteMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
       'Prepare a scoped Shopify local-build request from the Web Design response; do not edit Shopify until that scope is explicitly approved.',
       crmWriteApprovalMove,
@@ -2751,6 +2811,14 @@ const buildGoalAudit = ({
       seedInboxCorrectionPlanBlockers,
       seedInboxCorrectionPlanCanAskUiEditApprovalNow,
       seedInboxCorrectionPlanCanAskPublicSendApprovalNow,
+      shopifyPreviewRouteDecisionStatus,
+      shopifyPreviewRouteDecisionReady,
+      shopifyPreviewRouteDecisionExplanationReady,
+      shopifyPreviewRouteExactApprovalPhraseAvailable,
+      shopifyPreviewRouteExactApprovalPhrasePrinted,
+      shopifyPreviewRouteCanAskApprovalNow,
+      shopifyPreviewRouteCanPublishNow,
+      shopifyPreviewRouteVisibilityTier,
     },
     requirements,
     nextMoves: uniqueMoves([
@@ -2780,6 +2848,7 @@ const buildGoalAudit = ({
       repairPacketMove,
       seedRecipientMove,
       crmWriteApprovalMove,
+      shopifyPreviewRouteMove,
       emptyGroupCreateDryRunNoCreateNeeded
         ? 'Do not rerun mini-launch empty-group creation; the two target groups already exist and that boundary is closed.'
         : 'If the mini-launch empty-group approval packet is ready, stop at Alejandro exact-phrase boundary; do not create groups from the packet alone.',

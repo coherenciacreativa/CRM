@@ -82,6 +82,15 @@ const runbook = {
       createsFinalResponseFiles: false,
       canApplyCrmManifestPatchNow: false,
     },
+    miniLaunch: {
+      shopifyPreviewRouteDecisionStatus: "shopify_preview_route_decision_ready_for_human_explanation_no_live_changes",
+      shopifyPreviewRouteDecisionExplanationReady: true,
+      shopifyPreviewRouteExactApprovalPhraseAvailable: false,
+      shopifyPreviewRouteExactApprovalPhrasePrinted: false,
+      shopifyPreviewRouteCanAskApprovalNow: false,
+      shopifyPreviewRouteCanPublishNow: false,
+      shopifyPreviewRouteRecommendedVisibilityTier: "unlisted_noindex_preview",
+    },
   },
 };
 
@@ -204,6 +213,18 @@ const taxonomyRefreshResponseRequestBundle = {
   },
 };
 
+const miniLaunchShopifyPreviewRouteDecision = {
+  status: "shopify_preview_route_decision_ready_for_human_explanation_no_live_changes",
+  executiveSummary: {
+    recommendedVisibilityTier: "unlisted_noindex_preview",
+    decisionExplanationReady: true,
+    exactApprovalPhraseAvailable: false,
+    exactApprovalPhrasePrinted: false,
+    canAskApprovalNow: false,
+    canPublishNow: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/runbook.mjs",
@@ -243,6 +264,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/seed-test-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-plan": "node scripts/seed-inbox-correction-plan.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview": "node scripts/seed-inbox-correction-preview.mjs",
+    "crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet": "node scripts/shopify-preview-route-decision.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-policy-packet": "node scripts/crm-write-policy-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-write-approval-packet.mjs",
   },
@@ -291,6 +313,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(parsed.taxonomyRefreshDecisionIntake).toContain("mailerlite_launch_os_taxonomy_refresh_decision_intake_2026-05-28.json");
     expect(parsed.taxonomyRefreshResponseWorkspace).toContain("mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json");
     expect(parsed.taxonomyRefreshResponseRequestBundle).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json");
+    expect(parsed.miniLaunchShopifyPreviewRouteDecision).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.validationStatus).toBe("passed");
     expect(parsed.testFiles).toBe(46);
     expect(parsed.testCount).toBe(260);
@@ -313,6 +336,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       taxonomyRefreshResponseWorkspace,
       taxonomyRefreshResponseRequestBundle,
       onboardingTrunkMap,
+      miniLaunchShopifyPreviewRouteDecision,
       packageJson,
       sourceDigests,
       validationStatus: "passed",
@@ -369,6 +393,12 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.evidence.taxonomyRefreshResponseRequestCopyBlocksReady).toBe(true);
     expect(receipt.evidence.taxonomyRefreshResponseRequestAsksLiveApproval).toBe(false);
     expect(receipt.evidence.taxonomyRefreshResponseRequestCreatesFinalResponseFiles).toBe(false);
+    expect(receipt.evidence.shopifyPreviewRouteDecisionStatus).toBe("shopify_preview_route_decision_ready_for_human_explanation_no_live_changes");
+    expect(receipt.evidence.shopifyPreviewRouteDecisionExplanationReady).toBe(true);
+    expect(receipt.evidence.shopifyPreviewRouteExactApprovalPhraseAvailable).toBe(false);
+    expect(receipt.evidence.shopifyPreviewRouteExactApprovalPhrasePrinted).toBe(false);
+    expect(receipt.evidence.shopifyPreviewRouteCanAskApprovalNow).toBe(false);
+    expect(receipt.evidence.shopifyPreviewRouteCanPublishNow).toBe(false);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,
@@ -406,6 +436,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
       continuationGuard,
       missingInputsIntake,
       onboardingTrunkMap,
+      miniLaunchShopifyPreviewRouteDecision,
       packageJson,
       sourceDigests,
       validationStatus: "passed",
@@ -431,6 +462,7 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(markdown).toContain("Taxonomy decision intake");
     expect(markdown).toContain("Taxonomy response workspace");
     expect(markdown).toContain("Taxonomy response request bundle");
+    expect(markdown).toContain("Shopify preview-route decision");
     expect(markdown).toContain("No live actions");
     expect(markdown).toContain("This receipt cannot approve live action");
   });

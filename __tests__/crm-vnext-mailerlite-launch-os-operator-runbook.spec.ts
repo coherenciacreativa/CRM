@@ -901,6 +901,26 @@ const miniLaunchShopifyLocalBuildReceipt = {
   },
 };
 
+const miniLaunchShopifyPreviewRouteDecision = {
+  status: "shopify_preview_route_decision_ready_for_human_explanation_no_live_changes",
+  executiveSummary: {
+    recommendedVisibilityTier: "unlisted_noindex_preview",
+    decisionExplanationReady: true,
+    exactApprovalPhraseAvailable: false,
+    exactApprovalPhrasePrinted: false,
+    canAskApprovalNow: false,
+    canPublishNow: false,
+    publicAudienceSendUrlGateReady: false,
+  },
+  safety: {
+    shopifyApiCalled: false,
+    shopifyRepoFilesWritten: false,
+    mailerLiteApiCalled: false,
+    sendsPerformed: false,
+    exactApprovalPhrasePrinted: false,
+  },
+};
+
 const miniLaunchSeedInboxQa = {
   status: "seed_inbox_qa_completed_correction_recommended_before_public_launch_no_live_changes",
   executiveSummary: {
@@ -957,6 +977,7 @@ const packageJson = {
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-builder-packet": "node scripts/email-manual-ui-builder-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-execution-kit": "node scripts/email-manual-ui-execution-kit.mjs",
     "crm:vnext:mailerlite-mini-launch-email-manual-ui-build-receipt": "node scripts/email-manual-ui-build-receipt.mjs",
+    "crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet": "node scripts/shopify-preview-route-decision.mjs",
     "crm:vnext:mailerlite-mini-launch-crm-write-approval-packet": "node scripts/crm-write-approval.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-packets": "node scripts/packets.mjs",
     "crm:vnext:mailerlite-mini-launch-department-review-intake": "node scripts/intake.mjs",
@@ -1063,6 +1084,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.miniLaunchSeedInboxCorrectionPlan).toContain("mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchShopifyPreviewRouteDecision).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
   });
@@ -1101,6 +1123,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       miniLaunchEmailManualUiBuildReceipt,
       miniLaunchCrmWriteApprovalPacket,
       miniLaunchShopifyLocalBuildReceipt,
+      miniLaunchShopifyPreviewRouteDecision,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -1218,6 +1241,14 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.shopifyLocalBuildNoPublish).toBe(true);
     expect(state.miniLaunch.shopifyLocalBuildNoApi).toBe(true);
     expect(state.miniLaunch.shopifyLocalBuildNoRealForms).toBe(true);
+    expect(state.miniLaunch.shopifyPreviewRouteDecisionStatus).toBe("shopify_preview_route_decision_ready_for_human_explanation_no_live_changes");
+    expect(state.miniLaunch.shopifyPreviewRouteDecisionReady).toBe(true);
+    expect(state.miniLaunch.shopifyPreviewRouteDecisionExplanationReady).toBe(true);
+    expect(state.miniLaunch.shopifyPreviewRouteExactApprovalPhraseAvailable).toBe(false);
+    expect(state.miniLaunch.shopifyPreviewRouteExactApprovalPhrasePrinted).toBe(false);
+    expect(state.miniLaunch.shopifyPreviewRouteCanAskApprovalNow).toBe(false);
+    expect(state.miniLaunch.shopifyPreviewRouteCanPublishNow).toBe(false);
+    expect(state.miniLaunch.shopifyPreviewRouteRecommendedVisibilityTier).toBe("unlisted_noindex_preview");
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
     expect(state.miniLaunch.pendingDepartments).toEqual(["brand", "web_design", "crm"]);
@@ -2015,6 +2046,12 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
         consultedFor: "mini-launch Shopify local build receipt and closed publish/form/API gates",
       },
       {
+        path: "/tmp/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json",
+        present: true,
+        chars: 2000,
+        consultedFor: "mini-launch Shopify preview route decision boundary with no approval phrase or publish",
+      },
+      {
         path: "/tmp/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json",
         present: true,
         chars: 2000,
@@ -2138,6 +2175,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(reportMap.miniLaunchEmailRenderQa).toBe("/tmp/mailerlite_mini_launch_email_render_qa_inteligencia_descansar_2026-05-28.json");
     expect(reportMap.miniLaunchEmailManualUiBuildReceipt).toBe("/tmp/mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(reportMap.miniLaunchShopifyLocalBuildReceipt).toBe("/tmp/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(reportMap.miniLaunchShopifyPreviewRouteDecision).toBe("/tmp/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(reportMap.miniLaunchCrmWriteApprovalPacket).toBe("/tmp/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(reportMap.brujulaEmailStyleQa).toBe("/tmp/mailerlite_brujula_email_style_qa_packet_2026-05-27.json");
     expect(reportMap.brujulaEmailStyleCorrection).toBe("/tmp/mailerlite_brujula_email_style_correction_packet_2026-05-27.json");

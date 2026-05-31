@@ -19,6 +19,7 @@ const DEFAULT_TAXONOMY_REFRESH_DECISION_INTAKE = '/Users/alejandrogomez/Document
 const DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_2026-05-28.json';
 const DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_2026-05-28.json';
 const DEFAULT_ONBOARDING_TRUNK_MAP = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_trunk_map_2026-05-27.json';
+const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_PACKAGE_JSON = '/Users/alejandrogomez/CRM/package.json';
 
 const DEFAULT_COMMANDS = [
@@ -57,6 +58,7 @@ const DEFAULT_COMMANDS = [
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-plan.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.mjs',
+  'node --check scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-crm-write-policy-packet.mjs',
   'node --check scripts/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.mjs',
   'npm exec vitest run __tests__/crm-vnext-mailerlite*.spec.ts',
@@ -79,6 +81,7 @@ Options:
   --taxonomy-refresh-response-workspace <path> Taxonomy response workspace JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE}
   --taxonomy-refresh-response-request-bundle <path> Taxonomy response request bundle JSON. Defaults to ${DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE}
   --onboarding-trunk-map <path>  Onboarding trunk map JSON. Defaults to ${DEFAULT_ONBOARDING_TRUNK_MAP}
+  --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
   --package-json <path>          package.json. Defaults to ${DEFAULT_PACKAGE_JSON}
   --validation-status <status>   passed | failed | needs_validation. Defaults to needs_validation
   --validation-summary <text>    Required when status is passed
@@ -116,6 +119,7 @@ const parseArgs = (argv) => {
     taxonomyRefreshResponseWorkspace: DEFAULT_TAXONOMY_REFRESH_RESPONSE_WORKSPACE,
     taxonomyRefreshResponseRequestBundle: DEFAULT_TAXONOMY_REFRESH_RESPONSE_REQUEST_BUNDLE,
     onboardingTrunkMap: DEFAULT_ONBOARDING_TRUNK_MAP,
+    miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
     packageJson: DEFAULT_PACKAGE_JSON,
     validationStatus: 'needs_validation',
     validationSummary: null,
@@ -143,6 +147,7 @@ const parseArgs = (argv) => {
     else if (arg === '--taxonomy-refresh-response-workspace') options.taxonomyRefreshResponseWorkspace = argv[++index];
     else if (arg === '--taxonomy-refresh-response-request-bundle') options.taxonomyRefreshResponseRequestBundle = argv[++index];
     else if (arg === '--onboarding-trunk-map') options.onboardingTrunkMap = argv[++index];
+    else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
     else if (arg === '--package-json') options.packageJson = argv[++index];
     else if (arg === '--validation-status') options.validationStatus = argv[++index];
     else if (arg === '--validation-summary') options.validationSummary = argv[++index];
@@ -227,6 +232,7 @@ const buildValidationReceipt = ({
   taxonomyRefreshResponseWorkspace = null,
   taxonomyRefreshResponseRequestBundle = null,
   onboardingTrunkMap,
+  miniLaunchShopifyPreviewRouteDecision = null,
   packageJson,
   sourceDigests = [],
   validationStatus = 'needs_validation',
@@ -244,6 +250,8 @@ const buildValidationReceipt = ({
     && goalAudit?.safety?.shopifyApiCalled === false
     && goalAudit?.safety?.crmLiveApiCalled === false
     && goalAudit?.safety?.sendsPerformed === false
+    && (miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhrasePrinted ?? false) === false
+    && (miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.canPublishNow ?? false) === false
     && safetyClosed(safety);
   const requiredScriptsPresent = [
     'crm:vnext:mailerlite-launch-os-operator-runbook',
@@ -283,6 +291,7 @@ const buildValidationReceipt = ({
     'crm:vnext:mailerlite-mini-launch-seed-test-qa-packet',
     'crm:vnext:mailerlite-mini-launch-seed-inbox-correction-plan',
     'crm:vnext:mailerlite-mini-launch-seed-inbox-correction-preview',
+    'crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet',
     'crm:vnext:mailerlite-mini-launch-crm-write-policy-packet',
     'crm:vnext:mailerlite-mini-launch-crm-write-approval-packet',
   ].every((scriptName) => packageHas(packageJson, scriptName));
@@ -472,6 +481,34 @@ const buildValidationReceipt = ({
       taxonomyRefreshResponseRequestCanApplyCrmManifestPatchNow: taxonomyRefreshResponseRequestBundle?.executiveSummary?.canApplyCrmManifestPatchNow
         ?? runbook?.currentState?.taxonomyRefreshResponseRequestBundle?.canApplyCrmManifestPatchNow
         ?? null,
+      shopifyPreviewRouteDecisionStatus: miniLaunchShopifyPreviewRouteDecision?.status
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteDecisionStatus
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteDecisionStatus
+        ?? null,
+      shopifyPreviewRouteDecisionExplanationReady: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.decisionExplanationReady
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteDecisionExplanationReady
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteDecisionExplanationReady
+        ?? null,
+      shopifyPreviewRouteExactApprovalPhraseAvailable: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhraseAvailable
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExactApprovalPhraseAvailable
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExactApprovalPhraseAvailable
+        ?? null,
+      shopifyPreviewRouteExactApprovalPhrasePrinted: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.exactApprovalPhrasePrinted
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExactApprovalPhrasePrinted
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExactApprovalPhrasePrinted
+        ?? null,
+      shopifyPreviewRouteCanAskApprovalNow: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.canAskApprovalNow
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteCanAskApprovalNow
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteCanAskApprovalNow
+        ?? null,
+      shopifyPreviewRouteCanPublishNow: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.canPublishNow
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteCanPublishNow
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteCanPublishNow
+        ?? null,
+      shopifyPreviewRouteRecommendedVisibilityTier: miniLaunchShopifyPreviewRouteDecision?.executiveSummary?.recommendedVisibilityTier
+        ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteRecommendedVisibilityTier
+        ?? goalAudit?.executiveSummary?.shopifyPreviewRouteVisibilityTier
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -501,6 +538,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     taxonomyRefreshResponseWorkspace,
     taxonomyRefreshResponseRequestBundle,
     onboardingTrunkMap,
+    miniLaunchShopifyPreviewRouteDecision,
     packageJson,
     sourceDigests,
   ] = await Promise.all([
@@ -517,6 +555,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     readJson(options.taxonomyRefreshResponseWorkspace),
     readJson(options.taxonomyRefreshResponseRequestBundle),
     readJson(options.onboardingTrunkMap),
+    readJson(options.miniLaunchShopifyPreviewRouteDecision),
     readJson(options.packageJson),
     Promise.all([
       digestFor(options.runbook, 'operator runbook state and closed gates'),
@@ -532,6 +571,7 @@ const buildValidationReceiptFromFiles = async (options) => {
       digestFor(options.taxonomyRefreshResponseWorkspace, 'taxonomy response workspace with pending/final Brand and CRM decisions'),
       digestFor(options.taxonomyRefreshResponseRequestBundle, 'taxonomy response request bundle for Brand/CRM final files'),
       digestFor(options.onboardingTrunkMap, 'protected onboarding trunk evidence'),
+      digestFor(options.miniLaunchShopifyPreviewRouteDecision, 'Shopify preview route decision boundary and closed approval phrase state'),
       digestFor(options.packageJson, 'available Launch OS scripts'),
     ]),
   ]);
@@ -550,6 +590,7 @@ const buildValidationReceiptFromFiles = async (options) => {
     taxonomyRefreshResponseWorkspace,
     taxonomyRefreshResponseRequestBundle,
     onboardingTrunkMap,
+    miniLaunchShopifyPreviewRouteDecision,
     packageJson,
     sourceDigests,
     validationStatus: options.validationStatus,
@@ -617,6 +658,12 @@ const renderMarkdown = (receipt) => {
     `- Taxonomy response request missing finals: ${receipt.evidence.taxonomyRefreshResponseRequestMissingFinalResponseCount ?? 'unknown'}`,
     `- Taxonomy response request asks live approval: ${receipt.evidence.taxonomyRefreshResponseRequestAsksLiveApproval ?? 'unknown'}`,
     `- Taxonomy response request creates final files: ${receipt.evidence.taxonomyRefreshResponseRequestCreatesFinalResponseFiles ?? 'unknown'}`,
+    `- Shopify preview-route decision: ${receipt.evidence.shopifyPreviewRouteDecisionStatus ?? 'missing'}`,
+    `- Shopify preview-route explanation ready: ${receipt.evidence.shopifyPreviewRouteDecisionExplanationReady ?? 'unknown'}`,
+    `- Shopify preview-route exact approval phrase available: ${receipt.evidence.shopifyPreviewRouteExactApprovalPhraseAvailable ?? 'unknown'}`,
+    `- Shopify preview-route exact approval phrase printed: ${receipt.evidence.shopifyPreviewRouteExactApprovalPhrasePrinted ?? 'unknown'}`,
+    `- Shopify preview-route can ask approval now: ${receipt.evidence.shopifyPreviewRouteCanAskApprovalNow ?? 'unknown'}`,
+    `- Shopify preview-route can publish now: ${receipt.evidence.shopifyPreviewRouteCanPublishNow ?? 'unknown'}`,
     '',
     '## Commands',
     '',
