@@ -21,6 +21,7 @@ import {
   cleanupExecutionCompleted,
   mailerLiteApiInertDraftLabCompleted,
   mailerLiteApiNullAudienceLabCompleted,
+  nullAudienceSeedInboxQaCompletedAfterE04Resend,
   nullAudienceSeedInboxQaNeedsE04Resend,
   nullAudienceSeedTestSendCompleted,
   nullAudienceReplacementExecutionCompleted,
@@ -773,6 +774,40 @@ const miniLaunchNullAudienceSeedInboxQaPartialE04 = {
   decision: {
     needsHumanApprovalBeforeAnyAdditionalSend: true,
     recommendedNextBoundary: "approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan",
+  },
+  safety: {
+    gmailReadOnly: true,
+    mailerLiteSendsPerformedByThisQa: false,
+  },
+};
+
+const miniLaunchNullAudienceSeedInboxQaGreenAfterE04Resend = {
+  ok: true,
+  status: "mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes",
+  deliverySummary: {
+    expectedSeedMessages: 4,
+    deliveredToApprovedSeed: 4,
+    newCorrectedMessagesFoundOutsideApprovedSeed: 0,
+    historicalCorrectedMessagesFoundOutsideApprovedSeed: 1,
+    seedInboxQaGreen: true,
+  },
+  messageQa: [
+    {
+      label: "E04",
+      subject: "E04 Feedback invitation",
+      latestExpectedVersionFound: true,
+      latestExpectedVersionRecipient: "approved_seed",
+      priorMisdirectedCorrectedVersionFound: true,
+      bodyQa: {
+        rawReplyTokenPresentInOldSeedVersion: true,
+        rawReplyTokenPresentInLatestVersion: false,
+      },
+      blockers: [],
+    },
+  ],
+  decision: {
+    needsHumanApprovalBeforeAnyAdditionalSend: true,
+    recommendedNextBoundary: "regenerate_launch_os_current_state_after_e04_seed_inbox_green_no_live_changes",
   },
   safety: {
     gmailReadOnly: true,
@@ -1990,6 +2025,38 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     });
     expect(item.exactApprovalPhrase).toContain("sin reenviar E01-E03");
     expect(item.allowedAfterExactApproval).toContain("send_or_record_one_e04_test_email_only_to_exact_approved_seed_recipient");
+    expect(item.stillClosed).toContain("public_or_audience_send");
+  });
+
+  test("closes E04-only Null Audience resend after seed inbox QA is green", () => {
+    expect(nullAudienceSeedInboxQaNeedsE04Resend(miniLaunchNullAudienceSeedInboxQaGreenAfterE04Resend)).toBe(false);
+    expect(nullAudienceSeedInboxQaCompletedAfterE04Resend(miniLaunchNullAudienceSeedInboxQaGreenAfterE04Resend)).toBe(true);
+
+    const item = buildMiniLaunchE04SeedResendItem({
+      seedInboxQa: miniLaunchNullAudienceSeedInboxQaGreenAfterE04Resend,
+      nullAudienceSeedTestSendReceipt: miniLaunchNullAudienceSeedTestSendExecutionReceiptCompleted,
+      nullAudienceReplacementExecutionReceipt: miniLaunchNullAudienceReplacementExecutionReceiptCompleted,
+    });
+
+    expect(item).toMatchObject({
+      id: "mini_launch_null_audience_e04_seed_resend",
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_completed",
+      operationType: "mailerLite_null_audience_e04_seed_resend_completed_reference_only",
+      evidence: {
+        seedInboxQaGreen: true,
+        deliveredToApprovedSeed: 4,
+        expectedSeedMessages: 4,
+        latestCorrectedE04RecipientClass: "approved_seed",
+        latestCorrectedE04RawReplyTokenPresent: false,
+        priorMisdirectedCorrectedVersionFound: true,
+      },
+      blockers: [],
+    });
+    expect(item.exactApprovalPhrase).toBeNull();
+    expect(item.allowedAfterExactApproval).toEqual([]);
+    expect(item.stillClosed).toContain("additional_seed_or_test_send");
     expect(item.stillClosed).toContain("public_or_audience_send");
   });
 

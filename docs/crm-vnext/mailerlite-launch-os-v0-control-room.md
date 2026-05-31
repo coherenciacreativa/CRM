@@ -3780,3 +3780,59 @@ Next safe move:
 - After Computer Use is available in a healthy Codex session, use Computer Use only to send a single E04 test email to the exact approved seed recipient.
 - Then run the E04-only `--record-ui-sent --target-labels E04 --ui-sent-labels E04` receipt path, rerun Gmail seed inbox QA and regenerate approval queue/runbook/goal audit/validation receipt.
 - Keep public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store closed.
+
+## Launch OS v0 E04-only Null Audience seed resend closed - 2026-06-01
+
+Status: active goal, Computer Use responded in the native Codex app, and the narrow E04-only resend boundary is now closed. A fresh API preflight confirmed the corrected E04 replacement draft was safe, then MailerLite UI was operated through Computer Use semantic actions only to send one E04 test email to the approved seed recipient. Gmail read-only evidence confirms the corrected E04 test arrived at the approved seed recipient, so the Null Audience seed inbox QA is now green for all four messages.
+
+Evidence:
+
+- E04 seed-test send execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- E04 seed-test send execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.md`
+- Null Audience seed inbox QA report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`
+- Null Audience seed inbox QA report markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.md`
+- Current approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Computer Use: native Codex Computer Use responded and MailerLite UI was operated semantically, not by screenshot/coordinate control.
+- E04 preflight: `targetCount=1`, `qaGreenCount=1`, `testEmailsSent=0` before UI action.
+- E04 send receipt after UI record: `status=mailerlite_null_audience_seed_test_send_completed_test_only`, `targetCount=1`, `testEmailsSent=1`.
+- Gmail read-only verification: corrected E04 test email found at the approved seed recipient with subject `[Test] ¿Qué notaste al probar tu descanso?`.
+- Null Audience seed inbox QA: `status=mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes`, `deliveredToApprovedSeed=4`, `expectedSeedMessages=4`, `seedInboxQaGreen=true`.
+- Approval queue: `readyApprovalRequestCount=0`, `readyApprovalIds=[]`, `blockedApprovalIds=crm_signal_writes`, `openLiveMutationGateCount=0`.
+- E04 approval item: `status=reference_only_no_approval_request_now`, `approvalType=reference_only_completed`, `canAskAlejandroNow=false`, `blockers=[]`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=26`, `testCount=164`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`.
+
+Safety:
+
+- MailerLite UI test send performed: true, only for the approved E04-only seed-test scope.
+- MailerLite audience sends performed: false.
+- Campaigns published or scheduled: false/false.
+- Workflows or automations mutated: false.
+- Subscribers read or mutated: false/false.
+- Additional groups or segments created/assigned: false.
+- Shopify, CRM live API, ledgers, cards, scoring and Fact Store touched: false.
+- Gmail connector used read-only for verification: true.
+- Raw recipients, raw group/campaign IDs, exact preview URLs, sender values and tokens printed in repo docs: false.
+
+Decision:
+
+- Treat the E04-only resend boundary as used and closed.
+- Do not ask Alejandro again for the E04-only resend phrase unless a future QA run creates a new, explicit E04-only defect.
+- Keep all public/audience launch actions closed; green seed inbox QA is evidence for review, not launch authorization.
+- Keep CRM signal writes blocked until exact observed event/person evidence and a separate exact approval exist.
+- Keep Computer Use semantic UI as the Codex-native MailerLite UI route; do not fall back to screenshot/coordinate control.
+
+Next safe move:
+
+- Continue from local-only current-state, approval queue, runbook, goal audit and validation receipt.
+- Review the green seed inbox QA and decide the next launch-readiness packet locally before any public/audience send approval.
+- Stop before any public/audience send, publish/schedule, workflow, subscriber, Shopify live, CRM write, ledger, card, scoring or Fact Store action.

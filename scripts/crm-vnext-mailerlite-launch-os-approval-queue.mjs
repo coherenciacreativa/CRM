@@ -2537,6 +2537,17 @@ const nullAudienceSeedInboxQaNeedsE04Resend = (qa) =>
   && qa?.safety?.gmailReadOnly === true
   && qa?.safety?.mailerLiteSendsPerformedByThisQa === false;
 
+const nullAudienceSeedInboxQaCompletedAfterE04Resend = (qa) => {
+  const e04 = (qa?.messageQa ?? []).find((row) => row?.label === 'E04') ?? {};
+  return qa?.ok === true
+    && qa?.deliverySummary?.expectedSeedMessages === 4
+    && qa?.deliverySummary?.deliveredToApprovedSeed === 4
+    && qa?.deliverySummary?.seedInboxQaGreen === true
+    && e04?.latestExpectedVersionFound === true
+    && e04?.latestExpectedVersionRecipient === 'approved_seed'
+    && (e04?.blockers ?? []).length === 0;
+};
+
 const buildMiniLaunchE04SeedResendItem = ({
   seedInboxQa,
   nullAudienceSeedTestSendReceipt = null,
@@ -2547,6 +2558,60 @@ const buildMiniLaunchE04SeedResendItem = ({
   const e04 = (seedInboxQa.messageQa ?? []).find((row) => row?.label === 'E04') ?? {};
   const e04Sent = (nullAudienceSeedTestSendReceipt?.sentTests ?? []).find((row) => row?.label === 'E04') ?? {};
   const e04Replacement = (nullAudienceReplacementExecutionReceipt?.createdDrafts ?? []).find((row) => row?.label === 'E04') ?? {};
+  const targetNames = targetNamesFrom([
+    e04Sent?.name,
+    e04Replacement?.name,
+    e04?.subject,
+  ]);
+  if (nullAudienceSeedInboxQaCompletedAfterE04Resend(seedInboxQa)) {
+    return buildApprovalItem({
+      id: 'mini_launch_null_audience_e04_seed_resend',
+      title: 'Mini-launch Null Audience E04 seed-test resend',
+      lane: 'mini_launch_inteligencia_para_descansar',
+      operationType: 'mailerLite_null_audience_e04_seed_resend_completed_reference_only',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        seedInboxQa: seedInboxQa?.status ?? null,
+        nullAudienceSeedTestSendReceipt: nullAudienceSeedTestSendReceipt?.status ?? null,
+        nullAudienceReplacementExecutionReceipt: nullAudienceReplacementExecutionReceipt?.status ?? null,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: [
+        'additional_seed_or_test_send',
+        'public_or_audience_send',
+        'publish_or_schedule',
+        'workflow_or_automation_attachment',
+        'subscriber_import_assignment_or_mutation',
+        'group_creation_or_assignment',
+        'shopify_live_publish_or_form_connection',
+        'crm_signal_ledger_append',
+        'crm_card_write',
+        'crm_scoring',
+        'fact_store_write',
+      ],
+      requiredFreshEvidence: [
+        'future public/audience launch requires a separate live-readiness packet and exact approval',
+      ],
+      blockers: [],
+      evidence: {
+        seedInboxQaGreen: seedInboxQa?.deliverySummary?.seedInboxQaGreen ?? null,
+        deliveredToApprovedSeed: seedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
+        expectedSeedMessages: seedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
+        latestCorrectedE04RecipientClass: e04?.latestExpectedVersionRecipient ?? null,
+        latestCorrectedE04RawReplyTokenPresent: e04?.bodyQa?.rawReplyTokenPresentInLatestVersion ?? null,
+        priorMisdirectedCorrectedVersionFound: e04?.priorMisdirectedCorrectedVersionFound ?? null,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The narrow E04-only seed resend boundary has already been used and Gmail read-only QA now confirms the corrected E04 reached the approved seed recipient.',
+        'This closes the E04 repair gate only; it does not authorize additional tests, public/audience sends, schedules, workflows, subscribers, groups, Shopify, CRM, ledgers, cards, scoring or Fact Store.',
+      ],
+    });
+  }
+
   const seedSendCompleted = nullAudienceSeedTestSendCompleted(nullAudienceSeedTestSendReceipt);
   const replacementCompleted = nullAudienceReplacementExecutionCompleted(nullAudienceReplacementExecutionReceipt);
   const qaNeedsE04Resend = nullAudienceSeedInboxQaNeedsE04Resend(seedInboxQa);
@@ -2573,11 +2638,7 @@ const buildMiniLaunchE04SeedResendItem = ({
       nullAudienceSeedTestSendReceipt: nullAudienceSeedTestSendReceipt?.status ?? null,
       nullAudienceReplacementExecutionReceipt: nullAudienceReplacementExecutionReceipt?.status ?? null,
     },
-    targetNames: targetNamesFrom([
-      e04Sent?.name,
-      e04Replacement?.name,
-      e04?.subject,
-    ]),
+    targetNames,
     allowedAfterExactApproval: [
       'fresh_api_rescan_e04_only',
       'send_or_record_one_e04_test_email_only_to_exact_approved_seed_recipient',
@@ -3154,6 +3215,7 @@ export {
   cleanupExecutionCompleted,
   mailerLiteApiInertDraftLabCompleted,
   mailerLiteApiNullAudienceLabCompleted,
+  nullAudienceSeedInboxQaCompletedAfterE04Resend,
   nullAudienceSeedInboxQaNeedsE04Resend,
   nullAudienceSeedTestSendCompleted,
   nullAudienceReplacementExecutionCompleted,
