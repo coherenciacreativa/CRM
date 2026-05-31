@@ -201,6 +201,10 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
       date,
     ),
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt: staticReportPath(
+      reportsDir,
+      `mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_${date}.json`,
+    ),
     privateSeedEmailFile: privateReportPath(
       reportsDir,
       'mailerlite_seed_recipient_inteligencia_descansar.txt',
@@ -646,6 +650,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
         '--mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet',
         paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+        '--mini-launch-seed-inbox-correction-api-replacement-cleanup-execution-receipt',
+        paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
         '--mini-launch-crm-signal-projection-packet',
         paths.miniLaunchCrmSignalProjectionPacket,
         '--mini-launch-crm-write-approval-packet',
@@ -982,6 +988,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchEmailRenderQa,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
     missingInputsKit,
     missingInputsIntake,
     missingInputsRequestBundle,
@@ -1003,6 +1010,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchEmailRenderQa),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionUiEditApprovalPacket),
     readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket),
+    readOptionalJson(paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt),
     readOptionalJson(paths.missingInputsKit),
     readOptionalJson(paths.missingInputsIntake),
     readOptionalJson(paths.missingInputsRequestBundle),
@@ -1164,6 +1172,19 @@ const summarizeGeneratedReports = async (paths) => {
         miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.inertDraftCount ?? null,
       blockerCount:
         miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket?.executiveSummary?.blockerCount ?? null,
+    },
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt: {
+      path: paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+      markdownPath: paths.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceiptMarkdown,
+      status: miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt?.status ?? null,
+      ok: miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt?.ok ?? null,
+      mode: miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt?.mode ?? null,
+      deletedDraftCount:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt?.deletedDrafts?.length ?? null,
+      goneCount:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt?.postScan?.goneCount ?? null,
+      mailerLiteDraftsDeleted:
+        miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt?.safety?.mailerLiteDraftsDeleted ?? null,
     },
     missingInputsKit: {
       path: paths.missingInputsKit,

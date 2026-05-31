@@ -13,6 +13,7 @@ import {
   buildOnboardingV2EmptyGroupItem,
   buildShopifyPreviewRouteItem,
   buildSafety,
+  cleanupExecutionCompleted,
   parseArgs,
   renderMarkdown,
 } from "../scripts/crm-vnext-mailerlite-launch-os-approval-queue.mjs";
@@ -387,6 +388,43 @@ const miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket = {
   },
 };
 
+const miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt = {
+  ok: true,
+  status: "seed_inbox_correction_api_replacement_cleanup_execution_completed_no_sends",
+  mode: "execute_requested",
+  deletedDrafts: [
+    { label: "E02", campaignId: "new-e02", name: "ML Draft · descanso · E02 · API replacement", deleted: true },
+    { label: "E03", campaignId: "new-e03", name: "ML Draft · descanso · E03 · API replacement", deleted: true },
+  ],
+  postScan: {
+    goneCount: 2,
+  },
+  safety: {
+    mailerLiteApiCalled: true,
+    mailerLiteDraftsDeleted: 2,
+    mailerLiteMutationsPerformed: true,
+    allowedMutationType: "delete_two_unsafe_replacement_draft_campaigns_only",
+    originalDraftsEditedOrDeleted: false,
+    campaignsCreatedOrEdited: false,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    groupsCreatedOrAssigned: false,
+    segmentsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    shopifyMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    tokensPrinted: false,
+    exactUrlsPrinted: false,
+  },
+};
+
 const miniLaunchSeedTestQaPacket = {
   status: "seed_test_qa_packet_updated_after_manual_ui_build_no_live_changes",
   readiness: {
@@ -741,6 +779,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchEmailManualUiDraftRepairPacket).toContain("mailerlite_mini_launch_email_manual_ui_draft_repair_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchSeedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
@@ -1041,6 +1080,54 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_seed_inbox_correction_api_replacement_cleanup");
     expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_ui_edit");
     expect(queue.executiveSummary.nextBestHumanBoundary).toBe("mini_launch_empty_group_creation");
+  });
+
+  test("marks cleanup reference-only after execution receipt and re-enables UI correction boundary", () => {
+    expect(cleanupExecutionCompleted(miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt)).toBe(true);
+
+    const cleanupItem = buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem({
+      packet: miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+      executionReceipt: miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+    });
+
+    expect(cleanupItem).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_completed",
+      operationType: "live_mailerlite_api_unsafe_replacement_draft_cleanup_already_completed",
+      evidence: {
+        cleanupExecutionCompleted: true,
+        deletedDraftCount: 2,
+        goneCount: 2,
+        originalDraftsEditedOrDeleted: false,
+        sendsPerformed: false,
+      },
+    });
+
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_api_replacement_cleanup");
+    expect(queue.executiveSummary.readyApprovalIds).toContain("mini_launch_seed_inbox_correction_ui_edit");
   });
 
   test("marks seed send ready only from a private seed-send approval packet", () => {

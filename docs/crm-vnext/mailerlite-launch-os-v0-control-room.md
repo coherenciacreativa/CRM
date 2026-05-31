@@ -2890,3 +2890,47 @@ Next safe move:
 - Stop for Alejandro's exact cleanup approval before deleting the two unsafe replacement drafts.
 - If approved, run only `npm run crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete -- --execute --approval-phrase "<exact phrase>"`, then re-scan and regenerate the approval queue/runbook/goal audit/validation receipt.
 - Do not attempt more MailerLite draft correction, UI work, test sends or public sends until the cleanup receipt proves those two unsafe replacement drafts are gone.
+
+## Launch OS v0 post-cleanup recognition wiring - 2026-05-31
+
+Status: active goal, local-only control-plane wiring updated so the approval queue and current-state refresh can recognize a future completed cleanup receipt for the two unsafe E02/E03 API replacement drafts. This checkpoint does not record a deletion; the latest cleanup receipt is still a dry-run receipt, so the cleanup approval remains the current human boundary.
+
+Evidence:
+
+- API replacement cleanup execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current cleanup receipt remains `status=seed_inbox_correction_api_replacement_cleanup_dry_run_ready_for_exact_approval`, not completed.
+- Approval queue remains `readyApprovalIds=["mini_launch_seed_inbox_correction_api_replacement_cleanup"]`, `nextBestHumanBoundary=mini_launch_seed_inbox_correction_api_replacement_cleanup`, `openLiveMutationGateCount=0`.
+- Current-state refresh remains `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `liveActionAllowedNow=false`, `readyForLiveOperation=false`.
+- Validation coverage for this wiring: focused Vitest suite `3 files / 37 tests` passed; current-state refresh reported `testFiles=19`, `testCount=118`.
+
+What is now wired:
+
+- The approval queue can consume the cleanup execution receipt as evidence.
+- Only a completed cleanup receipt with exactly two deleted replacement drafts, exactly two gone in post-scan, no sends, no publish/schedule, no subscriber/group/segment/workflow mutations, no Shopify/CRM changes, no ledgers/cards/scoring, no Fact Store writes, no token prints and no exact URL prints can close this cleanup item.
+- When that future receipt proves completion, the cleanup item becomes reference-only completed and the original seed inbox correction boundary can become eligible again.
+
+What remains pending:
+
+- The two unsafe API replacement drafts still exist until the exact cleanup approval is given and executed.
+- MailerLite draft correction is still not complete.
+- Test sends, public/audience sends, publish/schedule, workflows, subscribers, groups/segments, Shopify changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.
+
+Safety:
+
+- This checkpoint ran local syntax/tests and local report refresh only.
+- MailerLite API called during this checkpoint: false.
+- MailerLite draft deletions during this checkpoint: 0.
+- Sends performed: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Tokens and exact URLs printed: false.
+
+Next safe move:
+
+- Stop for Alejandro's exact cleanup approval before deleting the two unsafe replacement drafts.
+- After cleanup is approved/executed and the receipt proves the drafts are gone, regenerate current-state evidence and resume only from the restored correction boundary.
