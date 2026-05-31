@@ -3729,3 +3729,54 @@ Next safe move:
 - Stop at the exact E04-only resend approval boundary before any additional MailerLite send.
 - If that exact approval is later provided, run only the E04-scoped seed-test send/record path, rerun Gmail seed inbox QA and regenerate the local receipts.
 - Continue blocking public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.
+
+## Launch OS v0 E04 resend attempt and UI operator route policy - 2026-06-01
+
+Status: active goal, E04-only human approval received, fresh MailerLite API preflight completed for the single E04 replacement draft, but the E04 resend is not closed yet. The public MailerLite REST endpoint candidates for test-send still return not-found, and Codex native Computer Use needed repair before any further UI operation. Do not count the E04 seed resend as completed until a semantic UI route sends only E04 and Gmail readback confirms delivery to the exact approved seed recipient.
+
+Evidence:
+
+- E04-only approval phrase was provided by Alejandro in chat.
+- E04 API execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- E04 API execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.md`
+- Computer Use installer status: `OK: installed`.
+- Gmail read-only check after the UI/Computer Use troubleshooting window: query for the E04 seed subject newer than two hours returned zero matching messages.
+
+Confirmed results:
+
+- E04 API preflight: `targetCount=1`, `qaGreenCount=1`.
+- E04 target: draft, regular campaign, assigned only to `CC · Safety · Null audience · DO NOT SEND`, safety group `active_count=0`, placeholder count `0`.
+- API test-send attempt: `status=mailerlite_null_audience_seed_test_send_blocked_before_send`, `testEmailsSent=0`.
+- API endpoint discovery: all candidate test-send endpoint variants returned MailerLite `404 Resource does not exist`.
+- Codex native Computer Use troubleshooting: stale `SkyComputerUseClient mcp` processes were removed; Computer Use installer was run and then reported installed; the native tool transport in the current Codex session remained closed afterward.
+- Direct MCP handshake to Computer Use succeeded, but app-reading calls such as `list_apps`/`get_app_state` did not return app state in this session.
+- A local runner bug was found and fixed: E04-only `--record-ui-sent` receipts now consider one targeted test complete when one targeted test is recorded, instead of hard-coding four tests.
+
+Operator UI route policy:
+
+- Codex native app operator: use Computer Use semantic UI actions only for MailerLite UI. Do not use screenshot-plus-coordinate clicking for MailerLite UI operations.
+- Mantis/OpenClaw operator: may use its Chrome relay UI route when Mantis/OpenClaw is the active operator.
+- Screenshots may remain evidence for human review, but they are not an acceptable control strategy for MailerLite UI actions in this Launch OS flow.
+- If Codex Computer Use times out or its transport closes, stabilize Computer Use or report the blocker; do not fall back to coordinate clicks.
+
+Safety:
+
+- MailerLite API called: true, for fresh E04 preflight and test-send endpoint discovery only.
+- MailerLite API test emails sent: `0`.
+- MailerLite UI send counted as complete: false.
+- Gmail connector used read-only: true.
+- Gmail messages sent/mutated: false/false.
+- Audience sends, publish, schedule: false/false/false.
+- Subscribers read or mutated: false/false.
+- Groups, segments, workflows and automations mutated: false.
+- Shopify API called or mutated: false/false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Raw recipients, raw group/campaign IDs, exact preview URLs, sender values and tokens printed in repo docs: false.
+
+Next safe move:
+
+- Do not retry MailerLite UI through screenshots or coordinates.
+- After Computer Use is available in a healthy Codex session, use Computer Use only to send a single E04 test email to the exact approved seed recipient.
+- Then run the E04-only `--record-ui-sent --target-labels E04 --ui-sent-labels E04` receipt path, rerun Gmail seed inbox QA and regenerate approval queue/runbook/goal audit/validation receipt.
+- Keep public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store closed.

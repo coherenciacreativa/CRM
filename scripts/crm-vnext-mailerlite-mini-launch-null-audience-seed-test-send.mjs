@@ -649,6 +649,14 @@ const buildSafety = ({
   tokensPrinted: false,
 });
 
+const targetedSeedTestSendCompleted = ({ preflight, sentTests, errors = [] }) => {
+  const targetCount = Array.isArray(preflight?.targets) ? preflight.targets.length : 0;
+  return targetCount > 0
+    && preflight.blockers.length === 0
+    && sentTests.length === targetCount
+    && !errors.some((error) => error.phase === 'test_send');
+};
+
 const buildRun = async (options) => {
   const generatedAt = new Date().toISOString();
   const executionRequested = options.execute || options.recordUiSent;
@@ -782,13 +790,9 @@ const buildRun = async (options) => {
     }
   }
 
-  const executedOk = options.execute
-    && preflight.blockers.length === 0
-    && sentTests.length === 4
-    && !errors.some((error) => error.phase === 'test_send');
-  const recordedUiOk = options.recordUiSent
-    && preflight.blockers.length === 0
-    && sentTests.length === 4;
+  const targetedSendCompleted = targetedSeedTestSendCompleted({ preflight, sentTests, errors });
+  const executedOk = options.execute && targetedSendCompleted;
+  const recordedUiOk = options.recordUiSent && targetedSendCompleted;
   const readOnlyOk = !options.execute && preflight.blockers.length === 0;
   const cleanTargets = preflight.targets.map(({ _campaignIdForRun, ...target }) => target);
 
@@ -1006,4 +1010,5 @@ export {
   parseArgs,
   renderMarkdown,
   replacementReceiptGreen,
+  targetedSeedTestSendCompleted,
 };

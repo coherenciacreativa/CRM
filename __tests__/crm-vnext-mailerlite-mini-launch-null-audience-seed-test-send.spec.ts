@@ -10,6 +10,7 @@ import {
   parseArgs,
   renderMarkdown,
   replacementReceiptGreen,
+  targetedSeedTestSendCompleted,
 } from "../scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs";
 
 const safetyGroup = {
@@ -161,6 +162,26 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(preflight.approvalMatched).toBe(true);
     expect(preflight.targetLabels).toEqual(["E04"]);
     expect(preflight.targets.map((target) => target.label)).toEqual(["E04"]);
+  });
+
+  test("treats an E04-only send as complete when the single targeted test is recorded", () => {
+    expect(targetedSeedTestSendCompleted({
+      preflight: {
+        blockers: [],
+        targets: [{ label: "E04" }],
+      },
+      sentTests: [{ label: "E04" }],
+      errors: [],
+    })).toBe(true);
+
+    expect(targetedSeedTestSendCompleted({
+      preflight: {
+        blockers: [],
+        targets: [{ label: "E04" }],
+      },
+      sentTests: [],
+      errors: [],
+    })).toBe(false);
   });
 
   test("blocks if any replacement draft is not constrained to the empty safety group", () => {
