@@ -20,6 +20,7 @@ import {
   cleanupExecutionCompleted,
   mailerLiteApiInertDraftLabCompleted,
   mailerLiteApiNullAudienceLabCompleted,
+  nullAudienceSeedTestSendCompleted,
   nullAudienceReplacementExecutionCompleted,
   parseArgs,
   renderMarkdown,
@@ -691,6 +692,56 @@ const miniLaunchNullAudienceReplacementPreflightReceipt = {
     mailerLiteApiCalled: true,
     mailerLiteDraftsCreated: 0,
     sendsPerformed: false,
+    tokensPrinted: false,
+  },
+};
+
+const miniLaunchNullAudienceSeedTestSendExecutionReceiptCompleted = {
+  ok: true,
+  status: "mailerlite_null_audience_seed_test_send_completed_test_only",
+  mode: "record_ui_sent",
+  decision: {
+    approval: {
+      status: "exact_approval_phrase_matched",
+    },
+  },
+  seedRecipient: {
+    redacted: "sa…@gmail.com",
+  },
+  preflight: {
+    targetCount: 4,
+    qaGreenCount: 4,
+  },
+  targetPlan: [
+    { label: "E01", name: "Draft E01 · API Null Audience replacement" },
+    { label: "E02", name: "Draft E02 · API Null Audience replacement" },
+    { label: "E03", name: "Draft E03 · API Null Audience replacement" },
+    { label: "E04", name: "Draft E04 · API Null Audience replacement" },
+  ],
+  sentTests: [
+    { label: "E01", name: "Draft E01 · API Null Audience replacement" },
+    { label: "E02", name: "Draft E02 · API Null Audience replacement" },
+    { label: "E03", name: "Draft E03 · API Null Audience replacement" },
+    { label: "E04", name: "Draft E04 · API Null Audience replacement" },
+  ],
+  safety: {
+    mailerLiteApiCalled: true,
+    mailerLiteTestEmailsSent: 4,
+    testSendExecutionChannel: "mailerlite_ui_manual_assisted",
+    audienceSendsPerformed: false,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    additionalGroupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    shopifyMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    exactUrlsPrinted: false,
     tokensPrinted: false,
   },
 };
@@ -1849,6 +1900,36 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.exactApprovalPhrase).toContain("seed@example.com");
     expect(item.allowedAfterExactApproval).toContain("send test emails only from the four existing mini-launch draft campaigns to the exact seed recipient");
     expect(item.stillClosed).toContain("public_or_audience_send");
+  });
+
+  test("marks Null Audience seed test send as used while inbox QA remains pending", () => {
+    expect(nullAudienceSeedTestSendCompleted(miniLaunchNullAudienceSeedTestSendExecutionReceiptCompleted)).toBe(true);
+
+    const item = buildMiniLaunchSeedSendItem({
+      payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+      renderQa: miniLaunchEmailRenderQa,
+      manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
+      seedTestQaPacket: miniLaunchSeedTestQaPacket,
+      seedSendApprovalPacket: miniLaunchSeedSendApprovalPacket,
+      nullAudienceSeedTestSendReceipt: miniLaunchNullAudienceSeedTestSendExecutionReceiptCompleted,
+    });
+
+    expect(item).toMatchObject({
+      status: "reference_only_no_approval_request_now",
+      canAskAlejandroNow: false,
+      approvalType: "reference_only_completed",
+      operationType: "mailerLite_null_audience_seed_test_sent_inbox_qa_pending",
+      evidence: {
+        seedTestSendCompleted: true,
+        inboxQaVerified: false,
+        testEmailsSentToSeedRecipientCount: 4,
+        executionChannel: "mailerlite_ui_manual_assisted",
+        audienceSendPerformed: false,
+      },
+    });
+    expect(item.exactApprovalPhrase).toBeNull();
+    expect(item.stillClosed).toContain("additional_seed_or_test_send");
+    expect(item.requiredFreshEvidence).toContain("perform seed inbox QA on the four received test emails");
   });
 
   test("keeps seed send blocked when private seed packet is still waiting for recipient", () => {

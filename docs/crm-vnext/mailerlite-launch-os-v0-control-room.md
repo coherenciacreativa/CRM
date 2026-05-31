@@ -3574,3 +3574,58 @@ Next safe move:
 - Continue local-only/reporting/review against the new Null Audience replacement drafts.
 - Do not send tests or audience emails from these drafts until a separate exact send approval is prepared and approved.
 - Resolve the remaining `crm_signal_writes` blocker only through its own approval packet and fresh evidence; do not write CRM signals from this checkpoint.
+
+## Launch OS v0 Null Audience seed test emails sent - 2026-05-31
+
+Status: active goal, exact seed-test approval received from Alejandro, and four test emails were sent from the new Null Audience replacement drafts for `Inteligencia para descansar` to the approved seed recipient only. The public MailerLite REST API did not expose a usable test-send endpoint, so the send action was completed through MailerLite UI after API preflight and visual QA. No audience send, publish, schedule, workflow, subscriber, Shopify, CRM, ledger, card, scoring or Fact Store action was performed.
+
+Evidence:
+
+- Null Audience seed test-send execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- Null Audience seed test-send execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.md`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Seed test-send receipt: `status=mailerlite_null_audience_seed_test_send_completed_test_only`, `mode=record_ui_sent`, `ok=true`.
+- Approval phrase: `exact_approval_phrase_matched`; exact phrase printed: `false`.
+- Fresh API preflight: `targetCount=4`, `qaGreenCount=4`, safety group active count `0`.
+- Test emails sent: `4`.
+- Execution channel: `mailerlite_ui_manual_assisted`.
+- Public REST endpoint discovery: blocked before send; MailerLite returned not-found for the candidate test-send endpoints, and `testEmailsSent=0` for that API attempt.
+- Approval queue after reconciliation: `readyApprovalIds=[]`, `blockedApprovalIds=["crm_signal_writes"]`, `openLiveMutationGateCount=0`.
+- Seed-send boundary in approval queue: `operationType=mailerLite_null_audience_seed_test_sent_inbox_qa_pending`, `canAskAlejandroNow=false`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=25`, `testCount=153`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `validationStatus=passed`, `liveGatesClosed=true`.
+
+Safety:
+
+- Test emails sent only to the approved seed recipient: true.
+- Audience sends performed: false.
+- Campaigns published or scheduled: false/false.
+- Subscribers read or mutated: false/false.
+- Subscribers outside the seed recipient touched: false.
+- Additional groups or segments created/assigned: false.
+- Workflows or automations mutated: false.
+- Shopify API called or mutated by this step: false/false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Raw group/campaign IDs, exact preview URLs, sender values and tokens printed in receipts: false.
+
+Decision:
+
+- Treat the Null Audience replacement drafts as seed-test sent, not inbox-QA verified.
+- Do not request another seed-test send from the same approval; any additional seed/test send needs a new exact approval.
+- Use the seed inbox QA as the next non-live decision point before any public/audience launch boundary.
+- Keep `crm_signal_writes` blocked until its own exact approval and fresh event/person evidence exist.
+
+Next safe move:
+
+- Inspect the four received seed emails in the seed inbox and produce an inbox QA/correction report.
+- Confirm copy, formatting, footer, links and reply behavior before any live/public/audience launch approval.
+- Continue to block public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.

@@ -87,6 +87,7 @@
     "crm:vnext:mailerlite-api-null-audience-lab": "node scripts/crm-vnext-mailerlite-api-null-audience-lab.mjs",
     "crm:vnext:mailerlite-mini-launch-null-audience-replacement-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-null-audience-replacement-create": "node scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs",
+    "crm:vnext:mailerlite-mini-launch-null-audience-seed-test-send": "node scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs",
     "crm:vnext:mailerlite-api-existing-draft-update-strategy-packet": "node scripts/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-asset-manifest": "node scripts/crm-vnext-mailerlite-mini-launch-asset-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-public-url-gate": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs",
