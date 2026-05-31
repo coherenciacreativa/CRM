@@ -3516,3 +3516,61 @@ Next safe move:
 - Stop for Alejandro's exact approval phrase before running `npm run crm:vnext:mailerlite-mini-launch-null-audience-replacement-create -- --execute --approval-phrase "<exact phrase>"`.
 - If approved, execute only that scoped API creation runner, verify all four replacement drafts point exclusively to `CC · Safety · Null audience · DO NOT SEND`, confirm no sends/publish/schedule/subscriber/workflow actions, and regenerate current-state evidence.
 - Do not ask for any public/audience send, workflow, subscriber, CRM, Shopify, ledger, card, scoring or Fact Store approval from this packet.
+
+## Launch OS v0 MailerLite API Null Audience replacement drafts created - 2026-05-31
+
+Status: active goal, exact approval received from Alejandro, four API replacement drafts created for `Inteligencia para descansar`, and current-state evidence regenerated. The new drafts use the API-heavy Null Audience safety model: each replacement draft remains a MailerLite draft and is assigned only to `CC · Safety · Null audience · DO NOT SEND`, whose observed active count is `0`.
+
+Evidence:
+
+- Null Audience replacement execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- Null Audience replacement execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Approval queue: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Execution receipt: `status=mailerlite_null_audience_replacement_execution_completed_no_sends`, `mode=execute_requested`, `ok=true`.
+- Approval phrase: `exact_approval_phrase_matched`; exact phrase printed: `false`.
+- Preflight: MailerLite groups read `90`, campaigns read `30`, source drafts read `4`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`; observed active count `0`; safety group ID printed: `false`.
+- Replacement drafts created: `4`.
+- Post-create QA: `replacementDraftCount=4`, `nullAudienceSafeCount=4`, `contentGreenCount=4`.
+- Placeholder QA: corrected content no longer contains the inert placeholders and each draft contains the expected preview URL hash; exact URLs printed: `false`.
+- Failure cleanup: not needed; `cleanup.attempted=false`, `deletedCount=0`.
+- Approval queue after reconciliation: `readyApprovalIds=[]`, `blockedApprovalIds=["crm_signal_writes"]`, `openLiveMutationGateCount=0`, `nextBestHumanBoundary=null`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=25`, `testCount=153`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `validationStatus=passed`, `liveGatesClosed=true`.
+
+Safety:
+
+- MailerLite API called: true, only inside the exact approved replacement-draft scope.
+- Allowed mutation type: create exactly four Null Audience replacement drafts and clean up drafts created by this run only if post-create QA fails.
+- MailerLite drafts created: 4.
+- Old mini-launch drafts edited/deleted/archived: false.
+- Sends, publish, schedule: false/false/false.
+- Subscribers read or mutated: false/false.
+- Additional groups or segments created/assigned: false.
+- Non-Null-Audience groups assigned: false.
+- Workflows and automations mutated: false.
+- Shopify API called or mutated: false/false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Sender values, subscriber rows, raw group/campaign IDs, exact preview URLs and tokens printed: false.
+
+Decision:
+
+- Treat the four API-created Null Audience drafts as the current corrected replacement draft set for this mini-launch QA path.
+- The previous manual UI correction boundary and existing-draft API strategy are superseded by this completed replacement route and should not be requested again unless fresh evidence invalidates the new drafts.
+- The new drafts are not authorized for test send, public/audience send, publishing, scheduling, workflows, subscribers, CRM, Shopify, ledgers, cards, scoring or Fact Store.
+- Launch OS remains not ready for live operation because CRM signal writes and live launch criteria are still outside the current approved scope.
+
+Next safe move:
+
+- Continue local-only/reporting/review against the new Null Audience replacement drafts.
+- Do not send tests or audience emails from these drafts until a separate exact send approval is prepared and approved.
+- Resolve the remaining `crm_signal_writes` blocker only through its own approval packet and fresh evidence; do not write CRM signals from this checkpoint.

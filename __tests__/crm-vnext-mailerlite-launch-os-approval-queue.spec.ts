@@ -1734,6 +1734,39 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
       },
     });
     expect(item.exactApprovalPhrase).toBeNull();
+
+    const queue = buildApprovalQueue({
+      miniLaunchEmptyGroupPacket,
+      miniLaunchEmptyGroupCreateDryRun,
+      onboardingV2EmptyGroupsPacket,
+      onboardingV2EmptyGroupsCreateDryRun,
+      miniLaunchEmailAssetBuildScopePacket,
+      miniLaunchEmailBuilderPayloadManifest,
+      miniLaunchEmailRenderQa,
+      miniLaunchEmailAssetBuildDryRun,
+      miniLaunchEmailAssetBuildExecution,
+      miniLaunchEmailManualUiBuilderPacket,
+      miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: null,
+      miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt,
+      miniLaunchMailerLiteApiInertDraftLab: miniLaunchMailerLiteApiInertDraftLabCompleted,
+      miniLaunchMailerLiteApiNullAudienceLab: miniLaunchMailerLiteApiNullAudienceLabCompleted,
+      miniLaunchNullAudienceReplacementApprovalPacket,
+      miniLaunchNullAudienceReplacementExecutionReceipt: miniLaunchNullAudienceReplacementExecutionReceiptCompleted,
+      miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
+      miniLaunchShopifyLocalBuildRequest,
+      miniLaunchCrmSignalProjectionPacket,
+      brujulaEmailStyleCorrection,
+      brujulaEmailRenderQa,
+      validationReceipt,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_mailerlite_api_null_audience_replacement_drafts")).toBe(true);
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_mailerlite_api_existing_draft_update_strategy")).toBe(false);
+    expect(queue.approvalItems.some((approvalItem) => approvalItem.id === "mini_launch_seed_inbox_correction_ui_edit")).toBe(false);
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_mailerlite_api_null_audience_replacement_drafts");
+    expect(queue.executiveSummary.readyApprovalIds).not.toContain("mini_launch_seed_inbox_correction_ui_edit");
   });
 
   test("surfaces MailerLite API existing-draft strategy as reference-only when E02/E03 are not inert", () => {

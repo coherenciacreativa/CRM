@@ -2563,6 +2563,7 @@ const buildApprovalQueue = ({
       executionReceipt: miniLaunchNullAudienceReplacementExecutionReceipt,
     })
     : null;
+  const nullAudienceReplacementCompleted = nullAudienceReplacementExecutionCompleted(miniLaunchNullAudienceReplacementExecutionReceipt);
   const nullAudienceReplacementRequiresAttention = nullAudienceReplacementItem
     && ['ready_for_exact_approval_request', 'prepared_but_blocked_before_approval_request'].includes(nullAudienceReplacementItem.status);
 
@@ -2597,12 +2598,12 @@ const buildApprovalQueue = ({
     !cleanupRequiresAttention && apiLabItem,
     !cleanupRequiresAttention && !apiLabRequiresAttention && apiNullAudienceLabItem,
     !cleanupRequiresAttention && !apiLabRequiresAttention && !apiNullAudienceLabRequiresAttention && nullAudienceReplacementItem,
-    !cleanupRequiresAttention && !apiLabRequiresAttention && !apiNullAudienceLabRequiresAttention && !nullAudienceReplacementRequiresAttention && miniLaunchMailerLiteApiExistingDraftUpdateStrategy
+    !cleanupRequiresAttention && !apiLabRequiresAttention && !apiNullAudienceLabRequiresAttention && !nullAudienceReplacementRequiresAttention && !nullAudienceReplacementCompleted && miniLaunchMailerLiteApiExistingDraftUpdateStrategy
       ? buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem({
         packet: miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
       })
       : null,
-    !cleanupRequiresAttention && !apiLabRequiresAttention && !apiNullAudienceLabRequiresAttention && !nullAudienceReplacementRequiresAttention && miniLaunchSeedInboxCorrectionUiEditApprovalPacket
+    !cleanupRequiresAttention && !apiLabRequiresAttention && !apiNullAudienceLabRequiresAttention && !nullAudienceReplacementRequiresAttention && !nullAudienceReplacementCompleted && miniLaunchSeedInboxCorrectionUiEditApprovalPacket
       ? buildMiniLaunchSeedInboxCorrectionUiEditItem({
         packet: miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
       })
