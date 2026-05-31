@@ -705,6 +705,22 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current Launch OS approval queue report',
     ),
     command(
+      'refresh_approval_intake',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-launch-os-approval-intake',
+        '--',
+        '--approval-queue',
+        paths.approvalQueue,
+        '--out',
+        paths.approvalIntake,
+        '--markdown-out',
+        paths.approvalIntakeMarkdown,
+      ],
+      'regenerate current approval intake with no approval text so stale approvals cannot be recycled',
+    ),
+    command(
       'refresh_blocked_gate_handoff',
       'npm',
       [
@@ -1018,6 +1034,7 @@ const summarizeGeneratedReports = async (paths) => {
   const [
     crmWriteApprovalPacket,
     approvalQueue,
+    approvalIntake,
     blockedGateHandoff,
     miniLaunchAssetManifest,
     miniLaunchShopifyPublicUrlGate,
@@ -1041,6 +1058,7 @@ const summarizeGeneratedReports = async (paths) => {
   ] = await Promise.all([
     readOptionalJson(paths.miniLaunchCrmWriteApprovalPacket),
     readOptionalJson(paths.approvalQueue),
+    readOptionalJson(paths.approvalIntake),
     readOptionalJson(paths.blockedGateHandoff),
     readOptionalJson(paths.miniLaunchAssetManifest),
     readOptionalJson(paths.miniLaunchShopifyPublicUrlGate),
@@ -1081,6 +1099,17 @@ const summarizeGeneratedReports = async (paths) => {
       readyApprovalRequestCount: approvalQueue?.executiveSummary?.readyApprovalRequestCount ?? null,
       blockedApprovalRequestCount: approvalQueue?.executiveSummary?.blockedApprovalRequestCount ?? null,
       openLiveMutationGateCount: approvalQueue?.executiveSummary?.openLiveMutationGateCount ?? null,
+    },
+    approvalIntake: {
+      path: paths.approvalIntake,
+      markdownPath: paths.approvalIntakeMarkdown,
+      status: approvalIntake?.status ?? null,
+      ok: approvalIntake?.ok ?? null,
+      approvalTextProvided: approvalIntake?.executiveSummary?.approvalTextProvided ?? null,
+      matchedApprovalCount: approvalIntake?.executiveSummary?.matchedApprovalCount ?? null,
+      matchedApprovalId: approvalIntake?.executiveSummary?.matchedApprovalId ?? null,
+      executionAllowedNow: approvalIntake?.executiveSummary?.executionAllowedNow ?? null,
+      openLiveMutationGateCount: approvalIntake?.executiveSummary?.openLiveMutationGateCount ?? null,
     },
     blockedGateHandoff: {
       path: paths.blockedGateHandoff,
@@ -1399,6 +1428,7 @@ const renderMarkdown = (receipt) => [
   '',
   `- CRM write approval packet: ${receipt.generatedReports.crmWriteApprovalPacket.path}`,
   `- Approval queue: ${receipt.generatedReports.approvalQueue.path}`,
+  `- Approval intake: ${receipt.generatedReports.approvalIntake.path}`,
   `- Blocked-gate handoff: ${receipt.generatedReports.blockedGateHandoff.path}`,
   `- Mini-launch asset manifest: ${receipt.generatedReports.miniLaunchAssetManifest.path}`,
   `- Mini-launch Shopify public URL gate: ${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.path}`,
@@ -1421,6 +1451,7 @@ const renderMarkdown = (receipt) => [
   '## Confirmed Results',
   '',
   `- CRM write approval: status=${receipt.generatedReports.crmWriteApprovalPacket.status}, exactEventCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactEventCountReady}, exactPersonCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactPersonCountReady}`,
+  `- approval intake: status=${receipt.generatedReports.approvalIntake.status}, approvalTextProvided=${receipt.generatedReports.approvalIntake.approvalTextProvided}, matchedApprovalId=${receipt.generatedReports.approvalIntake.matchedApprovalId}, executionAllowedNow=${receipt.generatedReports.approvalIntake.executionAllowedNow}`,
   `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady}, linkLifecyclePolicy=${receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
   `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.publicAudienceSendUrlGateReady}, noSeparateUrlSetsRequired=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.noSeparateUrlSetsRequired}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, recommendedVisibilityTier=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier}, fullyPublicNavigationRequiredNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow}, seoIndexingAllowedNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
   `- Shopify preview route decision: status=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.status}, decisionExplanationReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.decisionExplanationReady}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhraseAvailable}, exactApprovalPhrasePrinted=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhrasePrinted}, canAskApprovalNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canAskApprovalNow}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canPublishNow}`,
@@ -1548,6 +1579,10 @@ const main = async () => {
     testFiles: receipt.validation.testFiles,
     testCount: receipt.validation.testCount,
     crmWriteApprovalPacketStatus: receipt.generatedReports.crmWriteApprovalPacket.status,
+    approvalIntakeStatus: receipt.generatedReports.approvalIntake.status,
+    approvalIntakeApprovalTextProvided: receipt.generatedReports.approvalIntake.approvalTextProvided,
+    approvalIntakeMatchedApprovalId: receipt.generatedReports.approvalIntake.matchedApprovalId,
+    approvalIntakeExecutionAllowedNow: receipt.generatedReports.approvalIntake.executionAllowedNow,
     miniLaunchAssetManifestStatus: receipt.generatedReports.miniLaunchAssetManifest.status,
     miniLaunchShopifyPublicUrlGateStatus: receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status,
     miniLaunchShopifyPreviewRouteDecisionStatus:

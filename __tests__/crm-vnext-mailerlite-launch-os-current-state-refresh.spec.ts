@@ -97,6 +97,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-launch-os-approval-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-intake");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-missing-inputs-request-bundle");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-post-input-orchestrator");
@@ -113,6 +114,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_launch_os_approval_intake_current_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json");
     expect(commands).toContain("mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json");
     expect(commands).toContain("--no-write-examples");
@@ -203,6 +205,17 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           ok: true,
           readyApprovalRequestCount: 0,
           blockedApprovalRequestCount: 1,
+          openLiveMutationGateCount: 0,
+        },
+        approvalIntake: {
+          path: paths.approvalIntake,
+          markdownPath: paths.approvalIntakeMarkdown,
+          status: "waiting_for_exact_approval_text_no_live_changes",
+          ok: true,
+          approvalTextProvided: false,
+          matchedApprovalCount: 0,
+          matchedApprovalId: null,
+          executionAllowedNow: false,
           openLiveMutationGateCount: 0,
         },
         blockedGateHandoff: {
@@ -405,5 +418,6 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     });
     expect(buildSafety().groupMutationsPerformed).toBe(false);
     expect(renderMarkdown(receipt)).toContain("Current-State Refresh");
+    expect(renderMarkdown(receipt)).toContain("Approval intake");
   });
 });

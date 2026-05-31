@@ -3100,3 +3100,41 @@ Next safe move:
 
 - Keep the restored current boundary: stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before opening MailerLite UI or editing any draft.
 - After any local input/report change, rerun `npm run crm:vnext:mailerlite-launch-os-current-state-refresh` so the runbook/audit/receipt remain anchored to current evidence.
+
+## Launch OS v0 approval-intake refresh guard - 2026-05-31
+
+Status: active goal, local-only current-state refresh guard added. The refresh runner now regenerates the approval intake from the freshly generated approval queue with no approval text, so old exact approvals cannot remain as active matched approval evidence after the queue has moved to a new boundary.
+
+Evidence:
+
+- Current-state refresh script: `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+- Current-state refresh tests: `__tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
+- Approval intake report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_intake_current_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh now includes `crm:vnext:mailerlite-launch-os-approval-intake` after the approval queue and before downstream handoff/intake/runbook reports.
+- Approval intake status is `waiting_for_exact_approval_text_no_live_changes`.
+- Approval intake: `approvalTextProvided=false`, `matchedApprovalCount=0`, `matchedApprovalId=null`, `executionAllowedNow=false`, `openLiveMutationGateCount=0`.
+- Approval queue remains `readyApprovalIds=["mini_launch_seed_inbox_correction_ui_edit"]`, `blockedApprovalIds=["crm_signal_writes"]`, `openLiveMutationGateCount=0`.
+- Current-state refresh passed with `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=21`, `testCount=129`.
+- Goal audit remains `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt remains `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- No approval text printed.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Subscribers, groups/segments, workflows, sends, publish and schedule: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens, secrets and exact preview URLs printed: false.
+
+Next safe move:
+
+- Keep the current live boundary unchanged: stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before opening MailerLite UI or editing any draft.
+- If exact approval is supplied later, run approval intake with that explicit text/file as the first step of the fresh-evidence path; do not let routine refresh reuse old approvals.
