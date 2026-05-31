@@ -3138,3 +3138,51 @@ Next safe move:
 
 - Keep the current live boundary unchanged: stop for Alejandro's exact `mini_launch_seed_inbox_correction_ui_edit` approval phrase before opening MailerLite UI or editing any draft.
 - If exact approval is supplied later, run approval intake with that explicit text/file as the first step of the fresh-evidence path; do not let routine refresh reuse old approvals.
+
+## Launch OS v0 MailerLite API edit diagnostic - 2026-05-31
+
+Status: active goal, Alejandro approved a read-only MailerLite API diagnostic after the Advanced-plan upgrade conversation, and the diagnostic completed without mutations. The API is stable for reading the four existing `Inteligencia para descansar` drafts by ID, but E02/E03 are not safe API-edit candidates yet because their live MailerLite draft metadata still shows a recipient/basic-filter gate.
+
+Evidence:
+
+- Diagnostic script: `scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-edit-diagnostic.mjs`
+- Package command: `crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-edit-diagnostic`
+- Diagnostic report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.json`
+- Diagnostic report markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic_current_inteligencia_descansar_2026-05-31.md`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-edit-diagnostic.spec.ts`
+
+Confirmed results:
+
+- Diagnostic status: `seed_inbox_correction_api_edit_diagnostic_blocked_or_needs_ui_no_live_changes`.
+- `campaignReadCount=4`, `apiErrorCount=0`.
+- `allCorrectedHtmlReady=true`.
+- `allApiPayloadReady=true`.
+- `allDraftsInertByApi=false`.
+- `apiEditCandidate=false`.
+- E01 and E04 are API-edit candidates from the diagnostic point of view.
+- E02 and E03 are blocked by the same four safety checks: `filter_absent_or_null`, `no_basic_filter`, `recipients_missing`, `cannot_schedule_without_recipients`.
+- The exact Shopify preview URLs were read only from the approved preview-route receipt, compared by hash, and not stored or printed by the diagnostic report.
+
+What this means:
+
+- The MailerLite API route is viable for read-only state inspection.
+- The content payload for replacing the E02/E03 placeholders is ready: each placeholder can be replaced exactly once and the resulting hash matches the Shopify preview-route receipt.
+- The blocker is not content construction; it is the recipient/basic-filter state on E02/E03.
+- Do not API-edit or UI-edit E02/E03 until the recipient/basic-filter gate is resolved or explicitly scoped into a separate approval boundary.
+
+Safety:
+
+- MailerLite API called: true, read-only campaign detail reads only.
+- MailerLite mutations performed: false.
+- MailerLite assets created or edited: false.
+- Sends, publish, schedule, subscribers, groups/segments and workflows: false.
+- Shopify API called by this diagnostic: false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Tokens and exact preview URLs printed or stored by this diagnostic: false.
+
+Next safe move:
+
+- Preserve the new API diagnostic as evidence.
+- Prepare a separate local decision/approval packet for clearing or neutralizing the E02/E03 recipient/basic-filter gate only if a safe API or UI route can be proven.
+- Do not edit MailerLite drafts, send tests, publish, schedule or mutate subscribers/groups/workflows until the next exact scoped approval is given and the fresh preflight is green.

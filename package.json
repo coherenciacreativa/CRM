@@ -82,6 +82,7 @@
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-create": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-create.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-delete.mjs",
+    "crm:vnext:mailerlite-mini-launch-seed-inbox-correction-api-edit-diagnostic": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-edit-diagnostic.mjs",
     "crm:vnext:mailerlite-mini-launch-asset-manifest": "node scripts/crm-vnext-mailerlite-mini-launch-asset-manifest.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-public-url-gate": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs",
