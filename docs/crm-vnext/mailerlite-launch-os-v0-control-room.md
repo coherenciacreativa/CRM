@@ -387,6 +387,70 @@ Meaning:
   - Prepare an exact no-live MailerLite asset-build scope request from the local asset plan, or ask Alejandro whether to authorize the read-only MailerLite group dry-run.
   - Keep live group creation, MailerLite asset editing, seed sends, Shopify repo edits/previews, CRM ledger/card/scoring/Fact Store writes and workflow/subscriber mutations behind separate approval gates.
 
+## Launch OS v0 email builder scope/readiness checkpoint - 2026-05-31
+
+- Estado:
+  - active goal
+  - email asset-build scope packet generated
+  - email builder payload manifest generated
+  - mini-launch readiness board refreshed
+  - not ready for live operation
+  - no live actions authorized
+
+- Evidencia local generada:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_asset_build_scope_packet_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_current_inteligencia_descansar_2026-05-31.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_current_inteligencia_descansar_2026-05-31.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_readiness_board_current_inteligencia_descansar_2026-05-31.md`
+
+- Resultados confirmados:
+  - asset-build scope packet: `ok=true`, `status=email_asset_build_scope_packet_ready_for_exact_human_approval_no_live_changes`
+  - asset-build scope packet: `assetCount=4`
+  - asset-build scope packet: `inertUrlPlaceholderCount=3`
+  - asset-build scope packet: `replyCtaCount=1`
+  - asset-build scope packet: `readyForExactAssetBuildApprovalRequestNow=true`
+  - asset-build scope packet: `readyForMailerLiteAssetBuildNow=false`
+  - asset-build scope packet: `readyForSeedSendNow=false`
+  - asset-build scope packet: `canCreateOrEditMailerLiteAssetsNow=false`
+  - email builder payload manifest: `ok=true`, `status=email_builder_payload_manifest_ready_no_live_changes`
+  - email builder payload manifest: `payloadCount=4`
+  - email builder payload manifest: `contentBlockCount=40`
+  - email builder payload manifest: `inertUrlPlaceholderCount=3`
+  - email builder payload manifest: `replyCtaCount=1`
+  - email builder payload manifest: `canExecuteBuilderNow=false`
+  - email builder payload manifest: `readyForSeedSendNow=false`
+  - readiness board: `ok=true`, `status=mini_launch_readiness_board_ready_no_live_changes`
+  - readiness board: `overallState=ready_for_department_reviews_not_ready_for_live_operation`
+  - readiness board: `readyNoLiveLaneCount=12`
+  - readiness board: `liveMutationGateOpenCount=0`
+  - readiness board: `noImmediateAlejandroLiveApprovalNeeded=true`
+
+- Seguridad:
+  - MailerLite API called: false
+  - Shopify API called: false
+  - CRM live API called: false
+  - browser used: false
+  - subscribers read or mutated: false
+  - groups/workflows/forms/assets created or edited: false
+  - sends performed: false
+  - Signal Event Ledger append: false
+  - card writes/scoring/Fact Store/outbound: false
+  - tokens printed: false
+
+- Notas de decisión:
+  - The exact approval phrase for the future MailerLite builder step exists inside the asset-build scope packet, but the packet is not approval by itself.
+  - The payload manifest is local implementation input only; it must not be treated as permission to create/edit MailerLite assets.
+  - Even after a future exact asset-build approval, seed sends, workflow attachment, subscriber reads/assignment/import, group creation/assignment, Shopify preview/publish/form connection, CRM ledger/card/scoring and Fact Store writes remain closed.
+  - The readiness board still labels the general state as `ready_for_department_reviews_not_ready_for_live_operation`, while its operative lanes now include the current asset scope, payload manifest, Shopify handoff and CRM signal projection evidence.
+  - The mini-launch empty groups are recorded as already existing in the readiness board; do not rerun `--execute` for that boundary.
+
+- Próximo paso seguro:
+  - Keep the mini-launch in local-only readiness, documentation and review mode.
+  - If moving into MailerLite builder becomes the next step, stop first and explain the exact asset-build decision, scope, risks and approval phrase.
+  - Do not seed-send, attach workflows, read/assign subscribers, create groups, publish/connect Shopify, append CRM ledgers, write cards, change scoring or touch Fact Store without separate explicit approval.
+
 ## Brújula pilot status
 
 Functional status: green for test-only Email 1.
