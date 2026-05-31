@@ -9,6 +9,7 @@ import {
   buildMiniLaunchEmptyGroupItem,
   buildMiniLaunchSeedSendItem,
   buildOnboardingV2EmptyGroupItem,
+  buildShopifyPreviewRouteItem,
   buildSafety,
   parseArgs,
   renderMarkdown,
@@ -390,6 +391,96 @@ const miniLaunchShopifyLocalBuildReceipt = {
   },
 };
 
+const miniLaunchShopifyPreviewRouteDecision = {
+  ok: true,
+  status: "shopify_preview_route_decision_ready_for_human_explanation_no_live_changes",
+  executiveSummary: {
+    recommendedDecision: "use_unlisted_noindex_preview_route_for_test_launch_links",
+    recommendedVisibilityTier: "unlisted_noindex_preview",
+    decisionExplanationReady: true,
+    exactApprovalPhraseAvailable: false,
+    exactApprovalPhrasePrinted: false,
+    canAskApprovalNow: false,
+    canPublishNow: false,
+    publicAudienceSendUrlGateReady: false,
+    localAssetSlotReadyCount: 3,
+    requiredPublicUrlCount: 3,
+  },
+  slotScope: [
+    {
+      key: "result_or_resource_link",
+      label: "Result/resource page",
+      currentStage: "local_candidate",
+      nextStageAfterApprovedPreviewRoute: "preview_url_ready",
+      audienceSendReadyAfterApprovedPreviewRoute: false,
+    },
+    {
+      key: "practice_link",
+      label: "Practice section",
+      currentStage: "local_candidate",
+      nextStageAfterApprovedPreviewRoute: "preview_url_ready",
+      audienceSendReadyAfterApprovedPreviewRoute: false,
+    },
+    {
+      key: "editorial_note_link",
+      label: "Editorial note section",
+      currentStage: "local_candidate",
+      nextStageAfterApprovedPreviewRoute: "preview_url_ready",
+      audienceSendReadyAfterApprovedPreviewRoute: false,
+    },
+  ],
+  proposedScopeIfLaterApproved: {
+    allowedActions: ["create_or_update_shopify_preview_route_for_existing_local_inteligencia_para_descansar_assets"],
+    forbiddenActions: ["do_not_connect_mailerlite_groups_tags_workflows_or_subscribers"],
+    requiredReceiptFields: ["visibility_tier=unlisted_noindex_preview"],
+  },
+  safety: {
+    shopifyApiCalled: false,
+    shopifyRepoFilesWritten: false,
+    mailerLiteApiCalled: false,
+    sendsPerformed: false,
+  },
+};
+
+const miniLaunchShopifyPreviewRouteApprovalPacket = {
+  ok: true,
+  status: "shopify_preview_route_approval_packet_ready_for_exact_human_approval_no_live_changes",
+  executiveSummary: {
+    humanDecisionConfirmed: true,
+    recommendedVisibilityTier: "unlisted_noindex_preview",
+    exactApprovalPhraseAvailable: true,
+    exactApprovalPhrasePrinted: true,
+    canAskApprovalNow: true,
+    canExecuteNow: false,
+    canPublishNow: false,
+    publicAudienceSendUrlGateReady: false,
+  },
+  humanDecisionConfirmation: {
+    status: "shopify_preview_route_decision_confirmed_by_alejandro_no_live_changes",
+  },
+  targetLinks: [
+    { key: "result_or_resource_link", label: "Result/resource page" },
+    { key: "practice_link", label: "Practice section" },
+    { key: "editorial_note_link", label: "Editorial note section" },
+  ],
+  approvalBoundary: {
+    canAskAlejandroForApproval: true,
+    packetIsApprovalByItself: false,
+    canExecuteNow: false,
+    exactApprovalPhrase: "Apruebo crear/actualizar únicamente la preview route unlisted/noindex de Shopify para los 3 links.",
+    allowedAfterExactApproval: ["create_or_update_only_the_shopify_unlisted_noindex_preview_route_for_the_three_named_link_slots"],
+    stillClosedEvenAfterApproval: ["audience_launch_or_public_send", "mailerlite_ui_edit_send_schedule_or_campaign_publish"],
+    requiredFreshEvidenceBeforeExecution: ["freshly re-read the preview-route decision and approval packet"],
+  },
+  safety: {
+    shopifyApiCalled: false,
+    shopifyMutationsPerformed: false,
+    mailerLiteApiCalled: false,
+    crmLiveApiCalled: false,
+    sendsPerformed: false,
+  },
+};
+
 const miniLaunchCrmSignalProjectionPacket = {
   status: "ready_for_no_live_signal_projection_design",
   approvalGate: {
@@ -549,6 +640,8 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(parsed.miniLaunchSeedSendApprovalPacket).toContain("mailerlite_mini_launch_seed_send_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildRequest).toContain("mailerlite_mini_launch_shopify_local_build_request_inteligencia_descansar_2026-05-27.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
+    expect(parsed.miniLaunchShopifyPreviewRouteDecision).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchShopifyPreviewRouteApprovalPacket).toContain("mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.brujulaEmailManualUiBuildReceipt).toContain("mailerlite_brujula_email1_manual_ui_build_receipt_2026-05-28.json");
     expect(parsed.out).toBe("/tmp/queue.json");
@@ -574,7 +667,7 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
 
     expect(queue.status).toBe("mailerlite_launch_os_approval_queue_ready_no_live_changes");
     expect(queue.executiveSummary.readyApprovalRequestCount).toBe(5);
-    expect(queue.executiveSummary.blockedApprovalRequestCount).toBe(3);
+    expect(queue.executiveSummary.blockedApprovalRequestCount).toBe(4);
     expect(queue.executiveSummary.openLiveMutationGateCount).toBe(0);
     expect(queue.executiveSummary.readyApprovalIds).toEqual([
       "mini_launch_empty_group_creation",
@@ -616,6 +709,11 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(byId.get("mini_launch_seed_send")).toMatchObject({
       status: "prepared_but_blocked_before_approval_request",
       canAskAlejandroNow: false,
+    });
+    expect(byId.get("shopify_unlisted_noindex_preview_route")).toMatchObject({
+      status: "prepared_but_blocked_before_approval_request",
+      canAskAlejandroNow: false,
+      approvalType: "not_ready_for_request",
     });
     expect(byId.get("crm_signal_writes")?.blockers).toContain("separate_crm_write_approval_packet_missing");
   });
@@ -916,6 +1014,46 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     });
     expect(item?.stillClosed).toContain("shopify_publish_or_theme_push");
     expect(item?.notes.join(" ")).toContain("Shopify no-live local build boundary has already been used");
+  });
+
+  test("marks Shopify preview route ready only from a confirmed approval packet", () => {
+    const item = buildShopifyPreviewRouteItem({
+      decision: miniLaunchShopifyPreviewRouteDecision,
+      approvalPacket: miniLaunchShopifyPreviewRouteApprovalPacket,
+    });
+
+    expect(item).toMatchObject({
+      id: "shopify_unlisted_noindex_preview_route",
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      approvalType: "exact_phrase_required",
+      operationType: "live_shopify_preview_route_after_exact_approval",
+      targetCount: 3,
+      evidence: {
+        decisionReady: true,
+        approvalPacketReady: true,
+        recommendedVisibilityTier: "unlisted_noindex_preview",
+        humanDecisionConfirmed: true,
+        exactApprovalPhraseAvailable: true,
+        canExecuteNow: false,
+        publicAudienceSendUrlGateReady: false,
+      },
+    });
+    expect(item.exactApprovalPhrase).toContain("preview route");
+    expect(item.stillClosed).toContain("audience_launch_or_public_send");
+    expect(item.commandAfterApproval).toContain("future Shopify preview-route execution");
+  });
+
+  test("keeps Shopify preview route blocked if the decision is not confirmed into an approval packet", () => {
+    const item = buildShopifyPreviewRouteItem({
+      decision: miniLaunchShopifyPreviewRouteDecision,
+      approvalPacket: null,
+    });
+
+    expect(item.status).toBe("prepared_but_blocked_before_approval_request");
+    expect(item.canAskAlejandroNow).toBe(false);
+    expect(item.exactApprovalPhrase).toBeNull();
+    expect(item.blockers).toContain("shopify_preview_route_confirmation_or_approval_packet_missing");
   });
 
   test("marks Brújula builder draft approval as completed once the manual UI receipt exists", () => {
