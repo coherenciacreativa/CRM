@@ -3629,3 +3629,52 @@ Next safe move:
 - Inspect the four received seed emails in the seed inbox and produce an inbox QA/correction report.
 - Confirm copy, formatting, footer, links and reply behavior before any live/public/audience launch approval.
 - Continue to block public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.
+
+## Launch OS v0 Null Audience seed inbox QA partial - 2026-05-31
+
+Status: active goal, seed inbox QA executed read-only through Gmail, and the Null Audience seed test is not yet green. E01, E02 and E03 corrected test emails arrived at the approved seed recipient. The corrected E04 message was found, but it was addressed to the sender account rather than the approved seed recipient, while the seed inbox still contains only the older E04 version with the old raw `reply` token issue.
+
+Evidence:
+
+- Null Audience seed inbox QA report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`
+- Null Audience seed inbox QA report markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.md`
+- Prior seed test-send execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+- Null Audience replacement execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
+
+Confirmed results:
+
+- Seed inbox QA status: `mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed`, `ok=false`.
+- Gmail readback: corrected E01-E03 delivered to the approved seed recipient.
+- Gmail readback: corrected E04 found outside the approved seed recipient.
+- Old seed E04 is still visible in the seed inbox and remains unsuitable as final QA evidence.
+- E01-E03 body QA: no placeholder tokens, no raw reply token, corrected footer, preview route link present.
+- Corrected E04 body QA: copy/footer repaired and no raw reply token, but seed delivery is not green.
+- This checkpoint supersedes the operator-recorded assumption in the prior seed-send receipt that all four UI-assisted sends landed at the approved seed recipient.
+
+Safety:
+
+- Gmail connector used read-only: true.
+- Gmail labels/messages mutated: false.
+- Gmail messages sent by this QA: false.
+- MailerLite API/UI used by this QA: false/false.
+- MailerLite sends performed by this QA: false.
+- Audience sends, publish, schedule: false/false/false.
+- Subscribers read or mutated: false/false.
+- Groups, segments, workflows and automations mutated: false.
+- Shopify API called or mutated by this QA: false/false.
+- CRM live API called: false.
+- Signal Ledger, CRM cards, scoring and Fact Store writes: false.
+- Raw recipients, Gmail message IDs, raw group/campaign IDs, exact preview URLs and tokens printed in the report: false.
+
+Decision:
+
+- Do not treat the seed inbox QA as green.
+- Do not request or proceed to public/audience launch approval from this state.
+- Any additional MailerLite test send now needs a new exact approval because it is an outbound action and the E04 recipient mismatch must be repaired narrowly.
+- Keep CRM signal writes blocked until their own exact approval and fresh event/person evidence exist.
+
+Next safe move:
+
+- Ask Alejandro for a narrow E04-only test resend approval after fresh MailerLite API re-scan confirms E04 remains draft, Null Audience-only, placeholder-free and safe.
+- If approved, resend only corrected E04 to the exact approved seed recipient, then rerun Gmail seed inbox QA.
+- Continue blocking public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.
