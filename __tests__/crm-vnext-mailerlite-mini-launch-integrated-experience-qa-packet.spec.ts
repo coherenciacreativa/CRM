@@ -121,6 +121,8 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
       "/tmp/seed.json",
       "--public-launch-readiness-packet",
       "/tmp/public.json",
+      "--product-value-review-packet",
+      "/tmp/product-value.json",
       "--pilot-distribution-decision-intake",
       "/tmp/pilot.json",
       "--out",
@@ -131,6 +133,7 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
 
     expect(parsed.assetManifest).toBe("/tmp/assets.json");
     expect(parsed.payloadManifest).toBe("/tmp/payload.json");
+    expect(parsed.productValueReviewPacket).toBe("/tmp/product-value.json");
     expect(parsed.out).toBe("/tmp/out.json");
     expect(parsed.markdownOut).toBe("/tmp/out.md");
   });
@@ -230,6 +233,31 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
     expect(report.executiveSummary.distributionDecisionShouldWait).toBe(false);
     expect(report.executiveSummary.canAskPilotDistributionDecisionNow).toBe(true);
     expect(report.executiveSummary.canAskPublicSendApprovalNow).toBe(false);
+  });
+
+  test("uses Product/Value review packet blockers when the gate exists but is not green", async () => {
+    const reports = await baseReports();
+    const report = await buildIntegratedExperienceQaPacket({
+      ...reports,
+      productValueReviewPacket: {
+        status: "product_value_review_blocked_before_ceo_review_no_live_changes",
+        executiveSummary: {
+          productValueReviewPassed: false,
+          blockerCount: 2,
+          blockers: ["shopify_asset_placeholders_visible", "real_seed_clickthrough_not_verified"],
+        },
+      },
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(report.executiveSummary.productValueReviewStatus).toBe("product_value_review_blocked_before_ceo_review_no_live_changes");
+    expect(report.executiveSummary.productValueReviewPassed).toBe(false);
+    expect(report.executiveSummary.blockers).toEqual(expect.arrayContaining([
+      "product_value_review_not_green",
+      "product_value_shopify_asset_placeholders_visible",
+      "product_value_real_seed_clickthrough_not_verified",
+    ]));
+    expect(report.executiveSummary.blockers).not.toContain("product_value_review_gate_missing");
   });
 
   test("renders markdown without leaking exact URLs", async () => {

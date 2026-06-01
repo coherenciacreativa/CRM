@@ -149,6 +149,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchPublicSendPreflightDecisionPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchProductValueReviewPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchIntegratedExperienceQaPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -229,6 +232,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.mjs");
@@ -255,6 +259,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-send-preflight-decision-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-product-value-review-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-input-request-packet");
@@ -722,6 +727,27 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           exactUrlsPrinted: false,
           recipientsPrinted: false,
         },
+        miniLaunchProductValueReviewPacket: {
+          path: paths.miniLaunchProductValueReviewPacket,
+          markdownPath: paths.miniLaunchProductValueReviewPacketMarkdown,
+          status: "product_value_review_blocked_before_ceo_review_no_live_changes",
+          ok: true,
+          productValueReviewPassed: false,
+          ceoReviewValueReady: false,
+          readyGateCount: 5,
+          blockedGateCount: 2,
+          blockerCount: 2,
+          blockers: ["shopify_asset_placeholders_visible", "real_seed_clickthrough_not_verified"],
+          shopifyPlaceholderHitCount: 5,
+          visibleUrlTextCount: 0,
+          clickthroughVerified: false,
+          liveActionAllowedNow: false,
+          mailerLiteApiCalled: false,
+          shopifyApiCalled: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          tokensPrinted: false,
+        },
         miniLaunchIntegratedExperienceQaPacket: {
           path: paths.miniLaunchIntegratedExperienceQaPacket,
           markdownPath: paths.miniLaunchIntegratedExperienceQaPacketMarkdown,
@@ -944,6 +970,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(renderMarkdown(receipt)).toContain("pilot distribution strategy");
     expect(renderMarkdown(receipt)).toContain("pilot distribution input request");
     expect(renderMarkdown(receipt)).toContain("pilot distribution decision intake");
+    expect(renderMarkdown(receipt)).toContain("Product/Value review");
     expect(renderMarkdown(receipt)).toContain("integrated experience QA");
   });
 });

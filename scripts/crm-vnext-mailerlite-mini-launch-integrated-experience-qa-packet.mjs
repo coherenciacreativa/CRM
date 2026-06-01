@@ -20,6 +20,8 @@ const DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-06-01.json`;
+const DEFAULT_PRODUCT_VALUE_REVIEW_PACKET =
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_PILOT_DISTRIBUTION_DECISION_INTAKE =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_OUTPUT =
@@ -38,6 +40,7 @@ Options:
   --real-mailerlite-render-qa <path>         Real MailerLite render QA JSON. Defaults to ${DEFAULT_REAL_MAILERLITE_RENDER_QA}
   --null-audience-seed-inbox-qa <path>       Null Audience seed inbox QA JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA}
   --public-launch-readiness-packet <path>    Public launch readiness JSON. Defaults to ${DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET}
+  --product-value-review-packet <path>       Product/Value review JSON. Defaults to ${DEFAULT_PRODUCT_VALUE_REVIEW_PACKET}
   --pilot-distribution-decision-intake <path> Pilot distribution decision intake JSON. Defaults to ${DEFAULT_PILOT_DISTRIBUTION_DECISION_INTAKE}
   --out <path>                               Write JSON report. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                      Write Markdown report. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
@@ -60,6 +63,7 @@ const parseArgs = (argv) => {
     realMailerLiteRenderQa: DEFAULT_REAL_MAILERLITE_RENDER_QA,
     nullAudienceSeedInboxQa: DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA,
     publicLaunchReadinessPacket: DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET,
+    productValueReviewPacket: DEFAULT_PRODUCT_VALUE_REVIEW_PACKET,
     pilotDistributionDecisionIntake: DEFAULT_PILOT_DISTRIBUTION_DECISION_INTAKE,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
@@ -76,6 +80,7 @@ const parseArgs = (argv) => {
     else if (arg === '--real-mailerlite-render-qa') options.realMailerLiteRenderQa = argv[++index];
     else if (arg === '--null-audience-seed-inbox-qa') options.nullAudienceSeedInboxQa = argv[++index];
     else if (arg === '--public-launch-readiness-packet') options.publicLaunchReadinessPacket = argv[++index];
+    else if (arg === '--product-value-review-packet') options.productValueReviewPacket = argv[++index];
     else if (arg === '--pilot-distribution-decision-intake') options.pilotDistributionDecisionIntake = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -102,6 +107,24 @@ const readJsonWithDigest = async (path, consultedFor) => {
       consultedFor,
     },
   };
+};
+
+const readOptionalJsonWithDigest = async (path, consultedFor) => {
+  const resolved = resolve(path);
+  try {
+    return await readJsonWithDigest(resolved, consultedFor);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return {
+      value: null,
+      digest: {
+        path: resolved,
+        present: false,
+        private: false,
+        consultedFor,
+      },
+    };
+  }
 };
 
 const unique = (items) => [...new Set(items.filter(Boolean))];
@@ -266,6 +289,7 @@ const buildIntegratedExperienceQaPacket = async ({
   realMailerLiteRenderQa,
   nullAudienceSeedInboxQa,
   publicLaunchReadinessPacket,
+  productValueReviewPacket,
   pilotDistributionDecisionIntake,
   generatedAt = new Date().toISOString(),
 }) => {
@@ -316,8 +340,12 @@ const buildIntegratedExperienceQaPacket = async ({
     && shopifySourceScan.placeholderHitCount === 0;
 
   const productValueReviewPassed =
-    payloadManifest?.executiveSummary?.productValueReviewPassed === true
+    productValueReviewPacket?.executiveSummary?.productValueReviewPassed === true
+    || payloadManifest?.executiveSummary?.productValueReviewPassed === true
     || publicLaunchReadinessPacket?.executiveSummary?.productValueReviewPassed === true;
+  const productValueReviewPresent = productValueReviewPacket != null;
+  const productValueReviewBlockers = productValueReviewPacket?.executiveSummary?.blockers ?? [];
+  const productValueReviewStatus = productValueReviewPacket?.status ?? null;
 
   const publicDistributionClosed =
     publicLaunchReadinessPacket?.executiveSummary?.readyForExactPublicSendApproval === false
@@ -400,10 +428,21 @@ const buildIntegratedExperienceQaPacket = async ({
       label: 'Product/value review',
       ready: productValueReviewPassed,
       evidence: {
+        productValueReviewStatus,
         productValueReviewPassed,
-        reviewSource: productValueReviewPassed ? 'local_packet_evidence' : null,
+        productValueReviewBlockerCount: productValueReviewBlockers.length,
+        productValueReviewBlockers,
+        reviewSource: productValueReviewPacket?.executiveSummary?.productValueReviewPassed === true
+          ? 'product_value_review_packet'
+          : productValueReviewPassed
+            ? 'legacy_payload_or_public_readiness_evidence'
+            : null,
       },
-      blockers: ['product_value_review_gate_missing'],
+      blockers: [
+        productValueReviewPresent ? null : 'product_value_review_gate_missing',
+        productValueReviewPresent && !productValueReviewPassed ? 'product_value_review_not_green' : null,
+        ...productValueReviewBlockers.map((blocker) => `product_value_${blocker}`),
+      ],
     }),
     gate({
       id: 'public_distribution_boundary',
@@ -458,6 +497,10 @@ const buildIntegratedExperienceQaPacket = async ({
       blockedGateCount,
       blockerCount: blockers.length,
       blockers,
+      productValueReviewStatus,
+      productValueReviewPassed,
+      productValueReviewBlockerCount: productValueReviewBlockers.length,
+      productValueReviewBlockers,
       nextSafeAction: ceoReviewReady
         ? 'prepare_ceo_review_packet_before_any_later_distribution_choice'
         : 'repair_integrated_experience_before_distribution_decision',
@@ -499,6 +542,9 @@ const renderMarkdown = (report) => [
   `- Ready gates: ${report.executiveSummary.readyGateCount}`,
   `- Blocked gates: ${report.executiveSummary.blockedGateCount}`,
   `- Blockers: ${report.executiveSummary.blockerCount}`,
+  `- Product/value review status: ${report.executiveSummary.productValueReviewStatus ?? 'missing'}`,
+  `- Product/value review passed: ${report.executiveSummary.productValueReviewPassed}`,
+  `- Product/value review blockers: ${report.executiveSummary.productValueReviewBlockerCount}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
   '',
   '## Gate Matrix',
@@ -554,6 +600,7 @@ const main = async () => {
     realMailerLiteRenderQa,
     nullAudienceSeedInboxQa,
     publicLaunchReadinessPacket,
+    productValueReviewPacket,
     pilotDistributionDecisionIntake,
   ] = await Promise.all([
     readJsonWithDigest(options.assetManifest, 'asset manifest, link lifecycle, footer policy and Shopify source pointers'),
@@ -563,6 +610,7 @@ const main = async () => {
     readJsonWithDigest(options.realMailerLiteRenderQa, 'real MailerLite render QA readback and safety gate state'),
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox QA evidence after Null Audience replacement tests'),
     readJsonWithDigest(options.publicLaunchReadinessPacket, 'public launch readiness gates and live-action posture'),
+    readOptionalJsonWithDigest(options.productValueReviewPacket, 'Product/Value review gates before CEO review'),
     readJsonWithDigest(options.pilotDistributionDecisionIntake, 'pilot distribution decision posture and no-send boundary'),
   ]);
 
@@ -574,6 +622,7 @@ const main = async () => {
     realMailerLiteRenderQa: realMailerLiteRenderQa.value,
     nullAudienceSeedInboxQa: nullAudienceSeedInboxQa.value,
     publicLaunchReadinessPacket: publicLaunchReadinessPacket.value,
+    productValueReviewPacket: productValueReviewPacket.value,
     pilotDistributionDecisionIntake: pilotDistributionDecisionIntake.value,
   });
 
@@ -585,6 +634,7 @@ const main = async () => {
     realMailerLiteRenderQa.digest,
     nullAudienceSeedInboxQa.digest,
     publicLaunchReadinessPacket.digest,
+    productValueReviewPacket.digest,
     pilotDistributionDecisionIntake.digest,
     ...report.shopifySourceScan.inspectedFiles.map((source) => ({
       ...source,
@@ -613,6 +663,9 @@ const main = async () => {
     blockedGateCount: report.executiveSummary.blockedGateCount,
     blockerCount: report.executiveSummary.blockerCount,
     blockers: report.executiveSummary.blockers,
+    productValueReviewStatus: report.executiveSummary.productValueReviewStatus,
+    productValueReviewPassed: report.executiveSummary.productValueReviewPassed,
+    productValueReviewBlockerCount: report.executiveSummary.productValueReviewBlockerCount,
     shopifyPlaceholderHitCount: report.shopifySourceScan.placeholderHitCount,
     visibleUrlTextCount: report.emailHtmlVisibleUrlScan.visibleUrlTextCount,
     out: resolve(options.out),

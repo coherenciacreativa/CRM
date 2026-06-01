@@ -4806,3 +4806,54 @@ Operating meaning:
 - Before any tester, micro-cohort, opt-in, audience or send decision, repair the integrated review package: canonical MailerLite footer evidence, Alejandro signature asset evidence, real CTA click-through proof, Shopify resource completeness, and Product/Value review.
 - Do not generate a public/audience send approval phrase from the current state.
 - Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
+
+## Launch OS v0 Product/Value review checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only Product/Value gate added. The vague integrated blocker `product_value_review_gate_missing` is now replaced by a deterministic review packet that checks whether the mini-launch is valuable, complete and safe enough to reach CEO review before any tester, micro-cohort, opt-in, audience or send decision.
+
+Evidence:
+
+- Product/Value review packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-01.json`
+- Product/Value review packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-01.md`
+- Integrated experience QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json`
+- Integrated experience QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-06-01.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-06-01.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-06-01.json`
+
+Confirmed results:
+
+- Product/Value review: `ok=true`, `status=product_value_review_blocked_before_ceo_review_no_live_changes`.
+- `productValueReviewPassed=false`.
+- `ceoReviewValueReady=false`.
+- Product/Value gates: `readyGateCount=5`, `blockedGateCount=2`, `blockerCount=2`.
+- Product/Value blockers: `shopify_asset_placeholders_visible`, `real_seed_clickthrough_not_verified`.
+- Shopify local source scan: `shopifyPlaceholderHitCount=16`.
+- Local email HTML scan: `visibleUrlTextCount=0`.
+- Integrated experience QA: `status=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`.
+- Integrated experience QA: `productValueReviewStatus=product_value_review_blocked_before_ceo_review_no_live_changes`, `productValueReviewPassed=false`.
+- Integrated experience QA blockers now include `product_value_review_not_green` instead of the older missing-gate blocker.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `testFiles=3`, `testCount=18`, `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- Product/Value and integrated QA read only local reports and local Shopify source files referenced by the asset manifest.
+- MailerLite API called: `false`; MailerLite UI used: `false`.
+- Shopify API called: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated: `false`.
+- Subscriber/group/segment/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The Product/Value gate is now part of the recurring mini-launch machine: a future launch must show audience fit, ethical scope, actionability, asset completeness, CTA integrity, brand depth and CRM learning value before CEO review.
+- For `Inteligencia para descansar`, the conceptual value is mostly present, but the package is not CEO-review ready because Shopify still contains visible placeholder/internal wiring copy and the real seed CTA click-through is not verified.
+- The next safe edge is repairing the local Shopify preview asset and the email/CTA proof path, then regenerating Product/Value review and integrated QA.
+- Do not ask Alejandro for testers, micro-cohort, opt-in, audience or send approval from this checkpoint.
+- Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.

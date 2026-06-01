@@ -292,6 +292,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_public_send_preflight_decision_packet',
       date,
     ),
+    miniLaunchProductValueReviewPacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_product_value_review_packet',
+      date,
+    ),
     miniLaunchIntegratedExperienceQaPacket: miniLaunchReportPath(
       reportsDir,
       'mailerlite_mini_launch_integrated_experience_qa_packet',
@@ -605,6 +610,12 @@ const validationCommands = () => [
     'syntax-check mini-launch public send preflight decision packet',
   ),
   command(
+    'node_check_mini_launch_product_value_review_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs'],
+    'syntax-check mini-launch Product/Value review packet',
+  ),
+  command(
     'node_check_mini_launch_integrated_experience_qa_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs'],
@@ -781,6 +792,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-product-value-review-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-input-request-packet.spec.ts',
@@ -1399,6 +1411,28 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current mini-launch pilot distribution strategy decision intake without approval phrase or live actions',
     ),
     command(
+      'refresh_mini_launch_product_value_review_packet',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-product-value-review-packet',
+        '--',
+        '--asset-manifest',
+        paths.miniLaunchAssetManifest,
+        '--correction-preview',
+        paths.miniLaunchSeedInboxCorrectionPreview,
+        '--payload-manifest',
+        paths.miniLaunchEmailBuilderPayloadManifestAfterSeedInboxCorrectionPreview,
+        '--integrated-experience-qa-packet',
+        paths.miniLaunchIntegratedExperienceQaPacket,
+        '--out',
+        paths.miniLaunchProductValueReviewPacket,
+        '--markdown-out',
+        paths.miniLaunchProductValueReviewPacketMarkdown,
+      ],
+      'regenerate current mini-launch Product/Value review packet before CEO review',
+    ),
+    command(
       'refresh_mini_launch_integrated_experience_qa_packet',
       'npm',
       [
@@ -1419,6 +1453,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchNullAudienceSeedInboxQa,
         '--public-launch-readiness-packet',
         paths.miniLaunchPublicLaunchReadinessPacket,
+        '--product-value-review-packet',
+        paths.miniLaunchProductValueReviewPacket,
         '--pilot-distribution-decision-intake',
         paths.miniLaunchPilotDistributionDecisionIntake,
         '--out',
@@ -1781,6 +1817,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchNullAudienceSeedInboxQa,
     miniLaunchPublicLaunchReadinessPacket,
     miniLaunchPublicSendPreflightDecisionPacket,
+    miniLaunchProductValueReviewPacket,
     miniLaunchIntegratedExperienceQaPacket,
     miniLaunchPilotDistributionStrategyPacket,
     miniLaunchPilotDistributionInputRequestPacket,
@@ -1821,6 +1858,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchNullAudienceSeedInboxQa),
     readOptionalJson(paths.miniLaunchPublicLaunchReadinessPacket),
     readOptionalJson(paths.miniLaunchPublicSendPreflightDecisionPacket),
+    readOptionalJson(paths.miniLaunchProductValueReviewPacket),
     readOptionalJson(paths.miniLaunchIntegratedExperienceQaPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionStrategyPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionInputRequestPacket),
@@ -2359,6 +2397,42 @@ const summarizeGeneratedReports = async (paths) => {
       recipientsPrinted:
         miniLaunchPublicSendPreflightDecisionPacket?.safety?.recipientsPrinted ?? null,
     },
+    miniLaunchProductValueReviewPacket: {
+      path: paths.miniLaunchProductValueReviewPacket,
+      markdownPath: paths.miniLaunchProductValueReviewPacketMarkdown,
+      status: miniLaunchProductValueReviewPacket?.status ?? null,
+      ok: miniLaunchProductValueReviewPacket?.ok ?? null,
+      productValueReviewPassed:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.productValueReviewPassed ?? null,
+      ceoReviewValueReady:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.ceoReviewValueReady ?? null,
+      readyGateCount:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.readyGateCount ?? null,
+      blockedGateCount:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.blockedGateCount ?? null,
+      blockerCount:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.blockerCount ?? null,
+      blockers:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.blockers ?? [],
+      shopifyPlaceholderHitCount:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.shopifyPlaceholderHitCount ?? null,
+      visibleUrlTextCount:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.visibleUrlTextCount ?? null,
+      clickthroughVerified:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.clickthroughVerified ?? null,
+      liveActionAllowedNow:
+        miniLaunchProductValueReviewPacket?.executiveSummary?.liveActionAllowedNow ?? null,
+      mailerLiteApiCalled:
+        miniLaunchProductValueReviewPacket?.safety?.mailerLiteApiCalled ?? null,
+      shopifyApiCalled:
+        miniLaunchProductValueReviewPacket?.safety?.shopifyApiCalled ?? null,
+      sendsPerformed:
+        miniLaunchProductValueReviewPacket?.safety?.sendsPerformed ?? null,
+      exactUrlsPrinted:
+        miniLaunchProductValueReviewPacket?.safety?.exactUrlsPrinted ?? null,
+      tokensPrinted:
+        miniLaunchProductValueReviewPacket?.safety?.tokensPrinted ?? null,
+    },
     miniLaunchIntegratedExperienceQaPacket: {
       path: paths.miniLaunchIntegratedExperienceQaPacket,
       markdownPath: paths.miniLaunchIntegratedExperienceQaPacketMarkdown,
@@ -2734,6 +2808,7 @@ const renderMarkdown = (receipt) => [
   `- Mini-launch MailerLite Null Audience seed inbox QA: ${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.path}`,
   `- Mini-launch public launch readiness packet: ${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.path}`,
   `- Mini-launch public send preflight decision packet: ${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.path}`,
+  `- Mini-launch Product/Value review packet: ${receipt.generatedReports.miniLaunchProductValueReviewPacket.path}`,
   `- Mini-launch integrated experience QA packet: ${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.path}`,
   `- Mini-launch pilot distribution strategy packet: ${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.path}`,
   `- Mini-launch pilot distribution input request packet: ${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.path}`,
@@ -3070,6 +3145,12 @@ const main = async () => {
       receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.audienceStrategyGateRequiredBeforeMassSend,
     miniLaunchPublicSendPreflightDecisionBlockerCount:
       receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.blockerCount,
+    miniLaunchProductValueReviewStatus:
+      receipt.generatedReports.miniLaunchProductValueReviewPacket.status,
+    miniLaunchProductValueReviewPassed:
+      receipt.generatedReports.miniLaunchProductValueReviewPacket.productValueReviewPassed,
+    miniLaunchProductValueReviewBlockerCount:
+      receipt.generatedReports.miniLaunchProductValueReviewPacket.blockerCount,
     miniLaunchIntegratedExperienceQaStatus:
       receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.status,
     miniLaunchIntegratedExperienceCeoReviewReady:
