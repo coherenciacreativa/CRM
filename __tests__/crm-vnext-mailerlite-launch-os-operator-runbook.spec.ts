@@ -1024,6 +1024,44 @@ const miniLaunchSeedInboxCorrectionPlan = {
   ],
 };
 
+const miniLaunchSeedInboxCorrectionPreview = {
+  ok: true,
+  status: "seed_inbox_correction_preview_ready_no_live_changes",
+  executiveSummary: {
+    finalPublicLinksReady: true,
+    finalPublicLinkCount: 3,
+    publicAudienceSendUrlGateReady: false,
+    subscriptionReasonPolicyReady: true,
+    redactedPayloadManifestReady: true,
+    canAskMailerLiteUiEditApprovalNow: false,
+    canAskAdditionalTestSendApprovalNow: false,
+    canAskPublicSendApprovalNow: false,
+    nextSafeAction: "run_local_render_or_text_qa_on_redacted_payload_preview_before_any_ui_edit_approval",
+  },
+  safety: {
+    exactUrlsStoredInReport: false,
+    exactUrlsStoredInRedactedPayloadManifest: false,
+    uiOpened: false,
+    browserOpened: false,
+    mailerLiteApiCalled: false,
+    shopifyApiCalled: false,
+    crmLiveApiCalled: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    groupMutationsPerformed: false,
+    workflowMutationsPerformed: false,
+    sendsPerformed: false,
+    schedulesCreated: false,
+    publicCampaignPublished: false,
+    signalLedgerAppendPerformed: false,
+    crmCardMutationsPerformed: false,
+    crmScoreMutationsPerformed: false,
+    factStoreWritePerformed: false,
+    outboundPerformed: false,
+    tokensPrinted: false,
+  },
+};
+
 const packageJson = {
   scripts: {
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/path.mjs",
@@ -1148,6 +1186,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.miniLaunchEmailRenderQa).toContain("mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchEmailManualUiBuildReceipt).toContain("mailerlite_mini_launch_email_manual_ui_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchSeedInboxCorrectionPlan).toContain("mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchSeedInboxCorrectionPreview).toContain("mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchCrmWriteApprovalPacket).toContain("mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyPreviewRouteDecision).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
@@ -1553,6 +1592,39 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.seedInboxCorrectionPlanCanAskPublicSendApprovalNow).toBe(false);
     expect(moves).toContain("Use the seed inbox correction plan as the current mini-launch boundary");
     expect(moves).toContain("keep MailerLite UI edits, additional test sends and public/audience launch closed");
+  });
+
+  test("treats ready seed inbox correction preview as completed local evidence", () => {
+    const state = buildCurrentState({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      miniLaunchSeedInboxQa,
+      miniLaunchSeedInboxCorrectionPlan,
+      miniLaunchSeedInboxCorrectionPreview,
+      postInputOrchestrator: {
+        status: "post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes",
+        executiveSummary: {
+          readyCommandCount: 1,
+          allReadyCommandsAllowed: true,
+          commandsExecuted: false,
+        },
+        actionPlan: {
+          commands: [{ id: "prepare_mini_launch_seed_inbox_correction_preview" }],
+        },
+      },
+    });
+    const moves = buildImmediateNextMoves({ currentState: state }).join("\n");
+
+    expect(state.miniLaunch.seedInboxCorrectionPreviewReady).toBe(true);
+    expect(state.miniLaunch.seedInboxCorrectionPreviewFinalPublicLinksReady).toBe(true);
+    expect(state.miniLaunch.seedInboxCorrectionPreviewSubscriptionReasonPolicyReady).toBe(true);
+    expect(state.miniLaunch.seedInboxCorrectionPreviewRedactedPayloadManifestReady).toBe(true);
+    expect(state.miniLaunch.seedInboxCorrectionPreviewPublicAudienceSendUrlGateReady).toBe(false);
+    expect(state.miniLaunch.seedInboxCorrectionPreviewLiveSafetyClosed).toBe(true);
+    expect(moves).toContain("Use the seed inbox correction preview as completed local payload evidence");
+    expect(moves).toContain("Treat the post-input correction-preview command as refresh-only");
+    expect(moves).not.toContain("Use the Launch OS post-input orchestrator to regenerate local mini-launch correction preview only");
   });
 
   test("treats partial Null Audience seed inbox QA as the current E04-only resend boundary", () => {

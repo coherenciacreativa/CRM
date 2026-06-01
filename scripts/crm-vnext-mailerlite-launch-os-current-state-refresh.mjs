@@ -677,6 +677,8 @@ const currentStateArgs = (paths) => [
   paths.miniLaunchCrmWriteApprovalPacket,
   '--mini-launch-seed-inbox-correction-plan',
   paths.miniLaunchSeedInboxCorrectionPlan,
+  '--mini-launch-seed-inbox-correction-preview',
+  paths.miniLaunchSeedInboxCorrectionPreview,
   '--mini-launch-email-render-qa',
   paths.miniLaunchEmailRenderQa,
   '--mini-launch-seed-inbox-correction-ui-edit-approval-packet',

@@ -4399,3 +4399,48 @@ Next safe move:
 - Use the post-input orchestrator's single ready command only for local correction-preview regeneration; do not treat it as approval for seed sends, public sends, CRM writes or UI/API mutations.
 - Keep the public/audience send path closed until URL, audience strategy and public-launch readiness gates are explicitly ready.
 - Keep CRM signal writes closed until real observed events, people, writable event screen and Fact Store market review are ready and separately approved.
+
+## Launch OS v0 correction-preview state wiring checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only operator state cleanup. The runbook and goal audit now read the seed inbox correction preview as completed local evidence instead of recycling the post-input orchestrator command as a current action.
+
+Evidence:
+
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Seed inbox correction preview: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=31`, `testCount=192`.
+- Seed inbox correction preview: `status=seed_inbox_correction_preview_ready_no_live_changes`, `ok=true`.
+- Correction preview gates: `finalPublicLinksReady=true`, `subscriptionReasonPolicyReady=true`, `redactedPayloadManifestReady=true`.
+- Correction preview remains non-public: `publicAudienceSendUrlGateReady=false`, `canAskMailerLiteUiEditApprovalNow=false`, `canAskPublicSendApprovalNow=false`.
+- Operator runbook: `seedInboxCorrectionPreviewReady=true`.
+- Operator runbook post-input move now treats the correction-preview command as refresh-only because the preview is already ready.
+- Goal audit: `seedInboxCorrectionPreviewReady=true`, and the old next move `post-input orchestrator to regenerate local mini-launch correction preview only` is no longer present.
+- Public launch readiness remains blocked: `readyForExactPublicSendApproval=false`, `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `crmObservedEventsReady=false`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- This wiring is local-only and reports-only.
+- Current-state refresh MailerLite API called: `false`; Shopify API called: `false`; CRM live API called: `false`.
+- UI opened: `false`.
+- Subscribers read: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs remain redacted in shared reports and redacted payload manifests.
+
+Next safe move:
+
+- Treat the correction preview as current completed local evidence.
+- Rerun it only if final links, footer policy or asset inputs change.
+- Continue from the public-launch readiness and CRM observed-event blockers; do not ask for public/audience send approval yet.
+- Keep MailerLite UI/API draft edits, sends, audience assignment, Shopify changes and CRM writes behind separate exact approvals.

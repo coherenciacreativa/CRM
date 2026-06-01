@@ -44,6 +44,7 @@ const DEFAULT_MINI_LAUNCH_SEED_TEST_EXECUTION_RECEIPT = '/Users/alejandrogomez/D
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_NULL_AUDIENCE_SEED_INBOX_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PREVIEW = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_ui_edit_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json';
@@ -117,6 +118,7 @@ Options:
   --mini-launch-seed-inbox-qa <path> Mini-launch seed inbox QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_QA}
   --mini-launch-null-audience-seed-inbox-qa <path> Mini-launch Null Audience seed inbox QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_NULL_AUDIENCE_SEED_INBOX_QA}
   --mini-launch-seed-inbox-correction-plan <path> Mini-launch seed inbox correction plan JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN}
+  --mini-launch-seed-inbox-correction-preview <path> Mini-launch seed inbox correction preview JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PREVIEW}
   --mini-launch-seed-inbox-correction-ui-edit-approval-packet <path> Mini-launch seed inbox correction UI edit approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET}
   --mini-launch-shopify-local-build-receipt <path> Mini-launch Shopify local build receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT}
   --mini-launch-shopify-preview-route-decision <path> Mini-launch Shopify preview route decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION}
@@ -197,6 +199,7 @@ const parseArgs = (argv) => {
     miniLaunchSeedInboxQa: DEFAULT_MINI_LAUNCH_SEED_INBOX_QA,
     miniLaunchNullAudienceSeedInboxQa: DEFAULT_MINI_LAUNCH_NULL_AUDIENCE_SEED_INBOX_QA,
     miniLaunchSeedInboxCorrectionPlan: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PLAN,
+    miniLaunchSeedInboxCorrectionPreview: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_PREVIEW,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket: DEFAULT_MINI_LAUNCH_SEED_INBOX_CORRECTION_UI_EDIT_APPROVAL_PACKET,
     miniLaunchShopifyLocalBuildReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_LOCAL_BUILD_RECEIPT,
     miniLaunchShopifyPreviewRouteDecision: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION,
@@ -273,6 +276,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-seed-inbox-qa') options.miniLaunchSeedInboxQa = argv[++index];
     else if (arg === '--mini-launch-null-audience-seed-inbox-qa') options.miniLaunchNullAudienceSeedInboxQa = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-correction-plan') options.miniLaunchSeedInboxCorrectionPlan = argv[++index];
+    else if (arg === '--mini-launch-seed-inbox-correction-preview') options.miniLaunchSeedInboxCorrectionPreview = argv[++index];
     else if (arg === '--mini-launch-seed-inbox-correction-ui-edit-approval-packet') options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-local-build-receipt') options.miniLaunchShopifyLocalBuildReceipt = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-decision') options.miniLaunchShopifyPreviewRouteDecision = argv[++index];
@@ -362,6 +366,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchSeedInboxQa, 'mini-launch seed inbox QA with correction recommendations before public launch', true],
     [options.miniLaunchNullAudienceSeedInboxQa, 'mini-launch Null Audience seed inbox QA after replacement test sends', true],
     [options.miniLaunchSeedInboxCorrectionPlan, 'mini-launch seed inbox correction plan and blockers before UI edit/public launch', true],
+    [options.miniLaunchSeedInboxCorrectionPreview, 'mini-launch seed inbox correction preview with redacted corrected payload evidence and closed live gates', true],
     [options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket, 'mini-launch seed inbox correction UI edit approval packet with exact MailerLite draft edit boundary', true],
     [options.miniLaunchShopifyLocalBuildReceipt, 'mini-launch Shopify local build receipt and closed publish/form/API gates', true],
     [options.miniLaunchShopifyPreviewRouteDecision, 'mini-launch Shopify preview route decision boundary with no approval phrase or publish', true],
@@ -578,6 +583,7 @@ const buildCurrentState = ({
   miniLaunchSeedInboxQa,
   miniLaunchNullAudienceSeedInboxQa,
   miniLaunchSeedInboxCorrectionPlan,
+  miniLaunchSeedInboxCorrectionPreview,
   miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision,
@@ -1109,6 +1115,52 @@ const buildCurrentState = ({
         .map((input) => input?.id)
         .filter(Boolean),
       seedInboxCorrectionPlanBlockers: miniLaunchSeedInboxCorrectionPlan?.blockersBeforeAnyMailerLiteUiEditApproval ?? [],
+      seedInboxCorrectionPreviewStatus: miniLaunchSeedInboxCorrectionPreview?.status ?? null,
+      seedInboxCorrectionPreviewReady:
+        miniLaunchSeedInboxCorrectionPreview?.status === 'seed_inbox_correction_preview_ready_no_live_changes'
+        && miniLaunchSeedInboxCorrectionPreview?.ok === true,
+      seedInboxCorrectionPreviewFinalPublicLinksReady:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.finalPublicLinksReady ?? null,
+      seedInboxCorrectionPreviewSubscriptionReasonPolicyReady:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.subscriptionReasonPolicyReady ?? null,
+      seedInboxCorrectionPreviewRedactedPayloadManifestReady:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.redactedPayloadManifestReady ?? null,
+      seedInboxCorrectionPreviewPublicAudienceSendUrlGateReady:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
+      seedInboxCorrectionPreviewCanAskMailerLiteUiEditApprovalNow:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.canAskMailerLiteUiEditApprovalNow ?? null,
+      seedInboxCorrectionPreviewCanAskAdditionalTestSendApprovalNow:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.canAskAdditionalTestSendApprovalNow ?? null,
+      seedInboxCorrectionPreviewCanAskPublicSendApprovalNow:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.canAskPublicSendApprovalNow ?? null,
+      seedInboxCorrectionPreviewNextSafeAction:
+        miniLaunchSeedInboxCorrectionPreview?.executiveSummary?.nextSafeAction ?? null,
+      seedInboxCorrectionPreviewExactUrlsStoredInReport:
+        miniLaunchSeedInboxCorrectionPreview?.safety?.exactUrlsStoredInReport ?? null,
+      seedInboxCorrectionPreviewExactUrlsStoredInRedactedPayloadManifest:
+        miniLaunchSeedInboxCorrectionPreview?.safety?.exactUrlsStoredInRedactedPayloadManifest ?? null,
+      seedInboxCorrectionPreviewLiveSafetyClosed: miniLaunchSeedInboxCorrectionPreview
+        ? [
+          'uiOpened',
+          'browserOpened',
+          'mailerLiteApiCalled',
+          'shopifyApiCalled',
+          'crmLiveApiCalled',
+          'subscribersRead',
+          'subscriberMutationsPerformed',
+          'groupMutationsPerformed',
+          'workflowMutationsPerformed',
+          'sendsPerformed',
+          'schedulesCreated',
+          'publicCampaignPublished',
+          'signalLedgerAppendPerformed',
+          'crmCardMutationsPerformed',
+          'crmScoreMutationsPerformed',
+          'factStoreWritePerformed',
+          'outboundPerformed',
+          'tokensPrinted',
+        ].every((key) => miniLaunchSeedInboxCorrectionPreview?.safety?.[key] === false)
+        : null,
       seedInboxCorrectionUiEditApprovalPacketStatus: miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.status ?? null,
       seedInboxCorrectionUiEditCanAskApproval:
         miniLaunchSeedInboxCorrectionUiEditApprovalPacket?.executiveSummary?.canAskAlejandroForApproval ?? null,
@@ -1510,6 +1562,7 @@ const buildReportMap = (sourceDigests) => {
     miniLaunchSeedInboxQa: findPath('mailerlite_mini_launch_seed_inbox_qa_inteligencia_descansar_2026-05-31.json'),
     miniLaunchNullAudienceSeedInboxQa: findPath('mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json'),
     miniLaunchSeedInboxCorrectionPlan: findPath('mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json'),
+    miniLaunchSeedInboxCorrectionPreview: findPath('mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json'),
     miniLaunchShopifyLocalBuildReceipt: findPath('mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json'),
     miniLaunchShopifyPreviewRouteDecision: findPath('mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json'),
     miniLaunchShopifyPreviewRouteApprovalPacket: findPath('mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json'),
@@ -1817,6 +1870,18 @@ const miniLaunchSeedInboxCorrectionUiEditApprovalPacketReady = (currentState) =>
   && currentState?.miniLaunch?.seedInboxCorrectionUiEditCanAskApproval === true
   && currentState?.miniLaunch?.seedInboxCorrectionUiEditBlockerCount === 0
   && currentState?.miniLaunch?.seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady === false;
+const miniLaunchSeedInboxCorrectionPreviewReady = (currentState) =>
+  currentState?.miniLaunch?.seedInboxCorrectionPreviewStatus === 'seed_inbox_correction_preview_ready_no_live_changes'
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewReady === true
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewFinalPublicLinksReady === true
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewSubscriptionReasonPolicyReady === true
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewRedactedPayloadManifestReady === true
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewPublicAudienceSendUrlGateReady === false
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewCanAskMailerLiteUiEditApprovalNow === false
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewCanAskPublicSendApprovalNow === false
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewExactUrlsStoredInReport === false
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewExactUrlsStoredInRedactedPayloadManifest === false
+  && currentState?.miniLaunch?.seedInboxCorrectionPreviewLiveSafetyClosed === true;
 
 const buildSeedInboxQaMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
@@ -1828,6 +1893,9 @@ const buildSeedInboxQaMove = (currentState) => {
   }
   if (miniLaunchSeedInboxCorrectionUiEditApprovalPacketReady(currentState)) {
     return `Use the seed inbox correction UI edit approval packet as the current human boundary: target drafts ${miniLaunch.seedInboxCorrectionUiEditTargetDraftCount ?? 'unknown'}, local render ready ${miniLaunch.seedInboxCorrectionUiEditLocalRenderReady}, blockers ${miniLaunch.seedInboxCorrectionUiEditBlockerCount ?? 'unknown'}, public/audience send URL gate ready ${miniLaunch.seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady}; do not open MailerLite UI or edit drafts until Alejandro gives the exact scoped approval phrase.`;
+  }
+  if (miniLaunchSeedInboxCorrectionPreviewReady(currentState)) {
+    return `Use the seed inbox correction preview as completed local payload evidence: final links ready ${miniLaunch.seedInboxCorrectionPreviewFinalPublicLinksReady}, footer/subscription policy ready ${miniLaunch.seedInboxCorrectionPreviewSubscriptionReasonPolicyReady}, redacted payload ready ${miniLaunch.seedInboxCorrectionPreviewRedactedPayloadManifestReady}, public/audience URL gate ready ${miniLaunch.seedInboxCorrectionPreviewPublicAudienceSendUrlGateReady}; run only local render/text QA next and keep MailerLite UI edits, additional test sends and public/audience launch closed.`;
   }
   if (miniLaunch.seedInboxCorrectionPlanStatus === 'seed_inbox_correction_plan_ready_no_live_changes') {
     const blockers = (miniLaunch.seedInboxCorrectionPlanBlockers ?? []).join(', ') || 'none';
@@ -1954,6 +2022,13 @@ const buildPostInputOrchestratorMove = (currentState) => {
   const orchestrator = currentState?.postInputOrchestrator;
   if (!orchestrator?.status) return 'Generate the Launch OS post-input orchestrator so future private inputs route to local packet regeneration instead of reopening closed UI work.';
   if (orchestrator.status === 'post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes') {
+    if (miniLaunchSeedInboxCorrectionPreviewReady(currentState)
+      && (orchestrator.readyCommandIds ?? []).some((id) => [
+        'prepare_mini_launch_seed_inbox_correction_preview',
+        'regenerate_mini_launch_correction_preview',
+      ].includes(id))) {
+      return `Treat the post-input correction-preview command as refresh-only: the seed inbox correction preview is already ready, redacted and no-live; rerun it only if final links, footer policy or asset inputs change.`;
+    }
     return `Use the Launch OS post-input orchestrator to regenerate ${describePostInputCommandScope(orchestrator)}; ready commands ${orchestrator.readyCommandCount ?? 'unknown'}, all commands allowed: ${orchestrator.allReadyCommandsAllowed}, commands executed: ${orchestrator.commandsExecuted}.`;
   }
   return `Use the Launch OS post-input orchestrator as the current wait state; ready inputs ${orchestrator.readyInputCount ?? 0}, ready commands ${orchestrator.readyCommandCount ?? 0}, can ask approval now: ${orchestrator.canAskApprovalNow}, commands executed: ${orchestrator.commandsExecuted}.`;
@@ -2171,6 +2246,7 @@ const buildRunbook = ({
   miniLaunchSeedInboxQa,
   miniLaunchNullAudienceSeedInboxQa,
   miniLaunchSeedInboxCorrectionPlan,
+  miniLaunchSeedInboxCorrectionPreview,
   miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
   miniLaunchShopifyLocalBuildReceipt,
   miniLaunchShopifyPreviewRouteDecision,
@@ -2240,6 +2316,7 @@ const buildRunbook = ({
     miniLaunchSeedInboxQa,
     miniLaunchNullAudienceSeedInboxQa,
     miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchSeedInboxCorrectionPreview,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
@@ -2703,6 +2780,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchSeedInboxQa,
     miniLaunchNullAudienceSeedInboxQa,
     miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchSeedInboxCorrectionPreview,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
@@ -2771,6 +2849,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchSeedInboxQa),
     readOptionalJson(options.miniLaunchNullAudienceSeedInboxQa),
     readOptionalJson(options.miniLaunchSeedInboxCorrectionPlan),
+    readOptionalJson(options.miniLaunchSeedInboxCorrectionPreview),
     readOptionalJson(options.miniLaunchSeedInboxCorrectionUiEditApprovalPacket),
     readOptionalJson(options.miniLaunchShopifyLocalBuildReceipt),
     readOptionalJson(options.miniLaunchShopifyPreviewRouteDecision),
@@ -2841,6 +2920,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchSeedInboxQa,
     miniLaunchNullAudienceSeedInboxQa,
     miniLaunchSeedInboxCorrectionPlan,
+    miniLaunchSeedInboxCorrectionPreview,
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket,
     miniLaunchShopifyLocalBuildReceipt,
     miniLaunchShopifyPreviewRouteDecision,
