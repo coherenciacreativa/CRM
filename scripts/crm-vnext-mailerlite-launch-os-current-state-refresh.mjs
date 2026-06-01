@@ -292,6 +292,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_public_send_preflight_decision_packet',
       date,
     ),
+    miniLaunchIntegratedExperienceQaPacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_integrated_experience_qa_packet',
+      date,
+    ),
     miniLaunchCadenceBoard: staticReportPath(
       reportsDir,
       'mailerlite_mini_launch_cadence_board_current_2026-06-01.json',
@@ -357,6 +362,10 @@ const buildReportPaths = ({ date, reportsDir }) => {
       reportsDir,
       'mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview',
       date,
+    ),
+    miniLaunchEmailBuilderPayloadManifestAfterSeedInboxCorrectionPreview: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_email_builder_payload_manifest_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.redacted.json',
     ),
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket: miniLaunchReportPath(
       reportsDir,
@@ -596,6 +605,12 @@ const validationCommands = () => [
     'syntax-check mini-launch public send preflight decision packet',
   ),
   command(
+    'node_check_mini_launch_integrated_experience_qa_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs'],
+    'syntax-check mini-launch integrated experience QA packet',
+  ),
+  command(
     'node_check_mini_launch_pilot_distribution_strategy_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs'],
@@ -766,6 +781,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-input-request-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.spec.ts',
@@ -823,6 +839,8 @@ const currentStateArgs = (paths) => [
   paths.miniLaunchPublicAudienceScopePacket,
   '--mini-launch-public-send-preflight-decision-packet',
   paths.miniLaunchPublicSendPreflightDecisionPacket,
+  '--mini-launch-integrated-experience-qa-packet',
+  paths.miniLaunchIntegratedExperienceQaPacket,
   '--mini-launch-pilot-distribution-strategy-packet',
   paths.miniLaunchPilotDistributionStrategyPacket,
   '--mini-launch-pilot-distribution-input-request-packet',
@@ -1381,6 +1399,36 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current mini-launch pilot distribution strategy decision intake without approval phrase or live actions',
     ),
     command(
+      'refresh_mini_launch_integrated_experience_qa_packet',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet',
+        '--',
+        '--asset-manifest',
+        paths.miniLaunchAssetManifest,
+        '--correction-preview',
+        paths.miniLaunchSeedInboxCorrectionPreview,
+        '--payload-manifest',
+        paths.miniLaunchEmailBuilderPayloadManifestAfterSeedInboxCorrectionPreview,
+        '--email-render-qa',
+        paths.miniLaunchEmailRenderQa,
+        '--real-mailerlite-render-qa',
+        paths.miniLaunchRealMailerLiteRenderQaBeforeSeedSendLatest,
+        '--null-audience-seed-inbox-qa',
+        paths.miniLaunchNullAudienceSeedInboxQa,
+        '--public-launch-readiness-packet',
+        paths.miniLaunchPublicLaunchReadinessPacket,
+        '--pilot-distribution-decision-intake',
+        paths.miniLaunchPilotDistributionDecisionIntake,
+        '--out',
+        paths.miniLaunchIntegratedExperienceQaPacket,
+        '--markdown-out',
+        paths.miniLaunchIntegratedExperienceQaPacketMarkdown,
+      ],
+      'regenerate current mini-launch integrated experience QA packet before any distribution/tester decision',
+    ),
+    command(
       'refresh_approval_intake',
       'npm',
       [
@@ -1733,6 +1781,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchNullAudienceSeedInboxQa,
     miniLaunchPublicLaunchReadinessPacket,
     miniLaunchPublicSendPreflightDecisionPacket,
+    miniLaunchIntegratedExperienceQaPacket,
     miniLaunchPilotDistributionStrategyPacket,
     miniLaunchPilotDistributionInputRequestPacket,
     miniLaunchPilotDistributionDecisionIntake,
@@ -1772,6 +1821,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchNullAudienceSeedInboxQa),
     readOptionalJson(paths.miniLaunchPublicLaunchReadinessPacket),
     readOptionalJson(paths.miniLaunchPublicSendPreflightDecisionPacket),
+    readOptionalJson(paths.miniLaunchIntegratedExperienceQaPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionStrategyPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionInputRequestPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionDecisionIntake),
@@ -2309,6 +2359,48 @@ const summarizeGeneratedReports = async (paths) => {
       recipientsPrinted:
         miniLaunchPublicSendPreflightDecisionPacket?.safety?.recipientsPrinted ?? null,
     },
+    miniLaunchIntegratedExperienceQaPacket: {
+      path: paths.miniLaunchIntegratedExperienceQaPacket,
+      markdownPath: paths.miniLaunchIntegratedExperienceQaPacketMarkdown,
+      status: miniLaunchIntegratedExperienceQaPacket?.status ?? null,
+      ok: miniLaunchIntegratedExperienceQaPacket?.ok ?? null,
+      ceoReviewReady:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.ceoReviewReady ?? null,
+      integratedExperienceReady:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.integratedExperienceReady ?? null,
+      distributionDecisionShouldWait:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.distributionDecisionShouldWait ?? null,
+      canAskPilotDistributionDecisionNow:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.canAskPilotDistributionDecisionNow ?? null,
+      canAskPublicSendApprovalNow:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.canAskPublicSendApprovalNow ?? null,
+      liveActionAllowedNow:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.liveActionAllowedNow ?? null,
+      readyGateCount:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.readyGateCount ?? null,
+      blockedGateCount:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.blockedGateCount ?? null,
+      blockerCount:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.blockerCount ?? null,
+      blockers:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.blockers ?? [],
+      shopifyPlaceholderHitCount:
+        miniLaunchIntegratedExperienceQaPacket?.shopifySourceScan?.placeholderHitCount ?? null,
+      visibleUrlTextCount:
+        miniLaunchIntegratedExperienceQaPacket?.emailHtmlVisibleUrlScan?.visibleUrlTextCount ?? null,
+      nextSafeAction:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.nextSafeAction ?? null,
+      mailerLiteApiCalled:
+        miniLaunchIntegratedExperienceQaPacket?.safety?.mailerLiteApiCalled ?? null,
+      shopifyApiCalled:
+        miniLaunchIntegratedExperienceQaPacket?.safety?.shopifyApiCalled ?? null,
+      sendsPerformed:
+        miniLaunchIntegratedExperienceQaPacket?.safety?.sendsPerformed ?? null,
+      exactUrlsPrinted:
+        miniLaunchIntegratedExperienceQaPacket?.safety?.exactUrlsPrinted ?? null,
+      tokensPrinted:
+        miniLaunchIntegratedExperienceQaPacket?.safety?.tokensPrinted ?? null,
+    },
     miniLaunchPilotDistributionStrategyPacket: {
       path: paths.miniLaunchPilotDistributionStrategyPacket,
       markdownPath: paths.miniLaunchPilotDistributionStrategyPacketMarkdown,
@@ -2642,6 +2734,7 @@ const renderMarkdown = (receipt) => [
   `- Mini-launch MailerLite Null Audience seed inbox QA: ${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.path}`,
   `- Mini-launch public launch readiness packet: ${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.path}`,
   `- Mini-launch public send preflight decision packet: ${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.path}`,
+  `- Mini-launch integrated experience QA packet: ${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.path}`,
   `- Mini-launch pilot distribution strategy packet: ${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.path}`,
   `- Mini-launch pilot distribution input request packet: ${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.path}`,
   `- Mini-launch pilot distribution decision intake: ${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.path}`,
@@ -2680,6 +2773,7 @@ const renderMarkdown = (receipt) => [
   `- MailerLite Null Audience seed inbox QA: status=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.status}, seedInboxQaGreen=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.seedInboxQaGreen}, deliveredToApprovedSeed=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.deliveredToApprovedSeed}/${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.expectedSeedMessages}, correctedOutsideSeedCount=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.correctedOutsideSeedCount}, nextBoundary=${receipt.generatedReports.miniLaunchNullAudienceSeedInboxQa.recommendedNextBoundary}`,
   `- mini-launch public launch readiness: status=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.status}, seedInboxQaGreen=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.seedInboxQaGreen}, nullAudienceDraftsReady=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.nullAudienceReplacementDraftsReady}, previewLinksReady=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.previewLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.publicAudienceSendUrlGateReady}, publicAudienceScopeReady=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.publicAudienceScopeReady}, crmObservedEventsReady=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.crmObservedEventsReady}, postLaunchCrmWriteReady=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.postLaunchCrmWriteReady}, exactPublicSendApprovalAlreadyQueued=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.exactPublicSendApprovalAlreadyQueued}, readyForExactPublicSendApproval=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.readyForExactPublicSendApproval}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.liveActionAllowedNow}, blockerCount=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.blockerCount}, postLaunchCrmBlockerCount=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.postLaunchCrmBlockerCount}, approvalExecutionBlockerCount=${receipt.generatedReports.miniLaunchPublicLaunchReadinessPacket.approvalExecutionBlockerCount}`,
   `- mini-launch public send preflight decision: status=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.status}, decisionExplanationReady=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.decisionExplanationReady}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.exactApprovalPhraseAvailable}, canAskExactApprovalNow=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.canAskExactApprovalNow}, canExecuteNow=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.canExecuteNow}, urlLifecycleEvidenceReady=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.urlLifecycleEvidenceReady}, audienceDecisionEvidenceReady=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.audienceDecisionEvidenceReady}, recommendedUrlDecisionId=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedUrlDecisionId}, recommendedAudienceScopeId=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedAudienceScopeId}, recommendedAudienceKnownActiveCount=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedAudienceKnownActiveCount}, recommendedDistributionPath=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedDistributionPath}, massSubscriberSendRecommendedNow=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.massSubscriberSendRecommendedNow}, existingActiveSubscriberAudienceFutureOptionOnly=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.existingActiveSubscriberAudienceFutureOptionOnly}, audienceStrategyGateRequiredBeforeMassSend=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.audienceStrategyGateRequiredBeforeMassSend}, blockerCount=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.blockerCount}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.mailerLiteApiCalled}, shopifyApiCalled=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.shopifyApiCalled}`,
+  `- mini-launch integrated experience QA: status=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.status}, ceoReviewReady=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.ceoReviewReady}, integratedExperienceReady=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.integratedExperienceReady}, distributionDecisionShouldWait=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.distributionDecisionShouldWait}, canAskPilotDistributionDecisionNow=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.canAskPilotDistributionDecisionNow}, canAskPublicSendApprovalNow=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.canAskPublicSendApprovalNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.liveActionAllowedNow}, readyGateCount=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.readyGateCount}, blockedGateCount=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.blockedGateCount}, blockerCount=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.blockerCount}, shopifyPlaceholderHitCount=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.shopifyPlaceholderHitCount}, visibleUrlTextCount=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.visibleUrlTextCount}, nextSafeAction=${receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.nextSafeAction}`,
   `- mini-launch pilot distribution strategy: status=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.status}, strategyPacketReady=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.strategyPacketReady}, strategyDecisionReadyForExplanation=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.strategyDecisionReadyForExplanation}, finalSendPhraseAvailable=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.finalSendPhraseAvailable}, canAskFinalSendApprovalNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.canAskFinalSendApprovalNow}, recommendedStrategyId=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.recommendedStrategyId}, currentDefault=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.currentDefault}, nextLearningLanes=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.nextLearningLanes}, broadActiveSubscriberSendRecommendedNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.broadActiveSubscriberSendRecommendedNow}, every3DaysCadenceActiveNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.every3DaysCadenceActiveNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.liveActionAllowedNow}, blockerCount=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.blockerCount}, sendsPerformed=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.sendsPerformed}`,
   `- mini-launch pilot distribution input request: status=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.status}, inputRequestReady=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.inputRequestReady}, canAskPilotLaneDecisionNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.canAskPilotLaneDecisionNow}, canAskFinalSendApprovalNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.canAskFinalSendApprovalNow}, recommendedDecisionKind=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.recommendedDecisionKind}, recommendedDecisionOptions=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.recommendedDecisionOptions}, recommendedNextIfNoHumanRoster=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.recommendedNextIfNoHumanRoster}, broadActiveSubscriberSendRecommendedNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.broadActiveSubscriberSendRecommendedNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.liveActionAllowedNow}, blockerCount=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.blockerCount}, sendsPerformed=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.sendsPerformed}`,
   `- mini-launch pilot distribution decision intake: status=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.status}, decisionTextProvided=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.decisionTextProvided}, selectedPilotLane=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.selectedPilotLane}, laneDecisionReady=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.laneDecisionReady}, rosterRequiredNext=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.rosterRequiredNext}, canAskFinalSendApprovalNow=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.canAskFinalSendApprovalNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.liveActionAllowedNow}, wouldAuthorizeSend=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.wouldAuthorizeSend}, wouldAuthorizeAudienceAssignment=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.wouldAuthorizeAudienceAssignment}, blockerCount=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.blockerCount}, sendsPerformed=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.sendsPerformed}`,
@@ -2976,6 +3070,22 @@ const main = async () => {
       receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.audienceStrategyGateRequiredBeforeMassSend,
     miniLaunchPublicSendPreflightDecisionBlockerCount:
       receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.blockerCount,
+    miniLaunchIntegratedExperienceQaStatus:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.status,
+    miniLaunchIntegratedExperienceCeoReviewReady:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.ceoReviewReady,
+    miniLaunchIntegratedExperienceReady:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.integratedExperienceReady,
+    miniLaunchIntegratedExperienceDistributionDecisionShouldWait:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.distributionDecisionShouldWait,
+    miniLaunchIntegratedExperienceCanAskPilotDistributionDecisionNow:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.canAskPilotDistributionDecisionNow,
+    miniLaunchIntegratedExperienceCanAskPublicSendApprovalNow:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.canAskPublicSendApprovalNow,
+    miniLaunchIntegratedExperienceLiveActionAllowedNow:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.liveActionAllowedNow,
+    miniLaunchIntegratedExperienceBlockerCount:
+      receipt.generatedReports.miniLaunchIntegratedExperienceQaPacket.blockerCount,
     miniLaunchPilotDistributionStrategyStatus:
       receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.status,
     miniLaunchPilotDistributionStrategyReady:

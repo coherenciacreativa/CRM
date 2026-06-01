@@ -50,6 +50,7 @@ const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_DECISION = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_INTEGRATED_EXPERIENCE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json';
@@ -134,6 +135,7 @@ Options:
   --mini-launch-public-launch-readiness-packet <path> Mini-launch public launch readiness JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET}
   --mini-launch-public-audience-scope-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook.
   --mini-launch-public-send-preflight-decision-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook.
+  --mini-launch-integrated-experience-qa-packet <path> Accepted for current-state refresh compatibility; goal audit reads integrated experience posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_INTEGRATED_EXPERIENCE_QA_PACKET}
   --mini-launch-pilot-distribution-strategy-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET}
   --mini-launch-pilot-distribution-input-request-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET}
   --mini-launch-pilot-distribution-decision-intake <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE}
@@ -216,6 +218,7 @@ const parseArgs = (argv) => {
     miniLaunchPublicLaunchReadinessPacket: DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET,
     miniLaunchPublicAudienceScopePacket: null,
     miniLaunchPublicSendPreflightDecisionPacket: null,
+    miniLaunchIntegratedExperienceQaPacket: DEFAULT_MINI_LAUNCH_INTEGRATED_EXPERIENCE_QA_PACKET,
     miniLaunchPilotDistributionStrategyPacket: null,
     miniLaunchPilotDistributionInputRequestPacket: null,
     miniLaunchPilotDistributionDecisionIntake: null,
@@ -296,6 +299,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-public-launch-readiness-packet') options.miniLaunchPublicLaunchReadinessPacket = argv[++index];
     else if (arg === '--mini-launch-public-audience-scope-packet') options.miniLaunchPublicAudienceScopePacket = argv[++index];
     else if (arg === '--mini-launch-public-send-preflight-decision-packet') options.miniLaunchPublicSendPreflightDecisionPacket = argv[++index];
+    else if (arg === '--mini-launch-integrated-experience-qa-packet') options.miniLaunchIntegratedExperienceQaPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-strategy-packet') options.miniLaunchPilotDistributionStrategyPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-input-request-packet') options.miniLaunchPilotDistributionInputRequestPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-decision-intake') options.miniLaunchPilotDistributionDecisionIntake = argv[++index];
@@ -507,6 +511,7 @@ const loadSources = async (options) => {
     ['miniLaunchShopifyPreviewRouteApprovalPacket', options.miniLaunchShopifyPreviewRouteApprovalPacket, 'mini-launch Shopify preview route exact approval packet with execution still closed', 'json', true],
     ['miniLaunchShopifyPreviewRouteExecutionReceipt', options.miniLaunchShopifyPreviewRouteExecutionReceipt, 'mini-launch Shopify preview route execution receipt with QA evidence and closed audience-send gate', 'json', true],
     ['miniLaunchPublicLaunchReadinessPacket', options.miniLaunchPublicLaunchReadinessPacket, 'mini-launch public launch readiness after green Null Audience seed QA', 'json', true],
+    ['miniLaunchIntegratedExperienceQaPacket', options.miniLaunchIntegratedExperienceQaPacket, 'mini-launch integrated experience QA before CEO review or distribution decision', 'json', true],
     ['miniLaunchCrmWriteApprovalPacket', options.miniLaunchCrmWriteApprovalPacket, 'mini-launch CRM write approval packet with exact observed-events/person/write-family boundary', 'json', true],
     ['brujulaPlan', options.brujulaPlan, 'Brújula post-inbox verification and creative posture', 'json'],
     ['brujulaApply', options.brujulaApply, 'Brújula test subscriber receipt assignment', 'json'],
@@ -2949,6 +2954,47 @@ const buildGoalAudit = ({
   const publicSendPreflightMove = publicSendPreflightStatus
     ? `Public-send preflight is strategy evidence only: recommended audience ${publicSendPreflightRecommendedAudienceScopeId ?? 'unknown'} (${publicSendPreflightRecommendedAudienceKnownActiveCount ?? 'unknown'} active), path ${publicSendPreflightRecommendedDistributionPath ?? 'unknown'}, mass subscriber send recommended now ${publicSendPreflightMassSubscriberSendRecommendedNow}, existing active subscriber audience future-only ${publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly}, audience strategy gate before mass send ${publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend}, canAskExactApprovalNow=${publicSendPreflightCanAskExactApprovalNow}.`
     : null;
+  const integratedExperienceQaPacketStatus =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceQaPacketStatus
+    ?? null;
+  const integratedExperienceQaCeoReviewReady =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceQaCeoReviewReady
+    ?? null;
+  const integratedExperienceReady =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceReady
+    ?? null;
+  const integratedExperienceDistributionDecisionShouldWait =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceDistributionDecisionShouldWait
+    ?? null;
+  const integratedExperienceCanAskPilotDistributionDecisionNow =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceCanAskPilotDistributionDecisionNow
+    ?? null;
+  const integratedExperienceCanAskPublicSendApprovalNow =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceCanAskPublicSendApprovalNow
+    ?? null;
+  const integratedExperienceLiveActionAllowedNow =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceLiveActionAllowedNow
+    ?? null;
+  const integratedExperienceBlockerCount =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceBlockerCount
+    ?? null;
+  const integratedExperienceBlockers =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceBlockers
+    ?? [];
+  const integratedExperienceShopifyPlaceholderHitCount =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceShopifyPlaceholderHitCount
+    ?? null;
+  const integratedExperienceVisibleUrlTextCount =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceVisibleUrlTextCount
+    ?? null;
+  const integratedExperienceNextSafeAction =
+    values.runbook?.currentState?.miniLaunch?.integratedExperienceNextSafeAction
+    ?? null;
+  const integratedExperienceMove = integratedExperienceQaPacketStatus
+    ? integratedExperienceDistributionDecisionShouldWait === true
+      ? `Integrated experience QA is the active CEO-review boundary before distribution/testers: status ${integratedExperienceQaPacketStatus}, ceoReviewReady=${integratedExperienceQaCeoReviewReady}, integratedExperienceReady=${integratedExperienceReady}, blockers=${integratedExperienceBlockerCount ?? 'unknown'} (${integratedExperienceBlockers.join('|') || 'none'}), shopifyPlaceholderHits=${integratedExperienceShopifyPlaceholderHitCount ?? 'unknown'}, visibleUrlTextHits=${integratedExperienceVisibleUrlTextCount ?? 'unknown'}, canAskPilotDistributionDecisionNow=${integratedExperienceCanAskPilotDistributionDecisionNow}, canAskPublicSendApprovalNow=${integratedExperienceCanAskPublicSendApprovalNow}, liveActionAllowedNow=${integratedExperienceLiveActionAllowedNow}, nextSafeAction=${integratedExperienceNextSafeAction ?? 'unknown'}.`
+      : `Integrated experience QA is ready for CEO review: status ${integratedExperienceQaPacketStatus}, ceoReviewReady=${integratedExperienceQaCeoReviewReady}; keep later tester/audience/send choices behind separate explanation and exact approval.`
+    : null;
   const pilotDistributionStrategyPacketStatus =
     values.runbook?.currentState?.miniLaunch?.pilotDistributionStrategyPacketStatus
     ?? null;
@@ -3208,12 +3254,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${integratedExperienceMove ?? ''} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${integratedExperienceMove ?? ''} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${integratedExperienceMove ?? ''} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${seedRecipientMove} ${integratedExperienceMove ?? ''} ${pilotDistributionMove ?? ''} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -3235,6 +3281,7 @@ const buildGoalAudit = ({
         taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
+        integratedExperienceMove,
         pilotDistributionMove,
         publicSendPreflightMove,
         shopifyLocalBuildMove,
@@ -3261,6 +3308,7 @@ const buildGoalAudit = ({
         taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
+        integratedExperienceMove,
         pilotDistributionMove,
         publicSendPreflightMove,
         shopifyLocalBuildMove,
@@ -3286,6 +3334,7 @@ const buildGoalAudit = ({
         taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
+        integratedExperienceMove,
         pilotDistributionMove,
         publicSendPreflightMove,
         shopifyLocalBuildMove,
@@ -3309,6 +3358,7 @@ const buildGoalAudit = ({
       taxonomyRefreshResponseRequestMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
+      integratedExperienceMove,
       pilotDistributionMove,
       publicSendPreflightMove,
       shopifyLocalBuildMove,
@@ -3440,6 +3490,18 @@ const buildGoalAudit = ({
       publicSendPreflightExistingActiveSubscriberAudienceKnownActiveCount,
       publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend,
       publicSendPreflightCanAskExactApprovalNow,
+      integratedExperienceQaPacketStatus,
+      integratedExperienceQaCeoReviewReady,
+      integratedExperienceReady,
+      integratedExperienceDistributionDecisionShouldWait,
+      integratedExperienceCanAskPilotDistributionDecisionNow,
+      integratedExperienceCanAskPublicSendApprovalNow,
+      integratedExperienceLiveActionAllowedNow,
+      integratedExperienceBlockerCount,
+      integratedExperienceBlockers,
+      integratedExperienceShopifyPlaceholderHitCount,
+      integratedExperienceVisibleUrlTextCount,
+      integratedExperienceNextSafeAction,
       pilotDistributionStrategyPacketStatus,
       pilotDistributionStrategyReady,
       pilotDistributionRecommendedStrategy,
@@ -3517,6 +3579,7 @@ const buildGoalAudit = ({
       taxonomyRefreshResponseRequestMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
+      integratedExperienceMove,
       pilotDistributionMove,
       publicSendPreflightMove,
       repairPacketMove,
@@ -3612,6 +3675,12 @@ const renderMarkdown = (audit) => {
     `- Public send preflight recommended path: ${audit.executiveSummary.publicSendPreflightRecommendedDistributionPath ?? 'unknown'}`,
     `- Public send preflight mass subscriber send recommended now: ${audit.executiveSummary.publicSendPreflightMassSubscriberSendRecommendedNow ?? 'unknown'}`,
     `- Public send preflight audience strategy gate before mass send: ${audit.executiveSummary.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend ?? 'unknown'}`,
+    `- Integrated experience QA packet: ${audit.executiveSummary.integratedExperienceQaPacketStatus ?? 'missing'}`,
+    `- Integrated experience CEO review ready: ${audit.executiveSummary.integratedExperienceQaCeoReviewReady ?? 'unknown'}`,
+    `- Integrated experience ready: ${audit.executiveSummary.integratedExperienceReady ?? 'unknown'}`,
+    `- Integrated experience distribution decision should wait: ${audit.executiveSummary.integratedExperienceDistributionDecisionShouldWait ?? 'unknown'}`,
+    `- Integrated experience blockers: ${audit.executiveSummary.integratedExperienceBlockerCount ?? 'unknown'}`,
+    `- Integrated experience next safe action: ${audit.executiveSummary.integratedExperienceNextSafeAction ?? 'unknown'}`,
     `- Pilot distribution strategy packet: ${audit.executiveSummary.pilotDistributionStrategyPacketStatus ?? 'missing'}`,
     `- Pilot distribution recommended strategy: ${audit.executiveSummary.pilotDistributionRecommendedStrategy ?? 'unknown'}`,
     `- Pilot distribution current default: ${audit.executiveSummary.pilotDistributionCurrentDefault ?? 'unknown'}`,
@@ -3714,6 +3783,11 @@ const main = async () => {
     taxonomyRefreshResponseRequestBundleStatus: audit.executiveSummary.taxonomyRefreshResponseRequestBundleStatus,
     taxonomyRefreshResponseRequestMissingFinalResponseCount: audit.executiveSummary.taxonomyRefreshResponseRequestMissingFinalResponseCount,
     taxonomyRefreshResponseRequestAsksLiveApproval: audit.executiveSummary.taxonomyRefreshResponseRequestAsksLiveApproval,
+    integratedExperienceQaPacketStatus: audit.executiveSummary.integratedExperienceQaPacketStatus,
+    integratedExperienceCeoReviewReady: audit.executiveSummary.integratedExperienceQaCeoReviewReady,
+    integratedExperienceDistributionDecisionShouldWait:
+      audit.executiveSummary.integratedExperienceDistributionDecisionShouldWait,
+    integratedExperienceBlockerCount: audit.executiveSummary.integratedExperienceBlockerCount,
     pilotDistributionStrategyPacketStatus: audit.executiveSummary.pilotDistributionStrategyPacketStatus,
     pilotDistributionRecommendedStrategy: audit.executiveSummary.pilotDistributionRecommendedStrategy,
     pilotDistributionCanAskFinalSendApprovalNow: audit.executiveSummary.pilotDistributionCanAskFinalSendApprovalNow,

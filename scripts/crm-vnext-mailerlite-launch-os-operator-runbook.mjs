@@ -53,6 +53,7 @@ const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alej
 const DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PUBLIC_AUDIENCE_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PUBLIC_SEND_PREFLIGHT_DECISION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_INTEGRATED_EXPERIENCE_QA_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json';
@@ -130,6 +131,7 @@ Options:
   --mini-launch-public-launch-readiness-packet <path> Mini-launch public launch readiness JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET}
   --mini-launch-public-audience-scope-packet <path> Mini-launch public audience scope JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_AUDIENCE_SCOPE_PACKET}
   --mini-launch-public-send-preflight-decision-packet <path> Mini-launch public send preflight decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_SEND_PREFLIGHT_DECISION_PACKET}
+  --mini-launch-integrated-experience-qa-packet <path> Mini-launch integrated experience QA JSON. Defaults to ${DEFAULT_MINI_LAUNCH_INTEGRATED_EXPERIENCE_QA_PACKET}
   --mini-launch-pilot-distribution-strategy-packet <path> Mini-launch pilot distribution strategy JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET}
   --mini-launch-pilot-distribution-input-request-packet <path> Mini-launch pilot distribution input request JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET}
   --mini-launch-pilot-distribution-decision-intake <path> Mini-launch pilot distribution lane decision intake JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE}
@@ -214,6 +216,7 @@ const parseArgs = (argv) => {
     miniLaunchPublicLaunchReadinessPacket: DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET,
     miniLaunchPublicAudienceScopePacket: DEFAULT_MINI_LAUNCH_PUBLIC_AUDIENCE_SCOPE_PACKET,
     miniLaunchPublicSendPreflightDecisionPacket: DEFAULT_MINI_LAUNCH_PUBLIC_SEND_PREFLIGHT_DECISION_PACKET,
+    miniLaunchIntegratedExperienceQaPacket: DEFAULT_MINI_LAUNCH_INTEGRATED_EXPERIENCE_QA_PACKET,
     miniLaunchPilotDistributionStrategyPacket: DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET,
     miniLaunchPilotDistributionInputRequestPacket: DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET,
     miniLaunchPilotDistributionDecisionIntake: DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE,
@@ -294,6 +297,7 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-public-launch-readiness-packet') options.miniLaunchPublicLaunchReadinessPacket = argv[++index];
     else if (arg === '--mini-launch-public-audience-scope-packet') options.miniLaunchPublicAudienceScopePacket = argv[++index];
     else if (arg === '--mini-launch-public-send-preflight-decision-packet') options.miniLaunchPublicSendPreflightDecisionPacket = argv[++index];
+    else if (arg === '--mini-launch-integrated-experience-qa-packet') options.miniLaunchIntegratedExperienceQaPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-strategy-packet') options.miniLaunchPilotDistributionStrategyPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-input-request-packet') options.miniLaunchPilotDistributionInputRequestPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-decision-intake') options.miniLaunchPilotDistributionDecisionIntake = argv[++index];
@@ -387,6 +391,7 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchPublicLaunchReadinessPacket, 'mini-launch public launch readiness after green Null Audience seed QA', true],
     [options.miniLaunchPublicAudienceScopePacket, 'mini-launch public audience scope packet with pilot/default distribution posture', true],
     [options.miniLaunchPublicSendPreflightDecisionPacket, 'mini-launch public send preflight decision packet with URL and audience strategy posture', true],
+    [options.miniLaunchIntegratedExperienceQaPacket, 'mini-launch integrated experience QA packet before CEO review or distribution decision', true],
     [options.miniLaunchPilotDistributionStrategyPacket, 'mini-launch pilot distribution strategy packet with current default and next learning lanes', true],
     [options.miniLaunchPilotDistributionInputRequestPacket, 'mini-launch pilot distribution input request packet with strategy-only human boundary', true],
     [options.miniLaunchPilotDistributionDecisionIntake, 'mini-launch pilot distribution lane decision intake with no live approval', true],
@@ -607,6 +612,7 @@ const buildCurrentState = ({
   miniLaunchPublicLaunchReadinessPacket,
   miniLaunchPublicAudienceScopePacket,
   miniLaunchPublicSendPreflightDecisionPacket,
+  miniLaunchIntegratedExperienceQaPacket,
   miniLaunchPilotDistributionStrategyPacket,
   miniLaunchPilotDistributionInputRequestPacket,
   miniLaunchPilotDistributionDecisionIntake,
@@ -1286,6 +1292,33 @@ const buildCurrentState = ({
         miniLaunchPublicSendPreflightDecisionPacket?.executiveSummary?.audienceStrategyGateRequiredBeforeMassSend ?? null,
       publicSendPreflightBlockerCount:
         miniLaunchPublicSendPreflightDecisionPacket?.executiveSummary?.blockerCount ?? null,
+      integratedExperienceQaPacketStatus: miniLaunchIntegratedExperienceQaPacket?.status ?? null,
+      integratedExperienceQaCeoReviewReady:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.ceoReviewReady ?? null,
+      integratedExperienceReady:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.integratedExperienceReady ?? null,
+      integratedExperienceDistributionDecisionShouldWait:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.distributionDecisionShouldWait ?? null,
+      integratedExperienceCanAskPilotDistributionDecisionNow:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.canAskPilotDistributionDecisionNow ?? null,
+      integratedExperienceCanAskPublicSendApprovalNow:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.canAskPublicSendApprovalNow ?? null,
+      integratedExperienceLiveActionAllowedNow:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.liveActionAllowedNow ?? null,
+      integratedExperienceReadyGateCount:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.readyGateCount ?? null,
+      integratedExperienceBlockedGateCount:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.blockedGateCount ?? null,
+      integratedExperienceBlockerCount:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.blockerCount ?? null,
+      integratedExperienceBlockers:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.blockers ?? [],
+      integratedExperienceShopifyPlaceholderHitCount:
+        miniLaunchIntegratedExperienceQaPacket?.shopifySourceScan?.placeholderHitCount ?? null,
+      integratedExperienceVisibleUrlTextCount:
+        miniLaunchIntegratedExperienceQaPacket?.emailHtmlVisibleUrlScan?.visibleUrlTextCount ?? null,
+      integratedExperienceNextSafeAction:
+        miniLaunchIntegratedExperienceQaPacket?.executiveSummary?.nextSafeAction ?? null,
       pilotDistributionStrategyPacketStatus: miniLaunchPilotDistributionStrategyPacket?.status ?? null,
       pilotDistributionStrategyReady:
         miniLaunchPilotDistributionStrategyPacket?.executiveSummary?.strategyPacketReady ?? null,
@@ -1647,6 +1680,10 @@ const buildReportMap = (sourceDigests) => {
     miniLaunchShopifyPreviewRouteApprovalPacket: findPath('mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json'),
     miniLaunchShopifyPreviewRouteExecutionReceipt: findPath('mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json'),
     miniLaunchPublicLaunchReadinessPacket: findPath('mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json'),
+    miniLaunchIntegratedExperienceQaPacket: findCurrentReportPath(
+      'mailerlite_mini_launch_integrated_experience_qa_packet',
+      'mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json',
+    ),
     miniLaunchPublicAudienceScopePacket: findPath('mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json'),
     miniLaunchPublicSendPreflightDecisionPacket: findPath('mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json'),
     brujulaPostInboxVerify: findPath('mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json'),
@@ -1997,6 +2034,18 @@ const buildSeedInboxQaMove = (currentState) => {
   return 'Use the mini-launch email asset-build scope packet only as a human approval boundary; it cannot execute MailerLite builder mutations.';
 };
 
+const buildIntegratedExperienceMove = (currentState) => {
+  const miniLaunch = currentState?.miniLaunch ?? {};
+  if (!miniLaunch.integratedExperienceQaPacketStatus) return null;
+
+  const blockers = (miniLaunch.integratedExperienceBlockers ?? []).join(', ') || 'none';
+  if (miniLaunch.integratedExperienceDistributionDecisionShouldWait === true) {
+    return `Use the integrated experience QA packet as the active CEO-review boundary before any tester/distribution decision: status ${miniLaunch.integratedExperienceQaPacketStatus}, ceoReviewReady ${miniLaunch.integratedExperienceQaCeoReviewReady}, integratedExperienceReady ${miniLaunch.integratedExperienceReady}, blockers ${miniLaunch.integratedExperienceBlockerCount ?? 'unknown'} (${blockers}), Shopify placeholder hits ${miniLaunch.integratedExperienceShopifyPlaceholderHitCount ?? 'unknown'}, visible URL text hits ${miniLaunch.integratedExperienceVisibleUrlTextCount ?? 'unknown'}, can ask pilot distribution decision now ${miniLaunch.integratedExperienceCanAskPilotDistributionDecisionNow}, can ask public send approval now ${miniLaunch.integratedExperienceCanAskPublicSendApprovalNow}, live action allowed now ${miniLaunch.integratedExperienceLiveActionAllowedNow}.`;
+  }
+
+  return `Integrated experience QA is ready for CEO review: status ${miniLaunch.integratedExperienceQaPacketStatus}, ready gates ${miniLaunch.integratedExperienceReadyGateCount ?? 'unknown'}, blocked gates ${miniLaunch.integratedExperienceBlockedGateCount ?? 'unknown'}; keep any later tester/audience/send step behind a separate explanation and exact approval.`;
+};
+
 const buildPilotDistributionMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
   if (miniLaunch.pilotDistributionDecisionIntakeStatus) {
@@ -2219,6 +2268,7 @@ const buildApprovalPhaseMoves = (currentState) => {
       ? 'Real MailerLite render QA is green; keep the manual UI draft repair packet as evidence only and do not ask for repair approval.'
       : 'If real MailerLite render QA is not green, generate or refresh the manual UI draft repair packet before asking for any seed-send scope.',
     buildSeedInboxQaMove(currentState),
+    buildIntegratedExperienceMove(currentState),
     buildPilotDistributionMove(currentState),
     currentState?.miniLaunch?.crmWriteApprovalPacketStatus
     ? currentState?.miniLaunch?.crmWritePolicyPacketReady === true
@@ -2261,6 +2311,7 @@ const buildSharedImmediateMoves = (currentState) => {
       ? 'Use the mini-launch manual UI build receipt as the current draft state; keep the local asset plan and payload manifest as provenance, not as a new build request.'
       : 'Use the mini-launch local email asset plan only to request exact build scope; it cannot create MailerLite assets or send tests.',
     buildSeedInboxQaMove(currentState),
+    buildIntegratedExperienceMove(currentState),
     buildPilotDistributionMove(currentState),
     miniLaunchShopifyLocalBuildClosed(currentState)
       ? 'Use the Shopify local build receipt as current Web surface evidence; preview/publish/form connection remains outside this closed local build boundary.'
@@ -2346,6 +2397,7 @@ const buildRunbook = ({
   miniLaunchPublicLaunchReadinessPacket,
   miniLaunchPublicAudienceScopePacket,
   miniLaunchPublicSendPreflightDecisionPacket,
+  miniLaunchIntegratedExperienceQaPacket,
   miniLaunchPilotDistributionStrategyPacket,
   miniLaunchPilotDistributionInputRequestPacket,
   miniLaunchPilotDistributionDecisionIntake,
@@ -2419,6 +2471,7 @@ const buildRunbook = ({
     miniLaunchPublicLaunchReadinessPacket,
     miniLaunchPublicAudienceScopePacket,
     miniLaunchPublicSendPreflightDecisionPacket,
+    miniLaunchIntegratedExperienceQaPacket,
     miniLaunchPilotDistributionStrategyPacket,
     miniLaunchPilotDistributionInputRequestPacket,
     miniLaunchPilotDistributionDecisionIntake,
@@ -2670,6 +2723,12 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch public send preflight recommended path: ${runbook.currentState.miniLaunch.publicSendPreflightRecommendedDistributionPath ?? 'unknown'}`,
     `- Mini-launch public send preflight mass subscriber send recommended now: ${runbook.currentState.miniLaunch.publicSendPreflightMassSubscriberSendRecommendedNow ?? 'unknown'}`,
     `- Mini-launch public send preflight audience strategy gate before mass send: ${runbook.currentState.miniLaunch.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend ?? 'unknown'}`,
+    `- Mini-launch integrated experience QA packet: ${runbook.currentState.miniLaunch.integratedExperienceQaPacketStatus ?? 'unknown'}`,
+    `- Mini-launch integrated experience CEO review ready: ${runbook.currentState.miniLaunch.integratedExperienceQaCeoReviewReady ?? 'unknown'}`,
+    `- Mini-launch integrated experience ready: ${runbook.currentState.miniLaunch.integratedExperienceReady ?? 'unknown'}`,
+    `- Mini-launch integrated experience distribution decision should wait: ${runbook.currentState.miniLaunch.integratedExperienceDistributionDecisionShouldWait ?? 'unknown'}`,
+    `- Mini-launch integrated experience blockers: ${runbook.currentState.miniLaunch.integratedExperienceBlockerCount ?? 'unknown'}`,
+    `- Mini-launch integrated experience next safe action: ${runbook.currentState.miniLaunch.integratedExperienceNextSafeAction ?? 'unknown'}`,
     `- Mini-launch pilot distribution strategy packet: ${runbook.currentState.miniLaunch.pilotDistributionStrategyPacketStatus ?? 'unknown'}`,
     `- Mini-launch pilot distribution strategy ready: ${runbook.currentState.miniLaunch.pilotDistributionStrategyReady ?? 'unknown'}`,
     `- Mini-launch pilot distribution recommended strategy: ${runbook.currentState.miniLaunch.pilotDistributionRecommendedStrategy ?? 'unknown'}`,
@@ -2901,6 +2960,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchPublicLaunchReadinessPacket,
     miniLaunchPublicAudienceScopePacket,
     miniLaunchPublicSendPreflightDecisionPacket,
+    miniLaunchIntegratedExperienceQaPacket,
     miniLaunchPilotDistributionStrategyPacket,
     miniLaunchPilotDistributionInputRequestPacket,
     miniLaunchPilotDistributionDecisionIntake,
@@ -2973,6 +3033,7 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchPublicLaunchReadinessPacket),
     readOptionalJson(options.miniLaunchPublicAudienceScopePacket),
     readOptionalJson(options.miniLaunchPublicSendPreflightDecisionPacket),
+    readOptionalJson(options.miniLaunchIntegratedExperienceQaPacket),
     readOptionalJson(options.miniLaunchPilotDistributionStrategyPacket),
     readOptionalJson(options.miniLaunchPilotDistributionInputRequestPacket),
     readOptionalJson(options.miniLaunchPilotDistributionDecisionIntake),
@@ -3047,6 +3108,7 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchPublicLaunchReadinessPacket,
     miniLaunchPublicAudienceScopePacket,
     miniLaunchPublicSendPreflightDecisionPacket,
+    miniLaunchIntegratedExperienceQaPacket,
     miniLaunchPilotDistributionStrategyPacket,
     miniLaunchPilotDistributionInputRequestPacket,
     miniLaunchPilotDistributionDecisionIntake,
@@ -3168,6 +3230,14 @@ const main = async () => {
       runbook.currentState.miniLaunch.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend,
     pilotDistributionStrategyPacketStatus:
       runbook.currentState.miniLaunch.pilotDistributionStrategyPacketStatus,
+    integratedExperienceQaPacketStatus:
+      runbook.currentState.miniLaunch.integratedExperienceQaPacketStatus,
+    integratedExperienceCeoReviewReady:
+      runbook.currentState.miniLaunch.integratedExperienceQaCeoReviewReady,
+    integratedExperienceDistributionDecisionShouldWait:
+      runbook.currentState.miniLaunch.integratedExperienceDistributionDecisionShouldWait,
+    integratedExperienceBlockerCount:
+      runbook.currentState.miniLaunch.integratedExperienceBlockerCount,
     pilotDistributionStrategyReady:
       runbook.currentState.miniLaunch.pilotDistributionStrategyReady,
     pilotDistributionRecommendedStrategy:

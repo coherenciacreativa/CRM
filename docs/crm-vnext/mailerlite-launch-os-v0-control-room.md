@@ -4756,3 +4756,53 @@ Operating meaning:
 - If `manual_micro_cohort_next` or `opt_in_testers_next` is chosen, the next local-only requirement is a roster/preflight packet before any later audience assignment or send can be discussed.
 - If `keep_null_audience_no_public_send` is chosen, the four replacement drafts stay inert while readiness work continues.
 - No final public/audience send phrase can be requested from this checkpoint.
+
+## Launch OS v0 integrated experience QA checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only QA boundary added. The system must not ask Alejandro to choose testers, a micro-cohort, an opt-in lane or any distribution step just because the Null Audience seed inbox QA is green; the current active edge is an end-to-end CEO-review package that feels complete and worth reviewing.
+
+Evidence:
+
+- Integrated experience QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json`
+- Integrated experience QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-06-01.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-06-01.json`
+- Current continuation guard: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_continuation_guard_current_2026-06-01.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-06-01.json`
+
+Confirmed results:
+
+- Integrated experience QA: `ok=true`, `status=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`.
+- `ceoReviewReady=false`.
+- `integratedExperienceReady=false`.
+- `distributionDecisionShouldWait=true`.
+- `canAskPilotDistributionDecisionNow=false`.
+- `canAskPublicSendApprovalNow=false`.
+- `liveActionAllowedNow=false`.
+- `blockerCount=7`.
+- Current blockers: `visual_signature_asset_not_verified`, `signature_fallback_still_present_in_payload`, `canonical_mailerlite_footer_not_verified`, `platform_footer_policy_is_not_canonical_footer_proof`, `real_seed_clickthrough_not_verified`, `shopify_asset_placeholders_visible`, `product_value_review_gate_missing`.
+- Shopify local source scan: `shopifyPlaceholderHitCount=16`.
+- Local email HTML scan: `visibleUrlTextCount=0`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `integratedExperienceQaPacketStatus=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`, `integratedExperienceDistributionDecisionShouldWait=true`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `testFiles=4`, `testCount=50`, `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- The integrated packet reads only local reports and local Shopify source files referenced by the asset manifest.
+- MailerLite API called: `false`; MailerLite UI used: `false`.
+- Shopify API called: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated: `false`.
+- Subscriber/group/segment/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The previous pilot distribution choice remains a later strategic lane, not the current active ask.
+- Before any tester, micro-cohort, opt-in, audience or send decision, repair the integrated review package: canonical MailerLite footer evidence, Alejandro signature asset evidence, real CTA click-through proof, Shopify resource completeness, and Product/Value review.
+- Do not generate a public/audience send approval phrase from the current state.
+- Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
