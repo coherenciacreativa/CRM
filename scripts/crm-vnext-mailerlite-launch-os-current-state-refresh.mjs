@@ -34,8 +34,67 @@ const mdPathFor = (path) => path.replace(/\.json$/u, '.md');
 const reportPath = (reportsDir, name, date) => resolve(reportsDir, `${name}_current_${date}.json`);
 const miniLaunchReportPath = (reportsDir, name, date) =>
   resolve(reportsDir, `${name}_current_inteligencia_descansar_${date}.json`);
+const miniLaunchDatedReportPath = (reportsDir, name, date, suffix = '') =>
+  resolve(reportsDir, `${name}_inteligencia_descansar_${date}${suffix}.json`);
 const staticReportPath = (reportsDir, fileName) => resolve(reportsDir, fileName);
 const privateReportPath = (reportsDir, fileName) => resolve(reportsDir, 'private', fileName);
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+
+const latestExistingCurrentReportPath = (reportsDir, name, date) => {
+  const preferredPath = reportPath(reportsDir, name, date);
+  if (existsSync(preferredPath)) return preferredPath;
+  try {
+    const escapedName = escapeRegExp(name);
+    const match = readdirSync(reportsDir)
+      .map((fileName) => fileName.match(new RegExp(`^${escapedName}_current_(\\d{4}-\\d{2}-\\d{2})\\.json$`, 'u')))
+      .filter(Boolean)
+      .map((result) => result[1])
+      .sort()
+      .at(-1);
+    return match ? reportPath(reportsDir, name, match) : preferredPath;
+  } catch {
+    return preferredPath;
+  }
+};
+
+const latestExistingMiniLaunchCurrentReportPath = (reportsDir, name, date) => {
+  const preferredPath = miniLaunchReportPath(reportsDir, name, date);
+  if (existsSync(preferredPath)) return preferredPath;
+  try {
+    const escapedName = escapeRegExp(name);
+    const match = readdirSync(reportsDir)
+      .map((fileName) =>
+        fileName.match(new RegExp(`^${escapedName}_current_inteligencia_descansar_(\\d{4}-\\d{2}-\\d{2})\\.json$`, 'u'))
+      )
+      .filter(Boolean)
+      .map((result) => result[1])
+      .sort()
+      .at(-1);
+    return match ? miniLaunchReportPath(reportsDir, name, match) : preferredPath;
+  } catch {
+    return preferredPath;
+  }
+};
+
+const latestExistingMiniLaunchDatedReportPath = (reportsDir, name, date, suffix = '') => {
+  const preferredPath = miniLaunchDatedReportPath(reportsDir, name, date, suffix);
+  if (existsSync(preferredPath)) return preferredPath;
+  try {
+    const escapedName = escapeRegExp(name);
+    const escapedSuffix = escapeRegExp(suffix);
+    const match = readdirSync(reportsDir)
+      .map((fileName) =>
+        fileName.match(new RegExp(`^${escapedName}_inteligencia_descansar_(\\d{4}-\\d{2}-\\d{2})${escapedSuffix}\\.json$`, 'u'))
+      )
+      .filter(Boolean)
+      .map((result) => result[1])
+      .sort()
+      .at(-1);
+    return match ? miniLaunchDatedReportPath(reportsDir, name, match, suffix) : preferredPath;
+  } catch {
+    return preferredPath;
+  }
+};
 
 const latestSuccessfulCurrentStateDate = (reportsDir) => {
   try {
@@ -158,7 +217,7 @@ const buildReportPaths = ({ date, reportsDir }) => {
       reportsDir,
       'mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json',
     ),
-    miniLaunchGroupDryRun: miniLaunchReportPath(
+    miniLaunchGroupDryRun: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_group_dry_run',
       date,
@@ -167,6 +226,10 @@ const buildReportPaths = ({ date, reportsDir }) => {
       reportsDir,
       'mailerlite_mini_launch_crm_signal_projection_packet',
       date,
+    ),
+    miniLaunchCrmResponse: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_department_review_responses_inteligencia_descansar_2026-05-27/crm_response.json',
     ),
     miniLaunchCrmWriteApprovalPacket: miniLaunchReportPath(
       reportsDir,
@@ -199,7 +262,7 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_shopify_public_url_gate',
       date,
     ),
-    miniLaunchPublicAudienceScanPacket: miniLaunchReportPath(
+    miniLaunchPublicAudienceScanPacket: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_public_audience_scan_packet',
       date,
@@ -210,6 +273,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
       date,
     ),
     miniLaunchPublicAudienceScopePacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_public_audience_scope_packet',
+      date,
+    ),
+    miniLaunchPublicAudienceScopePacketInput: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_public_audience_scope_packet',
       date,
@@ -238,7 +306,7 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_shopify_preview_route_decision',
       date,
     ),
-    miniLaunchShopifyPreviewRouteDecisionConfirmation: miniLaunchReportPath(
+    miniLaunchShopifyPreviewRouteDecisionConfirmation: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_shopify_preview_route_decision_confirmation',
       date,
@@ -248,7 +316,7 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_shopify_preview_route_approval_packet',
       date,
     ),
-    miniLaunchShopifyPreviewRouteExecutionReceipt: miniLaunchReportPath(
+    miniLaunchShopifyPreviewRouteExecutionReceipt: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_shopify_preview_route_execution_receipt',
       date,
@@ -257,7 +325,7 @@ const buildReportPaths = ({ date, reportsDir }) => {
       reportsDir,
       'mailerlite_mini_launch_crm_write_policy_packet_inteligencia_descansar_2026-05-28.json',
     ),
-    miniLaunchSeedSendApprovalPacket: miniLaunchReportPath(
+    miniLaunchSeedSendApprovalPacket: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_seed_send_approval_packet',
       date,
@@ -266,13 +334,15 @@ const buildReportPaths = ({ date, reportsDir }) => {
       reportsDir,
       'mailerlite_mini_launch_seed_inbox_correction_plan_inteligencia_descansar_2026-05-31.json',
     ),
-    miniLaunchSeedInboxCorrectionPreview: staticReportPath(
+    miniLaunchSeedInboxCorrectionPreview: latestExistingMiniLaunchDatedReportPath(
       reportsDir,
-      `mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_${date}.json`,
+      'mailerlite_mini_launch_seed_inbox_correction_preview',
+      date,
     ),
-    miniLaunchEmailRenderQa: staticReportPath(
+    miniLaunchEmailRenderQa: latestExistingMiniLaunchDatedReportPath(
       reportsDir,
-      `mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_${date}.json`,
+      'mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview',
+      date,
     ),
     miniLaunchSeedInboxCorrectionUiEditApprovalPacket: miniLaunchReportPath(
       reportsDir,
@@ -284,34 +354,38 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_seed_inbox_correction_ui_edit_execution_kit',
       date,
     ),
-    miniLaunchSeedInboxCorrectionApiReplacementExecutionReceipt: staticReportPath(
+    miniLaunchSeedInboxCorrectionApiReplacementExecutionReceipt: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
-      `mailerlite_mini_launch_seed_inbox_correction_api_replacement_execution_receipt_current_inteligencia_descansar_${date}.json`,
+      'mailerlite_mini_launch_seed_inbox_correction_api_replacement_execution_receipt',
+      date,
     ),
     miniLaunchSeedInboxCorrectionApiReplacementCleanupApprovalPacket: miniLaunchReportPath(
       reportsDir,
       'mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_approval_packet',
       date,
     ),
-    miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt: staticReportPath(
+    miniLaunchSeedInboxCorrectionApiReplacementCleanupExecutionReceipt: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
-      `mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt_current_inteligencia_descansar_${date}.json`,
+      'mailerlite_mini_launch_seed_inbox_correction_api_replacement_cleanup_execution_receipt',
+      date,
     ),
-    miniLaunchSeedInboxCorrectionApiEditDiagnostic: miniLaunchReportPath(
+    miniLaunchSeedInboxCorrectionApiEditDiagnostic: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_seed_inbox_correction_api_edit_diagnostic',
       date,
     ),
-    miniLaunchRealMailerLiteRenderQaBeforeSeedSendLatest: staticReportPath(
+    miniLaunchRealMailerLiteRenderQaBeforeSeedSendLatest: latestExistingMiniLaunchDatedReportPath(
       reportsDir,
-      `mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_${date}-latest.json`,
+      'mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send',
+      date,
+      '-latest',
     ),
-    miniLaunchMailerLiteApiInertDraftLab: miniLaunchReportPath(
+    miniLaunchMailerLiteApiInertDraftLab: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_api_inert_draft_lab',
       date,
     ),
-    miniLaunchMailerLiteApiNullAudienceLab: miniLaunchReportPath(
+    miniLaunchMailerLiteApiNullAudienceLab: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_api_null_audience_lab',
       date,
@@ -321,7 +395,7 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_null_audience_replacement_approval_packet',
       date,
     ),
-    miniLaunchNullAudienceReplacementExecutionReceipt: miniLaunchReportPath(
+    miniLaunchNullAudienceReplacementExecutionReceipt: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
       date,
@@ -356,15 +430,18 @@ const buildReportPaths = ({ date, reportsDir }) => {
     missingInputsRequestBundle: reportPath(reportsDir, 'mailerlite_launch_os_missing_inputs_request_bundle', date),
     privateInputTemplatePack: reportPath(reportsDir, 'mailerlite_launch_os_private_input_template_pack', date),
     postInputOrchestrator: reportPath(reportsDir, 'mailerlite_launch_os_post_input_orchestrator', date),
-    taxonomyRefreshResponseRequestBundle: reportPath(
+    taxonomyRefreshResponseRequestBundle: latestExistingCurrentReportPath(
       reportsDir,
       'mailerlite_launch_os_taxonomy_refresh_response_request_bundle',
       date,
     ),
     continuationGuard: reportPath(reportsDir, 'mailerlite_launch_os_continuation_guard', date),
     operatorRunbook: reportPath(reportsDir, 'mailerlite_launch_os_operator_runbook', date),
+    operatorRunbookInput: latestExistingCurrentReportPath(reportsDir, 'mailerlite_launch_os_operator_runbook', date),
     goalAudit: reportPath(reportsDir, 'mailerlite_launch_os_v0_goal_audit', date),
+    goalAuditInput: latestExistingCurrentReportPath(reportsDir, 'mailerlite_launch_os_v0_goal_audit', date),
     validationReceipt: reportPath(reportsDir, 'mailerlite_launch_os_validation_receipt', date),
+    validationReceiptInput: latestExistingCurrentReportPath(reportsDir, 'mailerlite_launch_os_validation_receipt', date),
     currentStateRefresh: reportPath(reportsDir, 'mailerlite_launch_os_current_state_refresh', date),
   };
 
@@ -443,6 +520,12 @@ const validationCommands = () => [
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs'],
     'syntax-check current-state refresh runner',
+  ),
+  command(
+    'node_check_mini_launch_crm_signal_projection_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.mjs'],
+    'syntax-check mini-launch CRM signal projection packet',
   ),
   command(
     'node_check_crm_write_approval_packet',
@@ -671,6 +754,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts',
       '__tests__/crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-crm-write-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-kit.spec.ts',
       '__tests__/crm-vnext-mailerlite-launch-os-missing-inputs-intake.spec.ts',
@@ -788,6 +872,26 @@ const buildReportCommands = (paths, validationResult) => {
   }
 
   return [
+    command(
+      'refresh_mini_launch_crm_signal_projection_packet',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet',
+        '--',
+        '--crm-response',
+        paths.miniLaunchCrmResponse,
+        '--event-contract',
+        paths.miniLaunchEventContract,
+        '--onboarding-handoff-policy',
+        paths.miniLaunchOnboardingHandoffPolicy,
+        '--out',
+        paths.miniLaunchCrmSignalProjectionPacket,
+        '--markdown-out',
+        paths.miniLaunchCrmSignalProjectionPacketMarkdown,
+      ],
+      'regenerate current mini-launch CRM signal projection packet from local department response and event contract',
+    ),
     command(
       'refresh_mini_launch_crm_write_approval_packet',
       'npm',
@@ -1063,7 +1167,7 @@ const buildReportCommands = (paths, validationResult) => {
         '--mini-launch-crm-write-approval-packet',
         paths.miniLaunchCrmWriteApprovalPacket,
         '--validation-receipt',
-        paths.validationReceipt,
+        paths.validationReceiptInput,
         '--out',
         paths.approvalQueue,
         '--markdown-out',
@@ -1081,7 +1185,7 @@ const buildReportCommands = (paths, validationResult) => {
         '--public-audience-scan-packet',
         paths.miniLaunchPublicAudienceScanPacket,
         '--public-audience-scope-packet',
-        paths.miniLaunchPublicAudienceScopePacket,
+        paths.miniLaunchPublicAudienceScopePacketInput,
         '--out',
         paths.miniLaunchPublicAudienceSuppressionPolicyPacket,
         '--markdown-out',
@@ -1233,9 +1337,9 @@ const buildReportCommands = (paths, validationResult) => {
         '--approval-queue',
         paths.approvalQueue,
         '--runbook',
-        paths.operatorRunbook,
+        paths.operatorRunbookInput,
         '--goal-audit',
-        paths.goalAudit,
+        paths.goalAuditInput,
         '--seed-send-approval',
         paths.miniLaunchSeedSendApprovalPacket,
         '--crm-write-approval',
@@ -1261,7 +1365,7 @@ const buildReportCommands = (paths, validationResult) => {
         '--crm-write-approval',
         paths.miniLaunchCrmWriteApprovalPacket,
         '--runbook',
-        paths.operatorRunbook,
+        paths.operatorRunbookInput,
         '--seed-inbox-correction-plan',
         paths.miniLaunchSeedInboxCorrectionPlan,
         '--private-seed-email-file',
@@ -1289,7 +1393,7 @@ const buildReportCommands = (paths, validationResult) => {
         '--missing-inputs-kit',
         paths.missingInputsKit,
         '--operator-runbook',
-        paths.operatorRunbook,
+        paths.operatorRunbookInput,
         '--crm-write-approval-packet',
         paths.miniLaunchCrmWriteApprovalPacket,
         '--seed-email-file',
@@ -1418,7 +1522,7 @@ const buildReportCommands = (paths, validationResult) => {
         '--missing-inputs-kit',
         paths.missingInputsKit,
         '--validation-receipt',
-        paths.validationReceipt,
+        paths.validationReceiptInput,
         '--out',
         paths.continuationGuard,
         '--markdown-out',
@@ -1535,6 +1639,7 @@ const readOptionalJson = async (path) => {
 
 const summarizeGeneratedReports = async (paths) => {
   const [
+    crmSignalProjectionPacket,
     crmWriteApprovalPacket,
     approvalQueue,
     approvalIntake,
@@ -1571,6 +1676,7 @@ const summarizeGeneratedReports = async (paths) => {
     goalAudit,
     validationReceipt,
   ] = await Promise.all([
+    readOptionalJson(paths.miniLaunchCrmSignalProjectionPacket),
     readOptionalJson(paths.miniLaunchCrmWriteApprovalPacket),
     readOptionalJson(paths.approvalQueue),
     readOptionalJson(paths.approvalIntake),
@@ -1609,6 +1715,18 @@ const summarizeGeneratedReports = async (paths) => {
   ]);
 
   return {
+    crmSignalProjectionPacket: {
+      path: paths.miniLaunchCrmSignalProjectionPacket,
+      markdownPath: paths.miniLaunchCrmSignalProjectionPacketMarkdown,
+      status: crmSignalProjectionPacket?.status ?? null,
+      ok: crmSignalProjectionPacket?.ok ?? null,
+      signalsGenerated: crmSignalProjectionPacket?.projectionProof?.projection?.signalsGenerated ?? null,
+      storeOnlyNowCount: crmSignalProjectionPacket?.projectionModel?.storeOnlyNow?.length ?? null,
+      canAppendSignalLedgerNow: crmSignalProjectionPacket?.approvalGate?.canAppendSignalLedgerNow ?? null,
+      canWriteCardsNow: crmSignalProjectionPacket?.approvalGate?.canWriteCardsNow ?? null,
+      canScoreNow: crmSignalProjectionPacket?.approvalGate?.canScoreNow ?? null,
+      canWriteFactStoreNow: crmSignalProjectionPacket?.approvalGate?.canWriteFactStoreNow ?? null,
+    },
     crmWriteApprovalPacket: {
       path: paths.miniLaunchCrmWriteApprovalPacket,
       markdownPath: paths.miniLaunchCrmWriteApprovalPacketMarkdown,
@@ -2351,6 +2469,7 @@ const renderMarkdown = (receipt) => [
   '',
   '## Generated Reports',
   '',
+  `- CRM signal projection packet: ${receipt.generatedReports.crmSignalProjectionPacket.path}`,
   `- CRM write approval packet: ${receipt.generatedReports.crmWriteApprovalPacket.path}`,
   `- Approval queue: ${receipt.generatedReports.approvalQueue.path}`,
   `- Approval intake: ${receipt.generatedReports.approvalIntake.path}`,
@@ -2387,6 +2506,7 @@ const renderMarkdown = (receipt) => [
   '',
   '## Confirmed Results',
   '',
+  `- CRM signal projection: status=${receipt.generatedReports.crmSignalProjectionPacket.status}, signalsGenerated=${receipt.generatedReports.crmSignalProjectionPacket.signalsGenerated}, storeOnlyNowCount=${receipt.generatedReports.crmSignalProjectionPacket.storeOnlyNowCount}, canAppendSignalLedgerNow=${receipt.generatedReports.crmSignalProjectionPacket.canAppendSignalLedgerNow}, canWriteCardsNow=${receipt.generatedReports.crmSignalProjectionPacket.canWriteCardsNow}, canScoreNow=${receipt.generatedReports.crmSignalProjectionPacket.canScoreNow}, canWriteFactStoreNow=${receipt.generatedReports.crmSignalProjectionPacket.canWriteFactStoreNow}`,
   `- CRM write approval: status=${receipt.generatedReports.crmWriteApprovalPacket.status}, exactEventCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactEventCountReady}, exactPersonCountReady=${receipt.generatedReports.crmWriteApprovalPacket.exactPersonCountReady}`,
   `- approval intake: status=${receipt.generatedReports.approvalIntake.status}, approvalTextProvided=${receipt.generatedReports.approvalIntake.approvalTextProvided}, matchedApprovalId=${receipt.generatedReports.approvalIntake.matchedApprovalId}, executionAllowedNow=${receipt.generatedReports.approvalIntake.executionAllowedNow}`,
   `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady}, linkLifecyclePolicy=${receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
@@ -2527,6 +2647,9 @@ const main = async () => {
     generatedAt: receipt.generatedAt,
     testFiles: receipt.validation.testFiles,
     testCount: receipt.validation.testCount,
+    crmSignalProjectionPacketStatus: receipt.generatedReports.crmSignalProjectionPacket.status,
+    crmSignalProjectionSignalsGenerated: receipt.generatedReports.crmSignalProjectionPacket.signalsGenerated,
+    crmSignalProjectionCanAppendLedgerNow: receipt.generatedReports.crmSignalProjectionPacket.canAppendSignalLedgerNow,
     crmWriteApprovalPacketStatus: receipt.generatedReports.crmWriteApprovalPacket.status,
     approvalIntakeStatus: receipt.generatedReports.approvalIntake.status,
     approvalIntakeApprovalTextProvided: receipt.generatedReports.approvalIntake.approvalTextProvided,

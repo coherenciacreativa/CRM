@@ -56,6 +56,59 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     }
   });
 
+  test("uses latest historical evidence inputs while keeping refreshed outputs on the requested date", () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-paths-"));
+
+    try {
+      [
+        "mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json",
+        "mailerlite_mini_launch_public_audience_scan_packet_current_inteligencia_descansar_2026-05-31.json",
+        "mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json",
+        "mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json",
+        "mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json",
+        "mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json",
+        "mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json",
+        "mailerlite_launch_os_operator_runbook_current_2026-05-31.json",
+        "mailerlite_launch_os_validation_receipt_current_2026-05-31.json",
+      ].forEach((fileName) => writeFileSync(join(dir, fileName), "{}\n"));
+
+      const paths = buildReportPaths({ date: "2026-06-01", reportsDir: dir });
+
+      expect(paths.miniLaunchShopifyPreviewRouteExecutionReceipt).toBe(
+        join(dir, "mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json"),
+      );
+      expect(paths.miniLaunchPublicAudienceScanPacket).toBe(
+        join(dir, "mailerlite_mini_launch_public_audience_scan_packet_current_inteligencia_descansar_2026-05-31.json"),
+      );
+      expect(paths.miniLaunchPublicAudienceScopePacketInput).toBe(
+        join(dir, "mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json"),
+      );
+      expect(paths.miniLaunchSeedInboxCorrectionPreview).toBe(
+        join(dir, "mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json"),
+      );
+      expect(paths.miniLaunchRealMailerLiteRenderQaBeforeSeedSendLatest).toBe(
+        join(dir, "mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json"),
+      );
+      expect(paths.miniLaunchMailerLiteApiNullAudienceLab).toBe(
+        join(dir, "mailerlite_api_null_audience_lab_current_inteligencia_descansar_2026-05-31.json"),
+      );
+      expect(paths.taxonomyRefreshResponseRequestBundle).toBe(
+        join(dir, "mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-05-31.json"),
+      );
+      expect(paths.operatorRunbookInput).toBe(join(dir, "mailerlite_launch_os_operator_runbook_current_2026-05-31.json"));
+      expect(paths.validationReceiptInput).toBe(join(dir, "mailerlite_launch_os_validation_receipt_current_2026-05-31.json"));
+      expect(paths.miniLaunchAssetManifest).toBe(
+        join(dir, "mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-01.json"),
+      );
+      expect(paths.miniLaunchPublicAudienceScopePacket).toBe(
+        join(dir, "mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-06-01.json"),
+      );
+      expect(paths.validationReceipt).toBe(join(dir, "mailerlite_launch_os_validation_receipt_current_2026-06-01.json"));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("builds a local-only command plan for current-state report regeneration", () => {
     const plan = buildCurrentStateRefreshPlan({
       date: "2026-05-31",
@@ -68,6 +121,12 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     );
     expect(plan.paths.miniLaunchCrmWriteApprovalPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
+    expect(plan.paths.miniLaunchCrmSignalProjectionPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_crm_signal_projection_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
+    expect(plan.paths.miniLaunchCrmResponse).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_department_review_responses_inteligencia_descansar_2026-05-27/crm_response.json",
     );
     expect(plan.paths.miniLaunchAssetManifest).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json",
@@ -161,6 +220,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-crm-signal-projection-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-receipt.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-api-replacement-cleanup-approval-packet.mjs");
@@ -172,6 +232,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-api-existing-draft-update-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-signal-projection-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-crm-write-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-asset-manifest");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-public-url-gate");
@@ -201,6 +262,8 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-operator-runbook");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-goal-audit");
     expect(commands).toContain("crm:vnext:mailerlite-launch-os-validation-receipt");
+    expect(commands).toContain("mailerlite_mini_launch_crm_signal_projection_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_department_review_responses_inteligencia_descansar_2026-05-27/crm_response.json");
     expect(commands).toContain("mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json");
@@ -296,6 +359,18 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
         testCount: 45,
       },
       generatedReports: {
+        crmSignalProjectionPacket: {
+          path: paths.miniLaunchCrmSignalProjectionPacket,
+          markdownPath: paths.miniLaunchCrmSignalProjectionPacketMarkdown,
+          status: "ready_for_no_live_signal_projection_design",
+          ok: true,
+          signalsGenerated: 6,
+          storeOnlyNowCount: 4,
+          canAppendSignalLedgerNow: false,
+          canWriteCardsNow: false,
+          canScoreNow: false,
+          canWriteFactStoreNow: false,
+        },
         crmWriteApprovalPacket: {
           path: paths.miniLaunchCrmWriteApprovalPacket,
           markdownPath: paths.miniLaunchCrmWriteApprovalPacketMarkdown,
@@ -765,6 +840,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(buildSafety().groupMutationsPerformed).toBe(false);
     expect(renderMarkdown(receipt)).toContain("Current-State Refresh");
     expect(renderMarkdown(receipt)).toContain("Approval intake");
+    expect(renderMarkdown(receipt)).toContain("CRM signal projection");
     expect(renderMarkdown(receipt)).toContain("pilot distribution strategy");
   });
 });

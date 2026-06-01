@@ -4600,3 +4600,59 @@ Guardrails:
 - A proposal is not approval to build, publish, send, route, mutate subscribers, write CRM signals, change scoring or touch Fact Store.
 - Every proposed mini-product still needs Brand/Web Design/CRM review before build or distribution.
 - This roadmap lane should increase learning velocity without making Alejandro the manual bottleneck for opportunity detection.
+
+## Launch OS v0 current-state refresh repair checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only refresh repair. The current-state runner now distinguishes stable historical evidence from newly generated current reports, so a new report date does not fail just because immutable execution receipts were created on an earlier date.
+
+What changed:
+
+- The refresh now regenerates the mini-launch CRM signal projection packet before the CRM write approval packet.
+- Historical/stable inputs use the latest existing local evidence when a same-day copy does not exist: Shopify preview route execution, public audience scan, public audience scope bootstrap, seed inbox correction preview, MailerLite render QA, Null Audience lab evidence, Null Audience replacement execution, taxonomy refresh bundle, prior runbook/audit/validation inputs and related receipts.
+- Newly generated packets still write to the requested current date.
+- The CEO proposal engine remains a roadmap/parking-lot lane, not the active execution path. No proposal-engine implementation is part of this checkpoint.
+
+Evidence:
+
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-06-01.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-06-01.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-06-01.json`
+
+Confirmed results:
+
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=33`, `testCount=202`.
+- CRM signal projection: `status=ready_for_no_live_signal_projection_design`, `signalsGenerated=6`, `canAppendSignalLedgerNow=false`.
+- CRM write approval: `status=crm_write_approval_packet_blocked_missing_observed_events_no_live_changes`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `validationStatus=passed`, `liveGatesClosed=true`.
+- Seed inbox QA is green for the Null Audience replacement drafts: `deliveredToApprovedSeed=4/4`.
+- Public launch readiness remains blocked: `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `crmObservedEventsReady=false`, `readyForExactPublicSendApproval=false`.
+- Pilot distribution strategy remains: `keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called by the refresh: `false`; MailerLite UI used: `false`.
+- Shopify API called by the refresh: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated by the refresh: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Tokens printed: `false`.
+
+Current operating boundary:
+
+- Do not pursue the CEO proposal engine as an active build step unless Alejandro explicitly promotes it from roadmap to current implementation scope.
+- For strategic suggestions, record them as roadmap/parking-lot context only, then return to the current Launch OS blocker.
+- The next real Launch OS boundary remains distribution/readiness: explain and choose a pilot learning lane, such as manual micro-cohort or opt-in testers, before any public/audience send approval phrase is generated.
+
+Steering syntax that avoids drift:
+
+- Roadmap-only steer: "This is future strategy, not current scope. Record it as roadmap context if useful, do not implement, then return to the active Launch OS blocker."
+- Context steer: "Use this as background only. Do not create files/scripts unless it directly unblocks the current Control Room checkpoint."
+- Execution steer: "Promote this to the active hito now; keep it local-only, add tests/evidence, and stop before any live gate."
