@@ -5290,3 +5290,48 @@ Operating meaning:
 - The one-draft canary path is now proven through creation, safety preflight, UI-assisted test send and Gmail delivery readback.
 - The next active edge is canary inbox artifact QA: verify the received E01 rendering, visual signature, canonical footer, CTA clickthrough and absence of raw visible URLs.
 - Do not create E02-E04 replacements, send the full set, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness until E01 canary inbox artifact QA is green.
+
+## Launch OS v0 E01 canary inbox artifact QA partial - 2026-06-02
+
+Status: active goal, E01 canary inbox artifact QA was performed with Gmail read-only evidence plus Safari Computer Use read-only observation. The canary is useful but not yet green for CEO review: delivery, CTA presentation, clickthrough evidence, no raw visible URL text and footer are green, while the visual signature bitmap is blocked by Gmail's external-image policy until images are explicitly loaded.
+
+Evidence:
+
+- E01 canary seed inbox artifact observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_e01_canary_seed_inbox_artifact_observation_current_inteligencia_descansar_2026-06-02.json`
+- E01 canary seed inbox artifact QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_e01_canary_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+- E01 canary seed inbox artifact QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_e01_canary_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-02.md`
+- Canary seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-06-02.json`
+
+Confirmed results:
+
+- E01 canary inbox artifact observation: `ok=true`, `status=e01_canary_seed_inbox_artifact_observation_partial_visual_image_load_blocked_no_live_changes`.
+- E01 canary artifact QA packet: `ok=true`, `status=seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes`.
+- Delivery to approved seed: `1/1`.
+- Real seed clickthrough verified: `true`.
+- Visible raw URL text count: `0`.
+- Canonical MailerLite footer verified: `true`.
+- Visual signature image element/alt text present in Gmail readback: `true`.
+- Visual signature bitmap rendered in Gmail without loading images: `false`.
+- Gmail external images blocked: `true`.
+- Standard artifact QA blocker count: `2`; blockers are `visual_signature_asset_not_verified` and `signature_fallback_still_present_in_payload`.
+
+Safety:
+
+- Gmail connector used read-only.
+- Safari Computer Use used read-only.
+- The Gmail reduced footer content was expanded locally.
+- External images were not loaded.
+- CTA was not clicked through Gmail UI.
+- MailerLite API called by this artifact observation/QA packet: `false`.
+- MailerLite UI mutations: `false`.
+- Sends, audience sends, publish, schedule, subscribers, groups, segments, workflows and automations: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw message IDs, raw campaign/group IDs, sender values, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The E01 canary path is green for delivery, CTA/fallback repair and footer basics.
+- It is not yet green for CEO review because Gmail blocks the visual signature image by default; MailerLite preview showed the signature, and Gmail exposes the image element/alt text, but the received inbox bitmap was not rendered.
+- The next real human decision is whether to approve loading external images for this one seed message to prove the visual signature render, knowing that it may create an external image/open tracking event, or to accept element-level signature evidence and proceed to E02-E04 with that limitation documented.
+- Do not create E02-E04 replacements, send the full set, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this partial QA.
