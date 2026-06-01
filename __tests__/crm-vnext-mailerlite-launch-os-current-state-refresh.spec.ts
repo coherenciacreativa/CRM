@@ -155,6 +155,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchPilotDistributionStrategyPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchPilotDistributionInputRequestPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchShopifyPreviewRouteDecision).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -242,6 +245,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-send-preflight-decision-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-input-request-packet");
     expect(commands).toContain("--mini-launch-pilot-distribution-strategy-packet");
     expect(commands).toContain(
       "mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json",
@@ -270,6 +274,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_cadence_board_current_2026-06-01.json");
     expect(commands).toContain("mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_confirmation_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json");
@@ -732,6 +737,35 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           recipientsPrinted: false,
           tokensPrinted: false,
         },
+        miniLaunchPilotDistributionInputRequestPacket: {
+          path: paths.miniLaunchPilotDistributionInputRequestPacket,
+          markdownPath: paths.miniLaunchPilotDistributionInputRequestPacketMarkdown,
+          status: "pilot_distribution_input_request_packet_ready_no_live_changes",
+          ok: true,
+          inputRequestReady: true,
+          canAskPilotLaneDecisionNow: true,
+          canAskFinalSendApprovalNow: false,
+          exactApprovalPhraseAvailable: false,
+          liveActionAllowedNow: false,
+          recommendedDecisionKind: "strategy_input_only_no_send",
+          recommendedDecisionOptions: [
+            "keep_null_audience_no_public_send",
+            "manual_micro_cohort_next",
+            "opt_in_testers_next",
+          ],
+          recommendedNextIfNoHumanRoster: "keep_null_audience_no_public_send",
+          broadActiveSubscriberSendRecommendedNow: false,
+          existingActiveSubscriberAudienceFutureOnly: true,
+          inputRequestCount: 3,
+          blockerCount: 0,
+          mailerLiteApiCalled: false,
+          subscribersRead: false,
+          groupMutationsPerformed: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          recipientsPrinted: false,
+          tokensPrinted: false,
+        },
         miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
           path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
           markdownPath: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategyMarkdown,
@@ -842,5 +876,6 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(renderMarkdown(receipt)).toContain("Approval intake");
     expect(renderMarkdown(receipt)).toContain("CRM signal projection");
     expect(renderMarkdown(receipt)).toContain("pilot distribution strategy");
+    expect(renderMarkdown(receipt)).toContain("pilot distribution input request");
   });
 });

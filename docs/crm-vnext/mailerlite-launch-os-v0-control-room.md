@@ -4656,3 +4656,52 @@ Steering syntax that avoids drift:
 - Roadmap-only steer: "This is future strategy, not current scope. Record it as roadmap context if useful, do not implement, then return to the active Launch OS blocker."
 - Context steer: "Use this as background only. Do not create files/scripts unless it directly unblocks the current Control Room checkpoint."
 - Execution steer: "Promote this to the active hito now; keep it local-only, add tests/evidence, and stop before any live gate."
+
+## Launch OS v0 pilot distribution input request checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only input boundary added. The system can now ask Alejandro for a pilot distribution lane decision without confusing that decision with a final public/audience send approval.
+
+Evidence:
+
+- Pilot distribution input request packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.json`
+- Pilot distribution input request markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+
+Confirmed results:
+
+- Pilot input request packet: `ok=true`, `status=pilot_distribution_input_request_packet_ready_no_live_changes`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=34`, `testCount=206`.
+- `inputRequestReady=true`.
+- `canAskPilotLaneDecisionNow=true`.
+- `canAskFinalSendApprovalNow=false`.
+- `exactApprovalPhraseAvailable=false`.
+- `recommendedDecisionKind=strategy_input_only_no_send`.
+- Current default: `keep_null_audience_no_public_send`.
+- Decision options: `keep_null_audience_no_public_send`, `manual_micro_cohort_next`, `opt_in_testers_next`.
+- Broad active-subscriber send recommended now: `false`.
+- Live action allowed now: `false`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Operator runbook: `openLiveGateCount=0`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called by this checkpoint: `false`; MailerLite UI used: `false`.
+- Shopify API called by this checkpoint: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated by this checkpoint: `false`.
+- Subscriber/group/segment/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Tokens, exact URLs and recipients printed by the input packet: `false`.
+
+Operating meaning:
+
+- The next useful human input is a strategy decision, not a send approval phrase.
+- Alejandro can choose one pilot lane: keep Null Audience/no public send, prepare a manual micro-cohort, or prepare an opt-in tester path.
+- A micro-cohort or opt-in choice would still require a later scoped build/QA step before any subscriber/audience mutation or send.
+- Do not ask for final public/audience send approval from this checkpoint.
+- Do not let future roadmap notes promote themselves into current execution unless Alejandro explicitly says to promote them to the active hito.
