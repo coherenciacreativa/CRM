@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import {
   assertLocalOnlyCommandPlan,
@@ -29,6 +32,28 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(options.reportsDir).toBe(reportsDir);
     expect(options.out).toBe("/tmp/refresh.json");
     expect(options.markdownOut).toBe("/tmp/refresh.md");
+  });
+
+  test("defaults to the latest successful evidence date instead of a failed partial date", () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-"));
+
+    try {
+      writeFileSync(
+        join(dir, "mailerlite_launch_os_current_state_refresh_current_2026-05-31.json"),
+        `${JSON.stringify({ ok: true, status: "mailerlite_launch_os_current_state_refresh_ready_no_live_changes" })}\n`,
+      );
+      writeFileSync(
+        join(dir, "mailerlite_launch_os_current_state_refresh_current_2026-06-01.json"),
+        `${JSON.stringify({ ok: false, status: "mailerlite_launch_os_current_state_refresh_failed_no_live_changes" })}\n`,
+      );
+
+      const options = parseArgs(["--reports-dir", dir]);
+
+      expect(options.date).toBe("2026-05-31");
+      expect(options.out).toBe(join(dir, "mailerlite_launch_os_current_state_refresh_current_2026-05-31.json"));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   test("builds a local-only command plan for current-state report regeneration", () => {

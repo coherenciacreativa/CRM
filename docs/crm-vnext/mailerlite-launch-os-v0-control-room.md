@@ -4219,6 +4219,7 @@ Confirmed results:
 - Public audience scope packet: `publicAudienceScopeReady=false`, `canAskAudienceScopeApprovalNow=false`, `currentDraftsRemainInertUntilExactApproval=true`.
 - Public launch readiness remains blocked before any exact public-send approval: `readyForExactPublicSendApproval=false`, `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `blockerCount=3`.
 - Current-state refresh: `testFiles=31`, `testCount=187`, `openLiveGateCount=0`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`, `liveGatesClosed=true`.
+- Current-state refresh default date handling now reuses the latest successful evidence date when no `--date` is passed, so a failed partial date rollover does not displace the canonical current state.
 
 Safety:
 

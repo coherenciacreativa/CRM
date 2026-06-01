@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,7 @@ const usage = `Usage:
   node scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs [options]
 
 Options:
-  --date <YYYY-MM-DD>       Report date. Defaults to today's ISO date
+  --date <YYYY-MM-DD>       Report date. Defaults to the latest successful current-state evidence date, falling back to today's ISO date
   --reports-dir <path>      Report output directory. Defaults to ${DEFAULT_REPORTS_DIR}
   --out <path>              Refresh receipt JSON output
   --markdown-out <path>     Refresh receipt Markdown output
@@ -37,20 +37,44 @@ const miniLaunchReportPath = (reportsDir, name, date) =>
 const staticReportPath = (reportsDir, fileName) => resolve(reportsDir, fileName);
 const privateReportPath = (reportsDir, fileName) => resolve(reportsDir, 'private', fileName);
 
+const latestSuccessfulCurrentStateDate = (reportsDir) => {
+  try {
+    return readdirSync(reportsDir)
+      .map((fileName) => fileName.match(/^mailerlite_launch_os_current_state_refresh_current_(\d{4}-\d{2}-\d{2})\.json$/u)?.[1])
+      .filter(Boolean)
+      .filter((date) => {
+        try {
+          const report = JSON.parse(readFileSync(reportPath(reportsDir, 'mailerlite_launch_os_current_state_refresh', date), 'utf8'));
+          return report?.ok === true && report?.status === 'mailerlite_launch_os_current_state_refresh_ready_no_live_changes';
+        } catch {
+          return false;
+        }
+      })
+      .sort()
+      .at(-1) ?? null;
+  } catch {
+    return null;
+  }
+};
+
 const parseArgs = (argv) => {
   const options = {
-    date: todayIsoDate(),
+    date: null,
     reportsDir: DEFAULT_REPORTS_DIR,
     out: null,
     markdownOut: null,
     skipValidation: false,
     help: false,
   };
+  let dateProvided = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--help') options.help = true;
-    else if (arg === '--date') options.date = argv[++index];
+    else if (arg === '--date') {
+      options.date = argv[++index];
+      dateProvided = true;
+    }
     else if (arg === '--reports-dir') options.reportsDir = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
@@ -58,11 +82,15 @@ const parseArgs = (argv) => {
     else throw new Error(`unknown_arg:${arg}`);
   }
 
+  options.reportsDir = resolve(options.reportsDir);
+  if (!dateProvided) {
+    options.date = latestSuccessfulCurrentStateDate(options.reportsDir) ?? todayIsoDate();
+  }
+
   if (!/^\d{4}-\d{2}-\d{2}$/u.test(options.date)) {
     throw new Error(`invalid_date:${options.date}`);
   }
 
-  options.reportsDir = resolve(options.reportsDir);
   const defaultOut = reportPath(options.reportsDir, 'mailerlite_launch_os_current_state_refresh', options.date);
   options.out = resolve(options.out ?? defaultOut);
   options.markdownOut = resolve(options.markdownOut ?? mdPathFor(options.out));
