@@ -21,6 +21,20 @@ Build MailerLite Launch OS v0: a safe, documented, tested architecture for onboa
 - A mini-launch can point a person toward onboarding only through a deliberate handoff gate. The usual future target is `CC · Journey · Editorial onboarding · Eligible`, never a silent direct route into the active v1 flow.
 - Keep MailerLite delivery, CRM relationship intelligence and Brand voice/design separate but coordinated. MailerLite does not carry rich person memory, CRM does not invent Brand canon, and Brand review must protect public/audience-facing quality.
 
+## Strategic roadmap notes
+
+These notes are not current execution scope for Launch OS v0, but they should guide future roadmap work once the pilot loop is stable:
+
+- Build an autonomous market-learning proposal engine so the initial detection of themes, pains, audience signals and mini-product opportunities does not depend on Alejandro's memory or manual prompting.
+- First target cadence: a weekly CEO proposal packet with candidate mini-products, rationale, expected audience resonance, required assets, CRM learning goal, Brand/Web/CRM review path and recommended smallest-responsible test audience.
+- Future target cadence after the weekly loop is stable: every three days, with stronger automation and clearer kill/continue criteria.
+- The proposal engine should understand Brand tone, audience context, previous campaign evidence, CRM signals, community resonance and current content/product strategy before suggesting a launch.
+- Favor tests/quizzes as a primary microproduct format because they are familiar, engaging and naturally produce structured CRM learning when designed with consent, restraint and clear taxonomy.
+- Include small interactive games as a second fertile format when they illuminate an important theme, feel natural to the community, and can produce useful market-learning signals without becoming gimmicky.
+- Every proposed mini-product should still pass through Brand, Web Design and CRM review before build or distribution: Brand for promise/tone/taxonomy, Web Design for experience and links, CRM for learning design and signal hygiene.
+- The CEO-facing artifact should be a decision packet, not a raw brainstorm: what to test, why now, what assets are needed, what risks exist, what signal would count as resonance, and what the next gate would be.
+- This future lane must remain separate from live-send authority. A proposal is not approval to build, send, publish, route, mutate subscribers, or write CRM signals.
+
 ## Current evidence
 
 Canonical Brand sources:
