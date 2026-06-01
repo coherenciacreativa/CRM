@@ -54,6 +54,8 @@ const DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET = '/Users/alejandrogome
 const DEFAULT_MINI_LAUNCH_PUBLIC_AUDIENCE_SCOPE_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PUBLIC_SEND_PREFLIGHT_DECISION_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.json';
+const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
 const DEFAULT_BRUJULA_EMAIL_STYLE_QA = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_email_style_qa_packet_2026-05-27.json';
@@ -129,6 +131,8 @@ Options:
   --mini-launch-public-audience-scope-packet <path> Mini-launch public audience scope JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_AUDIENCE_SCOPE_PACKET}
   --mini-launch-public-send-preflight-decision-packet <path> Mini-launch public send preflight decision JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_SEND_PREFLIGHT_DECISION_PACKET}
   --mini-launch-pilot-distribution-strategy-packet <path> Mini-launch pilot distribution strategy JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET}
+  --mini-launch-pilot-distribution-input-request-packet <path> Mini-launch pilot distribution input request JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET}
+  --mini-launch-pilot-distribution-decision-intake <path> Mini-launch pilot distribution lane decision intake JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE}
   --brujula-plan <path>              Brújula post-inbox verification plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>             Brújula approved test-lane apply JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
   --brujula-email-style-qa <path>    Brújula email style QA JSON. Defaults to ${DEFAULT_BRUJULA_EMAIL_STYLE_QA}
@@ -211,6 +215,8 @@ const parseArgs = (argv) => {
     miniLaunchPublicAudienceScopePacket: DEFAULT_MINI_LAUNCH_PUBLIC_AUDIENCE_SCOPE_PACKET,
     miniLaunchPublicSendPreflightDecisionPacket: DEFAULT_MINI_LAUNCH_PUBLIC_SEND_PREFLIGHT_DECISION_PACKET,
     miniLaunchPilotDistributionStrategyPacket: DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET,
+    miniLaunchPilotDistributionInputRequestPacket: DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET,
+    miniLaunchPilotDistributionDecisionIntake: DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
     brujulaEmailStyleQa: DEFAULT_BRUJULA_EMAIL_STYLE_QA,
@@ -289,6 +295,8 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-public-audience-scope-packet') options.miniLaunchPublicAudienceScopePacket = argv[++index];
     else if (arg === '--mini-launch-public-send-preflight-decision-packet') options.miniLaunchPublicSendPreflightDecisionPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-strategy-packet') options.miniLaunchPilotDistributionStrategyPacket = argv[++index];
+    else if (arg === '--mini-launch-pilot-distribution-input-request-packet') options.miniLaunchPilotDistributionInputRequestPacket = argv[++index];
+    else if (arg === '--mini-launch-pilot-distribution-decision-intake') options.miniLaunchPilotDistributionDecisionIntake = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
     else if (arg === '--brujula-email-style-qa') options.brujulaEmailStyleQa = argv[++index];
@@ -380,6 +388,8 @@ const loadSourceDigests = async (options) => {
     [options.miniLaunchPublicAudienceScopePacket, 'mini-launch public audience scope packet with pilot/default distribution posture', true],
     [options.miniLaunchPublicSendPreflightDecisionPacket, 'mini-launch public send preflight decision packet with URL and audience strategy posture', true],
     [options.miniLaunchPilotDistributionStrategyPacket, 'mini-launch pilot distribution strategy packet with current default and next learning lanes', true],
+    [options.miniLaunchPilotDistributionInputRequestPacket, 'mini-launch pilot distribution input request packet with strategy-only human boundary', true],
+    [options.miniLaunchPilotDistributionDecisionIntake, 'mini-launch pilot distribution lane decision intake with no live approval', true],
     [options.brujulaPlan, 'Brújula post-inbox verification and creative QA posture'],
     [options.brujulaApply, 'approved Brújula test subscriber receipt assignments'],
     [options.brujulaEmailStyleQa, 'Brújula email style QA blockers and green criteria'],
@@ -598,6 +608,8 @@ const buildCurrentState = ({
   miniLaunchPublicAudienceScopePacket,
   miniLaunchPublicSendPreflightDecisionPacket,
   miniLaunchPilotDistributionStrategyPacket,
+  miniLaunchPilotDistributionInputRequestPacket,
+  miniLaunchPilotDistributionDecisionIntake,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -1303,6 +1315,38 @@ const buildCurrentState = ({
         miniLaunchPilotDistributionStrategyPacket?.executiveSummary?.liveActionAllowedNow ?? null,
       pilotDistributionBlockerCount:
         miniLaunchPilotDistributionStrategyPacket?.executiveSummary?.blockerCount ?? null,
+      pilotDistributionInputRequestPacketStatus: miniLaunchPilotDistributionInputRequestPacket?.status ?? null,
+      pilotDistributionInputRequestReady:
+        miniLaunchPilotDistributionInputRequestPacket?.executiveSummary?.inputRequestReady ?? null,
+      pilotDistributionCanAskLaneDecisionNow:
+        miniLaunchPilotDistributionInputRequestPacket?.executiveSummary?.canAskPilotLaneDecisionNow ?? null,
+      pilotDistributionInputRequestCanAskFinalSendApprovalNow:
+        miniLaunchPilotDistributionInputRequestPacket?.executiveSummary?.canAskFinalSendApprovalNow ?? null,
+      pilotDistributionInputRequestDecisionKind:
+        miniLaunchPilotDistributionInputRequestPacket?.executiveSummary?.recommendedDecisionKind ?? null,
+      pilotDistributionInputRequestDecisionOptions:
+        miniLaunchPilotDistributionInputRequestPacket?.executiveSummary?.recommendedDecisionOptions ?? [],
+      pilotDistributionInputRequestBlockerCount:
+        miniLaunchPilotDistributionInputRequestPacket?.executiveSummary?.blockerCount ?? null,
+      pilotDistributionDecisionIntakeStatus: miniLaunchPilotDistributionDecisionIntake?.status ?? null,
+      pilotDistributionDecisionTextProvided:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.decisionTextProvided ?? null,
+      pilotDistributionSelectedLane:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.selectedPilotLane ?? null,
+      pilotDistributionLaneDecisionReady:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.laneDecisionReady ?? null,
+      pilotDistributionRosterRequiredNext:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.rosterRequiredNext ?? null,
+      pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.canAskFinalSendApprovalNow ?? null,
+      pilotDistributionDecisionIntakeLiveActionAllowedNow:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.liveActionAllowedNow ?? null,
+      pilotDistributionDecisionIntakeWouldAuthorizeSend:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.wouldAuthorizeSend ?? null,
+      pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.wouldAuthorizeAudienceAssignment ?? null,
+      pilotDistributionDecisionIntakeBlockerCount:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.blockerCount ?? null,
       cadenceNow: cadenceBoard?.operatingRhythm?.activeCadenceNow ?? null,
       every3DaysStatus: cadenceBoard?.operatingRhythm?.every3DaysStatus ?? null,
       safeToIntakeOneMoreNoLiveIdea: backlogBoard?.wipSnapshot?.safeToIntakeOneMoreNoLiveIdea ?? null,
@@ -1955,6 +1999,14 @@ const buildSeedInboxQaMove = (currentState) => {
 
 const buildPilotDistributionMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
+  if (miniLaunch.pilotDistributionDecisionIntakeStatus) {
+    const options = (miniLaunch.pilotDistributionInputRequestDecisionOptions ?? []).join(', ') || 'unknown';
+    return `Use the pilot distribution decision intake as the active distribution boundary: status ${miniLaunch.pilotDistributionDecisionIntakeStatus}, decision text provided ${miniLaunch.pilotDistributionDecisionTextProvided}, selected lane ${miniLaunch.pilotDistributionSelectedLane ?? 'none'}, lane decision ready ${miniLaunch.pilotDistributionLaneDecisionReady}, roster required next ${miniLaunch.pilotDistributionRosterRequiredNext}, accepted options ${options}, can ask final send approval now ${miniLaunch.pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow}, would authorize send ${miniLaunch.pilotDistributionDecisionIntakeWouldAuthorizeSend}, would authorize audience assignment ${miniLaunch.pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment}, live action allowed now ${miniLaunch.pilotDistributionDecisionIntakeLiveActionAllowedNow}.`;
+  }
+  if (miniLaunch.pilotDistributionInputRequestPacketStatus) {
+    const options = (miniLaunch.pilotDistributionInputRequestDecisionOptions ?? []).join(', ') || 'unknown';
+    return `Use the pilot distribution input request as the active strategy boundary: input request ready ${miniLaunch.pilotDistributionInputRequestReady}, can ask lane decision now ${miniLaunch.pilotDistributionCanAskLaneDecisionNow}, decision kind ${miniLaunch.pilotDistributionInputRequestDecisionKind ?? 'unknown'}, options ${options}, can ask final send approval now ${miniLaunch.pilotDistributionInputRequestCanAskFinalSendApprovalNow}, blockers ${miniLaunch.pilotDistributionInputRequestBlockerCount ?? 'unknown'}.`;
+  }
   if (miniLaunch.pilotDistributionStrategyPacketStatus) {
     const lanes = (miniLaunch.pilotDistributionNextLearningLanes ?? []).join(', ') || 'unknown';
     return `Use the pilot distribution strategy packet as the active distribution boundary: strategy ready ${miniLaunch.pilotDistributionStrategyReady}, recommended strategy ${miniLaunch.pilotDistributionRecommendedStrategy ?? 'unknown'}, current default ${miniLaunch.pilotDistributionCurrentDefault ?? 'unknown'} (${miniLaunch.pilotDistributionCurrentDefaultKnownActiveCount ?? 'unknown'} active), next learning lanes ${lanes}, broad active subscriber send recommended now ${miniLaunch.pilotDistributionBroadActiveSubscriberSendRecommendedNow}, existing active subscriber audience future-only ${miniLaunch.pilotDistributionExistingActiveSubscriberAudienceFutureOnly}, final send phrase available ${miniLaunch.pilotDistributionFinalSendPhraseAvailable}, can ask final send approval now ${miniLaunch.pilotDistributionCanAskFinalSendApprovalNow}, live action allowed now ${miniLaunch.pilotDistributionLiveActionAllowedNow}.`;
@@ -2295,6 +2347,8 @@ const buildRunbook = ({
   miniLaunchPublicAudienceScopePacket,
   miniLaunchPublicSendPreflightDecisionPacket,
   miniLaunchPilotDistributionStrategyPacket,
+  miniLaunchPilotDistributionInputRequestPacket,
+  miniLaunchPilotDistributionDecisionIntake,
   brujulaPlan,
   brujulaApply,
   brujulaEmailStyleQa,
@@ -2366,6 +2420,8 @@ const buildRunbook = ({
     miniLaunchPublicAudienceScopePacket,
     miniLaunchPublicSendPreflightDecisionPacket,
     miniLaunchPilotDistributionStrategyPacket,
+    miniLaunchPilotDistributionInputRequestPacket,
+    miniLaunchPilotDistributionDecisionIntake,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -2623,6 +2679,12 @@ const renderMarkdown = (runbook) => {
     `- Mini-launch pilot distribution final send phrase available: ${runbook.currentState.miniLaunch.pilotDistributionFinalSendPhraseAvailable ?? 'unknown'}`,
     `- Mini-launch pilot distribution can ask final send approval now: ${runbook.currentState.miniLaunch.pilotDistributionCanAskFinalSendApprovalNow ?? 'unknown'}`,
     `- Mini-launch pilot distribution live action allowed now: ${runbook.currentState.miniLaunch.pilotDistributionLiveActionAllowedNow ?? 'unknown'}`,
+    `- Mini-launch pilot distribution input request: ${runbook.currentState.miniLaunch.pilotDistributionInputRequestPacketStatus ?? 'unknown'}`,
+    `- Mini-launch pilot distribution can ask lane decision now: ${runbook.currentState.miniLaunch.pilotDistributionCanAskLaneDecisionNow ?? 'unknown'}`,
+    `- Mini-launch pilot distribution decision intake: ${runbook.currentState.miniLaunch.pilotDistributionDecisionIntakeStatus ?? 'unknown'}`,
+    `- Mini-launch pilot distribution selected lane: ${runbook.currentState.miniLaunch.pilotDistributionSelectedLane ?? 'none'}`,
+    `- Mini-launch pilot distribution decision ready: ${runbook.currentState.miniLaunch.pilotDistributionLaneDecisionReady ?? 'unknown'}`,
+    `- Mini-launch pilot distribution decision would authorize send: ${runbook.currentState.miniLaunch.pilotDistributionDecisionIntakeWouldAuthorizeSend ?? 'unknown'}`,
     `- Mini-launch cadence: ${runbook.currentState.miniLaunch.cadenceNow}`,
     `- Safe to intake one more no-live idea: ${runbook.currentState.miniLaunch.safeToIntakeOneMoreNoLiveIdea}`,
     `- Onboarding handoff policy: ${runbook.currentState.miniLaunch.onboardingHandoffPolicyStatus ?? 'unknown'}`,
@@ -2840,6 +2902,8 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchPublicAudienceScopePacket,
     miniLaunchPublicSendPreflightDecisionPacket,
     miniLaunchPilotDistributionStrategyPacket,
+    miniLaunchPilotDistributionInputRequestPacket,
+    miniLaunchPilotDistributionDecisionIntake,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,
@@ -2910,6 +2974,8 @@ const buildRunbookFromFiles = async (options) => {
     readOptionalJson(options.miniLaunchPublicAudienceScopePacket),
     readOptionalJson(options.miniLaunchPublicSendPreflightDecisionPacket),
     readOptionalJson(options.miniLaunchPilotDistributionStrategyPacket),
+    readOptionalJson(options.miniLaunchPilotDistributionInputRequestPacket),
+    readOptionalJson(options.miniLaunchPilotDistributionDecisionIntake),
     readJson(options.brujulaPlan),
     readJson(options.brujulaApply),
     readJson(options.brujulaEmailStyleQa),
@@ -2982,6 +3048,8 @@ const buildRunbookFromFiles = async (options) => {
     miniLaunchPublicAudienceScopePacket,
     miniLaunchPublicSendPreflightDecisionPacket,
     miniLaunchPilotDistributionStrategyPacket,
+    miniLaunchPilotDistributionInputRequestPacket,
+    miniLaunchPilotDistributionDecisionIntake,
     brujulaPlan,
     brujulaApply,
     brujulaEmailStyleQa,

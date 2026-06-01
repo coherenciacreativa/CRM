@@ -51,6 +51,8 @@ const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET = '/Users/alejan
 const DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json';
+const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.json';
+const DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json';
 const DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_inteligencia_descansar_2026-05-28.json';
 const DEFAULT_BRUJULA_PLAN = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_plan_post_inbox_verify_2026-05-27.json';
 const DEFAULT_BRUJULA_APPLY = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_brujula_test_lane_apply_saludoalsol_pruebasmayo2026_2026-05-27.json';
@@ -133,6 +135,8 @@ Options:
   --mini-launch-public-audience-scope-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook.
   --mini-launch-public-send-preflight-decision-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook.
   --mini-launch-pilot-distribution-strategy-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_STRATEGY_PACKET}
+  --mini-launch-pilot-distribution-input-request-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_INPUT_REQUEST_PACKET}
+  --mini-launch-pilot-distribution-decision-intake <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook. Defaults to ${DEFAULT_MINI_LAUNCH_PILOT_DISTRIBUTION_DECISION_INTAKE}
   --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -213,6 +217,8 @@ const parseArgs = (argv) => {
     miniLaunchPublicAudienceScopePacket: null,
     miniLaunchPublicSendPreflightDecisionPacket: null,
     miniLaunchPilotDistributionStrategyPacket: null,
+    miniLaunchPilotDistributionInputRequestPacket: null,
+    miniLaunchPilotDistributionDecisionIntake: null,
     miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -291,6 +297,8 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-public-audience-scope-packet') options.miniLaunchPublicAudienceScopePacket = argv[++index];
     else if (arg === '--mini-launch-public-send-preflight-decision-packet') options.miniLaunchPublicSendPreflightDecisionPacket = argv[++index];
     else if (arg === '--mini-launch-pilot-distribution-strategy-packet') options.miniLaunchPilotDistributionStrategyPacket = argv[++index];
+    else if (arg === '--mini-launch-pilot-distribution-input-request-packet') options.miniLaunchPilotDistributionInputRequestPacket = argv[++index];
+    else if (arg === '--mini-launch-pilot-distribution-decision-intake') options.miniLaunchPilotDistributionDecisionIntake = argv[++index];
     else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -2977,7 +2985,62 @@ const buildGoalAudit = ({
   const pilotDistributionBlockerCount =
     values.runbook?.currentState?.miniLaunch?.pilotDistributionBlockerCount
     ?? null;
-  const pilotDistributionMove = pilotDistributionStrategyPacketStatus
+  const pilotDistributionInputRequestPacketStatus =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionInputRequestPacketStatus
+    ?? null;
+  const pilotDistributionInputRequestReady =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionInputRequestReady
+    ?? null;
+  const pilotDistributionCanAskLaneDecisionNow =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionCanAskLaneDecisionNow
+    ?? null;
+  const pilotDistributionInputRequestCanAskFinalSendApprovalNow =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionInputRequestCanAskFinalSendApprovalNow
+    ?? null;
+  const pilotDistributionInputRequestDecisionKind =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionInputRequestDecisionKind
+    ?? null;
+  const pilotDistributionInputRequestDecisionOptions =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionInputRequestDecisionOptions
+    ?? [];
+  const pilotDistributionInputRequestBlockerCount =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionInputRequestBlockerCount
+    ?? null;
+  const pilotDistributionDecisionIntakeStatus =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionIntakeStatus
+    ?? null;
+  const pilotDistributionDecisionTextProvided =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionTextProvided
+    ?? null;
+  const pilotDistributionSelectedLane =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionSelectedLane
+    ?? null;
+  const pilotDistributionLaneDecisionReady =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionLaneDecisionReady
+    ?? null;
+  const pilotDistributionRosterRequiredNext =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionRosterRequiredNext
+    ?? null;
+  const pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow
+    ?? null;
+  const pilotDistributionDecisionIntakeLiveActionAllowedNow =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionIntakeLiveActionAllowedNow
+    ?? null;
+  const pilotDistributionDecisionIntakeWouldAuthorizeSend =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionIntakeWouldAuthorizeSend
+    ?? null;
+  const pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment
+    ?? null;
+  const pilotDistributionDecisionIntakeBlockerCount =
+    values.runbook?.currentState?.miniLaunch?.pilotDistributionDecisionIntakeBlockerCount
+    ?? null;
+  const pilotDistributionMove = pilotDistributionDecisionIntakeStatus
+    ? `Pilot distribution decision intake is the active strategy boundary: status ${pilotDistributionDecisionIntakeStatus}, decisionTextProvided=${pilotDistributionDecisionTextProvided}, selectedLane=${pilotDistributionSelectedLane ?? 'none'}, laneDecisionReady=${pilotDistributionLaneDecisionReady}, rosterRequiredNext=${pilotDistributionRosterRequiredNext}, canAskFinalSendApprovalNow=${pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow}, wouldAuthorizeSend=${pilotDistributionDecisionIntakeWouldAuthorizeSend}, wouldAuthorizeAudienceAssignment=${pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment}, liveActionAllowedNow=${pilotDistributionDecisionIntakeLiveActionAllowedNow}.`
+    : pilotDistributionInputRequestPacketStatus
+    ? `Pilot distribution input request is the active strategy boundary: inputRequestReady=${pilotDistributionInputRequestReady}, canAskLaneDecisionNow=${pilotDistributionCanAskLaneDecisionNow}, decisionKind=${pilotDistributionInputRequestDecisionKind ?? 'unknown'}, options=${pilotDistributionInputRequestDecisionOptions.join('|') || 'none'}, canAskFinalSendApprovalNow=${pilotDistributionInputRequestCanAskFinalSendApprovalNow}, blockers=${pilotDistributionInputRequestBlockerCount ?? 'unknown'}.`
+    : pilotDistributionStrategyPacketStatus
     ? `Pilot distribution strategy packet is ready: recommended strategy ${pilotDistributionRecommendedStrategy ?? 'unknown'}, current default ${pilotDistributionCurrentDefault ?? 'unknown'} (${pilotDistributionCurrentDefaultKnownActiveCount ?? 'unknown'} active), next learning lanes ${pilotDistributionNextLearningLanes.join('|') || 'none'}, broad active subscriber send recommended now ${pilotDistributionBroadActiveSubscriberSendRecommendedNow}, existing active subscriber audience future-only ${pilotDistributionExistingActiveSubscriberAudienceFutureOnly}, finalSendPhraseAvailable=${pilotDistributionFinalSendPhraseAvailable}, canAskFinalSendApprovalNow=${pilotDistributionCanAskFinalSendApprovalNow}, liveActionAllowedNow=${pilotDistributionLiveActionAllowedNow}.`
     : null;
   const seedInboxCorrectionPlan = values.miniLaunchSeedInboxCorrectionPlan ?? null;
@@ -3389,6 +3452,23 @@ const buildGoalAudit = ({
       pilotDistributionCanAskFinalSendApprovalNow,
       pilotDistributionLiveActionAllowedNow,
       pilotDistributionBlockerCount,
+      pilotDistributionInputRequestPacketStatus,
+      pilotDistributionInputRequestReady,
+      pilotDistributionCanAskLaneDecisionNow,
+      pilotDistributionInputRequestCanAskFinalSendApprovalNow,
+      pilotDistributionInputRequestDecisionKind,
+      pilotDistributionInputRequestDecisionOptions,
+      pilotDistributionInputRequestBlockerCount,
+      pilotDistributionDecisionIntakeStatus,
+      pilotDistributionDecisionTextProvided,
+      pilotDistributionSelectedLane,
+      pilotDistributionLaneDecisionReady,
+      pilotDistributionRosterRequiredNext,
+      pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow,
+      pilotDistributionDecisionIntakeLiveActionAllowedNow,
+      pilotDistributionDecisionIntakeWouldAuthorizeSend,
+      pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment,
+      pilotDistributionDecisionIntakeBlockerCount,
       seedInboxCorrectionUiEditApprovalPacketStatus,
       seedInboxCorrectionUiEditApprovalPacketReady,
       seedInboxCorrectionUiEditCanAskApproval,
@@ -3540,6 +3620,12 @@ const renderMarkdown = (audit) => {
     `- Pilot distribution final send phrase available: ${audit.executiveSummary.pilotDistributionFinalSendPhraseAvailable ?? 'unknown'}`,
     `- Pilot distribution can ask final send approval now: ${audit.executiveSummary.pilotDistributionCanAskFinalSendApprovalNow ?? 'unknown'}`,
     `- Pilot distribution live action allowed now: ${audit.executiveSummary.pilotDistributionLiveActionAllowedNow ?? 'unknown'}`,
+    `- Pilot distribution input request: ${audit.executiveSummary.pilotDistributionInputRequestPacketStatus ?? 'missing'}`,
+    `- Pilot distribution can ask lane decision now: ${audit.executiveSummary.pilotDistributionCanAskLaneDecisionNow ?? 'unknown'}`,
+    `- Pilot distribution decision intake: ${audit.executiveSummary.pilotDistributionDecisionIntakeStatus ?? 'missing'}`,
+    `- Pilot distribution selected lane: ${audit.executiveSummary.pilotDistributionSelectedLane ?? 'none'}`,
+    `- Pilot distribution lane decision ready: ${audit.executiveSummary.pilotDistributionLaneDecisionReady ?? 'unknown'}`,
+    `- Pilot distribution decision would authorize send: ${audit.executiveSummary.pilotDistributionDecisionIntakeWouldAuthorizeSend ?? 'unknown'}`,
     `- Shopify preview-route execution: ${audit.executiveSummary.shopifyPreviewRouteExecutionReceiptStatus ?? 'missing'}`,
     `- Shopify preview-route execution ready: ${audit.executiveSummary.shopifyPreviewRouteExecutionReady ?? 'unknown'}`,
     `- Shopify preview-route target links: ${audit.executiveSummary.shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}`,

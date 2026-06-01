@@ -1792,6 +1792,60 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.nextMoves.join("\n")).toContain("Public-send preflight is strategy evidence only");
   });
 
+  test("prefers pilot distribution decision intake over older strategy posture when present", () => {
+    const audit = buildGoalAudit({
+      values: {
+        ...values,
+        reconciliationBoard: reconciliationBoardAfterResponses,
+        responseWorkspace: responseWorkspaceAfterResponses,
+        finalizationPreflight: finalizationPreflightAfterResponses,
+        runbook: {
+          ...runbook,
+          currentState: {
+            ...runbook.currentState,
+            miniLaunch: {
+              ...runbook.currentState.miniLaunch,
+              pilotDistributionInputRequestPacketStatus: "pilot_distribution_input_request_packet_ready_no_live_changes",
+              pilotDistributionInputRequestReady: true,
+              pilotDistributionCanAskLaneDecisionNow: true,
+              pilotDistributionInputRequestCanAskFinalSendApprovalNow: false,
+              pilotDistributionInputRequestDecisionKind: "strategy_input_only_no_send",
+              pilotDistributionInputRequestDecisionOptions: [
+                "keep_null_audience_no_public_send",
+                "manual_micro_cohort_next",
+                "opt_in_testers_next",
+              ],
+              pilotDistributionInputRequestBlockerCount: 0,
+              pilotDistributionDecisionIntakeStatus:
+                "pilot_distribution_decision_intake_waiting_for_strategy_choice_no_live_changes",
+              pilotDistributionDecisionTextProvided: false,
+              pilotDistributionSelectedLane: null,
+              pilotDistributionLaneDecisionReady: false,
+              pilotDistributionRosterRequiredNext: false,
+              pilotDistributionDecisionIntakeCanAskFinalSendApprovalNow: false,
+              pilotDistributionDecisionIntakeLiveActionAllowedNow: false,
+              pilotDistributionDecisionIntakeWouldAuthorizeSend: false,
+              pilotDistributionDecisionIntakeWouldAuthorizeAudienceAssignment: false,
+              pilotDistributionDecisionIntakeBlockerCount: 1,
+            },
+          },
+        },
+      },
+      sourceDigests,
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(audit.executiveSummary.pilotDistributionDecisionIntakeStatus).toBe(
+      "pilot_distribution_decision_intake_waiting_for_strategy_choice_no_live_changes",
+    );
+    expect(audit.executiveSummary.pilotDistributionSelectedLane).toBe(null);
+    expect(audit.executiveSummary.pilotDistributionDecisionIntakeWouldAuthorizeSend).toBe(false);
+    expect(audit.executiveSummary.nextBestMove).toContain("Pilot distribution decision intake is the active strategy boundary");
+    expect(audit.executiveSummary.nextBestMove).toContain("wouldAuthorizeSend=false");
+    expect(audit.nextMoves.join("\n")).toContain("Pilot distribution decision intake is the active strategy boundary");
+    expect(renderMarkdown(audit)).toContain("Pilot distribution decision intake");
+  });
+
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {
     const checks = buildRequirementChecks({
       ...values,

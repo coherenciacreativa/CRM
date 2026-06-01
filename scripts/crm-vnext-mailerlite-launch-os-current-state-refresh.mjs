@@ -306,6 +306,15 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_pilot_distribution_input_request_packet',
       date,
     ),
+    miniLaunchPilotDistributionDecisionIntake: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_pilot_distribution_decision_intake',
+      date,
+    ),
+    privatePilotDistributionLaneDecisionFile: privateReportPath(
+      reportsDir,
+      `mailerlite_mini_launch_pilot_distribution_lane_decision_inteligencia_descansar_${date}.txt`,
+    ),
     miniLaunchShopifyPreviewRouteDecision: miniLaunchReportPath(
       reportsDir,
       'mailerlite_mini_launch_shopify_preview_route_decision',
@@ -599,6 +608,12 @@ const validationCommands = () => [
     'syntax-check mini-launch pilot distribution input request packet',
   ),
   command(
+    'node_check_mini_launch_pilot_distribution_decision_intake',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.mjs'],
+    'syntax-check mini-launch pilot distribution strategy decision intake',
+  ),
+  command(
     'node_check_mini_launch_shopify_preview_route_decision_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs'],
@@ -753,6 +768,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-input-request-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-correction-preview.spec.ts',
@@ -809,6 +825,10 @@ const currentStateArgs = (paths) => [
   paths.miniLaunchPublicSendPreflightDecisionPacket,
   '--mini-launch-pilot-distribution-strategy-packet',
   paths.miniLaunchPilotDistributionStrategyPacket,
+  '--mini-launch-pilot-distribution-input-request-packet',
+  paths.miniLaunchPilotDistributionInputRequestPacket,
+  '--mini-launch-pilot-distribution-decision-intake',
+  paths.miniLaunchPilotDistributionDecisionIntake,
   '--approval-intake',
   paths.approvalIntake,
   '--blocked-gate-handoff',
@@ -1344,6 +1364,23 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current mini-launch pilot distribution input request packet without approval phrase or live actions',
     ),
     command(
+      'refresh_mini_launch_pilot_distribution_decision_intake',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-pilot-distribution-decision-intake',
+        '--',
+        '--input-request-packet',
+        paths.miniLaunchPilotDistributionInputRequestPacket,
+        ...optionalExistingArg('--decision-file', paths.privatePilotDistributionLaneDecisionFile),
+        '--out',
+        paths.miniLaunchPilotDistributionDecisionIntake,
+        '--markdown-out',
+        paths.miniLaunchPilotDistributionDecisionIntakeMarkdown,
+      ],
+      'regenerate current mini-launch pilot distribution strategy decision intake without approval phrase or live actions',
+    ),
+    command(
       'refresh_approval_intake',
       'npm',
       [
@@ -1698,6 +1735,7 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchPublicSendPreflightDecisionPacket,
     miniLaunchPilotDistributionStrategyPacket,
     miniLaunchPilotDistributionInputRequestPacket,
+    miniLaunchPilotDistributionDecisionIntake,
     miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
     missingInputsKit,
     missingInputsIntake,
@@ -1736,6 +1774,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.miniLaunchPublicSendPreflightDecisionPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionStrategyPacket),
     readOptionalJson(paths.miniLaunchPilotDistributionInputRequestPacket),
+    readOptionalJson(paths.miniLaunchPilotDistributionDecisionIntake),
     readOptionalJson(paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy),
     readOptionalJson(paths.missingInputsKit),
     readOptionalJson(paths.missingInputsIntake),
@@ -2370,6 +2409,40 @@ const summarizeGeneratedReports = async (paths) => {
       tokensPrinted:
         miniLaunchPilotDistributionInputRequestPacket?.safety?.tokensPrinted ?? null,
     },
+    miniLaunchPilotDistributionDecisionIntake: {
+      path: paths.miniLaunchPilotDistributionDecisionIntake,
+      markdownPath: paths.miniLaunchPilotDistributionDecisionIntakeMarkdown,
+      status: miniLaunchPilotDistributionDecisionIntake?.status ?? null,
+      ok: miniLaunchPilotDistributionDecisionIntake?.ok ?? null,
+      decisionTextProvided:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.decisionTextProvided ?? null,
+      selectedPilotLane:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.selectedPilotLane ?? null,
+      laneDecisionReady:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.laneDecisionReady ?? null,
+      rosterRequiredNext:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.rosterRequiredNext ?? null,
+      canAskFinalSendApprovalNow:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.canAskFinalSendApprovalNow ?? null,
+      liveActionAllowedNow:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.liveActionAllowedNow ?? null,
+      wouldAuthorizeSend:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.wouldAuthorizeSend ?? null,
+      wouldAuthorizeAudienceAssignment:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.wouldAuthorizeAudienceAssignment ?? null,
+      blockerCount:
+        miniLaunchPilotDistributionDecisionIntake?.executiveSummary?.blockerCount ?? null,
+      decisionTextPrinted:
+        miniLaunchPilotDistributionDecisionIntake?.safety?.decisionTextPrinted ?? null,
+      mailerLiteApiCalled:
+        miniLaunchPilotDistributionDecisionIntake?.safety?.mailerLiteApiCalled ?? null,
+      subscribersRead:
+        miniLaunchPilotDistributionDecisionIntake?.safety?.subscribersRead ?? null,
+      sendsPerformed:
+        miniLaunchPilotDistributionDecisionIntake?.safety?.sendsPerformed ?? null,
+      tokensPrinted:
+        miniLaunchPilotDistributionDecisionIntake?.safety?.tokensPrinted ?? null,
+    },
     miniLaunchMailerLiteApiExistingDraftUpdateStrategy: {
       path: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategy,
       markdownPath: paths.miniLaunchMailerLiteApiExistingDraftUpdateStrategyMarkdown,
@@ -2571,6 +2644,7 @@ const renderMarkdown = (receipt) => [
   `- Mini-launch public send preflight decision packet: ${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.path}`,
   `- Mini-launch pilot distribution strategy packet: ${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.path}`,
   `- Mini-launch pilot distribution input request packet: ${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.path}`,
+  `- Mini-launch pilot distribution decision intake: ${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.path}`,
   `- Mini-launch MailerLite API existing-draft update strategy: ${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.path}`,
   `- Missing-inputs kit: ${receipt.generatedReports.missingInputsKit.path}`,
   `- Missing-inputs intake: ${receipt.generatedReports.missingInputsIntake.path}`,
@@ -2608,6 +2682,7 @@ const renderMarkdown = (receipt) => [
   `- mini-launch public send preflight decision: status=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.status}, decisionExplanationReady=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.decisionExplanationReady}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.exactApprovalPhraseAvailable}, canAskExactApprovalNow=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.canAskExactApprovalNow}, canExecuteNow=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.canExecuteNow}, urlLifecycleEvidenceReady=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.urlLifecycleEvidenceReady}, audienceDecisionEvidenceReady=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.audienceDecisionEvidenceReady}, recommendedUrlDecisionId=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedUrlDecisionId}, recommendedAudienceScopeId=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedAudienceScopeId}, recommendedAudienceKnownActiveCount=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedAudienceKnownActiveCount}, recommendedDistributionPath=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.recommendedDistributionPath}, massSubscriberSendRecommendedNow=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.massSubscriberSendRecommendedNow}, existingActiveSubscriberAudienceFutureOptionOnly=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.existingActiveSubscriberAudienceFutureOptionOnly}, audienceStrategyGateRequiredBeforeMassSend=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.audienceStrategyGateRequiredBeforeMassSend}, blockerCount=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.blockerCount}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.mailerLiteApiCalled}, shopifyApiCalled=${receipt.generatedReports.miniLaunchPublicSendPreflightDecisionPacket.shopifyApiCalled}`,
   `- mini-launch pilot distribution strategy: status=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.status}, strategyPacketReady=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.strategyPacketReady}, strategyDecisionReadyForExplanation=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.strategyDecisionReadyForExplanation}, finalSendPhraseAvailable=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.finalSendPhraseAvailable}, canAskFinalSendApprovalNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.canAskFinalSendApprovalNow}, recommendedStrategyId=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.recommendedStrategyId}, currentDefault=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.currentDefault}, nextLearningLanes=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.nextLearningLanes}, broadActiveSubscriberSendRecommendedNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.broadActiveSubscriberSendRecommendedNow}, every3DaysCadenceActiveNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.every3DaysCadenceActiveNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.liveActionAllowedNow}, blockerCount=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.blockerCount}, sendsPerformed=${receipt.generatedReports.miniLaunchPilotDistributionStrategyPacket.sendsPerformed}`,
   `- mini-launch pilot distribution input request: status=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.status}, inputRequestReady=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.inputRequestReady}, canAskPilotLaneDecisionNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.canAskPilotLaneDecisionNow}, canAskFinalSendApprovalNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.canAskFinalSendApprovalNow}, recommendedDecisionKind=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.recommendedDecisionKind}, recommendedDecisionOptions=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.recommendedDecisionOptions}, recommendedNextIfNoHumanRoster=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.recommendedNextIfNoHumanRoster}, broadActiveSubscriberSendRecommendedNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.broadActiveSubscriberSendRecommendedNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.liveActionAllowedNow}, blockerCount=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.blockerCount}, sendsPerformed=${receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.sendsPerformed}`,
+  `- mini-launch pilot distribution decision intake: status=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.status}, decisionTextProvided=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.decisionTextProvided}, selectedPilotLane=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.selectedPilotLane}, laneDecisionReady=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.laneDecisionReady}, rosterRequiredNext=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.rosterRequiredNext}, canAskFinalSendApprovalNow=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.canAskFinalSendApprovalNow}, liveActionAllowedNow=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.liveActionAllowedNow}, wouldAuthorizeSend=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.wouldAuthorizeSend}, wouldAuthorizeAudienceAssignment=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.wouldAuthorizeAudienceAssignment}, blockerCount=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.blockerCount}, sendsPerformed=${receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.sendsPerformed}`,
   `- MailerLite API existing-draft update strategy: status=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.status}, apiConnectionStableForRead=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiConnectionStableForRead}, allApiPayloadReady=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.allApiPayloadReady}, allDraftsInertByApi=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.allDraftsInertByApi}, apiExistingDraftUpdateRecommendedNow=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiExistingDraftUpdateRecommendedNow}, apiCreateRealDraftsRecommendedNow=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.apiCreateRealDraftsRecommendedNow}, mailerLiteApiCalled=${receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.mailerLiteApiCalled}`,
   `- missing-inputs intake: status=${receipt.generatedReports.missingInputsIntake.status}, readyInputCount=${receipt.generatedReports.missingInputsIntake.readyInputCount}/${receipt.generatedReports.missingInputsIntake.inputCount}, readyForCrmApprovalRequest=${receipt.generatedReports.missingInputsIntake.readyForCrmApprovalRequest}, readyForMiniLaunchCorrectionPreview=${receipt.generatedReports.missingInputsIntake.readyForMiniLaunchCorrectionPreview}`,
   `- continuation-guard: status=${receipt.generatedReports.continuationGuard.status}, openLiveMutationGateCount=${receipt.generatedReports.continuationGuard.openLiveMutationGateCount}`,
@@ -2941,6 +3016,24 @@ const main = async () => {
       receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.liveActionAllowedNow,
     miniLaunchPilotDistributionInputRequestBlockerCount:
       receipt.generatedReports.miniLaunchPilotDistributionInputRequestPacket.blockerCount,
+    miniLaunchPilotDistributionDecisionIntakeStatus:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.status,
+    miniLaunchPilotDistributionDecisionTextProvided:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.decisionTextProvided,
+    miniLaunchPilotDistributionSelectedLane:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.selectedPilotLane,
+    miniLaunchPilotDistributionLaneDecisionReady:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.laneDecisionReady,
+    miniLaunchPilotDistributionRosterRequiredNext:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.rosterRequiredNext,
+    miniLaunchPilotDistributionDecisionIntakeCanAskFinalSendApprovalNow:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.canAskFinalSendApprovalNow,
+    miniLaunchPilotDistributionDecisionIntakeLiveActionAllowedNow:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.liveActionAllowedNow,
+    miniLaunchPilotDistributionDecisionIntakeWouldAuthorizeSend:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.wouldAuthorizeSend,
+    miniLaunchPilotDistributionDecisionIntakeBlockerCount:
+      receipt.generatedReports.miniLaunchPilotDistributionDecisionIntake.blockerCount,
     miniLaunchMailerLiteApiExistingDraftUpdateStrategyStatus:
       receipt.generatedReports.miniLaunchMailerLiteApiExistingDraftUpdateStrategy.status,
     miniLaunchMailerLiteApiExistingDraftUpdateRecommendedNow:

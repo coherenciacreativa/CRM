@@ -4705,3 +4705,54 @@ Operating meaning:
 - A micro-cohort or opt-in choice would still require a later scoped build/QA step before any subscriber/audience mutation or send.
 - Do not ask for final public/audience send approval from this checkpoint.
 - Do not let future roadmap notes promote themselves into current execution unless Alejandro explicitly says to promote them to the active hito.
+
+## Launch OS v0 pilot distribution decision intake checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only decision intake added. The system can now consume a pilot distribution lane choice as strategy input while preserving the hard boundary that this is not a public/audience send approval, not audience assignment, and not permission to mutate MailerLite, Shopify or CRM.
+
+Evidence:
+
+- Pilot distribution decision intake JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json`
+- Pilot distribution decision intake markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-06-01.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-06-01.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-06-01.json`
+
+Confirmed results:
+
+- Decision intake: `ok=true`, `status=pilot_distribution_decision_intake_waiting_for_strategy_choice_no_live_changes`.
+- `decisionTextProvided=false`.
+- `selectedPilotLane=null`.
+- `laneDecisionReady=false`.
+- `rosterRequiredNext=false`.
+- `canAskFinalSendApprovalNow=false`.
+- `liveActionAllowedNow=false`.
+- `wouldAuthorizeSend=false`.
+- `wouldAuthorizeAudienceAssignment=false`.
+- `blockerCount=1`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=35`, `testCount=214`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called by the current-state refresh: `false`; MailerLite UI used: `false`.
+- Shopify API called by the current-state refresh: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated by this checkpoint: `false`.
+- Subscriber/group/segment/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Raw human decision text, exact approval phrase, tokens, exact URLs and recipients printed by the intake: `false`.
+
+Operating meaning:
+
+- The next real boundary is one strategy choice among: `keep_null_audience_no_public_send`, `manual_micro_cohort_next`, or `opt_in_testers_next`.
+- If `manual_micro_cohort_next` or `opt_in_testers_next` is chosen, the next local-only requirement is a roster/preflight packet before any later audience assignment or send can be discussed.
+- If `keep_null_audience_no_public_send` is chosen, the four replacement drafts stay inert while readiness work continues.
+- No final public/audience send phrase can be requested from this checkpoint.
