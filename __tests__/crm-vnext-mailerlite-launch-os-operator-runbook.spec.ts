@@ -1003,6 +1003,28 @@ const miniLaunchPublicSendPreflightDecisionPacket = {
   },
 };
 
+const miniLaunchPilotDistributionStrategyPacket = {
+  status: "pilot_distribution_strategy_packet_ready_no_live_changes",
+  executiveSummary: {
+    strategyPacketReady: true,
+    strategyDecisionReadyForExplanation: true,
+    exactApprovalPhraseAvailable: false,
+    finalSendPhraseAvailable: false,
+    canAskFinalSendApprovalNow: false,
+    canExecuteNow: false,
+    liveActionAllowedNow: false,
+    recommendedStrategyId: "keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send",
+    currentDefault: "keep_null_audience_no_public_send",
+    currentDefaultKnownActiveCount: 0,
+    nextLearningLanes: ["manual_micro_cohort_next", "opt_in_testers_next"],
+    broadActiveSubscriberSendRecommendedNow: false,
+    existingActiveSubscriberAudienceFutureOnly: true,
+    existingActiveSubscriberAudienceKnownActiveCount: 933,
+    every3DaysCadenceActiveNow: false,
+    blockerCount: 0,
+  },
+};
+
 const miniLaunchSeedInboxCorrectionPlan = {
   status: "seed_inbox_correction_plan_ready_no_live_changes",
   executiveSummary: {
@@ -1191,6 +1213,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(parsed.miniLaunchShopifyLocalBuildReceipt).toContain("mailerlite_mini_launch_shopify_local_build_receipt_inteligencia_descansar_2026-05-28.json");
     expect(parsed.miniLaunchShopifyPreviewRouteDecision).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.miniLaunchShopifyPreviewRouteExecutionReceipt).toContain("mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json");
+    expect(parsed.miniLaunchPilotDistributionStrategyPacket).toContain("mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(parsed.out).toBe("/tmp/runbook.json");
     expect(parsed.markdownOut).toBe("/tmp/runbook.md");
   });
@@ -1657,6 +1680,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       miniLaunchPublicLaunchReadinessPacket,
       miniLaunchPublicAudienceScopePacket,
       miniLaunchPublicSendPreflightDecisionPacket,
+      miniLaunchPilotDistributionStrategyPacket,
     });
     const moves = buildImmediateNextMoves({ currentState: state }).join("\n");
 
@@ -1665,8 +1689,23 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
     expect(state.miniLaunch.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly).toBe(true);
     expect(state.miniLaunch.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
-    expect(moves).toContain("Use the public-send preflight decision packet as strategy evidence only");
-    expect(moves).toContain("exact send approval remains unavailable");
+    expect(state.miniLaunch.pilotDistributionStrategyPacketStatus).toBe(
+      "pilot_distribution_strategy_packet_ready_no_live_changes",
+    );
+    expect(state.miniLaunch.pilotDistributionRecommendedStrategy).toBe(
+      "keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send",
+    );
+    expect(state.miniLaunch.pilotDistributionCurrentDefault).toBe("keep_null_audience_no_public_send");
+    expect(state.miniLaunch.pilotDistributionNextLearningLanes).toEqual([
+      "manual_micro_cohort_next",
+      "opt_in_testers_next",
+    ]);
+    expect(state.miniLaunch.pilotDistributionBroadActiveSubscriberSendRecommendedNow).toBe(false);
+    expect(state.miniLaunch.pilotDistributionFinalSendPhraseAvailable).toBe(false);
+    expect(state.miniLaunch.pilotDistributionCanAskFinalSendApprovalNow).toBe(false);
+    expect(state.miniLaunch.pilotDistributionLiveActionAllowedNow).toBe(false);
+    expect(moves).toContain("Use the pilot distribution strategy packet as the active distribution boundary");
+    expect(moves).toContain("broad active subscriber send recommended now false");
     expect(moves).toContain("post-launch CRM observed events ready");
     expect(moves).toContain("URL and audience gates are ready");
   });

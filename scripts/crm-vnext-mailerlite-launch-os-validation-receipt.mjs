@@ -592,6 +592,46 @@ const buildValidationReceipt = ({
         runbook?.currentState?.miniLaunch?.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend
         ?? goalAudit?.executiveSummary?.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend
         ?? null,
+      pilotDistributionStrategyPacketStatus:
+        runbook?.currentState?.miniLaunch?.pilotDistributionStrategyPacketStatus
+        ?? goalAudit?.executiveSummary?.pilotDistributionStrategyPacketStatus
+        ?? null,
+      pilotDistributionStrategyReady:
+        runbook?.currentState?.miniLaunch?.pilotDistributionStrategyReady
+        ?? goalAudit?.executiveSummary?.pilotDistributionStrategyReady
+        ?? null,
+      pilotDistributionRecommendedStrategy:
+        runbook?.currentState?.miniLaunch?.pilotDistributionRecommendedStrategy
+        ?? goalAudit?.executiveSummary?.pilotDistributionRecommendedStrategy
+        ?? null,
+      pilotDistributionCurrentDefault:
+        runbook?.currentState?.miniLaunch?.pilotDistributionCurrentDefault
+        ?? goalAudit?.executiveSummary?.pilotDistributionCurrentDefault
+        ?? null,
+      pilotDistributionNextLearningLanes:
+        runbook?.currentState?.miniLaunch?.pilotDistributionNextLearningLanes
+        ?? goalAudit?.executiveSummary?.pilotDistributionNextLearningLanes
+        ?? [],
+      pilotDistributionBroadActiveSubscriberSendRecommendedNow:
+        runbook?.currentState?.miniLaunch?.pilotDistributionBroadActiveSubscriberSendRecommendedNow
+        ?? goalAudit?.executiveSummary?.pilotDistributionBroadActiveSubscriberSendRecommendedNow
+        ?? null,
+      pilotDistributionFinalSendPhraseAvailable:
+        runbook?.currentState?.miniLaunch?.pilotDistributionFinalSendPhraseAvailable
+        ?? goalAudit?.executiveSummary?.pilotDistributionFinalSendPhraseAvailable
+        ?? null,
+      pilotDistributionCanAskFinalSendApprovalNow:
+        runbook?.currentState?.miniLaunch?.pilotDistributionCanAskFinalSendApprovalNow
+        ?? goalAudit?.executiveSummary?.pilotDistributionCanAskFinalSendApprovalNow
+        ?? null,
+      pilotDistributionLiveActionAllowedNow:
+        runbook?.currentState?.miniLaunch?.pilotDistributionLiveActionAllowedNow
+        ?? goalAudit?.executiveSummary?.pilotDistributionLiveActionAllowedNow
+        ?? null,
+      pilotDistributionBlockerCount:
+        runbook?.currentState?.miniLaunch?.pilotDistributionBlockerCount
+        ?? goalAudit?.executiveSummary?.pilotDistributionBlockerCount
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -765,6 +805,14 @@ const renderMarkdown = (receipt) => {
     `- Public send preflight recommended path: ${receipt.evidence.publicSendPreflightRecommendedDistributionPath ?? 'unknown'}`,
     `- Public send preflight mass subscriber send recommended now: ${receipt.evidence.publicSendPreflightMassSubscriberSendRecommendedNow ?? 'unknown'}`,
     `- Public send preflight audience strategy gate before mass send: ${receipt.evidence.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend ?? 'unknown'}`,
+    `- Pilot distribution strategy packet: ${receipt.evidence.pilotDistributionStrategyPacketStatus ?? 'missing'}`,
+    `- Pilot distribution recommended strategy: ${receipt.evidence.pilotDistributionRecommendedStrategy ?? 'unknown'}`,
+    `- Pilot distribution current default: ${receipt.evidence.pilotDistributionCurrentDefault ?? 'unknown'}`,
+    `- Pilot distribution next learning lanes: ${(receipt.evidence.pilotDistributionNextLearningLanes ?? []).join(', ') || 'none'}`,
+    `- Pilot distribution broad active subscriber send recommended now: ${receipt.evidence.pilotDistributionBroadActiveSubscriberSendRecommendedNow ?? 'unknown'}`,
+    `- Pilot distribution final send phrase available: ${receipt.evidence.pilotDistributionFinalSendPhraseAvailable ?? 'unknown'}`,
+    `- Pilot distribution can ask final send approval now: ${receipt.evidence.pilotDistributionCanAskFinalSendApprovalNow ?? 'unknown'}`,
+    `- Pilot distribution live action allowed now: ${receipt.evidence.pilotDistributionLiveActionAllowedNow ?? 'unknown'}`,
     '',
     '## Commands',
     '',
@@ -818,6 +866,10 @@ const main = async () => {
     testFiles: receipt.testScope.testFiles,
     testCount: receipt.testScope.testCount,
     liveGatesClosed: receipt.evidence.liveGatesClosed,
+    pilotDistributionStrategyPacketStatus: receipt.evidence.pilotDistributionStrategyPacketStatus,
+    pilotDistributionRecommendedStrategy: receipt.evidence.pilotDistributionRecommendedStrategy,
+    pilotDistributionCanAskFinalSendApprovalNow: receipt.evidence.pilotDistributionCanAskFinalSendApprovalNow,
+    pilotDistributionLiveActionAllowedNow: receipt.evidence.pilotDistributionLiveActionAllowedNow,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
     safety: receipt.safety,

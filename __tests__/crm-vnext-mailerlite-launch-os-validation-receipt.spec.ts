@@ -99,6 +99,16 @@ const runbook = {
       publicSendPreflightMassSubscriberSendRecommendedNow: false,
       publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly: true,
       publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend: true,
+      pilotDistributionStrategyPacketStatus: "pilot_distribution_strategy_packet_ready_no_live_changes",
+      pilotDistributionStrategyReady: true,
+      pilotDistributionRecommendedStrategy: "keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send",
+      pilotDistributionCurrentDefault: "keep_null_audience_no_public_send",
+      pilotDistributionNextLearningLanes: ["manual_micro_cohort_next", "opt_in_testers_next"],
+      pilotDistributionBroadActiveSubscriberSendRecommendedNow: false,
+      pilotDistributionFinalSendPhraseAvailable: false,
+      pilotDistributionCanAskFinalSendApprovalNow: false,
+      pilotDistributionLiveActionAllowedNow: false,
+      pilotDistributionBlockerCount: 0,
     },
   },
 };
@@ -416,6 +426,20 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.evidence.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
     expect(receipt.evidence.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly).toBe(true);
     expect(receipt.evidence.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
+    expect(receipt.evidence.pilotDistributionStrategyPacketStatus).toBe(
+      "pilot_distribution_strategy_packet_ready_no_live_changes",
+    );
+    expect(receipt.evidence.pilotDistributionRecommendedStrategy).toBe(
+      "keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send",
+    );
+    expect(receipt.evidence.pilotDistributionCurrentDefault).toBe("keep_null_audience_no_public_send");
+    expect(receipt.evidence.pilotDistributionNextLearningLanes).toEqual([
+      "manual_micro_cohort_next",
+      "opt_in_testers_next",
+    ]);
+    expect(receipt.evidence.pilotDistributionBroadActiveSubscriberSendRecommendedNow).toBe(false);
+    expect(receipt.evidence.pilotDistributionCanAskFinalSendApprovalNow).toBe(false);
+    expect(receipt.evidence.pilotDistributionLiveActionAllowedNow).toBe(false);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,

@@ -4524,3 +4524,79 @@ Next safe move:
 - Use the packet to explain the pilot distribution strategy when distribution becomes the active boundary.
 - Do not generate or request a final public/audience send approval phrase from this checkpoint.
 - Continue building the weekly proposal/cadence engine locally: autonomous proposal generation, tests/quizzes as the primary microproduct shape, and small interactive games as a secondary format remain roadmap lanes, not live-launch permission.
+
+## Launch OS v0 pilot distribution strategy propagation checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only propagation. The pilot distribution strategy packet is now consumed by the operator runbook, goal audit, validation receipt and current-state refresh so the operating layer keeps the same market-learning boundary after context compaction or operator handoff.
+
+Evidence:
+
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=32`, `testCount=196`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+- Pilot distribution strategy packet: `status=pilot_distribution_strategy_packet_ready_no_live_changes`.
+- Recommended strategy: `keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send`.
+- Current default: `keep_null_audience_no_public_send`.
+- Next learning lanes: `manual_micro_cohort_next`, `opt_in_testers_next`.
+- Broad active-subscriber send recommended now: `false`.
+- Final send phrase available: `false`.
+- Can ask final send approval now: `false`.
+- Live action allowed now: `false`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called: `false`; MailerLite UI used: `false`.
+- Shopify API called: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+
+Operating meaning:
+
+- Future operators should treat distribution as a pilot learning boundary, not a default public/audience campaign.
+- Existing active subscribers remain relationship capital for a later strategy gate, not the current default audience.
+- The next useful distribution decision is micro-cohort vs opt-in testers; either path needs a separate scoped approval before any send or audience mutation.
+
+## Launch OS v0 CEO proposal engine roadmap addendum - 2026-06-01
+
+Status: roadmap note, not current execution scope and not live permission. Alejandro wants the future Launch OS to generate market-learning proposals autonomously instead of depending on him to notice every theme, pain, insight or product opportunity.
+
+Roadmap intent:
+
+- Build a Strategy / CRM / Brand Intelligence proposal engine that can detect themes, pains, audience signals and resonance opportunities from Brand context, CRM evidence, community language, previous launches and current content/product strategy.
+- First operating target: Alejandro receives a weekly CEO decision packet with ranked mini-product proposals, not a raw brainstorm.
+- Future operating target: move toward every 3 days only after the weekly loop is stable, boring, legible and measured.
+- The CEO role should be to choose, redirect or veto the best proposal; the initial detection should increasingly belong to the system.
+- Tests/quizzes should be the primary mini-product format because they are familiar, engaging and naturally produce structured CRM learning when designed with consent and restraint.
+- Small interactive games should be a secondary format when play clarifies an important theme, fits the community and produces clean market-learning signals.
+- Guides, audios, practices and checklists remain supporting formats when a quieter resource serves the promise better than interaction.
+
+Decision packet shape:
+
+- Theme or pain.
+- Audience signal and why now.
+- Recommended mini-product and preferred format.
+- Expected resonance and smallest responsible test audience.
+- Required Brand, Web Design and CRM review path.
+- Asset requirements, preview/link plan and email shape.
+- CRM learning goal, success signal and kill/continue criteria.
+- Next gate and exact human decision needed.
+
+Guardrails:
+
+- A proposal is not approval to build, publish, send, route, mutate subscribers, write CRM signals, change scoring or touch Fact Store.
+- Every proposed mini-product still needs Brand/Web Design/CRM review before build or distribution.
+- This roadmap lane should increase learning velocity without making Alejandro the manual bottleneck for opportunity detection.

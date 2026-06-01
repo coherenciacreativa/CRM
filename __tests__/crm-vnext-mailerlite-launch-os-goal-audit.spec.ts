@@ -52,6 +52,18 @@ const runbook = {
       publicSendPreflightExistingActiveSubscriberAudienceKnownActiveCount: 933,
       publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend: true,
       publicSendPreflightCanAskExactApprovalNow: false,
+      pilotDistributionStrategyPacketStatus: "pilot_distribution_strategy_packet_ready_no_live_changes",
+      pilotDistributionStrategyReady: true,
+      pilotDistributionRecommendedStrategy: "keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send",
+      pilotDistributionCurrentDefault: "keep_null_audience_no_public_send",
+      pilotDistributionCurrentDefaultKnownActiveCount: 0,
+      pilotDistributionNextLearningLanes: ["manual_micro_cohort_next", "opt_in_testers_next"],
+      pilotDistributionBroadActiveSubscriberSendRecommendedNow: false,
+      pilotDistributionExistingActiveSubscriberAudienceFutureOnly: true,
+      pilotDistributionFinalSendPhraseAvailable: false,
+      pilotDistributionCanAskFinalSendApprovalNow: false,
+      pilotDistributionLiveActionAllowedNow: false,
+      pilotDistributionBlockerCount: 0,
     },
   },
   safety: {
@@ -1760,11 +1772,23 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.publicSendPreflightRecommendedAudienceKnownActiveCount).toBe(0);
     expect(audit.executiveSummary.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
     expect(audit.executiveSummary.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
+    expect(audit.executiveSummary.pilotDistributionStrategyPacketStatus).toBe(
+      "pilot_distribution_strategy_packet_ready_no_live_changes",
+    );
+    expect(audit.executiveSummary.pilotDistributionRecommendedStrategy).toBe(
+      "keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send",
+    );
+    expect(audit.executiveSummary.pilotDistributionFinalSendPhraseAvailable).toBe(false);
+    expect(audit.executiveSummary.pilotDistributionCanAskFinalSendApprovalNow).toBe(false);
+    expect(audit.executiveSummary.pilotDistributionLiveActionAllowedNow).toBe(false);
+    expect(audit.executiveSummary.nextBestMove).toContain("Pilot distribution strategy packet is ready");
+    expect(audit.executiveSummary.nextBestMove).toContain("canAskFinalSendApprovalNow=false");
     expect(audit.executiveSummary.nextBestMove).toContain("Public-send preflight is strategy evidence only");
     expect(audit.executiveSummary.nextBestMove).toContain("canAskExactApprovalNow=false");
     expect(audit.executiveSummary.nextBestMove).toContain("postLaunchCrmObservedEventsReady=false");
     expect(audit.executiveSummary.nextBestMove).not.toContain("crmObservedEventsReady=false, blockers=3");
     expect(audit.executiveSummary.nextBestMove.match(/Public-send preflight is strategy evidence only/g)).toHaveLength(1);
+    expect(audit.nextMoves.join("\n")).toContain("Pilot distribution strategy packet is ready");
     expect(audit.nextMoves.join("\n")).toContain("Public-send preflight is strategy evidence only");
   });
 

@@ -711,6 +711,8 @@ const currentStateArgs = (paths) => [
   paths.miniLaunchPublicAudienceScopePacket,
   '--mini-launch-public-send-preflight-decision-packet',
   paths.miniLaunchPublicSendPreflightDecisionPacket,
+  '--mini-launch-pilot-distribution-strategy-packet',
+  paths.miniLaunchPilotDistributionStrategyPacket,
   '--approval-intake',
   paths.approvalIntake,
   '--blocked-gate-handoff',
