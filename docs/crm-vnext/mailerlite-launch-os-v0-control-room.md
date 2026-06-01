@@ -5011,3 +5011,48 @@ Operating meaning:
 - The old seed inbox artifact evidence still reports `visibleRawUrlTextCount=3` because those are already-received seed messages from the earlier build path.
 - Before CEO review, the next real boundary is a fresh approved MailerLite draft update/replacement plus seed resend/observation to prove the inbox now has no visible raw URL text and to verify the canonical MailerLite footer/signature experience.
 - Do not treat this checkpoint as permission for MailerLite draft edits, API writes, UI actions, seed sends, audience sends or CRM/Shopify live mutations.
+
+## Launch OS v0 CTA/fallback replacement approval boundary - 2026-06-01
+
+Status: active goal, local-only/report-only approval boundary prepared. The local repair is now wired into the Null Audience replacement approval packet, so the next MailerLite draft-construction request is explicitly for a new CTA/fallback repair set, not for reusing or editing the already-tested replacement drafts from the earlier build path.
+
+Evidence:
+
+- Null Audience replacement approval packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-06-01.json`
+- Null Audience replacement approval packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-06-01.md`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+
+Confirmed results:
+
+- Replacement approval packet: `ok=true`, `status=mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes`.
+- Replacement approval packet: `canAskAlejandroForApproval=true`, `replacementTargetCount=4`, `blockerCount=0`.
+- Replacement draft suffix: `API Null Audience CTA fallback repair`.
+- Null Audience safety group: `CC · Safety · Null audience · DO NOT SEND`, observed active count `0`.
+- Local render QA required by packet: `status=mini_launch_email_render_qa_green_no_live_changes`, `redCheckCount=0`.
+- CTA/fallback guard required by packet: `visibleLinkTokenHitCount=0`, `plainTextFallbackLinkTokenHitCount=0`.
+- Existing public/audience send URL gate remains closed: `publicAudienceSendUrlGateReady=false`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state validation: `testFiles=38`, `testCount=233`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called by this checkpoint: `false`; MailerLite UI used: `false`.
+- MailerLite drafts created, edited or deleted by this checkpoint: `0`.
+- Shopify API called: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers, groups, segments and workflows mutated: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The next live-adjacent decision is narrow: create four new MailerLite draft replacements by API, assigned only to the empty Null Audience safety group, using the corrected CTA/fallback HTML.
+- This is not permission to send tests, publish, schedule, assign real audiences, add subscribers, run workflows, change Shopify, write CRM signals, or touch ledgers/cards/scoring/Fact Store.
+- If Alejandro approves the draft creation, run only the scoped replacement execution path, then re-scan and generate a fresh receipt before any seed resend or CEO-review claim.
+- Do not ask for tester, micro-cohort, opt-in, audience or public send approval from this checkpoint.

@@ -61,6 +61,8 @@ const emailRenderQa = {
     emailCount: 4,
     renderPreviewNonEmptyCount: 4,
     redCheckCount: 0,
+    visibleLinkTokenHitCount: 0,
+    plainTextFallbackLinkTokenHitCount: 0,
     publicUseReady: false,
     seedSendReady: false,
   },
@@ -171,7 +173,7 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
     });
 
     expect(targets).toHaveLength(4);
-    expect(targets[0].replacementDraftName).toBe("Draft E01 · API Null Audience replacement");
+    expect(targets[0].replacementDraftName).toBe("Draft E01 · API Null Audience CTA fallback repair");
     expect(targets[0].oldCampaignIdPresent).toBe(true);
     expect(targets[0].oldCampaignIdSha256).toBeTruthy();
     expect(targets[0]).not.toHaveProperty("oldCampaignId");
@@ -187,7 +189,7 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
       subject: "S1",
       sourceCampaignId: "c1",
       sourceCampaignIdSha256: "hash-c1",
-      replacementDraftName: "Draft E01 · API Null Audience replacement",
+      replacementDraftName: "Draft E01 · API Null Audience CTA fallback repair",
       correctedHtml: "<p>final_public_link_ready_redacted:result_or_resource_link</p>".repeat(3),
       correctedHtmlPath: "/tmp/e01.html",
       correctedHtmlStats: htmlStats(`final_public_link_ready_redacted:result_or_resource_link`),
@@ -201,7 +203,7 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
       subject: "S4",
       sourceCampaignId: "c4",
       sourceCampaignIdSha256: "hash-c4",
-      replacementDraftName: "Draft E04 · API Null Audience replacement",
+      replacementDraftName: "Draft E04 · API Null Audience CTA fallback repair",
       correctedHtml: "<p>reply</p>".repeat(20),
       correctedHtmlPath: "/tmp/e04.html",
       correctedHtmlStats: htmlStats("<p>reply</p>".repeat(20)),

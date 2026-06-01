@@ -13,7 +13,7 @@ const DEFAULT_REAL_MAILERLITE_RENDER_QA = '/Users/alejandrogomez/Documents/Manti
 const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.md';
 const SAFETY_GROUP_NAME = 'CC · Safety · Null audience · DO NOT SEND';
-const REPLACEMENT_SUFFIX = 'API Null Audience replacement';
+const REPLACEMENT_SUFFIX = 'API Null Audience CTA fallback repair';
 const PLACEHOLDERS = [
   'result_or_resource_link_placeholder',
   'practice_link_placeholder',
@@ -146,7 +146,7 @@ const buildSafety = () => ({
 });
 
 const buildExactApprovalPhrase = () =>
-  `Apruebo crear por API únicamente 4 nuevos borradores de reemplazo del mini-lanzamiento Inteligencia para descansar en MailerLite, asignados solo al grupo vacío de seguridad ${SAFETY_GROUP_NAME} con active_count=0, usando los 4 HTML locales QA-green y reemplazando en memoria solo los tokens redacted final_public_link_ready_redacted:* por las URLs preview unlisted/noindex ya registradas en el Shopify preview route execution receipt, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar cualquier borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si cualquier borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.`;
+  `Apruebo crear por API únicamente 4 nuevos borradores de reemplazo del mini-lanzamiento Inteligencia para descansar en MailerLite, asignados solo al grupo vacío de seguridad ${SAFETY_GROUP_NAME} con active_count=0, usando los 4 HTML locales QA-green con CTA en href y fallback de texto sin URLs/tokens visibles, y reemplazando en memoria solo los tokens redacted final_public_link_ready_redacted:* por las URLs preview unlisted/noindex ya registradas en el Shopify preview route execution receipt, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar cualquier borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si cualquier borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.`;
 
 const rowByStep = (rows = []) => new Map(rows.map((row) => [Number(row?.step), row]).filter(([step]) => Number.isFinite(step)));
 const campaignIdFor = (row) => cleanString(row?.campaignId);
@@ -251,6 +251,8 @@ const buildPacket = ({
   if (emailRenderQa?.executiveSummary?.emailCount !== 4) blockers.push('email_render_expected_4_emails');
   if (emailRenderQa?.executiveSummary?.renderPreviewNonEmptyCount !== 4) blockers.push('email_render_previews_not_all_non_empty');
   if (emailRenderQa?.executiveSummary?.redCheckCount !== 0) blockers.push('email_render_has_red_checks');
+  if (emailRenderQa?.executiveSummary?.visibleLinkTokenHitCount !== 0) blockers.push('email_render_has_visible_link_tokens');
+  if (emailRenderQa?.executiveSummary?.plainTextFallbackLinkTokenHitCount !== 0) blockers.push('email_render_plain_text_fallback_has_link_tokens');
   if (emailRenderQa?.executiveSummary?.publicUseReady !== false) blockers.push('email_render_public_gate_unexpectedly_ready');
   if (emailRenderQa?.executiveSummary?.seedSendReady !== false) blockers.push('email_render_seed_send_gate_unexpectedly_ready');
 
@@ -310,6 +312,8 @@ const buildPacket = ({
       emailRenderQaStatus: emailRenderQa?.status ?? null,
       localRenderReady: emailRenderQa?.executiveSummary?.localRenderReady ?? null,
       redCheckCount: emailRenderQa?.executiveSummary?.redCheckCount ?? null,
+      visibleLinkTokenHitCount: emailRenderQa?.executiveSummary?.visibleLinkTokenHitCount ?? null,
+      plainTextFallbackLinkTokenHitCount: emailRenderQa?.executiveSummary?.plainTextFallbackLinkTokenHitCount ?? null,
       finalPublicLinksReady: correctionPreview?.executiveSummary?.finalPublicLinksReady ?? null,
       publicAudienceSendUrlGateReady: correctionPreview?.executiveSummary?.publicAudienceSendUrlGateReady ?? null,
       realMailerLiteRenderQaStatus: realMailerLiteRenderQa?.status ?? null,
@@ -378,6 +382,8 @@ const renderMarkdown = (packet) => [
   `Safety group active_count observed in lab: ${packet.executiveSummary.safetyGroupActiveCountObserved}`,
   `Null Audience recipe ready: ${packet.executiveSummary.nullAudienceRecipeReady}`,
   `Public audience send URL gate ready: ${packet.executiveSummary.publicAudienceSendUrlGateReady}`,
+  `Visible URL/link token hits: ${packet.executiveSummary.visibleLinkTokenHitCount}`,
+  `Plain-text fallback link token hits: ${packet.executiveSummary.plainTextFallbackLinkTokenHitCount}`,
   '',
   '## Targets',
   '',
