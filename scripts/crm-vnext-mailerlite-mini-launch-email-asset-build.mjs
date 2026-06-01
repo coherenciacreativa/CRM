@@ -260,12 +260,30 @@ const buildTargetPayloads = (payloadManifest) => (payloadManifest?.payloads ?? [
     hardExclusions: payload.hardExclusions ?? [],
   }));
 
-const buildHtmlForPayload = (payload) => {
+const signatureAssetFor = (signatureAssetReference) => {
+  const selected = signatureAssetReference?.selected ?? signatureAssetReference?.signatureAsset ?? null;
+  const src = cleanString(selected?.src);
+  const srcSha256 = cleanString(selected?.srcSha256);
+  if (!src || !srcSha256) return null;
+  return {
+    src,
+    srcSha256,
+    width: Number.isFinite(Number(selected?.width)) && Number(selected.width) > 0
+      ? Number(selected.width)
+      : 189,
+    height: Number.isFinite(Number(selected?.height)) && Number(selected.height) > 0
+      ? Number(selected.height)
+      : null,
+  };
+};
+
+const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) => {
   const escape = (value) => String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+  const signatureAsset = signatureAssetFor(signatureAssetReference);
   const lines = [
     '<!doctype html>',
     '<html lang="es">',
@@ -281,6 +299,7 @@ const buildHtmlForPayload = (payload) => {
     '    .cta-placeholder { display: inline-block; margin: 8px 0 4px; padding: 12px 18px; border-radius: 7px; background: #2F3E63; color: #FFFFFF; font-weight: 600; text-decoration: none; }',
     '    .placeholder-note { color: #777777; font-size: 13px; line-height: 150%; }',
     '    .signature { margin: 28px 0 0; font-family: Georgia, serif; color: #2F3E63; }',
+    '    .signature-image { display: block; width: 189px; max-width: 60%; height: auto; border: 0; }',
     '    .footer { font-size: 13px; line-height: 150%; color: #777777; }',
     '    @media (max-width: 640px) { .email-content { padding: 36px 24px 32px; } p { font-size: 15px; } }',
     '  </style>',
@@ -295,12 +314,19 @@ const buildHtmlForPayload = (payload) => {
   }
 
   for (const block of payload.contentBlocks) {
-    const text = cleanString(block?.text);
-    if (!text) continue;
     if (block.type === 'preheader') continue;
     if (block.type === 'signature') {
-      lines.push('      <p class="signature">Alejandro</p>');
-    } else if (block.type === 'compliance_footer') {
+      if (signatureAsset) {
+        const heightAttr = signatureAsset.height ? ` height="${escape(signatureAsset.height)}"` : '';
+        lines.push(`      <p class="signature"><img class="signature-image" src="${escape(signatureAsset.src)}" alt="Firma de Alejandro" width="${escape(signatureAsset.width)}"${heightAttr} data-signature-asset-sha256="${escape(signatureAsset.srcSha256)}"></p>`);
+      } else {
+        lines.push('      <p class="signature">Alejandro</p>');
+      }
+      continue;
+    }
+    const text = cleanString(block?.text);
+    if (!text) continue;
+    if (block.type === 'compliance_footer') {
       lines.push('      <hr style="border:0;border-top:1px solid #E3E7EA;margin:32px 0 18px;">');
       lines.push('      <p class="footer">Recibes este correo porque pediste recursos de Coherencia Creativa. Puedes darte de baja desde el enlace de suscripcion incluido por la plataforma.</p>');
     } else if (block.type === 'cta') {
@@ -945,5 +971,6 @@ export {
   parseArgs,
   renderMarkdown,
   senderIdentityFor,
+  signatureAssetFor,
   validateSourceReadiness,
 };

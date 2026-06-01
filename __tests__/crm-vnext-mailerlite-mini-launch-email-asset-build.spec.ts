@@ -8,6 +8,7 @@ import {
   normalizeApprovalPhrase,
   parseArgs,
   renderMarkdown,
+  signatureAssetFor,
   validateSourceReadiness,
 } from "../scripts/crm-vnext-mailerlite-mini-launch-email-asset-build.mjs";
 
@@ -331,6 +332,34 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     expect(html).toContain("Gracias por hacer el quiz.");
     expect(html).not.toContain('<span class="placeholder-note">result_or_resource_link_placeholder</span>');
     expect(html).not.toContain("<script");
+  });
+
+  test("renders visual signature from a private asset reference when supplied", () => {
+    const signatureAssetReference = {
+      selected: {
+        src: "https://storage.mlcdn.com/account/signature.png",
+        srcSha256: "f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8",
+        width: 189,
+        height: null,
+      },
+    };
+    const html = buildHtmlForPayload({
+      ...payloads[0],
+      contentBlocks: [
+        ...payloads[0].contentBlocks,
+        { type: "signature", text: "Alejandro signature asset or text-signature fallback" },
+      ],
+    }, { signatureAssetReference });
+
+    expect(signatureAssetFor(signatureAssetReference)).toMatchObject({
+      srcSha256: "f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8",
+      width: 189,
+    });
+    expect(html).toContain('class="signature-image"');
+    expect(html).toContain('alt="Firma de Alejandro"');
+    expect(html).toContain('data-signature-asset-sha256="f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8"');
+    expect(html).toContain('src="https://storage.mlcdn.com/account/signature.png"');
+    expect(html).not.toContain('<p class="signature">Alejandro</p>');
   });
 
   test("renders reply CTA without exposing the raw reply destination token", () => {

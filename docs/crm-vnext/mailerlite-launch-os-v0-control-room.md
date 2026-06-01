@@ -5158,3 +5158,51 @@ Operating meaning:
 - The campaign is still not CEO-review ready because the actual received seed emails did not prove Alejandro's visual signature asset; the current payload still falls back to text signature.
 - The next real boundary is not testers, micro-cohort, opt-in, audience or public send. It is asset-quality repair for the MailerLite email signature/footer experience, followed by fresh local QA and a separate approval if any MailerLite draft mutation or resend is needed.
 - Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
+
+## Launch OS v0 visual signature local repair checkpoint - 2026-06-02
+
+Status: active goal, visual signature asset reference discovered and wired into local email rendering, current render QA is green for the four `Inteligencia para descansar` emails, and the current-state refresh records the delta without opening any live gate. Launch OS remains not ready for live operation.
+
+Evidence:
+
+- Signature asset discovery report JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_signature_asset_discovery_current_inteligencia_descansar_2026-06-02.json`
+- Signature asset discovery report markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_signature_asset_discovery_current_inteligencia_descansar_2026-06-02.md`
+- Private signature asset reference: `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_signature_asset_reference_current_2026-06-02.json`
+- Email render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-06-02.json`
+- Email render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-06-02.md`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.md`
+
+Confirmed results:
+
+- Signature discovery: `status=signature_asset_candidate_found_read_only_no_live_changes`.
+- Signature discovery: selected asset hash `f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8`.
+- Email render QA: `status=mini_launch_email_render_qa_green_no_live_changes`, `localRenderReady=true`, `emailCount=4`, `renderPreviewNonEmptyCount=4`.
+- Email render QA: `visualSignatureAssetReadyCount=4`, `signatureFallbackCount=0`, `redCheckCount=0`.
+- Email render QA: exact signature asset URL printed in JSON/Markdown evidence: `false`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state refresh validation: `testFiles=38`, `testCount=234`.
+- Product/Value review: `status=product_value_review_ready_for_ceo_review_no_live_changes`, `productValueReviewPassed=true`, `blockerCount=0`.
+- Seed inbox artifact QA remains blocked: `status=seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes`, `blockerCount=2`.
+- Integrated experience QA remains blocked: `status=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`, `ceoReviewReady=false`, `distributionDecisionShouldWait=true`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- Render QA and current-state refresh are local-only/report-only.
+- Current-state refresh safety: MailerLite API called `false`, Shopify API called `false`, CRM live API called `false`.
+- MailerLite drafts created, edited or deleted by this checkpoint: `0`.
+- Test sends, audience sends, publish and schedule: `false`.
+- Subscriber, group, segment and workflow mutations: `false`.
+- Shopify publish/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw recipients, raw ids and tokens printed: `false`.
+
+Operating meaning:
+
+- The local source HTML is now ready to render Alejandro's visual signature instead of the text-signature fallback.
+- The previously received seed emails are still historical evidence with the old signature gap, so this checkpoint does not make the campaign CEO-review ready by itself.
+- The next real boundary is a human-approved MailerLite draft mutation/replacement using the updated render QA, followed by a fresh seed resend and artifact QA.
+- Do not ask for tester, micro-cohort, opt-in, audience or public send approval until the integrated experience QA is green.

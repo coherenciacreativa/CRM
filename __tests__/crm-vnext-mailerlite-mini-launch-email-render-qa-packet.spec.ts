@@ -141,6 +141,16 @@ const generatedEmails = payloads.map((target) => {
   };
 });
 
+const signatureAssetReference = {
+  selected: {
+    src: "https://storage.mlcdn.com/account/signature.png",
+    srcSha256: "f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8",
+    host: "storage.mlcdn.com",
+    width: 189,
+    height: null,
+  },
+};
+
 const renderPreviewFor = (htmlPath: string) => ({
   htmlPath,
   renderPreview: {
@@ -164,6 +174,8 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
       "--render-dir",
       "/tmp/render",
       "--skip-render",
+      "--signature-asset-reference",
+      "/tmp/private-signature.json",
       "--out",
       "/tmp/render-qa.json",
       "--markdown-out",
@@ -174,6 +186,7 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(parsed.assetBuildDryRun).toContain("mailerlite_mini_launch_email_asset_build_dry_run_inteligencia_descansar_2026-05-28.json");
     expect(parsed.renderDir).toBe("/tmp/render");
     expect(parsed.skipRender).toBe(true);
+    expect(parsed.signatureAssetReference).toBe("/tmp/private-signature.json");
     expect(parsed.out).toBe("/tmp/render-qa.json");
   });
 
@@ -277,6 +290,8 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(packet.executiveSummary.visibleLinkTokenHitCount).toBe(0);
     expect(packet.executiveSummary.plainTextFallbackCleanCount).toBe(4);
     expect(packet.executiveSummary.plainTextFallbackLinkTokenHitCount).toBe(0);
+    expect(packet.executiveSummary.visualSignatureAssetReadyCount).toBe(0);
+    expect(packet.executiveSummary.signatureFallbackCount).toBe(4);
     expect(packet.executiveSummary.publicUseReady).toBe(false);
     expect(packet.executiveSummary.mailerLiteBuilderReady).toBe(false);
     expect(packet.safety).toMatchObject({
@@ -287,6 +302,40 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
       sendsPerformed: false,
       factStoreWritePerformed: false,
     });
+  });
+
+  test("marks visual signature ready without printing the exact signature URL in packet evidence", () => {
+    const generatedWithSignature = payloads.map((target) => {
+      const html = buildHtmlForPayload(target, { signatureAssetReference });
+      return {
+        step: target.step,
+        role: target.role,
+        name: target.name,
+        subject: target.subject,
+        htmlPath: `/tmp/render/email_${target.step}.html`,
+        html,
+        staticQa: buildStaticChecksForEmail({ target, html }),
+      };
+    });
+    const packet = buildPacket({
+      payloadManifest,
+      assetBuildDryRun,
+      signatureAssetReference,
+      generatedEmails: generatedWithSignature,
+      renderPreviews: generatedWithSignature.map((email) => renderPreviewFor(email.htmlPath)),
+      generatedAt: "2026-06-02T00:00:00.000Z",
+    });
+    const packetJson = JSON.stringify(packet);
+
+    expect(packet.executiveSummary.visualSignatureAssetReadyCount).toBe(4);
+    expect(packet.executiveSummary.signatureFallbackCount).toBe(0);
+    expect(packet.inputs.signatureAssetReference).toMatchObject({
+      ready: true,
+      selectedSrcSha256: "f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8",
+      exactSrcPrinted: false,
+    });
+    expect(packet.emailQa[0].staticQa.checks.find((check) => check.id === "signature_identity")?.status).toBe("green");
+    expect(packetJson).not.toContain("https://storage.mlcdn.com/account/signature.png");
   });
 
   test("does not mark tiny or missing previews as local-render ready", () => {

@@ -28,6 +28,8 @@ const usage = `Usage:
 Options:
   --payload-manifest <path>      Email builder payload manifest. Defaults to ${DEFAULT_PAYLOAD_MANIFEST}
   --asset-build-dry-run <path>   Email asset-build dry-run. Defaults to ${DEFAULT_ASSET_BUILD_DRY_RUN}
+  --signature-asset-reference <path>
+                                  Optional private local visual signature asset reference.
   --render-dir <path>            Directory for generated local HTML and Quick Look PNG previews. Defaults to ${DEFAULT_RENDER_DIR}
   --skip-render                  Write local HTML and run static QA only; do not call Quick Look
   --out <path>                   Write JSON packet
@@ -52,6 +54,7 @@ const parseArgs = (argv) => {
   const options = {
     payloadManifest: DEFAULT_PAYLOAD_MANIFEST,
     assetBuildDryRun: DEFAULT_ASSET_BUILD_DRY_RUN,
+    signatureAssetReference: null,
     renderDir: DEFAULT_RENDER_DIR,
     skipRender: false,
     out: null,
@@ -64,6 +67,7 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--payload-manifest') options.payloadManifest = argv[++index];
     else if (arg === '--asset-build-dry-run') options.assetBuildDryRun = argv[++index];
+    else if (arg === '--signature-asset-reference') options.signatureAssetReference = argv[++index];
     else if (arg === '--render-dir') options.renderDir = argv[++index];
     else if (arg === '--skip-render') options.skipRender = true;
     else if (arg === '--out') options.out = argv[++index];
@@ -76,6 +80,32 @@ const parseArgs = (argv) => {
 
 const readText = async (path) => readFile(resolve(path), 'utf8');
 const readJson = async (path) => JSON.parse(await readText(path));
+
+const signatureAssetSummaryFor = (signatureAssetReference) => {
+  const selected = signatureAssetReference?.selected ?? null;
+  const srcSha256 = cleanString(selected?.srcSha256);
+  const src = cleanString(selected?.src);
+  if (!selected || !src || !srcSha256) {
+    return {
+      present: false,
+      ready: false,
+      selectedSrcSha256: null,
+      host: null,
+      width: null,
+      height: null,
+      exactSrcPrinted: false,
+    };
+  }
+  return {
+    present: true,
+    ready: true,
+    selectedSrcSha256: srcSha256,
+    host: cleanString(selected.host),
+    width: selected.width ?? null,
+    height: selected.height ?? null,
+    exactSrcPrinted: false,
+  };
+};
 
 const sourceDigest = (path, content, consultedFor) => ({
   path: resolve(path),
@@ -185,6 +215,11 @@ const buildStaticChecksForEmail = ({ target, html }) => {
   const blueHits = defaultBlueHits(html);
   const hasReplyCta = hasReplyCtaFor(target);
   const rawReplyDestinationRendered = hasReplyCta && rendersRawReplyDestination(html);
+  const visualSignatureAssetVerified = /class="signature-image"/iu.test(html)
+    && /data-signature-asset-sha256="[a-f0-9]{64}"/iu.test(html);
+  const textSignatureFallbackPresent = !visualSignatureAssetVerified
+    && html.includes('class="signature"')
+    && html.includes('Alejandro');
   const checks = [
     {
       id: 'html_document_basics',
@@ -261,10 +296,14 @@ const buildStaticChecksForEmail = ({ target, html }) => {
     },
     {
       id: 'signature_identity',
-      status: html.includes('class="signature"') && html.includes('Alejandro')
+      status: visualSignatureAssetVerified
+        ? 'green'
+        : textSignatureFallbackPresent
         ? 'yellow_text_signature_only'
         : 'red',
-      evidence: 'Local draft has text signature; real visual signature asset is still MailerLite/Brand QA dependent.',
+      evidence: visualSignatureAssetVerified
+        ? 'Local draft references the visual signature asset through a private asset digest; exact asset URL is not printed in this packet.'
+        : 'Local draft has text signature; real visual signature asset is still MailerLite/Brand QA dependent.',
     },
   ];
 
@@ -278,6 +317,8 @@ const buildStaticChecksForEmail = ({ target, html }) => {
     plainTextFallbackScan: fallbackScan,
     hasReplyCta,
     rawReplyDestinationRendered,
+    visualSignatureAssetVerified,
+    signatureFallbackPresent: textSignatureFallbackPresent,
     greenCount: checks.filter((check) => check.status === 'green').length,
     redCount: checks.filter((check) => check.status === 'red').length,
     yellowCount: checks.filter((check) => String(check.status).startsWith('yellow')).length,
@@ -351,14 +392,14 @@ const slugify = (value) => String(value ?? 'email')
 
 const htmlFileNameFor = (target) => `email_${String(target.step).padStart(2, '0')}_${slugify(target.role ?? target.name)}.html`;
 
-const writeLocalHtmlForTargets = async ({ payloadManifest, renderDir }) => {
+const writeLocalHtmlForTargets = async ({ payloadManifest, renderDir, signatureAssetReference = null }) => {
   const fullRenderDir = resolve(renderDir);
   await mkdir(fullRenderDir, { recursive: true });
   const targets = buildTargetPayloads(payloadManifest);
   const generatedEmails = [];
 
   for (const target of targets) {
-    const html = buildHtmlForPayload(target);
+    const html = buildHtmlForPayload(target, { signatureAssetReference });
     const htmlPath = join(fullRenderDir, htmlFileNameFor(target));
     await writeFile(htmlPath, html, 'utf8');
     generatedEmails.push({
@@ -450,6 +491,7 @@ const renderPreviewNonEmptyFor = (renderPreview) => renderPreview?.status === 'r
 const buildPacket = ({
   payloadManifest,
   assetBuildDryRun,
+  signatureAssetReference = null,
   generatedEmails,
   renderPreviews = [],
   sourceDigests = [],
@@ -490,6 +532,11 @@ const buildPacket = ({
   const plainTextFallbackCleanCount = emailQa.filter((email) => email.staticQa.plainTextFallbackScan?.clean === true).length;
   const plainTextFallbackLinkTokenHitCount = emailQa
     .reduce((sum, email) => sum + (email.staticQa.plainTextFallbackScan?.linkTokenHitCount ?? 0), 0);
+  const visualSignatureAssetReadyCount = emailQa
+    .filter((email) => email.staticQa.visualSignatureAssetVerified === true).length;
+  const signatureFallbackCount = emailQa
+    .filter((email) => email.staticQa.signatureFallbackPresent === true).length;
+  const signatureAssetReferenceSummary = signatureAssetSummaryFor(signatureAssetReference);
   const localRenderReady = sourceReadiness.ok
     && emailCount === 4
     && staticGreenCount === 4
@@ -519,6 +566,8 @@ const buildPacket = ({
       visibleLinkTokenHitCount,
       plainTextFallbackCleanCount,
       plainTextFallbackLinkTokenHitCount,
+      visualSignatureAssetReadyCount,
+      signatureFallbackCount,
       localRenderReady,
       publicUseReady: false,
       mailerLiteBuilderReady: false,
@@ -531,6 +580,7 @@ const buildPacket = ({
     inputs: {
       payloadManifestPath: sourceDigests.find((source) => source.consultedFor.includes('payload manifest'))?.path ?? null,
       assetBuildDryRunPath: sourceDigests.find((source) => source.consultedFor.includes('asset-build dry-run'))?.path ?? null,
+      signatureAssetReference: signatureAssetReferenceSummary,
       renderDir: resolve(renderDir),
     },
     sourceReadiness,
@@ -565,19 +615,32 @@ const buildPacket = ({
 };
 
 const loadSources = async (options) => {
-  const [payloadManifestContent, assetBuildDryRunContent] = await Promise.all([
+  const [payloadManifestContent, assetBuildDryRunContent, signatureAssetReferenceContent] = await Promise.all([
     readText(options.payloadManifest),
     readText(options.assetBuildDryRun),
+    options.signatureAssetReference ? readText(options.signatureAssetReference) : null,
   ]);
+  const signatureAssetReference = signatureAssetReferenceContent
+    ? JSON.parse(signatureAssetReferenceContent)
+    : null;
+  const sourceDigests = [
+    sourceDigest(options.payloadManifest, payloadManifestContent, 'mini-launch email builder payload manifest and approval boundary'),
+    sourceDigest(options.assetBuildDryRun, assetBuildDryRunContent, 'mini-launch email asset-build dry-run and fresh campaign scan'),
+  ];
+  if (options.signatureAssetReference) {
+    sourceDigests.push(sourceDigest(
+      options.signatureAssetReference,
+      signatureAssetReferenceContent,
+      'private visual signature asset reference; exact URL intentionally omitted from packet',
+    ));
+  }
   return {
     values: {
       payloadManifest: JSON.parse(payloadManifestContent),
       assetBuildDryRun: JSON.parse(assetBuildDryRunContent),
+      signatureAssetReference,
     },
-    sourceDigests: [
-      sourceDigest(options.payloadManifest, payloadManifestContent, 'mini-launch email builder payload manifest and approval boundary'),
-      sourceDigest(options.assetBuildDryRun, assetBuildDryRunContent, 'mini-launch email asset-build dry-run and fresh campaign scan'),
-    ],
+    sourceDigests,
   };
 };
 
@@ -586,6 +649,7 @@ const buildPacketFromFiles = async (options) => {
   const generatedEmails = await writeLocalHtmlForTargets({
     payloadManifest: values.payloadManifest,
     renderDir: options.renderDir,
+    signatureAssetReference: values.signatureAssetReference,
   });
   const renderPreviews = [];
 
@@ -640,6 +704,8 @@ const renderMarkdown = (packet) => {
     `- Visible URL/link token hits: ${packet.executiveSummary.visibleLinkTokenHitCount}`,
     `- Plain-text fallback clean count: ${packet.executiveSummary.plainTextFallbackCleanCount}`,
     `- Plain-text fallback link token hits: ${packet.executiveSummary.plainTextFallbackLinkTokenHitCount}`,
+    `- Visual signature asset ready count: ${packet.executiveSummary.visualSignatureAssetReadyCount}`,
+    `- Signature fallback count: ${packet.executiveSummary.signatureFallbackCount}`,
     `- Open live mutation gates: ${packet.executiveSummary.openLiveMutationGateCount}`,
     '',
     '## Email QA',
