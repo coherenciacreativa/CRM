@@ -97,6 +97,34 @@ const stripTags = (html) => String(html ?? '')
   .replace(/\s+/g, ' ')
   .trim();
 
+const LINK_TOKEN_PATTERN = /(https?:\/\/|\{\{\s*(?:result_or_resource_link|practice_link|editorial_note_link)\s*\}\}|\b(?:result_or_resource_link|practice_link|editorial_note_link)_placeholder\b|final_public_link_ready_redacted:)/giu;
+
+const classifyLinkTokenHit = (value) => {
+  const text = String(value ?? '');
+  if (/^https?:\/\//iu.test(text)) return 'url';
+  if (/^\{\{/u.test(text)) return 'handlebar_link_token';
+  if (/final_public_link_ready_redacted:/iu.test(text)) return 'redacted_final_link_token';
+  if (/_placeholder\b/iu.test(text)) return 'placeholder_token';
+  return 'link_token';
+};
+
+const linkTokenHits = (value) => [...String(value ?? '').matchAll(LINK_TOKEN_PATTERN)]
+  .map((match) => classifyLinkTokenHit(match[0]));
+
+const hrefValues = (html) => [...String(html ?? '').matchAll(/\shref\s*=\s*["']([^"']+)["']/giu)]
+  .map((match) => cleanString(match[1]))
+  .filter(Boolean);
+
+const plainTextFallbackScan = (value) => {
+  const hits = linkTokenHits(value);
+  return {
+    present: cleanString(value) != null,
+    linkTokenHitCount: hits.length,
+    linkTokenHitTypes: [...new Set(hits)],
+    clean: hits.length === 0,
+  };
+};
+
 const scanPublicText = (html) => {
   const text = stripTags(html);
   const normalized = normalizeForScan(text);
@@ -151,6 +179,9 @@ const buildStaticChecksForEmail = ({ target, html }) => {
   const publicTextScan = scanPublicText(html);
   const urlPlaceholders = expectedUrlPlaceholdersFor(target);
   const missingPlaceholders = urlPlaceholders.filter((placeholder) => !html.includes(placeholder));
+  const visibleLinkTokenHits = linkTokenHits(publicTextScan.text);
+  const fallbackScan = plainTextFallbackScan(target.plainTextFallback);
+  const unsafeHrefValues = hrefValues(html).filter((value) => /^https?:\/\//iu.test(value));
   const blueHits = defaultBlueHits(html);
   const hasReplyCta = hasReplyCtaFor(target);
   const rawReplyDestinationRendered = hasReplyCta && rendersRawReplyDestination(html);
@@ -192,8 +223,8 @@ const buildStaticChecksForEmail = ({ target, html }) => {
     },
     {
       id: 'no_script_or_live_link',
-      status: !/<script/i.test(html) && !/\shref\s*=/i.test(html) ? 'green' : 'red',
-      evidence: 'Local preview contains no script tag and no live href.',
+      status: !/<script/i.test(html) && unsafeHrefValues.length === 0 ? 'green' : 'red',
+      evidence: `Local preview contains no script tag and no exact http(s) href; exact-live href count=${unsafeHrefValues.length}.`,
     },
     {
       id: 'placeholder_boundary',
@@ -204,7 +235,17 @@ const buildStaticChecksForEmail = ({ target, html }) => {
         ? `URL placeholders present=${urlPlaceholders.length}; missing=${missingPlaceholders.length}.`
         : hasReplyCta
           ? 'Reply CTA is text-only and does not require a URL placeholder.'
-          : 'No CTA boundary found.',
+        : 'No CTA boundary found.',
+    },
+    {
+      id: 'cta_destination_not_visible_text',
+      status: visibleLinkTokenHits.length === 0 ? 'green' : 'red',
+      evidence: `Visible URL/link token hits in reader-facing text=${visibleLinkTokenHits.length}.`,
+    },
+    {
+      id: 'plain_text_fallback_no_visible_link_token',
+      status: fallbackScan.clean ? 'green' : 'red',
+      evidence: `Plain-text fallback link token hits=${fallbackScan.linkTokenHitCount}.`,
     },
     {
       id: 'reply_cta_no_raw_destination_token',
@@ -232,6 +273,9 @@ const buildStaticChecksForEmail = ({ target, html }) => {
     publicTextScan,
     expectedUrlPlaceholders: urlPlaceholders,
     missingPlaceholders,
+    visibleLinkTokenHitCount: visibleLinkTokenHits.length,
+    visibleLinkTokenHitTypes: [...new Set(visibleLinkTokenHits)],
+    plainTextFallbackScan: fallbackScan,
     hasReplyCta,
     rawReplyDestinationRendered,
     greenCount: checks.filter((check) => check.status === 'green').length,
@@ -442,6 +486,10 @@ const buildPacket = ({
   const renderPreviewNonEmptyCount = emailQa.filter((email) => email.renderPreviewNonEmpty).length;
   const staticGreenCount = emailQa.filter((email) => email.staticQa.staticGreenEnoughForLocalRender).length;
   const redCheckCount = emailQa.reduce((sum, email) => sum + email.staticQa.redCount, 0);
+  const visibleLinkTokenHitCount = emailQa.reduce((sum, email) => sum + (email.staticQa.visibleLinkTokenHitCount ?? 0), 0);
+  const plainTextFallbackCleanCount = emailQa.filter((email) => email.staticQa.plainTextFallbackScan?.clean === true).length;
+  const plainTextFallbackLinkTokenHitCount = emailQa
+    .reduce((sum, email) => sum + (email.staticQa.plainTextFallbackScan?.linkTokenHitCount ?? 0), 0);
   const localRenderReady = sourceReadiness.ok
     && emailCount === 4
     && staticGreenCount === 4
@@ -468,6 +516,9 @@ const buildPacket = ({
       staticGreenCount,
       renderPreviewNonEmptyCount,
       redCheckCount,
+      visibleLinkTokenHitCount,
+      plainTextFallbackCleanCount,
+      plainTextFallbackLinkTokenHitCount,
       localRenderReady,
       publicUseReady: false,
       mailerLiteBuilderReady: false,
@@ -586,6 +637,9 @@ const renderMarkdown = (packet) => {
     `- Static green count: ${packet.executiveSummary.staticGreenCount}`,
     `- Render preview non-empty count: ${packet.executiveSummary.renderPreviewNonEmptyCount}`,
     `- Red check count: ${packet.executiveSummary.redCheckCount}`,
+    `- Visible URL/link token hits: ${packet.executiveSummary.visibleLinkTokenHitCount}`,
+    `- Plain-text fallback clean count: ${packet.executiveSummary.plainTextFallbackCleanCount}`,
+    `- Plain-text fallback link token hits: ${packet.executiveSummary.plainTextFallbackLinkTokenHitCount}`,
     `- Open live mutation gates: ${packet.executiveSummary.openLiveMutationGateCount}`,
     '',
     '## Email QA',

@@ -12,6 +12,7 @@ import {
 import {
   buildFormBody,
   buildPreflight,
+  escapeHtmlAttribute,
   htmlStats,
   normalizeApprovalPhrase,
   parseArgs as parseCreateArgs,
@@ -256,6 +257,12 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
 
     expect(body["groups[]"]).toEqual(["group-null"]);
     expect(Object.keys(body).some((key) => /subscriber|segment|workflow/i.test(key))).toBe(false);
+  });
+
+  test("escapes exact preview URLs before injecting them into href attributes", () => {
+    expect(escapeHtmlAttribute('https://example.test/path?a=1&b="two"')).toBe(
+      "https://example.test/path?a=1&amp;b=&quot;two&quot;",
+    );
   });
 
   test("normalizes approval phrase and renders markdown without secrets", () => {

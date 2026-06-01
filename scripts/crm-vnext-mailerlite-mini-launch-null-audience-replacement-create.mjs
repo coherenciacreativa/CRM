@@ -89,6 +89,11 @@ const sha256 = (value) => createHash('sha256').update(String(value)).digest('hex
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
 const readText = async (path) => readFile(resolve(path), 'utf8');
 const redactedTokenFor = (key) => key ? `final_public_link_ready_redacted:${key}` : null;
+const escapeHtmlAttribute = (value) => String(value ?? '')
+  .replace(/&/gu, '&amp;')
+  .replace(/</gu, '&lt;')
+  .replace(/>/gu, '&gt;')
+  .replace(/"/gu, '&quot;');
 
 const parseArgs = (argv) => {
   const options = {
@@ -737,7 +742,9 @@ const buildRun = async (options) => {
         if (campaignStatusFor(sourceDetail) !== 'draft') throw new Error(`source_campaign_not_draft:${target.label}`);
         if (!sender.fromName || !sender.fromEmail) throw new Error(`sender_identity_missing:${target.label}`);
         const content = target._redactedTokenForRun && target._exactPreviewUrlForRun
-          ? target._correctedHtmlForRun.split(target._redactedTokenForRun).join(target._exactPreviewUrlForRun)
+          ? target._correctedHtmlForRun
+            .split(target._redactedTokenForRun)
+            .join(escapeHtmlAttribute(target._exactPreviewUrlForRun))
           : target._correctedHtmlForRun;
 
         const payload = await requestJson({
@@ -1084,6 +1091,7 @@ export {
   buildFormBody,
   buildPreflight,
   buildRun,
+  escapeHtmlAttribute,
   htmlStats,
   normalizeApprovalPhrase,
   parseArgs,

@@ -327,7 +327,9 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     const html = buildHtmlForPayload(payloads[0]);
 
     expect(html).toContain("result_or_resource_link_placeholder");
+    expect(html).toContain('href="result_or_resource_link_placeholder"');
     expect(html).toContain("Gracias por hacer el quiz.");
+    expect(html).not.toContain('<span class="placeholder-note">result_or_resource_link_placeholder</span>');
     expect(html).not.toContain("<script");
   });
 

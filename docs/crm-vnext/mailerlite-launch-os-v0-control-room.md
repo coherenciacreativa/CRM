@@ -4963,3 +4963,51 @@ Operating meaning:
 - The remaining repair is not a distribution/audience decision. It is an asset-quality repair: hide raw URL text in the actual received email experience and verify the canonical MailerLite footer/signature pattern.
 - Do not ask Alejandro for testers, micro-cohort, opt-in, audience or send approval from this checkpoint.
 - Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
+
+## Launch OS v0 CTA/fallback local repair checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only asset-quality repair added. The corrected local email path now keeps CTA destinations in the button `href` instead of rendering link tokens or URLs as visible text under the CTA, and the plain-text fallback strips link placeholders/tokens from the reader-facing fallback copy. This does not change any live MailerLite draft or resend any seed email.
+
+Evidence:
+
+- Seed inbox correction preview JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+- Seed inbox correction preview markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md`
+- Redacted corrected payload manifest JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_builder_payload_manifest_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.redacted.json`
+- Local email render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.json`
+- Local email render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+
+Confirmed results:
+
+- Correction preview: `ok=true`, `status=seed_inbox_correction_preview_ready_no_live_changes`.
+- Correction preview: `ctaDestinationRenderPolicy=href_only_not_visible_body_text`.
+- Correction preview: `plainTextFallbackPolicy=remove_visible_url_or_link_token_lines`.
+- Correction preview: `plainTextFallbackCleanCount=4`, `plainTextFallbackLinkTokenHitCount=0`.
+- Local email render QA: `ok=true`, `status=mini_launch_email_render_qa_green_no_live_changes`.
+- Local email render QA: `localRenderReady=true`, `emailCount=4`, `renderPreviewNonEmptyCount=4`, `redCheckCount=0`.
+- Local email render QA: `visibleLinkTokenHitCount=0`, `plainTextFallbackCleanCount=4`, `plainTextFallbackLinkTokenHitCount=0`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state validation: `testFiles=38`, `testCount=233`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called by this repair: `false`; MailerLite UI used: `false`.
+- Shopify API called: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers, groups, segments and workflows read/mutated: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The local root cause for the visible raw URL presentation has been repaired for future generated/replacement drafts: exact preview URLs should land in the CTA `href`, not as visible text under the button.
+- The Null Audience API replacement path also escapes exact preview URLs before injecting them into `href` attributes.
+- The old seed inbox artifact evidence still reports `visibleRawUrlTextCount=3` because those are already-received seed messages from the earlier build path.
+- Before CEO review, the next real boundary is a fresh approved MailerLite draft update/replacement plus seed resend/observation to prove the inbox now has no visible raw URL text and to verify the canonical MailerLite footer/signature experience.
+- Do not treat this checkpoint as permission for MailerLite draft edits, API writes, UI actions, seed sends, audience sends or CRM/Shopify live mutations.

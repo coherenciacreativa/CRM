@@ -183,6 +183,8 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(scan.ok).toBe(true);
     expect(scan.bannedTermHits).toEqual([]);
     expect(generatedEmails[0].html).toContain("result_or_resource_link_placeholder");
+    expect(generatedEmails[0].html).toContain('href="result_or_resource_link_placeholder"');
+    expect(generatedEmails[0].html).not.toContain('<span class="placeholder-note">result_or_resource_link_placeholder</span>');
     expect(generatedEmails[0].html).not.toContain("MailerLite unsubscribe footer");
   });
 
@@ -190,11 +192,27 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(generatedEmails[0].staticQa.staticGreenEnoughForLocalRender).toBe(true);
     expect(generatedEmails[0].staticQa.expectedUrlPlaceholders).toEqual(["result_or_resource_link_placeholder"]);
     expect(generatedEmails[0].staticQa.missingPlaceholders).toEqual([]);
+    expect(generatedEmails[0].staticQa.visibleLinkTokenHitCount).toBe(0);
+    expect(generatedEmails[0].staticQa.plainTextFallbackScan.clean).toBe(true);
     expect(generatedEmails[3].staticQa.hasReplyCta).toBe(true);
     expect(generatedEmails[3].staticQa.expectedUrlPlaceholders).toEqual([]);
     expect(generatedEmails[3].staticQa.rawReplyDestinationRendered).toBe(false);
     expect(generatedEmails[3].html).not.toContain('<span class="placeholder-note">reply</span>');
     expect(generatedEmails[3].staticQa.redCount).toBe(0);
+  });
+
+  test("blocks plain-text fallbacks that still expose link tokens", () => {
+    const target = {
+      ...payloads[0],
+      plainTextFallback: "Ver mi lectura: {{ result_or_resource_link }}",
+    };
+    const html = buildHtmlForPayload(target);
+    const qa = buildStaticChecksForEmail({ target, html });
+
+    expect(qa.staticGreenEnoughForLocalRender).toBe(false);
+    expect(qa.plainTextFallbackScan.clean).toBe(false);
+    expect(qa.plainTextFallbackScan.linkTokenHitCount).toBe(1);
+    expect(qa.checks.find((check) => check.id === "plain_text_fallback_no_visible_link_token")?.status).toBe("red");
   });
 
   test("validates source readiness only when the no-live dry-run is green", () => {
@@ -256,6 +274,9 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(packet.status).toBe("mini_launch_email_render_qa_green_no_live_changes");
     expect(packet.executiveSummary.localRenderReady).toBe(true);
     expect(packet.executiveSummary.renderPreviewNonEmptyCount).toBe(4);
+    expect(packet.executiveSummary.visibleLinkTokenHitCount).toBe(0);
+    expect(packet.executiveSummary.plainTextFallbackCleanCount).toBe(4);
+    expect(packet.executiveSummary.plainTextFallbackLinkTokenHitCount).toBe(0);
     expect(packet.executiveSummary.publicUseReady).toBe(false);
     expect(packet.executiveSummary.mailerLiteBuilderReady).toBe(false);
     expect(packet.safety).toMatchObject({

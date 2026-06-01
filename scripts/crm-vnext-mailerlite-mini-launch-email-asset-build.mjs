@@ -278,7 +278,7 @@ const buildHtmlForPayload = (payload) => {
     '    .email-container { max-width: 640px; margin: 0 auto; background: #FFFFFF; }',
     '    .email-content { padding: 44px 42px 36px; }',
     '    p { font-size: 16px; line-height: 165%; margin: 0 0 18px; }',
-    '    .cta-placeholder { display: inline-block; margin: 8px 0 4px; padding: 12px 18px; border-radius: 7px; background: #2F3E63; color: #FFFFFF; font-weight: 600; }',
+    '    .cta-placeholder { display: inline-block; margin: 8px 0 4px; padding: 12px 18px; border-radius: 7px; background: #2F3E63; color: #FFFFFF; font-weight: 600; text-decoration: none; }',
     '    .placeholder-note { color: #777777; font-size: 13px; line-height: 150%; }',
     '    .signature { margin: 28px 0 0; font-family: Georgia, serif; color: #2F3E63; }',
     '    .footer { font-size: 13px; line-height: 150%; color: #777777; }',
@@ -305,7 +305,7 @@ const buildHtmlForPayload = (payload) => {
       lines.push('      <p class="footer">Recibes este correo porque pediste recursos de Coherencia Creativa. Puedes darte de baja desde el enlace de suscripcion incluido por la plataforma.</p>');
     } else if (block.type === 'cta') {
       const placeholder = cleanString(block?.placeholder?.value) ?? cleanString(block?.destination) ?? 'inert_placeholder';
-      lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span><br><span class="placeholder-note">${escape(placeholder)}</span></p>`);
+      lines.push(`      <p><a class="cta-placeholder" href="${escape(placeholder)}">${escape(text)}</a></p>`);
     } else if (block.type === 'reply_cta') {
       lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span></p>`);
     } else {

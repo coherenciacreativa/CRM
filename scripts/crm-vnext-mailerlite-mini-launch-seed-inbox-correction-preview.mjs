@@ -192,6 +192,54 @@ const buildSafety = ({ redactedPayloadManifestWritten = false } = {}) => ({
 });
 
 const redactedLinkToken = (key) => `final_public_link_ready_redacted:${key}`;
+const LINK_TOKEN_PATTERN = /(https?:\/\/|\{\{\s*(?:result_or_resource_link|practice_link|editorial_note_link)\s*\}\}|\b(?:result_or_resource_link|practice_link|editorial_note_link)_placeholder\b|final_public_link_ready_redacted:)/giu;
+
+const fallbackCtaLineFor = (key) => {
+  if (key === 'result_or_resource_link') return 'Para abrir tu lectura, usa el boton principal de este correo.';
+  if (key === 'practice_link') return 'Para abrir la practica, usa el boton principal de este correo.';
+  if (key === 'editorial_note_link') return 'Para abrir la nota, usa el boton principal de este correo.';
+  return 'Usa el boton principal de este correo para abrir el recurso.';
+};
+
+const plainTextFallbackLinkTokenHits = (value) =>
+  [...String(value ?? '').matchAll(LINK_TOKEN_PATTERN)].length;
+
+const sanitizePlainTextFallbackForPreview = ({ plainTextFallback, linkKey }) => {
+  const original = typeof plainTextFallback === 'string' ? plainTextFallback : null;
+  if (!original) {
+    return {
+      value: plainTextFallback ?? null,
+      originalHadLinkToken: false,
+      linkTokenHitCount: 0,
+      replacementLineApplied: false,
+    };
+  }
+
+  let replacementApplied = false;
+  const sanitizedLines = original
+    .split(/\r?\n/u)
+    .map((line) => {
+      LINK_TOKEN_PATTERN.lastIndex = 0;
+      const hasLinkToken = LINK_TOKEN_PATTERN.test(line);
+      LINK_TOKEN_PATTERN.lastIndex = 0;
+      if (!hasLinkToken) return line;
+      replacementApplied = true;
+      return fallbackCtaLineFor(linkKey);
+    })
+    .map((line) => line.trimEnd());
+  LINK_TOKEN_PATTERN.lastIndex = 0;
+  const sanitized = sanitizedLines
+    .join('\n')
+    .replace(/\n{3,}/gu, '\n\n')
+    .trim();
+
+  return {
+    value: sanitized || null,
+    originalHadLinkToken: replacementApplied,
+    linkTokenHitCount: plainTextFallbackLinkTokenHits(sanitized),
+    replacementLineApplied: replacementApplied,
+  };
+};
 
 const normalizeFooterBlock = ({ block, policy }) => {
   if (block?.type !== 'compliance_footer') return block;
@@ -216,6 +264,10 @@ const redactPayloadForPreview = ({ payload, correctionState }) => {
   const linkKey = LINK_KEY_BY_STEP.get(step) ?? null;
   const policy = correctionState.subscriptionReasonPolicy.policy;
   const linkHash = linkKey ? correctionState.finalPublicLinks.urlSha256ByKey[linkKey] ?? null : null;
+  const plainTextFallback = sanitizePlainTextFallbackForPreview({
+    plainTextFallback: payload?.plainTextFallback,
+    linkKey,
+  });
   const blocks = (payload?.contentBlocks ?? []).map((block) => {
     if (block?.type === 'cta' && linkKey) {
       return {
@@ -243,6 +295,7 @@ const redactPayloadForPreview = ({ payload, correctionState }) => {
 
   return {
     ...payload,
+    plainTextFallback: plainTextFallback.value,
     contentBlocks: blocks,
     cta: payload?.cta && linkKey
       ? {
@@ -267,6 +320,11 @@ const redactPayloadForPreview = ({ payload, correctionState }) => {
       subscriptionReasonPolicy: policy,
       footerPolicyApplied: policy,
       rawReplyDestinationTokenRendered: false,
+      ctaDestinationRenderPolicy: 'href_only_not_visible_body_text',
+      plainTextFallbackPolicy: 'remove_visible_url_or_link_token_lines',
+      plainTextFallbackOriginalHadLinkToken: plainTextFallback.originalHadLinkToken,
+      plainTextFallbackReplacementLineApplied: plainTextFallback.replacementLineApplied,
+      plainTextFallbackLinkTokenHitCount: plainTextFallback.linkTokenHitCount,
     },
   };
 };
@@ -274,6 +332,11 @@ const redactPayloadForPreview = ({ payload, correctionState }) => {
 const buildRedactedPayloadManifest = ({ payloadManifest, correctionState, generatedAt }) => {
   const payloads = (payloadManifest?.payloads ?? [])
     .map((payload) => redactPayloadForPreview({ payload, correctionState }));
+  const plainTextFallbackLinkTokenHitCount = payloads
+    .reduce((sum, payload) => sum + (payload.correctionPreview?.plainTextFallbackLinkTokenHitCount ?? 0), 0);
+  const plainTextFallbackCleanCount = payloads
+    .filter((payload) => (payload.correctionPreview?.plainTextFallbackLinkTokenHitCount ?? 0) === 0)
+    .length;
   return {
     ...payloadManifest,
     schemaVersion: `${payloadManifest?.schemaVersion ?? 'payload-manifest'}+seed-inbox-correction-preview-redacted`,
@@ -289,6 +352,10 @@ const buildRedactedPayloadManifest = ({ payloadManifest, correctionState, genera
         correctionState.finalPublicLinks.linkLifecycle.liveUrlReadyCount
         + correctionState.finalPublicLinks.linkLifecycle.previewPromotedToLiveCount,
       subscriptionReasonPolicy: correctionState.subscriptionReasonPolicy.policy,
+      ctaDestinationRenderPolicy: 'href_only_not_visible_body_text',
+      plainTextFallbackPolicy: 'remove_visible_url_or_link_token_lines',
+      plainTextFallbackCleanCount,
+      plainTextFallbackLinkTokenHitCount,
       exactUrlsStoredInReport: false,
       canExecuteBuilderNow: false,
       canSendNow: false,
@@ -321,6 +388,9 @@ const buildPreviewRows = ({ redactedPayloadManifest }) =>
     subscriptionReasonPolicy: payload.correctionPreview?.subscriptionReasonPolicy ?? null,
     footerPolicyApplied: payload.correctionPreview?.footerPolicyApplied ?? null,
     rawReplyDestinationTokenRendered: false,
+    ctaDestinationRenderPolicy: payload.correctionPreview?.ctaDestinationRenderPolicy ?? null,
+    plainTextFallbackPolicy: payload.correctionPreview?.plainTextFallbackPolicy ?? null,
+    plainTextFallbackLinkTokenHitCount: payload.correctionPreview?.plainTextFallbackLinkTokenHitCount ?? null,
   }));
 
 const buildBlockers = ({ payloadManifest, correctionPlan, correctionState }) => unique([
@@ -377,6 +447,10 @@ const buildSeedInboxCorrectionPreview = ({
       subscriptionReasonPolicyReady: correctionState.subscriptionReasonPolicy.valid,
       subscriptionReasonPolicy: correctionState.subscriptionReasonPolicy.policy,
       redactedPayloadManifestReady: ready,
+      ctaDestinationRenderPolicy: redactedPayloadManifest?.executiveSummary?.ctaDestinationRenderPolicy ?? null,
+      plainTextFallbackPolicy: redactedPayloadManifest?.executiveSummary?.plainTextFallbackPolicy ?? null,
+      plainTextFallbackCleanCount: redactedPayloadManifest?.executiveSummary?.plainTextFallbackCleanCount ?? 0,
+      plainTextFallbackLinkTokenHitCount: redactedPayloadManifest?.executiveSummary?.plainTextFallbackLinkTokenHitCount ?? null,
       redactedPayloadManifestOut: ready ? resolve(redactedPayloadManifestOut) : null,
       canAskMailerLiteUiEditApprovalNow: false,
       canAskAdditionalTestSendApprovalNow: false,
@@ -422,6 +496,10 @@ const renderMarkdown = (report) => [
   `- Subscription policy ready: ${report.executiveSummary.subscriptionReasonPolicyReady}`,
   `- Subscription policy: ${report.executiveSummary.subscriptionReasonPolicy ?? 'missing'}`,
   `- Redacted payload manifest ready: ${report.executiveSummary.redactedPayloadManifestReady}`,
+  `- CTA destination render policy: ${report.executiveSummary.ctaDestinationRenderPolicy ?? 'missing'}`,
+  `- Plain-text fallback policy: ${report.executiveSummary.plainTextFallbackPolicy ?? 'missing'}`,
+  `- Plain-text fallback clean count: ${report.executiveSummary.plainTextFallbackCleanCount}`,
+  `- Plain-text fallback link token hits: ${report.executiveSummary.plainTextFallbackLinkTokenHitCount ?? 'unknown'}`,
   `- Can ask MailerLite UI edit approval now: ${report.executiveSummary.canAskMailerLiteUiEditApprovalNow}`,
   `- Can ask test/public send approval now: ${report.executiveSummary.canAskAdditionalTestSendApprovalNow}/${report.executiveSummary.canAskPublicSendApprovalNow}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
@@ -535,6 +613,7 @@ const main = async () => {
     subscriptionReasonPolicyReady: report.executiveSummary.subscriptionReasonPolicyReady,
     redactedPayloadManifestWritten,
     redactedPayloadManifestOut: redactedPayloadManifestWritten ? resolve(options.redactedPayloadManifestOut) : null,
+    plainTextFallbackLinkTokenHitCount: report.executiveSummary.plainTextFallbackLinkTokenHitCount,
     canAskMailerLiteUiEditApprovalNow: report.executiveSummary.canAskMailerLiteUiEditApprovalNow,
     canAskPublicSendApprovalNow: report.executiveSummary.canAskPublicSendApprovalNow,
     blockers: report.blockers,

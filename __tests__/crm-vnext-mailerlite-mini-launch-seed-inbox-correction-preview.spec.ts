@@ -17,6 +17,7 @@ const payloads = [
     mailerLiteAssetNameDraft: "ML Draft - E01",
     subject: "Tu lectura",
     preheader: "Una lectura pequena.",
+    plainTextFallback: "Hola,\n\nGracias por hacer el quiz.\n\nVer mi lectura: {{ result_or_resource_link }}",
     cta: {
       text: "Ver mi lectura",
       destination: "result_or_resource_link_placeholder",
@@ -46,6 +47,7 @@ const payloads = [
     role: "practice_or_value",
     mailerLiteAssetNameDraft: "ML Draft - E02",
     subject: "Practica",
+    plainTextFallback: "Guardar practica: {{ practice_link }}",
     cta: {
       text: "Guardar practica",
       destination: "practice_link_placeholder",
@@ -74,6 +76,7 @@ const payloads = [
     role: "story_or_editorial_depth",
     mailerLiteAssetNameDraft: "ML Draft - E03",
     subject: "Criterio",
+    plainTextFallback: "Leer nota: {{ editorial_note_link }}",
     cta: {
       text: "Leer la nota",
       destination: "editorial_note_link_placeholder",
@@ -102,6 +105,7 @@ const payloads = [
     role: "invitation_or_feedback",
     mailerLiteAssetNameDraft: "ML Draft - E04",
     subject: "Que notaste",
+    plainTextFallback: "Responde a este correo con una linea.",
     cta: {
       text: "Responder",
       destination: "reply",
@@ -272,6 +276,16 @@ describe("CRM vNext MailerLite mini-launch seed inbox correction preview", () =>
     expect(report.previewRows[0].finalPublicLinkKey).toBe("result_or_resource_link");
     expect(report.previewRows[0].finalPublicLinkSha256).toHaveLength(64);
     expect(report.redactedPayloadManifest.payloads[0].cta.destination).toBe("final_public_link_ready_redacted:result_or_resource_link");
+    expect(report.redactedPayloadManifest.executiveSummary.plainTextFallbackCleanCount).toBe(4);
+    expect(report.redactedPayloadManifest.executiveSummary.plainTextFallbackLinkTokenHitCount).toBe(0);
+    expect(report.redactedPayloadManifest.payloads[0].plainTextFallback).toContain("usa el boton principal");
+    expect(report.redactedPayloadManifest.payloads[0].plainTextFallback).not.toContain("{{ result_or_resource_link }}");
+    expect(report.redactedPayloadManifest.payloads[0].correctionPreview).toMatchObject({
+      ctaDestinationRenderPolicy: "href_only_not_visible_body_text",
+      plainTextFallbackPolicy: "remove_visible_url_or_link_token_lines",
+      plainTextFallbackOriginalHadLinkToken: true,
+      plainTextFallbackLinkTokenHitCount: 0,
+    });
     expect(report.redactedPayloadManifest.payloads[3].contentBlocks[1]).toMatchObject({
       type: "reply_cta",
       destination: "reply",
