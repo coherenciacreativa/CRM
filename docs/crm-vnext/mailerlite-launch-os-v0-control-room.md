@@ -5056,3 +5056,55 @@ Operating meaning:
 - This is not permission to send tests, publish, schedule, assign real audiences, add subscribers, run workflows, change Shopify, write CRM signals, or touch ledgers/cards/scoring/Fact Store.
 - If Alejandro approves the draft creation, run only the scoped replacement execution path, then re-scan and generate a fresh receipt before any seed resend or CEO-review claim.
 - Do not ask for tester, micro-cohort, opt-in, audience or public send approval from this checkpoint.
+
+## Launch OS v0 CTA/fallback replacement drafts created - 2026-06-01
+
+Status: active goal, exact API approval received from Alejandro, and four new MailerLite replacement drafts were created for `Inteligencia para descansar`. The new drafts use the CTA/fallback repair set and are assigned only to the empty Null Audience safety group. A stale-evidence guard now prevents the previous seed inbox QA from being treated as green for this newer draft set.
+
+Evidence:
+
+- Null Audience replacement execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-06-01.json`
+- Null Audience replacement execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-06-01.md`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+
+Confirmed results:
+
+- Replacement execution: `ok=true`, `status=mailerlite_null_audience_replacement_execution_completed_no_sends`.
+- Replacement execution: `createdDraftCount=4`, `nullAudienceSafeCount=4`, `contentGreenCount=4`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`, observed active count `0`.
+- Cleanup: `cleanupAttempted=false`, `cleanupDeletedCount=0`.
+- MailerLite test/audience sends: `false`; publish/schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups/segments/workflows created or assigned: `false`.
+- Old drafts edited/deleted/archived: `false`.
+- Exact URLs/tokens/sender values printed: `false`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state validation: `testFiles=38`, `testCount=233`.
+- Approval queue next best human boundary: `mini_launch_null_audience_seed_test_send`.
+- Approval queue ready ids: `mini_launch_null_audience_seed_test_send`.
+- Previous seed inbox QA raw status remains green for the older set, but `appliesToCurrentReplacementReceipt=false` and `effectiveSeedInboxQaGreen=false`.
+- Public launch readiness: `status=mini_launch_public_launch_readiness_blocked_missing_evidence_no_live_changes`.
+- Public send preflight: `status=public_send_preflight_decision_packet_blocked_missing_evidence_no_live_changes`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- MailerLite API called only for the exact approved replacement-draft creation and post-create QA.
+- MailerLite drafts created: `4`.
+- MailerLite drafts deleted by failure cleanup: `0`.
+- MailerLite UI used by this checkpoint: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Subscriber, non-seed group, segment and workflow mutations: `false`.
+- Shopify API/publish/mutations: `false`.
+- CRM live API, Signal Ledger, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, raw campaign/group ids, recipients, sender values and tokens printed: `false`.
+
+Operating meaning:
+
+- The current corrected MailerLite draft set exists and is inert in the empty safety audience.
+- The prior seed inbox QA is now historical evidence only. It cannot support CEO review or public/audience readiness for the new CTA/fallback drafts.
+- The next real boundary is a separate exact approval to send or record test emails from these four current Null Audience drafts to the approved seed recipient, followed by fresh Gmail seed inbox QA.
+- This checkpoint is not permission to send tests, publish, schedule, assign real audiences, add subscribers, run workflows, change Shopify, write CRM signals, or touch ledgers/cards/scoring/Fact Store.

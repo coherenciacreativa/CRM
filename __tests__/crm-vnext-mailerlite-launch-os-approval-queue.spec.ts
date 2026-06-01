@@ -12,6 +12,7 @@ import {
   buildMiniLaunchMailerLiteApiInertDraftLabItem,
   buildMiniLaunchMailerLiteApiNullAudienceLabItem,
   buildMiniLaunchNullAudienceReplacementItem,
+  buildMiniLaunchNullAudienceSeedTestSendItem,
   buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
   buildMiniLaunchSeedSendItem,
@@ -24,6 +25,7 @@ import {
   nullAudienceSeedInboxQaCompletedAfterE04Resend,
   nullAudienceSeedInboxQaNeedsE04Resend,
   nullAudienceSeedTestSendCompleted,
+  nullAudienceSeedTestSendMatchesReplacement,
   nullAudienceReplacementExecutionCompleted,
   parseArgs,
   renderMarkdown,
@@ -2001,6 +2003,51 @@ describe("CRM vNext MailerLite Launch OS approval queue", () => {
     expect(item.exactApprovalPhrase).toBeNull();
     expect(item.stillClosed).toContain("additional_seed_or_test_send");
     expect(item.requiredFreshEvidence).toContain("perform seed inbox QA on the four received test emails");
+  });
+
+  test("reopens Null Audience seed-test approval when a newer replacement set supersedes old seed evidence", () => {
+    const currentReplacement = {
+      ...miniLaunchNullAudienceReplacementExecutionReceiptCompleted,
+      createdDrafts: [
+        { label: "E01", name: "Draft E01 · API Null Audience CTA fallback repair", campaignIdSha256: "new-e01" },
+        { label: "E02", name: "Draft E02 · API Null Audience CTA fallback repair", campaignIdSha256: "new-e02" },
+        { label: "E03", name: "Draft E03 · API Null Audience CTA fallback repair", campaignIdSha256: "new-e03" },
+        { label: "E04", name: "Draft E04 · API Null Audience CTA fallback repair", campaignIdSha256: "new-e04" },
+      ],
+    };
+    const oldSeedReceipt = {
+      ...miniLaunchNullAudienceSeedTestSendExecutionReceiptCompleted,
+      sentTests: [
+        { label: "E01", name: "Draft E01 · API Null Audience replacement", campaignIdSha256: "old-e01" },
+        { label: "E02", name: "Draft E02 · API Null Audience replacement", campaignIdSha256: "old-e02" },
+        { label: "E03", name: "Draft E03 · API Null Audience replacement", campaignIdSha256: "old-e03" },
+        { label: "E04", name: "Draft E04 · API Null Audience replacement", campaignIdSha256: "old-e04" },
+      ],
+    };
+
+    expect(nullAudienceSeedTestSendMatchesReplacement(oldSeedReceipt, currentReplacement)).toBe(false);
+
+    const item = buildMiniLaunchNullAudienceSeedTestSendItem({
+      nullAudienceReplacementExecutionReceipt: currentReplacement,
+      nullAudienceSeedTestSendReceipt: oldSeedReceipt,
+    });
+
+    expect(item).toMatchObject({
+      id: "mini_launch_null_audience_seed_test_send",
+      status: "ready_for_exact_approval_request",
+      canAskAlejandroNow: true,
+      approvalType: "exact_phrase_required",
+      operationType: "live_mailerlite_null_audience_seed_test_send_after_exact_approval",
+      evidence: {
+        currentReplacementSetSeedSent: false,
+        priorSeedReceiptMatchesCurrentReplacementSet: false,
+        replacementDraftCount: 4,
+        nullAudienceSafeCount: 4,
+        contentGreenCount: 4,
+      },
+    });
+    expect(item.exactApprovalPhrase).toContain("test emails desde los 4 nuevos borradores");
+    expect(item.stillClosed).toContain("public_or_audience_send");
   });
 
   test("marks E04-only Null Audience resend as the next exact approval boundary after partial inbox QA", () => {

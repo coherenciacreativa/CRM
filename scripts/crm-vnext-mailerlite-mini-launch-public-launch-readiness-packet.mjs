@@ -82,6 +82,10 @@ const parseArgs = (argv) => {
 };
 
 const sha256 = (value) => createHash('sha256').update(String(value)).digest('hex');
+const resolvedPath = (value) => cleanString(value) ? resolve(cleanString(value)) : null;
+const pathsMatch = (left, right) => Boolean(resolvedPath(left) && resolvedPath(right) && resolvedPath(left) === resolvedPath(right));
+const sourceDigestPathFor = (sourceDigests = [], needle) =>
+  sourceDigests.find((digest) => cleanString(digest?.consultedFor)?.includes(needle))?.path ?? null;
 
 const readJsonWithDigest = async (path, consultedFor) => {
   const resolved = resolve(path);
@@ -161,14 +165,22 @@ const buildPublicLaunchReadinessPacket = ({
   generatedAt = new Date().toISOString(),
 }) => {
   const safety = buildSafety();
+  const currentReplacementReceiptPath = sourceDigestPathFor(
+    sourceDigests,
+    'Null Audience replacement draft safety',
+  );
+  const seedInboxQaAppliesToCurrentReplacementReceipt = currentReplacementReceiptPath
+    ? pathsMatch(nullAudienceSeedInboxQa?.sourceEvidence?.replacementDraftReceipt, currentReplacementReceiptPath)
+    : true;
 
-  const seedInboxQaGreen =
+  const rawSeedInboxQaGreen =
     nullAudienceSeedInboxQa?.status === 'mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes'
     && nullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen === true
     && nullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed === nullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages
     && nullAudienceSeedInboxQa?.deliverySummary?.newCorrectedMessagesFoundOutsideApprovedSeed === 0
     && nullAudienceSeedInboxQa?.safety?.gmailReadOnly === true
     && nullAudienceSeedInboxQa?.safety?.mailerLiteSendsPerformedByThisQa === false;
+  const seedInboxQaGreen = rawSeedInboxQaGreen && seedInboxQaAppliesToCurrentReplacementReceipt;
 
   const nullAudienceDraftsReady =
     nullAudienceReplacementExecutionReceipt?.status === 'mailerlite_null_audience_replacement_execution_completed_no_sends'
@@ -232,8 +244,16 @@ const buildPublicLaunchReadinessPacket = ({
         expectedSeedMessages: nullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
         correctedOutsideSeedCount:
           nullAudienceSeedInboxQa?.deliverySummary?.newCorrectedMessagesFoundOutsideApprovedSeed ?? null,
+        rawSeedInboxQaGreen,
+        appliesToCurrentReplacementReceipt: seedInboxQaAppliesToCurrentReplacementReceipt,
       },
-      blockers: seedInboxQaGreen ? [] : ['seed_inbox_qa_not_green'],
+      blockers: seedInboxQaGreen
+        ? []
+        : [
+          rawSeedInboxQaGreen && !seedInboxQaAppliesToCurrentReplacementReceipt
+            ? 'seed_inbox_qa_stale_for_current_replacement_drafts'
+            : 'seed_inbox_qa_not_green',
+        ],
       nextSafeAction: seedInboxQaGreen
         ? 'Use as test-only evidence; do not treat as audience-send authorization.'
         : 'Repair seed inbox QA before considering any public launch boundary.',
@@ -401,6 +421,8 @@ const buildPublicLaunchReadinessPacket = ({
     },
     executiveSummary: {
       seedInboxQaGreen,
+      rawSeedInboxQaGreen,
+      seedInboxQaAppliesToCurrentReplacementReceipt,
       approvedSeedDeliveredCount: nullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
       expectedSeedMessages: nullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
       nullAudienceReplacementDraftsReady: nullAudienceDraftsReady,

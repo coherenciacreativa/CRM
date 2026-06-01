@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  EXPECTED_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
 } from './crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs';
 
@@ -231,6 +232,28 @@ const targetNamesFrom = (...values) => [...new Set(values
     ? cleanString(row)
     : cleanString(row?.name ?? row?.draftName ?? row?.mailerLiteAssetNameDraft ?? row?.path))
   .filter(Boolean))];
+
+const resolvedPath = (value) => cleanString(value) ? resolve(cleanString(value)) : null;
+const pathsMatch = (left, right) => Boolean(resolvedPath(left) && resolvedPath(right) && resolvedPath(left) === resolvedPath(right));
+const sourceDigestPathFor = (sourceDigests = [], needle) =>
+  sourceDigests.find((digest) => cleanString(digest?.consultedFor)?.includes(needle))?.path ?? null;
+
+const seedInboxQaMatchesCurrentReplacementReceipt = (seedInboxQa, currentReplacementReceiptPath) =>
+  pathsMatch(seedInboxQa?.sourceEvidence?.replacementDraftReceipt, currentReplacementReceiptPath);
+
+const campaignIdHashesByLabel = (rows = []) => new Map(
+  rows
+    .map((row) => [cleanString(row?.label), cleanString(row?.campaignIdSha256)])
+    .filter(([label, hash]) => label && hash)
+);
+
+const nullAudienceSeedTestSendMatchesReplacement = (seedTestSendReceipt, replacementReceipt) => {
+  const current = campaignIdHashesByLabel(replacementReceipt?.createdDrafts ?? []);
+  const sent = campaignIdHashesByLabel(seedTestSendReceipt?.sentTests ?? seedTestSendReceipt?.targetPlan ?? []);
+  return current.size === 4
+    && sent.size === 4
+    && [...current].every(([label, hash]) => sent.get(label) === hash);
+};
 
 const buildSafety = () => ({
   localOnly: true,
@@ -2527,6 +2550,137 @@ const buildMiniLaunchSeedSendItem = ({
   });
 };
 
+const buildMiniLaunchNullAudienceSeedTestSendItem = ({
+  nullAudienceReplacementExecutionReceipt = null,
+  nullAudienceSeedTestSendReceipt = null,
+}) => {
+  const replacementCompleted = nullAudienceReplacementExecutionCompleted(nullAudienceReplacementExecutionReceipt);
+  const currentSeedSent =
+    nullAudienceSeedTestSendCompleted(nullAudienceSeedTestSendReceipt)
+    && nullAudienceSeedTestSendMatchesReplacement(nullAudienceSeedTestSendReceipt, nullAudienceReplacementExecutionReceipt);
+  const targetNames = targetNamesFrom(
+    (nullAudienceReplacementExecutionReceipt?.createdDrafts ?? []).map((draft) => draft?.name),
+    (nullAudienceSeedTestSendReceipt?.sentTests ?? []).map((sent) => sent?.name),
+  );
+
+  if (currentSeedSent) {
+    return buildApprovalItem({
+      id: 'mini_launch_null_audience_seed_test_send',
+      title: 'Mini-launch Null Audience seed/test send',
+      lane: 'mini_launch_inteligencia_para_descansar',
+      operationType: 'mailerLite_null_audience_seed_test_sent_for_current_replacement_set',
+      approvalType: 'reference_only_completed',
+      canAskNow: false,
+      exactApprovalPhrase: null,
+      sourceStatuses: {
+        nullAudienceReplacementExecutionReceipt: nullAudienceReplacementExecutionReceipt?.status ?? null,
+        nullAudienceSeedTestSendReceipt: nullAudienceSeedTestSendReceipt?.status ?? null,
+      },
+      targetNames,
+      allowedAfterExactApproval: [],
+      stillClosed: [
+        'additional_seed_or_test_send',
+        'public_or_audience_send',
+        'publish_or_schedule',
+        'workflow_or_automation_attachment',
+        'subscriber_import_assignment_or_mutation',
+        'group_creation_or_assignment',
+        'shopify_live_publish_or_form_connection',
+        'crm_signal_ledger_append',
+        'crm_card_write',
+        'crm_scoring',
+        'fact_store_write',
+      ],
+      requiredFreshEvidence: [
+        'perform seed inbox QA on the current replacement set before CEO review or distribution claims',
+      ],
+      blockers: [],
+      evidence: {
+        currentReplacementSetSeedSent: true,
+        targetCount: nullAudienceSeedTestSendReceipt?.preflight?.targetCount ?? null,
+        qaGreenCount: nullAudienceSeedTestSendReceipt?.preflight?.qaGreenCount ?? null,
+        sentCount: countRows(nullAudienceSeedTestSendReceipt?.sentTests),
+        replacementDraftCount: nullAudienceReplacementExecutionReceipt?.postCreateQa?.replacementDraftCount ?? null,
+        nullAudienceSafeCount: nullAudienceReplacementExecutionReceipt?.postCreateQa?.nullAudienceSafeCount ?? null,
+        contentGreenCount: nullAudienceReplacementExecutionReceipt?.postCreateQa?.contentGreenCount ?? null,
+        sendsPerformed: nullAudienceSeedTestSendReceipt?.safety?.mailerLiteTestEmailsSent ?? null,
+        audienceSendPerformed: nullAudienceSeedTestSendReceipt?.safety?.audienceSendsPerformed ?? null,
+      },
+      commandAfterApproval: null,
+      notes: [
+        'The current Null Audience replacement draft set has already had test emails sent.',
+        'Inbox QA remains a separate read-only evidence step before any CEO review or distribution claim.',
+      ],
+    });
+  }
+
+  const blockers = [
+    replacementCompleted ? null : `null_audience_replacement_receipt_not_completed:${nullAudienceReplacementExecutionReceipt?.status ?? 'missing'}`,
+    nullAudienceReplacementExecutionReceipt?.preflight?.safetyGroupActiveCount === 0
+      ? null
+      : `safety_group_active_count_not_0:${nullAudienceReplacementExecutionReceipt?.preflight?.safetyGroupActiveCount ?? 'missing'}`,
+  ].filter(Boolean);
+  const canAskNow = blockers.length === 0;
+
+  return buildApprovalItem({
+    id: 'mini_launch_null_audience_seed_test_send',
+    title: 'Mini-launch Null Audience seed/test send',
+    lane: 'mini_launch_inteligencia_para_descansar',
+    operationType: 'live_mailerlite_null_audience_seed_test_send_after_exact_approval',
+    approvalType: canAskNow ? 'exact_phrase_required' : 'not_ready_for_request',
+    canAskNow,
+    exactApprovalPhrase: canAskNow ? EXPECTED_APPROVAL_PHRASE : null,
+    sourceStatuses: {
+      nullAudienceReplacementExecutionReceipt: nullAudienceReplacementExecutionReceipt?.status ?? null,
+      nullAudienceSeedTestSendReceipt: nullAudienceSeedTestSendReceipt?.status ?? null,
+    },
+    targetNames,
+    allowedAfterExactApproval: [
+      'fresh_api_rescan_all_4_replacement_drafts',
+      'send_or_record_test_emails_only_to_the_exact_approved_seed_recipient',
+      'generate_local_seed_test_send_receipt',
+    ],
+    stillClosed: [
+      'public_or_audience_send',
+      'publish_or_schedule',
+      'workflow_or_automation_attachment',
+      'subscriber_import_assignment_or_mutation',
+      'group_creation_or_assignment',
+      'shopify_live_publish_or_form_connection',
+      'crm_signal_ledger_append',
+      'crm_card_write',
+      'crm_scoring',
+      'fact_store_write',
+    ],
+    requiredFreshEvidence: [
+      'fresh MailerLite API re-scan confirms all four drafts remain draft',
+      'fresh MailerLite API re-scan confirms all four drafts point only to the empty Null Audience safety group',
+      'fresh MailerLite API re-scan confirms safety group active_count is 0',
+      'fresh content QA confirms no placeholders or redacted final-link tokens remain',
+    ],
+    blockers,
+    evidence: {
+      replacementDraftCount: nullAudienceReplacementExecutionReceipt?.postCreateQa?.replacementDraftCount ?? null,
+      nullAudienceSafeCount: nullAudienceReplacementExecutionReceipt?.postCreateQa?.nullAudienceSafeCount ?? null,
+      contentGreenCount: nullAudienceReplacementExecutionReceipt?.postCreateQa?.contentGreenCount ?? null,
+      safetyGroupName: nullAudienceReplacementExecutionReceipt?.preflight?.safetyGroupName ?? null,
+      safetyGroupActiveCount: nullAudienceReplacementExecutionReceipt?.preflight?.safetyGroupActiveCount ?? null,
+      currentReplacementSetSeedSent: false,
+      priorSeedReceiptMatchesCurrentReplacementSet: nullAudienceSeedTestSendMatchesReplacement(
+        nullAudienceSeedTestSendReceipt,
+        nullAudienceReplacementExecutionReceipt,
+      ),
+    },
+    commandAfterApproval: canAskNow
+      ? 'npm run crm:vnext:mailerlite-mini-launch-null-audience-seed-test-send -- --replacement-receipt "<current replacement receipt>" --execute --approval-phrase "<exact phrase>"'
+      : null,
+    notes: [
+      'The current CTA/fallback repair drafts exist and are inert in the empty Null Audience safety group.',
+      'This approval would allow only test emails to the approved seed recipient; it is not a public/audience send.',
+    ],
+  });
+};
+
 const nullAudienceSeedInboxQaNeedsE04Resend = (qa) =>
   qa?.status === 'mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed'
   && qa?.deliverySummary?.expectedSeedMessages === 4
@@ -2840,6 +2994,22 @@ const buildApprovalQueue = ({
   const nullAudienceReplacementCompleted = nullAudienceReplacementExecutionCompleted(miniLaunchNullAudienceReplacementExecutionReceipt);
   const nullAudienceReplacementRequiresAttention = nullAudienceReplacementItem
     && ['ready_for_exact_approval_request', 'prepared_but_blocked_before_approval_request'].includes(nullAudienceReplacementItem.status);
+  const currentReplacementReceiptPath = sourceDigestPathFor(
+    sourceDigests,
+    'mini-launch MailerLite API Null Audience replacement execution receipt',
+  );
+  const currentNullAudienceSeedInboxQa = seedInboxQaMatchesCurrentReplacementReceipt(
+    miniLaunchNullAudienceSeedInboxQa,
+    currentReplacementReceiptPath,
+  )
+    ? miniLaunchNullAudienceSeedInboxQa
+    : null;
+  const currentNullAudienceSeedTestSendExecutionReceipt = nullAudienceSeedTestSendMatchesReplacement(
+    miniLaunchNullAudienceSeedTestSendExecutionReceipt,
+    miniLaunchNullAudienceReplacementExecutionReceipt,
+  )
+    ? miniLaunchNullAudienceSeedTestSendExecutionReceipt
+    : null;
 
   const approvalItems = [
     buildMiniLaunchEmptyGroupItem({
@@ -2897,18 +3067,23 @@ const buildApprovalQueue = ({
       realMailerLiteRenderQa: brujulaRealMailerLiteRenderQa,
       manualUiReceipt: brujulaEmailManualUiBuildReceipt,
     }),
-    buildMiniLaunchSeedSendItem({
-      payloadManifest: miniLaunchEmailBuilderPayloadManifest,
-      renderQa: miniLaunchEmailRenderQa,
-      manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
-      seedTestQaPacket: miniLaunchSeedTestQaPacket,
-      seedSendApprovalPacket: miniLaunchSeedSendApprovalPacket,
-      seedTestExecutionReceipt: miniLaunchSeedTestExecutionReceipt,
-      nullAudienceSeedTestSendReceipt: miniLaunchNullAudienceSeedTestSendExecutionReceipt,
-    }),
+    nullAudienceReplacementCompleted
+      ? buildMiniLaunchNullAudienceSeedTestSendItem({
+        nullAudienceReplacementExecutionReceipt: miniLaunchNullAudienceReplacementExecutionReceipt,
+        nullAudienceSeedTestSendReceipt: currentNullAudienceSeedTestSendExecutionReceipt,
+      })
+      : buildMiniLaunchSeedSendItem({
+        payloadManifest: miniLaunchEmailBuilderPayloadManifest,
+        renderQa: miniLaunchEmailRenderQa,
+        manualUiReceipt: miniLaunchEmailManualUiBuildReceipt,
+        seedTestQaPacket: miniLaunchSeedTestQaPacket,
+        seedSendApprovalPacket: miniLaunchSeedSendApprovalPacket,
+        seedTestExecutionReceipt: miniLaunchSeedTestExecutionReceipt,
+        nullAudienceSeedTestSendReceipt: currentNullAudienceSeedTestSendExecutionReceipt,
+      }),
     buildMiniLaunchE04SeedResendItem({
-      seedInboxQa: miniLaunchNullAudienceSeedInboxQa,
-      nullAudienceSeedTestSendReceipt: miniLaunchNullAudienceSeedTestSendExecutionReceipt,
+      seedInboxQa: currentNullAudienceSeedInboxQa,
+      nullAudienceSeedTestSendReceipt: currentNullAudienceSeedTestSendExecutionReceipt,
       nullAudienceReplacementExecutionReceipt: miniLaunchNullAudienceReplacementExecutionReceipt,
     }),
     buildCrmSignalWriteItem({
@@ -3205,6 +3380,7 @@ export {
   buildMiniLaunchMailerLiteApiExistingDraftUpdateStrategyItem,
   buildMiniLaunchMailerLiteApiInertDraftLabItem,
   buildMiniLaunchMailerLiteApiNullAudienceLabItem,
+  buildMiniLaunchNullAudienceSeedTestSendItem,
   buildMiniLaunchNullAudienceReplacementItem,
   buildMiniLaunchSeedInboxCorrectionApiReplacementCleanupItem,
   buildMiniLaunchSeedInboxCorrectionUiEditItem,
@@ -3218,6 +3394,7 @@ export {
   nullAudienceSeedInboxQaCompletedAfterE04Resend,
   nullAudienceSeedInboxQaNeedsE04Resend,
   nullAudienceSeedTestSendCompleted,
+  nullAudienceSeedTestSendMatchesReplacement,
   nullAudienceReplacementExecutionCompleted,
   parseArgs,
   renderMarkdown,
