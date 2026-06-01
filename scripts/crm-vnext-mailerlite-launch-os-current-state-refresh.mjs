@@ -448,9 +448,10 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
       date,
     ),
-    miniLaunchNullAudienceSeedInboxQa: staticReportPath(
+    miniLaunchNullAudienceSeedInboxQa: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
-      'mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json',
+      'mailerlite_mini_launch_null_audience_seed_inbox_qa',
+      date,
     ),
     miniLaunchMailerLiteApiExistingDraftUpdateStrategy: miniLaunchReportPath(
       reportsDir,

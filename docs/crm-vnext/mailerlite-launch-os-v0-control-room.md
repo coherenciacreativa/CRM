@@ -5108,3 +5108,53 @@ Operating meaning:
 - The prior seed inbox QA is now historical evidence only. It cannot support CEO review or public/audience readiness for the new CTA/fallback drafts.
 - The next real boundary is a separate exact approval to send or record test emails from these four current Null Audience drafts to the approved seed recipient, followed by fresh Gmail seed inbox QA.
 - This checkpoint is not permission to send tests, publish, schedule, assign real audiences, add subscribers, run workflows, change Shopify, write CRM signals, or touch ledgers/cards/scoring/Fact Store.
+
+## Launch OS v0 current seed-test QA and artifact blocker checkpoint - 2026-06-02
+
+Status: active goal, the four current CTA/fallback Null Audience replacement drafts have now been seed-tested, the current-state refresh consumes the 2026-06-02 seed inbox QA instead of the historical 2026-05-31 QA, and the next active blocker is asset-quality repair before CEO review. Launch OS remains not ready for live operation and no live action is authorized by this checkpoint.
+
+Evidence:
+
+- Null Audience seed test send receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-06-02.json`
+- Null Audience seed inbox QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
+- Null Audience seed inbox QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.md`
+- Redacted seed inbox artifact observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_current_inteligencia_descansar_2026-06-02.json`
+- Seed inbox artifact QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+- Seed inbox artifact QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-02.md`
+- Product/Value review packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
+- Integrated experience QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.md`
+
+Confirmed results:
+
+- Null Audience seed inbox QA: `status=mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes`, `deliveredToApprovedSeed=4/4`, `seedInboxQaGreen=true`.
+- Current-state refresh: `miniLaunchNullAudienceSeedInboxQaAppliesToCurrentReplacement=true`, `miniLaunchNullAudienceSeedInboxQaEffectiveGreen=true`.
+- Seed inbox artifact QA: `status=seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes`.
+- Seed inbox artifact QA: `realSeedClickthroughVerified=true`, `clickthroughHttpOkCount=3/3`, `visibleRawUrlTextCount=0`.
+- Seed inbox artifact QA blockers: `visual_signature_asset_not_verified`, `signature_fallback_still_present_in_payload`.
+- Product/Value review: `status=product_value_review_blocked_before_ceo_review_no_live_changes`, `productValueReviewPassed=false`.
+- Integrated experience QA: `status=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`, `ceoReviewReady=false`, `distributionDecisionShouldWait=true`.
+- Public launch readiness remains blocked: `readyForExactPublicSendApproval=false`, `liveActionAllowedNow=false`.
+- Current-state refresh validation: `testFiles=38`, `testCount=233`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `validationStatus=passed`, `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only/report-only except for the already approved seed test sends recorded in the seed test receipt.
+- Current-state refresh called no MailerLite, Shopify or CRM live APIs.
+- Current-state refresh opened no UI.
+- Audience sends, publish and schedule: `false`.
+- Subscriber, group, segment and workflow mutations: `false`.
+- Shopify publish/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw recipients, raw ids and tokens printed: `false`.
+
+Operating meaning:
+
+- The current replacement set passed seed delivery and click-through mechanics, so the old seed-send boundary is closed.
+- The campaign is still not CEO-review ready because the actual received seed emails did not prove Alejandro's visual signature asset; the current payload still falls back to text signature.
+- The next real boundary is not testers, micro-cohort, opt-in, audience or public send. It is asset-quality repair for the MailerLite email signature/footer experience, followed by fresh local QA and a separate approval if any MailerLite draft mutation or resend is needed.
+- Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
