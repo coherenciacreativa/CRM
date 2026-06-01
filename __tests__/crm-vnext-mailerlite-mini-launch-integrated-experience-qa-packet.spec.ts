@@ -119,6 +119,8 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
       "/tmp/real.json",
       "--null-audience-seed-inbox-qa",
       "/tmp/seed.json",
+      "--seed-inbox-artifact-qa-packet",
+      "/tmp/seed-artifact.json",
       "--public-launch-readiness-packet",
       "/tmp/public.json",
       "--product-value-review-packet",
@@ -133,6 +135,7 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
 
     expect(parsed.assetManifest).toBe("/tmp/assets.json");
     expect(parsed.payloadManifest).toBe("/tmp/payload.json");
+    expect(parsed.seedInboxArtifactQaPacket).toBe("/tmp/seed-artifact.json");
     expect(parsed.productValueReviewPacket).toBe("/tmp/product-value.json");
     expect(parsed.out).toBe("/tmp/out.json");
     expect(parsed.markdownOut).toBe("/tmp/out.md");
@@ -258,6 +261,40 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
       "product_value_real_seed_clickthrough_not_verified",
     ]));
     expect(report.executiveSummary.blockers).not.toContain("product_value_review_gate_missing");
+  });
+
+  test("uses seed inbox artifact QA to verify click-through but block raw visible URLs", async () => {
+    const reports = await baseReports();
+    reports.nullAudienceSeedInboxQa.deliverySummary = {};
+    const report = await buildIntegratedExperienceQaPacket({
+      ...reports,
+      seedInboxArtifactQaPacket: {
+        status: "seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes",
+        executiveSummary: {
+          realSeedClickthroughVerified: true,
+          visibleRawUrlTextCount: 3,
+          canonicalMailerLiteFooterVerified: false,
+          visualSignatureAssetVerified: false,
+          signatureFallbackPresent: true,
+          footerCompliancePresent: true,
+        },
+      },
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    const ctaGate = report.gateMatrix.find((entry) => entry.id === "cta_clickthrough_experience");
+    expect(ctaGate?.evidence).toMatchObject({
+      clickthroughVerified: true,
+      seedClickthroughVerified: true,
+      seedRawUrlVisibleCount: 3,
+    });
+    expect(report.executiveSummary.blockers).toEqual(expect.arrayContaining([
+      "visible_raw_url_text_present_in_seed_inbox_body",
+      "visual_signature_asset_not_verified",
+      "canonical_mailerlite_footer_not_verified",
+      "signature_fallback_still_present_in_payload",
+    ]));
+    expect(report.executiveSummary.blockers).not.toContain("real_seed_clickthrough_not_verified");
   });
 
   test("renders markdown without leaking exact URLs", async () => {

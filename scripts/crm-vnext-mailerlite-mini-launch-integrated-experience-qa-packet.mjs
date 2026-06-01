@@ -18,6 +18,8 @@ const DEFAULT_REAL_MAILERLITE_RENDER_QA =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_real_mailerlite_render_qa_before_seed_send_inteligencia_descansar_2026-05-31-latest.json`;
 const DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`;
+const DEFAULT_SEED_INBOX_ARTIFACT_QA_PACKET =
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_PRODUCT_VALUE_REVIEW_PACKET =
@@ -39,6 +41,7 @@ Options:
   --email-render-qa <path>                   Local email render QA JSON. Defaults to ${DEFAULT_EMAIL_RENDER_QA}
   --real-mailerlite-render-qa <path>         Real MailerLite render QA JSON. Defaults to ${DEFAULT_REAL_MAILERLITE_RENDER_QA}
   --null-audience-seed-inbox-qa <path>       Null Audience seed inbox QA JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA}
+  --seed-inbox-artifact-qa-packet <path>     Redacted seed inbox artifact QA JSON. Defaults to ${DEFAULT_SEED_INBOX_ARTIFACT_QA_PACKET}
   --public-launch-readiness-packet <path>    Public launch readiness JSON. Defaults to ${DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET}
   --product-value-review-packet <path>       Product/Value review JSON. Defaults to ${DEFAULT_PRODUCT_VALUE_REVIEW_PACKET}
   --pilot-distribution-decision-intake <path> Pilot distribution decision intake JSON. Defaults to ${DEFAULT_PILOT_DISTRIBUTION_DECISION_INTAKE}
@@ -62,6 +65,7 @@ const parseArgs = (argv) => {
     emailRenderQa: DEFAULT_EMAIL_RENDER_QA,
     realMailerLiteRenderQa: DEFAULT_REAL_MAILERLITE_RENDER_QA,
     nullAudienceSeedInboxQa: DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA,
+    seedInboxArtifactQaPacket: DEFAULT_SEED_INBOX_ARTIFACT_QA_PACKET,
     publicLaunchReadinessPacket: DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET,
     productValueReviewPacket: DEFAULT_PRODUCT_VALUE_REVIEW_PACKET,
     pilotDistributionDecisionIntake: DEFAULT_PILOT_DISTRIBUTION_DECISION_INTAKE,
@@ -79,6 +83,7 @@ const parseArgs = (argv) => {
     else if (arg === '--email-render-qa') options.emailRenderQa = argv[++index];
     else if (arg === '--real-mailerlite-render-qa') options.realMailerLiteRenderQa = argv[++index];
     else if (arg === '--null-audience-seed-inbox-qa') options.nullAudienceSeedInboxQa = argv[++index];
+    else if (arg === '--seed-inbox-artifact-qa-packet') options.seedInboxArtifactQaPacket = argv[++index];
     else if (arg === '--public-launch-readiness-packet') options.publicLaunchReadinessPacket = argv[++index];
     else if (arg === '--product-value-review-packet') options.productValueReviewPacket = argv[++index];
     else if (arg === '--pilot-distribution-decision-intake') options.pilotDistributionDecisionIntake = argv[++index];
@@ -278,7 +283,7 @@ const gate = ({ id, label, ready, evidence = {}, blockers = [] }) => ({
   ready: Boolean(ready),
   status: ready ? 'ready' : 'blocked',
   evidence,
-  blockers: ready ? [] : blockers,
+  blockers: ready ? [] : unique(blockers),
 });
 
 const buildIntegratedExperienceQaPacket = async ({
@@ -288,6 +293,7 @@ const buildIntegratedExperienceQaPacket = async ({
   emailRenderQa,
   realMailerLiteRenderQa,
   nullAudienceSeedInboxQa,
+  seedInboxArtifactQaPacket,
   publicLaunchReadinessPacket,
   productValueReviewPacket,
   pilotDistributionDecisionIntake,
@@ -298,6 +304,13 @@ const buildIntegratedExperienceQaPacket = async ({
   const htmlVisibleUrlScan = await countVisibleUrlTextInHtml(emailRenderQa);
   const blockTexts = payloadBlockTexts(payloadManifest);
   const allPayloadText = blockTexts.join('\n').toLowerCase();
+  const seedArtifactSummary = seedInboxArtifactQaPacket?.executiveSummary ?? {};
+  const seedRawUrlVisibleCount =
+    typeof seedArtifactSummary.visibleRawUrlTextCount === 'number'
+      ? seedArtifactSummary.visibleRawUrlTextCount
+      : null;
+  const seedRawUrlsClear = seedRawUrlVisibleCount === null ? true : seedRawUrlVisibleCount === 0;
+  const seedClickthroughVerified = seedArtifactSummary.realSeedClickthroughVerified === true;
 
   const payloadAndLocalRenderReady =
     correctionPreview?.executiveSummary?.finalPublicLinksReady === true
@@ -316,23 +329,29 @@ const buildIntegratedExperienceQaPacket = async ({
     .test(allPayloadText);
   const signatureAssetVerified =
     payloadManifest?.executiveSummary?.visualSignatureAssetVerified === true
-    || realMailerLiteRenderQa?.executiveSummary?.visualSignatureAssetVerified === true;
+    || realMailerLiteRenderQa?.executiveSummary?.visualSignatureAssetVerified === true
+    || seedArtifactSummary.visualSignatureAssetVerified === true;
   const canonicalFooterVerified =
     payloadManifest?.executiveSummary?.canonicalMailerLiteFooterVerified === true
-    || realMailerLiteRenderQa?.executiveSummary?.canonicalMailerLiteFooterVerified === true;
+    || realMailerLiteRenderQa?.executiveSummary?.canonicalMailerLiteFooterVerified === true
+    || seedArtifactSummary.canonicalMailerLiteFooterVerified === true;
+  const seedArtifactSignatureFallbackPresent = seedArtifactSummary.signatureFallbackPresent === true;
   const platformFooterPolicyOnly = /use mailerlite platform unsubscribe\/footer only|platform footer only/iu
     .test(allPayloadText);
   const canonicalSignatureAndFooterReady =
     signatureAssetVerified === true
     && signatureFallbackMentioned === false
+    && seedArtifactSignatureFallbackPresent === false
     && canonicalFooterVerified === true
     && platformFooterPolicyOnly === false;
 
   const clickthroughVerified =
     nullAudienceSeedInboxQa?.deliverySummary?.ctaClickthroughGreen === true
     || nullAudienceSeedInboxQa?.deliverySummary?.buttonClickthroughVerified === true
-    || realMailerLiteRenderQa?.executiveSummary?.ctaClickthroughVerified === true;
-  const ctaClickthroughReady = clickthroughVerified && htmlVisibleUrlScan.visibleUrlTextCount === 0;
+    || realMailerLiteRenderQa?.executiveSummary?.ctaClickthroughVerified === true
+    || seedClickthroughVerified;
+  const ctaClickthroughReady =
+    clickthroughVerified && htmlVisibleUrlScan.visibleUrlTextCount === 0 && seedRawUrlsClear;
 
   const shopifyResourceComplete =
     assetManifest?.executiveSummary?.finalPublicLinksReady === true
@@ -384,12 +403,17 @@ const buildIntegratedExperienceQaPacket = async ({
       evidence: {
         signatureAssetVerified,
         signatureFallbackMentioned,
+        seedArtifactSignatureFallbackPresent,
         canonicalMailerLiteFooterVerified: canonicalFooterVerified,
+        seedInboxArtifactQaStatus: seedInboxArtifactQaPacket?.status ?? null,
+        footerCompliancePresent: seedArtifactSummary.footerCompliancePresent ?? null,
         platformFooterPolicyOnly,
       },
       blockers: [
         signatureAssetVerified ? null : 'visual_signature_asset_not_verified',
-        signatureFallbackMentioned ? 'signature_fallback_still_present_in_payload' : null,
+        signatureFallbackMentioned || seedArtifactSignatureFallbackPresent
+          ? 'signature_fallback_still_present_in_payload'
+          : null,
         canonicalFooterVerified ? null : 'canonical_mailerlite_footer_not_verified',
         platformFooterPolicyOnly ? 'platform_footer_policy_is_not_canonical_footer_proof' : null,
       ],
@@ -400,12 +424,16 @@ const buildIntegratedExperienceQaPacket = async ({
       ready: ctaClickthroughReady,
       evidence: {
         clickthroughVerified,
+        seedInboxArtifactQaStatus: seedInboxArtifactQaPacket?.status ?? null,
+        seedClickthroughVerified,
+        seedRawUrlVisibleCount,
         inspectedHtmlCount: htmlVisibleUrlScan.inspectedHtmlCount,
         visibleUrlTextCount: htmlVisibleUrlScan.visibleUrlTextCount,
       },
       blockers: [
         clickthroughVerified ? null : 'real_seed_clickthrough_not_verified',
         htmlVisibleUrlScan.visibleUrlTextCount > 0 ? 'visible_raw_url_text_present_in_local_html' : null,
+        seedRawUrlVisibleCount > 0 ? 'visible_raw_url_text_present_in_seed_inbox_body' : null,
       ],
     }),
     gate({
@@ -545,6 +573,7 @@ const renderMarkdown = (report) => [
   `- Product/value review status: ${report.executiveSummary.productValueReviewStatus ?? 'missing'}`,
   `- Product/value review passed: ${report.executiveSummary.productValueReviewPassed}`,
   `- Product/value review blockers: ${report.executiveSummary.productValueReviewBlockerCount}`,
+  `- Seed inbox visible raw URL text hits: ${report.gateMatrix.find((entry) => entry.id === 'cta_clickthrough_experience')?.evidence?.seedRawUrlVisibleCount ?? 'unknown'}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
   '',
   '## Gate Matrix',
@@ -599,6 +628,7 @@ const main = async () => {
     emailRenderQa,
     realMailerLiteRenderQa,
     nullAudienceSeedInboxQa,
+    seedInboxArtifactQaPacket,
     publicLaunchReadinessPacket,
     productValueReviewPacket,
     pilotDistributionDecisionIntake,
@@ -609,6 +639,7 @@ const main = async () => {
     readJsonWithDigest(options.emailRenderQa, 'local HTML render QA and HTML output paths'),
     readJsonWithDigest(options.realMailerLiteRenderQa, 'real MailerLite render QA readback and safety gate state'),
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox QA evidence after Null Audience replacement tests'),
+    readOptionalJsonWithDigest(options.seedInboxArtifactQaPacket, 'redacted seed inbox artifact QA evidence from Gmail read-only and preview-link GET checks'),
     readJsonWithDigest(options.publicLaunchReadinessPacket, 'public launch readiness gates and live-action posture'),
     readOptionalJsonWithDigest(options.productValueReviewPacket, 'Product/Value review gates before CEO review'),
     readJsonWithDigest(options.pilotDistributionDecisionIntake, 'pilot distribution decision posture and no-send boundary'),
@@ -621,6 +652,7 @@ const main = async () => {
     emailRenderQa: emailRenderQa.value,
     realMailerLiteRenderQa: realMailerLiteRenderQa.value,
     nullAudienceSeedInboxQa: nullAudienceSeedInboxQa.value,
+    seedInboxArtifactQaPacket: seedInboxArtifactQaPacket.value,
     publicLaunchReadinessPacket: publicLaunchReadinessPacket.value,
     productValueReviewPacket: productValueReviewPacket.value,
     pilotDistributionDecisionIntake: pilotDistributionDecisionIntake.value,
@@ -633,6 +665,7 @@ const main = async () => {
     emailRenderQa.digest,
     realMailerLiteRenderQa.digest,
     nullAudienceSeedInboxQa.digest,
+    seedInboxArtifactQaPacket.digest,
     publicLaunchReadinessPacket.digest,
     productValueReviewPacket.digest,
     pilotDistributionDecisionIntake.digest,
@@ -668,6 +701,9 @@ const main = async () => {
     productValueReviewBlockerCount: report.executiveSummary.productValueReviewBlockerCount,
     shopifyPlaceholderHitCount: report.shopifySourceScan.placeholderHitCount,
     visibleUrlTextCount: report.emailHtmlVisibleUrlScan.visibleUrlTextCount,
+    seedRawUrlVisibleCount: report.gateMatrix
+      .find((entry) => entry.id === 'cta_clickthrough_experience')
+      ?.evidence?.seedRawUrlVisibleCount ?? null,
     out: resolve(options.out),
     markdownOut: resolve(options.markdownOut),
     safety: report.safety,

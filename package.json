@@ -96,6 +96,7 @@
     "crm:vnext:mailerlite-mini-launch-public-audience-scope-packet": "node scripts/crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet": "node scripts/crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-public-send-preflight-decision-packet": "node scripts/crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-seed-inbox-artifact-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-artifact-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-product-value-review-packet": "node scripts/crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs",

@@ -149,6 +149,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchPublicSendPreflightDecisionPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchSeedInboxArtifactQaPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchProductValueReviewPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -232,6 +235,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-artifact-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs");
@@ -259,6 +263,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-send-preflight-decision-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-artifact-qa-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-product-value-review-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet");
@@ -727,6 +732,30 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           exactUrlsPrinted: false,
           recipientsPrinted: false,
         },
+        miniLaunchSeedInboxArtifactQaPacket: {
+          path: paths.miniLaunchSeedInboxArtifactQaPacket,
+          markdownPath: paths.miniLaunchSeedInboxArtifactQaPacketMarkdown,
+          status: "seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes",
+          ok: true,
+          seedInboxArtifactQaPassed: false,
+          realSeedClickthroughVerified: true,
+          visibleRawUrlTextCount: 3,
+          canonicalMailerLiteFooterVerified: false,
+          visualSignatureAssetVerified: false,
+          blockerCount: 3,
+          blockers: [
+            "visible_raw_url_text_present_in_seed_inbox_body",
+            "canonical_mailerlite_footer_not_verified",
+            "visual_signature_asset_not_verified",
+          ],
+          gmailApiCalledByThisScript: false,
+          mailerLiteApiCalled: false,
+          shopifyApiCalled: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          recipientsPrinted: false,
+          tokensPrinted: false,
+        },
         miniLaunchProductValueReviewPacket: {
           path: paths.miniLaunchProductValueReviewPacket,
           markdownPath: paths.miniLaunchProductValueReviewPacketMarkdown,
@@ -970,6 +999,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(renderMarkdown(receipt)).toContain("pilot distribution strategy");
     expect(renderMarkdown(receipt)).toContain("pilot distribution input request");
     expect(renderMarkdown(receipt)).toContain("pilot distribution decision intake");
+    expect(renderMarkdown(receipt)).toContain("seed inbox artifact QA");
     expect(renderMarkdown(receipt)).toContain("Product/Value review");
     expect(renderMarkdown(receipt)).toContain("integrated experience QA");
   });

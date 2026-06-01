@@ -101,6 +101,8 @@ describe("CRM vNext MailerLite mini-launch product/value review packet", () => {
       "/tmp/payload.json",
       "--integrated-experience-qa-packet",
       "/tmp/integrated.json",
+      "--seed-inbox-artifact-qa-packet",
+      "/tmp/seed-artifact.json",
       "--out",
       "/tmp/out.json",
       "--markdown-out",
@@ -109,6 +111,7 @@ describe("CRM vNext MailerLite mini-launch product/value review packet", () => {
 
     expect(parsed.assetManifest).toBe("/tmp/assets.json");
     expect(parsed.integratedExperienceQaPacket).toBe("/tmp/integrated.json");
+    expect(parsed.seedInboxArtifactQaPacket).toBe("/tmp/seed-artifact.json");
     expect(parsed.out).toBe("/tmp/out.json");
     expect(parsed.markdownOut).toBe("/tmp/out.md");
   });
@@ -194,6 +197,37 @@ describe("CRM vNext MailerLite mini-launch product/value review packet", () => {
     expect(report.executiveSummary.productValueReviewPassed).toBe(true);
     expect(report.executiveSummary.readyGateCount).toBe(7);
     expect(report.executiveSummary.blockedGateCount).toBe(0);
+  });
+
+  test("uses seed inbox artifact QA to keep raw seed URL text blocking value review", async () => {
+    const reports = await baseReports();
+    reports.integratedExperienceQaPacket = {
+      executiveSummary: {
+        blockers: [],
+      },
+      gateMatrix: [],
+      emailHtmlVisibleUrlScan: {
+        visibleUrlTextCount: 0,
+      },
+    };
+
+    const report = await buildProductValueReviewPacket({
+      ...reports,
+      seedInboxArtifactQaPacket: {
+        executiveSummary: {
+          realSeedClickthroughVerified: true,
+          visibleRawUrlTextCount: 3,
+        },
+      },
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(report.executiveSummary.clickthroughVerified).toBe(true);
+    expect(report.executiveSummary.seedRawUrlVisibleCount).toBe(3);
+    expect(report.executiveSummary.blockers).toEqual(expect.arrayContaining([
+      "visible_raw_url_text_present_in_seed_inbox_body",
+    ]));
+    expect(report.executiveSummary.blockers).not.toContain("real_seed_clickthrough_not_verified");
   });
 
   test("renders markdown without leaking exact URLs", async () => {

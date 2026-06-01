@@ -14,6 +14,8 @@ const DEFAULT_PAYLOAD_MANIFEST =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_email_builder_payload_manifest_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.redacted.json`;
 const DEFAULT_INTEGRATED_EXPERIENCE_QA_PACKET =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json`;
+const DEFAULT_SEED_INBOX_ARTIFACT_QA_PACKET =
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_OUTPUT =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_MARKDOWN_OUTPUT =
@@ -27,6 +29,7 @@ Options:
   --correction-preview <path>                Seed inbox correction preview JSON. Defaults to ${DEFAULT_CORRECTION_PREVIEW}
   --payload-manifest <path>                  Redacted email payload manifest JSON. Defaults to ${DEFAULT_PAYLOAD_MANIFEST}
   --integrated-experience-qa-packet <path>   Integrated experience QA JSON. Defaults to ${DEFAULT_INTEGRATED_EXPERIENCE_QA_PACKET}
+  --seed-inbox-artifact-qa-packet <path>     Redacted seed inbox artifact QA JSON. Defaults to ${DEFAULT_SEED_INBOX_ARTIFACT_QA_PACKET}
   --out <path>                               Write JSON report. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                      Write Markdown report. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                                     Show this help
@@ -45,6 +48,7 @@ const parseArgs = (argv) => {
     correctionPreview: DEFAULT_CORRECTION_PREVIEW,
     payloadManifest: DEFAULT_PAYLOAD_MANIFEST,
     integratedExperienceQaPacket: DEFAULT_INTEGRATED_EXPERIENCE_QA_PACKET,
+    seedInboxArtifactQaPacket: DEFAULT_SEED_INBOX_ARTIFACT_QA_PACKET,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     help: false,
@@ -57,6 +61,7 @@ const parseArgs = (argv) => {
     else if (arg === '--correction-preview') options.correctionPreview = argv[++index];
     else if (arg === '--payload-manifest') options.payloadManifest = argv[++index];
     else if (arg === '--integrated-experience-qa-packet') options.integratedExperienceQaPacket = argv[++index];
+    else if (arg === '--seed-inbox-artifact-qa-packet') options.seedInboxArtifactQaPacket = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -260,6 +265,7 @@ const buildProductValueReviewPacket = async ({
   correctionPreview,
   payloadManifest,
   integratedExperienceQaPacket,
+  seedInboxArtifactQaPacket,
   generatedAt = new Date().toISOString(),
 }) => {
   const safety = buildSafety();
@@ -276,10 +282,21 @@ const buildProductValueReviewPacket = async ({
   const integratedBlockers = integratedExperienceQaPacket?.executiveSummary?.blockers ?? [];
   const visibleUrlTextCount =
     integratedExperienceQaPacket?.emailHtmlVisibleUrlScan?.visibleUrlTextCount ?? null;
-  const clickthroughVerified =
+  const ctaGateEvidence =
     integratedExperienceQaPacket?.gateMatrix
       ?.find((entry) => entry.id === 'cta_clickthrough_experience')
-      ?.evidence?.clickthroughVerified === true;
+      ?.evidence ?? {};
+  const seedArtifactSummary = seedInboxArtifactQaPacket?.executiveSummary ?? {};
+  const seedRawUrlVisibleCount =
+    typeof seedArtifactSummary.visibleRawUrlTextCount === 'number'
+      ? seedArtifactSummary.visibleRawUrlTextCount
+      : typeof ctaGateEvidence.seedRawUrlVisibleCount === 'number'
+        ? ctaGateEvidence.seedRawUrlVisibleCount
+        : null;
+  const seedRawUrlsClear = seedRawUrlVisibleCount === null ? true : seedRawUrlVisibleCount === 0;
+  const clickthroughVerified =
+    ctaGateEvidence.clickthroughVerified === true
+    || seedArtifactSummary.realSeedClickthroughVerified === true;
 
   const painSignalCount = countMatches(text, [
     /descans/iu,
@@ -312,6 +329,7 @@ const buildProductValueReviewPacket = async ({
     finalPublicLinksReady
     && clickthroughVerified === true
     && visibleUrlTextCount === 0
+    && seedRawUrlsClear
     && !integratedBlockers.includes('real_seed_clickthrough_not_verified');
 
   const gateMatrix = [
@@ -368,11 +386,13 @@ const buildProductValueReviewPacket = async ({
         finalPublicLinksReady,
         clickthroughVerified,
         visibleUrlTextCount,
+        seedRawUrlVisibleCount,
       },
       blockers: [
         finalPublicLinksReady ? null : 'final_public_links_not_ready',
         clickthroughVerified ? null : 'real_seed_clickthrough_not_verified',
         visibleUrlTextCount === 0 ? null : 'visible_raw_url_text_present_in_local_html',
+        seedRawUrlVisibleCount > 0 ? 'visible_raw_url_text_present_in_seed_inbox_body' : null,
       ],
       recommendation: 'Verify the button path end-to-end in seed QA before asking for CEO review.',
     }),
@@ -431,6 +451,7 @@ const buildProductValueReviewPacket = async ({
       blockers,
       shopifyPlaceholderHitCount: shopifySourceScan.placeholderHitCount,
       visibleUrlTextCount,
+      seedRawUrlVisibleCount,
       clickthroughVerified,
       liveActionAllowedNow: false,
       canAskPilotDistributionDecisionNow: false,
@@ -474,6 +495,7 @@ const renderMarkdown = (report) => [
   `- Blockers: ${report.executiveSummary.blockerCount}`,
   `- Shopify placeholder hits: ${report.executiveSummary.shopifyPlaceholderHitCount}`,
   `- Visible URL text hits: ${report.executiveSummary.visibleUrlTextCount}`,
+  `- Seed inbox visible raw URL text hits: ${report.executiveSummary.seedRawUrlVisibleCount}`,
   `- Click-through verified: ${report.executiveSummary.clickthroughVerified}`,
   `- Live action allowed now: ${report.executiveSummary.liveActionAllowedNow}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
@@ -528,11 +550,13 @@ const main = async () => {
     correctionPreview,
     payloadManifest,
     integratedExperienceQaPacket,
+    seedInboxArtifactQaPacket,
   ] = await Promise.all([
     readJsonWithDigest(options.assetManifest, 'asset manifest, link lifecycle and Shopify source pointers'),
     readJsonWithDigest(options.correctionPreview, 'seed inbox correction preview and redacted local payload readiness'),
     readJsonWithDigest(options.payloadManifest, 'redacted email payload content and CRM learning hooks'),
     readOptionalJsonWithDigest(options.integratedExperienceQaPacket, 'integrated experience QA click-through and URL text evidence'),
+    readOptionalJsonWithDigest(options.seedInboxArtifactQaPacket, 'redacted seed inbox artifact QA click-through, footer and signature evidence'),
   ]);
 
   const report = await buildProductValueReviewPacket({
@@ -540,6 +564,7 @@ const main = async () => {
     correctionPreview: correctionPreview.value,
     payloadManifest: payloadManifest.value,
     integratedExperienceQaPacket: integratedExperienceQaPacket.value,
+    seedInboxArtifactQaPacket: seedInboxArtifactQaPacket.value,
   });
 
   report.sourceDigests = [
@@ -547,6 +572,7 @@ const main = async () => {
     correctionPreview.digest,
     payloadManifest.digest,
     integratedExperienceQaPacket.digest,
+    seedInboxArtifactQaPacket.digest,
     ...report.shopifySourceScan.inspectedFiles.map((source) => ({
       ...source,
       private: false,
@@ -568,6 +594,7 @@ const main = async () => {
     blockers: report.executiveSummary.blockers,
     shopifyPlaceholderHitCount: report.executiveSummary.shopifyPlaceholderHitCount,
     visibleUrlTextCount: report.executiveSummary.visibleUrlTextCount,
+    seedRawUrlVisibleCount: report.executiveSummary.seedRawUrlVisibleCount,
     clickthroughVerified: report.executiveSummary.clickthroughVerified,
     liveActionAllowedNow: report.executiveSummary.liveActionAllowedNow,
     out: resolve(options.out),

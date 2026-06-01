@@ -4909,3 +4909,57 @@ Operating meaning:
 - The package is still not CEO-review ready: the next real blockers are canonical MailerLite signature/footer proof and real seed CTA click-through verification.
 - No tester, micro-cohort, opt-in, audience or send decision should be requested from this checkpoint.
 - Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
+
+## Launch OS v0 seed inbox artifact QA checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only seed inbox artifact QA added. The old generic blocker `real_seed_clickthrough_not_verified` has been split into precise evidence: the three preview links do respond from the seed inbox path, but the received seed emails still expose raw visible URLs and do not yet prove the canonical MailerLite footer/signature experience Alejandro expects for CEO review.
+
+Evidence:
+
+- Redacted seed inbox artifact observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_current_inteligencia_descansar_2026-06-01.json`
+- Seed inbox artifact QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-01.json`
+- Seed inbox artifact QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-01.md`
+- Product/Value review packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-01.json`
+- Integrated experience QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current-state refresh receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.md`
+
+Confirmed results:
+
+- Seed inbox artifact QA: `ok=true`, `status=seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes`.
+- Seed inbox artifact QA: `realSeedClickthroughVerified=true`.
+- Seed inbox artifact QA: `clickthroughHttpOkCount=3`, `expectedClickthroughCount=3`.
+- Seed inbox artifact QA: `visibleRawUrlTextCount=3`.
+- Seed inbox artifact QA: `canonicalMailerLiteFooterVerified=false`, `visualSignatureAssetVerified=false`, `signatureFallbackPresent=true`.
+- Seed inbox artifact QA blockers: `visible_raw_url_text_present_in_seed_inbox_body`, `canonical_mailerlite_footer_not_verified`, `visual_signature_asset_not_verified`, `signature_fallback_still_present_in_payload`.
+- Product/Value review: `status=product_value_review_blocked_before_ceo_review_no_live_changes`, `readyGateCount=6`, `blockedGateCount=1`, `blockerCount=1`.
+- Product/Value remaining blocker: `visible_raw_url_text_present_in_seed_inbox_body`.
+- Product/Value now has `clickthroughVerified=true`; `real_seed_clickthrough_not_verified` is no longer the blocker.
+- Integrated experience QA: `status=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`, `readyGateCount=4`, `blockedGateCount=3`, `blockerCount=7`.
+- Integrated experience QA blockers include signature/footer proof plus seed-inbox raw URL visibility; they no longer include `real_seed_clickthrough_not_verified`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state validation: `testFiles=38`, `testCount=231`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- The seed inbox artifact packet references Gmail read-only evidence and HTTP GET checks to the preview URLs, but stores only hashes/counts and does not print exact URLs or recipients.
+- The script itself called no Gmail, MailerLite, Shopify or CRM live APIs.
+- MailerLite UI used: `false`.
+- Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated by this script: `false`.
+- Subscriber/group/segment/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The link-delivery question is now sharper: the preview URLs work technically, but the email body presentation is not CEO-review ready because the raw URL is visible under the CTA in the seed inbox.
+- The remaining repair is not a distribution/audience decision. It is an asset-quality repair: hide raw URL text in the actual received email experience and verify the canonical MailerLite footer/signature pattern.
+- Do not ask Alejandro for testers, micro-cohort, opt-in, audience or send approval from this checkpoint.
+- Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
