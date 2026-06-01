@@ -53,6 +53,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchPublicAudienceScanPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_public_audience_scan_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchPublicAudienceSuppressionPolicyPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchPublicAudienceScopePacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -117,6 +120,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-asset-manifest.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-scan-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-suppression-policy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
@@ -136,6 +140,8 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-asset-manifest");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-public-url-gate");
     expect(commands).toContain("mailerlite_mini_launch_public_audience_scan_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-audience-suppression-policy-packet");
+    expect(commands).toContain("mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet");
@@ -323,6 +329,27 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           blockerCount: 4,
           mailerLiteApiCalled: true,
           subscriberRowsPrinted: false,
+          rawIdsPrinted: false,
+          recipientsPrinted: false,
+          tokensPrinted: false,
+        },
+        miniLaunchPublicAudienceSuppressionPolicyPacket: {
+          path: paths.miniLaunchPublicAudienceSuppressionPolicyPacket,
+          markdownPath: paths.miniLaunchPublicAudienceSuppressionPolicyPacketMarkdown,
+          status: "public_audience_suppression_policy_packet_ready_no_live_changes",
+          ok: true,
+          suppressionPolicyPacketReady: true,
+          suppressionExclusionPolicyReady: true,
+          policyRuleCount: 6,
+          sendableMembershipObservations: 933,
+          suppressionRiskMembershipCount: 144,
+          resolvedBlockerCount: 1,
+          remainingBlockerCountAfterPolicy: 3,
+          publicAudienceSendAllowedNow: false,
+          mailerLiteApiCalled: false,
+          subscribersRead: false,
+          subscriberRowsPrinted: false,
+          sendsPerformed: false,
           rawIdsPrinted: false,
           recipientsPrinted: false,
           tokensPrinted: false,

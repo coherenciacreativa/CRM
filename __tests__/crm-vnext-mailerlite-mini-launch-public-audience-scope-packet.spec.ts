@@ -116,6 +116,25 @@ const publicAudienceScanPacket = {
   },
 };
 
+const publicAudienceSuppressionPolicyPacket = {
+  ok: true,
+  status: "public_audience_suppression_policy_packet_ready_no_live_changes",
+  executiveSummary: {
+    suppressionExclusionPolicyReady: true,
+    policyRuleCount: 6,
+    suppressionRiskMembershipCount: 144,
+    remainingBlockerCountAfterPolicy: 3,
+  },
+  safety: {
+    mailerLiteApiCalled: false,
+    subscribersRead: false,
+    subscriberRowsPrinted: false,
+    rawIdsPrinted: false,
+    recipientsPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
 describe("CRM vNext MailerLite mini-launch public audience scope packet", () => {
   test("normalizes args and defaults to local reports", () => {
     const parsed = parseArgs([
@@ -123,6 +142,8 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
       "/tmp/os.json",
       "--shopify-public-url-gate",
       "/tmp/url.json",
+      "--public-audience-suppression-policy-packet",
+      "/tmp/policy.json",
       "--out",
       "/tmp/scope.json",
       "--markdown-out",
@@ -131,6 +152,7 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
 
     expect(parsed.miniLaunchOsPacket).toBe("/tmp/os.json");
     expect(parsed.shopifyPublicUrlGate).toBe("/tmp/url.json");
+    expect(parsed.publicAudienceSuppressionPolicyPacket).toBe("/tmp/policy.json");
     expect(parsed.out).toBe("/tmp/scope.json");
     expect(parsed.markdownOut).toBe("/tmp/scope.md");
   });
@@ -220,6 +242,43 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
     ).toMatchObject({
       knownActiveCount: 933,
     });
+  });
+
+  test("consumes a local suppression policy packet and removes only that policy blocker", () => {
+    const report = buildPublicAudienceScopePacket({
+      miniLaunchOsPacket,
+      miniLaunchPathPacket,
+      onboardingTrunkMap,
+      onboardingV2DesignPacket,
+      onboardingHandoffPolicy,
+      miniLaunchGroupDryRun,
+      nullAudienceReplacementExecutionReceipt,
+      nullAudienceSeedInboxQa,
+      shopifyPublicUrlGate,
+      publicAudienceScanPacket,
+      publicAudienceSuppressionPolicyPacket,
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(report.executiveSummary.freshAudienceScanReady).toBe(true);
+    expect(report.executiveSummary.suppressionStatusScanReady).toBe(true);
+    expect(report.executiveSummary.suppressionExclusionPolicyReady).toBe(true);
+    expect(report.blockersBeforeScopeReady).not.toContain("fresh_audience_membership_scan_missing");
+    expect(report.blockersBeforeScopeReady).not.toContain("suppression_exclusion_policy_missing");
+    expect(report.blockersBeforeScopeReady).toEqual([
+      "exact_public_audience_scope_decision_missing",
+      "public_audience_url_gate_not_ready",
+      "current_drafts_point_only_to_empty_safety_group",
+    ]);
+    expect(report.currentSafeState.suppressionPolicyReport).toMatchObject({
+      status: "public_audience_suppression_policy_packet_ready_no_live_changes",
+      suppressionExclusionPolicyReady: true,
+      policyRuleCount: 6,
+      suppressionRiskMembershipCount: 144,
+    });
+    expect(
+      report.audienceScopeOptions.find((option) => option.id === "existing_legacy_onboarding_complete_campaign_audience")?.blockers,
+    ).not.toContain("suppression_exclusion_policy_missing");
   });
 
   test("keeps safety closed by default", () => {

@@ -3988,3 +3988,57 @@ Next safe move:
 - Continue local-only with suppression/exclusion policy packet and URL lifecycle/public audience gate.
 - Do not ask for public/audience send approval while `publicAudienceScopeReady=false`, `publicAudienceSendUrlGateReady=false`, or `suppressionExclusionPolicyReady=false`.
 - Stop before any public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 public audience suppression policy wired - 2026-06-01
+
+Status: active goal, local-only suppression/exclusion policy packet added for `Inteligencia para descansar`. The packet converts the aggregate read-only suppression-status scan into a conservative operating rule: any later public/audience scope can include only active/subscribed recipients and must exclude suppression-risk, unknown, internal, seed and QA recipients. Launch OS remains not ready for live operation.
+
+Evidence:
+
+- Public audience suppression policy packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public audience suppression policy packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.md`
+- Public audience scope packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public audience suppression policy packet: `status=public_audience_suppression_policy_packet_ready_no_live_changes`.
+- Public audience suppression policy packet: `suppressionExclusionPolicyReady=true`, `policyRuleCount=6`, `publicAudienceSendAllowedNow=false`, `liveActionAllowedNow=false`.
+- Public audience suppression policy packet: `candidateGroupCount=4`, `sendableMembershipObservations=933`, `suppressionRiskMembershipCount=144`.
+- Public audience suppression policy packet resolved blocker: `suppression_exclusion_policy_missing`; remaining blocker count after policy: `3`.
+- Public audience scope packet now consumes the policy packet: `freshAudienceScanReady=true`, `suppressionStatusScanReady=true`, `suppressionExclusionPolicyReady=true`, `blockerCount=3`.
+- Public audience scope remains blocked: `publicAudienceScopeReady=false`, `readyForExactAudienceScopeApproval=false`, `canAskAudienceScopeApprovalNow=false`.
+- Public launch readiness packet now drops the suppression-policy blocker: `readyForExactPublicSendApproval=false`, `liveActionAllowedNow=false`, `blockerCount=12`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=30`, `testCount=182`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- Suppression policy packet is local-only and reports-only.
+- Suppression policy packet called MailerLite API: `false`; Shopify API: `false`; CRM live API: `false`.
+- Suppression policy packet subscribers read: `false`; subscriber rows printed: `false`.
+- Subscriber/group/workflow/campaign mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Raw IDs, exact recipients, exact URLs and tokens printed: `false`.
+- Current-state refresh itself reports `mailerLiteApiCalled=false`, `shopifyApiCalled=false`, `crmLiveApiCalled=false`, `subscribersRead=false`.
+
+Decision:
+
+- The suppression/exclusion policy is now ready as a conservative local operating rule, not as a live-send approval.
+- Existing suppression-risk observations stay excluded from any later public/audience scope.
+- `Onboarding complete` and future audience groups remain candidates only.
+- Current replacement drafts still point only to `CC · Safety · Null audience · DO NOT SEND`.
+- Public/audience send approval remains unavailable until URL gate, exact audience scope, CRM observed-event posture and exact live approval are all ready.
+
+Next safe move:
+
+- Continue local-only with URL lifecycle/public audience gate and exact audience-scope decision design.
+- Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
+- Stop before any public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.

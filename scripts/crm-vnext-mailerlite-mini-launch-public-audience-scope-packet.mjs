@@ -16,6 +16,7 @@ const DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT = `${DEFAULT_REPORTS_D
 const DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_SHOPIFY_PUBLIC_URL_GATE = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_PUBLIC_AUDIENCE_SCAN_PACKET = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scan_packet_current_inteligencia_descansar_2026-05-31.json`;
+const DEFAULT_PUBLIC_AUDIENCE_SUPPRESSION_POLICY_PACKET = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_OUTPUT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_MARKDOWN_OUTPUT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.md`;
 
@@ -33,6 +34,7 @@ Options:
   --null-audience-seed-inbox-qa <path>            Current Null Audience seed inbox QA JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA}
   --shopify-public-url-gate <path>                Current Shopify public URL gate JSON. Defaults to ${DEFAULT_SHOPIFY_PUBLIC_URL_GATE}
   --public-audience-scan-packet <path>            Optional current read-only public audience scan JSON. Defaults to ${DEFAULT_PUBLIC_AUDIENCE_SCAN_PACKET}
+  --public-audience-suppression-policy-packet <path> Optional current suppression/exclusion policy JSON. Defaults to ${DEFAULT_PUBLIC_AUDIENCE_SUPPRESSION_POLICY_PACKET}
   --out <path>                                    Write JSON report. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                           Write Markdown report. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                                          Show this help
@@ -56,6 +58,7 @@ const parseArgs = (argv) => {
     nullAudienceSeedInboxQa: DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA,
     shopifyPublicUrlGate: DEFAULT_SHOPIFY_PUBLIC_URL_GATE,
     publicAudienceScanPacket: DEFAULT_PUBLIC_AUDIENCE_SCAN_PACKET,
+    publicAudienceSuppressionPolicyPacket: DEFAULT_PUBLIC_AUDIENCE_SUPPRESSION_POLICY_PACKET,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     help: false,
@@ -74,6 +77,7 @@ const parseArgs = (argv) => {
     else if (arg === '--null-audience-seed-inbox-qa') options.nullAudienceSeedInboxQa = argv[++index];
     else if (arg === '--shopify-public-url-gate') options.shopifyPublicUrlGate = argv[++index];
     else if (arg === '--public-audience-scan-packet') options.publicAudienceScanPacket = argv[++index];
+    else if (arg === '--public-audience-suppression-policy-packet') options.publicAudienceSuppressionPolicyPacket = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -203,6 +207,7 @@ const buildPublicAudienceScopePacket = ({
   nullAudienceSeedInboxQa,
   shopifyPublicUrlGate,
   publicAudienceScanPacket = null,
+  publicAudienceSuppressionPolicyPacket = null,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
 }) => {
@@ -243,7 +248,18 @@ const buildPublicAudienceScopePacket = ({
     && publicAudienceScanPacket?.safety?.recipientsPrinted === false
     && publicAudienceScanPacket?.safety?.tokensPrinted === false;
   const suppressionStatusScanReady = publicAudienceScanPacket?.executiveSummary?.suppressionStatusScanReady === true;
-  const suppressionExclusionPolicyReady = publicAudienceScanPacket?.executiveSummary?.suppressionExclusionPolicyReady === true;
+  const suppressionPolicySafetyReady =
+    publicAudienceSuppressionPolicyPacket?.ok === true
+    && publicAudienceSuppressionPolicyPacket?.executiveSummary?.suppressionExclusionPolicyReady === true
+    && publicAudienceSuppressionPolicyPacket?.safety?.mailerLiteApiCalled === false
+    && publicAudienceSuppressionPolicyPacket?.safety?.subscribersRead === false
+    && publicAudienceSuppressionPolicyPacket?.safety?.subscriberRowsPrinted === false
+    && publicAudienceSuppressionPolicyPacket?.safety?.rawIdsPrinted === false
+    && publicAudienceSuppressionPolicyPacket?.safety?.recipientsPrinted === false
+    && publicAudienceSuppressionPolicyPacket?.safety?.tokensPrinted === false;
+  const suppressionExclusionPolicyReady =
+    suppressionPolicySafetyReady
+    || publicAudienceScanPacket?.executiveSummary?.suppressionExclusionPolicyReady === true;
 
   const sourceReceiptGroup = miniLaunchGroupDryRun?.launch?.sourceGroupCandidate
     ?? 'CC · Source · Quiz · Inteligencia para descansar';
@@ -278,9 +294,9 @@ const buildPublicAudienceScopePacket = ({
       blockers: [
         'exact_public_audience_scope_decision_missing',
         'fresh_audience_membership_scan_missing',
-        'suppression_exclusion_policy_missing',
+        suppressionExclusionPolicyReady ? null : 'suppression_exclusion_policy_missing',
         'public_audience_url_gate_not_ready',
-      ],
+      ].filter(Boolean),
       stillRequires: [
         'fresh read-only membership/count evidence',
         'unsubscribe/suppression/exclusion check',
@@ -333,9 +349,9 @@ const buildPublicAudienceScopePacket = ({
       blockers: [
         'exact_people_missing',
         'fresh_audience_membership_scan_missing',
-        'suppression_exclusion_policy_missing',
+        suppressionExclusionPolicyReady ? null : 'suppression_exclusion_policy_missing',
         'public_audience_url_gate_not_ready',
-      ],
+      ].filter(Boolean),
       stillRequires: [
         'exact people/subscribers evidence',
         'explicit inclusion/exclusion list',
@@ -381,7 +397,9 @@ const buildPublicAudienceScopePacket = ({
       candidateOptionCount: options.length,
       blockerCount: blockersBeforeScopeReady.length,
       nextSafeAction: freshAudienceScanReady
-        ? 'Use the fresh aggregate audience scan as evidence, but keep Null Audience drafts inert until URL, exact scope and suppression policy gates are ready.'
+        ? (suppressionExclusionPolicyReady
+          ? 'Use the fresh aggregate audience scan and suppression policy as evidence, but keep Null Audience drafts inert until URL and exact scope gates are ready.'
+          : 'Use the fresh aggregate audience scan as evidence, but keep Null Audience drafts inert until URL, exact scope and suppression policy gates are ready.')
         : 'Keep Null Audience drafts inert and collect a fresh audience-scope decision packet before any public/audience send request.',
     },
     currentSafeState: {
@@ -398,6 +416,15 @@ const buildPublicAudienceScopePacket = ({
         subscribersScanned: publicAudienceScanPacket?.executiveSummary?.subscribersScanned ?? null,
         subscribersMatchedToCandidateGroups:
           publicAudienceScanPacket?.executiveSummary?.subscribersMatchedToCandidateGroups ?? null,
+      } : null,
+      suppressionPolicyReport: publicAudienceSuppressionPolicyPacket ? {
+        status: publicAudienceSuppressionPolicyPacket.status ?? null,
+        suppressionExclusionPolicyReady,
+        policyRuleCount: publicAudienceSuppressionPolicyPacket?.executiveSummary?.policyRuleCount ?? null,
+        suppressionRiskMembershipCount:
+          publicAudienceSuppressionPolicyPacket?.executiveSummary?.suppressionRiskMembershipCount ?? null,
+        remainingBlockerCountAfterPolicy:
+          publicAudienceSuppressionPolicyPacket?.executiveSummary?.remainingBlockerCountAfterPolicy ?? null,
       } : null,
       sourceReceiptGroup: {
         name: sourceReceiptGroup,
@@ -416,7 +443,9 @@ const buildPublicAudienceScopePacket = ({
       freshAudienceScanReady
         ? 'Fresh read-only membership/count evidence exists as aggregate scan input.'
         : 'Fresh read-only membership/count evidence before send approval.',
-      'Suppression, unsubscribe and exclusion posture checked before send approval.',
+      suppressionExclusionPolicyReady
+        ? 'Suppression, unsubscribe and exclusion policy is ready as a conservative local rule.'
+        : 'Suppression, unsubscribe and exclusion posture checked before send approval.',
       'URL lifecycle gate green for audience sending.',
       `No silent assignment to ${handoffTargetGroup} or production onboarding v1.`,
       'Separate exact public/audience send approval before any send.',
@@ -448,6 +477,7 @@ const loadPacketFromFiles = async (options) => {
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox QA status as test-only evidence'),
     readJsonWithDigest(options.shopifyPublicUrlGate, 'URL lifecycle gate before any audience scope can be used'),
     readOptionalJsonWithDigest(options.publicAudienceScanPacket, 'fresh aggregate public/audience membership and suppression-status scan'),
+    readOptionalJsonWithDigest(options.publicAudienceSuppressionPolicyPacket, 'local suppression/exclusion policy derived from aggregate scan'),
   ]);
 
   return buildPublicAudienceScopePacket({
@@ -461,6 +491,7 @@ const loadPacketFromFiles = async (options) => {
     nullAudienceSeedInboxQa: sources[7].value,
     shopifyPublicUrlGate: sources[8].value,
     publicAudienceScanPacket: sources[9].value,
+    publicAudienceSuppressionPolicyPacket: sources[10].value,
     sourceDigests: sources.map((source) => source.digest),
   });
 };
@@ -560,6 +591,7 @@ const main = async () => {
     freshAudienceScanReady: report.executiveSummary.freshAudienceScanReady,
     suppressionStatusScanReady: report.executiveSummary.suppressionStatusScanReady,
     suppressionExclusionPolicyReady: report.executiveSummary.suppressionExclusionPolicyReady,
+    suppressionPolicyReportStatus: report.currentSafeState.suppressionPolicyReport?.status ?? null,
     candidateOptionCount: report.executiveSummary.candidateOptionCount,
     blockerCount: report.executiveSummary.blockerCount,
     out: options.out ? resolve(options.out) : null,
