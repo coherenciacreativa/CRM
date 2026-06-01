@@ -28,6 +28,8 @@ const DEFAULT_ACCOUNT = process.env.MAILERLITE_KEYCHAIN_ACCOUNT || 'default';
 const DEFAULT_API_BASE = 'https://connect.mailerlite.com/api';
 const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json';
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.md';
+const FULL_REPLACEMENT_SUFFIX = 'API Null Audience CTA fallback repair';
+const CANARY_REPLACEMENT_SUFFIX = 'API Null Audience visual signature canary';
 const PLACEHOLDERS = [
   'result_or_resource_link_placeholder',
   'practice_link_placeholder',
@@ -43,7 +45,9 @@ Options:
   --email-render-qa <path>         Local render QA with corrected HTML paths. Defaults to ${DEFAULT_EMAIL_RENDER_QA}
   --shopify-preview-route-execution-receipt <path> Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
   --real-mailerlite-render-qa <path> Existing real MailerLite render QA with source campaign IDs. Defaults to ${DEFAULT_REAL_MAILERLITE_RENDER_QA}
-  --execute                        Create the four approved replacement drafts. Without this, run read-only API preflight only.
+  --target-labels <csv>            Optional subset for canary mode. Currently only E01 is supported.
+  --replacement-suffix <text>      Optional suffix for created replacement draft names.
+  --execute                        Create the approved replacement drafts. Without this, run read-only API preflight only.
   --approval-phrase <text>         Exact approval phrase required with --execute.
   --service <name>                 Keychain service. Defaults to ${DEFAULT_SERVICE}
   --account <name>                 Keychain account. Defaults to ${DEFAULT_ACCOUNT}
@@ -89,6 +93,27 @@ const sha256 = (value) => createHash('sha256').update(String(value)).digest('hex
 const readJson = async (path) => JSON.parse(await readFile(resolve(path), 'utf8'));
 const readText = async (path) => readFile(resolve(path), 'utf8');
 const redactedTokenFor = (key) => key ? `final_public_link_ready_redacted:${key}` : null;
+const normalizeTargetLabel = (value) => {
+  const normalized = cleanString(value)?.toUpperCase().replace(/^E?0?([1-4])$/u, 'E0$1') ?? null;
+  return /^E0[1-4]$/u.test(normalized) ? normalized : null;
+};
+const parseTargetLabels = (value) => [...new Set(String(value ?? '')
+  .split(',')
+  .map(normalizeTargetLabel)
+  .filter(Boolean))];
+const buildE01CanaryApprovalPhrase = () =>
+  `Apruebo crear por API únicamente 1 borrador canario de reemplazo para E01 del mini-lanzamiento Inteligencia para descansar en MailerLite, asignado solo al grupo vacío de seguridad ${SAFETY_GROUP_NAME} con active_count=0, usando el HTML local QA-green con firma visual, CTA en href y fallback sin URLs/tokens visibles, reemplazando en memoria solo el token redacted final_public_link_ready_redacted:result_or_resource_link por la URL preview unlisted/noindex ya registrada, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify adicional, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar el borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si el borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.`;
+const canaryTargetLabelsSupported = (labels = []) => labels.length === 1 && labels[0] === 'E01';
+const expectedApprovalPhraseFor = (labels = []) =>
+  canaryTargetLabelsSupported(labels) ? buildE01CanaryApprovalPhrase() : buildExactApprovalPhrase();
+const replacementDraftNameWithSuffix = (name, suffix) => {
+  const cleanName = cleanString(name);
+  const cleanSuffix = cleanString(suffix);
+  if (!cleanName || !cleanSuffix) return cleanName;
+  const escapedFullSuffix = FULL_REPLACEMENT_SUFFIX.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const baseName = cleanName.replace(new RegExp(`\\s·\\s${escapedFullSuffix}$`, 'u'), '');
+  return `${baseName} · ${cleanSuffix}`;
+};
 const escapeHtmlAttribute = (value) => String(value ?? '')
   .replace(/&/gu, '&amp;')
   .replace(/</gu, '&lt;')
@@ -102,6 +127,8 @@ const parseArgs = (argv) => {
     emailRenderQa: DEFAULT_EMAIL_RENDER_QA,
     shopifyPreviewRouteExecutionReceipt: DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
     realMailerLiteRenderQa: DEFAULT_REAL_MAILERLITE_RENDER_QA,
+    targetLabels: [],
+    replacementSuffix: null,
     execute: false,
     approvalPhrase: null,
     service: DEFAULT_SERVICE,
@@ -121,6 +148,8 @@ const parseArgs = (argv) => {
     else if (arg === '--email-render-qa') options.emailRenderQa = argv[++index];
     else if (arg === '--shopify-preview-route-execution-receipt') options.shopifyPreviewRouteExecutionReceipt = argv[++index];
     else if (arg === '--real-mailerlite-render-qa') options.realMailerLiteRenderQa = argv[++index];
+    else if (arg === '--target-labels') options.targetLabels = parseTargetLabels(argv[++index]);
+    else if (arg === '--replacement-suffix') options.replacementSuffix = argv[++index];
     else if (arg === '--execute') options.execute = true;
     else if (arg === '--approval-phrase') options.approvalPhrase = argv[++index];
     else if (arg === '--service') options.service = argv[++index];
@@ -135,6 +164,10 @@ const parseArgs = (argv) => {
   options.apiBase = cleanString(options.apiBase)?.replace(/\/+$/u, '');
   if (options.apiBase !== DEFAULT_API_BASE) throw new Error(`unsafe_api_base_not_mailerlite:${options.apiBase}`);
   options.timeoutMs = Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : 30_000;
+  if (options.targetLabels.length > 0 && !canaryTargetLabelsSupported(options.targetLabels)) {
+    throw new Error(`unsupported_target_labels:${options.targetLabels.join(',')}`);
+  }
+  if (options.targetLabels.length > 0 && !options.replacementSuffix) options.replacementSuffix = CANARY_REPLACEMENT_SUFFIX;
   return options;
 };
 
@@ -471,6 +504,7 @@ const targetRecords = async ({
   emailRenderQa,
   shopifyPreviewRouteExecutionReceipt,
   realMailerLiteRenderQa,
+  replacementSuffix = null,
 }) => {
   const qaByStep = rowByStep(emailRenderQa?.emailQa ?? []);
   const exactLinks = targetLinksByKey(shopifyPreviewRouteExecutionReceipt);
@@ -498,9 +532,10 @@ const targetRecords = async ({
   return targets.map((target) => {
     const explicit = explicitByStep.get(target.step) ?? {};
     const htmlRow = new Map(htmlEntries).get(target.step);
+    const replacementDraftName = cleanString(explicit.replacementDraftName) ?? target.replacementDraftName;
     return {
       ...target,
-      replacementDraftName: cleanString(explicit.replacementDraftName) ?? target.replacementDraftName,
+      replacementDraftName: replacementDraftNameWithSuffix(replacementDraftName, replacementSuffix) ?? replacementDraftName,
       sourceCampaignId: sourceCampaignIdForStep(realMailerLiteRenderQa, target.step),
       correctedHtml: htmlRow?.html ?? null,
       correctedHtmlStats: htmlRow?.stats ?? null,
@@ -509,9 +544,11 @@ const targetRecords = async ({
   });
 };
 
-const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, approvalPhrase }) => {
+const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, approvalPhrase, targetLabels = [] }) => {
   const blockers = [];
-  const expectedPhrase = buildExactApprovalPhrase();
+  const expectedPhrase = expectedApprovalPhraseFor(targetLabels);
+  const approvalPacketExpectedPhrase = buildExactApprovalPhrase();
+  const expectedTargetCount = targetLabels.length || 4;
   const approvalMatched = normalizeApprovalPhrase(approvalPhrase) === normalizeApprovalPhrase(expectedPhrase);
   const groupMatches = groups.filter((group) => normalizeName(groupNameFor(group)) === normalizeName(SAFETY_GROUP_NAME));
   const safetyGroup = groupMatches.length === 1 ? groupMatches[0] : null;
@@ -533,7 +570,7 @@ const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, a
   if (approvalPacket?.executiveSummary?.canAskAlejandroForApproval !== true) blockers.push('approval_packet_cannot_ask_approval_now');
   if (approvalPacket?.decision?.packetIsApprovalByItself !== false) blockers.push('approval_packet_self_authorizes_unexpectedly');
   if (approvalPacket?.decision?.canCreateReplacementDraftsNow !== false) blockers.push('approval_packet_create_gate_unexpectedly_open');
-  if (normalizeApprovalPhrase(approvalPacket?.decision?.exactApprovalPhrase) !== normalizeApprovalPhrase(expectedPhrase)) {
+  if (normalizeApprovalPhrase(approvalPacket?.decision?.exactApprovalPhrase) !== normalizeApprovalPhrase(approvalPacketExpectedPhrase)) {
     blockers.push('approval_packet_exact_phrase_mismatch');
   }
   if (approvalPacket?.safety?.mailerLiteApiCalled !== false) blockers.push('approval_packet_reports_mailerlite_api_call');
@@ -547,7 +584,10 @@ const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, a
   if (groupMatches.length !== 1) blockers.push(`safety_group_match_count_not_1:${groupMatches.length}`);
   if (!safetyGroupId) blockers.push('safety_group_id_missing');
   if (safetyGroupActiveCount !== 0) blockers.push(`safety_group_active_count_not_0:${safetyGroupActiveCount}`);
-  if (targets.length !== 4) blockers.push(`target_count_not_4:${targets.length}`);
+  if (targetLabels.length > 0 && !canaryTargetLabelsSupported(targetLabels)) {
+    blockers.push(`unsupported_target_labels:${targetLabels.join(',')}`);
+  }
+  if (targets.length !== expectedTargetCount) blockers.push(`target_count_not_${expectedTargetCount}:${targets.length}`);
 
   const targetPlan = targets.map((target) => {
     const rowBlockers = [];
@@ -595,6 +635,8 @@ const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, a
 
   return {
     expectedPhrase,
+    expectedTargetCount,
+    targetLabels,
     approvalMatched,
     blockers: [...new Set(blockers)],
     safetyGroupId,
@@ -614,6 +656,7 @@ const buildSafety = ({
   sourceDraftsRead = 0,
   created = 0,
   deleted = 0,
+  targetCount = 4,
 }) => ({
   mode: execute ? 'execute_mailerlite_api_null_audience_replacement_drafts' : 'read_only_preflight',
   mailerLiteApiCalled: apiCalled,
@@ -624,7 +667,9 @@ const buildSafety = ({
   mailerLiteDraftsDeletedByFailureCleanup: deleted,
   mailerLiteMutationsPerformed: execute && (created > 0 || deleted > 0),
   allowedMutationType: execute && created > 0
-    ? 'create_four_null_audience_replacement_drafts_only_and_cleanup_created_drafts_on_failure'
+    ? targetCount === 1
+      ? 'create_one_e01_canary_null_audience_replacement_draft_only_and_cleanup_created_draft_on_failure'
+      : 'create_four_null_audience_replacement_drafts_only_and_cleanup_created_drafts_on_failure'
     : null,
   safetyGroupName: SAFETY_GROUP_NAME,
   safetyGroupNamePrinted: true,
@@ -698,7 +743,11 @@ const buildRun = async (options) => {
       postCreateQa: { replacementDraftCount: 0, nullAudienceSafeCount: 0 },
       cleanup: { attempted: false, deletedCount: 0, goneCount: 0 },
       errors: [],
-      safety: buildSafety({ execute: options.execute, apiCalled: false }),
+      safety: buildSafety({
+        execute: options.execute,
+        apiCalled: false,
+        targetCount: options.targetLabels.length || 4,
+      }),
     };
   }
 
@@ -709,17 +758,22 @@ const buildRun = async (options) => {
       emailRenderQa,
       shopifyPreviewRouteExecutionReceipt,
       realMailerLiteRenderQa,
+      replacementSuffix: options.replacementSuffix,
     }),
     scanGroups(options, credential.key),
     fetchCampaigns(options, credential.key),
   ]);
+  const selectedTargets = options.targetLabels.length
+    ? targets.filter((target) => options.targetLabels.includes(target.label))
+    : targets;
   const preflight = buildPreflight({
     approvalPacket,
-    targets,
+    targets: selectedTargets,
     groups,
     campaigns,
     execute: options.execute,
     approvalPhrase: options.approvalPhrase,
+    targetLabels: options.targetLabels,
   });
   const createdDrafts = [];
   const postCreateQa = [];
@@ -828,8 +882,8 @@ const buildRun = async (options) => {
       }
     }
 
-    const postCreateGreen = createdDrafts.length === 4
-      && postCreateQa.length === 4
+    const postCreateGreen = createdDrafts.length === preflight.expectedTargetCount
+      && postCreateQa.length === preflight.expectedTargetCount
       && postCreateQa.every((row) =>
         row.nullAudienceSafe === true
         && row.contentHasPlaceholder === false
@@ -871,10 +925,10 @@ const buildRun = async (options) => {
   const executedOk = options.execute
     && preflight.blockers.length === 0
     && errors.length === 0
-    && createdDrafts.length === 4
-    && postCreateQa.length === 4
-    && nullAudienceSafeCount === 4
-    && contentGreenCount === 4
+    && createdDrafts.length === preflight.expectedTargetCount
+    && postCreateQa.length === preflight.expectedTargetCount
+    && nullAudienceSafeCount === preflight.expectedTargetCount
+    && contentGreenCount === preflight.expectedTargetCount
     && cleanupAttempted === false;
   const readOnlyOk = !options.execute && preflight.blockers.length === 0;
 
@@ -894,7 +948,9 @@ const buildRun = async (options) => {
     ok: options.execute ? executedOk : readOnlyOk,
     status: options.execute
       ? executedOk
-        ? 'mailerlite_null_audience_replacement_execution_completed_no_sends'
+        ? preflight.expectedTargetCount === 1
+          ? 'mailerlite_null_audience_canary_replacement_execution_completed_no_sends'
+          : 'mailerlite_null_audience_replacement_execution_completed_no_sends'
         : createdDrafts.length > 0
           ? cleanupAttempted && cleanupDeletedCount === createdDrafts.length && cleanupGoneCount === createdDrafts.length
             ? 'mailerlite_null_audience_replacement_execution_failed_cleanup_completed_no_sends'
@@ -924,6 +980,8 @@ const buildRun = async (options) => {
       expectedPhraseSha256: sha256(preflight.expectedPhrase),
       exactApprovalPhrasePrinted: false,
       blockers: preflight.blockers,
+      targetLabels: preflight.targetLabels,
+      expectedTargetCount: preflight.expectedTargetCount,
     },
     preflight: {
       groupsRead: groups.length,
@@ -934,6 +992,8 @@ const buildRun = async (options) => {
       safetyGroupActiveCount: preflight.safetyGroupActiveCount,
       groupMatchesRead: preflight.groupMatchesRead,
       replacementNameCollisionCount: cleanTargetPlan.reduce((sum, row) => sum + row.replacementNameCollisionCount, 0),
+      targetLabels: preflight.targetLabels,
+      expectedTargetCount: preflight.expectedTargetCount,
     },
     targetPlan: cleanTargetPlan,
     createdDrafts: cleanCreatedDrafts,
@@ -956,6 +1016,7 @@ const buildRun = async (options) => {
       sourceDraftsRead,
       created: createdDrafts.length,
       deleted: cleanupDeletedCount,
+      targetCount: preflight.expectedTargetCount,
     }),
   };
 };
@@ -972,6 +1033,8 @@ const renderMarkdown = (run) => [
   '',
   `- Approval status: ${run.decision.approval.status}`,
   `- Can execute: ${run.decision.canExecute}`,
+  `- Target labels: ${(run.decision.targetLabels ?? []).join(',') || 'all'}`,
+  `- Expected target count: ${run.decision.expectedTargetCount ?? 4}`,
   `- Exact approval phrase printed: ${run.decision.exactApprovalPhrasePrinted}`,
   `- Blocker count: ${run.decision.blockers.length}`,
   '',
@@ -1052,6 +1115,8 @@ const main = async () => {
     status: run.status,
     mode: run.mode,
     createdDraftCount: run.createdDrafts.length,
+    targetLabels: run.decision.targetLabels,
+    expectedTargetCount: run.decision.expectedTargetCount,
     nullAudienceSafeCount: run.postCreateQa.nullAudienceSafeCount,
     contentGreenCount: run.postCreateQa.contentGreenCount,
     blockerCount: run.decision.blockers.length,
@@ -1075,7 +1140,7 @@ const main = async () => {
     },
   }, null, 2));
 
-  if (options.execute && run.status !== 'mailerlite_null_audience_replacement_execution_completed_no_sends') {
+  if (options.execute && run.ok !== true) {
     process.exitCode = 2;
   }
 };
@@ -1089,6 +1154,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 
 export {
   buildFormBody,
+  buildE01CanaryApprovalPhrase,
   buildPreflight,
   buildRun,
   escapeHtmlAttribute,

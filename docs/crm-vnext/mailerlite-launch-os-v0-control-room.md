@@ -5206,3 +5206,45 @@ Operating meaning:
 - The previously received seed emails are still historical evidence with the old signature gap, so this checkpoint does not make the campaign CEO-review ready by itself.
 - The next real boundary is a human-approved MailerLite draft mutation/replacement using the updated render QA, followed by a fresh seed resend and artifact QA.
 - Do not ask for tester, micro-cohort, opt-in, audience or public send approval until the integrated experience QA is green.
+
+## Launch OS v0 E01 canary replacement checkpoint - 2026-06-02
+
+Status: active goal, Alejandro approved a one-draft MailerLite API canary instead of recreating all four replacement drafts, and the E01 canary draft was created successfully in the empty Null Audience safety group. This checkpoint does not authorize any send, publish, schedule, workflow, subscriber action, Shopify action, CRM write or full four-email replacement.
+
+Evidence:
+
+- Canary preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_replacement_preflight_current_inteligencia_descansar_2026-06-02.json`
+- Canary preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_replacement_preflight_current_inteligencia_descansar_2026-06-02.md`
+- Canary execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_replacement_execution_receipt_current_inteligencia_descansar_2026-06-02.json`
+- Canary execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_replacement_execution_receipt_current_inteligencia_descansar_2026-06-02.md`
+
+Confirmed results:
+
+- Canary execution: `ok=true`, `status=mailerlite_null_audience_canary_replacement_execution_completed_no_sends`.
+- Target labels: `E01`; expected target count: `1`; created draft count: `1`.
+- Created draft status: `draft`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`.
+- MailerLite groups read: `90`; MailerLite campaigns read: `38`; source drafts read: `1`.
+- Post-create QA: `replacementDraftCount=1`, `nullAudienceSafeCount=1`, `contentGreenCount=1`.
+- Post-create QA: `contentHasPlaceholder=false`, `contentHasExpectedUrlHash=true`.
+- Cleanup: `attempted=false`, `deletedCount=0`, `goneCount=0`.
+- Errors: `0`.
+- Exact URLs, raw campaign/group IDs, sender values and tokens printed: `false`.
+
+Safety:
+
+- MailerLite API called only for approved E01 canary preflight, create and post-create QA.
+- MailerLite drafts created: `1`.
+- MailerLite drafts deleted by failure cleanup: `0`.
+- Old drafts edited/deleted/archived: `false`.
+- Sends, publish and schedule: `false`.
+- Subscribers read/mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+
+Operating meaning:
+
+- The API route for one-draft canary creation is now proven and safer for iterative render QA than recreating all four drafts first.
+- The next real boundary is a separate human approval to send exactly one test email from the E01 canary draft to the approved seed recipient, followed by seed inbox artifact QA for signature, footer, CTA clickthrough and no raw URL text.
+- Do not create E02-E04 replacements, send E01, send the full set, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this checkpoint alone.

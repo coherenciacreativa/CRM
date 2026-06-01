@@ -11,6 +11,7 @@ import {
 } from "../scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs";
 import {
   buildFormBody,
+  buildE01CanaryApprovalPhrase,
   buildPreflight,
   escapeHtmlAttribute,
   htmlStats,
@@ -246,6 +247,60 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
     expect(preflight.targetPlan[0]._exactPreviewUrlForRun).toBe(exactUrl);
   });
 
+  test("preflight supports the E01 canary approval without opening the full four-draft route", () => {
+    const exactUrl = "https://example.test/result";
+    const targets = [{
+      step: 1,
+      label: "E01",
+      role: "delivery_and_orientation",
+      subject: "S1",
+      sourceCampaignId: "c1",
+      sourceCampaignIdSha256: "hash-c1",
+      replacementDraftName: "Draft E01 · API Null Audience visual signature canary",
+      correctedHtml: "<p>final_public_link_ready_redacted:result_or_resource_link</p>".repeat(3),
+      correctedHtmlPath: "/tmp/e01.html",
+      correctedHtmlStats: htmlStats("final_public_link_ready_redacted:result_or_resource_link"),
+      finalPublicLinkKey: "result_or_resource_link",
+      exactPreviewUrl: exactUrl,
+      expectedFinalPublicUrlSha256: "84bf31001f25fa12068d8dc53ffb65a66f76cf0c9d608846d9879c756f67de70",
+    }];
+
+    const preflight = buildPreflight({
+      approvalPacket: {
+        ok: true,
+        status: "mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes",
+        executiveSummary: {
+          canAskAlejandroForApproval: true,
+        },
+        decision: {
+          packetIsApprovalByItself: false,
+          canCreateReplacementDraftsNow: false,
+          exactApprovalPhrase: buildExactApprovalPhrase(),
+        },
+        safety: {
+          mailerLiteApiCalled: false,
+          mailerLiteMutationsPerformed: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          tokensPrinted: false,
+        },
+      },
+      targets,
+      groups: [{ id: "group-null", name: SAFETY_GROUP_NAME, active_count: 0 }],
+      campaigns: [],
+      execute: true,
+      approvalPhrase: buildE01CanaryApprovalPhrase(),
+      targetLabels: ["E01"],
+    });
+
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.expectedTargetCount).toBe(1);
+    expect(preflight.targetLabels).toEqual(["E01"]);
+    expect(preflight.blockers).toEqual([]);
+    expect(preflight.targetPlan).toHaveLength(1);
+    expect(preflight.targetPlan[0].label).toBe("E01");
+  });
+
   test("form body assigns only the Null Audience group", () => {
     const body = buildFormBody({
       name: "Draft",
@@ -271,6 +326,7 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
     expect(normalizeApprovalPhrase("  Apruebo   crear  ")).toBe("Apruebo crear");
     expect(parseApprovalArgs([]).out).toContain("mailerlite_mini_launch_null_audience_replacement_approval_packet");
     expect(parseCreateArgs([]).out).toContain("mailerlite_mini_launch_null_audience_replacement_execution_receipt");
+    expect(parseCreateArgs(["--target-labels", "1"]).targetLabels).toEqual(["E01"]);
 
     const packet = buildPacket({
       correctionPreview,
