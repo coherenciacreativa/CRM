@@ -90,6 +90,15 @@ const runbook = {
       shopifyPreviewRouteCanAskApprovalNow: false,
       shopifyPreviewRouteCanPublishNow: false,
       shopifyPreviewRouteRecommendedVisibilityTier: "unlisted_noindex_preview",
+      publicAudienceScopeRecommendedDefaultNow: "keep_null_audience_no_public_send",
+      publicAudienceScopeRecommendedFutureDecisionPath: "qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_subscriber_send",
+      publicAudienceScopeMassSubscriberSendRecommendedNow: false,
+      publicSendPreflightRecommendedAudienceScopeId: "keep_null_audience_no_public_send",
+      publicSendPreflightRecommendedAudienceKnownActiveCount: 0,
+      publicSendPreflightRecommendedDistributionPath: "qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send",
+      publicSendPreflightMassSubscriberSendRecommendedNow: false,
+      publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly: true,
+      publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend: true,
     },
   },
 };
@@ -400,6 +409,13 @@ describe("CRM vNext MailerLite Launch OS validation receipt", () => {
     expect(receipt.evidence.shopifyPreviewRouteExactApprovalPhrasePrinted).toBe(false);
     expect(receipt.evidence.shopifyPreviewRouteCanAskApprovalNow).toBe(false);
     expect(receipt.evidence.shopifyPreviewRouteCanPublishNow).toBe(false);
+    expect(receipt.evidence.publicAudienceScopeRecommendedDefaultNow).toBe("keep_null_audience_no_public_send");
+    expect(receipt.evidence.publicAudienceScopeMassSubscriberSendRecommendedNow).toBe(false);
+    expect(receipt.evidence.publicSendPreflightRecommendedAudienceScopeId).toBe("keep_null_audience_no_public_send");
+    expect(receipt.evidence.publicSendPreflightRecommendedAudienceKnownActiveCount).toBe(0);
+    expect(receipt.evidence.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
+    expect(receipt.evidence.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly).toBe(true);
+    expect(receipt.evidence.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
     expect(receipt.safety).toMatchObject({
       localOnly: true,
       mailerLiteApiCalled: false,

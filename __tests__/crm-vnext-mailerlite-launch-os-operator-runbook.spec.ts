@@ -957,6 +957,39 @@ const miniLaunchNullAudienceSeedInboxQa = {
   },
 };
 
+const miniLaunchPublicAudienceScopePacket = {
+  status: "public_audience_scope_packet_ready_no_live_changes",
+  executiveSummary: {
+    publicAudienceScopeReady: false,
+    canAskAudienceScopeApprovalNow: false,
+    recommendedDefaultNow: "keep_null_audience_no_public_send",
+    recommendedFutureDecisionPath: "qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_subscriber_send",
+    massSubscriberSendRecommendedNow: false,
+    existingActiveSubscriberAudienceFutureOptionOnly: true,
+    currentDraftsRemainInertUntilExactApproval: true,
+    blockerCount: 2,
+  },
+};
+
+const miniLaunchPublicSendPreflightDecisionPacket = {
+  status: "public_send_preflight_decision_packet_ready_for_human_explanation_no_live_changes",
+  executiveSummary: {
+    decisionExplanationReady: true,
+    exactApprovalPhraseAvailable: false,
+    canAskExactApprovalNow: false,
+    canExecuteNow: false,
+    recommendedUrlDecisionId: "keep_existing_unlisted_noindex_preview_links_for_qa_and_micro_cohort_candidate",
+    recommendedAudienceScopeId: "keep_null_audience_no_public_send",
+    recommendedAudienceKnownActiveCount: 0,
+    recommendedDistributionPath: "qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send",
+    massSubscriberSendRecommendedNow: false,
+    existingActiveSubscriberAudienceFutureOptionOnly: true,
+    existingActiveSubscriberAudienceKnownActiveCount: 933,
+    audienceStrategyGateRequiredBeforeMassSend: true,
+    blockerCount: 0,
+  },
+};
+
 const miniLaunchSeedInboxCorrectionPlan = {
   status: "seed_inbox_correction_plan_ready_no_live_changes",
   executiveSummary: {
@@ -1145,6 +1178,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       miniLaunchCrmWriteApprovalPacket,
       miniLaunchShopifyLocalBuildReceipt,
       miniLaunchShopifyPreviewRouteDecision,
+      miniLaunchPublicAudienceScopePacket,
+      miniLaunchPublicSendPreflightDecisionPacket,
       brujulaPlan,
       brujulaApply,
       brujulaEmailStyleQa,
@@ -1270,6 +1305,14 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.shopifyPreviewRouteCanAskApprovalNow).toBe(false);
     expect(state.miniLaunch.shopifyPreviewRouteCanPublishNow).toBe(false);
     expect(state.miniLaunch.shopifyPreviewRouteRecommendedVisibilityTier).toBe("unlisted_noindex_preview");
+    expect(state.miniLaunch.publicAudienceScopeRecommendedDefaultNow).toBe("keep_null_audience_no_public_send");
+    expect(state.miniLaunch.publicAudienceScopeMassSubscriberSendRecommendedNow).toBe(false);
+    expect(state.miniLaunch.publicAudienceScopeExistingActiveSubscriberAudienceFutureOptionOnly).toBe(true);
+    expect(state.miniLaunch.publicSendPreflightRecommendedAudienceScopeId).toBe("keep_null_audience_no_public_send");
+    expect(state.miniLaunch.publicSendPreflightRecommendedAudienceKnownActiveCount).toBe(0);
+    expect(state.miniLaunch.publicSendPreflightRecommendedDistributionPath).toBe("qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send");
+    expect(state.miniLaunch.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
+    expect(state.miniLaunch.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
     expect(state.miniLaunch.onboardingHandoffPolicyStatus).toBe("mini_launch_onboarding_handoff_policy_ready_no_live_changes");
     expect(state.miniLaunch.onboardingHandoffTargetGroup).toBe("CC · Journey · Editorial onboarding · Eligible");
     expect(state.miniLaunch.pendingDepartments).toEqual(["brand", "web_design", "crm"]);
@@ -1519,6 +1562,25 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.nullAudienceSeedInboxQaNeedsHumanApprovalBeforeAdditionalSend).toBe(true);
     expect(moves).toContain("Null Audience seed inbox QA is partial");
     expect(moves).toContain("do not resend, publish or audience-send until Alejandro gives the exact E04-only phrase");
+  });
+
+  test("surfaces pilot distribution as strategy evidence without opening mass send", () => {
+    const state = buildCurrentState({
+      readinessBoard,
+      cadenceBoard,
+      backlogBoard,
+      miniLaunchPublicAudienceScopePacket,
+      miniLaunchPublicSendPreflightDecisionPacket,
+    });
+    const moves = buildImmediateNextMoves({ currentState: state }).join("\n");
+
+    expect(state.miniLaunch.publicSendPreflightRecommendedAudienceScopeId).toBe("keep_null_audience_no_public_send");
+    expect(state.miniLaunch.publicSendPreflightRecommendedAudienceKnownActiveCount).toBe(0);
+    expect(state.miniLaunch.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
+    expect(state.miniLaunch.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly).toBe(true);
+    expect(state.miniLaunch.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
+    expect(moves).toContain("Use the public-send preflight decision packet as strategy evidence only");
+    expect(moves).toContain("exact send approval remains unavailable");
   });
 
   test("closes Onboarding v2 empty-groups approval once execution and post-verify exist", () => {

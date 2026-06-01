@@ -4244,3 +4244,59 @@ Next safe move:
 - Keep current replacement drafts inert on the empty safety audience.
 - If the next launch move is distribution, prepare only a pilot distribution strategy decision; do not generate or request a final public/audience send phrase.
 - Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 pilot distribution posture propagated - 2026-06-01
+
+Status: active goal, local-only control-plane hardening after the pilot distribution correction. The corrected posture is now carried by the operator runbook, goal audit, validation receipt and current-state refresh, so future operators should read the mini-launch as QA/pilot-first instead of defaulting to a broad active-subscriber send.
+
+Evidence:
+
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+- Public audience scope packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public send preflight decision packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh without an explicit `--date`: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=31`, `testCount=190`.
+- Public send preflight recommended audience: `keep_null_audience_no_public_send`.
+- Public send preflight recommended audience active count: `0`.
+- Public send preflight recommended distribution path: `qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send`.
+- Mass subscriber send recommended now: `false`.
+- Existing active subscriber audience future option only: `true`.
+- Audience strategy gate required before mass send: `true`.
+- Public launch readiness remains blocked: `readyForExactPublicSendApproval=false`, `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `blockerCount=3`.
+- CRM observed-event posture remains incomplete for post-launch learning/CRM writes: `crmObservedEventsReady=false`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- This propagation is local-only and reports-only.
+- Current-state refresh MailerLite API called: `false`; Shopify API called: `false`; CRM live API called: `false`.
+- UI opened: `false`.
+- Subscribers read: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Raw IDs, exact recipients, exact URLs and tokens printed: `false`.
+
+Decision:
+
+- The active goal wording remains correct; no top-level rewrite is needed.
+- The operational fix belongs in the Launch OS evidence layer: runbook, audit, receipt and current-state refresh now surface the pilot posture directly.
+- Mini-launch distribution should stay smallest-responsible-exposure first: Null Audience, seed QA, manual micro-cohort or opt-in testers before any broad send.
+- Existing active subscriber audiences can remain future options, but they require a separate strategy gate and later exact approval.
+
+Next safe move:
+
+- Continue local-only from the refreshed current-state evidence.
+- Prepare the next pilot distribution strategy decision only if distribution becomes the next active boundary.
+- Do not ask for or generate any final public/audience send phrase while the public URL gate and audience scope remain incomplete.
+- Do not write CRM signals, ledgers, cards, scoring or Fact Store evidence until the CRM observed-event posture is ready and separately approved.
+- Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.

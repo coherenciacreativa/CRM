@@ -127,6 +127,8 @@ Options:
   --mini-launch-shopify-preview-route-approval-packet <path> Mini-launch Shopify preview route exact approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET}
   --mini-launch-shopify-preview-route-execution-receipt <path> Mini-launch Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
   --mini-launch-public-launch-readiness-packet <path> Mini-launch public launch readiness JSON. Defaults to ${DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET}
+  --mini-launch-public-audience-scope-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook.
+  --mini-launch-public-send-preflight-decision-packet <path> Accepted for current-state refresh compatibility; goal audit reads pilot posture from runbook.
   --mini-launch-crm-write-approval-packet <path> Mini-launch CRM write approval packet JSON. Defaults to ${DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET}
   --brujula-plan <path>             Brújula post-inbox plan JSON. Defaults to ${DEFAULT_BRUJULA_PLAN}
   --brujula-apply <path>            Brújula apply receipt JSON. Defaults to ${DEFAULT_BRUJULA_APPLY}
@@ -203,6 +205,8 @@ const parseArgs = (argv) => {
     miniLaunchShopifyPreviewRouteApprovalPacket: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_APPROVAL_PACKET,
     miniLaunchShopifyPreviewRouteExecutionReceipt: DEFAULT_MINI_LAUNCH_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
     miniLaunchPublicLaunchReadinessPacket: DEFAULT_MINI_LAUNCH_PUBLIC_LAUNCH_READINESS_PACKET,
+    miniLaunchPublicAudienceScopePacket: null,
+    miniLaunchPublicSendPreflightDecisionPacket: null,
     miniLaunchCrmWriteApprovalPacket: DEFAULT_MINI_LAUNCH_CRM_WRITE_APPROVAL_PACKET,
     brujulaPlan: DEFAULT_BRUJULA_PLAN,
     brujulaApply: DEFAULT_BRUJULA_APPLY,
@@ -277,6 +281,8 @@ const parseArgs = (argv) => {
     else if (arg === '--mini-launch-shopify-preview-route-approval-packet') options.miniLaunchShopifyPreviewRouteApprovalPacket = argv[++index];
     else if (arg === '--mini-launch-shopify-preview-route-execution-receipt') options.miniLaunchShopifyPreviewRouteExecutionReceipt = argv[++index];
     else if (arg === '--mini-launch-public-launch-readiness-packet') options.miniLaunchPublicLaunchReadinessPacket = argv[++index];
+    else if (arg === '--mini-launch-public-audience-scope-packet') options.miniLaunchPublicAudienceScopePacket = argv[++index];
+    else if (arg === '--mini-launch-public-send-preflight-decision-packet') options.miniLaunchPublicSendPreflightDecisionPacket = argv[++index];
     else if (arg === '--mini-launch-crm-write-approval-packet') options.miniLaunchCrmWriteApprovalPacket = argv[++index];
     else if (arg === '--brujula-plan') options.brujulaPlan = argv[++index];
     else if (arg === '--brujula-apply') options.brujulaApply = argv[++index];
@@ -2795,6 +2801,36 @@ const buildGoalAudit = ({
     publicLaunchReadinessPacket?.executiveSummary?.blockerCount
     ?? values.runbook?.currentState?.miniLaunch?.publicLaunchReadinessBlockerCount
     ?? null;
+  const publicSendPreflightStatus =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightDecisionPacketStatus
+    ?? null;
+  const publicSendPreflightRecommendedAudienceScopeId =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightRecommendedAudienceScopeId
+    ?? null;
+  const publicSendPreflightRecommendedAudienceKnownActiveCount =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightRecommendedAudienceKnownActiveCount
+    ?? null;
+  const publicSendPreflightRecommendedDistributionPath =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightRecommendedDistributionPath
+    ?? null;
+  const publicSendPreflightMassSubscriberSendRecommendedNow =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightMassSubscriberSendRecommendedNow
+    ?? null;
+  const publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly
+    ?? null;
+  const publicSendPreflightExistingActiveSubscriberAudienceKnownActiveCount =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightExistingActiveSubscriberAudienceKnownActiveCount
+    ?? null;
+  const publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend
+    ?? null;
+  const publicSendPreflightCanAskExactApprovalNow =
+    values.runbook?.currentState?.miniLaunch?.publicSendPreflightCanAskExactApprovalNow
+    ?? null;
+  const publicSendPreflightMove = publicSendPreflightStatus
+    ? `Public-send preflight is strategy evidence only: recommended audience ${publicSendPreflightRecommendedAudienceScopeId ?? 'unknown'} (${publicSendPreflightRecommendedAudienceKnownActiveCount ?? 'unknown'} active), path ${publicSendPreflightRecommendedDistributionPath ?? 'unknown'}, mass subscriber send recommended now ${publicSendPreflightMassSubscriberSendRecommendedNow}, existing active subscriber audience future-only ${publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly}, audience strategy gate before mass send ${publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend}, canAskExactApprovalNow=${publicSendPreflightCanAskExactApprovalNow}.`
+    : null;
   const seedInboxCorrectionPlan = values.miniLaunchSeedInboxCorrectionPlan ?? null;
   const seedInboxCorrectionPlanStatus = seedInboxCorrectionPlan?.status
     ?? values.runbook?.currentState?.miniLaunch?.seedInboxCorrectionPlanStatus
@@ -2866,7 +2902,7 @@ const buildGoalAudit = ({
   const seedRecipientMove = nullAudienceSeedInboxQaPartialE04
     ? `Null Audience seed inbox QA is partial: ${nullAudienceSeedInboxQaDeliveredToApprovedSeed}/${nullAudienceSeedInboxQaExpectedSeedMessages} corrected messages reached the approved seed, corrected E04 was found outside the seed (${nullAudienceSeedInboxQaCorrectedOutsideSeedCount ?? 'unknown'}), and the next human boundary is ${nullAudienceSeedInboxQaRecommendedNextBoundary ?? 'approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan'}; ask only for the exact E04-only resend phrase before any additional test send.`
     : publicLaunchReadinessPacketStatus === 'mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes'
-    ? `Seed inbox QA is green and public-launch readiness is explicit: readyForExactPublicSendApproval=${publicLaunchReadinessReadyForExactApproval}, publicAudienceSendUrlGateReady=${publicLaunchReadinessPublicAudienceSendUrlGateReady}, publicAudienceScopeReady=${publicLaunchReadinessPublicAudienceScopeReady}, crmObservedEventsReady=${publicLaunchReadinessCrmObservedEventsReady}, blockers=${publicLaunchReadinessBlockerCount ?? 'unknown'}; keep public/audience send approval closed.`
+    ? `Seed inbox QA is green and public-launch readiness is explicit: readyForExactPublicSendApproval=${publicLaunchReadinessReadyForExactApproval}, publicAudienceSendUrlGateReady=${publicLaunchReadinessPublicAudienceSendUrlGateReady}, publicAudienceScopeReady=${publicLaunchReadinessPublicAudienceScopeReady}, crmObservedEventsReady=${publicLaunchReadinessCrmObservedEventsReady}, blockers=${publicLaunchReadinessBlockerCount ?? 'unknown'}; keep public/audience send approval closed. ${publicSendPreflightMove ?? ''}`
     : seedInboxCorrectionUiEditApprovalPacketReady
     ? `Seed inbox correction UI edit approval packet is ready: target drafts ${seedInboxCorrectionUiEditTargetDraftCount ?? 'unknown'}, local render ready ${seedInboxCorrectionUiEditLocalRenderReady}, blockers ${seedInboxCorrectionUiEditBlockerCount ?? 'unknown'}, public/audience URL gate ready ${seedInboxCorrectionUiEditPublicAudienceSendUrlGateReady}; stop at Alejandro exact-phrase boundary before opening MailerLite UI or editing drafts.`
     : seedInboxQaCompleted
@@ -2923,12 +2959,12 @@ const buildGoalAudit = ({
     : 'Prepare the CRM write approval packet before any Signal Ledger, card, scoring or Fact Store approval request; CRM signal projection remains no-live.';
   const nextBestMove = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
-      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The two mini-launch empty groups already exist and the fresh create dry-run reports no create needed; do not rerun --execute for that boundary. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupCreateDryRunReady
-      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
+      ? `The mini-launch empty-group create runner dry-run is green; pause at Alejandro exact-approval boundary before any --execute. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} ${crmWriteApprovalMove} Live actions remain closed.`
       : emptyGroupApprovalPacketReady
-      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} Live actions remain closed.`
-      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
+      ? `The mini-launch empty-group approval packet is ready; run only the create runner dry-run for a fresh scan, then pause at Alejandro exact-approval boundary if he wants the two groups created empty. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${publicSendPreflightMove ?? ''} Live actions remain closed.`
+      : `Continue with the next no-live moves unlocked by department reconciliation. ${blockedGateHandoffMove ?? ''} ${missingInputsKitMove ?? ''} ${missingInputsIntakeMove ?? ''} ${missingInputsRequestBundleMove ?? ''} ${privateInputTemplatePackMove ?? ''} ${postInputOrchestratorMove ?? ''} ${taxonomyConsolidationMove ?? ''} ${taxonomyRefreshHandoffMove ?? ''} ${taxonomyRefreshResponseWorkspaceMove ?? ''} ${taxonomyRefreshDecisionMove ?? ''} ${taxonomyRefreshResponseRequestMove ?? ''} ${continuationGuardMove ?? ''} ${localEmailAssetPlanMove} ${publicSendPreflightMove ?? ''} ${shopifyLocalBuildMove} ${shopifyPreviewRouteMove} Prepare the exact empty-group approval packet and CRM signal projection packet. Live actions remain closed.`
     : 'Route the request bundle to Brand, Web Design and CRM, collect final no-live responses through the response workspace, use the response watcher to confirm final file presence, pass them through finalization preflight, then run intake/reconciliation before any new dry-run or build request.';
   const departmentResponseMoves = departmentResponsesAccepted
     ? emptyGroupCreateDryRunNoCreateNeeded
@@ -2950,6 +2986,7 @@ const buildGoalAudit = ({
         taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
+        publicSendPreflightMove,
         shopifyLocalBuildMove,
         shopifyPreviewRouteMove,
         crmWriteApprovalMove,
@@ -2974,6 +3011,7 @@ const buildGoalAudit = ({
         taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
+        publicSendPreflightMove,
         shopifyLocalBuildMove,
         shopifyPreviewRouteMove,
         crmWriteApprovalMove,
@@ -2997,6 +3035,7 @@ const buildGoalAudit = ({
         taxonomyRefreshResponseRequestMove,
         continuationGuardMove,
         localEmailAssetPlanMove,
+        publicSendPreflightMove,
         shopifyLocalBuildMove,
         shopifyPreviewRouteMove,
         crmWriteApprovalMove,
@@ -3018,6 +3057,7 @@ const buildGoalAudit = ({
       taxonomyRefreshResponseRequestMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
+      publicSendPreflightMove,
       shopifyLocalBuildMove,
       shopifyPreviewRouteMove,
       'Prepare the exact mini-launch empty-group approval packet after the dry-run is ready; do not execute group creation from the dry-run alone.',
@@ -3130,6 +3170,15 @@ const buildGoalAudit = ({
       publicLaunchReadinessPublicAudienceScopeReady,
       publicLaunchReadinessCrmObservedEventsReady,
       publicLaunchReadinessBlockerCount,
+      publicSendPreflightStatus,
+      publicSendPreflightRecommendedAudienceScopeId,
+      publicSendPreflightRecommendedAudienceKnownActiveCount,
+      publicSendPreflightRecommendedDistributionPath,
+      publicSendPreflightMassSubscriberSendRecommendedNow,
+      publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly,
+      publicSendPreflightExistingActiveSubscriberAudienceKnownActiveCount,
+      publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend,
+      publicSendPreflightCanAskExactApprovalNow,
       seedInboxCorrectionUiEditApprovalPacketStatus,
       seedInboxCorrectionUiEditApprovalPacketReady,
       seedInboxCorrectionUiEditCanAskApproval,
@@ -3178,6 +3227,7 @@ const buildGoalAudit = ({
       taxonomyRefreshResponseRequestMove,
       continuationGuardMove,
       localEmailAssetPlanMove,
+      publicSendPreflightMove,
       repairPacketMove,
       seedRecipientMove,
       crmWriteApprovalMove,
@@ -3263,6 +3313,11 @@ const renderMarkdown = (audit) => {
     `- Public launch audience scope ready: ${audit.executiveSummary.publicLaunchReadinessPublicAudienceScopeReady ?? 'unknown'}`,
     `- Public launch CRM observed events ready: ${audit.executiveSummary.publicLaunchReadinessCrmObservedEventsReady ?? 'unknown'}`,
     `- Public launch blocker count: ${audit.executiveSummary.publicLaunchReadinessBlockerCount ?? 'unknown'}`,
+    `- Public send preflight recommended audience: ${audit.executiveSummary.publicSendPreflightRecommendedAudienceScopeId ?? 'unknown'}`,
+    `- Public send preflight recommended audience active count: ${audit.executiveSummary.publicSendPreflightRecommendedAudienceKnownActiveCount ?? 'unknown'}`,
+    `- Public send preflight recommended path: ${audit.executiveSummary.publicSendPreflightRecommendedDistributionPath ?? 'unknown'}`,
+    `- Public send preflight mass subscriber send recommended now: ${audit.executiveSummary.publicSendPreflightMassSubscriberSendRecommendedNow ?? 'unknown'}`,
+    `- Public send preflight audience strategy gate before mass send: ${audit.executiveSummary.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend ?? 'unknown'}`,
     `- Shopify preview-route execution: ${audit.executiveSummary.shopifyPreviewRouteExecutionReceiptStatus ?? 'missing'}`,
     `- Shopify preview-route execution ready: ${audit.executiveSummary.shopifyPreviewRouteExecutionReady ?? 'unknown'}`,
     `- Shopify preview-route target links: ${audit.executiveSummary.shopifyPreviewRouteExecutionTargetLinkCount ?? 'unknown'}`,

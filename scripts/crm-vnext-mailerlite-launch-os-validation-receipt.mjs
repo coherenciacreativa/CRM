@@ -556,6 +556,42 @@ const buildValidationReceipt = ({
         ?? runbook?.currentState?.miniLaunch?.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady
         ?? goalAudit?.executiveSummary?.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady
         ?? null,
+      publicAudienceScopeRecommendedDefaultNow:
+        runbook?.currentState?.miniLaunch?.publicAudienceScopeRecommendedDefaultNow
+        ?? goalAudit?.executiveSummary?.publicAudienceScopeRecommendedDefaultNow
+        ?? null,
+      publicAudienceScopeRecommendedFutureDecisionPath:
+        runbook?.currentState?.miniLaunch?.publicAudienceScopeRecommendedFutureDecisionPath
+        ?? goalAudit?.executiveSummary?.publicAudienceScopeRecommendedFutureDecisionPath
+        ?? null,
+      publicAudienceScopeMassSubscriberSendRecommendedNow:
+        runbook?.currentState?.miniLaunch?.publicAudienceScopeMassSubscriberSendRecommendedNow
+        ?? goalAudit?.executiveSummary?.publicAudienceScopeMassSubscriberSendRecommendedNow
+        ?? null,
+      publicSendPreflightRecommendedAudienceScopeId:
+        runbook?.currentState?.miniLaunch?.publicSendPreflightRecommendedAudienceScopeId
+        ?? goalAudit?.executiveSummary?.publicSendPreflightRecommendedAudienceScopeId
+        ?? null,
+      publicSendPreflightRecommendedAudienceKnownActiveCount:
+        runbook?.currentState?.miniLaunch?.publicSendPreflightRecommendedAudienceKnownActiveCount
+        ?? goalAudit?.executiveSummary?.publicSendPreflightRecommendedAudienceKnownActiveCount
+        ?? null,
+      publicSendPreflightRecommendedDistributionPath:
+        runbook?.currentState?.miniLaunch?.publicSendPreflightRecommendedDistributionPath
+        ?? goalAudit?.executiveSummary?.publicSendPreflightRecommendedDistributionPath
+        ?? null,
+      publicSendPreflightMassSubscriberSendRecommendedNow:
+        runbook?.currentState?.miniLaunch?.publicSendPreflightMassSubscriberSendRecommendedNow
+        ?? goalAudit?.executiveSummary?.publicSendPreflightMassSubscriberSendRecommendedNow
+        ?? null,
+      publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly:
+        runbook?.currentState?.miniLaunch?.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly
+        ?? goalAudit?.executiveSummary?.publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly
+        ?? null,
+      publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend:
+        runbook?.currentState?.miniLaunch?.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend
+        ?? goalAudit?.executiveSummary?.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend
+        ?? null,
       onboardingTrunkMapStatus: onboardingTrunkMap?.status ?? null,
       packageRequiredScriptsPresent: requiredScriptsPresent,
       liveGatesClosed,
@@ -721,6 +757,14 @@ const renderMarkdown = (receipt) => {
     `- Shopify preview-route effective view: ${receipt.evidence.shopifyPreviewRouteExecutionEffectivePreviewView ?? 'unknown'}`,
     `- Shopify preview-route can use for correction preview: ${receipt.evidence.shopifyPreviewRouteExecutionCanUseForLocalCorrectionPreview ?? 'unknown'}`,
     `- Shopify preview-route public/audience send gate ready: ${receipt.evidence.shopifyPreviewRouteExecutionPublicAudienceSendUrlGateReady ?? 'unknown'}`,
+    `- Public audience scope recommended default: ${receipt.evidence.publicAudienceScopeRecommendedDefaultNow ?? 'unknown'}`,
+    `- Public audience future path: ${receipt.evidence.publicAudienceScopeRecommendedFutureDecisionPath ?? 'unknown'}`,
+    `- Public audience mass subscriber send recommended now: ${receipt.evidence.publicAudienceScopeMassSubscriberSendRecommendedNow ?? 'unknown'}`,
+    `- Public send preflight recommended audience: ${receipt.evidence.publicSendPreflightRecommendedAudienceScopeId ?? 'unknown'}`,
+    `- Public send preflight recommended audience active count: ${receipt.evidence.publicSendPreflightRecommendedAudienceKnownActiveCount ?? 'unknown'}`,
+    `- Public send preflight recommended path: ${receipt.evidence.publicSendPreflightRecommendedDistributionPath ?? 'unknown'}`,
+    `- Public send preflight mass subscriber send recommended now: ${receipt.evidence.publicSendPreflightMassSubscriberSendRecommendedNow ?? 'unknown'}`,
+    `- Public send preflight audience strategy gate before mass send: ${receipt.evidence.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend ?? 'unknown'}`,
     '',
     '## Commands',
     '',

@@ -43,6 +43,15 @@ const runbook = {
       responseWatcherMissingFinalCount: 3,
       responseWatcherFinalFilePresentCount: 0,
       responseWatcherNextBestMove: "Keep collecting final response files for: brand, web_design, crm.",
+      publicSendPreflightDecisionPacketStatus: "public_send_preflight_decision_packet_ready_for_human_explanation_no_live_changes",
+      publicSendPreflightRecommendedAudienceScopeId: "keep_null_audience_no_public_send",
+      publicSendPreflightRecommendedAudienceKnownActiveCount: 0,
+      publicSendPreflightRecommendedDistributionPath: "qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send",
+      publicSendPreflightMassSubscriberSendRecommendedNow: false,
+      publicSendPreflightExistingActiveSubscriberAudienceFutureOptionOnly: true,
+      publicSendPreflightExistingActiveSubscriberAudienceKnownActiveCount: 933,
+      publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend: true,
+      publicSendPreflightCanAskExactApprovalNow: false,
     },
   },
   safety: {
@@ -1625,6 +1634,42 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(infrastructureRequirement?.evidence.join("\n")).toContain(
       "miniLaunchNullAudienceSeedInboxQaStatus=mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed",
     );
+  });
+
+  test("keeps mini-launch distribution anchored to pilot strategy evidence", () => {
+    const audit = buildGoalAudit({
+      values: {
+        ...values,
+        reconciliationBoard: reconciliationBoardAfterResponses,
+        responseWorkspace: responseWorkspaceAfterResponses,
+        finalizationPreflight: finalizationPreflightAfterResponses,
+        runbook: {
+          ...runbook,
+          currentState: {
+            ...runbook.currentState,
+            miniLaunch: {
+              ...runbook.currentState.miniLaunch,
+              publicLaunchReadinessPacketStatus: "mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes",
+              publicLaunchReadinessReadyForExactApproval: false,
+              publicLaunchReadinessPublicAudienceSendUrlGateReady: false,
+              publicLaunchReadinessPublicAudienceScopeReady: false,
+              publicLaunchReadinessCrmObservedEventsReady: false,
+              publicLaunchReadinessBlockerCount: 3,
+            },
+          },
+        },
+      },
+      sourceDigests,
+      generatedAt: "2026-05-31T00:00:00.000Z",
+    });
+
+    expect(audit.executiveSummary.publicSendPreflightRecommendedAudienceScopeId).toBe("keep_null_audience_no_public_send");
+    expect(audit.executiveSummary.publicSendPreflightRecommendedAudienceKnownActiveCount).toBe(0);
+    expect(audit.executiveSummary.publicSendPreflightMassSubscriberSendRecommendedNow).toBe(false);
+    expect(audit.executiveSummary.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
+    expect(audit.executiveSummary.nextBestMove).toContain("Public-send preflight is strategy evidence only");
+    expect(audit.executiveSummary.nextBestMove).toContain("canAskExactApprovalNow=false");
+    expect(audit.nextMoves.join("\n")).toContain("Public-send preflight is strategy evidence only");
   });
 
   test("promotes Brújula status when local render QA is green but keeps public gates closed", () => {
