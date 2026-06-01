@@ -161,6 +161,12 @@ const requestMetadata = {
 const byId = (items = []) => new Map(items.filter((item) => item?.id).map((item) => [item.id, item]));
 const unique = (items) => [...new Set((items ?? []).filter(Boolean))];
 
+const inputStateIsReady = (state) => {
+  const status = cleanString(state?.status);
+  if (!status) return false;
+  return status.startsWith('ready_') || status === 'ready_no_live_changes';
+};
+
 const buildRequestBlock = ({ request, state, handoffInput }) => {
   const meta = requestMetadata[request.id] ?? {
     title: request.label ?? request.id,
@@ -208,15 +214,16 @@ const buildRequestBlocks = ({ missingInputsKit, missingInputsIntake, blockedGate
   ]);
   const kitRequestsById = byId(missingInputsKit?.inputRequests);
 
-  return requestedIds.map((id) => buildRequestBlock({
-    request: kitRequestsById.get(id) ?? { id },
-    state: statesById.get(id),
-    handoffInput: handoffInputsById.get(id),
-  }));
+  return requestedIds
+    .filter((id) => !inputStateIsReady(statesById.get(id)))
+    .map((id) => buildRequestBlock({
+      request: kitRequestsById.get(id) ?? { id },
+      state: statesById.get(id),
+      handoffInput: handoffInputsById.get(id),
+    }));
 };
 
-const buildPostInputCommands = ({ missingInputsKit, missingInputsIntake }) => unique([
-  ...(missingInputsKit?.postInputCommands ?? []),
+const buildPostInputCommands = ({ missingInputsIntake }) => unique([
   missingInputsIntake?.executiveSummary?.readyForSeedApprovalPacket === true
     ? missingInputsIntake?.postInputCommands?.seedApprovalPacket
     : null,
@@ -237,6 +244,14 @@ const buildMissingInputsRequestBundle = ({
 }) => {
   const requests = buildRequestBlocks({ missingInputsKit, missingInputsIntake, blockedGateHandoff });
   const requestIds = requests.map((request) => request.id);
+  const readyInputIds = unique((missingInputsIntake?.inputStates ?? [])
+    .filter((state) => inputStateIsReady(state))
+    .map((state) => state.id));
+  const allInputIds = unique([
+    ...(missingInputsKit?.inputRequests ?? []).map((request) => request?.id),
+    ...(missingInputsIntake?.inputStates ?? []).map((state) => state?.id),
+    ...(blockedGateHandoff?.inputNeededNow ?? []).map((input) => input?.id),
+  ]);
   const safety = buildSafety();
 
   return {
@@ -251,6 +266,9 @@ const buildMissingInputsRequestBundle = ({
       blockedGateHandoffStatus: blockedGateHandoff?.status ?? null,
       requestCount: requests.length,
       requestIds,
+      allInputCount: allInputIds.length,
+      allInputIds,
+      readyInputIds,
       copyBlocksReady: requests.length > 0 && requests.every((request) => Boolean(cleanString(request.copyReadyText))),
       readyInputCount: missingInputsIntake?.executiveSummary?.readyInputCount ?? null,
       inputCount: missingInputsIntake?.executiveSummary?.inputCount ?? missingInputsKit?.executiveSummary?.inputCount ?? null,
@@ -262,7 +280,7 @@ const buildMissingInputsRequestBundle = ({
       nextSafeAction: 'collect_missing_inputs_without_approval_or_execution',
     },
     requests,
-    postInputCommands: buildPostInputCommands({ missingInputsKit, missingInputsIntake }),
+    postInputCommands: buildPostInputCommands({ missingInputsIntake }),
     hardStops: [
       'This request bundle is not approval.',
       'Do not paste private emails, exact people, exact facts or final public URLs into public reports.',
@@ -288,6 +306,8 @@ const renderMarkdown = (bundle) => {
     '## Summary',
     '',
     `- Request count: ${bundle.executiveSummary.requestCount}`,
+    `- All input count: ${bundle.executiveSummary.allInputCount ?? 'unknown'}`,
+    `- Ready input ids: ${(bundle.executiveSummary.readyInputIds ?? []).join(', ') || 'none'}`,
     `- Copy blocks ready: ${bundle.executiveSummary.copyBlocksReady}`,
     `- Inputs ready: ${bundle.executiveSummary.readyInputCount ?? 'unknown'}/${bundle.executiveSummary.inputCount ?? 'unknown'}`,
     `- Creates private files: ${bundle.executiveSummary.createsPrivateFiles}`,

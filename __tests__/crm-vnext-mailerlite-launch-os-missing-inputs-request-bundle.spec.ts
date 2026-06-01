@@ -221,7 +221,19 @@ describe("CRM vNext MailerLite Launch OS missing-inputs request bundle", () => {
     });
 
     expect(waitingBundle.postInputCommands).not.toContain("npm run preview -- --correction-inputs-file /tmp/private/correction-inputs.json");
+    expect(waitingBundle.postInputCommands).toEqual([]);
     expect(readyBundle.postInputCommands).toContain("npm run preview -- --correction-inputs-file /tmp/private/correction-inputs.json");
+    expect(readyBundle.postInputCommands).toEqual([
+      "npm run preview -- --correction-inputs-file /tmp/private/correction-inputs.json",
+    ]);
+    expect(readyBundle.executiveSummary.requestCount).toBe(5);
+    expect(readyBundle.executiveSummary.allInputCount).toBe(7);
+    expect(readyBundle.executiveSummary.readyInputIds).toEqual([
+      "final_public_links",
+      "subscription_reason_policy",
+    ]);
+    expect(readyBundle.executiveSummary.requestIds).not.toContain("final_public_links");
+    expect(readyBundle.executiveSummary.requestIds).not.toContain("subscription_reason_policy");
     expect(readyBundle.executiveSummary.asksApproval).toBe(false);
     expect(readyBundle.executiveSummary.canAskApprovalNow).toBe(false);
     expect(readyBundle.safety.mailerLiteApiCalled).toBe(false);

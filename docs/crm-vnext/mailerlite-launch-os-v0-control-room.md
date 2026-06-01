@@ -4340,3 +4340,48 @@ Next safe move:
 - Continue from the refreshed current-state evidence.
 - Keep distribution decisions in the pilot/micro-cohort lane until URL and audience gates are mature.
 - Keep CRM signal writes in the post-launch evidence lane until observed events, people and Fact Store review are ready and separately approved.
+
+## Launch OS v0 missing-input request pruning checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only operator cleanup. The missing-inputs request bundle now treats already-ready inputs as current state instead of asking Alejandro for them again. The post-input orchestrator is labeled by the command family that is actually ready, so the current path is the local mini-launch correction preview, not stale seed/CRM packet regeneration.
+
+Evidence:
+
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current missing-inputs request bundle: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-05-31.json`
+- Current post-input orchestrator: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_post_input_orchestrator_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh without an explicit `--date`: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=31`, `testCount=190`.
+- Missing-inputs intake: `status=missing_inputs_intake_partial_no_live_changes`, `readyInputCount=2`, `inputCount=6`.
+- Ready inputs no longer requested from Alejandro: `final_public_links`, `subscription_reason_policy`.
+- Remaining requested input ids: `real_observed_events_file`, `exact_people`, `writable_event_screen`, `fact_store_market_review`.
+- Missing-inputs request bundle: `requestCount=4`, `allInputCount=6`, `canAskApprovalNow=false`.
+- Post-input orchestrator: `status=post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes`, `readyCommandCount=1`, `commandsExecuted=false`.
+- Current ready command family: local mini-launch correction preview only.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- This cleanup is local-only and reports-only.
+- Current-state refresh MailerLite API called: `false`; Shopify API called: `false`; CRM live API called: `false`.
+- UI opened: `false`.
+- Subscribers read: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- The refresh read existing historical API-lab receipts as evidence; it did not perform new API calls or mutations for this checkpoint.
+
+Next safe move:
+
+- Use the request bundle only for the 4 unresolved CRM/post-launch learning inputs.
+- Use the post-input orchestrator's single ready command only for local correction-preview regeneration; do not treat it as approval for seed sends, public sends, CRM writes or UI/API mutations.
+- Keep the public/audience send path closed until URL, audience strategy and public-launch readiness gates are explicitly ready.
+- Keep CRM signal writes closed until real observed events, people, writable event screen and Fact Store market review are ready and separately approved.

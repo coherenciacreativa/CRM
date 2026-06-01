@@ -1450,6 +1450,25 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
       missingInputsIntake,
       missingInputsRequestBundle,
       privateInputTemplatePack,
+      postInputOrchestrator: {
+        status: "post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes",
+        executiveSummary: {
+          readyInputCount: 2,
+          readyForSeedApprovalPacket: false,
+          readyForCrmWritePacketRegeneration: false,
+          readyForMiniLaunchCorrectionPreview: true,
+          readyCommandCount: 1,
+          allReadyCommandsAllowed: true,
+          canAskApprovalNow: false,
+          commandsExecuted: false,
+          openLiveMutationGateCount: 0,
+        },
+        actionPlan: {
+          commands: [
+            { id: "prepare_mini_launch_seed_inbox_correction_preview" },
+          ],
+        },
+      },
       taxonomyConsolidationAudit,
       taxonomyRefreshHandoff,
       taxonomyRefreshResponseWorkspace,
@@ -1518,6 +1537,8 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.nextBestMove).toContain("missing-inputs intake");
     expect(audit.executiveSummary.nextBestMove).toContain("missing-inputs request bundle");
     expect(audit.executiveSummary.nextBestMove).toContain("private-input template pack");
+    expect(audit.executiveSummary.nextBestMove).toContain("post-input orchestrator to regenerate local mini-launch correction preview only");
+    expect(audit.executiveSummary.nextBestMove).not.toContain("post-input orchestrator to regenerate seed/CRM packets only");
     expect(audit.executiveSummary.nextBestMove).toContain("taxonomy consolidation audit");
     expect(audit.executiveSummary.nextBestMove).toContain("taxonomy refresh handoff");
     expect(audit.executiveSummary.nextBestMove).toContain("taxonomy response workspace");

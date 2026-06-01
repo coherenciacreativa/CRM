@@ -772,6 +772,8 @@ const buildCurrentState = ({
   const missingInputsRequestBundleIds = (missingInputsRequestBundle?.requests ?? [])
     .map((request) => request?.id)
     .filter(Boolean);
+  const missingInputsRequestBundleReadyInputIds = missingInputsRequestBundle?.executiveSummary?.readyInputIds ?? [];
+  const missingInputsRequestBundleAllInputIds = missingInputsRequestBundle?.executiveSummary?.allInputIds ?? [];
   const privateInputTemplateIds = (privateInputTemplatePack?.templateRows ?? [])
     .map((template) => template?.id)
     .filter(Boolean);
@@ -1320,9 +1322,12 @@ const buildCurrentState = ({
     missingInputsRequestBundle: {
       status: missingInputsRequestBundle?.status ?? null,
       requestCount: missingInputsRequestBundle?.executiveSummary?.requestCount ?? null,
+      allInputCount: missingInputsRequestBundle?.executiveSummary?.allInputCount ?? null,
       inputCount: missingInputsRequestBundle?.executiveSummary?.inputCount ?? null,
       readyInputCount: missingInputsRequestBundle?.executiveSummary?.readyInputCount ?? null,
       requestIds: missingInputsRequestBundleIds,
+      allInputIds: missingInputsRequestBundleAllInputIds,
+      readyInputIds: missingInputsRequestBundleReadyInputIds,
       copyBlocksReady: missingInputsRequestBundle?.executiveSummary?.copyBlocksReady ?? null,
       createsPrivateFiles: missingInputsRequestBundle?.executiveSummary?.createsPrivateFiles ?? null,
       asksApproval: missingInputsRequestBundle?.executiveSummary?.asksApproval ?? null,
@@ -1348,7 +1353,13 @@ const buildCurrentState = ({
     postInputOrchestrator: {
       status: postInputOrchestrator?.status ?? null,
       readyInputCount: postInputOrchestrator?.executiveSummary?.readyInputCount ?? null,
+      readyForSeedApprovalPacket: postInputOrchestrator?.executiveSummary?.readyForSeedApprovalPacket ?? null,
+      readyForCrmWritePacketRegeneration: postInputOrchestrator?.executiveSummary?.readyForCrmWritePacketRegeneration ?? null,
+      readyForMiniLaunchCorrectionPreview: postInputOrchestrator?.executiveSummary?.readyForMiniLaunchCorrectionPreview ?? null,
       readyCommandCount: postInputOrchestrator?.executiveSummary?.readyCommandCount ?? null,
+      readyCommandIds: (postInputOrchestrator?.actionPlan?.commands ?? [])
+        .map((command) => command?.id)
+        .filter(Boolean),
       allReadyCommandsAllowed: postInputOrchestrator?.executiveSummary?.allReadyCommandsAllowed ?? null,
       canAskApprovalNow: postInputOrchestrator?.executiveSummary?.canAskApprovalNow ?? null,
       commandsExecuted: postInputOrchestrator?.executiveSummary?.commandsExecuted ?? null,
@@ -1882,22 +1893,22 @@ const buildMissingInputsKitMove = (currentState) => {
   const kit = currentState?.missingInputsKit;
   if (!kit?.status) return null;
   if (kit.status === 'missing_inputs_kit_ready_no_live_changes') {
-    return `Use the Launch OS missing-inputs kit to collect the ${kit.inputCount ?? 'current'} missing inputs without turning them into approval or execution; input ids: ${kit.inputIds.join(', ') || 'none'}; next safe action: ${kit.nextSafeAction ?? 'collect_missing_inputs_without_approval_or_execution'}.`;
+    return `Use the Launch OS missing-inputs kit as the input-spec catalog, not as the pending ask list: total specs ${kit.inputCount ?? 'current'}, input ids ${kit.inputIds.join(', ') || 'none'}; collect only the currently unresolved request-bundle items, without turning inputs into approval or execution.`;
   }
   return `Refresh the Launch OS missing-inputs kit before requesting new approvals; current status: ${kit.status}.`;
 };
 
 const buildMissingInputsIntakeMove = (currentState) => {
   const intake = currentState?.missingInputsIntake;
-  if (!intake?.status) return 'Generate the Launch OS missing-inputs intake so seed/CRM private inputs are checked locally and redacted before any packet regeneration.';
+  if (!intake?.status) return 'Generate the Launch OS missing-inputs intake so private inputs are checked locally and redacted before any packet regeneration.';
   if (intake.status === 'missing_inputs_intake_waiting_for_inputs_no_live_changes') {
     return `Use the Launch OS missing-inputs intake as the current redacted input state; ready inputs ${intake.readyInputCount ?? 0}/${intake.inputCount ?? 'unknown'}, blockers ${intake.blockerIds.join(', ') || 'none'}, can ask approval now: ${intake.canAskApprovalNow}.`;
   }
   if (intake.status === 'missing_inputs_intake_partial_no_live_changes') {
-    return `Use the Launch OS missing-inputs intake before regenerating packets; ready inputs ${intake.readyInputCount ?? 0}/${intake.inputCount ?? 'unknown'}, present inputs ${intake.presentInputCount ?? 0}, blockers ${intake.blockerIds.join(', ') || 'none'}, full private values stored: ${intake.fullPrivateValuesStoredInReport}.`;
+    return `Use the Launch OS missing-inputs intake before regenerating relevant local packets; ready inputs ${intake.readyInputCount ?? 0}/${intake.inputCount ?? 'unknown'}, present inputs ${intake.presentInputCount ?? 0}, blockers ${intake.blockerIds.join(', ') || 'none'}, full private values stored: ${intake.fullPrivateValuesStoredInReport}.`;
   }
   if (intake.status === 'missing_inputs_intake_all_inputs_ready_no_live_changes') {
-    return `Use the Launch OS missing-inputs intake to regenerate the relevant seed/CRM packets without execution; ready inputs ${intake.readyInputCount}/${intake.inputCount}, can ask approval now: ${intake.canAskApprovalNow}, full private values stored: ${intake.fullPrivateValuesStoredInReport}.`;
+    return `Use the Launch OS missing-inputs intake to regenerate the relevant local packets without execution; ready inputs ${intake.readyInputCount}/${intake.inputCount}, can ask approval now: ${intake.canAskApprovalNow}, full private values stored: ${intake.fullPrivateValuesStoredInReport}.`;
   }
   return `Refresh the Launch OS missing-inputs intake before packet regeneration; current status: ${intake.status}.`;
 };
@@ -1920,11 +1931,30 @@ const buildPrivateInputTemplatePackMove = (currentState) => {
   return `Refresh the Launch OS private-input template pack before using examples; current status: ${pack.status}.`;
 };
 
+const describePostInputCommandScope = (orchestrator) => {
+  const readyCommandIds = orchestrator?.readyCommandIds ?? [];
+  const scopes = [];
+  if (orchestrator?.readyForMiniLaunchCorrectionPreview === true
+    || readyCommandIds.includes('prepare_mini_launch_seed_inbox_correction_preview')) {
+    scopes.push('mini-launch correction preview');
+  }
+  if (orchestrator?.readyForSeedApprovalPacket === true
+    || readyCommandIds.includes('regenerate_seed_send_approval_packet')) {
+    scopes.push('seed-send approval packet');
+  }
+  if (orchestrator?.readyForCrmWritePacketRegeneration === true
+    || readyCommandIds.includes('regenerate_crm_write_approval_packet')) {
+    scopes.push('CRM write approval packet');
+  }
+  if (!scopes.length) return 'the currently listed local packet commands';
+  return `local ${scopes.join(', ')} only`;
+};
+
 const buildPostInputOrchestratorMove = (currentState) => {
   const orchestrator = currentState?.postInputOrchestrator;
   if (!orchestrator?.status) return 'Generate the Launch OS post-input orchestrator so future private inputs route to local packet regeneration instead of reopening closed UI work.';
   if (orchestrator.status === 'post_input_orchestrator_ready_for_local_packet_regeneration_no_live_changes') {
-    return `Use the Launch OS post-input orchestrator to regenerate local seed/CRM packets only; ready commands ${orchestrator.readyCommandCount ?? 'unknown'}, all commands allowed: ${orchestrator.allReadyCommandsAllowed}, commands executed: ${orchestrator.commandsExecuted}.`;
+    return `Use the Launch OS post-input orchestrator to regenerate ${describePostInputCommandScope(orchestrator)}; ready commands ${orchestrator.readyCommandCount ?? 'unknown'}, all commands allowed: ${orchestrator.allReadyCommandsAllowed}, commands executed: ${orchestrator.commandsExecuted}.`;
   }
   return `Use the Launch OS post-input orchestrator as the current wait state; ready inputs ${orchestrator.readyInputCount ?? 0}, ready commands ${orchestrator.readyCommandCount ?? 0}, can ask approval now: ${orchestrator.canAskApprovalNow}, commands executed: ${orchestrator.commandsExecuted}.`;
 };
