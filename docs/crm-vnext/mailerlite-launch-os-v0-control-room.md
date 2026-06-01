@@ -4137,3 +4137,55 @@ Next safe move:
 - Continue local-only with public/audience URL lifecycle gate and exact audience-scope decision design.
 - Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
 - Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 public send preflight decision packet wired - 2026-06-01
+
+Status: active goal, local-only public send preflight decision packet added for `Inteligencia para descansar`. The packet combines the remaining URL lifecycle and audience-scope decision into one human-explainable boundary before any exact approval phrase. Launch OS remains not ready for live operation and no live actions are authorized.
+
+Evidence:
+
+- Public send preflight decision packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public send preflight decision packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.md`
+- Public audience scope packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public send preflight decision packet: `status=public_send_preflight_decision_packet_ready_for_human_explanation_no_live_changes`.
+- Public send preflight decision packet: `decisionExplanationReady=true`, `exactApprovalPhraseAvailable=false`, `canAskExactApprovalNow=false`, `canExecuteNow=false`.
+- Public send preflight decision packet: `urlLifecycleEvidenceReady=true`, `audienceDecisionEvidenceReady=true`, `blockerCount=0`.
+- Recommended URL decision: `promote_existing_unlisted_noindex_preview_links_to_audience_send_ready`.
+- Recommended audience scope: `existing_legacy_onboarding_complete_campaign_audience`, `recommendedAudienceKnownActiveCount=933`.
+- Public launch readiness remains blocked before any exact public-send approval: `readyForExactPublicSendApproval=false`, `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `blockerCount=3`.
+- Public audience scope remains blocked before execution: `publicAudienceScopeReady=false`, `canAskAudienceScopeApprovalNow=false`, `audienceAssignmentExecutionBlockerCount=1`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=31`, `testCount=187`.
+- Current-state refresh: `openLiveGateCount=0`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`, `liveGatesClosed=true`.
+
+Safety:
+
+- The preflight decision packet is local-only and reports-only.
+- Preflight decision packet MailerLite API called: `false`; Shopify API: `false`; CRM live API: `false`.
+- Preflight decision packet subscribers read: `false`; subscriber rows printed: `false`.
+- Subscriber/group/workflow/campaign mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Raw IDs, exact recipients, exact URLs and tokens printed: `false`.
+- Current-state refresh itself reports `mailerLiteApiCalled=false`, `shopifyApiCalled=false`, `crmLiveApiCalled=false`, `subscribersRead=false`.
+
+Decision:
+
+- The next human boundary can now be explained as one combined preflight decision instead of two scattered blockers.
+- The packet recommends using the existing unlisted/noindex preview URLs as the audience-send URL slots for this test launch, without adding navigation or SEO indexing.
+- The packet recommends the existing practical campaign audience as the starting public audience scope, with suppression/exclusion policy still active.
+- The packet deliberately does not generate or print an exact approval phrase.
+- Even after this decision is explained and accepted, audience assignment, public/audience send, workflow/subscriber/group mutation, Shopify live changes and CRM writes remain separate closed boundaries.
+
+Next safe move:
+
+- Explain the URL + audience preflight decision to Alejandro before generating any exact approval phrase.
+- Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
+- Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.

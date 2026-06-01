@@ -62,6 +62,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchPublicLaunchReadinessPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchPublicSendPreflightDecisionPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchShopifyPreviewRouteDecision).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -123,6 +126,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-suppression-policy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-send-preflight-decision-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit.mjs");
@@ -143,6 +147,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-audience-suppression-policy-packet");
     expect(commands).toContain("mailerlite_mini_launch_public_audience_suppression_policy_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-launch-readiness-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-public-send-preflight-decision-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-correction-ui-edit-execution-kit");
@@ -162,6 +167,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json");
+    expect(commands).toContain("mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_decision_confirmation_current_inteligencia_descansar_2026-05-31.json");
     expect(commands).toContain("mailerlite_mini_launch_shopify_preview_route_approval_packet_current_inteligencia_descansar_2026-05-31.json");
@@ -549,6 +555,27 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           liveActionAllowedNow: false,
           blockerCount: 7,
           mailerLiteApiCalled: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          recipientsPrinted: false,
+        },
+        miniLaunchPublicSendPreflightDecisionPacket: {
+          path: paths.miniLaunchPublicSendPreflightDecisionPacket,
+          markdownPath: paths.miniLaunchPublicSendPreflightDecisionPacketMarkdown,
+          status: "public_send_preflight_decision_packet_ready_for_human_explanation_no_live_changes",
+          ok: true,
+          decisionExplanationReady: true,
+          exactApprovalPhraseAvailable: false,
+          canAskExactApprovalNow: false,
+          canExecuteNow: false,
+          urlLifecycleEvidenceReady: true,
+          audienceDecisionEvidenceReady: true,
+          recommendedUrlDecisionId: "promote_existing_unlisted_noindex_preview_links_to_audience_send_ready",
+          recommendedAudienceScopeId: "existing_legacy_onboarding_complete_campaign_audience",
+          recommendedAudienceKnownActiveCount: 933,
+          blockerCount: 0,
+          mailerLiteApiCalled: false,
+          shopifyApiCalled: false,
           sendsPerformed: false,
           exactUrlsPrinted: false,
           recipientsPrinted: false,
