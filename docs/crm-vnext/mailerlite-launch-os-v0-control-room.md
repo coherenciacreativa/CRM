@@ -4467,3 +4467,60 @@ Next safe move:
 - Rerun it only if final links, footer policy or asset inputs change.
 - Continue from the public-launch readiness and CRM observed-event blockers; do not ask for public/audience send approval yet.
 - Keep MailerLite UI/API draft edits, sends, audience assignment, Shopify changes and CRM writes behind separate exact approvals.
+
+## Launch OS v0 pilot distribution strategy packet checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only pilot distribution strategy wired into current-state refresh. The system now has an explicit strategy packet between public-send preflight and any future send/audience approval, so the next distribution conversation stays in market-learning mode instead of drifting into a broad active-subscriber campaign.
+
+Evidence:
+
+- Pilot distribution strategy packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.json`
+- Pilot distribution strategy packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_strategy_packet_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs`
+- Package command: `npm run crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.spec.ts`
+
+Confirmed results:
+
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=32`, `testCount=196`.
+- Pilot distribution strategy packet: `status=pilot_distribution_strategy_packet_ready_no_live_changes`.
+- Strategy packet ready: `true`.
+- Strategy decision ready for explanation: `true`.
+- Recommended strategy: `keep_null_audience_then_micro_cohort_or_opt_in_before_broad_send`.
+- Current default: `keep_null_audience_no_public_send`.
+- Next learning lanes: `manual_micro_cohort_next`, `opt_in_testers_next`.
+- Broad active-subscriber send recommended now: `false`.
+- Existing active-subscriber audience remains future-only.
+- Every-3-days cadence active now: `false`.
+- Final send phrase available: `false`.
+- Can ask final send approval now: `false`.
+- Live action allowed now: `false`.
+- Blocker count: `0`.
+
+Safety:
+
+- This packet is local-only and reports-only.
+- MailerLite API called: `false`; MailerLite UI used: `false`.
+- Shopify API called: `false`; Shopify publish/mutations: `false`.
+- CRM live API called: `false`.
+- Subscribers read: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients, raw IDs and tokens printed: `false`.
+
+Operating meaning:
+
+- The first distribution posture remains Null Audience/no public send.
+- The next real learning exposure should be either exact manual micro-cohort or explicit opt-in testers, with a fresh QA and separate exact approval before any send.
+- Existing active subscribers are relationship capital and remain a later campaign option behind a separate strategy gate.
+- This strategy decision is not approval to assign audiences, send, publish, schedule, mutate subscribers, change workflows, touch Shopify, write CRM signals, append ledgers, update cards/scoring or write Fact Store.
+
+Next safe move:
+
+- Use the packet to explain the pilot distribution strategy when distribution becomes the active boundary.
+- Do not generate or request a final public/audience send approval phrase from this checkpoint.
+- Continue building the weekly proposal/cadence engine locally: autonomous proposal generation, tests/quizzes as the primary microproduct shape, and small interactive games as a secondary format remain roadmap lanes, not live-launch permission.
