@@ -4091,3 +4091,49 @@ Next safe move:
 - Continue local-only with public/audience URL gate and exact audience-scope decision design.
 - Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
 - Stop before any public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 audience assignment execution boundary split - 2026-06-01
+
+Status: active goal, local-only audience-scope semantics updated so Null Audience draft assignment remains an execution boundary instead of a pre-send readiness blocker. Launch OS remains not ready for live operation and no live actions are authorized.
+
+Evidence:
+
+- Public audience scope packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public audience scope packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.md`
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public launch readiness packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public audience scope packet: `status=public_audience_scope_packet_ready_blocked_no_live_changes`.
+- Public audience scope packet: `freshAudienceScanReady=true`, `suppressionStatusScanReady=true`, `suppressionExclusionPolicyReady=true`.
+- Public audience scope packet: pre-scope `blockerCount=2`.
+- Public audience scope packet: `audienceAssignmentExecutionBlockerCount=1`, `currentDraftsRemainInertUntilExactApproval=true`.
+- Public launch readiness packet: `status=mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes`.
+- Public launch readiness packet: pre-send `blockerCount=3`, `postLaunchCrmBlockerCount=7`, `approvalExecutionBlockerCount=2`.
+- Public launch readiness packet: `readyForExactPublicSendApproval=false`, `liveActionAllowedNow=false`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=30`, `testCount=183`.
+- Current-state refresh: `openLiveGateCount=0`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`, `liveGatesClosed=true`.
+
+Safety:
+
+- This boundary split is local-only and reports-only.
+- MailerLite API called by the refreshed state runner: `false`.
+- Shopify API called: `false`.
+- CRM live API called: `false`.
+- Subscriber/group/workflow/campaign mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Raw IDs, exact recipients, exact URLs and tokens printed: `false`.
+
+Decision:
+
+- Keeping the replacement drafts assigned only to `CC · Safety · Null audience · DO NOT SEND` is intentional while URL and audience decisions mature.
+- Reassigning drafts from the empty safety group to a real audience is an execution step that requires exact approval.
+- The remaining pre-send blockers are now URL lifecycle readiness and exact audience-scope decision, not premature audience assignment.
+
+Next safe move:
+
+- Continue local-only with public/audience URL lifecycle gate and exact audience-scope decision design.
+- Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
+- Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.

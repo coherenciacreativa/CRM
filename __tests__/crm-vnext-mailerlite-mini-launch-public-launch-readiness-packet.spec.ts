@@ -178,21 +178,24 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
     expect(report.executiveSummary.readyForExactPublicSendApproval).toBe(false);
     expect(report.executiveSummary.liveActionAllowedNow).toBe(false);
     expect(report.executiveSummary.postLaunchCrmBlockerCount).toBe(2);
-    expect(report.executiveSummary.approvalExecutionBlockerCount).toBe(1);
+    expect(report.executiveSummary.approvalExecutionBlockerCount).toBe(2);
     expect(report.blockersBeforePublicLaunch).toContain("preview_unlisted_noindex_links_are_not_audience_send_links");
     expect(report.blockersBeforePublicLaunch).toContain("exact_public_audience_scope_decision_missing");
-    expect(report.blockersBeforePublicLaunch).toContain("current_drafts_point_only_to_empty_safety_group");
+    expect(report.blockersBeforePublicLaunch).not.toContain("current_drafts_point_only_to_empty_safety_group");
     expect(report.blockersBeforePublicLaunch).not.toContain("real_observed_event_file_missing");
     expect(report.blockersBeforePublicLaunch).not.toContain("public_send_approval_not_available");
     expect(report.postLaunchCrmBlockers).toContain("real_observed_event_file_missing");
+    expect(report.approvalExecutionBlockers).toContain("current_drafts_point_only_to_empty_safety_group");
     expect(report.approvalExecutionBlockers).toContain("exact_public_send_approval_not_yet_requested_or_matched");
     expect(report.readinessPolicy).toMatchObject({
       postLaunchCrmWritesAreNotPreSendBlockers: true,
+      nullAudienceDraftAssignmentIsNotPreSendBlocker: true,
       exactApprovalTextIsNotRequiredBeforeReadiness: true,
       executionStillRequiresExactApproval: true,
     });
     expect(markdown).toContain("Ready for exact public send approval: false");
     expect(markdown).toContain("Post-launch CRM writes are not pre-send blockers: true");
+    expect(markdown).toContain("Null Audience draft assignment is not a pre-send blocker: true");
     expect(markdown).toContain("No public or audience send.");
     expect(report.safety).toMatchObject({
       localOnly: true,
@@ -256,6 +259,7 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
     expect(report.executiveSummary.exactPublicSendApprovalAlreadyQueued).toBe(false);
     expect(report.blockersBeforeExactPublicSendApproval).toEqual([]);
     expect(report.postLaunchCrmBlockers).toContain("real_observed_event_file_missing");
+    expect(report.approvalExecutionBlockers).toContain("current_drafts_point_only_to_empty_safety_group");
     expect(report.approvalExecutionBlockers).toContain("exact_public_send_approval_not_yet_requested_or_matched");
   });
 

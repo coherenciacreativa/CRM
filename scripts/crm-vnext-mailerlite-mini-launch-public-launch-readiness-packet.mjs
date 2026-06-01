@@ -197,6 +197,23 @@ const buildPublicLaunchReadinessPacket = ({
     && shopifyPublicUrlGate?.executiveSummary?.publicAudienceSendUrlGateReady === true
     && shopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady === true;
   const publicAudienceScopeReady = publicAudienceScopePacket?.executiveSummary?.publicAudienceScopeReady === true;
+  const publicAudienceScopePreSendBlockers = (
+    publicAudienceScopePacket?.blockersBeforeScopeReady ?? ['public_audience_scope_not_defined']
+  ).filter((blocker) => blocker !== 'current_drafts_point_only_to_empty_safety_group');
+  const explicitAudienceAssignmentExecutionBlockers =
+    publicAudienceScopePacket?.audienceAssignmentExecutionBlockers;
+  const legacyAudienceAssignmentExecutionBlockers = (publicAudienceScopePacket?.blockersBeforeScopeReady ?? [])
+    .filter((blocker) => blocker === 'current_drafts_point_only_to_empty_safety_group');
+  const currentDraftAudience =
+    publicAudienceScopePacket?.executiveSummary?.currentDraftAudience ?? 'null_audience_safety_group_only';
+  const normalizedAudienceAssignmentExecutionBlockers = Array.isArray(explicitAudienceAssignmentExecutionBlockers)
+    ? explicitAudienceAssignmentExecutionBlockers
+    : legacyAudienceAssignmentExecutionBlockers.length
+      ? legacyAudienceAssignmentExecutionBlockers
+      : currentDraftAudience === 'null_audience_safety_group_only'
+        ? ['current_drafts_point_only_to_empty_safety_group']
+        : [];
+  const audienceAssignmentExecutionReady = normalizedAudienceAssignmentExecutionBlockers.length === 0;
   const crmObservedEventsReady =
     crmWriteApprovalPacket?.executiveSummary?.approvalRequestReady === true
     && crmWriteApprovalPacket?.executiveSummary?.exactEventCountReady > 0
@@ -293,9 +310,27 @@ const buildPublicLaunchReadinessPacket = ({
       },
       blockers: publicAudienceScopeReady
         ? []
-        : (publicAudienceScopePacket?.blockersBeforeScopeReady
-          ?? ['public_audience_scope_not_defined', 'current_drafts_point_only_to_empty_safety_group']),
+        : publicAudienceScopePreSendBlockers,
       nextSafeAction: 'Define audience scope in a separate packet; do not infer it from seed QA or Null Audience drafts.',
+    }),
+    withGateMeta(buildGate({
+      id: 'audience_assignment_execution',
+      label: 'Replacement drafts have not been reassigned from the empty safety audience',
+      ready: audienceAssignmentExecutionReady,
+      evidence: {
+        currentDraftAudience,
+        currentSafetyGroupName: publicAudienceScopePacket?.executiveSummary?.currentSafetyGroupName ?? null,
+        currentSafetyGroupActiveCount:
+          publicAudienceScopePacket?.executiveSummary?.currentSafetyGroupActiveCount ?? null,
+        selectedAudienceScopeId: publicAudienceScopePacket?.executiveSummary?.selectedAudienceScopeId ?? null,
+        currentDraftsRemainInertUntilExactApproval:
+          publicAudienceScopePacket?.executiveSummary?.currentDraftsRemainInertUntilExactApproval ?? null,
+      },
+      blockers: normalizedAudienceAssignmentExecutionBlockers,
+      nextSafeAction: 'Keep replacement drafts inert until an exact execution approval allows assignment to the selected audience.',
+    }), {
+      phase: 'approval_execution',
+      blocksExactPublicSendApprovalReadiness: false,
     }),
     withGateMeta(buildGate({
       id: 'crm_observed_events',
@@ -335,7 +370,8 @@ const buildPublicLaunchReadinessPacket = ({
 
   const preSendGates = gates.filter((gate) => gate.blocksExactPublicSendApprovalReadiness);
   const postLaunchCrmGates = gates.filter((gate) => gate.phase === 'post_launch_crm');
-  const approvalBoundaryGates = gates.filter((gate) => gate.phase === 'approval_boundary');
+  const approvalExecutionGates = gates.filter((gate) =>
+    gate.phase === 'approval_boundary' || gate.phase === 'approval_execution');
   const blockersBeforeExactPublicSendApproval = [
     ...new Set(preSendGates.flatMap((gate) => gate.blockers)),
   ];
@@ -343,7 +379,7 @@ const buildPublicLaunchReadinessPacket = ({
     ...new Set(postLaunchCrmGates.flatMap((gate) => gate.blockers)),
   ];
   const approvalExecutionBlockers = [
-    ...new Set(approvalBoundaryGates.flatMap((gate) => gate.blockers)),
+    ...new Set(approvalExecutionGates.flatMap((gate) => gate.blockers)),
   ];
   const readyForExactPublicSendApproval = preSendGates.every((gate) => gate.ready);
   const status = readyForExactPublicSendApproval
@@ -397,9 +433,10 @@ const buildPublicLaunchReadinessPacket = ({
     readinessPolicy: {
       exactApprovalReadinessRequires: preSendGates.map((gate) => gate.id),
       postLaunchCrmWritesAreNotPreSendBlockers: true,
+      nullAudienceDraftAssignmentIsNotPreSendBlocker: true,
       exactApprovalTextIsNotRequiredBeforeReadiness: true,
       executionStillRequiresExactApproval: true,
-      rationale: 'CRM observed events and Fact Store write evidence are post-launch artifacts. They remain blocked for CRM writes, but they cannot be required before asking for a public/audience send approval.',
+      rationale: 'CRM observed events and Fact Store write evidence are post-launch artifacts, and assigning replacement drafts from the empty safety audience to a real audience is an execution step. Those gates remain closed, but they cannot be required before asking for a public/audience send approval.',
     },
     hardStops: [
       'No public or audience send.',
@@ -479,6 +516,7 @@ const renderMarkdown = (report) => [
   '',
   `- Exact approval readiness requires: ${report.readinessPolicy.exactApprovalReadinessRequires.join(', ')}`,
   `- Post-launch CRM writes are not pre-send blockers: ${report.readinessPolicy.postLaunchCrmWritesAreNotPreSendBlockers}`,
+  `- Null Audience draft assignment is not a pre-send blocker: ${report.readinessPolicy.nullAudienceDraftAssignmentIsNotPreSendBlocker}`,
   `- Exact approval text is not required before readiness: ${report.readinessPolicy.exactApprovalTextIsNotRequiredBeforeReadiness}`,
   `- Execution still requires exact approval: ${report.readinessPolicy.executionStillRequiresExactApproval}`,
   `- Rationale: ${report.readinessPolicy.rationale}`,

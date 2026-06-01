@@ -365,8 +365,10 @@ const buildPublicAudienceScopePacket = ({
     publicAudienceSendUrlGateReady ? null : 'public_audience_url_gate_not_ready',
     freshAudienceScanReady ? null : 'fresh_audience_membership_scan_missing',
     suppressionExclusionPolicyReady ? null : 'suppression_exclusion_policy_missing',
-    'current_drafts_point_only_to_empty_safety_group',
   ]);
+  const audienceAssignmentExecutionBlockers = [
+    'current_drafts_point_only_to_empty_safety_group',
+  ];
 
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -396,9 +398,11 @@ const buildPublicAudienceScopePacket = ({
       recommendedFutureDecisionPath: 'choose_existing_legacy_audience_micro_cohort_or_archive_after_url_gate_and_fresh_scan',
       candidateOptionCount: options.length,
       blockerCount: blockersBeforeScopeReady.length,
+      audienceAssignmentExecutionBlockerCount: audienceAssignmentExecutionBlockers.length,
+      currentDraftsRemainInertUntilExactApproval: true,
       nextSafeAction: freshAudienceScanReady
         ? (suppressionExclusionPolicyReady
-          ? 'Use the fresh aggregate audience scan and suppression policy as evidence, but keep Null Audience drafts inert until URL and exact scope gates are ready.'
+          ? 'Use the fresh aggregate audience scan and suppression policy as evidence, but keep Null Audience drafts inert until exact execution approval.'
           : 'Use the fresh aggregate audience scan as evidence, but keep Null Audience drafts inert until URL, exact scope and suppression policy gates are ready.')
         : 'Keep Null Audience drafts inert and collect a fresh audience-scope decision packet before any public/audience send request.',
     },
@@ -451,6 +455,13 @@ const buildPublicAudienceScopePacket = ({
       'Separate exact public/audience send approval before any send.',
     ],
     blockersBeforeScopeReady,
+    audienceAssignmentExecutionBlockers,
+    scopeReadinessPolicy: {
+      nullAudienceDraftsAreExecutionBoundary: true,
+      exactScopeDecisionDoesNotMutateDrafts: true,
+      audienceAssignmentRequiresExactExecutionApproval: true,
+      rationale: 'Replacement drafts should stay attached only to the empty safety audience while scope and URL decisions mature. Reassigning drafts to a real audience is an execution step, not evidence needed before preparing the decision.',
+    },
     hardStops: [
       'No public or audience send.',
       'No subscriber import, assignment, suppression change or segment mutation.',
@@ -520,7 +531,16 @@ const renderMarkdown = (report) => [
   `- Recommended default now: ${report.executiveSummary.recommendedDefaultNow}`,
   `- Recommended future decision path: ${report.executiveSummary.recommendedFutureDecisionPath}`,
   `- Blocker count: ${report.executiveSummary.blockerCount}`,
+  `- Audience assignment execution blocker count: ${report.executiveSummary.audienceAssignmentExecutionBlockerCount}`,
+  `- Current drafts remain inert until exact approval: ${report.executiveSummary.currentDraftsRemainInertUntilExactApproval}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
+  '',
+  '## Scope Readiness Policy',
+  '',
+  `- Null Audience drafts are execution boundary: ${report.scopeReadinessPolicy.nullAudienceDraftsAreExecutionBoundary}`,
+  `- Exact scope decision does not mutate drafts: ${report.scopeReadinessPolicy.exactScopeDecisionDoesNotMutateDrafts}`,
+  `- Audience assignment requires exact execution approval: ${report.scopeReadinessPolicy.audienceAssignmentRequiresExactExecutionApproval}`,
+  `- Rationale: ${report.scopeReadinessPolicy.rationale}`,
   '',
   '## Audience Scope Options',
   '',
@@ -534,6 +554,10 @@ const renderMarkdown = (report) => [
   '## Blockers Before Scope Ready',
   '',
   renderList(report.blockersBeforeScopeReady),
+  '',
+  '## Audience Assignment Execution Blockers',
+  '',
+  renderList(report.audienceAssignmentExecutionBlockers),
   '',
   '## Hard Stops',
   '',
@@ -594,6 +618,8 @@ const main = async () => {
     suppressionPolicyReportStatus: report.currentSafeState.suppressionPolicyReport?.status ?? null,
     candidateOptionCount: report.executiveSummary.candidateOptionCount,
     blockerCount: report.executiveSummary.blockerCount,
+    audienceAssignmentExecutionBlockerCount:
+      report.executiveSummary.audienceAssignmentExecutionBlockerCount,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
     safety: report.safety,

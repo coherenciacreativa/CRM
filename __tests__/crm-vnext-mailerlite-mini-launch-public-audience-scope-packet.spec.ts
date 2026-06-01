@@ -182,9 +182,16 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
     expect(report.executiveSummary.readyForExactAudienceScopeApproval).toBe(false);
     expect(report.executiveSummary.canAskAudienceScopeApprovalNow).toBe(false);
     expect(report.executiveSummary.recommendedDefaultNow).toBe("keep_null_audience_no_public_send");
+    expect(report.executiveSummary.currentDraftsRemainInertUntilExactApproval).toBe(true);
     expect(report.blockersBeforeScopeReady).toContain("exact_public_audience_scope_decision_missing");
     expect(report.blockersBeforeScopeReady).toContain("public_audience_url_gate_not_ready");
-    expect(report.blockersBeforeScopeReady).toContain("current_drafts_point_only_to_empty_safety_group");
+    expect(report.blockersBeforeScopeReady).not.toContain("current_drafts_point_only_to_empty_safety_group");
+    expect(report.audienceAssignmentExecutionBlockers).toContain("current_drafts_point_only_to_empty_safety_group");
+    expect(report.scopeReadinessPolicy).toMatchObject({
+      nullAudienceDraftsAreExecutionBoundary: true,
+      exactScopeDecisionDoesNotMutateDrafts: true,
+      audienceAssignmentRequiresExactExecutionApproval: true,
+    });
     expect(report.audienceScopeOptions.map((option) => option.id)).toEqual([
       "keep_null_audience_no_public_send",
       "existing_legacy_onboarding_complete_campaign_audience",
@@ -268,8 +275,8 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
     expect(report.blockersBeforeScopeReady).toEqual([
       "exact_public_audience_scope_decision_missing",
       "public_audience_url_gate_not_ready",
-      "current_drafts_point_only_to_empty_safety_group",
     ]);
+    expect(report.audienceAssignmentExecutionBlockers).toEqual(["current_drafts_point_only_to_empty_safety_group"]);
     expect(report.currentSafeState.suppressionPolicyReport).toMatchObject({
       status: "public_audience_suppression_policy_packet_ready_no_live_changes",
       suppressionExclusionPolicyReady: true,
