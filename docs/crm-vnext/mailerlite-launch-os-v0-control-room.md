@@ -3884,3 +3884,54 @@ Next safe move:
 - Continue local-only with readiness/reporting work that reduces the public launch blockers.
 - Do not ask for public/audience send approval until the public launch readiness packet reports `readyForExactPublicSendApproval=true`.
 - Stop before any public/audience send, publish/schedule, workflow, subscriber, Shopify live, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 public audience scope packet wired - 2026-06-01
+
+Status: active goal, local-only audience-scope wiring added after the public launch readiness packet. The generic `public_audience_scope_not_defined` blocker is now expanded into a reusable audience decision packet for `Inteligencia para descansar`; it documents the current Null Audience safety state, candidate future scopes and exact requirements before any public/audience send approval can become askable. Launch OS remains not ready for live operation.
+
+Evidence:
+
+- Public audience scope packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public audience scope packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.md`
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public audience scope packet: `status=public_audience_scope_packet_ready_blocked_no_live_changes`.
+- Public audience scope packet: `audienceScopePacketReady=true`, `publicAudienceScopeReady=false`, `readyForExactAudienceScopeApproval=false`, `canAskAudienceScopeApprovalNow=false`.
+- Public audience scope packet: `recommendedDefaultNow=keep_null_audience_no_public_send`, `candidateOptionCount=5`, `blockerCount=5`.
+- Candidate options documented: keep Null Audience/no public send, existing legacy `Onboarding complete`, future `CC · Audience · General newsletter · Eligible`, future `CC · Audience · Mini-launches · Eligible`, and manual micro-cohort.
+- Public launch readiness packet now consumes the audience scope packet: `publicAudienceScopeReady=false`, `readyForExactPublicSendApproval=false`, `blockerCount=14`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=28`, `testCount=170`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- Public audience scope packet is local-only and reports-only.
+- Current-state refresh safety reports: `mailerLiteApiCalled=false`, `shopifyApiCalled=false`, `crmLiveApiCalled=false`, `subscribersRead=false`.
+- UI opened: false.
+- Subscriber/group/workflow mutations: false.
+- Sends performed: false.
+- Shopify publish/forms, CRM writes, ledgers, cards, scoring and Fact Store writes: false.
+- Raw recipients, raw group/campaign IDs, exact preview URLs, sender values and tokens printed in repo docs: false.
+
+Decision:
+
+- Current replacement drafts remain assigned only to `CC · Safety · Null audience · DO NOT SEND`.
+- `Onboarding complete` is only a candidate broad existing-community scope, not selected or approved.
+- Future `CC · Audience · General newsletter · Eligible` depends on the onboarding v2/audience migration posture.
+- Future `CC · Audience · Mini-launches · Eligible` remains optional and not approved/created.
+- Manual micro-cohort remains blocked until exact people/subscriber evidence exists.
+- No audience scope approval should be requested until the URL gate is audience-send-ready, a fresh audience count/suppression scan exists and the exact scope is selected.
+
+Next safe move:
+
+- Continue local-only with URL lifecycle/public audience gate, fresh audience scan planning and CRM observed-event readiness.
+- Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
+- Stop before any public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.

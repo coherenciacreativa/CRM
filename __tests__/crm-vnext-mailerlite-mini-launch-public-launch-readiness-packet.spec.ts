@@ -51,6 +51,26 @@ const shopifyPreviewRouteExecutionReceipt = {
   },
 };
 
+const publicAudienceScopePacket = {
+  ok: true,
+  status: "public_audience_scope_packet_ready_blocked_no_live_changes",
+  executiveSummary: {
+    audienceScopePacketReady: true,
+    publicAudienceScopeReady: false,
+    selectedAudienceScopeId: null,
+    recommendedDefaultNow: "keep_null_audience_no_public_send",
+    recommendedFutureDecisionPath: "choose_existing_legacy_audience_micro_cohort_or_archive_after_url_gate_and_fresh_scan",
+    candidateOptionCount: 5,
+  },
+  blockersBeforeScopeReady: [
+    "exact_public_audience_scope_decision_missing",
+    "public_audience_url_gate_not_ready",
+    "fresh_audience_membership_scan_missing",
+    "suppression_exclusion_policy_missing",
+    "current_drafts_point_only_to_empty_safety_group",
+  ],
+};
+
 const nullAudienceReplacementExecutionReceipt = {
   ok: true,
   status: "mailerlite_null_audience_replacement_execution_completed_no_sends",
@@ -115,6 +135,8 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
       "/tmp/asset.json",
       "--approval-queue",
       "/tmp/queue.json",
+      "--public-audience-scope-packet",
+      "/tmp/audience.json",
       "--out",
       "/tmp/readiness.json",
       "--markdown-out",
@@ -123,6 +145,7 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
 
     expect(parsed.assetManifest).toBe("/tmp/asset.json");
     expect(parsed.approvalQueue).toBe("/tmp/queue.json");
+    expect(parsed.publicAudienceScopePacket).toBe("/tmp/audience.json");
     expect(parsed.out).toBe("/tmp/readiness.json");
     expect(parsed.markdownOut).toBe("/tmp/readiness.md");
   });
@@ -132,6 +155,7 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
       assetManifest,
       shopifyPublicUrlGate,
       shopifyPreviewRouteExecutionReceipt,
+      publicAudienceScopePacket,
       nullAudienceReplacementExecutionReceipt,
       nullAudienceSeedInboxQa,
       crmWriteApprovalPacket,
@@ -152,7 +176,8 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
     expect(report.executiveSummary.readyForExactPublicSendApproval).toBe(false);
     expect(report.executiveSummary.liveActionAllowedNow).toBe(false);
     expect(report.blockersBeforePublicLaunch).toContain("preview_unlisted_noindex_links_are_not_audience_send_links");
-    expect(report.blockersBeforePublicLaunch).toContain("public_audience_scope_not_defined");
+    expect(report.blockersBeforePublicLaunch).toContain("exact_public_audience_scope_decision_missing");
+    expect(report.blockersBeforePublicLaunch).toContain("current_drafts_point_only_to_empty_safety_group");
     expect(report.blockersBeforePublicLaunch).toContain("real_observed_event_file_missing");
     expect(report.blockersBeforePublicLaunch).toContain("public_send_approval_not_available");
     expect(markdown).toContain("Ready for exact public send approval: false");

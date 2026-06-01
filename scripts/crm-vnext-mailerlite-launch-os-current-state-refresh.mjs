@@ -110,6 +110,31 @@ const safetyClosed = (safety) => [
 
 const buildReportPaths = ({ date, reportsDir }) => {
   const paths = {
+    miniLaunchOsPacket: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_os_v0_packet_2026-05-27.json',
+    ),
+    miniLaunchPathPacket: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_path_packet_2026-05-27.json',
+    ),
+    onboardingTrunkMap: staticReportPath(
+      reportsDir,
+      'mailerlite_onboarding_trunk_map_2026-05-27.json',
+    ),
+    onboardingV2DesignPacket: staticReportPath(
+      reportsDir,
+      'mailerlite_onboarding_v2_decision_design_packet_2026-05-27.json',
+    ),
+    miniLaunchOnboardingHandoffPolicy: staticReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_onboarding_handoff_policy_inteligencia_descansar_2026-05-27.json',
+    ),
+    miniLaunchGroupDryRun: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_group_dry_run',
+      date,
+    ),
     miniLaunchCrmSignalProjectionPacket: miniLaunchReportPath(
       reportsDir,
       'mailerlite_mini_launch_crm_signal_projection_packet',
@@ -144,6 +169,11 @@ const buildReportPaths = ({ date, reportsDir }) => {
     miniLaunchShopifyPublicUrlGate: miniLaunchReportPath(
       reportsDir,
       'mailerlite_mini_launch_shopify_public_url_gate',
+      date,
+    ),
+    miniLaunchPublicAudienceScopePacket: miniLaunchReportPath(
+      reportsDir,
+      'mailerlite_mini_launch_public_audience_scope_packet',
       date,
     ),
     miniLaunchPublicLaunchReadinessPacket: miniLaunchReportPath(
@@ -387,6 +417,12 @@ const validationCommands = () => [
     'syntax-check mini-launch Shopify public URL gate',
   ),
   command(
+    'node_check_mini_launch_public_audience_scope_packet',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs'],
+    'syntax-check mini-launch public audience scope packet',
+  ),
+  command(
     'node_check_mini_launch_public_launch_readiness_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs'],
@@ -540,6 +576,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-asset-manifest.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.spec.ts',
@@ -947,6 +984,38 @@ const buildReportCommands = (paths, validationResult) => {
       'regenerate current Launch OS approval queue report',
     ),
     command(
+      'refresh_mini_launch_public_audience_scope_packet',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-public-audience-scope-packet',
+        '--',
+        '--mini-launch-os-packet',
+        paths.miniLaunchOsPacket,
+        '--mini-launch-path-packet',
+        paths.miniLaunchPathPacket,
+        '--onboarding-trunk-map',
+        paths.onboardingTrunkMap,
+        '--onboarding-v2-design-packet',
+        paths.onboardingV2DesignPacket,
+        '--onboarding-handoff-policy',
+        paths.miniLaunchOnboardingHandoffPolicy,
+        '--mini-launch-group-dry-run',
+        paths.miniLaunchGroupDryRun,
+        '--null-audience-replacement-execution-receipt',
+        paths.miniLaunchNullAudienceReplacementExecutionReceipt,
+        '--null-audience-seed-inbox-qa',
+        paths.miniLaunchNullAudienceSeedInboxQa,
+        '--shopify-public-url-gate',
+        paths.miniLaunchShopifyPublicUrlGate,
+        '--out',
+        paths.miniLaunchPublicAudienceScopePacket,
+        '--markdown-out',
+        paths.miniLaunchPublicAudienceScopePacketMarkdown,
+      ],
+      'regenerate current mini-launch public audience scope packet from local evidence only',
+    ),
+    command(
       'refresh_mini_launch_public_launch_readiness_packet',
       'npm',
       [
@@ -959,6 +1028,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchShopifyPublicUrlGate,
         '--shopify-preview-route-execution-receipt',
         paths.miniLaunchShopifyPreviewRouteExecutionReceipt,
+        '--public-audience-scope-packet',
+        paths.miniLaunchPublicAudienceScopePacket,
         '--null-audience-replacement-execution-receipt',
         paths.miniLaunchNullAudienceReplacementExecutionReceipt,
         '--null-audience-seed-inbox-qa',
@@ -1308,6 +1379,7 @@ const summarizeGeneratedReports = async (paths) => {
     blockedGateHandoff,
     miniLaunchAssetManifest,
     miniLaunchShopifyPublicUrlGate,
+    miniLaunchPublicAudienceScopePacket,
     miniLaunchShopifyPreviewRouteDecision,
     miniLaunchShopifyPreviewRouteApprovalPacket,
     miniLaunchShopifyPreviewRouteExecutionReceipt,
@@ -1339,6 +1411,7 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.blockedGateHandoff),
     readOptionalJson(paths.miniLaunchAssetManifest),
     readOptionalJson(paths.miniLaunchShopifyPublicUrlGate),
+    readOptionalJson(paths.miniLaunchPublicAudienceScopePacket),
     readOptionalJson(paths.miniLaunchShopifyPreviewRouteDecision),
     readOptionalJson(paths.miniLaunchShopifyPreviewRouteApprovalPacket),
     readOptionalJson(paths.miniLaunchShopifyPreviewRouteExecutionReceipt),
@@ -1431,6 +1504,40 @@ const summarizeGeneratedReports = async (paths) => {
       decisionExplanationRequiredBeforeApprovalPhrase:
         miniLaunchShopifyPublicUrlGate?.executiveSummary?.decisionExplanationRequiredBeforeApprovalPhrase ?? null,
       canPublishNow: miniLaunchShopifyPublicUrlGate?.executiveSummary?.canPublishNow ?? null,
+    },
+    miniLaunchPublicAudienceScopePacket: {
+      path: paths.miniLaunchPublicAudienceScopePacket,
+      markdownPath: paths.miniLaunchPublicAudienceScopePacketMarkdown,
+      status: miniLaunchPublicAudienceScopePacket?.status ?? null,
+      ok: miniLaunchPublicAudienceScopePacket?.ok ?? null,
+      audienceScopePacketReady:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.audienceScopePacketReady ?? null,
+      publicAudienceScopeReady:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.publicAudienceScopeReady ?? null,
+      readyForExactAudienceScopeApproval:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.readyForExactAudienceScopeApproval ?? null,
+      canAskAudienceScopeApprovalNow:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.canAskAudienceScopeApprovalNow ?? null,
+      selectedAudienceScopeId:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.selectedAudienceScopeId ?? null,
+      recommendedDefaultNow:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.recommendedDefaultNow ?? null,
+      recommendedFutureDecisionPath:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.recommendedFutureDecisionPath ?? null,
+      candidateOptionCount:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.candidateOptionCount ?? null,
+      blockerCount:
+        miniLaunchPublicAudienceScopePacket?.executiveSummary?.blockerCount ?? null,
+      mailerLiteApiCalled:
+        miniLaunchPublicAudienceScopePacket?.safety?.mailerLiteApiCalled ?? null,
+      subscribersRead:
+        miniLaunchPublicAudienceScopePacket?.safety?.subscribersRead ?? null,
+      sendsPerformed:
+        miniLaunchPublicAudienceScopePacket?.safety?.sendsPerformed ?? null,
+      rawIdsPrinted:
+        miniLaunchPublicAudienceScopePacket?.safety?.rawIdsPrinted ?? null,
+      recipientsPrinted:
+        miniLaunchPublicAudienceScopePacket?.safety?.recipientsPrinted ?? null,
     },
     miniLaunchShopifyPreviewRouteDecision: {
       path: paths.miniLaunchShopifyPreviewRouteDecision,
@@ -1891,6 +1998,7 @@ const renderMarkdown = (receipt) => [
   `- Blocked-gate handoff: ${receipt.generatedReports.blockedGateHandoff.path}`,
   `- Mini-launch asset manifest: ${receipt.generatedReports.miniLaunchAssetManifest.path}`,
   `- Mini-launch Shopify public URL gate: ${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.path}`,
+  `- Mini-launch public audience scope packet: ${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.path}`,
   `- Mini-launch Shopify preview route decision: ${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.path}`,
   `- Mini-launch Shopify preview route approval packet: ${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.path}`,
   `- Mini-launch Shopify preview route execution receipt: ${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.path}`,
@@ -1920,6 +2028,7 @@ const renderMarkdown = (receipt) => [
   `- approval intake: status=${receipt.generatedReports.approvalIntake.status}, approvalTextProvided=${receipt.generatedReports.approvalIntake.approvalTextProvided}, matchedApprovalId=${receipt.generatedReports.approvalIntake.matchedApprovalId}, executionAllowedNow=${receipt.generatedReports.approvalIntake.executionAllowedNow}`,
   `- mini-launch asset manifest: status=${receipt.generatedReports.miniLaunchAssetManifest.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchAssetManifest.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchAssetManifest.publicAudienceSendUrlGateReady}, linkLifecyclePolicy=${receipt.generatedReports.miniLaunchAssetManifest.linkLifecyclePolicy}, requiresAlejandroManualLinks=${receipt.generatedReports.miniLaunchAssetManifest.requiresAlejandroManualLinks}, subscriptionReasonPolicy=${receipt.generatedReports.miniLaunchAssetManifest.subscriptionReasonPolicy}`,
   `- Shopify public URL gate: status=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.status}, finalPublicLinksReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.finalPublicLinksReady}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.publicAudienceSendUrlGateReady}, noSeparateUrlSetsRequired=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.noSeparateUrlSetsRequired}, approvalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.approvalPhraseAvailable}, recommendedVisibilityTier=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.recommendedVisibilityTier}, fullyPublicNavigationRequiredNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.fullyPublicNavigationRequiredNow}, seoIndexingAllowedNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.seoIndexingAllowedNow}, decisionExplanationRequiredBeforeApprovalPhrase=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.decisionExplanationRequiredBeforeApprovalPhrase}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPublicUrlGate.canPublishNow}`,
+  `- mini-launch public audience scope: status=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.status}, audienceScopePacketReady=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.audienceScopePacketReady}, publicAudienceScopeReady=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.publicAudienceScopeReady}, readyForExactAudienceScopeApproval=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.readyForExactAudienceScopeApproval}, canAskAudienceScopeApprovalNow=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.canAskAudienceScopeApprovalNow}, recommendedDefaultNow=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.recommendedDefaultNow}, candidateOptionCount=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.candidateOptionCount}, blockerCount=${receipt.generatedReports.miniLaunchPublicAudienceScopePacket.blockerCount}`,
   `- Shopify preview route decision: status=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.status}, decisionExplanationReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.decisionExplanationReady}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhraseAvailable}, exactApprovalPhrasePrinted=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.exactApprovalPhrasePrinted}, canAskApprovalNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canAskApprovalNow}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteDecision.canPublishNow}`,
   `- Shopify preview route approval packet: status=${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.status}, humanDecisionConfirmed=${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.humanDecisionConfirmed}, exactApprovalPhraseAvailable=${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.exactApprovalPhraseAvailable}, canAskApprovalNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.canAskApprovalNow}, canExecuteNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.canExecuteNow}, canPublishNow=${receipt.generatedReports.miniLaunchShopifyPreviewRouteApprovalPacket.canPublishNow}`,
   `- Shopify preview route execution receipt: status=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.status}, previewRouteReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.previewRouteReady}, targetLinkCount=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.targetLinkCount}, effectivePreviewView=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.effectivePreviewView}, publicAudienceSendUrlGateReady=${receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.publicAudienceSendUrlGateReady}`,
@@ -2092,6 +2201,18 @@ const main = async () => {
       receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.previewRouteReady,
     previewRouteExecutionPublicAudienceSendUrlGateReady:
       receipt.generatedReports.miniLaunchShopifyPreviewRouteExecutionReceipt.publicAudienceSendUrlGateReady,
+    miniLaunchPublicAudienceScopePacketStatus:
+      receipt.generatedReports.miniLaunchPublicAudienceScopePacket.status,
+    miniLaunchPublicAudienceScopeReady:
+      receipt.generatedReports.miniLaunchPublicAudienceScopePacket.publicAudienceScopeReady,
+    miniLaunchPublicAudienceScopeCanAskApprovalNow:
+      receipt.generatedReports.miniLaunchPublicAudienceScopePacket.canAskAudienceScopeApprovalNow,
+    miniLaunchPublicAudienceScopeRecommendedDefaultNow:
+      receipt.generatedReports.miniLaunchPublicAudienceScopePacket.recommendedDefaultNow,
+    miniLaunchPublicAudienceScopeCandidateOptionCount:
+      receipt.generatedReports.miniLaunchPublicAudienceScopePacket.candidateOptionCount,
+    miniLaunchPublicAudienceScopeBlockerCount:
+      receipt.generatedReports.miniLaunchPublicAudienceScopePacket.blockerCount,
     miniLaunchSeedInboxCorrectionUiEditExecutionKitStatus:
       receipt.generatedReports.miniLaunchSeedInboxCorrectionUiEditExecutionKit.status,
     miniLaunchSeedInboxCorrectionUiEditExecutionKitReady:

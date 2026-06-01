@@ -9,6 +9,7 @@ const DEFAULT_REPORTS_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports';
 const DEFAULT_ASSET_MANIFEST = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_SHOPIFY_PUBLIC_URL_GATE = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json`;
+const DEFAULT_PUBLIC_AUDIENCE_SCOPE_PACKET = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_CRM_WRITE_APPROVAL_PACKET = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-05-31.json`;
@@ -23,6 +24,7 @@ Options:
   --asset-manifest <path>                         Current mini-launch asset manifest JSON. Defaults to ${DEFAULT_ASSET_MANIFEST}
   --shopify-public-url-gate <path>                Current Shopify public URL gate JSON. Defaults to ${DEFAULT_SHOPIFY_PUBLIC_URL_GATE}
   --shopify-preview-route-execution-receipt <path> Current Shopify preview route execution receipt JSON. Defaults to ${DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT}
+  --public-audience-scope-packet <path>           Current public audience scope packet JSON. Defaults to ${DEFAULT_PUBLIC_AUDIENCE_SCOPE_PACKET}
   --null-audience-replacement-execution-receipt <path> Current MailerLite Null Audience replacement receipt JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT}
   --null-audience-seed-inbox-qa <path>            Current Null Audience seed inbox QA JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA}
   --crm-write-approval-packet <path>              Current CRM write approval packet JSON. Defaults to ${DEFAULT_CRM_WRITE_APPROVAL_PACKET}
@@ -50,6 +52,7 @@ const parseArgs = (argv) => {
     assetManifest: DEFAULT_ASSET_MANIFEST,
     shopifyPublicUrlGate: DEFAULT_SHOPIFY_PUBLIC_URL_GATE,
     shopifyPreviewRouteExecutionReceipt: DEFAULT_SHOPIFY_PREVIEW_ROUTE_EXECUTION_RECEIPT,
+    publicAudienceScopePacket: DEFAULT_PUBLIC_AUDIENCE_SCOPE_PACKET,
     nullAudienceReplacementExecutionReceipt: DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT,
     nullAudienceSeedInboxQa: DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA,
     crmWriteApprovalPacket: DEFAULT_CRM_WRITE_APPROVAL_PACKET,
@@ -65,6 +68,7 @@ const parseArgs = (argv) => {
     else if (arg === '--asset-manifest') options.assetManifest = argv[++index];
     else if (arg === '--shopify-public-url-gate') options.shopifyPublicUrlGate = argv[++index];
     else if (arg === '--shopify-preview-route-execution-receipt') options.shopifyPreviewRouteExecutionReceipt = argv[++index];
+    else if (arg === '--public-audience-scope-packet') options.publicAudienceScopePacket = argv[++index];
     else if (arg === '--null-audience-replacement-execution-receipt') options.nullAudienceReplacementExecutionReceipt = argv[++index];
     else if (arg === '--null-audience-seed-inbox-qa') options.nullAudienceSeedInboxQa = argv[++index];
     else if (arg === '--crm-write-approval-packet') options.crmWriteApprovalPacket = argv[++index];
@@ -141,6 +145,7 @@ const buildPublicLaunchReadinessPacket = ({
   assetManifest,
   shopifyPublicUrlGate,
   shopifyPreviewRouteExecutionReceipt,
+  publicAudienceScopePacket,
   nullAudienceReplacementExecutionReceipt,
   nullAudienceSeedInboxQa,
   crmWriteApprovalPacket,
@@ -186,7 +191,7 @@ const buildPublicLaunchReadinessPacket = ({
   const publicAudienceSendUrlGateReady = assetManifest?.executiveSummary?.publicAudienceSendUrlGateReady === true
     && shopifyPublicUrlGate?.executiveSummary?.publicAudienceSendUrlGateReady === true
     && shopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady === true;
-  const publicAudienceScopeReady = false;
+  const publicAudienceScopeReady = publicAudienceScopePacket?.executiveSummary?.publicAudienceScopeReady === true;
   const crmObservedEventsReady =
     crmWriteApprovalPacket?.executiveSummary?.approvalRequestReady === true
     && crmWriteApprovalPacket?.executiveSummary?.exactEventCountReady > 0
@@ -271,11 +276,20 @@ const buildPublicLaunchReadinessPacket = ({
       label: 'Public/audience recipient scope is explicitly defined',
       ready: publicAudienceScopeReady,
       evidence: {
+        status: publicAudienceScopePacket?.status ?? null,
+        audienceScopePacketReady: publicAudienceScopePacket?.executiveSummary?.audienceScopePacketReady ?? null,
         currentDraftAudience: 'null_audience_safety_group_only',
         safetyGroupActiveCount: nullAudienceReplacementExecutionReceipt?.preflight?.safetyGroupActiveCount ?? null,
+        selectedAudienceScopeId: publicAudienceScopePacket?.executiveSummary?.selectedAudienceScopeId ?? null,
+        recommendedDefaultNow: publicAudienceScopePacket?.executiveSummary?.recommendedDefaultNow ?? null,
+        recommendedFutureDecisionPath: publicAudienceScopePacket?.executiveSummary?.recommendedFutureDecisionPath ?? null,
+        candidateOptionCount: publicAudienceScopePacket?.executiveSummary?.candidateOptionCount ?? null,
         approvalQueueReadyIds: approvalQueue?.executiveSummary?.readyApprovalIds ?? [],
       },
-      blockers: ['public_audience_scope_not_defined', 'current_drafts_point_only_to_empty_safety_group'],
+      blockers: publicAudienceScopeReady
+        ? []
+        : (publicAudienceScopePacket?.blockersBeforeScopeReady
+          ?? ['public_audience_scope_not_defined', 'current_drafts_point_only_to_empty_safety_group']),
       nextSafeAction: 'Define audience scope in a separate packet; do not infer it from seed QA or Null Audience drafts.',
     }),
     buildGate({
@@ -380,6 +394,7 @@ const loadPacketFromFiles = async (options) => {
     readJsonWithDigest(options.assetManifest, 'asset slots, preview/live URL lifecycle and footer policy'),
     readJsonWithDigest(options.shopifyPublicUrlGate, 'public/audience URL gate state'),
     readJsonWithDigest(options.shopifyPreviewRouteExecutionReceipt, 'preview route QA and noindex evidence'),
+    readJsonWithDigest(options.publicAudienceScopePacket, 'public/audience scope options and current audience blockers'),
     readJsonWithDigest(options.nullAudienceReplacementExecutionReceipt, 'Null Audience replacement draft safety'),
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox delivery and content QA evidence'),
     readJsonWithDigest(options.crmWriteApprovalPacket, 'CRM write blockers and observed-event readiness'),
@@ -390,10 +405,11 @@ const loadPacketFromFiles = async (options) => {
     assetManifest: sources[0].value,
     shopifyPublicUrlGate: sources[1].value,
     shopifyPreviewRouteExecutionReceipt: sources[2].value,
-    nullAudienceReplacementExecutionReceipt: sources[3].value,
-    nullAudienceSeedInboxQa: sources[4].value,
-    crmWriteApprovalPacket: sources[5].value,
-    approvalQueue: sources[6].value,
+    publicAudienceScopePacket: sources[3].value,
+    nullAudienceReplacementExecutionReceipt: sources[4].value,
+    nullAudienceSeedInboxQa: sources[5].value,
+    crmWriteApprovalPacket: sources[6].value,
+    approvalQueue: sources[7].value,
     sourceDigests: sources.map((source) => source.digest),
   });
 };

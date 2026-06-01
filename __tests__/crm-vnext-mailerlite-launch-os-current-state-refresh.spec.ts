@@ -50,6 +50,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchShopifyPublicUrlGate).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchPublicAudienceScopePacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchPublicLaunchReadinessPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json",
     );
@@ -110,6 +113,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-launch-os-current-state-refresh.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-asset-manifest.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-public-url-gate.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-audience-scope-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-public-launch-readiness-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs");
@@ -298,6 +302,26 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           seoIndexingAllowedNow: false,
           decisionExplanationRequiredBeforeApprovalPhrase: true,
           canPublishNow: false,
+        },
+        miniLaunchPublicAudienceScopePacket: {
+          path: paths.miniLaunchPublicAudienceScopePacket,
+          markdownPath: paths.miniLaunchPublicAudienceScopePacketMarkdown,
+          status: "public_audience_scope_packet_ready_blocked_no_live_changes",
+          ok: true,
+          audienceScopePacketReady: true,
+          publicAudienceScopeReady: false,
+          readyForExactAudienceScopeApproval: false,
+          canAskAudienceScopeApprovalNow: false,
+          selectedAudienceScopeId: null,
+          recommendedDefaultNow: "keep_null_audience_no_public_send",
+          recommendedFutureDecisionPath: "choose_existing_legacy_audience_micro_cohort_or_archive_after_url_gate_and_fresh_scan",
+          candidateOptionCount: 5,
+          blockerCount: 5,
+          mailerLiteApiCalled: false,
+          subscribersRead: false,
+          sendsPerformed: false,
+          rawIdsPrinted: false,
+          recipientsPrinted: false,
         },
         miniLaunchShopifyPreviewRouteDecision: {
           path: paths.miniLaunchShopifyPreviewRouteDecision,
