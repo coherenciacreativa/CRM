@@ -86,6 +86,36 @@ const shopifyPublicUrlGate = {
   },
 };
 
+const publicAudienceScanPacket = {
+  ok: true,
+  status: "public_audience_scan_packet_ready_read_only_no_mutations",
+  executiveSummary: {
+    freshAudienceScanReady: true,
+    suppressionStatusScanReady: true,
+    suppressionExclusionPolicyReady: false,
+    candidateGroupCount: 3,
+    subscribersScanned: 933,
+    subscribersMatchedToCandidateGroups: 933,
+  },
+  candidateAudienceGroups: [
+    {
+      name: "CC · Safety · Null audience · DO NOT SEND",
+      apiActiveCount: 0,
+    },
+    {
+      name: "Onboarding complete",
+      apiActiveCount: 933,
+    },
+  ],
+  safety: {
+    readOnly: true,
+    subscriberRowsPrinted: false,
+    rawIdsPrinted: false,
+    recipientsPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
 describe("CRM vNext MailerLite mini-launch public audience scope packet", () => {
   test("normalizes args and defaults to local reports", () => {
     const parsed = parseArgs([
@@ -156,6 +186,39 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
       sendsPerformed: false,
       rawIdsPrinted: false,
       recipientsPrinted: false,
+    });
+  });
+
+  test("consumes the aggregate read-only audience scan and resolves only the fresh-scan blocker", () => {
+    const report = buildPublicAudienceScopePacket({
+      miniLaunchOsPacket,
+      miniLaunchPathPacket,
+      onboardingTrunkMap,
+      onboardingV2DesignPacket,
+      onboardingHandoffPolicy,
+      miniLaunchGroupDryRun,
+      nullAudienceReplacementExecutionReceipt,
+      nullAudienceSeedInboxQa,
+      shopifyPublicUrlGate,
+      publicAudienceScanPacket,
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(report.executiveSummary.freshAudienceScanReady).toBe(true);
+    expect(report.executiveSummary.suppressionStatusScanReady).toBe(true);
+    expect(report.executiveSummary.suppressionExclusionPolicyReady).toBe(false);
+    expect(report.blockersBeforeScopeReady).not.toContain("fresh_audience_membership_scan_missing");
+    expect(report.blockersBeforeScopeReady).toContain("suppression_exclusion_policy_missing");
+    expect(report.blockersBeforeScopeReady).toContain("public_audience_url_gate_not_ready");
+    expect(report.currentSafeState.aggregateScanReport).toMatchObject({
+      status: "public_audience_scan_packet_ready_read_only_no_mutations",
+      subscribersScanned: 933,
+      subscribersMatchedToCandidateGroups: 933,
+    });
+    expect(
+      report.audienceScopeOptions.find((option) => option.id === "existing_legacy_onboarding_complete_campaign_audience"),
+    ).toMatchObject({
+      knownActiveCount: 933,
     });
   });
 

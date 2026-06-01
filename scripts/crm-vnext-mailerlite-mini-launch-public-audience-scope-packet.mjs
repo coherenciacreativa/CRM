@@ -15,6 +15,7 @@ const DEFAULT_MINI_LAUNCH_GROUP_DRY_RUN = `${DEFAULT_REPORTS_DIR}/mailerlite_min
 const DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_replacement_execution_receipt_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_SHOPIFY_PUBLIC_URL_GATE = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_shopify_public_url_gate_current_inteligencia_descansar_2026-05-31.json`;
+const DEFAULT_PUBLIC_AUDIENCE_SCAN_PACKET = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scan_packet_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_OUTPUT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`;
 const DEFAULT_MARKDOWN_OUTPUT = `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.md`;
 
@@ -31,6 +32,7 @@ Options:
   --null-audience-replacement-execution-receipt <path> Current Null Audience replacement receipt JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT}
   --null-audience-seed-inbox-qa <path>            Current Null Audience seed inbox QA JSON. Defaults to ${DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA}
   --shopify-public-url-gate <path>                Current Shopify public URL gate JSON. Defaults to ${DEFAULT_SHOPIFY_PUBLIC_URL_GATE}
+  --public-audience-scan-packet <path>            Optional current read-only public audience scan JSON. Defaults to ${DEFAULT_PUBLIC_AUDIENCE_SCAN_PACKET}
   --out <path>                                    Write JSON report. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                           Write Markdown report. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                                          Show this help
@@ -53,6 +55,7 @@ const parseArgs = (argv) => {
     nullAudienceReplacementExecutionReceipt: DEFAULT_NULL_AUDIENCE_REPLACEMENT_EXECUTION_RECEIPT,
     nullAudienceSeedInboxQa: DEFAULT_NULL_AUDIENCE_SEED_INBOX_QA,
     shopifyPublicUrlGate: DEFAULT_SHOPIFY_PUBLIC_URL_GATE,
+    publicAudienceScanPacket: DEFAULT_PUBLIC_AUDIENCE_SCAN_PACKET,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     help: false,
@@ -70,6 +73,7 @@ const parseArgs = (argv) => {
     else if (arg === '--null-audience-replacement-execution-receipt') options.nullAudienceReplacementExecutionReceipt = argv[++index];
     else if (arg === '--null-audience-seed-inbox-qa') options.nullAudienceSeedInboxQa = argv[++index];
     else if (arg === '--shopify-public-url-gate') options.shopifyPublicUrlGate = argv[++index];
+    else if (arg === '--public-audience-scan-packet') options.publicAudienceScanPacket = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -94,6 +98,37 @@ const readJsonWithDigest = async (path, consultedFor) => {
       consultedFor,
     },
   };
+};
+
+const readOptionalJsonWithDigest = async (path, consultedFor) => {
+  const resolved = resolve(path);
+  try {
+    const raw = await readFile(resolved, 'utf8');
+    return {
+      value: JSON.parse(raw),
+      digest: {
+        path: resolved,
+        present: true,
+        private: false,
+        chars: raw.length,
+        sha256: sha256(raw),
+        consultedFor,
+      },
+    };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return {
+      value: null,
+      digest: {
+        path: resolved,
+        present: false,
+        private: false,
+        chars: 0,
+        sha256: null,
+        consultedFor,
+      },
+    };
+  }
 };
 
 const buildSafety = () => ({
@@ -167,6 +202,7 @@ const buildPublicAudienceScopePacket = ({
   nullAudienceReplacementExecutionReceipt,
   nullAudienceSeedInboxQa,
   shopifyPublicUrlGate,
+  publicAudienceScanPacket = null,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
 }) => {
@@ -200,11 +236,26 @@ const buildPublicAudienceScopePacket = ({
     nullAudienceSeedInboxQa?.status === 'mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes'
     && nullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen === true;
   const publicAudienceSendUrlGateReady = shopifyPublicUrlGate?.executiveSummary?.publicAudienceSendUrlGateReady === true;
+  const freshAudienceScanReady = publicAudienceScanPacket?.executiveSummary?.freshAudienceScanReady === true
+    && publicAudienceScanPacket?.safety?.readOnly === true
+    && publicAudienceScanPacket?.safety?.subscriberRowsPrinted === false
+    && publicAudienceScanPacket?.safety?.rawIdsPrinted === false
+    && publicAudienceScanPacket?.safety?.recipientsPrinted === false
+    && publicAudienceScanPacket?.safety?.tokensPrinted === false;
+  const suppressionStatusScanReady = publicAudienceScanPacket?.executiveSummary?.suppressionStatusScanReady === true;
+  const suppressionExclusionPolicyReady = publicAudienceScanPacket?.executiveSummary?.suppressionExclusionPolicyReady === true;
 
   const sourceReceiptGroup = miniLaunchGroupDryRun?.launch?.sourceGroupCandidate
     ?? 'CC · Source · Quiz · Inteligencia para descansar';
   const deliveredReceiptGroup = miniLaunchGroupDryRun?.launch?.deliveredGroupCandidate
     ?? 'CC · Delivered · Quiz result · Inteligencia para descansar';
+  const scannedGroupByName = new Map(
+    (publicAudienceScanPacket?.candidateAudienceGroups ?? [])
+      .filter((group) => group?.name)
+      .map((group) => [group.name, group]),
+  );
+  const scannedActiveCount = (groupName, fallback = null) =>
+    scannedGroupByName.get(groupName)?.apiActiveCount ?? fallback;
 
   const options = [
     buildAudienceScopeOption({
@@ -212,7 +263,7 @@ const buildPublicAudienceScopePacket = ({
       label: 'Keep replacement drafts assigned only to the empty safety audience',
       posture: 'safe_current_state',
       groupName: safetyGroupName,
-      knownActiveCount: safetyGroupActiveCount,
+      knownActiveCount: scannedActiveCount(safetyGroupName, safetyGroupActiveCount),
       recommendedFor: 'continued QA, archive, or iteration without audience send',
       blockers: ['not_a_public_audience'],
       stillRequires: ['separate public audience decision before any audience send'],
@@ -222,7 +273,7 @@ const buildPublicAudienceScopePacket = ({
       label: 'Use the existing practical campaign audience only if Alejandro chooses a broad first public rehearsal',
       posture: 'candidate_requires_exact_decision',
       groupName: currentLegacyAudienceGroup,
-      knownActiveCount: currentLegacyAudienceActiveCount,
+      knownActiveCount: scannedActiveCount(currentLegacyAudienceGroup, currentLegacyAudienceActiveCount),
       recommendedFor: 'broad existing-community send after URL and suppression gates are ready',
       blockers: [
         'exact_public_audience_scope_decision_missing',
@@ -241,7 +292,7 @@ const buildPublicAudienceScopePacket = ({
       label: 'Use the future general newsletter eligibility group after onboarding v2 migration separates Journey from Audience',
       posture: 'future_after_migration',
       groupName: futureGeneralNewsletterGroup,
-      knownActiveCount: null,
+      knownActiveCount: scannedActiveCount(futureGeneralNewsletterGroup, null),
       recommendedFor: 'stable frequent-launch audience after v2 audience migration',
       blockers: [
         'onboarding_v2_audience_migration_not_complete',
@@ -259,7 +310,7 @@ const buildPublicAudienceScopePacket = ({
       label: 'Create/use a dedicated mini-launch audience only if later strategy proves it is needed',
       posture: 'future_optional',
       groupName: audienceCandidate,
-      knownActiveCount: null,
+      knownActiveCount: scannedActiveCount(audienceCandidate, null),
       recommendedFor: 'dedicated mini-launch lane after Brand/CRM audience semantics are approved',
       blockers: [
         'dedicated_mini_launch_audience_not_approved',
@@ -296,8 +347,8 @@ const buildPublicAudienceScopePacket = ({
   const blockersBeforeScopeReady = unique([
     'exact_public_audience_scope_decision_missing',
     publicAudienceSendUrlGateReady ? null : 'public_audience_url_gate_not_ready',
-    'fresh_audience_membership_scan_missing',
-    'suppression_exclusion_policy_missing',
+    freshAudienceScanReady ? null : 'fresh_audience_membership_scan_missing',
+    suppressionExclusionPolicyReady ? null : 'suppression_exclusion_policy_missing',
     'current_drafts_point_only_to_empty_safety_group',
   ]);
 
@@ -317,7 +368,10 @@ const buildPublicAudienceScopePacket = ({
       seedInboxQaGreen,
       currentDraftAudience: 'null_audience_safety_group_only',
       currentSafetyGroupName: safetyGroupName,
-      currentSafetyGroupActiveCount: safetyGroupActiveCount,
+      currentSafetyGroupActiveCount: scannedActiveCount(safetyGroupName, safetyGroupActiveCount),
+      freshAudienceScanReady,
+      suppressionStatusScanReady,
+      suppressionExclusionPolicyReady,
       publicAudienceScopeReady: false,
       readyForExactAudienceScopeApproval: false,
       canAskAudienceScopeApprovalNow: false,
@@ -326,13 +380,25 @@ const buildPublicAudienceScopePacket = ({
       recommendedFutureDecisionPath: 'choose_existing_legacy_audience_micro_cohort_or_archive_after_url_gate_and_fresh_scan',
       candidateOptionCount: options.length,
       blockerCount: blockersBeforeScopeReady.length,
-      nextSafeAction: 'Keep Null Audience drafts inert and collect a fresh audience-scope decision packet before any public/audience send request.',
+      nextSafeAction: freshAudienceScanReady
+        ? 'Use the fresh aggregate audience scan as evidence, but keep Null Audience drafts inert until URL, exact scope and suppression policy gates are ready.'
+        : 'Keep Null Audience drafts inert and collect a fresh audience-scope decision packet before any public/audience send request.',
     },
     currentSafeState: {
       draftAudience: safetyGroupName,
-      safetyGroupActiveCount,
+      safetyGroupActiveCount: scannedActiveCount(safetyGroupName, safetyGroupActiveCount),
       seedInboxQaGreen,
       receiptGroupsExistButAreNotAudienceScope: true,
+      aggregateScanReport: publicAudienceScanPacket ? {
+        status: publicAudienceScanPacket.status ?? null,
+        freshAudienceScanReady,
+        suppressionStatusScanReady,
+        suppressionExclusionPolicyReady,
+        candidateGroupCount: publicAudienceScanPacket?.executiveSummary?.candidateGroupCount ?? null,
+        subscribersScanned: publicAudienceScanPacket?.executiveSummary?.subscribersScanned ?? null,
+        subscribersMatchedToCandidateGroups:
+          publicAudienceScanPacket?.executiveSummary?.subscribersMatchedToCandidateGroups ?? null,
+      } : null,
       sourceReceiptGroup: {
         name: sourceReceiptGroup,
         activeCount: groupActiveCount(miniLaunchGroupDryRun, sourceReceiptGroup),
@@ -347,7 +413,9 @@ const buildPublicAudienceScopePacket = ({
     audienceScopeOptions: options,
     audienceDecisionRequirements: [
       'Exact selected group, segment or micro-cohort.',
-      'Fresh read-only membership/count evidence before send approval.',
+      freshAudienceScanReady
+        ? 'Fresh read-only membership/count evidence exists as aggregate scan input.'
+        : 'Fresh read-only membership/count evidence before send approval.',
       'Suppression, unsubscribe and exclusion posture checked before send approval.',
       'URL lifecycle gate green for audience sending.',
       `No silent assignment to ${handoffTargetGroup} or production onboarding v1.`,
@@ -379,6 +447,7 @@ const loadPacketFromFiles = async (options) => {
     readJsonWithDigest(options.nullAudienceReplacementExecutionReceipt, 'current Null Audience safety draft assignment'),
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox QA status as test-only evidence'),
     readJsonWithDigest(options.shopifyPublicUrlGate, 'URL lifecycle gate before any audience scope can be used'),
+    readOptionalJsonWithDigest(options.publicAudienceScanPacket, 'fresh aggregate public/audience membership and suppression-status scan'),
   ]);
 
   return buildPublicAudienceScopePacket({
@@ -391,6 +460,7 @@ const loadPacketFromFiles = async (options) => {
     nullAudienceReplacementExecutionReceipt: sources[6].value,
     nullAudienceSeedInboxQa: sources[7].value,
     shopifyPublicUrlGate: sources[8].value,
+    publicAudienceScanPacket: sources[9].value,
     sourceDigests: sources.map((source) => source.digest),
   });
 };
@@ -410,6 +480,9 @@ const renderMarkdown = (report) => [
   `- Seed inbox QA green: ${report.executiveSummary.seedInboxQaGreen}`,
   `- Current draft audience: ${report.executiveSummary.currentDraftAudience}`,
   `- Current safety group active count: ${report.executiveSummary.currentSafetyGroupActiveCount}`,
+  `- Fresh audience scan ready: ${report.executiveSummary.freshAudienceScanReady}`,
+  `- Suppression status scan ready: ${report.executiveSummary.suppressionStatusScanReady}`,
+  `- Suppression/exclusion policy ready: ${report.executiveSummary.suppressionExclusionPolicyReady}`,
   `- Public/audience scope ready: ${report.executiveSummary.publicAudienceScopeReady}`,
   `- Ready for exact audience scope approval: ${report.executiveSummary.readyForExactAudienceScopeApproval}`,
   `- Can ask audience scope approval now: ${report.executiveSummary.canAskAudienceScopeApprovalNow}`,
@@ -484,6 +557,9 @@ const main = async () => {
     canAskAudienceScopeApprovalNow: report.executiveSummary.canAskAudienceScopeApprovalNow,
     recommendedDefaultNow: report.executiveSummary.recommendedDefaultNow,
     recommendedFutureDecisionPath: report.executiveSummary.recommendedFutureDecisionPath,
+    freshAudienceScanReady: report.executiveSummary.freshAudienceScanReady,
+    suppressionStatusScanReady: report.executiveSummary.suppressionStatusScanReady,
+    suppressionExclusionPolicyReady: report.executiveSummary.suppressionExclusionPolicyReady,
     candidateOptionCount: report.executiveSummary.candidateOptionCount,
     blockerCount: report.executiveSummary.blockerCount,
     out: options.out ? resolve(options.out) : null,
