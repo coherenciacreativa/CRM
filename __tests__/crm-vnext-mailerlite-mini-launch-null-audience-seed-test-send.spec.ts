@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   EXPECTED_APPROVAL_PHRASE,
+  EXPECTED_E01_CANARY_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
   expectedApprovalPhraseFor,
@@ -85,6 +86,44 @@ const replacementReceipt = {
   },
 };
 
+const canaryName = "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E01 Delivery orientation · API Null Audience visual signature canary";
+const canaryCampaign = campaign({
+  label: "E01",
+  name: canaryName,
+});
+const canaryReplacementReceipt = {
+  ok: true,
+  status: "mailerlite_null_audience_canary_replacement_execution_completed_no_sends",
+  mode: "execute_requested",
+  createdDrafts: [{
+    step: 1,
+    label: "E01",
+    campaignIdSha256: null,
+    name: canaryName,
+  }],
+  postCreateQa: {
+    replacementDraftCount: 1,
+    nullAudienceSafeCount: 1,
+    contentGreenCount: 1,
+    rows: [{
+      label: "E01",
+      contentSha256: htmlStats(canaryCampaign.emails[0].content).sha256,
+    }],
+  },
+  safety: {
+    mailerLiteDraftsCreated: 1,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    additionalGroupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    exactUrlsPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
 describe("CRM vNext MailerLite Null Audience seed test send", () => {
   test("normalizes and matches the exact approval phrase", () => {
     expect(normalizeApprovalPhrase(EXPECTED_APPROVAL_PHRASE)).toBe(normalizeApprovalPhrase(EXPECTED_APPROVAL_PHRASE));
@@ -121,6 +160,20 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(options.uiSentLabels).toEqual(["E04"]);
     expect(expectedApprovalPhraseFor(options.targetLabels)).toBe(EXPECTED_E04_RESEND_APPROVAL_PHRASE);
     expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("sin reenviar E01-E03");
+  });
+
+  test("supports an E01 canary seed-test boundary with its own exact phrase", () => {
+    const options = parseArgs([
+      "--target-labels",
+      "E01",
+      "--execute",
+      "--approval-phrase",
+      EXPECTED_E01_CANARY_APPROVAL_PHRASE,
+    ]);
+
+    expect(options.targetLabels).toEqual(["E01"]);
+    expect(expectedApprovalPhraseFor(options.targetLabels)).toBe(EXPECTED_E01_CANARY_APPROVAL_PHRASE);
+    expect(EXPECTED_E01_CANARY_APPROVAL_PHRASE).toContain("sin reenviar E02-E04");
   });
 
   test("accepts a completed replacement receipt and green fresh campaign scan", () => {
@@ -162,6 +215,29 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(preflight.approvalMatched).toBe(true);
     expect(preflight.targetLabels).toEqual(["E04"]);
     expect(preflight.targets.map((target) => target.label)).toEqual(["E04"]);
+  });
+
+  test("accepts an E01 canary replacement receipt and limits fresh preflight to that draft", () => {
+    const details = new Map([[canaryCampaign.id, canaryCampaign]]);
+    const preflight = buildPreflight({
+      replacementReceipt: canaryReplacementReceipt,
+      groups: [safetyGroup],
+      campaigns: [canaryCampaign],
+      details,
+      seedEmail: "saludoalsol+seedmail@gmail.com",
+      execute: true,
+      targetLabels: ["E01"],
+      approvalPhrase: EXPECTED_E01_CANARY_APPROVAL_PHRASE,
+    });
+
+    expect(replacementReceiptGreen(canaryReplacementReceipt, ["E01"])).toBe(true);
+    expect(replacementReceiptGreen(canaryReplacementReceipt)).toBe(false);
+    expect(preflight.blockers).toEqual([]);
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.targetLabels).toEqual(["E01"]);
+    expect(preflight.targets.map((target) => target.label)).toEqual(["E01"]);
+    expect(preflight.targets[0].placeholderCount).toBe(0);
+    expect(preflight.targets[0].redactedFinalLinkTokenCount).toBe(0);
   });
 
   test("treats an E04-only send as complete when the single targeted test is recorded", () => {

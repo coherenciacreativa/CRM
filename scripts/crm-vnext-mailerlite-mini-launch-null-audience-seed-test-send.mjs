@@ -28,8 +28,11 @@ const PLACEHOLDERS = [
 ];
 
 const EXPECTED_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 nuevos borradores de reemplazo Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco y QA real verde en MailerLite, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier borrador no sigue en draft, no apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND, tiene placeholders pendientes o falla QA, detenerse y reportar.';
+const EXPECTED_E01_CANARY_APPROVAL_PHRASE = 'Apruebo enviar únicamente un test email desde el borrador canario E01 Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, no tiene placeholders ni tokens redacted pendientes, sin reenviar E02-E04, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
 const EXPECTED_E04_RESEND_APPROVAL_PHRASE = 'Apruebo reenviar únicamente un test email del borrador E04 corregido Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, no tiene placeholders ni tokens redacted pendientes, sin reenviar E01-E03, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si el recipient no queda exactamente en el seed o cualquier QA falla, detenerse y reportar.';
 const DEFAULT_TARGET_LABELS = ['E01', 'E02', 'E03', 'E04'];
+const FULL_REPLACEMENT_RECEIPT_STATUS = 'mailerlite_null_audience_replacement_execution_completed_no_sends';
+const CANARY_REPLACEMENT_RECEIPT_STATUS = 'mailerlite_null_audience_canary_replacement_execution_completed_no_sends';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs [options]
@@ -397,28 +400,43 @@ const htmlStats = (html) => {
   };
 };
 
-const replacementReceiptGreen = (receipt) =>
-  receipt?.ok === true
-  && receipt?.status === 'mailerlite_null_audience_replacement_execution_completed_no_sends'
-  && receipt?.mode === 'execute_requested'
-  && receipt?.createdDrafts?.length === 4
-  && receipt?.postCreateQa?.replacementDraftCount === 4
-  && receipt?.postCreateQa?.nullAudienceSafeCount === 4
-  && receipt?.postCreateQa?.contentGreenCount === 4
-  && receipt?.safety?.mailerLiteDraftsCreated === 4
-  && receipt?.safety?.campaignsPublished === false
-  && receipt?.safety?.campaignsScheduled === false
-  && receipt?.safety?.sendsPerformed === false
-  && receipt?.safety?.subscribersRead === false
-  && receipt?.safety?.subscriberMutationsPerformed === false
-  && receipt?.safety?.additionalGroupsCreatedOrAssigned === false
-  && receipt?.safety?.workflowMutationsPerformed === false
-  && receipt?.safety?.exactUrlsPrinted === false
-  && receipt?.safety?.tokensPrinted === false;
-
+const targetLabelsAreE01Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E01';
 const targetLabelsAreE04Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E04';
+const replacementReceiptGreen = (receipt, targetLabels = DEFAULT_TARGET_LABELS) => {
+  const labels = Array.isArray(targetLabels) && targetLabels.length ? targetLabels : DEFAULT_TARGET_LABELS;
+  const isE01Canary = targetLabelsAreE01Only(labels);
+  const expectedCount = isE01Canary ? 1 : DEFAULT_TARGET_LABELS.length;
+  const receiptLabels = (receipt?.createdDrafts ?? []).map((row) => cleanString(row?.label)).filter(Boolean);
+  const expectedReceiptStatus = isE01Canary
+    ? CANARY_REPLACEMENT_RECEIPT_STATUS
+    : FULL_REPLACEMENT_RECEIPT_STATUS;
+
+  return receipt?.ok === true
+    && receipt?.status === expectedReceiptStatus
+    && receipt?.mode === 'execute_requested'
+    && receipt?.createdDrafts?.length === expectedCount
+    && labels.every((label) => receiptLabels.includes(label))
+    && receipt?.postCreateQa?.replacementDraftCount === expectedCount
+    && receipt?.postCreateQa?.nullAudienceSafeCount === expectedCount
+    && receipt?.postCreateQa?.contentGreenCount === expectedCount
+    && receipt?.safety?.mailerLiteDraftsCreated === expectedCount
+    && receipt?.safety?.campaignsPublished === false
+    && receipt?.safety?.campaignsScheduled === false
+    && receipt?.safety?.sendsPerformed === false
+    && receipt?.safety?.subscribersRead === false
+    && receipt?.safety?.subscriberMutationsPerformed === false
+    && receipt?.safety?.additionalGroupsCreatedOrAssigned === false
+    && receipt?.safety?.workflowMutationsPerformed === false
+    && receipt?.safety?.exactUrlsPrinted === false
+    && receipt?.safety?.tokensPrinted === false;
+};
+
 const expectedApprovalPhraseFor = (targetLabels = DEFAULT_TARGET_LABELS) =>
-  targetLabelsAreE04Only(targetLabels) ? EXPECTED_E04_RESEND_APPROVAL_PHRASE : EXPECTED_APPROVAL_PHRASE;
+  targetLabelsAreE01Only(targetLabels)
+    ? EXPECTED_E01_CANARY_APPROVAL_PHRASE
+    : targetLabelsAreE04Only(targetLabels)
+      ? EXPECTED_E04_RESEND_APPROVAL_PHRASE
+      : EXPECTED_APPROVAL_PHRASE;
 
 const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEmail, execute, approvalPhrase, targetLabels = DEFAULT_TARGET_LABELS }) => {
   const blockers = [];
@@ -428,7 +446,7 @@ const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEm
   const normalizedSeed = normalizeEmail(seedEmail);
   const targetLabelSet = new Set(targetLabels);
 
-  if (!replacementReceiptGreen(replacementReceipt)) blockers.push('replacement_receipt_not_green_or_missing');
+  if (!replacementReceiptGreen(replacementReceipt, targetLabels)) blockers.push('replacement_receipt_not_green_or_missing');
   if (!emailLooksValid(normalizedSeed)) blockers.push('seed_email_invalid');
   if (normalizedSeed !== expectedSeed) blockers.push('seed_email_not_exact_approved_recipient');
   if (execute && !approvalMatched) {
@@ -1001,6 +1019,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 
 export {
   EXPECTED_APPROVAL_PHRASE,
+  EXPECTED_E01_CANARY_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
   buildRun,

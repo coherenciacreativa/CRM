@@ -5248,3 +5248,45 @@ Operating meaning:
 - The API route for one-draft canary creation is now proven and safer for iterative render QA than recreating all four drafts first.
 - The next real boundary is a separate human approval to send exactly one test email from the E01 canary draft to the approved seed recipient, followed by seed inbox artifact QA for signature, footer, CTA clickthrough and no raw URL text.
 - Do not create E02-E04 replacements, send E01, send the full set, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this checkpoint alone.
+
+## Launch OS v0 E01 canary seed test checkpoint - 2026-06-02
+
+Status: active goal, Alejandro approved exactly one E01 canary test email, fresh MailerLite API preflight was green, and the E01 test was sent through MailerLite UI with Computer Use after the API test-send route failed safely before sending. Gmail read-only readback found the latest matching E01 test message at the approved seed recipient. This checkpoint does not authorize E02-E04 sends, audience sends, public launch, schedule, workflow, subscriber actions, Shopify actions, CRM writes or full four-email replacement.
+
+Evidence:
+
+- Canary replacement execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_replacement_execution_receipt_current_inteligencia_descansar_2026-06-02.json`
+- Canary seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_seed_test_send_preflight_current_inteligencia_descansar_2026-06-02.json`
+- Canary seed-test preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_seed_test_send_preflight_current_inteligencia_descansar_2026-06-02.md`
+- Canary seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-06-02.json`
+- Canary seed-test execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_canary_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-06-02.md`
+- Prior seed inbox artifact QA packet, still historical for the older four-email set: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+
+Confirmed results:
+
+- Canary replacement execution: `ok=true`, `status=mailerlite_null_audience_canary_replacement_execution_completed_no_sends`.
+- Canary seed-test preflight: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- Canary seed-test execution receipt: `ok=true`, `status=mailerlite_null_audience_seed_test_send_completed_test_only`, `mode=record_ui_sent`.
+- Target labels: `E01`; target count: `1`; QA green count: `1`; test emails sent: `1`.
+- Test-send execution channel: `mailerlite_ui_manual_assisted`.
+- API endpoint discovery for test send failed safely before send; no API test email was sent before switching to Computer Use.
+- Gmail read-only readback found the latest matching E01 test message at the approved seed recipient with the expected test subject and CTA link present.
+- Existing seed inbox artifact QA remains historical for the older four-email set and still reports `visualSignatureAssetVerified=false`, so it cannot prove CEO-review readiness for the new E01 canary.
+
+Safety:
+
+- MailerLite API called only for approved fresh QA/preflight and readback before the UI-assisted test.
+- MailerLite UI used only for the approved E01 canary test email.
+- E02-E04 test emails sent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read/mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw campaign/group IDs, sender values, raw message IDs and tokens printed: `false`.
+
+Operating meaning:
+
+- The one-draft canary path is now proven through creation, safety preflight, UI-assisted test send and Gmail delivery readback.
+- The next active edge is canary inbox artifact QA: verify the received E01 rendering, visual signature, canonical footer, CTA clickthrough and absence of raw visible URLs.
+- Do not create E02-E04 replacements, send the full set, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness until E01 canary inbox artifact QA is green.
