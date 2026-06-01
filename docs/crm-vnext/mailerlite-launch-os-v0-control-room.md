@@ -1629,6 +1629,29 @@ Result:
 
 This is the operating cadence for the future mini-launch machine. It prevents speed from becoming drift: the agency can increase frequency only after the review, seed-test and learning loops are proven.
 
+### Proposal engine cadence checkpoint - 2026-06-01
+
+Status: roadmap lane wired into the local cadence board, no live changes.
+
+Evidence:
+
+- Current cadence board report: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_current_2026-06-01.md`
+- Current cadence board JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_cadence_board_current_2026-06-01.json`
+- Script: `scripts/crm-vnext-mailerlite-mini-launch-cadence-board.mjs`
+- Test coverage: `__tests__/crm-vnext-mailerlite-mini-launch-cadence-board.spec.ts`
+
+Result:
+
+- Adds `market_learning_proposal` as the first pipeline stage before `idea_intake`, so the future machine does not depend on Alejandro manually naming every opportunity.
+- Defines the future `CEO mini-product proposal packet` as a ranked decision packet, not a raw brainstorm.
+- First cadence target remains weekly; future every-3-days cadence remains designed but inactive until the weekly loop is stable.
+- Preferred formats are now explicit: tests/quizzes are primary, small interactive games are secondary, and quiet guides/audio/practices/checklists remain supporting formats.
+- Backlog fields now capture proposal source, proposal engine status, pain/insight, preferred format, expected resonance, success signal and smallest-responsible test audience.
+- Guardrail remains explicit: proposal generation is not approval to build, publish, send, route, mutate subscribers, write CRM signals, change scoring or touch Fact Store.
+- Current local evidence: `pipelineStageCount=12`, `proposalEngineRoadmapReady=true`, `openLiveGateCount=0`, MailerLite/Shopify/CRM API calls `false`, sends `false`, subscriber/group/workflow mutations `false`.
+
+This keeps the CEO-facing future in view while preserving the Launch OS v0 boundary: first make the machine safe and repeatable, then automate opportunity detection.
+
 ## Mini-launch department review dispatch status
 
 Status: department review dispatch ready, no live changes.

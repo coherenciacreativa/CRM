@@ -111,6 +111,71 @@ const buildCadenceStrategy = () => ({
   ],
 });
 
+const buildProposalEngineRoadmap = () => ({
+  status: 'future_lane_designed_not_current_execution_scope',
+  purpose: 'Detect market-learning opportunities before Alejandro has to name them manually.',
+  firstCadenceTarget: 'weekly_ceo_proposal_packet',
+  futureCadenceTarget: 'every_3_days_after_weekly_loop_is_stable',
+  decisionArtifact: {
+    name: 'CEO mini-product proposal packet',
+    owner: 'Strategy / CRM / Brand Intelligence',
+    format: 'ranked_decision_packet_not_raw_brainstorm',
+    requiredSections: [
+      'theme_or_pain',
+      'audience_signal',
+      'recommended_microproduct',
+      'why_now',
+      'preferred_format',
+      'expected_resonance',
+      'required_assets',
+      'brand_review_path',
+      'web_design_review_path',
+      'crm_learning_goal',
+      'smallest_responsible_test_audience',
+      'kill_continue_criteria',
+      'next_gate',
+    ],
+  },
+  inputsToConsult: [
+    'Brand tone and claim boundaries',
+    'audience context and community language',
+    'previous campaign and seed-test evidence',
+    'CRM signals, replies, clicks, quiz/game completions and market-learning reports',
+    'current content/product strategy',
+    'operator capacity and open Launch OS gates',
+  ],
+  preferredFormats: [
+    {
+      id: 'tests_or_quizzes',
+      priority: 'primary',
+      rationale: 'Familiar, engaging and naturally structured for consent-aware CRM learning.',
+    },
+    {
+      id: 'small_interactive_games',
+      priority: 'secondary',
+      rationale: 'Useful when play clarifies an important theme and can produce clean market-learning signals.',
+    },
+    {
+      id: 'guides_audio_practice_or_checklist',
+      priority: 'supporting',
+      rationale: 'Good fallback when the promise is better served by a quiet resource than by interaction.',
+    },
+  ],
+  readinessBeforeActivation: [
+    'The weekly cadence board is proven with at least two no-live mini-launch rehearsals.',
+    'At least one seed-tested pilot has green inbox QA and closed live gates.',
+    'Brand review can evaluate promise, tone and taxonomy without rewriting the operating model.',
+    'Web Design can produce or review unlisted/noindex preview routes without bespoke confusion.',
+    'CRM can define the learning goal and signal hygiene before any audience send.',
+  ],
+  guardrails: [
+    'A proposal is not approval to build, publish, send, route, mutate subscribers, or write CRM signals.',
+    'Every proposed mini-product still passes Brand, Web Design and CRM review before build or distribution.',
+    'No public/audience send is proposed until URL, audience, CRM evidence and exact approval gates are ready.',
+    'Tests and games must collect only useful, consent-aware learning and avoid manipulative funnel behavior.',
+  ],
+});
+
 const buildWipLimits = () => ({
   liveAdjacentLaunches: 1,
   noLivePrepLaunches: 2,
@@ -123,10 +188,18 @@ const buildWipLimits = () => ({
 
 const buildPipelineStages = () => [
   {
+    id: 'market_learning_proposal',
+    owner: 'Strategy / CRM / Brand Intelligence',
+    purpose: 'Detect a theme, pain, insight or audience signal and turn it into a CEO-ready mini-product proposal.',
+    definitionOfReady: ['Brand canon available', 'CRM/community evidence available', 'operator capacity visible'],
+    definitionOfDone: ['ranked proposal packet ready', 'preferred format selected', 'smallest-responsible test audience proposed'],
+    liveGate: 'closed',
+  },
+  {
     id: 'idea_intake',
-    owner: 'Alejandro / Brand Front Desk',
-    purpose: 'Choose one testable idea from the idea bucket.',
-    definitionOfReady: ['One public promise', 'one audience hypothesis', 'one resource type', 'one learning question'],
+    owner: 'Alejandro / Strategy / Brand Front Desk',
+    purpose: 'Choose one testable idea from the proposal packet or idea bucket.',
+    definitionOfReady: ['One public promise', 'one audience hypothesis', 'one resource type', 'one learning question', 'CEO decision or clear operator selection rule'],
     definitionOfDone: ['launch_id assigned', 'status set to intake_ready', 'risks noted'],
     liveGate: 'closed',
   },
@@ -216,6 +289,7 @@ const buildRoutingPolicy = () => ({
   brand: 'Owns voice, promise, visual/copy criteria, semantic status of MailerLite group names and public/internal separation.',
   webDesign: 'Owns Shopify-native implementation, previews, mobile UX and form placement. Loose HTML is fallback only after blocker declaration.',
   crm: 'Owns relationship intelligence, launch_id, signal interpretation, market learning, card/write gates and CRM-first experiment identity.',
+  strategy: 'Owns the future proposal engine: detects themes, pains and resonance opportunities, then prepares CEO decision packets before build.',
   mailerLite: 'Executes email delivery, groups/receipts and seed tests only after Brand/CRM dry-runs and exact human approval.',
   onboarding: 'Protected trunk. Mini-launches may recommend a future handoff, but no participant is routed into onboarding automatically.',
   alejandro: 'Approves live-adjacent steps, audience launches, workflow changes, subscriber mutations and any Shopify/MailerLite public operation.',
@@ -223,7 +297,7 @@ const buildRoutingPolicy = () => ({
 
 const buildOperatingRhythm = () => ({
   weekly: [
-    'Slot 0: choose one idea, one resource type and one learning question.',
+    'Slot 0: proposal engine prepares a CEO packet; Alejandro or an approved operator selects one idea, one resource type and one learning question.',
     'Slot 1: Brand brief, promise, claims and first copy direction.',
     'Slot 2: Web/Shopify handoff plus email sequence draft.',
     'Slot 3: Brand candidate review, group dry-run and seed-test QA decision packet.',
@@ -241,11 +315,18 @@ const buildOperatingRhythm = () => ({
 
 const buildBacklogFields = () => [
   'idea_id',
+  'proposal_source',
+  'proposal_engine_status',
   'theme',
+  'pain_or_insight',
   'resource_type',
+  'preferred_format',
   'audience_hypothesis',
+  'expected_resonance',
   'public_promise',
   'learning_question',
+  'success_signal',
+  'smallest_responsible_test_audience',
   'status',
   'owner',
   'evidence',
@@ -323,6 +404,7 @@ const buildCadenceBoard = ({
     currentPilot: buildCurrentPilot(readinessBoard),
     launchOsStatus: launchOsPacket?.status ?? null,
     cadenceStrategy: buildCadenceStrategy(),
+    proposalEngineRoadmap: buildProposalEngineRoadmap(),
     wipLimits: buildWipLimits(),
     pipelineStages,
     routingPolicy: buildRoutingPolicy(),
@@ -330,12 +412,14 @@ const buildCadenceBoard = ({
     backlogFields: buildBacklogFields(),
     gateDefaults: buildGateDefaults(),
     nextNoLiveMoves: [
+      'Use the proposal engine roadmap to prepare the next CEO proposal packet manually/local-only before automating it.',
       'Ask Brand to review the full email sequence and group candidate semantics for the current pilot.',
       'Ask Web Design to review the Shopify handoff before any local draft or preview work.',
       'Keep weekly cadence until two no-live rehearsals and one seed test prove the loop.',
       'Use the backlog fields for the next mini-launch idea before creating new MailerLite groups.',
     ],
     operatorWarnings: [
+      'Proposal generation is not build approval, send approval or CRM write approval.',
       'Every-3-days cadence is designed, not active.',
       'Do not let mini-launch speed bypass Brand semantic review or Web/Shopify review.',
       'Do not use receipt groups as human-interest signals without CRM interpretation.',
@@ -348,6 +432,7 @@ const buildCadenceBoard = ({
       pipelineStageCount: pipelineStages.length,
       closedLiveGateCount: buildGateDefaults().length,
       openLiveGateCount: 0,
+      proposalEngineRoadmapReady: true,
     },
   };
 };
@@ -389,6 +474,25 @@ const renderMarkdown = (board) => {
   for (const [key, value] of Object.entries(board.wipLimits)) {
     lines.push(`- ${key}: ${value}`);
   }
+
+  lines.push('', '## Proposal Engine Roadmap', '');
+  lines.push(`- Status: ${board.proposalEngineRoadmap.status}`);
+  lines.push(`- Purpose: ${board.proposalEngineRoadmap.purpose}`);
+  lines.push(`- First cadence target: ${board.proposalEngineRoadmap.firstCadenceTarget}`);
+  lines.push(`- Future cadence target: ${board.proposalEngineRoadmap.futureCadenceTarget}`);
+  lines.push(`- Decision artifact: ${board.proposalEngineRoadmap.decisionArtifact.name}`);
+  lines.push('- Required sections:');
+  lines.push(renderIndentedList(board.proposalEngineRoadmap.decisionArtifact.requiredSections));
+  lines.push('- Inputs to consult:');
+  lines.push(renderIndentedList(board.proposalEngineRoadmap.inputsToConsult));
+  lines.push('- Preferred formats:');
+  for (const format of board.proposalEngineRoadmap.preferredFormats) {
+    lines.push(`  - ${format.id}: ${format.priority}; ${format.rationale}`);
+  }
+  lines.push('- Activation readiness:');
+  lines.push(renderIndentedList(board.proposalEngineRoadmap.readinessBeforeActivation));
+  lines.push('- Guardrails:');
+  lines.push(renderIndentedList(board.proposalEngineRoadmap.guardrails));
 
   lines.push('', '## Pipeline Stages', '');
   for (const stage of board.pipelineStages) {
@@ -512,6 +616,7 @@ export {
   buildGateDefaults,
   buildOperatingRhythm,
   buildPipelineStages,
+  buildProposalEngineRoadmap,
   buildRoutingPolicy,
   buildWipLimits,
   parseArgs,
