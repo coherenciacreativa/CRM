@@ -4189,3 +4189,57 @@ Next safe move:
 - Explain the URL + audience preflight decision to Alejandro before generating any exact approval phrase.
 - Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
 - Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 pilot distribution correction checkpoint - 2026-06-01
+
+Status: active goal, local-only correction after strategic re-anchor. The preflight lane now treats `Inteligencia para descansar` as a market-learning pilot by default, not as a broad subscriber campaign. Launch OS keeps moving toward frequent mini-launch operation, but no mass subscriber send, public/audience send, workflow/subscriber mutation, Shopify live change or CRM write is recommended or authorized.
+
+Evidence:
+
+- Public send preflight decision packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public send preflight decision packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-05-31.md`
+- Public audience scope packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public send preflight decision packet: `status=public_send_preflight_decision_packet_ready_for_human_explanation_no_live_changes`.
+- Public send preflight decision packet: `decisionExplanationReady=true`, `exactApprovalPhraseAvailable=false`, `canAskExactApprovalNow=false`, `canExecuteNow=false`.
+- Recommended URL decision: `keep_existing_unlisted_noindex_preview_links_for_qa_and_micro_cohort_candidate`.
+- Recommended audience scope: `keep_null_audience_no_public_send`, `recommendedAudienceKnownActiveCount=0`.
+- Recommended distribution path: `qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send`.
+- Mass subscriber send recommended now: `false`.
+- Existing active subscriber audience future option only: `true`.
+- Audience strategy gate required before mass send: `true`.
+- Public audience scope packet: `recommendedDefaultNow=keep_null_audience_no_public_send`, `candidateOptionCount=6`.
+- Public audience scope packet: `publicAudienceScopeReady=false`, `canAskAudienceScopeApprovalNow=false`, `currentDraftsRemainInertUntilExactApproval=true`.
+- Public launch readiness remains blocked before any exact public-send approval: `readyForExactPublicSendApproval=false`, `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `blockerCount=3`.
+- Current-state refresh: `testFiles=31`, `testCount=187`, `openLiveGateCount=0`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`, `liveGatesClosed=true`.
+
+Safety:
+
+- This correction is local-only and reports-only.
+- Current-state refresh MailerLite API called: `false`; Shopify API: `false`; CRM live API: `false`.
+- Current-state refresh subscribers read: `false`; subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Raw IDs, exact recipients, exact URLs and tokens printed by the corrected preflight packet: `false`.
+
+Decision:
+
+- Do not change the top-level goal wording yet. The active goal is still right; the drift came from an operational packet recommending the largest technically available audience as the default.
+- Mini-launch pilots should optimize for learning with the smallest responsible exposure first: Null Audience, seed QA, exact micro-cohort, or opt-in testers.
+- Existing active subscriber audiences may remain visible as future options, but never as the default path for a pilot.
+- A broad active-subscriber send requires a separate campaign strategy gate: hypothesis, value proposition, segment rationale, risk, suppression policy, and exact approval.
+- Preview/unlisted/noindex links remain useful for QA and possible micro-cohort access; they are not automatically broad public/audience-send links.
+
+Next safe move:
+
+- Continue building Launch OS v0 from this corrected posture.
+- Keep current replacement drafts inert on the empty safety audience.
+- If the next launch move is distribution, prepare only a pilot distribution strategy decision; do not generate or request a final public/audience send phrase.
+- Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.

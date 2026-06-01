@@ -59,8 +59,10 @@ const publicAudienceScopePacket = {
     publicAudienceScopeReady: false,
     selectedAudienceScopeId: null,
     recommendedDefaultNow: "keep_null_audience_no_public_send",
-    recommendedFutureDecisionPath: "choose_existing_legacy_audience_micro_cohort_or_archive_after_url_gate_and_fresh_scan",
-    candidateOptionCount: 5,
+    recommendedFutureDecisionPath: "qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_subscriber_send",
+    massSubscriberSendRecommendedNow: false,
+    existingActiveSubscriberAudienceFutureOptionOnly: true,
+    candidateOptionCount: 6,
   },
   blockersBeforeScopeReady: [
     "exact_public_audience_scope_decision_missing",

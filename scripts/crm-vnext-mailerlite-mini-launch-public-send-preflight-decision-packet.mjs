@@ -162,9 +162,13 @@ const buildPublicSendPreflightDecisionPacket = ({
 }) => {
   const safety = buildSafety();
   const slotSummaries = slotSummariesFromManifest(assetManifest);
+  const safeDefaultScopeOption = optionById(publicAudienceScopePacket, 'keep_null_audience_no_public_send');
+  const manualMicroCohortOption = optionById(publicAudienceScopePacket, 'manual_micro_cohort');
+  const existingActiveSubscriberAudienceOption =
+    optionById(publicAudienceScopePacket, 'existing_legacy_onboarding_complete_campaign_audience');
   const selectedScopeOption =
-    optionById(publicAudienceScopePacket, 'existing_legacy_onboarding_complete_campaign_audience')
-    ?? optionById(publicAudienceScopePacket, 'manual_micro_cohort')
+    safeDefaultScopeOption
+    ?? manualMicroCohortOption
     ?? null;
 
   const seedInboxQaGreen =
@@ -192,12 +196,15 @@ const buildPublicSendPreflightDecisionPacket = ({
     && slotSummaries.length === 3
     && slotSummaries.every((slot) => slot.publicUrlReady && slot.previewUrlReady && !slot.exactPublicUrlStoredInReport);
   const audienceDecisionEvidenceReady =
-    publicAudienceScopePacket?.executiveSummary?.freshAudienceScanReady === true
+    publicAudienceScopePacket?.executiveSummary?.audienceScopePacketReady === true
+    && publicAudienceScopePacket?.executiveSummary?.freshAudienceScanReady === true
     && publicAudienceScopePacket?.executiveSummary?.suppressionStatusScanReady === true
     && publicAudienceScopePacket?.executiveSummary?.suppressionExclusionPolicyReady === true
-    && selectedScopeOption != null
-    && Number.isFinite(selectedScopeOption?.knownActiveCount)
-    && selectedScopeOption.knownActiveCount > 0;
+    && publicAudienceScopePacket?.executiveSummary?.recommendedDefaultNow === 'keep_null_audience_no_public_send'
+    && publicAudienceScopePacket?.executiveSummary?.currentDraftsRemainInertUntilExactApproval === true
+    && safeDefaultScopeOption != null
+    && manualMicroCohortOption != null
+    && existingActiveSubscriberAudienceOption != null;
   const suppressionPolicyReady =
     publicAudienceSuppressionPolicyPacket?.executiveSummary?.suppressionExclusionPolicyReady === true
     && publicAudienceSuppressionPolicyPacket?.safety?.mailerLiteApiCalled === false
@@ -246,22 +253,29 @@ const buildPublicSendPreflightDecisionPacket = ({
       urlLifecycleEvidenceReady,
       audienceDecisionEvidenceReady,
       suppressionPolicyReady,
-      recommendedUrlDecisionId: 'promote_existing_unlisted_noindex_preview_links_to_audience_send_ready',
+      recommendedUrlDecisionId: 'keep_existing_unlisted_noindex_preview_links_for_qa_and_micro_cohort_candidate',
       recommendedAudienceScopeId: selectedScopeOption?.id ?? null,
       recommendedAudienceKnownActiveCount: selectedScopeOption?.knownActiveCount ?? null,
+      recommendedDistributionPath: 'qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_send',
+      massSubscriberSendRecommendedNow: false,
+      existingActiveSubscriberAudienceFutureOptionOnly: true,
+      existingActiveSubscriberAudienceKnownActiveCount:
+        existingActiveSubscriberAudienceOption?.knownActiveCount ?? null,
+      audienceStrategyGateRequiredBeforeMassSend: true,
       blockerCount: blockersBeforeHumanExplanation.length,
       nextSafeAction: decisionExplanationReady
-        ? 'Explain the URL + audience preflight decision to Alejandro before generating any exact approval phrase.'
-        : 'Resolve missing local evidence before explaining or requesting any public-send approval boundary.',
+        ? 'Explain that pilots stay in QA or micro-cohort mode by default; a next phrase may record distribution strategy only, not approve a send.'
+        : 'Resolve missing local evidence before explaining or requesting any distribution approval boundary.',
     },
     recommendedDecision: {
       urlLifecycle: {
-        id: 'promote_existing_unlisted_noindex_preview_links_to_audience_send_ready',
-        meaning: 'Use the existing unlisted/noindex preview URLs as the audience-send URL slots for this test launch, without adding navigation or SEO indexing.',
-        why: 'The same-slot lifecycle avoids creating separate preview/live URL sets, and the current links already pass real-browser QA for exact-link access.',
+        id: 'keep_existing_unlisted_noindex_preview_links_for_qa_and_micro_cohort_candidate',
+        meaning: 'Keep the existing unlisted/noindex preview URLs as exact-link QA and possible micro-cohort URLs, without declaring broad audience send-readiness.',
+        why: 'The same-slot lifecycle avoids creating separate preview/live URL sets, while preserving the option to promote the same slots later after a strategy gate.',
         requiresShopifyMutationNow: false,
         requiresNavigationChangeNow: false,
         requiresSeoIndexingNow: false,
+        broadAudienceSendReadyNow: false,
         stillRequiresExactApprovalBeforeUse: true,
         slotCount: slotSummaries.length,
         slots: slotSummaries,
@@ -271,11 +285,20 @@ const buildPublicSendPreflightDecisionPacket = ({
         label: selectedScopeOption?.label ?? null,
         groupName: selectedScopeOption?.groupName ?? null,
         knownActiveCount: selectedScopeOption?.knownActiveCount ?? null,
-        why: 'This uses an already observed practical campaign audience, avoids creating a new group, and keeps suppression/exclusion policy active.',
+        why: 'This keeps the pilot in the inert safety lane while the system learns through QA, seed checks, and later exact micro-cohort or opt-in tester choices.',
+        marketLearningPath: 'QA evidence first, then exact micro-cohort or opt-in testers, then only later a separate broad campaign strategy gate if warranted.',
+        massSubscriberSendRecommendedNow: false,
+        existingActiveSubscriberAudience: {
+          id: existingActiveSubscriberAudienceOption?.id ?? null,
+          groupName: existingActiveSubscriberAudienceOption?.groupName ?? null,
+          knownActiveCount: existingActiveSubscriberAudienceOption?.knownActiveCount ?? null,
+          posture: 'future_option_only_requires_separate_campaign_strategy_gate',
+        },
         alternatives: [
           'manual_micro_cohort',
+          'opt_in_testers',
+          'existing_legacy_onboarding_complete_campaign_audience_future_only',
           'keep_null_audience_no_public_send',
-          'future_general_newsletter_eligible_after_onboarding_v2',
         ],
         stillRequiresExactApprovalBeforeAssignmentOrSend: true,
       },
@@ -284,14 +307,19 @@ const buildPublicSendPreflightDecisionPacket = ({
       boundaryId: 'mini_launch_public_send_preflight_decision',
       phraseGeneratedByThisPacket: false,
       canGeneratePhraseAfterExplanation: decisionExplanationReady,
+      phraseScope: 'pilot_distribution_strategy_decision_only_no_send',
+      finalSendPhraseAvailable: false,
+      whyFinalSendPhraseStillUnavailable:
+        'The system is re-anchored to pilot learning: no mass subscriber send is recommended now, and any active-audience send needs a separate campaign strategy gate.',
       proposedApprovalWouldOnlyAllow: [
-        'mark the current URL slots as audience-send-ready in local evidence if Alejandro accepts the unlisted/noindex route for this test launch',
-        'record the selected audience-scope decision locally',
-        'prepare the final public-send approval packet after a fresh re-scan',
+        'record that the current pilot distribution default is no public send / Null Audience safety',
+        'record that micro-cohort or opt-in tester distribution is the next learning lane if Alejandro later chooses it',
+        'keep the existing active-subscriber audience as a future option only, not the default recommendation',
       ],
       stillClosedEvenAfterDecisionApproval: [
         'MailerLite draft audience assignment',
         'public_or_audience_send',
+        'mass_subscriber_or_existing_active_audience_send',
         'workflow_or_automation_changes',
         'subscriber_import_update_or_suppression_mutation',
         'Shopify navigation or SEO publication',
@@ -301,6 +329,7 @@ const buildPublicSendPreflightDecisionPacket = ({
         'Fact Store writes',
       ],
       requiredFreshEvidenceBeforeAnyFinalSend: [
+        'separate campaign strategy gate if considering existing active subscribers',
         'fresh MailerLite audience scan',
         'fresh Null Audience/draft QA',
         'fresh URL gate receipt with audience-send-ready slots',
@@ -369,6 +398,11 @@ const renderMarkdown = (report) => [
   `- Recommended URL decision: ${report.executiveSummary.recommendedUrlDecisionId}`,
   `- Recommended audience scope: ${report.executiveSummary.recommendedAudienceScopeId}`,
   `- Recommended audience known active count: ${report.executiveSummary.recommendedAudienceKnownActiveCount}`,
+  `- Recommended distribution path: ${report.executiveSummary.recommendedDistributionPath}`,
+  `- Mass subscriber send recommended now: ${report.executiveSummary.massSubscriberSendRecommendedNow}`,
+  `- Existing active subscriber audience future option only: ${report.executiveSummary.existingActiveSubscriberAudienceFutureOptionOnly}`,
+  `- Existing active subscriber audience known active count: ${report.executiveSummary.existingActiveSubscriberAudienceKnownActiveCount}`,
+  `- Audience strategy gate required before mass send: ${report.executiveSummary.audienceStrategyGateRequiredBeforeMassSend}`,
   `- Blocker count: ${report.executiveSummary.blockerCount}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
   '',
@@ -380,12 +414,17 @@ const renderMarkdown = (report) => [
   `- Audience scope: ${report.recommendedDecision.audienceScope.id}`,
   `- Audience group: ${report.recommendedDecision.audienceScope.groupName}`,
   `- Audience why: ${report.recommendedDecision.audienceScope.why}`,
+  `- Market learning path: ${report.recommendedDecision.audienceScope.marketLearningPath}`,
+  `- Mass subscriber send recommended now: ${report.recommendedDecision.audienceScope.massSubscriberSendRecommendedNow}`,
   '',
   '## Future Approval Boundary',
   '',
   `- Boundary: ${report.futureApprovalBoundary.boundaryId}`,
   `- Phrase generated by this packet: ${report.futureApprovalBoundary.phraseGeneratedByThisPacket}`,
   `- Can generate phrase after explanation: ${report.futureApprovalBoundary.canGeneratePhraseAfterExplanation}`,
+  `- Phrase scope: ${report.futureApprovalBoundary.phraseScope}`,
+  `- Final send phrase available: ${report.futureApprovalBoundary.finalSendPhraseAvailable}`,
+  `- Why final send phrase still unavailable: ${report.futureApprovalBoundary.whyFinalSendPhraseStillUnavailable}`,
   'Proposed approval would only allow:',
   renderList(report.futureApprovalBoundary.proposedApprovalWouldOnlyAllow),
   'Still closed even after decision approval:',
@@ -449,6 +488,14 @@ const main = async () => {
     recommendedUrlDecisionId: report.executiveSummary.recommendedUrlDecisionId,
     recommendedAudienceScopeId: report.executiveSummary.recommendedAudienceScopeId,
     recommendedAudienceKnownActiveCount: report.executiveSummary.recommendedAudienceKnownActiveCount,
+    recommendedDistributionPath: report.executiveSummary.recommendedDistributionPath,
+    massSubscriberSendRecommendedNow: report.executiveSummary.massSubscriberSendRecommendedNow,
+    existingActiveSubscriberAudienceFutureOptionOnly:
+      report.executiveSummary.existingActiveSubscriberAudienceFutureOptionOnly,
+    existingActiveSubscriberAudienceKnownActiveCount:
+      report.executiveSummary.existingActiveSubscriberAudienceKnownActiveCount,
+    audienceStrategyGateRequiredBeforeMassSend:
+      report.executiveSummary.audienceStrategyGateRequiredBeforeMassSend,
     blockerCount: report.executiveSummary.blockerCount,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,

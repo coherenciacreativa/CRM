@@ -182,6 +182,10 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
     expect(report.executiveSummary.readyForExactAudienceScopeApproval).toBe(false);
     expect(report.executiveSummary.canAskAudienceScopeApprovalNow).toBe(false);
     expect(report.executiveSummary.recommendedDefaultNow).toBe("keep_null_audience_no_public_send");
+    expect(report.executiveSummary.recommendedFutureDecisionPath)
+      .toBe("qa_then_manual_micro_cohort_or_opt_in_testers_before_any_broad_subscriber_send");
+    expect(report.executiveSummary.massSubscriberSendRecommendedNow).toBe(false);
+    expect(report.executiveSummary.existingActiveSubscriberAudienceFutureOptionOnly).toBe(true);
     expect(report.executiveSummary.currentDraftsRemainInertUntilExactApproval).toBe(true);
     expect(report.blockersBeforeScopeReady).toContain("exact_public_audience_scope_decision_missing");
     expect(report.blockersBeforeScopeReady).toContain("public_audience_url_gate_not_ready");
@@ -198,13 +202,25 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
       "future_general_newsletter_eligible",
       "future_mini_launches_eligible",
       "manual_micro_cohort",
+      "opt_in_testers",
     ]);
     expect(report.audienceScopeOptions.find((option) => option.id === "existing_legacy_onboarding_complete_campaign_audience")).toMatchObject({
+      posture: "future_option_requires_campaign_strategy_gate",
       groupName: "Onboarding complete",
       knownActiveCount: 933,
       publicSendReadyNow: false,
     });
+    expect(
+      report.audienceScopeOptions.find((option) => option.id === "existing_legacy_onboarding_complete_campaign_audience")?.blockers,
+    ).toContain("campaign_strategy_gate_missing");
+    expect(report.audienceScopeOptions.find((option) => option.id === "manual_micro_cohort")).toMatchObject({
+      recommendedFor: "default market-learning pilot after seed QA if exact people are available",
+    });
+    expect(report.audienceScopeOptions.find((option) => option.id === "opt_in_testers")).toMatchObject({
+      posture: "candidate_requires_opt_in_roster",
+    });
     expect(markdown).toContain("Public/audience scope ready: false");
+    expect(markdown).toContain("Mass subscriber send recommended now: false");
     expect(markdown).toContain("No public or audience send.");
     expect(report.safety).toMatchObject({
       localOnly: true,
@@ -286,6 +302,9 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
     expect(
       report.audienceScopeOptions.find((option) => option.id === "existing_legacy_onboarding_complete_campaign_audience")?.blockers,
     ).not.toContain("suppression_exclusion_policy_missing");
+    expect(
+      report.audienceScopeOptions.find((option) => option.id === "existing_legacy_onboarding_complete_campaign_audience")?.blockers,
+    ).toContain("campaign_strategy_gate_missing");
   });
 
   test("keeps safety closed by default", () => {
