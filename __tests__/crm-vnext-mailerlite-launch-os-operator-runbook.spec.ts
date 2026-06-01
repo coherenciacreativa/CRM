@@ -957,6 +957,19 @@ const miniLaunchNullAudienceSeedInboxQa = {
   },
 };
 
+const miniLaunchPublicLaunchReadinessPacket = {
+  status: "mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes",
+  executiveSummary: {
+    nullAudienceReplacementDraftsReady: true,
+    previewLinksReady: true,
+    publicAudienceSendUrlGateReady: false,
+    publicAudienceScopeReady: false,
+    crmObservedEventsReady: false,
+    readyForExactPublicSendApproval: false,
+    blockerCount: 3,
+  },
+};
+
 const miniLaunchPublicAudienceScopePacket = {
   status: "public_audience_scope_packet_ready_no_live_changes",
   executiveSummary: {
@@ -1569,6 +1582,7 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
       readinessBoard,
       cadenceBoard,
       backlogBoard,
+      miniLaunchPublicLaunchReadinessPacket,
       miniLaunchPublicAudienceScopePacket,
       miniLaunchPublicSendPreflightDecisionPacket,
     });
@@ -1581,6 +1595,8 @@ describe("CRM vNext MailerLite Launch OS operator runbook", () => {
     expect(state.miniLaunch.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
     expect(moves).toContain("Use the public-send preflight decision packet as strategy evidence only");
     expect(moves).toContain("exact send approval remains unavailable");
+    expect(moves).toContain("post-launch CRM observed events ready");
+    expect(moves).toContain("URL and audience gates are ready");
   });
 
   test("closes Onboarding v2 empty-groups approval once execution and post-verify exist", () => {

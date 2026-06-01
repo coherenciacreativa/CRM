@@ -4300,3 +4300,43 @@ Next safe move:
 - Do not ask for or generate any final public/audience send phrase while the public URL gate and audience scope remain incomplete.
 - Do not write CRM signals, ledgers, cards, scoring or Fact Store evidence until the CRM observed-event posture is ready and separately approved.
 - Stop before any audience assignment, public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 next-move de-noise checkpoint - 2026-06-01
+
+Status: active goal, local-only operator clarity cleanup. The goal audit and operator runbook now keep seed QA, pilot distribution and post-launch CRM learning as separate next-move lanes, instead of repeating the same public-send preflight sentence or mixing CRM observed events into the pre-send gate.
+
+Evidence:
+
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.md`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+
+Confirmed results:
+
+- Current-state refresh without an explicit `--date`: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Validation scope: `testFiles=31`, `testCount=190`.
+- Goal audit next-best move includes `Public-send preflight is strategy evidence only` once.
+- Goal audit no longer uses the old pre-send fragment `crmObservedEventsReady=false, blockers=3`.
+- Goal audit now says `postLaunchCrmObservedEventsReady=false` separately.
+- Public send preflight recommended audience remains `keep_null_audience_no_public_send` with `recommendedAudienceKnownActiveCount=0`.
+- Public/audience send approval remains closed: `readyForExactPublicSendApproval=false`, `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- This cleanup is local-only and reports-only.
+- Current-state refresh MailerLite API called: `false`; Shopify API called: `false`; CRM live API called: `false`.
+- UI opened: `false`.
+- Subscribers read: `false`.
+- Subscriber/group/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+
+Next safe move:
+
+- Continue from the refreshed current-state evidence.
+- Keep distribution decisions in the pilot/micro-cohort lane until URL and audience gates are mature.
+- Keep CRM signal writes in the post-launch evidence lane until observed events, people and Fact Store review are ready and separately approved.

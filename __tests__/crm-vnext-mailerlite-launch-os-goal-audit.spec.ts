@@ -1669,6 +1669,9 @@ describe("CRM vNext MailerLite Launch OS goal audit", () => {
     expect(audit.executiveSummary.publicSendPreflightAudienceStrategyGateRequiredBeforeMassSend).toBe(true);
     expect(audit.executiveSummary.nextBestMove).toContain("Public-send preflight is strategy evidence only");
     expect(audit.executiveSummary.nextBestMove).toContain("canAskExactApprovalNow=false");
+    expect(audit.executiveSummary.nextBestMove).toContain("postLaunchCrmObservedEventsReady=false");
+    expect(audit.executiveSummary.nextBestMove).not.toContain("crmObservedEventsReady=false, blockers=3");
+    expect(audit.executiveSummary.nextBestMove.match(/Public-send preflight is strategy evidence only/g)).toHaveLength(1);
     expect(audit.nextMoves.join("\n")).toContain("Public-send preflight is strategy evidence only");
   });
 
