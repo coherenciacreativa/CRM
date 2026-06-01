@@ -4857,3 +4857,55 @@ Operating meaning:
 - The next safe edge is repairing the local Shopify preview asset and the email/CTA proof path, then regenerating Product/Value review and integrated QA.
 - Do not ask Alejandro for testers, micro-cohort, opt-in, audience or send approval from this checkpoint.
 - Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.
+
+## Launch OS v0 Shopify preview copy repair checkpoint - 2026-06-01
+
+Status: active goal, local-only/report-only repair completed for the `Inteligencia para descansar` Shopify preview asset. The local preview no longer exposes internal placeholder/resource wiring copy in the scanned result section, and the asset manifest now treats post-preview placeholder removal as a valid lifecycle stage when the preview route execution receipt is present.
+
+Evidence:
+
+- Shopify result section edited locally: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite/sections/result-inteligencia-para-descansar.liquid`
+- Shopify inert preview form snippet edited locally: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite/snippets/mailerlite-inteligencia-para-descansar-form.liquid`
+- Asset manifest JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-01.json`
+- Product/Value review packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-01.json`
+- Integrated experience QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-01.json`
+- Current-state refresh receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-01.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-06-01.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-06-01.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-06-01.json`
+
+Confirmed results:
+
+- Asset manifest: `ok=true`, `status=mini_launch_asset_manifest_ready_for_correction_inputs_no_live_changes`.
+- Asset manifest: `localAssetSlotReadyCount=3`, `publicUrlReadyCount=3`, `previewUrlReadyCount=3`, `finalPublicLinksReady=true`, `publicAudienceSendUrlGateReady=false`.
+- Shopify preview route decision: `status=shopify_preview_route_decision_reference_only_preview_urls_ready_no_live_changes`.
+- Product/Value review: `ok=true`, `status=product_value_review_blocked_before_ceo_review_no_live_changes`.
+- Product/Value gates improved to `readyGateCount=6`, `blockedGateCount=1`, `blockerCount=1`.
+- Product/Value remaining blocker: `real_seed_clickthrough_not_verified`.
+- Shopify local source scan: `shopifyPlaceholderHitCount=0`, `inspectedFileCount=2`.
+- Integrated experience QA: `status=integrated_experience_qa_blocked_before_ceo_review_no_live_changes`, `readyGateCount=4`, `blockedGateCount=3`, `blockerCount=7`.
+- Integrated experience QA blockers no longer include `shopify_asset_placeholders_visible`.
+- Current-state refresh: `ok=true`, `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state validation: `testFiles=37`, `testCount=226`.
+- Operator runbook: `openLiveGateCount=0`.
+- Goal audit: `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `liveGatesClosed=true`.
+
+Safety:
+
+- This checkpoint is local-only and reports-only.
+- MailerLite API called by current-state refresh: `false`; MailerLite UI used: `false`.
+- Shopify API called by current-state refresh: `false`; Shopify publish/mutations by current-state refresh: `false`.
+- CRM live API called: `false`.
+- Subscribers read or mutated: `false`.
+- Subscriber/group/segment/workflow mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Exact URLs, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The Shopify placeholder/internal-copy blocker is closed for the local preview asset.
+- The package is still not CEO-review ready: the next real blockers are canonical MailerLite signature/footer proof and real seed CTA click-through verification.
+- No tester, micro-cohort, opt-in, audience or send decision should be requested from this checkpoint.
+- Do not use this checkpoint as permission for MailerLite, Shopify or CRM live actions.

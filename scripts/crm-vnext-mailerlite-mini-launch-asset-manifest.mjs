@@ -225,7 +225,12 @@ const buildSlot = ({ key, receiptReady, filesByRelativePath, previewExecutionRea
   const source = filesByRelativePath.get(spec.localSourcePath);
   const template = filesByRelativePath.get(spec.templatePath);
   const placeholderPresent = Boolean(source?.content?.includes(spec.requiredPlaceholder));
-  const localEvidenceReady = receiptReady && source?.present === true && template?.present === true && placeholderPresent;
+  const placeholderEvidenceSatisfied = placeholderPresent || previewExecutionReady;
+  const localEvidenceReady =
+    receiptReady
+    && source?.present === true
+    && template?.present === true
+    && placeholderEvidenceSatisfied;
   const previewLink = previewLinksByKey.get(key) ?? null;
   const previewUrlReady = previewExecutionReady
     && previewLink?.stageAfter === 'preview_url_ready'
@@ -236,7 +241,7 @@ const buildSlot = ({ key, receiptReady, filesByRelativePath, previewExecutionRea
     ...(receiptReady ? [] : ['shopify_local_build_receipt_not_ready']),
     ...(source?.present ? [] : [`local_source_missing:${spec.localSourcePath}`]),
     ...(template?.present ? [] : [`template_missing:${spec.templatePath}`]),
-    ...(placeholderPresent ? [] : [`placeholder_missing:${spec.requiredPlaceholder}`]),
+    ...(placeholderEvidenceSatisfied ? [] : [`placeholder_missing:${spec.requiredPlaceholder}`]),
     ...(publicUrlReady ? ['preview_url_not_live_or_promoted_for_audience_send'] : ['public_shopify_url_missing']),
   ];
 

@@ -25,6 +25,14 @@ const resultSection = [
   "</section>",
 ].join("\n");
 
+const polishedResultSection = [
+  "<section>",
+  "<p>Lectura principal lista para QA.</p>",
+  '<div id="practice">Practica breve lista para QA.</div>',
+  '<div id="editorial-note">Nota editorial lista para QA.</div>',
+  "</section>",
+].join("\n");
+
 const fileEvidence = [
   {
     relativePath: "sections/result-inteligencia-para-descansar.liquid",
@@ -43,6 +51,47 @@ const fileEvidence = [
     content: '{"sections":{"main":{"type":"result-inteligencia-para-descansar"}}}',
   },
 ];
+
+const previewRouteExecutionReceipt = {
+  ok: true,
+  status: "shopify_preview_route_execution_completed_unlisted_noindex_no_live_mailerlite_crm",
+  executionSummary: {
+    previewRouteReady: true,
+    publicAudienceSendUrlGateReady: false,
+  },
+  targetLinks: [
+    {
+      key: "result_or_resource_link",
+      stageAfter: "preview_url_ready",
+      audienceSendReady: false,
+      urlSha256: "a".repeat(64),
+    },
+    {
+      key: "practice_link",
+      stageAfter: "preview_url_ready",
+      audienceSendReady: false,
+      urlSha256: "b".repeat(64),
+    },
+    {
+      key: "editorial_note_link",
+      stageAfter: "preview_url_ready",
+      audienceSendReady: false,
+      urlSha256: "c".repeat(64),
+    },
+  ],
+  safety: {
+    scopedLiveShopifyMutationApproved: true,
+    shopifyApiCalled: true,
+    shopifyMutationsPerformed: true,
+    siteNavigationUpdated: false,
+    seoIndexingAllowed: false,
+    realFormsCreated: false,
+    mailerLiteApiCalled: false,
+    mailerLiteMutationsPerformed: false,
+    crmLiveApiCalled: false,
+    sendsPerformed: false,
+  },
+};
 
 describe("CRM vNext MailerLite mini-launch asset manifest", () => {
   test("normalizes args and local report outputs", () => {
@@ -109,6 +158,31 @@ describe("CRM vNext MailerLite mini-launch asset manifest", () => {
       mailerLiteApiCalled: false,
       sendsPerformed: false,
     });
+  });
+
+  test("keeps local asset slots ready after preview placeholders are replaced", () => {
+    const report = buildAssetManifest({
+      shopifyLocalBuildReceipt,
+      shopifyPreviewRouteExecutionReceipt: previewRouteExecutionReceipt,
+      fileEvidence: fileEvidence.map((file) =>
+        file.relativePath === "sections/result-inteligencia-para-descansar.liquid"
+          ? {
+              ...file,
+              chars: polishedResultSection.length,
+              content: polishedResultSection,
+            }
+          : file),
+      shopifyRepo: "/tmp/shopify",
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    expect(report.status).toBe("mini_launch_asset_manifest_ready_for_correction_inputs_no_live_changes");
+    expect(report.executiveSummary.localAssetSlotReadyCount).toBe(3);
+    expect(report.executiveSummary.publicUrlReadyCount).toBe(3);
+    expect(report.executiveSummary.finalPublicLinksReady).toBe(true);
+    expect(report.finalPublicLinks.slots.every((slot) => slot.placeholderPresent === false)).toBe(true);
+    expect(report.finalPublicLinks.slots.every((slot) => slot.linkLifecycle.currentStage === "preview_url_ready")).toBe(true);
+    expect(report.finalPublicLinks.blockers.some((blocker) => blocker.startsWith("placeholder_missing:"))).toBe(false);
   });
 
   test("keeps hard live gates closed even when local evidence is missing", () => {
