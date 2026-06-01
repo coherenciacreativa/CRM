@@ -134,11 +134,18 @@ const closedSafety = (safety) => Object.entries(safety)
 const buildGate = ({ id, label, ready, evidence, blockers = [], nextSafeAction }) => ({
   id,
   label,
+  phase: 'pre_send',
+  blocksExactPublicSendApprovalReadiness: true,
   status: ready ? 'ready' : 'blocked',
   ready,
   evidence,
   blockers,
   nextSafeAction,
+});
+
+const withGateMeta = (gate, meta = {}) => ({
+  ...gate,
+  ...meta,
 });
 
 const buildPublicLaunchReadinessPacket = ({
@@ -180,8 +187,6 @@ const buildPublicLaunchReadinessPacket = ({
     && shopifyPreviewRouteExecutionReceipt?.executionSummary?.previewRouteReady === true
     && shopifyPreviewRouteExecutionReceipt?.executionSummary?.targetLinkCount === 3
     && shopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForLocalCorrectionPreview === true
-    && shopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForPublicAudienceSend === false
-    && shopifyPreviewRouteExecutionReceipt?.executionSummary?.publicAudienceSendUrlGateReady === false
     && shopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.statusHttp200ForAll === true
     && shopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.noindexForAll === true
     && shopifyPreviewRouteExecutionReceipt?.qa?.automatedHtmlQa?.externalFormActionsForAll === 0;
@@ -196,7 +201,7 @@ const buildPublicLaunchReadinessPacket = ({
     crmWriteApprovalPacket?.executiveSummary?.approvalRequestReady === true
     && crmWriteApprovalPacket?.executiveSummary?.exactEventCountReady > 0
     && crmWriteApprovalPacket?.executiveSummary?.exactPersonCountReady > 0;
-  const approvalQueueReadyForLive = (approvalQueue?.executiveSummary?.readyApprovalIds ?? [])
+  const exactPublicSendApprovalAlreadyQueued = (approvalQueue?.executiveSummary?.readyApprovalIds ?? [])
     .includes('mini_launch_public_or_audience_send');
 
   const gates = [
@@ -292,7 +297,7 @@ const buildPublicLaunchReadinessPacket = ({
           ?? ['public_audience_scope_not_defined', 'current_drafts_point_only_to_empty_safety_group']),
       nextSafeAction: 'Define audience scope in a separate packet; do not infer it from seed QA or Null Audience drafts.',
     }),
-    buildGate({
+    withGateMeta(buildGate({
       id: 'crm_observed_events',
       label: 'Real observed events and exact people exist for CRM/Fact Store writes',
       ready: crmObservedEventsReady,
@@ -306,24 +311,41 @@ const buildPublicLaunchReadinessPacket = ({
         ? []
         : (crmWriteApprovalPacket?.executiveSummary?.blockers ?? ['crm_real_observed_events_missing']),
       nextSafeAction: 'Keep CRM writes blocked until real post-launch observations exist and a separate exact approval is provided.',
+    }), {
+      phase: 'post_launch_crm',
+      blocksExactPublicSendApprovalReadiness: false,
     }),
-    buildGate({
+    withGateMeta(buildGate({
       id: 'exact_live_approval',
       label: 'Exact public/audience send approval is available',
-      ready: approvalQueueReadyForLive,
+      ready: exactPublicSendApprovalAlreadyQueued,
       evidence: {
         approvalQueueStatus: approvalQueue?.status ?? null,
         readyApprovalIds: approvalQueue?.executiveSummary?.readyApprovalIds ?? [],
         blockedApprovalIds: approvalQueue?.executiveSummary?.blockedApprovalIds ?? [],
         openLiveMutationGateCount: approvalQueue?.executiveSummary?.openLiveMutationGateCount ?? null,
       },
-      blockers: approvalQueueReadyForLive ? [] : ['public_send_approval_not_available'],
-      nextSafeAction: 'Do not ask for or reuse any live/public send phrase until upstream gates are ready.',
+      blockers: exactPublicSendApprovalAlreadyQueued ? [] : ['exact_public_send_approval_not_yet_requested_or_matched'],
+      nextSafeAction: 'Ask for exact public/audience send approval only after all pre-send gates are ready and explained.',
+    }), {
+      phase: 'approval_boundary',
+      blocksExactPublicSendApprovalReadiness: false,
     }),
   ];
 
-  const blockersBeforePublicLaunch = [...new Set(gates.flatMap((gate) => gate.blockers))];
-  const readyForExactPublicSendApproval = gates.every((gate) => gate.ready);
+  const preSendGates = gates.filter((gate) => gate.blocksExactPublicSendApprovalReadiness);
+  const postLaunchCrmGates = gates.filter((gate) => gate.phase === 'post_launch_crm');
+  const approvalBoundaryGates = gates.filter((gate) => gate.phase === 'approval_boundary');
+  const blockersBeforeExactPublicSendApproval = [
+    ...new Set(preSendGates.flatMap((gate) => gate.blockers)),
+  ];
+  const postLaunchCrmBlockers = [
+    ...new Set(postLaunchCrmGates.flatMap((gate) => gate.blockers)),
+  ];
+  const approvalExecutionBlockers = [
+    ...new Set(approvalBoundaryGates.flatMap((gate) => gate.blockers)),
+  ];
+  const readyForExactPublicSendApproval = preSendGates.every((gate) => gate.ready);
   const status = readyForExactPublicSendApproval
     ? 'mini_launch_public_launch_readiness_ready_for_exact_approval_no_live_changes'
     : seedInboxQaGreen
@@ -354,18 +376,31 @@ const buildPublicLaunchReadinessPacket = ({
         shopifyPreviewRouteExecutionReceipt?.executionSummary?.canUseForPublicAudienceSend ?? null,
       publicAudienceScopeReady,
       crmObservedEventsReady,
-      approvalQueueReadyForLive,
+      postLaunchCrmWriteReady: crmObservedEventsReady,
+      exactPublicSendApprovalAlreadyQueued,
       readyForExactPublicSendApproval,
       readyForLiveOperation: false,
       canAskAlejandroForPublicSendApprovalNow: readyForExactPublicSendApproval,
       liveActionAllowedNow: false,
-      blockerCount: blockersBeforePublicLaunch.length,
+      blockerCount: blockersBeforeExactPublicSendApproval.length,
+      postLaunchCrmBlockerCount: postLaunchCrmBlockers.length,
+      approvalExecutionBlockerCount: approvalExecutionBlockers.length,
       nextSafeAction: readyForExactPublicSendApproval
         ? 'Prepare an exact public/audience send approval request only; do not execute it from this packet.'
-        : 'Keep work local-only and resolve URL/audience/CRM evidence gates before any public/audience send request.',
+        : 'Keep work local-only and resolve URL/audience gates before any public/audience send request.',
     },
     gateMatrix: gates,
-    blockersBeforePublicLaunch,
+    blockersBeforePublicLaunch: blockersBeforeExactPublicSendApproval,
+    blockersBeforeExactPublicSendApproval,
+    postLaunchCrmBlockers,
+    approvalExecutionBlockers,
+    readinessPolicy: {
+      exactApprovalReadinessRequires: preSendGates.map((gate) => gate.id),
+      postLaunchCrmWritesAreNotPreSendBlockers: true,
+      exactApprovalTextIsNotRequiredBeforeReadiness: true,
+      executionStillRequiresExactApproval: true,
+      rationale: 'CRM observed events and Fact Store write evidence are post-launch artifacts. They remain blocked for CRM writes, but they cannot be required before asking for a public/audience send approval.',
+    },
     hardStops: [
       'No public or audience send.',
       'No publish or schedule.',
@@ -381,7 +416,7 @@ const buildPublicLaunchReadinessPacket = ({
       'Keep Null Audience drafts inert until an audience packet exists.',
       'Promote or approve the URL lifecycle before any audience-send boundary.',
       'Define public/audience scope separately; never infer it from the empty safety group.',
-      'Collect real observed events only after real external/public signals exist; seed QA is not CRM write evidence.',
+      'Keep CRM writes blocked until real observed events exist after public/external signals; seed QA is not CRM write evidence.',
       'Regenerate Launch OS current-state reports after this packet so runbook/audit/receipt reflect the public-launch boundary.',
     ],
     sourceDigests,
@@ -432,18 +467,38 @@ const renderMarkdown = (report) => [
   `- Public/audience URL gate ready: ${report.executiveSummary.publicAudienceSendUrlGateReady}`,
   `- Public/audience scope ready: ${report.executiveSummary.publicAudienceScopeReady}`,
   `- CRM observed events ready: ${report.executiveSummary.crmObservedEventsReady}`,
+  `- Post-launch CRM write ready: ${report.executiveSummary.postLaunchCrmWriteReady}`,
+  `- Exact public send approval already queued: ${report.executiveSummary.exactPublicSendApprovalAlreadyQueued}`,
   `- Ready for exact public send approval: ${report.executiveSummary.readyForExactPublicSendApproval}`,
   `- Live action allowed now: ${report.executiveSummary.liveActionAllowedNow}`,
+  `- Pre-send blocker count: ${report.executiveSummary.blockerCount}`,
+  `- Post-launch CRM blocker count: ${report.executiveSummary.postLaunchCrmBlockerCount}`,
   `- Next safe action: ${report.executiveSummary.nextSafeAction}`,
+  '',
+  '## Readiness Policy',
+  '',
+  `- Exact approval readiness requires: ${report.readinessPolicy.exactApprovalReadinessRequires.join(', ')}`,
+  `- Post-launch CRM writes are not pre-send blockers: ${report.readinessPolicy.postLaunchCrmWritesAreNotPreSendBlockers}`,
+  `- Exact approval text is not required before readiness: ${report.readinessPolicy.exactApprovalTextIsNotRequiredBeforeReadiness}`,
+  `- Execution still requires exact approval: ${report.readinessPolicy.executionStillRequiresExactApproval}`,
+  `- Rationale: ${report.readinessPolicy.rationale}`,
   '',
   '## Gate Matrix',
   '',
   renderList(report.gateMatrix.map((gate) =>
-    `${gate.id}: ${gate.status}; blockers=${gate.blockers.join('|') || 'none'}; next=${gate.nextSafeAction}`)),
+    `${gate.id}: ${gate.status}; phase=${gate.phase}; blocksExactApprovalReadiness=${gate.blocksExactPublicSendApprovalReadiness}; blockers=${gate.blockers.join('|') || 'none'}; next=${gate.nextSafeAction}`)),
   '',
-  '## Blockers Before Public Launch',
+  '## Blockers Before Exact Public Send Approval',
   '',
-  renderList(report.blockersBeforePublicLaunch),
+  renderList(report.blockersBeforeExactPublicSendApproval),
+  '',
+  '## Post-Launch CRM Blockers',
+  '',
+  renderList(report.postLaunchCrmBlockers),
+  '',
+  '## Approval Execution Blockers',
+  '',
+  renderList(report.approvalExecutionBlockers),
   '',
   '## Hard Stops',
   '',
@@ -502,9 +557,13 @@ const main = async () => {
     publicAudienceSendUrlGateReady: report.executiveSummary.publicAudienceSendUrlGateReady,
     publicAudienceScopeReady: report.executiveSummary.publicAudienceScopeReady,
     crmObservedEventsReady: report.executiveSummary.crmObservedEventsReady,
+    postLaunchCrmWriteReady: report.executiveSummary.postLaunchCrmWriteReady,
+    exactPublicSendApprovalAlreadyQueued: report.executiveSummary.exactPublicSendApprovalAlreadyQueued,
     readyForExactPublicSendApproval: report.executiveSummary.readyForExactPublicSendApproval,
     liveActionAllowedNow: report.executiveSummary.liveActionAllowedNow,
     blockerCount: report.executiveSummary.blockerCount,
+    postLaunchCrmBlockerCount: report.executiveSummary.postLaunchCrmBlockerCount,
+    approvalExecutionBlockerCount: report.executiveSummary.approvalExecutionBlockerCount,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
     safety: report.safety,

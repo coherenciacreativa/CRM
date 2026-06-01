@@ -4042,3 +4042,52 @@ Next safe move:
 - Continue local-only with URL lifecycle/public audience gate and exact audience-scope decision design.
 - Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
 - Stop before any public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
+
+## Launch OS v0 public launch readiness phase split - 2026-06-01
+
+Status: active goal, local-only public launch readiness semantics updated so pre-send readiness and post-launch CRM write readiness are tracked separately. CRM observed events and Fact Store evidence remain required before CRM writes, but they are no longer treated as blockers before preparing an exact public/audience send approval request. Launch OS remains not ready for live operation.
+
+Evidence:
+
+- Public launch readiness packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.json`
+- Public launch readiness packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-05-31.md`
+- Current-state refresh receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-05-31.json`
+- Current operator runbook: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_operator_runbook_current_2026-05-31.json`
+- Current goal audit: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_goal_audit_current_2026-05-31.json`
+- Current validation receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_validation_receipt_current_2026-05-31.json`
+
+Confirmed results:
+
+- Public launch readiness packet: `status=mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes`.
+- Public launch readiness packet: `seedInboxQaGreen=true`, `nullAudienceReplacementDraftsReady=true`, `previewLinksReady=true`.
+- Public launch readiness packet: `publicAudienceSendUrlGateReady=false`, `publicAudienceScopeReady=false`, `readyForExactPublicSendApproval=false`, `liveActionAllowedNow=false`.
+- Public launch readiness packet: pre-send `blockerCount=4`.
+- Public launch readiness packet: `postLaunchCrmWriteReady=false`, `postLaunchCrmBlockerCount=7`.
+- Public launch readiness packet: `exactPublicSendApprovalAlreadyQueued=false`, `approvalExecutionBlockerCount=1`.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=30`, `testCount=183`.
+- Operator runbook: `status=mailerlite_launch_os_operator_runbook_ready_no_live_changes`, `openLiveGateCount=0`.
+- Goal audit: `status=goal_active_not_ready_for_live_operation`, `readyForLiveOperation=false`, `liveActionAllowedNow=false`.
+- Validation receipt: `status=mailerlite_launch_os_validation_receipt_ready_no_live_changes`, `liveGatesClosed=true`.
+
+Safety:
+
+- The readiness phase split is local-only and reports-only.
+- Current-state refresh itself reports `mailerLiteApiCalled=false`, `shopifyApiCalled=false`, `crmLiveApiCalled=false`, `subscribersRead=false`.
+- UI opened: `false`.
+- Subscriber/group/workflow/campaign mutations: `false`.
+- Sends, publish, schedule and audience send: `false`.
+- CRM live API calls, Signal Ledger append, card/scoring mutations and Fact Store writes: `false`.
+- Raw IDs, exact recipients, exact URLs and tokens printed: `false`.
+
+Decision:
+
+- Pre-send readiness now requires seed QA, replacement drafts, preview links, public/audience URL gate and exact audience scope.
+- CRM observed events are post-launch evidence; they stay blocked for CRM/Fact Store writes but are not required before asking for a future public/audience send approval.
+- Exact public/audience send approval remains a separate human boundary and has not been requested or matched.
+- Current replacement drafts still point only to `CC · Safety · Null audience · DO NOT SEND`.
+
+Next safe move:
+
+- Continue local-only with public/audience URL gate and exact audience-scope decision design.
+- Do not ask for public/audience send approval while `publicAudienceScopeReady=false` or `publicAudienceSendUrlGateReady=false`.
+- Stop before any public/audience send, publish/schedule, workflow, subscriber/group/segment mutation, Shopify live change, CRM write, ledger, card, scoring or Fact Store action.
