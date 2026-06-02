@@ -238,6 +238,93 @@ describe("CRM vNext MailerLite mini-launch integrated experience QA packet", () 
     expect(report.executiveSummary.canAskPublicSendApprovalNow).toBe(false);
   });
 
+  test("uses compact local render proof when the planning payload still mentions signature/footer fallbacks", async () => {
+    const reports = await baseReports();
+    const signatureFooterChecks = [
+      { id: "signature_identity", status: "green" },
+      { id: "canonical_author_footer", status: "green" },
+      { id: "footer_compact_hierarchy", status: "green" },
+    ];
+    reports.emailRenderQa = {
+      executiveSummary: {
+        localRenderReady: true,
+        redCheckCount: 0,
+        emailCount: 4,
+        visualSignatureAssetReadyCount: 4,
+        signatureFallbackCount: 0,
+      },
+      emailQa: Array.from({ length: 4 }, () => ({
+        htmlPath: reports.emailRenderQa.emailQa[0].htmlPath,
+        staticQa: {
+          checks: signatureFooterChecks,
+        },
+      })),
+    };
+
+    const report = await buildIntegratedExperienceQaPacket({
+      ...reports,
+      nullAudienceSeedInboxQa: {
+        deliverySummary: {
+          ctaClickthroughGreen: true,
+        },
+      },
+      productValueReviewPacket: {
+        status: "product_value_review_ready_for_ceo_review_no_live_changes",
+        executiveSummary: {
+          productValueReviewPassed: true,
+          clickthroughVerified: true,
+          blockerCount: 0,
+          blockers: [],
+        },
+      },
+      publicLaunchReadinessPacket: {
+        executiveSummary: {
+          readyForExactPublicSendApproval: false,
+          liveActionAllowedNow: false,
+          seedInboxQaAppliesToCurrentReplacementReceipt: false,
+        },
+      },
+      seedInboxArtifactQaPacket: {
+        status: "seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes",
+        executiveSummary: {
+          realSeedClickthroughVerified: true,
+          visibleRawUrlTextCount: 3,
+          canonicalMailerLiteFooterVerified: true,
+          visualSignatureAssetVerified: false,
+          signatureFallbackPresent: true,
+          footerCompliancePresent: true,
+        },
+      },
+      generatedAt: "2026-06-01T00:00:00.000Z",
+    });
+
+    const signatureGate = report.gateMatrix.find((entry) => entry.id === "canonical_signature_and_footer");
+    expect(signatureGate?.ready).toBe(true);
+    expect(signatureGate?.evidence).toMatchObject({
+      signatureFallbackMentioned: true,
+      seedArtifactSignatureFallbackPresent: true,
+      effectiveSeedArtifactSignatureFallbackPresent: false,
+      seedEvidenceAppliesToCurrentReplacement: false,
+      signatureFallbackEffectivelyPresent: false,
+      localRenderVisualSignatureAssetVerified: true,
+      localRenderSignatureFallbackClear: true,
+      localRenderCanonicalMailerLiteFooterVerified: true,
+      platformFooterPolicyOnly: true,
+      platformFooterPolicyEffectivelyOnly: false,
+    });
+    const ctaGate = report.gateMatrix.find((entry) => entry.id === "cta_clickthrough_experience");
+    expect(ctaGate?.evidence).toMatchObject({
+      clickthroughVerified: true,
+      seedEvidenceAppliesToCurrentReplacement: false,
+      rawSeedRawUrlVisibleCount: 3,
+      seedRawUrlVisibleCount: null,
+    });
+    expect(report.status).toBe("integrated_experience_qa_ready_for_ceo_review_no_live_changes");
+    expect(report.executiveSummary.blockers).not.toContain("visual_signature_asset_not_verified");
+    expect(report.executiveSummary.blockers).not.toContain("signature_fallback_still_present_in_payload");
+    expect(report.executiveSummary.blockers).not.toContain("platform_footer_policy_is_not_canonical_footer_proof");
+  });
+
   test("uses Product/Value review packet blockers when the gate exists but is not green", async () => {
     const reports = await baseReports();
     const report = await buildIntegratedExperienceQaPacket({

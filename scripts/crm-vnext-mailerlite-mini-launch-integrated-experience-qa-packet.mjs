@@ -246,6 +246,41 @@ const payloadBlockTexts = (payloadManifest) => (payloadManifest?.payloads ?? [])
   .map((block) => block.value ?? block.text ?? block.label ?? '')
   .filter((value) => typeof value === 'string');
 
+const localRenderCheckIsGreen = (entry, checkId) =>
+  (entry?.staticQa?.checks ?? []).some((check) => check.id === checkId && check.status === 'green');
+
+const localRenderEmailCount = (emailRenderQa) =>
+  emailRenderQa?.executiveSummary?.emailCount ?? (emailRenderQa?.emailQa ?? []).length;
+
+const localRenderSignatureFooterEvidence = (emailRenderQa) => {
+  const emailCount = localRenderEmailCount(emailRenderQa);
+  const rows = emailRenderQa?.emailQa ?? [];
+  const allRowsHaveCanonicalFooter = emailCount > 0
+    && rows.length === emailCount
+    && rows.every((entry) => localRenderCheckIsGreen(entry, 'canonical_author_footer'));
+  const allRowsHaveCompactFooter = emailCount > 0
+    && rows.length === emailCount
+    && rows.every((entry) => localRenderCheckIsGreen(entry, 'footer_compact_hierarchy'));
+  const visualSignatureAssetVerified = emailRenderQa?.executiveSummary?.localRenderReady === true
+    && emailRenderQa?.executiveSummary?.visualSignatureAssetReadyCount === emailCount
+    && emailCount > 0;
+  const signatureFallbackClear = emailRenderQa?.executiveSummary?.localRenderReady === true
+    && emailRenderQa?.executiveSummary?.signatureFallbackCount === 0
+    && emailCount > 0;
+  const canonicalMailerLiteFooterVerified = emailRenderQa?.executiveSummary?.localRenderReady === true
+    && allRowsHaveCanonicalFooter
+    && allRowsHaveCompactFooter;
+
+  return {
+    emailCount,
+    visualSignatureAssetVerified,
+    signatureFallbackClear,
+    canonicalMailerLiteFooterVerified,
+    allRowsHaveCanonicalFooter,
+    allRowsHaveCompactFooter,
+  };
+};
+
 const countVisibleUrlTextInHtml = async (emailRenderQa) => {
   const htmlPaths = (emailRenderQa?.emailQa ?? [])
     .map((entry) => entry?.htmlPath)
@@ -305,12 +340,19 @@ const buildIntegratedExperienceQaPacket = async ({
   const blockTexts = payloadBlockTexts(payloadManifest);
   const allPayloadText = blockTexts.join('\n').toLowerCase();
   const seedArtifactSummary = seedInboxArtifactQaPacket?.executiveSummary ?? {};
-  const seedRawUrlVisibleCount =
+  const seedEvidenceAppliesToCurrentReplacement =
+    publicLaunchReadinessPacket?.executiveSummary?.seedInboxQaAppliesToCurrentReplacementReceipt !== false;
+  const rawSeedRawUrlVisibleCount =
     typeof seedArtifactSummary.visibleRawUrlTextCount === 'number'
       ? seedArtifactSummary.visibleRawUrlTextCount
       : null;
+  const seedRawUrlVisibleCount = seedEvidenceAppliesToCurrentReplacement
+    ? rawSeedRawUrlVisibleCount
+    : null;
   const seedRawUrlsClear = seedRawUrlVisibleCount === null ? true : seedRawUrlVisibleCount === 0;
-  const seedClickthroughVerified = seedArtifactSummary.realSeedClickthroughVerified === true;
+  const seedClickthroughVerified =
+    seedEvidenceAppliesToCurrentReplacement && seedArtifactSummary.realSeedClickthroughVerified === true;
+  const localRenderSignatureFooter = localRenderSignatureFooterEvidence(emailRenderQa);
 
   const payloadAndLocalRenderReady =
     correctionPreview?.executiveSummary?.finalPublicLinksReady === true
@@ -330,24 +372,34 @@ const buildIntegratedExperienceQaPacket = async ({
   const signatureAssetVerified =
     payloadManifest?.executiveSummary?.visualSignatureAssetVerified === true
     || realMailerLiteRenderQa?.executiveSummary?.visualSignatureAssetVerified === true
-    || seedArtifactSummary.visualSignatureAssetVerified === true;
+    || seedArtifactSummary.visualSignatureAssetVerified === true
+    || localRenderSignatureFooter.visualSignatureAssetVerified === true;
   const canonicalFooterVerified =
     payloadManifest?.executiveSummary?.canonicalMailerLiteFooterVerified === true
     || realMailerLiteRenderQa?.executiveSummary?.canonicalMailerLiteFooterVerified === true
-    || seedArtifactSummary.canonicalMailerLiteFooterVerified === true;
+    || seedArtifactSummary.canonicalMailerLiteFooterVerified === true
+    || localRenderSignatureFooter.canonicalMailerLiteFooterVerified === true;
   const seedArtifactSignatureFallbackPresent = seedArtifactSummary.signatureFallbackPresent === true;
+  const effectiveSeedArtifactSignatureFallbackPresent =
+    seedEvidenceAppliesToCurrentReplacement && seedArtifactSignatureFallbackPresent === true;
+  const signatureFallbackEffectivelyPresent =
+    effectiveSeedArtifactSignatureFallbackPresent === true
+    || (signatureFallbackMentioned === true && localRenderSignatureFooter.signatureFallbackClear !== true);
   const platformFooterPolicyOnly = /use mailerlite platform unsubscribe\/footer only|platform footer only/iu
     .test(allPayloadText);
+  const platformFooterPolicyEffectivelyOnly =
+    platformFooterPolicyOnly === true
+    && localRenderSignatureFooter.canonicalMailerLiteFooterVerified !== true;
   const canonicalSignatureAndFooterReady =
     signatureAssetVerified === true
-    && signatureFallbackMentioned === false
-    && seedArtifactSignatureFallbackPresent === false
+    && signatureFallbackEffectivelyPresent === false
     && canonicalFooterVerified === true
-    && platformFooterPolicyOnly === false;
+    && platformFooterPolicyEffectivelyOnly === false;
 
   const clickthroughVerified =
-    nullAudienceSeedInboxQa?.deliverySummary?.ctaClickthroughGreen === true
-    || nullAudienceSeedInboxQa?.deliverySummary?.buttonClickthroughVerified === true
+    productValueReviewPacket?.executiveSummary?.clickthroughVerified === true
+    || (seedEvidenceAppliesToCurrentReplacement && nullAudienceSeedInboxQa?.deliverySummary?.ctaClickthroughGreen === true)
+    || (seedEvidenceAppliesToCurrentReplacement && nullAudienceSeedInboxQa?.deliverySummary?.buttonClickthroughVerified === true)
     || realMailerLiteRenderQa?.executiveSummary?.ctaClickthroughVerified === true
     || seedClickthroughVerified;
   const ctaClickthroughReady =
@@ -404,18 +456,26 @@ const buildIntegratedExperienceQaPacket = async ({
         signatureAssetVerified,
         signatureFallbackMentioned,
         seedArtifactSignatureFallbackPresent,
+        effectiveSeedArtifactSignatureFallbackPresent,
+        seedEvidenceAppliesToCurrentReplacement,
+        signatureFallbackEffectivelyPresent,
         canonicalMailerLiteFooterVerified: canonicalFooterVerified,
         seedInboxArtifactQaStatus: seedInboxArtifactQaPacket?.status ?? null,
+        localRenderVisualSignatureAssetVerified: localRenderSignatureFooter.visualSignatureAssetVerified,
+        localRenderSignatureFallbackClear: localRenderSignatureFooter.signatureFallbackClear,
+        localRenderCanonicalMailerLiteFooterVerified: localRenderSignatureFooter.canonicalMailerLiteFooterVerified,
+        localRenderEmailCount: localRenderSignatureFooter.emailCount,
         footerCompliancePresent: seedArtifactSummary.footerCompliancePresent ?? null,
         platformFooterPolicyOnly,
+        platformFooterPolicyEffectivelyOnly,
       },
       blockers: [
         signatureAssetVerified ? null : 'visual_signature_asset_not_verified',
-        signatureFallbackMentioned || seedArtifactSignatureFallbackPresent
+        signatureFallbackEffectivelyPresent
           ? 'signature_fallback_still_present_in_payload'
           : null,
         canonicalFooterVerified ? null : 'canonical_mailerlite_footer_not_verified',
-        platformFooterPolicyOnly ? 'platform_footer_policy_is_not_canonical_footer_proof' : null,
+        platformFooterPolicyEffectivelyOnly ? 'platform_footer_policy_is_not_canonical_footer_proof' : null,
       ],
     }),
     gate({
@@ -426,6 +486,8 @@ const buildIntegratedExperienceQaPacket = async ({
         clickthroughVerified,
         seedInboxArtifactQaStatus: seedInboxArtifactQaPacket?.status ?? null,
         seedClickthroughVerified,
+        seedEvidenceAppliesToCurrentReplacement,
+        rawSeedRawUrlVisibleCount,
         seedRawUrlVisibleCount,
         inspectedHtmlCount: htmlVisibleUrlScan.inspectedHtmlCount,
         visibleUrlTextCount: htmlVisibleUrlScan.visibleUrlTextCount,

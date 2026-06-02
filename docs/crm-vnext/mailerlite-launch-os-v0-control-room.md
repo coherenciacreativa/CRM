@@ -6159,3 +6159,73 @@ Operating meaning:
 - Alternatively, the compact seed completion can be parked and CEO review can be
   held as value-ready but integrated-experience-not-ready, with the caveat made
   explicit.
+
+## Launch OS v0 compact footer integrated QA local green checkpoint - 2026-06-02
+
+Status: active goal, no live action. The integrated-experience blocker was
+reclassified and repaired locally. The previous blocker came from mixing an old
+planning payload and historical seed-inbox artifact with the current
+compact-footer local render. The integrated-experience QA now treats the current
+compact-footer render as authoritative for current local signature/footer proof
+and ignores historical seed artifacts when public-readiness marks them as not
+applicable to the compact replacement receipt.
+
+Evidence:
+
+- Integrated-experience QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+- Integrated-experience QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.md`
+- Current-state refresh JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- CEO-review readiness delta JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Integrated-experience QA status:
+  `integrated_experience_qa_ready_for_ceo_review_no_live_changes`.
+- Integrated-experience CEO review ready: `true`.
+- Integrated-experience ready: `true`.
+- Integrated-experience blocker count: `0`.
+- Product/Value review passed: `true`.
+- Shopify placeholder hits: `0`.
+- Visible URL text hits: `0`.
+- Seed raw URL visible count for current compact evidence: `null` because the
+  historical seed artifact is not applicable to the compact replacement receipt.
+- Current-state refresh status:
+  `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state refresh validation: `testFiles=38`, `testCount=244`,
+  `liveGatesClosed=true`.
+- CEO-review delta status:
+  `ceo_review_readiness_delta_not_ready_no_live_changes`.
+- CEO-review delta now has `integratedExperienceReady=true`.
+- CEO-review delta still has `compactFooterSeedExecutionState=partial_e01_only_remaining_e02_e03_e04_blocked`.
+- Remaining unsent compact-footer labels: `E02`, `E03`, `E04`.
+- Do not resend label: `E01`.
+- Ready for public send approval now: `false`.
+- Live action allowed now: `false`.
+
+Safety:
+
+- Integrated QA repair and refresh were local/report-only.
+- UI opened: `false`.
+- MailerLite API called by these local reports: `false`.
+- MailerLite UI used by these local reports: `false`.
+- Test emails sent by these local reports: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, additional groups, segments, workflows and automations mutated:
+  `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- Local CEO-review ingredients are materially stronger: Product/Value,
+  compact-footer drafts, compact-footer preflight and integrated-experience QA
+  are green.
+- The full CEO-review delta is still not ready because compact-footer seed
+  execution remains partial for `E01` only.
+- The next real boundary is unchanged: continue `E02`, `E03` and `E04` only
+  after fresh API re-scan/preflight and only if Computer Use exposes semantic
+  MailerLite test-send controls, or after Alejandro explicitly approves a
+  different route for those three test sends.
+- Public/audience send approval, Shopify publish, CRM writes, ledgers, cards,
+  scoring and Fact Store remain closed.

@@ -180,7 +180,14 @@ action that a resumed Goal should continue before replanning.
   CEO-review readiness delta was generated from receipts only: Product/Value is
   ready, compact-footer drafts and fresh preflight are green, but the
   CEO-review package is not ready because compact-footer seed execution remains
-  partial and integrated-experience proof still has blockers.
+  partial and integrated-experience proof still has blockers. A later local QA
+  repair taught integrated-experience QA to treat the current compact-footer
+  local render as authoritative for the current draft set and to ignore
+  historical seed artifacts when public-readiness marks them not applicable to
+  the compact replacement receipt. Current-state refresh now reports
+  integrated-experience CEO-review local QA green; the CEO delta remains not
+  ready only because compact-footer seed execution is still partial and
+  public/audience send remains closed.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Inspect or regenerate the local CEO-review readiness delta as a no-live,
@@ -277,9 +284,10 @@ action that a resumed Goal should continue before replanning.
   control remains unavailable as a semantic control. Continue only after another
   fresh API re-scan and only if Computer Use can operate the remaining
   test-send UI semantically, or if Alejandro explicitly approves a different
-  test-send route. Queue readiness is not approval. Public/audience sends,
-  MailerLite publish/schedule, subscribers, workflows, Shopify and CRM remain
-  closed.
+  test-send route. Queue readiness is not approval. Local integrated-experience
+  CEO-review QA is green, but compact-footer seed evidence is still incomplete.
+  Public/audience sends, MailerLite publish/schedule, subscribers, workflows,
+  Shopify and CRM remain closed.
 - `human_boundary_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
@@ -299,8 +307,8 @@ action that a resumed Goal should continue before replanning.
   asset-ready drafts, do not recreate the compact replacements, do not rerun
   either consumed asset-ready seed approval, and do not perform
   artifact/CEO-readiness QA from the stale oversized-footer seed messages. Use
-  the CEO-review readiness delta to preserve the current distinction: value is
-  ready, but integrated experience and compact-footer seed evidence are not
+  the CEO-review readiness delta to preserve the current distinction: value and
+  local integrated experience are ready, but compact-footer seed evidence is not
   complete.
 - `completion_definition`: A later compact-footer seed-test checkpoint has a
   fresh API re-scan/preflight, the received exact approval consumed exactly
