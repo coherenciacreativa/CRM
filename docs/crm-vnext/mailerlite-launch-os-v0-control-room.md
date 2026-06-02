@@ -6840,3 +6840,61 @@ Operating meaning:
   readiness.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 seed inbox readback QA blocked - 2026-06-02
+
+Status: active goal, approved read-only seed inbox QA executed through a narrow
+Gmail connector route, but formal artifact QA is blocked before CEO review. The
+approval was consumed only for read-only QA of the four compact-footer v2 seed
+messages and did not authorize any resend, public send or live mutation.
+
+Evidence:
+
+- V2 seed inbox observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 seed inbox observation markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 seed inbox artifact QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 seed inbox artifact QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Exact read-only seed inbox QA approval matched and was consumed.
+- Inbox route: restricted Gmail connector search/read for the exact seed, four
+  expected subjects and recent window.
+- Matched compact-footer v2 messages: `4/4`.
+- Safe GET link validations: `3`.
+- Real seed clickthrough verified: `true`.
+- Visible raw URL text count: `0`.
+- Canonical footer verified in connector body: `true`.
+- Duplicate postal address observed: `false`.
+- Duplicate typed `Alejandro` after `Un abrazo,`: `false`.
+- Formal artifact QA status:
+  `seed_inbox_artifact_qa_blocked_before_ceo_review_no_live_changes`.
+- Blocker count: `1`.
+- Blocker: `visual_signature_asset_not_verified`.
+
+Safety:
+
+- Gmail route was read-only and restricted to the four expected current seed
+  messages.
+- Messages replied, forwarded, archived, deleted, labeled or filtered: `false`.
+- MailerLite API called: `false` in this readback step.
+- Test emails sent or resent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Exact URLs, tokens, raw IDs and recipients printed: `false`.
+
+Operating meaning:
+
+- The textual/copy/link/footer readback is mostly green, but CEO-review
+  readiness remains blocked because the Gmail connector body does not expose the
+  visual signature image or rendered footer hierarchy.
+- Do not use this blocked QA packet as public/audience-send readiness.
+- Do not use older seed inbox QA reports as compact-footer v2 inbox evidence.
+- The next real boundary is missing visual evidence only: user-provided visual
+  evidence for the four messages, or a separate exact approval for a narrow
+  read-only visual UI inspection route.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.

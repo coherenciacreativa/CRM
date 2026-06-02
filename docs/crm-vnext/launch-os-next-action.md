@@ -222,30 +222,61 @@ action that a resumed Goal should continue before replanning.
   as `safety.mailerLiteTestEmailsSent=4`; the general current-state refresh is
   context, not the v2 seed-inbox authority.
 
-## Active Next Action
+## Blocked Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_seed_inbox_readback_qa_inteligencia_descansar`
-- `status`: `active`
+- `status`: `blocked`
 - `created_at`: `2026-06-02`
-- `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 compact footer v2 seed tests completed - 2026-06-02`
+- `blocked_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 seed inbox readback QA blocked - 2026-06-02`
 - `objective`: Review the four received compact-footer v2 seed/test emails for
   visual, copy, link and footer readback QA before any public/audience-send
   approval packet is considered.
-- `why_now`: The exact compact-footer v2 seed-test approval was consumed after
-  fresh API QA stayed green, and four test emails were sent by the MailerLite
-  UI/Computer Use route to the approved seed recipient. The next useful work is
-  CEO/seed inbox readback, not another draft creation or resend.
+- `blocked_reason`: The exact read-only seed inbox QA approval was consumed and
+  a restricted Gmail connector readback found exactly four recent v2 seed
+  messages, but the formal artifact QA is not green because the connector
+  exposes a textual body and cannot verify the visual signature image or rendered
+  footer hierarchy.
+- `blocked_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- `green_evidence_from_readback`:
+  - Exactly four recent compact-footer v2 seed messages found for E01-E04.
+  - Three CTA links validated by safe GET with no exact URL output.
+  - Visible raw URL count: `0`.
+  - Canonical footer text verified in connector body.
+  - Duplicate postal address observed: `false`.
+  - Duplicate typed `Alejandro` after `Un abrazo,`: `false`.
+- `blocker`: `visual_signature_asset_not_verified`
+- `live_gate_status`: V2 replacement-draft creation approval, v2 seed-test
+  approval and v2 read-only seed inbox QA approval are consumed. Public/audience
+  sends, MailerLite publish/schedule, subscribers, workflows, Shopify and CRM
+  remain closed until a separate exact approval.
+- `resume_instruction`: Stop and report this QA blocker unless Alejandro
+  provides user-side visual evidence for the four messages or gives a new exact
+  approval for a narrow visual read-only UI inspection route. Do not resend test
+  emails, recreate drafts, ask for public/audience send approval, or use stale
+  seed inbox QA as v2 evidence.
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_visual_readback_evidence_boundary_inteligencia_descansar`
+- `status`: `active`
+- `created_at`: `2026-06-02`
+- `updated_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 seed inbox readback QA blocked - 2026-06-02`
+- `objective`: Resolve only the missing visual readback evidence for the four
+  compact-footer v2 seed emails before CEO-review readiness can be considered.
+- `why_now`: Textual readback is mostly green, but formal QA remains blocked by
+  visual signature evidence. This is a CEO-review quality gate, not a delivery
+  or public-send gate.
 - `allowed_scope`:
-  - Inspect local v2 receipts, local render QA and current-state reports.
-  - Use the seed inbox readback approval packet to request the exact read-only
-    inbox QA phrase before inspecting the seed inbox.
-  - Review only the four received seed/test emails through a user-approved
-    read-only inbox route or user-provided evidence.
-  - Compare visible email rendering against the v2 canon: compact footer,
-    single postal-address display, no duplicate typed `Alejandro` before the
-    signature, CTA link behavior and no visible placeholder/token artifacts.
-  - Produce a local readback QA packet or short CEO decision note.
+  - Accept user-provided visual evidence for the four v2 messages.
+  - If Alejandro gives a fresh exact approval, inspect only those four messages
+    through a narrow read-only visual UI route.
+  - Update the redacted observation and artifact QA packet after visual evidence
+    exists.
 - `forbidden_scope`:
   - Do not recreate replacement drafts.
   - Do not resend seed/test emails without a new exact approval.
@@ -258,46 +289,38 @@ action that a resumed Goal should continue before replanning.
   - No secret reads, env dumps, raw token output, raw private URLs, raw asset
     URLs, recipient lists or broad mailbox inspection.
 - `expected_files`:
-  - `docs/crm-vnext/launch-os-next-action.md`
-  - `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_readback_qa_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
-  - Optional local readback QA packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - Optional future visual evidence/readback packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - Read-only inbox/UI inspection only after Alejandro provides the exact
-    phrase from the seed inbox readback QA approval packet.
+  - Read-only visual inspection only after a fresh exact approval for that
+    route.
 - `validation_commands`:
   - `git diff --check`
 - `live_gate_status`: V2 replacement-draft creation approval and v2 seed-test
-  approval are consumed. Public/audience sends, MailerLite publish/schedule,
-  subscribers, workflows, Shopify and CRM remain closed until a separate exact
-  approval.
-- `human_boundary_id`: `mailerlite_footer_compact_v2_seed_inbox_readback_qa_inteligencia_descansar`
+  approval are consumed. The read-only seed inbox QA approval was consumed and
+  resulted in a visual-evidence blocker. Public/audience sends, MailerLite
+  publish/schedule, subscribers, workflows, Shopify and CRM remain closed until
+  a separate exact approval.
+- `human_boundary_id`: `mailerlite_footer_compact_v2_visual_readback_evidence_boundary_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
-- `human_boundary_packet`:
-  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_readback_qa_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - The exact read-only seed inbox QA phrase is absent or materially changed.
-  - The requested route would inspect unrelated inbox/mailbox content.
+  - The requested route would inspect unrelated inbox/mailbox content or older
+    same-subject test threads.
   - Any requested action would resend tests, publish, schedule, assign a real
     audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
     scoring/Fact Store without a separate exact approval.
-- `resume_instruction`: Continue with compact-footer v2 seed inbox/readback QA
-  only. If the exact read-only seed inbox QA phrase has not been provided, give
-  Alejandro the phrase from the approval packet and stop. Use the v2 execution
-  receipt as the authoritative seed-test evidence; do not treat the general
-  current-state refresh or older seed inbox QA artifacts as proof of v2 inbox
-  quality.
-- `completion_definition`: The four compact-footer v2 seed emails are reviewed
-  for visual/copy/link/footer quality and the next boundary is declared as
-  either correction, resend approval, or a separate public/audience-send
-  readiness packet. No live audience action occurs.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 seed inbox readback QA - 2026-06-02`
+- `resume_instruction`: Ask for or use only the missing visual evidence. Do not
+  revisit sends, draft creation or public/audience readiness.
+- `completion_definition`: Visual signature and footer hierarchy evidence for
+  the four v2 seed emails is captured or explicitly rejected, and the artifact
+  QA packet is refreshed. No live audience action occurs.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 visual readback evidence - 2026-06-02`
 
 ## Stop/Change Conditions
 
