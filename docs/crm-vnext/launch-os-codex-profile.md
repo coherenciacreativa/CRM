@@ -68,7 +68,8 @@ reads.
 - Brand/voice/value canon: Brand Hub documents, only when the active next
   action calls for Brand evidence.
 - Mantis/OpenClaw strategic memory: use digest-level summaries, not raw
-  implementation noise, unless operating handoff requires more.
+  implementation noise, unless operating handoff requires more. Use
+  `docs/crm-vnext/mantis-digest-policy.md` for what should be promoted.
 
 ## MailerLite Test Email Route
 
