@@ -6966,3 +6966,69 @@ Operating meaning:
   execution.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 CEO-review readiness packet - 2026-06-02
+
+Status: active goal, local-only/report-only CEO-review synthesis completed from
+the compact-footer v2 seed evidence. The package is ready for Alejandro review
+with no seed caveat, no artifact QA blocker and no live-action permission. This
+checkpoint performs no MailerLite API/UI mutation, resend, publish, schedule,
+audience assignment, subscriber/group/workflow mutation, Shopify mutation, CRM
+write, ledger, card, scoring or Fact Store action.
+
+Evidence:
+
+- CEO-review readiness delta JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+- CEO-review readiness delta markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.md`
+- CEO proposal packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+- CEO proposal packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.md`
+- V2 visual readback observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 visual artifact QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- CEO-review delta status: `ceo_review_readiness_delta_ready_no_live_changes`.
+- CEO-review package ready: `true`.
+- Product/Value ready: `true`.
+- Integrated experience ready: `true`.
+- Compact-footer drafts ready: `true`.
+- Compact-footer seed execution state: `complete_e01_e02_e03_e04`.
+- Compact-footer seed inbox artifact QA ready: `true`.
+- Compact-footer visual readback green: `true`.
+- Sent labels: `E01`, `E02`, `E03`, `E04`.
+- Unsent labels: none.
+- Do-not-resend labels: `E01`, `E02`, `E03`, `E04`.
+- CEO delta blocker count: `0`.
+- Ready for pilot distribution decision now: `true`.
+- Ready for public send approval now: `false`.
+- Live action allowed now: `false`.
+- CEO proposal packet status:
+  `ceo_proposal_packet_ready_for_ceo_review_no_live_changes`.
+- CEO proposal ready with seed caveat: `false`.
+- CEO proposal blocker count: `0`.
+- CEO proposal next boundary:
+  `prepare_pilot_distribution_decision_without_send_approval`.
+
+Safety:
+
+- Report generation was local-only and report-only.
+- MailerLite API/UI called or mutated in this synthesis: `false`.
+- Test emails sent or resent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Exact URLs, tokens, raw IDs and recipient lists printed: `false`.
+
+Operating meaning:
+
+- The compact-footer v2 received-email package is CEO-reviewable.
+- The seed visual/copy/footer/clickthrough QA is green for the current v2
+  Null Audience draft set and the current received seed messages.
+- Public/audience send approval is still not ready and is not being requested.
+- The next useful edge is a CEO/no-live decision: review the packet, request
+  corrections, or prepare a pilot distribution decision packet with no send
+  authorization.
+- Any future resend, public/audience send, MailerLite publish/schedule,
+  subscriber/group/workflow mutation, Shopify mutation or CRM write still needs
+  a separate fresh exact approval and preflight.

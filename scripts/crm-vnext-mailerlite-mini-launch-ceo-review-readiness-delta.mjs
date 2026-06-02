@@ -13,11 +13,15 @@ const DEFAULT_INTEGRATED_EXPERIENCE_QA_PACKET =
 const DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_public_launch_readiness_packet_current_inteligencia_descansar_2026-06-02.json`;
 const DEFAULT_COMPACT_FOOTER_REPLACEMENT_RECEIPT =
-  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`;
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`;
 const DEFAULT_COMPACT_FOOTER_SEED_PREFLIGHT =
-  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`;
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`;
 const DEFAULT_COMPACT_FOOTER_SEED_UI_BLOCKER =
-  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`;
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`;
+const DEFAULT_COMPACT_FOOTER_SEED_ARTIFACT_QA_PACKET =
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`;
+const DEFAULT_COMPACT_FOOTER_VISUAL_READBACK_OBSERVATION =
+  `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`;
 const DEFAULT_CURRENT_STATE_REFRESH =
   `${DEFAULT_REPORTS_DIR}/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`;
 const DEFAULT_GOAL_AUDIT =
@@ -37,6 +41,8 @@ Options:
   --compact-footer-replacement-receipt <path> Compact-footer Null Audience replacement receipt. Defaults to ${DEFAULT_COMPACT_FOOTER_REPLACEMENT_RECEIPT}
   --compact-footer-seed-preflight <path>     Compact-footer seed-test preflight JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_SEED_PREFLIGHT}
   --compact-footer-seed-ui-blocker <path>    Compact-footer seed-test UI blocker, partial receipt, or final record_ui_sent execution receipt JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_SEED_UI_BLOCKER}
+  --compact-footer-seed-artifact-qa-packet <path> Compact-footer seed inbox artifact QA JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_SEED_ARTIFACT_QA_PACKET}
+  --compact-footer-visual-readback-observation <path> Compact-footer visual readback observation JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_VISUAL_READBACK_OBSERVATION}
   --current-state-refresh <path>             Current-state refresh JSON. Defaults to ${DEFAULT_CURRENT_STATE_REFRESH}
   --goal-audit <path>                        Goal audit JSON. Defaults to ${DEFAULT_GOAL_AUDIT}
   --out <path>                               Write JSON report. Defaults to ${DEFAULT_OUTPUT}
@@ -60,6 +66,8 @@ const parseArgs = (argv) => {
     compactFooterReplacementReceipt: DEFAULT_COMPACT_FOOTER_REPLACEMENT_RECEIPT,
     compactFooterSeedPreflight: DEFAULT_COMPACT_FOOTER_SEED_PREFLIGHT,
     compactFooterSeedUiBlocker: DEFAULT_COMPACT_FOOTER_SEED_UI_BLOCKER,
+    compactFooterSeedArtifactQaPacket: DEFAULT_COMPACT_FOOTER_SEED_ARTIFACT_QA_PACKET,
+    compactFooterVisualReadbackObservation: DEFAULT_COMPACT_FOOTER_VISUAL_READBACK_OBSERVATION,
     currentStateRefresh: DEFAULT_CURRENT_STATE_REFRESH,
     goalAudit: DEFAULT_GOAL_AUDIT,
     out: DEFAULT_OUTPUT,
@@ -76,6 +84,8 @@ const parseArgs = (argv) => {
     else if (arg === '--compact-footer-replacement-receipt') options.compactFooterReplacementReceipt = argv[++index];
     else if (arg === '--compact-footer-seed-preflight') options.compactFooterSeedPreflight = argv[++index];
     else if (arg === '--compact-footer-seed-ui-blocker') options.compactFooterSeedUiBlocker = argv[++index];
+    else if (arg === '--compact-footer-seed-artifact-qa-packet') options.compactFooterSeedArtifactQaPacket = argv[++index];
+    else if (arg === '--compact-footer-visual-readback-observation') options.compactFooterVisualReadbackObservation = argv[++index];
     else if (arg === '--current-state-refresh') options.currentStateRefresh = argv[++index];
     else if (arg === '--goal-audit') options.goalAudit = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
@@ -246,6 +256,39 @@ const normalizeSeedExecutionEvidence = (seedEvidenceInput = {}) => {
   };
 };
 
+const seedInboxArtifactQaReady = (packet = {}) => {
+  const summary = packet?.executiveSummary ?? {};
+  return packet?.ok === true
+    && packet?.status === 'seed_inbox_artifact_qa_ready_for_ceo_review_no_live_changes'
+    && summary.seedInboxArtifactQaPassed === true
+    && summary.deliveredToApprovedSeedCount === 4
+    && summary.expectedSeedMessageCount === 4
+    && summary.realSeedClickthroughVerified === true
+    && summary.visibleRawUrlTextCount === 0
+    && summary.footerCompliancePresent === true
+    && summary.canonicalMailerLiteFooterVerified === true
+    && summary.visualSignatureAssetVerified === true
+    && summary.signatureFallbackPresent === false
+    && summary.liveActionAllowedNow === false
+    && (summary.blockerCount ?? 0) === 0;
+};
+
+const visualReadbackGreen = (observation = {}) => {
+  const summary = observation?.visualReadbackSummary ?? {};
+  const expectedCount = summary.expectedMessageCount ?? 4;
+  return observation?.status === 'seed_inbox_visual_readback_completed_green_no_live_changes'
+    && summary.visualReadbackPassed === true
+    && summary.inspectedMessageCount === expectedCount
+    && expectedCount === 4
+    && summary.latestThreadMessagesOnly === true
+    && summary.visualSignatureRenderedCount === 4
+    && summary.footerNameCompactCount === 4
+    && summary.footerHierarchyCompactCount === 4
+    && summary.duplicatePostalAddressVisibleCount === 0
+    && summary.duplicateTypedAlejandroAfterClosingCount === 0
+    && (summary.blockerCount ?? 0) === 0;
+};
+
 const buildCeoReviewReadinessDelta = ({
   productValueReviewPacket,
   integratedExperienceQaPacket,
@@ -253,6 +296,8 @@ const buildCeoReviewReadinessDelta = ({
   compactFooterReplacementReceipt,
   compactFooterSeedPreflight,
   compactFooterSeedUiBlocker,
+  compactFooterSeedArtifactQaPacket,
+  compactFooterVisualReadbackObservation,
   currentStateRefresh,
   goalAudit,
   generatedAt = new Date().toISOString(),
@@ -264,6 +309,8 @@ const buildCeoReviewReadinessDelta = ({
   const publicSummary = publicLaunchReadinessPacket?.executiveSummary ?? {};
   const replacementQa = compactFooterReplacementReceipt?.postCreateQa ?? {};
   const replacementRows = asArray(replacementQa.rows);
+  const artifactQaSummary = compactFooterSeedArtifactQaPacket?.executiveSummary ?? {};
+  const visualReadbackSummary = compactFooterVisualReadbackObservation?.visualReadbackSummary ?? {};
   const seedPreflight = compactFooterSeedPreflight?.preflight ?? {};
   const {
     evidenceKind: seedExecutionEvidenceKind,
@@ -318,6 +365,10 @@ const buildCeoReviewReadinessDelta = ({
     && uiExecution.computerUseSemanticSendCompleted === 'all_e01_e02_e03_e04';
   const seedExecutionPartial = sentLabels.length > 0 && !seedExecutionComplete;
   const seedExecutionBlocked = !seedExecutionComplete;
+  const compactFooterSeedInboxArtifactQaReady =
+    seedInboxArtifactQaReady(compactFooterSeedArtifactQaPacket);
+  const compactFooterVisualReadbackGreen =
+    visualReadbackGreen(compactFooterVisualReadbackObservation);
 
   const strictSemanticUiPolicy = uiPolicy.screenshotsOrCapturesAllowedForUiOperation === false
     && uiPolicy.coordinateClicksAllowed === false
@@ -325,14 +376,16 @@ const buildCeoReviewReadinessDelta = ({
     && uiPolicy.browserDomOrAppleScriptClickInjectionAllowed === false
     && uiPolicy.apiTestSendEndpointAllowedAsPrimaryRoute === false;
 
-  const publicSendReady = publicSummary.readyForExactPublicSendApproval === true
-    && publicSummary.liveActionAllowedNow === true;
+  const publicSendGateClosed = publicSummary.readyForExactPublicSendApproval === false
+    && publicSummary.liveActionAllowedNow === false;
 
   const ceoReviewPackageReady = productValueReady
     && integratedExperienceReady
     && compactFooterDraftsReady
     && seedPreflightGreen
-    && seedExecutionComplete;
+    && seedExecutionComplete
+    && compactFooterSeedInboxArtifactQaReady
+    && compactFooterVisualReadbackGreen;
 
   const nextSafeAction = !compactFooterDraftsReady
     ? 'get_exact_approval_then_create_compact_footer_v2_null_audience_replacement_drafts'
@@ -340,7 +393,11 @@ const buildCeoReviewReadinessDelta = ({
       ? 'run_fresh_compact_footer_seed_preflight_after_replacement_drafts_exist'
       : seedExecutionBlocked
         ? 'choose_computer_use_retry_or_explicitly_approve_a_different_test_send_route_before_e02_e03_e04'
-        : 'rerun_seed_inbox_qa_then_integrated_experience_qa_before_distribution_decision';
+        : !compactFooterSeedInboxArtifactQaReady
+          ? 'resolve_compact_footer_seed_inbox_artifact_qa_before_ceo_review'
+          : !compactFooterVisualReadbackGreen
+            ? 'resolve_compact_footer_visual_readback_before_ceo_review'
+            : 'prepare_ceo_review_packet_before_any_later_distribution_choice';
 
   const gateMatrix = [
     buildGate({
@@ -406,6 +463,51 @@ const buildCeoReviewReadinessDelta = ({
       },
     }),
     buildGate({
+      id: 'compact_footer_seed_inbox_artifact_qa',
+      ready: compactFooterSeedInboxArtifactQaReady,
+      status: compactFooterSeedInboxArtifactQaReady
+        ? 'ready_for_ceo_review_no_live_changes'
+        : 'blocked_before_ceo_review',
+      blockers: compactFooterSeedInboxArtifactQaReady
+        ? []
+        : (artifactQaSummary.blockers ?? ['compact_footer_seed_inbox_artifact_qa_not_green']),
+      evidence: {
+        status: compactFooterSeedArtifactQaPacket?.status ?? null,
+        seedInboxArtifactQaPassed: artifactQaSummary.seedInboxArtifactQaPassed ?? null,
+        deliveredToApprovedSeedCount: artifactQaSummary.deliveredToApprovedSeedCount ?? null,
+        expectedSeedMessageCount: artifactQaSummary.expectedSeedMessageCount ?? null,
+        realSeedClickthroughVerified: artifactQaSummary.realSeedClickthroughVerified ?? null,
+        visibleRawUrlTextCount: artifactQaSummary.visibleRawUrlTextCount ?? null,
+        canonicalMailerLiteFooterVerified: artifactQaSummary.canonicalMailerLiteFooterVerified ?? null,
+        visualSignatureAssetVerified: artifactQaSummary.visualSignatureAssetVerified ?? null,
+        signatureFallbackPresent: artifactQaSummary.signatureFallbackPresent ?? null,
+        blockerCount: artifactQaSummary.blockerCount ?? null,
+      },
+    }),
+    buildGate({
+      id: 'compact_footer_visual_readback',
+      ready: compactFooterVisualReadbackGreen,
+      status: compactFooterVisualReadbackGreen
+        ? 'visual_readback_green_for_ceo_review'
+        : 'visual_readback_blocked_or_missing',
+      blockers: compactFooterVisualReadbackGreen
+        ? []
+        : (visualReadbackSummary.blockers ?? ['compact_footer_visual_readback_not_green']),
+      evidence: {
+        status: compactFooterVisualReadbackObservation?.status ?? null,
+        inspectedMessageCount: visualReadbackSummary.inspectedMessageCount ?? null,
+        expectedMessageCount: visualReadbackSummary.expectedMessageCount ?? null,
+        latestThreadMessagesOnly: visualReadbackSummary.latestThreadMessagesOnly ?? null,
+        visualSignatureRenderedCount: visualReadbackSummary.visualSignatureRenderedCount ?? null,
+        footerNameCompactCount: visualReadbackSummary.footerNameCompactCount ?? null,
+        footerHierarchyCompactCount: visualReadbackSummary.footerHierarchyCompactCount ?? null,
+        duplicatePostalAddressVisibleCount: visualReadbackSummary.duplicatePostalAddressVisibleCount ?? null,
+        duplicateTypedAlejandroAfterClosingCount:
+          visualReadbackSummary.duplicateTypedAlejandroAfterClosingCount ?? null,
+        blockerCount: visualReadbackSummary.blockerCount ?? null,
+      },
+    }),
+    buildGate({
       id: 'integrated_experience_ceo_review',
       ready: integratedExperienceReady,
       status: integratedExperienceReady ? 'ready_for_ceo_review' : 'blocked_before_ceo_review',
@@ -419,9 +521,9 @@ const buildCeoReviewReadinessDelta = ({
     }),
     buildGate({
       id: 'public_or_audience_send',
-      ready: publicSendReady,
+      ready: publicSendGateClosed,
       status: 'closed_not_ready_for_exact_public_send_approval',
-      blockers: ['public_send_gate_not_part_of_ceo_delta'],
+      blockers: publicSendGateClosed ? [] : ['public_send_gate_unexpectedly_open_or_unknown'],
       evidence: {
         status: publicLaunchReadinessPacket?.status,
         readyForExactPublicSendApproval: publicSummary.readyForExactPublicSendApproval ?? null,
@@ -435,6 +537,8 @@ const buildCeoReviewReadinessDelta = ({
   const blockerIds = unique([
     ...gateMatrix.flatMap((entry) => entry.ready ? [] : entry.blockers),
     ...(seedExecutionBlocked && unsentLabels.length > 0 ? ['compact_footer_remaining_seed_tests_unsent'] : []),
+    ...(!compactFooterSeedInboxArtifactQaReady ? ['compact_footer_seed_inbox_artifact_qa_not_green'] : []),
+    ...(!compactFooterVisualReadbackGreen ? ['compact_footer_visual_readback_not_green'] : []),
   ]);
 
   const report = {
@@ -456,14 +560,14 @@ const buildCeoReviewReadinessDelta = ({
       compactFooterDraftsReady,
       compactFooterSeedPreflightGreen: seedPreflightGreen,
       compactFooterSeedExecutionComplete: seedExecutionComplete,
+      compactFooterSeedInboxArtifactQaReady,
+      compactFooterVisualReadbackGreen,
       compactFooterSeedExecutionState: seedExecutionComplete
         ? 'complete_e01_e02_e03_e04'
         : seedExecutionPartial
           ? 'partial_e01_only_remaining_e02_e03_e04_blocked'
           : 'not_started_or_unproven',
-      readyForPilotDistributionDecisionNow: integratedExperienceReady
-        && compactFooterDraftsReady
-        && seedExecutionComplete
+      readyForPilotDistributionDecisionNow: ceoReviewPackageReady
         && integratedSummary.canAskPilotDistributionDecisionNow === true,
       readyForPublicSendApprovalNow: false,
       liveActionAllowedNow: false,
@@ -477,6 +581,14 @@ const buildCeoReviewReadinessDelta = ({
       sentLabels,
       unsentLabels,
       doNotResendLabels,
+      seedInboxArtifactQaStatus: compactFooterSeedArtifactQaPacket?.status ?? null,
+      visualReadbackStatus: compactFooterVisualReadbackObservation?.status ?? null,
+      visualSignatureAssetVerified: artifactQaSummary.visualSignatureAssetVerified ?? null,
+      visualSignatureRenderedCount: visualReadbackSummary.visualSignatureRenderedCount ?? null,
+      footerNameCompactCount: visualReadbackSummary.footerNameCompactCount ?? null,
+      duplicatePostalAddressVisibleCount: visualReadbackSummary.duplicatePostalAddressVisibleCount ?? null,
+      duplicateTypedAlejandroAfterClosingCount:
+        visualReadbackSummary.duplicateTypedAlejandroAfterClosingCount ?? null,
       nextSafeAction,
     },
     gateMatrix,
@@ -489,9 +601,9 @@ const buildCeoReviewReadinessDelta = ({
         nextBoundary.doNotAskSameApprovalAgainUnlessEvidenceChanges ?? true,
       allowedNextChoices: seedExecutionComplete
         ? [
-          'rerun_seed_inbox_qa_read_only_for_compact_footer_receipts',
           'review_ceo_proposal_without_send_approval',
           'choose_pilot_distribution_lane_without_send_approval',
+          'prepare_pilot_distribution_decision_packet_no_send',
         ]
         : [
           'continue_e02_e03_e04_only_after_fresh_preflight_with_computer_use',
@@ -514,7 +626,9 @@ const buildCeoReviewReadinessDelta = ({
       seedExecutionComplete
         ? 'Do not resend any compact-footer seed test under the consumed approval.'
         : 'Do not resend E01 under the compact-footer seed-test approval.',
-      'Before any remaining seed send, run a fresh API re-scan/preflight and require QA green.',
+      seedExecutionComplete
+        ? 'Any future seed/test resend requires a new exact approval and fresh safety preflight.'
+        : 'Before any remaining seed send, run a fresh API re-scan/preflight and require QA green.',
       'Operate MailerLite UI through Computer Use; use fallback UI routes only with explicit scope-specific approval.',
       'Exact URLs, recipients, raw IDs and tokens must remain unprinted.',
     ],
@@ -544,9 +658,16 @@ const renderMarkdown = (report) => [
   `- Compact-footer drafts ready: ${report.executiveSummary.compactFooterDraftsReady}`,
   `- Compact-footer seed preflight green: ${report.executiveSummary.compactFooterSeedPreflightGreen}`,
   `- Compact-footer seed execution state: ${report.executiveSummary.compactFooterSeedExecutionState}`,
+  `- Compact-footer seed inbox artifact QA ready: ${report.executiveSummary.compactFooterSeedInboxArtifactQaReady}`,
+  `- Compact-footer visual readback green: ${report.executiveSummary.compactFooterVisualReadbackGreen}`,
   `- Sent labels: ${report.executiveSummary.sentLabels.join(', ') || 'none'}`,
   `- Remaining unsent labels: ${report.executiveSummary.unsentLabels.join(', ') || 'none'}`,
   `- Do not resend labels: ${report.executiveSummary.doNotResendLabels.join(', ') || 'none'}`,
+  `- Visual signature asset verified: ${report.executiveSummary.visualSignatureAssetVerified}`,
+  `- Visual signature rendered count: ${report.executiveSummary.visualSignatureRenderedCount}`,
+  `- Footer name compact count: ${report.executiveSummary.footerNameCompactCount}`,
+  `- Duplicate postal address visible count: ${report.executiveSummary.duplicatePostalAddressVisibleCount}`,
+  `- Duplicate typed Alejandro after closing count: ${report.executiveSummary.duplicateTypedAlejandroAfterClosingCount}`,
   `- Ready for pilot distribution decision now: ${report.executiveSummary.readyForPilotDistributionDecisionNow}`,
   `- Ready for public send approval now: ${report.executiveSummary.readyForPublicSendApprovalNow}`,
   `- Live action allowed now: ${report.executiveSummary.liveActionAllowedNow}`,
@@ -607,6 +728,8 @@ const main = async () => {
     compactFooterReplacementReceipt,
     compactFooterSeedPreflight,
     compactFooterSeedUiBlocker,
+    compactFooterSeedArtifactQaPacket,
+    compactFooterVisualReadbackObservation,
     currentStateRefresh,
     goalAudit,
   ] = await Promise.all([
@@ -616,6 +739,8 @@ const main = async () => {
     readOptionalJsonWithDigest(options.compactFooterReplacementReceipt, 'compact-footer Null Audience replacement draft QA'),
     readOptionalJsonWithDigest(options.compactFooterSeedPreflight, 'compact-footer seed-test fresh preflight evidence'),
     readOptionalJsonWithDigest(options.compactFooterSeedUiBlocker, 'compact-footer seed-test semantic UI blocker, partial state, or final execution receipt'),
+    readOptionalJsonWithDigest(options.compactFooterSeedArtifactQaPacket, 'compact-footer v2 seed inbox artifact QA evidence'),
+    readOptionalJsonWithDigest(options.compactFooterVisualReadbackObservation, 'compact-footer v2 visual readback evidence'),
     readJsonWithDigest(options.currentStateRefresh, 'Launch OS current-state no-live posture'),
     readJsonWithDigest(options.goalAudit, 'Launch OS goal audit posture'),
   ]);
@@ -627,6 +752,8 @@ const main = async () => {
     compactFooterReplacementReceipt: compactFooterReplacementReceipt.value,
     compactFooterSeedPreflight: compactFooterSeedPreflight.value,
     compactFooterSeedUiBlocker: compactFooterSeedUiBlocker.value,
+    compactFooterSeedArtifactQaPacket: compactFooterSeedArtifactQaPacket.value,
+    compactFooterVisualReadbackObservation: compactFooterVisualReadbackObservation.value,
     currentStateRefresh: currentStateRefresh.value,
     goalAudit: goalAudit.value,
   });
@@ -638,6 +765,8 @@ const main = async () => {
     compactFooterReplacementReceipt.digest,
     compactFooterSeedPreflight.digest,
     compactFooterSeedUiBlocker.digest,
+    compactFooterSeedArtifactQaPacket.digest,
+    compactFooterVisualReadbackObservation.digest,
     currentStateRefresh.digest,
     goalAudit.digest,
   ];
@@ -654,6 +783,8 @@ const main = async () => {
     compactFooterDraftsReady: report.executiveSummary.compactFooterDraftsReady,
     compactFooterSeedPreflightGreen: report.executiveSummary.compactFooterSeedPreflightGreen,
     compactFooterSeedExecutionState: report.executiveSummary.compactFooterSeedExecutionState,
+    compactFooterSeedInboxArtifactQaReady: report.executiveSummary.compactFooterSeedInboxArtifactQaReady,
+    compactFooterVisualReadbackGreen: report.executiveSummary.compactFooterVisualReadbackGreen,
     sentLabels: report.executiveSummary.sentLabels,
     unsentLabels: report.executiveSummary.unsentLabels,
     doNotResendLabels: report.executiveSummary.doNotResendLabels,

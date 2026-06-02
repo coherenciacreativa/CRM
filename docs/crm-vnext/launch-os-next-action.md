@@ -333,25 +333,51 @@ action that a resumed Goal should continue before replanning.
   QA packet is green for CEO review and does not authorize any send or live
   mutation.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_ceo_review_readiness_packet_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `updated_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 CEO-review readiness packet - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`
+- `completion_note`: The local CEO-review/readiness synthesis is green with
+  `ceoReviewPackageReady=true`, `ceoProposalReviewReady=true`,
+  `compactFooterSeedInboxArtifactQaReady=true`,
+  `compactFooterVisualReadbackGreen=true`, `blockerCount=0`,
+  `readyForPublicSendApprovalNow=false` and `liveActionAllowedNow=false`.
+  It names the next no-live human decision without authorizing any send or live
+  mutation.
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_ceo_review_decision_boundary_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 compact footer v2 visual readback QA green - 2026-06-02`
-- `objective`: Convert the now-green compact-footer v2 seed inbox evidence into
-  a CEO-review/readiness packet and a clear next decision boundary, without
-  asking for or executing any public/audience send.
-- `why_now`: Four current compact-footer v2 seed emails are now delivery,
-  clickthrough, footer/copy and visual-readback green. The previous blocker
-  `visual_signature_asset_not_verified` is closed by evidence, so the next
-  useful move is a local CEO-review/readiness synthesis.
+- `source_checkpoint`: `Launch OS v0 compact footer v2 CEO-review readiness packet - 2026-06-02`
+- `objective`: Present the CEO-reviewable compact-footer v2 packet and capture
+  Alejandro's next no-live decision without asking for or executing any
+  public/audience send.
+- `why_now`: The v2 package has green local and received-email evidence: four
+  seed tests complete, visual/readback QA green, CEO-review delta ready and CEO
+  proposal ready with no seed caveat. The next useful move is a human product/
+  distribution decision, not another QA resend or live send.
 - `allowed_scope`:
-  - Read the v2 visual observation and refreshed artifact QA packet.
-  - Refresh local-only CEO-review/readiness/current-state evidence if needed.
-  - Prepare a concise CEO-review packet or next-decision note with caveats and
-    explicit closed live gates.
+  - Read the CEO-review readiness delta and CEO proposal packet.
+  - Summarize the packet for Alejandro.
+  - Offer only no-live decision options: accept current packet for pilot
+    distribution decision planning, request copy/visual corrections, or prepare
+    a pilot distribution decision packet with no send authorization.
+  - If Alejandro chooses a no-live packet-prep option, prepare only local
+    decision/readiness evidence.
 - `forbidden_scope`:
   - Do not recreate replacement drafts.
   - Do not resend seed/test emails.
@@ -364,9 +390,9 @@ action that a resumed Goal should continue before replanning.
   - No secret reads, env dumps, raw token output, raw private URLs, raw asset
     URLs, recipient lists or broad mailbox inspection.
 - `expected_files`:
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`
-  - Optional refreshed CEO/current-state/readiness packets under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+  - Optional future no-live pilot distribution decision packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
@@ -382,21 +408,22 @@ action that a resumed Goal should continue before replanning.
   are all consumed. Public/audience sends, MailerLite publish/schedule,
   subscribers, workflows, Shopify and CRM remain closed until a separate exact
   approval.
-- `human_boundary_id`: `mailerlite_footer_compact_v2_ceo_review_readiness_packet_inteligencia_descansar`
-- `human_boundary_notification_status`: `not_required_for_local_readiness_synthesis`
+- `human_boundary_id`: `mailerlite_footer_compact_v2_ceo_review_decision_boundary_inteligencia_descansar`
+- `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Required local visual/QA evidence is missing or fails validation.
+  - Required CEO-review readiness evidence is missing or fails validation.
   - Any requested action would resend tests, publish, schedule, assign a real
     audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
     scoring/Fact Store without a separate exact approval.
-- `resume_instruction`: Prepare or refresh only the local CEO-review/readiness
-  synthesis. Do not revisit sends, draft creation or public/audience execution.
-- `completion_definition`: A local CEO-review/readiness synthesis is current,
-  cites the visual-readback green packet, preserves all live gates as closed and
-  names the next human decision without executing a live action.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 CEO-review readiness packet - 2026-06-02`
+- `resume_instruction`: Report the CEO-review packet as ready and keep the next
+  step to a no-live decision. Do not revisit sends, draft creation, inbox QA or
+  public/audience execution.
+- `completion_definition`: Alejandro chooses the next no-live direction or asks
+  for corrections, and any resulting local packet/checkpoint preserves all live
+  gates closed.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 CEO-review decision boundary - 2026-06-02`
 
 ## Stop/Change Conditions
 

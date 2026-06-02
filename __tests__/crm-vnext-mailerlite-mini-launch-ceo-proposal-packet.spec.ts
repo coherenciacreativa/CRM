@@ -76,6 +76,13 @@ const ceoReviewReadinessDelta = {
   executiveSummary: {
     compactFooterDraftsReady: true,
     compactFooterSeedPreflightGreen: true,
+    compactFooterSeedInboxArtifactQaReady: true,
+    compactFooterVisualReadbackGreen: true,
+    visualSignatureAssetVerified: true,
+    visualSignatureRenderedCount: 4,
+    footerNameCompactCount: 4,
+    duplicatePostalAddressVisibleCount: 0,
+    duplicateTypedAlejandroAfterClosingCount: 0,
     compactFooterSeedExecutionComplete: false,
     compactFooterSeedExecutionState: "partial_e01_only_remaining_e02_e03_e04_blocked",
     sentLabels: ["E01"],
@@ -196,7 +203,15 @@ describe("CRM vNext MailerLite mini-launch CEO proposal packet", () => {
     );
     expect(report.proposalSections.mailerLiteDeliveryLogic.status)
       .toBe("null_audience_compact_drafts_ready_seed_execution_complete");
+    expect(report.proposalSections.mailerLiteDeliveryLogic).toMatchObject({
+      compactFooterSeedInboxArtifactQaReady: true,
+      compactFooterVisualReadbackGreen: true,
+      visualSignatureAssetVerified: true,
+      footerNameCompactCount: 4,
+    });
     expect(report.proposalSections.nextApprovalOrDecision.asksPublicSendApprovalNow).toBe(false);
+    expect(report.hardStops).toContain("Do not resend any compact-footer seed test under the consumed approval.");
+    expect(report.hardStops).not.toContain("Remaining seed tests E02-E04 still require fresh preflight and a valid approved route.");
     expect(safetyClosed(report.safety)).toBe(true);
   });
 

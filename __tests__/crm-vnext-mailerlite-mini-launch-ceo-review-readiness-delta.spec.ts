@@ -168,11 +168,49 @@ const completedRecordUiSentReceipt = {
   },
 };
 
+const compactFooterSeedArtifactQaPacket = {
+  ok: true,
+  status: "seed_inbox_artifact_qa_ready_for_ceo_review_no_live_changes",
+  executiveSummary: {
+    seedInboxArtifactQaPassed: true,
+    deliveredToApprovedSeedCount: 4,
+    expectedSeedMessageCount: 4,
+    realSeedClickthroughVerified: true,
+    visibleRawUrlTextCount: 0,
+    footerCompliancePresent: true,
+    canonicalMailerLiteFooterVerified: true,
+    visualSignatureAssetVerified: true,
+    signatureFallbackPresent: false,
+    liveActionAllowedNow: false,
+    blockerCount: 0,
+    blockers: [],
+  },
+};
+
+const compactFooterVisualReadbackObservation = {
+  status: "seed_inbox_visual_readback_completed_green_no_live_changes",
+  visualReadbackSummary: {
+    inspectedMessageCount: 4,
+    expectedMessageCount: 4,
+    latestThreadMessagesOnly: true,
+    visualSignatureRenderedCount: 4,
+    footerNameCompactCount: 4,
+    footerHierarchyCompactCount: 4,
+    duplicatePostalAddressVisibleCount: 0,
+    duplicateTypedAlejandroAfterClosingCount: 0,
+    visualReadbackPassed: true,
+    blockerCount: 0,
+    blockers: [],
+  },
+};
+
 const baseInput = {
   productValueReviewPacket: productValueReadyPacket,
   publicLaunchReadinessPacket: publicClosedPacket,
   compactFooterReplacementReceipt: compactReplacementReceipt,
   compactFooterSeedPreflight: compactSeedPreflight,
+  compactFooterSeedArtifactQaPacket,
+  compactFooterVisualReadbackObservation,
   currentStateRefresh: {
     status: "mailerlite_launch_os_current_state_refresh_ready_no_live_changes",
   },
@@ -200,6 +238,10 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
       "/tmp/preflight.json",
       "--compact-footer-seed-ui-blocker",
       "/tmp/blocker.json",
+      "--compact-footer-seed-artifact-qa-packet",
+      "/tmp/artifact.json",
+      "--compact-footer-visual-readback-observation",
+      "/tmp/visual.json",
       "--current-state-refresh",
       "/tmp/current.json",
       "--goal-audit",
@@ -212,6 +254,8 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
 
     expect(parsed.productValueReviewPacket).toBe("/tmp/product.json");
     expect(parsed.compactFooterSeedUiBlocker).toBe("/tmp/blocker.json");
+    expect(parsed.compactFooterSeedArtifactQaPacket).toBe("/tmp/artifact.json");
+    expect(parsed.compactFooterVisualReadbackObservation).toBe("/tmp/visual.json");
     expect(parsed.out).toBe("/tmp/out.json");
   });
 
@@ -230,6 +274,8 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
       compactFooterDraftsReady: true,
       compactFooterSeedPreflightGreen: true,
       compactFooterSeedExecutionComplete: false,
+      compactFooterSeedInboxArtifactQaReady: true,
+      compactFooterVisualReadbackGreen: true,
       compactFooterSeedExecutionState: "partial_e01_only_remaining_e02_e03_e04_blocked",
       readyForPilotDistributionDecisionNow: false,
       readyForPublicSendApprovalNow: false,
@@ -277,6 +323,8 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
     expect(report.executiveSummary.compactFooterDraftsReady).toBe(false);
     expect(report.executiveSummary.compactFooterSeedPreflightGreen).toBe(false);
     expect(report.executiveSummary.compactFooterSeedExecutionComplete).toBe(false);
+    expect(report.executiveSummary.compactFooterSeedInboxArtifactQaReady).toBe(true);
+    expect(report.executiveSummary.compactFooterVisualReadbackGreen).toBe(true);
     expect(report.executiveSummary.readyForPilotDistributionDecisionNow).toBe(false);
     expect(report.executiveSummary.nextSafeAction)
       .toBe("get_exact_approval_then_create_compact_footer_v2_null_audience_replacement_drafts");
@@ -307,6 +355,8 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
     expect(report.executiveSummary).toMatchObject({
       ceoReviewPackageReady: true,
       compactFooterSeedExecutionComplete: true,
+      compactFooterSeedInboxArtifactQaReady: true,
+      compactFooterVisualReadbackGreen: true,
       compactFooterSeedExecutionState: "complete_e01_e02_e03_e04",
       sentLabels: ["E01", "E02", "E03", "E04"],
       unsentLabels: [],
@@ -321,6 +371,31 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
     });
     expect(report.decisionBoundary.notAllowedWithoutFreshApprovalOrEvidence)
       .toContain("resend_any_compact_footer_seed_test");
+    expect(safetyClosed(report.safety)).toBe(true);
+  });
+
+  test("keeps CEO readiness blocked when the v2 visual artifact QA is missing", () => {
+    const report = buildCeoReviewReadinessDelta({
+      ...baseInput,
+      integratedExperienceQaPacket: integratedReadyPacket,
+      compactFooterSeedUiBlocker: completedRecordUiSentReceipt,
+      compactFooterSeedArtifactQaPacket: null,
+      compactFooterVisualReadbackObservation: null,
+    });
+
+    expect(report.status).toBe("ceo_review_readiness_delta_not_ready_no_live_changes");
+    expect(report.executiveSummary).toMatchObject({
+      ceoReviewPackageReady: false,
+      compactFooterSeedExecutionComplete: true,
+      compactFooterSeedInboxArtifactQaReady: false,
+      compactFooterVisualReadbackGreen: false,
+      readyForPilotDistributionDecisionNow: false,
+      nextSafeAction: "resolve_compact_footer_seed_inbox_artifact_qa_before_ceo_review",
+    });
+    expect(report.executiveSummary.blockerIds).toEqual(expect.arrayContaining([
+      "compact_footer_seed_inbox_artifact_qa_not_green",
+      "compact_footer_visual_readback_not_green",
+    ]));
     expect(safetyClosed(report.safety)).toBe(true);
   });
 });

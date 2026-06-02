@@ -217,8 +217,14 @@ const buildCeoProposalPacket = ({
     && assetSummary.publicAudienceSendUrlGateReady === false
     && assetSummary.localAssetSlotReadyCount >= 3
     && assetSummary.previewUrlReadyCount >= 3;
+  const compactFooterSeedInboxArtifactQaReady =
+    deltaSummary.compactFooterSeedInboxArtifactQaReady !== false;
+  const compactFooterVisualReadbackGreen =
+    deltaSummary.compactFooterVisualReadbackGreen !== false;
   const mailerLiteDeliveryReady = deltaSummary.compactFooterDraftsReady === true
-    && deltaSummary.compactFooterSeedPreflightGreen === true;
+    && deltaSummary.compactFooterSeedPreflightGreen === true
+    && compactFooterSeedInboxArtifactQaReady
+    && compactFooterVisualReadbackGreen;
   const compactSeedExecutionComplete = deltaSummary.compactFooterSeedExecutionComplete === true;
   const publicSendClosed = publicSummary.readyForExactPublicSendApproval === false
     && publicSummary.liveActionAllowedNow === false
@@ -289,13 +295,30 @@ const buildCeoProposalPacket = ({
         compactFooterDraftsReady: deltaSummary.compactFooterDraftsReady ?? null,
         compactFooterSeedPreflightGreen: deltaSummary.compactFooterSeedPreflightGreen ?? null,
         compactFooterSeedExecutionState: deltaSummary.compactFooterSeedExecutionState ?? null,
+        compactFooterSeedInboxArtifactQaReady:
+          deltaSummary.compactFooterSeedInboxArtifactQaReady ?? null,
+        compactFooterVisualReadbackGreen:
+          deltaSummary.compactFooterVisualReadbackGreen ?? null,
+        visualSignatureAssetVerified: deltaSummary.visualSignatureAssetVerified ?? null,
+        visualSignatureRenderedCount: deltaSummary.visualSignatureRenderedCount ?? null,
+        footerNameCompactCount: deltaSummary.footerNameCompactCount ?? null,
+        duplicatePostalAddressVisibleCount: deltaSummary.duplicatePostalAddressVisibleCount ?? null,
+        duplicateTypedAlejandroAfterClosingCount:
+          deltaSummary.duplicateTypedAlejandroAfterClosingCount ?? null,
         sentLabels: deltaSummary.sentLabels ?? [],
         unsentLabels: deltaSummary.unsentLabels ?? [],
         doNotResendLabels: deltaSummary.doNotResendLabels ?? [],
       },
       blockers: compactSeedExecutionComplete
-        ? []
-        : ['compact_footer_seed_execution_partial_e02_e03_e04_unsent'],
+        ? [
+          compactFooterSeedInboxArtifactQaReady ? null : 'compact_footer_seed_inbox_artifact_qa_not_green',
+          compactFooterVisualReadbackGreen ? null : 'compact_footer_visual_readback_not_green',
+        ].filter(Boolean)
+        : [
+          'compact_footer_seed_execution_partial_e02_e03_e04_unsent',
+          compactFooterSeedInboxArtifactQaReady ? null : 'compact_footer_seed_inbox_artifact_qa_not_green',
+          compactFooterVisualReadbackGreen ? null : 'compact_footer_visual_readback_not_green',
+        ].filter(Boolean),
     }),
     gate({
       id: 'crm_signal_design',
@@ -406,6 +429,12 @@ const buildCeoProposalPacket = ({
             : 'null_audience_compact_drafts_ready_seed_partial'
           : 'blocked',
         compactSeedExecutionState: deltaSummary.compactFooterSeedExecutionState ?? null,
+        compactFooterSeedInboxArtifactQaReady:
+          deltaSummary.compactFooterSeedInboxArtifactQaReady ?? null,
+        compactFooterVisualReadbackGreen:
+          deltaSummary.compactFooterVisualReadbackGreen ?? null,
+        visualSignatureAssetVerified: deltaSummary.visualSignatureAssetVerified ?? null,
+        footerNameCompactCount: deltaSummary.footerNameCompactCount ?? null,
         sentLabels: deltaSummary.sentLabels ?? [],
         unsentLabels: deltaSummary.unsentLabels ?? [],
         doNotResendLabels: deltaSummary.doNotResendLabels ?? [],
@@ -430,9 +459,13 @@ const buildCeoProposalPacket = ({
     safety,
     hardStops: [
       'This CEO Proposal Packet is not approval to build, publish, send, assign an audience, mutate workflows, or write CRM records.',
-      'Do not resend E01.',
+      compactSeedExecutionComplete
+        ? 'Do not resend any compact-footer seed test under the consumed approval.'
+        : 'Do not resend E01.',
       'Do not request public/audience send approval from this packet.',
-      'Remaining seed tests E02-E04 still require fresh preflight and a valid approved route.',
+      compactSeedExecutionComplete
+        ? 'Any future test resend requires a fresh exact approval and safety preflight.'
+        : 'Remaining seed tests E02-E04 still require fresh preflight and a valid approved route.',
       'Exact URLs, recipients, raw IDs and tokens must remain unprinted.',
     ],
   };
