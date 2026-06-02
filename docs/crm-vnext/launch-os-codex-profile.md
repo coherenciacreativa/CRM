@@ -14,7 +14,8 @@ to read next.
 
 ## Default Resume Sources
 
-For normal Launch OS resumes, read in this order:
+After this profile has been selected for Launch OS work, normal resumes should
+read in this order:
 
 1. `docs/crm-vnext/launch-os-next-action.md`
 2. The latest relevant checkpoint in
@@ -25,6 +26,10 @@ For normal Launch OS resumes, read in this order:
 Use this light hydration by default for microfixes, local report generation,
 checkpoint updates, draft/test preflights, and continuation after a normal
 Goal/play resume.
+
+If `git status` shows changes from another lane or thread, do not mix them into
+the current patch. Keep side-conversation process work and main Goal
+implementation work separately staged and committed.
 
 ## Do Not Deep-Read By Default
 
