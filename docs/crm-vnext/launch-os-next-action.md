@@ -150,7 +150,8 @@ action that a resumed Goal should continue before replanning.
 - `source_checkpoint`: `Launch OS v0 compact footer Null Audience replacement drafts created - 2026-06-02`
 - `objective`: Stop before any compact-footer seed/test email send. Treat the
   newly created compact-footer drafts as inert Null Audience draft evidence
-  until a separate exact seed-test approval is provided after fresh API QA.
+  until the approved seed-test edge is executed through a semantic Computer Use
+  UI route after fresh API QA.
 - `why_now`: The compact-footer replacement execution receipt is green for four
   new draft-only campaigns assigned exclusively to the empty Null Audience
   safety group. The current approval queue now exposes the generic
@@ -160,16 +161,24 @@ action that a resumed Goal should continue before replanning.
   Current-state refresh explicitly marks the historical asset-ready seed inbox
   QA as not applicable to the compact-footer replacement receipt, so effective
   seed inbox QA remains false until fresh compact-footer seed evidence exists.
-  A fresh compact-footer seed-test preflight is now green, but the approval
-  remains unconsumed and test sending is still closed.
+  Alejandro provided the fresh exact compact-footer seed-test approval, and
+  fresh API re-scans stayed green, but no valid UI send was completed. The
+  approval remains received but unconsumed because no Computer Use semantic
+  test-send receipt exists and test emails sent remains `0`.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Generate or refresh a compact-footer seed-test preflight/approval packet
     only as a local/reporting or read-only API action.
-  - If Alejandro later gives a fresh exact compact-footer seed-test approval,
-    route the actual test sends through MailerLite UI by Computer Use or the
-    Mantis relay UI route, then record a local receipt; do not use API as the
-    primary test-send route.
+  - Use the received compact-footer seed-test approval only once, and only after
+    a fresh API re-scan remains green. Do not ask for the same approval again
+    unless Alejandro supersedes it or the evidence set changes.
+  - Route the actual test sends through MailerLite UI by Computer Use semantic
+    UI actions only in this Codex thread, then record a local receipt; do not
+    use API as the primary test-send route.
+  - If Computer Use cannot expose and operate the required test-send controls
+    semantically, stop and report the UI-route blocker. Do not use screenshots,
+    coordinate clicks, system-click fallbacks or browser DOM/AppleScript click
+    injection for MailerLite UI operations.
   - Before any seed-test send, re-scan by API and require QA green that the four
     current compact-footer drafts are still draft-only, unpublished,
     unscheduled, workflow-free and assigned only to
@@ -179,7 +188,9 @@ action that a resumed Goal should continue before replanning.
 - `forbidden_scope`:
   - Do not repeat the asset-ready replacement draft creation.
   - Do not repeat the compact-footer replacement draft creation.
-  - Do not resend `E01`, `E02`, `E03` or `E04`.
+  - Do not send `E01`, `E02`, `E03` or `E04` more than once under this approval.
+  - Do not record any `record_ui_sent` receipt unless the test emails were
+    actually sent through Computer Use semantic UI operation.
   - Do not rerun the consumed four-email seed-test approval.
   - Do not rerun the consumed E04-only seed resend approval.
   - Do not perform artifact/CEO-readiness QA from the stale oversized-footer
@@ -231,17 +242,20 @@ action that a resumed Goal should continue before replanning.
   - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
   - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
-- `live_gate_status`: blocked until Alejandro gives a new exact compact-footer
-  seed-test approval. The compact-footer preflight is ready, but approval is not
-  consumed. Queue readiness is not approval. Public/audience sends, MailerLite
-  publish/schedule, subscribers, workflows, Shopify and CRM remain closed.
+- `live_gate_status`: blocked after approval until Computer Use can operate the
+  MailerLite test-send UI semantically after a fresh API re-scan. The exact
+  compact-footer seed-test approval has been received but remains unconsumed
+  because no valid UI send occurred. Queue readiness is not approval.
+  Public/audience sends, MailerLite publish/schedule, subscribers, workflows,
+  Shopify and CRM remain closed.
 - `human_boundary_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Any requested action would send another test email without a fresh exact
-    compact-footer seed-test approval.
+  - Any requested action would send a test email without a fresh API re-scan.
+  - Any requested action would use screenshots, coordinate clicks, system-click
+    fallbacks or browser DOM/AppleScript click injection for MailerLite UI.
   - Any requested action would prepare a public send approval before fresh
     compact-footer seed inbox evidence exists.
   - A requested action would send, publish, schedule, assign a real audience,
@@ -253,10 +267,11 @@ action that a resumed Goal should continue before replanning.
   either consumed asset-ready seed approval, and do not perform
   artifact/CEO-readiness QA from the stale oversized-footer seed messages.
 - `completion_definition`: A later compact-footer seed-test checkpoint has a
-  fresh API re-scan/preflight, a fresh exact approval, UI-recorded test-send
-  receipt and then seed inbox QA, all without public/audience send, publish,
-  schedule, subscriber/workflow, Shopify, CRM, ledger, card, scoring or Fact
-  Store effects.
+  fresh API re-scan/preflight, the received exact approval consumed exactly
+  once, a Computer Use semantic UI-recorded test-send receipt and then seed
+  inbox QA, all without public/audience send, publish, schedule,
+  subscriber/workflow, Shopify, CRM, ledger, card, scoring or Fact Store
+  effects.
 - `next_checkpoint_expected`: `Launch OS v0 compact footer seed-test approval boundary checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions

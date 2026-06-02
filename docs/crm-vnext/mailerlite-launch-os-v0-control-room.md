@@ -5853,3 +5853,63 @@ Operating meaning:
 - Approval remains unconsumed; do not send tests merely because this preflight is green.
 - If approved later, actual test sending should route through UI/Computer Use or the Mantis relay UI route, then be recorded locally; do not use MailerLite API as the primary test-send route for this boundary.
 - Public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.
+
+## Launch OS v0 compact footer seed-test UI route blocker checkpoint - 2026-06-02
+
+Status: active goal, Alejandro provided the exact compact-footer seed-test
+approval, and a fresh MailerLite API read-only re-scan/preflight remained green
+for the four compact-footer Null Audience replacement drafts. The approved
+seed-test edge is not closed: no valid Computer Use semantic UI send was
+completed, no `record_ui_sent` receipt was created, and the approval remains
+received but unconsumed. A newer operator instruction explicitly forbids
+screenshot/capture inspection, coordinate clicks, system-click fallbacks and
+browser DOM/AppleScript click injection for MailerLite UI operations.
+
+Evidence:
+
+- Compact-footer seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Compact-footer seed-test preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Compact-footer replacement execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+- Codex profile UI policy: `docs/crm-vnext/launch-os-codex-profile.md`
+
+Confirmed results:
+
+- Fresh seed-test preflight after the UI blocker: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- Target count: `4`; QA green count: `4`; blocker count: `0`; error count: `0`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`; active count `0`.
+- Target labels: `E01`, `E02`, `E03`, `E04`.
+- Test emails sent: `0`; test-send execution channel `null`.
+- `record_ui_sent` receipt created: `false`.
+- Approval status: received from Alejandro but not consumed because no valid
+  Computer Use semantic UI send occurred.
+- Temporary screenshot evidence from the aborted fallback path was deleted and
+  is not an authoritative artifact.
+
+Safety:
+
+- MailerLite API called only for read-only re-scan/preflight: `true`.
+- MailerLite API test-send called: `false`.
+- MailerLite UI semantic send completed: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact preview URLs, raw campaign/group IDs, raw recipients, sender values and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- Do not ask for the same compact-footer seed-test approval again unless
+  Alejandro supersedes it or the evidence set changes; it is received but
+  unconsumed.
+- Before any later seed-test send, run another fresh API re-scan/preflight and
+  require QA green.
+- For Codex-operated MailerLite UI, continue only through Computer Use semantic
+  UI actions. If Computer Use cannot expose the test-send controls
+  semantically, stop and report the blocker.
+- Do not use screenshots/captures, coordinate clicks, system-click fallbacks,
+  browser DOM/AppleScript click injection, API test-send endpoints or simulated
+  receipts to close this boundary.
+- Public/audience sends, publish/schedule, workflows, subscribers, Shopify live
+  changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.
