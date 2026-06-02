@@ -7032,3 +7032,73 @@ Operating meaning:
 - Any future resend, public/audience send, MailerLite publish/schedule,
   subscriber/group/workflow mutation, Shopify mutation or CRM write still needs
   a separate fresh exact approval and preflight.
+
+## Launch OS v0 compact footer v2 pilot distribution decision packet no-send - 2026-06-02
+
+Status: active goal, local-only/report-only pilot distribution decision packet
+prepared from the compact-footer v2 CEO-review-ready evidence. This packet
+creates a strategy-choice boundary only; it does not ask for, generate or imply
+any public/audience send approval. This checkpoint performs no MailerLite
+API/UI call, resend, publish, schedule, audience assignment, subscriber/group/
+workflow mutation, Shopify mutation, CRM write, ledger, card, scoring or Fact
+Store action.
+
+Evidence:
+
+- Pilot distribution decision packet no-send JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+- Pilot distribution decision packet no-send markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.md`
+- CEO-review readiness delta JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+- CEO proposal packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+- Public send preflight decision packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_send_preflight_decision_packet_current_inteligencia_descansar_2026-06-02.json`
+- Public audience scope packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_public_audience_scope_packet_current_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Decision packet status:
+  `pilot_distribution_decision_packet_no_send_ready_no_live_changes`.
+- Decision packet ready: `true`.
+- CEO packet ready: `true`.
+- CEO readiness ready: `true`.
+- No-send preflight aligned: `true`.
+- Audience scope aligned: `true`.
+- Can ask pilot lane decision now: `true`.
+- Asks public send approval now: `false`.
+- Can ask final send approval now: `false`.
+- Exact approval phrase available/printed: `false`/`false`.
+- Live action allowed now: `false`.
+- Would authorize send: `false`.
+- Would authorize audience assignment: `false`.
+- Current default: `keep_null_audience_no_public_send` with known active count
+  `0`.
+- Recommended no-send decision options:
+  `keep_null_audience_no_public_send`, `manual_micro_cohort_next`,
+  `opt_in_testers_next`.
+- Broad active subscriber send recommended now: `false`.
+- Existing active subscriber audience remains future-only.
+- Blocker count: `0`.
+
+Safety:
+
+- Report generation was local-only and report-only.
+- MailerLite API/UI called or mutated: `false`.
+- Test emails sent or resent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Audience assignment performed: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Exact URLs, tokens, raw IDs and recipient lists printed: `false`.
+
+Operating meaning:
+
+- The next human boundary is one strategy-only no-send lane choice:
+  `keep_null_audience_no_public_send`, `manual_micro_cohort_next` or
+  `opt_in_testers_next`.
+- Choosing `manual_micro_cohort_next` or `opt_in_testers_next` only authorizes a
+  future local roster/preflight packet for that lane; it does not authorize
+  audience assignment or send.
+- Choosing `keep_null_audience_no_public_send` keeps the current v2 draft set
+  inert and closes this launch edge in local review/readiness mode.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed behind future separate exact
+  approvals and fresh preflight.

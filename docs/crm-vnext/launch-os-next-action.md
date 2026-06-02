@@ -356,32 +356,54 @@ action that a resumed Goal should continue before replanning.
   It names the next no-live human decision without authorizing any send or live
   mutation.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_ceo_review_decision_boundary_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `updated_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 pilot distribution decision packet no-send - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+- `completion_note`: The no-send pilot distribution decision packet is ready
+  with `decisionPacketReady=true`, `canAskPilotLaneDecisionNow=true`,
+  `asksPublicSendApprovalNow=false`, `canAskFinalSendApprovalNow=false`,
+  `exactApprovalPhraseAvailable=false`, `liveActionAllowedNow=false`,
+  `wouldAuthorizeSend=false`, `wouldAuthorizeAudienceAssignment=false` and
+  `blockerCount=0`.
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_pilot_distribution_lane_choice_no_send_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 compact footer v2 CEO-review readiness packet - 2026-06-02`
-- `objective`: Present the CEO-reviewable compact-footer v2 packet and capture
-  Alejandro's next no-live decision without asking for or executing any
-  public/audience send.
-- `why_now`: The v2 package has green local and received-email evidence: four
-  seed tests complete, visual/readback QA green, CEO-review delta ready and CEO
-  proposal ready with no seed caveat. The next useful move is a human product/
-  distribution decision, not another QA resend or live send.
+- `source_checkpoint`: `Launch OS v0 compact footer v2 pilot distribution decision packet no-send - 2026-06-02`
+- `objective`: Capture Alejandro's strategy-only no-send pilot lane choice for
+  `Inteligencia para descansar`, without asking for or executing any public/
+  audience send.
+- `why_now`: The compact-footer v2 CEO packet and the no-send pilot
+  distribution decision packet are both green. The next useful move is one
+  human lane choice: keep the current Null Audience/no-send posture, prepare a
+  manual micro-cohort packet, or prepare an opt-in testers packet.
 - `allowed_scope`:
-  - Read the CEO-review readiness delta and CEO proposal packet.
-  - Summarize the packet for Alejandro.
-  - Offer only no-live decision options: accept current packet for pilot
-    distribution decision planning, request copy/visual corrections, or prepare
-    a pilot distribution decision packet with no send authorization.
-  - If Alejandro chooses a no-live packet-prep option, prepare only local
-    decision/readiness evidence.
+  - Read the no-send pilot distribution decision packet.
+  - Present only the three strategy choices:
+    `keep_null_audience_no_public_send`, `manual_micro_cohort_next`,
+    `opt_in_testers_next`.
+  - If Alejandro chooses `manual_micro_cohort_next` or `opt_in_testers_next`,
+    prepare only the matching local roster/preflight packet boundary.
+  - If Alejandro chooses `keep_null_audience_no_public_send`, record the no-send
+    hold locally.
 - `forbidden_scope`:
   - Do not recreate replacement drafts.
   - Do not resend seed/test emails.
   - Do not ask for or execute public/audience-send approval from this boundary.
+  - Do not assign any audience, group or segment.
   - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
     mutation or automation action.
   - No Shopify mutation, publish, theme push, live form wiring, public
@@ -390,9 +412,8 @@ action that a resumed Goal should continue before replanning.
   - No secret reads, env dumps, raw token output, raw private URLs, raw asset
     URLs, recipient lists or broad mailbox inspection.
 - `expected_files`:
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
-  - Optional future no-live pilot distribution decision packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - Optional future lane-specific no-live roster/preflight packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
@@ -403,27 +424,24 @@ action that a resumed Goal should continue before replanning.
   - `node --check <local report scripts used>`
   - Focused `npx vitest run <relevant specs>` when a script is used.
   - `git diff --check`
-- `live_gate_status`: V2 replacement-draft creation approval, v2 seed-test
-  approval, v2 read-only seed inbox QA approval and v2 visual readback approval
-  are all consumed. Public/audience sends, MailerLite publish/schedule,
+- `live_gate_status`: All prior compact-footer v2 approvals are consumed.
+  Public/audience sends, MailerLite publish/schedule, audience assignment,
   subscribers, workflows, Shopify and CRM remain closed until a separate exact
   approval.
-- `human_boundary_id`: `mailerlite_footer_compact_v2_ceo_review_decision_boundary_inteligencia_descansar`
+- `human_boundary_id`: `mailerlite_footer_compact_v2_pilot_distribution_lane_choice_no_send_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Required CEO-review readiness evidence is missing or fails validation.
+  - Required no-send decision packet evidence is missing or fails validation.
   - Any requested action would resend tests, publish, schedule, assign a real
     audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
     scoring/Fact Store without a separate exact approval.
-- `resume_instruction`: Report the CEO-review packet as ready and keep the next
-  step to a no-live decision. Do not revisit sends, draft creation, inbox QA or
-  public/audience execution.
-- `completion_definition`: Alejandro chooses the next no-live direction or asks
-  for corrections, and any resulting local packet/checkpoint preserves all live
-  gates closed.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 CEO-review decision boundary - 2026-06-02`
+- `resume_instruction`: Ask only for the strategy-only no-send lane choice. Do
+  not revisit sends, draft creation, inbox QA or public/audience execution.
+- `completion_definition`: Alejandro chooses one of the three no-send lanes and
+  any resulting local checkpoint preserves all live gates closed.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 pilot distribution lane choice no-send - 2026-06-02`
 
 ## Stop/Change Conditions
 
