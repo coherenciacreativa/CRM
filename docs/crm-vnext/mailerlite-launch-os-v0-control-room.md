@@ -14,6 +14,12 @@ Build MailerLite Launch OS v0: a safe, documented, tested architecture for onboa
 - MailerLite owns delivery, workflow routes, minimal receipts, dedupe, and coarse audience/journey state.
 - Alejandro approves live mutations, audience sends, active workflow changes, and public launch moments.
 
+## Goal/play resume pointer
+
+Goal/play resumes should consult `docs/crm-vnext/launch-os-next-action.md`
+before replanning. The Control Room remains the historical ledger; the next
+action contract is the active pointer for the first move after resume.
+
 ## Operating principles
 
 - Treat the active editorial onboarding as the protected relationship-deepening trunk: welcome, spaced article sequence, completion marker and current general campaign audience.
