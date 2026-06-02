@@ -5808,3 +5808,48 @@ Operating meaning:
 - The compact-footer replacement approval has been consumed; do not rerun it or ask for it again.
 - The next real boundary is a separate compact-footer seed-test approval after fresh API re-scan/preflight proves the four new drafts are still draft-only, unpublished, unscheduled, workflow-free and assigned exclusively to the empty Null Audience safety group.
 - Queue readiness is not approval. Do not send test emails, publish, schedule, assign a real audience, mutate subscribers/workflows, touch Shopify, CRM, ledgers, cards, scoring or Fact Store without a fresh exact approval for that later boundary.
+
+## Launch OS v0 compact footer seed-test preflight boundary checkpoint - 2026-06-02
+
+Status: active goal, a fresh MailerLite API read-only re-scan/preflight is green
+for the four compact-footer Null Audience replacement drafts. The seed-test
+approval phrase is compact-footer-specific and separate from the consumed
+asset-ready seed-test and E04-only resend approvals. No test email was sent, no
+approval was consumed, and no audience/public action was performed by this
+checkpoint.
+
+Evidence:
+
+- Compact-footer seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Compact-footer seed-test preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Compact-footer replacement execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Seed-test preflight: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- Target count: `4`; QA green count: `4`; blocker count: `0`; error count: `0`.
+- Approval status: `read_only_preflight_no_live_approval_required`.
+- Exact approval phrase printed: `false`.
+- Target labels: `E01`, `E02`, `E03`, `E04`.
+- Compact-footer set recognized: `true`.
+- Current-state refresh after this checkpoint: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=38`, `testCount=243`, `liveGatesClosed=true`.
+
+Safety:
+
+- MailerLite API called for read-only re-scan/preflight: `true`.
+- Test emails sent: `0`.
+- Test-send execution channel: `null`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact preview URLs, raw campaign/group IDs, raw recipients, sender values and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The next boundary is now human approval for compact-footer seed-test emails only.
+- Approval remains unconsumed; do not send tests merely because this preflight is green.
+- If approved later, actual test sending should route through UI/Computer Use or the Mantis relay UI route, then be recorded locally; do not use MailerLite API as the primary test-send route for this boundary.
+- Public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.

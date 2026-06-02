@@ -158,6 +158,8 @@ action that a resumed Goal should continue before replanning.
   Current-state refresh explicitly marks the historical asset-ready seed inbox
   QA as not applicable to the compact-footer replacement receipt, so effective
   seed inbox QA remains false until fresh compact-footer seed evidence exists.
+  A fresh compact-footer seed-test preflight is now green, but the approval
+  remains unconsumed and test sending is still closed.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Generate or refresh a compact-footer seed-test preflight/approval packet
@@ -207,6 +209,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
 - `allowed_commands`:
@@ -223,12 +227,12 @@ action that a resumed Goal should continue before replanning.
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs`
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
   - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
 - `live_gate_status`: blocked until Alejandro gives a new exact compact-footer
-  seed-test approval. Queue readiness is not approval. Public/audience sends,
-  MailerLite publish/schedule, subscribers, workflows, Shopify and CRM remain
-  closed.
+  seed-test approval. The compact-footer preflight is ready, but approval is not
+  consumed. Queue readiness is not approval. Public/audience sends, MailerLite
+  publish/schedule, subscribers, workflows, Shopify and CRM remain closed.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
@@ -240,10 +244,10 @@ action that a resumed Goal should continue before replanning.
     mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store without a new exact approval.
 - `resume_instruction`: Continue from the compact-footer replacement execution
-  receipt. Do not recreate old asset-ready drafts, do not recreate the compact
-  replacements, do not rerun either consumed asset-ready seed approval, and do
-  not perform artifact/CEO-readiness QA from the stale oversized-footer seed
-  messages.
+  receipt and compact-footer seed-test preflight. Do not recreate old
+  asset-ready drafts, do not recreate the compact replacements, do not rerun
+  either consumed asset-ready seed approval, and do not perform
+  artifact/CEO-readiness QA from the stale oversized-footer seed messages.
 - `completion_definition`: A later compact-footer seed-test checkpoint has a
   fresh API re-scan/preflight, a fresh exact approval, UI-recorded test-send
   receipt and then seed inbox QA, all without public/audience send, publish,

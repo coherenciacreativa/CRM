@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   EXPECTED_APPROVAL_PHRASE,
+  EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
   EXPECTED_E01_CANARY_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
@@ -53,6 +54,18 @@ const campaigns = names.map((name, index) => campaign({
   name,
 }));
 
+const compactNames = [
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E01 Delivery orientation · API Null Audience compact footer canon",
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E02 Practice · API Null Audience compact footer canon",
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E03 Editorial depth · API Null Audience compact footer canon",
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E04 Feedback invitation · API Null Audience compact footer canon",
+];
+
+const compactCampaigns = compactNames.map((name, index) => campaign({
+  label: `E0${index + 1}`,
+  name,
+}));
+
 const replacementReceipt = {
   ok: true,
   status: "mailerlite_null_audience_replacement_execution_completed_no_sends",
@@ -68,6 +81,39 @@ const replacementReceipt = {
     nullAudienceSafeCount: 4,
     contentGreenCount: 4,
     rows: campaigns.map((row, index) => ({
+      label: `E0${index + 1}`,
+      contentSha256: htmlStats(row.emails[0].content).sha256,
+    })),
+  },
+  safety: {
+    mailerLiteDraftsCreated: 4,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    sendsPerformed: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    additionalGroupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    exactUrlsPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
+const compactReplacementReceipt = {
+  ok: true,
+  status: "mailerlite_null_audience_replacement_execution_completed_no_sends",
+  mode: "execute_requested",
+  createdDrafts: compactNames.map((name, index) => ({
+    step: index + 1,
+    label: `E0${index + 1}`,
+    campaignIdSha256: null,
+    name,
+  })),
+  postCreateQa: {
+    replacementDraftCount: 4,
+    nullAudienceSafeCount: 4,
+    contentGreenCount: 4,
+    rows: compactCampaigns.map((row, index) => ({
       label: `E0${index + 1}`,
       contentSha256: htmlStats(row.emails[0].content).sha256,
     })),
@@ -164,6 +210,45 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("E04 asset-ready Null Audience");
     expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("receipt de creación asset-ready");
     expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("sin reenviar E01-E03");
+  });
+
+  test("supports a compact-footer seed-test boundary with its own exact phrase", () => {
+    const details = new Map(compactCampaigns.map((row) => [row.id, row]));
+    const preflight = buildPreflight({
+      replacementReceipt: compactReplacementReceipt,
+      groups: [safetyGroup],
+      campaigns: compactCampaigns,
+      details,
+      seedEmail: "saludoalsol+seedmail@gmail.com",
+      execute: true,
+      recordUiSent: true,
+      approvalPhrase: EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
+    });
+
+    expect(expectedApprovalPhraseFor(["E01", "E02", "E03", "E04"], compactReplacementReceipt)).toBe(
+      EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
+    );
+    expect(EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE).toContain("compact-footer Null Audience");
+    expect(EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE).toContain("receipt de creación compact-footer");
+    expect(preflight.blockers).toEqual([]);
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.compactFooterSet).toBe(true);
+  });
+
+  test("blocks direct API execution for compact-footer seed tests", () => {
+    const details = new Map(compactCampaigns.map((row) => [row.id, row]));
+    const preflight = buildPreflight({
+      replacementReceipt: compactReplacementReceipt,
+      groups: [safetyGroup],
+      campaigns: compactCampaigns,
+      details,
+      seedEmail: "saludoalsol+seedmail@gmail.com",
+      execute: true,
+      approvalPhrase: EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
+    });
+
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.blockers).toContain("compact_footer_seed_test_requires_ui_record_mode");
   });
 
   test("supports an E01 canary seed-test boundary with its own exact phrase", () => {

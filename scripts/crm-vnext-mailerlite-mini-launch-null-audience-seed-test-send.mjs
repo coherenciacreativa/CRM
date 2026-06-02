@@ -28,6 +28,7 @@ const PLACEHOLDERS = [
 ];
 
 const EXPECTED_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 borradores asset-ready Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que los 4 borradores siguen en draft, apuntan exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coinciden con el receipt de creación asset-ready, no tienen placeholders ni tokens redacted pendientes, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
+const EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 borradores compact-footer Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que los 4 borradores siguen en draft, apuntan exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coinciden con el receipt de creación compact-footer, no tienen placeholders ni tokens redacted pendientes, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
 const EXPECTED_E01_CANARY_APPROVAL_PHRASE = 'Apruebo enviar únicamente un test email desde el borrador canario E01 Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, no tiene placeholders ni tokens redacted pendientes, sin reenviar E02-E04, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
 const EXPECTED_E04_RESEND_APPROVAL_PHRASE = 'Apruebo reenviar únicamente un test email del borrador E04 asset-ready Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coincide con el receipt de creación asset-ready, no tiene placeholders ni tokens redacted pendientes, sin reenviar E01-E03, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si el recipient no queda exactamente en el seed o cualquier QA falla, detenerse y reportar.';
 const DEFAULT_TARGET_LABELS = ['E01', 'E02', 'E03', 'E04'];
@@ -402,6 +403,9 @@ const htmlStats = (html) => {
 
 const targetLabelsAreE01Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E01';
 const targetLabelsAreE04Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E04';
+const replacementReceiptIsCompactFooter = (receipt) =>
+  (receipt?.createdDrafts ?? []).some((row) => normalizeName(row?.name)?.includes('compact footer canon'));
+
 const replacementReceiptGreen = (receipt, targetLabels = DEFAULT_TARGET_LABELS) => {
   const labels = Array.isArray(targetLabels) && targetLabels.length ? targetLabels : DEFAULT_TARGET_LABELS;
   const isE01Canary = targetLabelsAreE01Only(labels);
@@ -431,24 +435,38 @@ const replacementReceiptGreen = (receipt, targetLabels = DEFAULT_TARGET_LABELS) 
     && receipt?.safety?.tokensPrinted === false;
 };
 
-const expectedApprovalPhraseFor = (targetLabels = DEFAULT_TARGET_LABELS) =>
-  targetLabelsAreE01Only(targetLabels)
+const expectedApprovalPhraseFor = (targetLabels = DEFAULT_TARGET_LABELS, replacementReceipt = null) =>
+  replacementReceiptIsCompactFooter(replacementReceipt) && !targetLabelsAreE01Only(targetLabels) && !targetLabelsAreE04Only(targetLabels)
+    ? EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE
+    : targetLabelsAreE01Only(targetLabels)
     ? EXPECTED_E01_CANARY_APPROVAL_PHRASE
     : targetLabelsAreE04Only(targetLabels)
       ? EXPECTED_E04_RESEND_APPROVAL_PHRASE
       : EXPECTED_APPROVAL_PHRASE;
 
-const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEmail, execute, approvalPhrase, targetLabels = DEFAULT_TARGET_LABELS }) => {
+const buildPreflight = ({
+  replacementReceipt,
+  groups,
+  campaigns,
+  details,
+  seedEmail,
+  execute,
+  recordUiSent = false,
+  approvalPhrase,
+  targetLabels = DEFAULT_TARGET_LABELS,
+}) => {
   const blockers = [];
-  const expectedApprovalPhrase = expectedApprovalPhraseFor(targetLabels);
+  const expectedApprovalPhrase = expectedApprovalPhraseFor(targetLabels, replacementReceipt);
   const approvalMatched = normalizeApprovalPhrase(approvalPhrase) === normalizeApprovalPhrase(expectedApprovalPhrase);
   const expectedSeed = normalizeEmail(DEFAULT_SEED_EMAIL);
   const normalizedSeed = normalizeEmail(seedEmail);
   const targetLabelSet = new Set(targetLabels);
+  const compactFooterSet = replacementReceiptIsCompactFooter(replacementReceipt);
 
   if (!replacementReceiptGreen(replacementReceipt, targetLabels)) blockers.push('replacement_receipt_not_green_or_missing');
   if (!emailLooksValid(normalizedSeed)) blockers.push('seed_email_invalid');
   if (normalizedSeed !== expectedSeed) blockers.push('seed_email_not_exact_approved_recipient');
+  if (execute && !recordUiSent && compactFooterSet) blockers.push('compact_footer_seed_test_requires_ui_record_mode');
   if (execute && !approvalMatched) {
     blockers.push(cleanString(approvalPhrase) ? 'blocked_approval_phrase_mismatch' : 'blocked_missing_exact_approval_phrase');
   }
@@ -534,6 +552,7 @@ const buildPreflight = ({ replacementReceipt, groups, campaigns, details, seedEm
     approvalMatched,
     expectedApprovalPhraseSha256: sha256(expectedApprovalPhrase),
     targetLabels,
+    compactFooterSet,
     seed: {
       redacted: redactEmail(normalizedSeed),
       sha256: normalizedSeed ? sha256(normalizedSeed) : null,
@@ -731,6 +750,7 @@ const buildRun = async (options) => {
     execute: executionRequested,
     approvalPhrase: options.approvalPhrase,
     targetLabels: options.targetLabels,
+    recordUiSent: options.recordUiSent,
   });
   const sentTests = [];
   const errors = [];
@@ -1019,6 +1039,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 
 export {
   EXPECTED_APPROVAL_PHRASE,
+  EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
   EXPECTED_E01_CANARY_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
