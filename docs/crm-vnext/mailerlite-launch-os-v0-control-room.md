@@ -5914,6 +5914,63 @@ Operating meaning:
 - Public/audience sends, publish/schedule, workflows, subscribers, Shopify live
   changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.
 
+## Launch OS v0 compact footer E02 semantic retry blocker checkpoint - 2026-06-02
+
+Status: active goal, remaining compact-footer seed tests still blocked. A fresh
+MailerLite API read-only re-scan/preflight stayed green for the four
+compact-footer Null Audience drafts. Computer Use recovered the
+`Campaigns | MailerLite` window through Safari's semantic `Window` menu, returned
+to a clean draft list, and loaded the `E02 Practice` schedule page
+semantically. The campaign summary subject changed to `Una práctica pequeña
+para descansar sin exigirte calma`, confirming the operator was no longer on
+`E01`. The `Send a test` control was visible but was not exposed as a semantic
+button/link in the accessibility tree, so the operator stopped before typing
+the seed recipient or sending `E02`. `E03` and `E04` were not attempted.
+
+Evidence:
+
+- Compact-footer seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Partial UI blocker/receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Partial UI blocker/receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Fresh seed-test preflight: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- Target count: `4`; QA green count: `4`; blocker count: `0`; error count: `0`.
+- UI semantic route for `E01`: already completed earlier; do not resend `E01`.
+- UI semantic route for `E02`: schedule page loaded, test-send control not exposed semantically.
+- Test emails sent by UI in total for this compact-footer edge: `1`, label `E01`.
+- Remaining unsent labels: `E02`, `E03`, `E04`.
+- Full `record_ui_sent` receipt created: `false`.
+
+Safety:
+
+- MailerLite API called only for read-only re-scan/preflight: `true`.
+- MailerLite API test-send called: `false`.
+- `E02` seed typed or sent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Screenshots/captures, coordinate clicks, system-click fallbacks and browser
+  DOM/AppleScript click injection used as UI route: `false`.
+- Exact preview URLs, raw campaign/group IDs, raw recipients, sender values and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The compact-footer seed-test edge remains incomplete and partially consumed
+  for `E01` only.
+- Do not resend `E01`.
+- Continue only for `E02`, `E03` and `E04`, after another fresh API
+  re-scan/preflight, and only if Computer Use exposes the remaining
+  MailerLite `Send a test` controls semantically.
+- If semantic exposure remains unavailable, stop and report the UI-route
+  blocker; do not use coordinates, screenshots/captures, system-click
+  fallbacks, browser DOM/AppleScript injection, API test-send endpoints or
+  simulated receipts.
+
 ## Launch OS v0 compact footer E01 partial seed-test checkpoint - 2026-06-02
 
 Status: active goal, partial UI execution. A fresh MailerLite API read-only

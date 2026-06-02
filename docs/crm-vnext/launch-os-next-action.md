@@ -167,7 +167,10 @@ action that a resumed Goal should continue before replanning.
   recipient, with semantic success text observed. The full approved edge is
   still not closed: `E02`, `E03` and `E04` were not sent, no full
   `record_ui_sent` receipt exists, and the approval is now partially consumed
-  for `E01` only. Do not resend `E01`.
+  for `E01` only. A later retry recovered the MailerLite window and loaded the
+  `E02` schedule page semantically after a fresh green preflight, but the
+  `Send a test` control was not exposed as a semantic control for `E02`; no
+  seed was typed and no `E02` send occurred. Do not resend `E01`.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Generate or refresh a compact-footer seed-test preflight/approval packet
