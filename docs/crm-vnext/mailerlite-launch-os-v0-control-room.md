@@ -5516,6 +5516,52 @@ Operating meaning:
 
 - The asset-ready replacement draft creation gate is now closed and reference-only.
 - The Active Next Action must no longer ask for replacement-draft creation approval or recreate drafts.
-- The next real boundary is separate and narrower: exact approval for seed-test sends from the four current asset-ready Null Audience drafts to the approved seed recipient.
-- Stop before asking for or executing seed-test sends unless Alejandro explicitly requests that boundary.
+- The seed-test approval boundary was separate from draft creation and is now closed by the following checkpoint.
+- Do not ask again for the draft-creation approval or for the consumed four-email seed-test approval.
 - Do not ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness, until fresh seed inbox QA proves these current received emails.
+
+## Launch OS v0 asset-ready seed test checkpoint - 2026-06-02
+
+Status: active goal, Alejandro approved the exact four-email asset-ready Null Audience seed-test edge. A fresh MailerLite API re-scan was green, and the four current `Inteligencia para descansar` asset-ready replacement drafts were test-sent through MailerLite UI only to the approved seed recipient. This checkpoint does not authorize any further test send, public/audience send, publish, schedule, workflow, subscriber action, Shopify action, CRM write, ledger, card, scoring or Fact Store write.
+
+Evidence:
+
+- Asset-ready seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+- Asset-ready seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+- Asset-ready seed-test execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.md`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Seed-test execution receipt: `ok=true`, `status=mailerlite_null_audience_seed_test_send_completed_test_only`, `mode=record_ui_sent`.
+- Approval status: `exact_approval_phrase_matched`; blockers `0`; errors `0`.
+- Fresh preflight inside execution: groups read `90`, campaigns read `43`, campaign details read `4`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`, active count `0`.
+- Target count: `4`; QA green count: `4`; labels: `E01`, `E02`, `E03`, `E04`.
+- Test-send execution channel: `mailerlite_ui_manual_assisted`.
+- Test emails recorded as sent: `4`, one each for `E01`, `E02`, `E03`, `E04`.
+- The exact seed recipient was not printed raw in the receipt; recipient evidence is redacted and hashed.
+
+Safety:
+
+- MailerLite API called for re-scan: `true`.
+- MailerLite test emails sent: `4`, only within the approved seed-test scope.
+- Allowed mutation type: `send_scoped_test_emails_only_to_exact_seed_recipient_from_null_audience_replacement_drafts`.
+- Campaigns published: `false`.
+- Campaigns scheduled: `false`.
+- Audience sends performed: `false`.
+- Subscribers read: `false`.
+- Subscriber mutations: `false`.
+- Additional groups created/assigned: `false`.
+- Non-Null Audience groups assigned: `false`.
+- Segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, sender values and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The four-email asset-ready seed-test approval has been consumed; do not rerun or ask for that same approval again.
+- The asset-ready drafts remain Null Audience draft evidence, not public/audience launch evidence.
+- The next useful edge is read-only seed inbox QA/readback for these four current seed messages, followed by artifact QA or a local repair plan depending on the evidence.
+- Any additional test send, MailerLite draft mutation, public/audience send, external-image loading side effect, Shopify action, CRM write, ledger, card, scoring or Fact Store write requires a separate exact approval.

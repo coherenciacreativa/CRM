@@ -75,32 +75,43 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
 
+- `next_action_id`: `mailerlite_asset_ready_seed_test_approval_boundary_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 asset-ready seed test checkpoint - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+
 ## Active Next Action
 
-- `next_action_id`: `mailerlite_asset_ready_seed_test_approval_boundary_inteligencia_descansar`
-- `status`: `blocked`
+- `next_action_id`: `mailerlite_asset_ready_seed_inbox_qa_inteligencia_descansar`
+- `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 asset-ready Null Audience replacement drafts created - 2026-06-02`
-- `objective`: Stop at the human approval boundary before sending test emails
-  from the asset-ready Null Audience replacement drafts to the seed recipient.
-- `why_now`: Four new MailerLite replacement drafts now exist from the
-  asset-ready/footer-canon payload, are still draft-only, and point exclusively
-  to the empty Null Audience safety group. A read-only seed-test preflight is
-  green, but sending test emails is a separate MailerLite live action and
-  requires exact approval.
+- `source_checkpoint`: `Launch OS v0 asset-ready seed test checkpoint - 2026-06-02`
+- `objective`: Perform the next read-only seed inbox/readback QA for the four
+  asset-ready Null Audience seed test messages, then decide whether artifact QA
+  is green or a local repair plan is needed before CEO review.
+- `why_now`: The exact seed-test approval boundary has already been consumed.
+  Fresh MailerLite API QA was green, and the four approved test emails were
+  sent through the MailerLite UI to the approved seed recipient only. No
+  public/audience send, publish, schedule, workflow, subscriber, Shopify, CRM,
+  ledger, card, scoring or Fact Store action is authorized by that receipt.
 - `allowed_scope`:
-  - Explain the seed-test decision if Alejandro asks.
-  - Provide the exact approval phrase for seed-test sends only if Alejandro asks.
-  - Before any execution after approval, run a fresh MailerLite/API preflight
-    that verifies the four drafts still match the creation receipt, remain
-    draft-only, point exclusively to Null Audience and contain no placeholders or
-    redacted final-link tokens.
-  - Keep any pre-approval work local-only/report-only.
+  - Use the execution receipt as closed seed-send evidence.
+  - Run or prepare read-only seed inbox QA scoped to the four current
+    asset-ready test messages and the approved seed recipient.
+  - Produce local redacted evidence only: delivery counts, expected label/subject
+    matching, artifact checks, blockers and next boundary.
+  - Keep any artifact observation read-only unless Alejandro separately approves
+    a UI action that may load external images or create tracking/open events.
 - `forbidden_scope`:
   - Do not repeat the asset-ready replacement draft creation.
-  - No MailerLite draft creation, edit, send, publish, schedule or audience
-    action without exact approval.
+  - Do not ask for or execute the same four-email seed-send approval again.
+  - No additional MailerLite test send, draft creation, edit, publish, schedule
+    or audience action without a new exact approval.
   - No Shopify additional mutation, publish, theme push, live form wiring or
     public navigation/SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
@@ -115,37 +126,43 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - Fresh preflight commands only after confirming they do not mutate drafts,
-    sends, subscribers, groups, workflows, Shopify, CRM, ledgers, cards, scoring
-    or Fact Store.
+  - Read-only seed inbox/search/QA commands scoped to the current asset-ready
+    test messages and approved seed recipient.
+  - Fresh MailerLite/API read-only preflight commands only if needed to
+    reconcile current draft evidence; they must not mutate drafts, sends,
+    subscribers, groups, workflows, Shopify, CRM, ledgers, cards, scoring or
+    Fact Store.
 - `validation_commands`:
   - `git diff --check`
   - Focused syntax/tests for any touched local scripts.
-- `live_gate_status`: closed until Alejandro gives an exact approval phrase for
-  seed-test sends from these four asset-ready Null Audience drafts.
+- `live_gate_status`: seed-send gate consumed and closed; public/audience sends,
+  additional test sends, MailerLite draft mutations, image-loading side effects,
+  subscribers, workflows, Shopify and CRM remain closed.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Any target draft or Null Audience evidence is stale or contradicts current
-    reports.
+  - Seed inbox evidence is missing, ambiguous, stale or not attributable to this
+    asset-ready replacement receipt.
+  - Artifact observation would require external-image loading, link clicks or
+    any other side effect not explicitly approved.
   - A requested action would send, publish, schedule, assign a real audience,
     mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
-    Store without exact approval.
-- `resume_instruction`: Continue from the asset-ready replacement execution
-  receipt and seed-test preflight. Do not recreate drafts or ask again for draft
-  creation approval. Stop before asking for or executing seed-test sends unless
-  Alejandro explicitly requests that next approval boundary.
-- `completion_definition`: Seed-test sends are performed only after exact
-  approval, only to the approved seed recipient, from the four current
-  asset-ready Null Audience drafts, with no publish, schedule, audience send,
-  subscribers, group/segment changes, workflows, Shopify, CRM, ledgers, cards,
-  scoring or Fact Store writes, followed by fresh seed inbox QA and local
-  receipts.
-- `next_checkpoint_expected`: `Launch OS v0 asset-ready seed test checkpoint - 2026-06-02`
+    Store without a new exact approval.
+- `resume_instruction`: Continue from the asset-ready seed-test execution
+  receipt. Do not recreate drafts, do not ask again for draft creation approval,
+  and do not ask again for the already consumed four-email seed-test approval.
+  The next useful move is read-only seed inbox QA for these current received
+  emails.
+- `completion_definition`: Seed inbox QA produces a local redacted receipt for
+  the current asset-ready replacement receipt, proves whether the expected four
+  messages reached the approved seed recipient, identifies artifact/rendering
+  blockers, and keeps all live/mutation gates closed.
+- `next_checkpoint_expected`: `Launch OS v0 asset-ready seed inbox QA checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 

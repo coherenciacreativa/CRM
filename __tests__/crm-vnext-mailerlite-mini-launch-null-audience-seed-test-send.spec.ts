@@ -128,6 +128,8 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
   test("normalizes and matches the exact approval phrase", () => {
     expect(normalizeApprovalPhrase(EXPECTED_APPROVAL_PHRASE)).toBe(normalizeApprovalPhrase(EXPECTED_APPROVAL_PHRASE));
     expect(EXPECTED_APPROVAL_PHRASE).toContain("saludoalsol+seedmail@gmail.com");
+    expect(EXPECTED_APPROVAL_PHRASE).toContain("asset-ready Null Audience");
+    expect(EXPECTED_APPROVAL_PHRASE).toContain("active_count=0");
     expect(EXPECTED_APPROVAL_PHRASE).toContain("sin audience send");
   });
 
