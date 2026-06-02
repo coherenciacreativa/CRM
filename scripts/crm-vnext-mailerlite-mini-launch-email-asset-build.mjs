@@ -277,6 +277,15 @@ const signatureAssetFor = (signatureAssetReference) => {
   };
 };
 
+const CANONICAL_AUTHOR_NAME = 'Alejandro Gómez Bernal';
+const CANONICAL_AUTHOR_BIO = 'Psicólogo · Monje · Desarrollador de proyectos con sentido.';
+const CANONICAL_UNSUBSCRIBE_TEXT =
+  'Te envío este correo porque te suscribiste a mi boletín. Si deseas darte de baja, haz clic aquí:';
+const CANONICAL_UNSUBSCRIBE_LABEL = 'Darme de baja';
+const CANONICAL_UNSUBSCRIBE_HREF = '{$unsubscribe}';
+const CANONICAL_POSTAL_ADDRESS = 'Finca el Amanecer, vereda Alatania, Subachoque';
+const CANONICAL_COUNTRY = 'Colombia';
+
 const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) => {
   const escape = (value) => String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -300,7 +309,12 @@ const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) =
     '    .placeholder-note { color: #777777; font-size: 13px; line-height: 150%; }',
     '    .signature { margin: 28px 0 0; font-family: Georgia, serif; color: #2F3E63; }',
     '    .signature-image { display: block; width: 189px; max-width: 60%; height: auto; border: 0; }',
-    '    .footer { font-size: 13px; line-height: 150%; color: #777777; }',
+    '    .footer { color: #555B5C; }',
+    '    .footer-name { margin: 0 0 12px; font-family: Georgia, serif; font-size: 34px; line-height: 115%; font-weight: 700; color: #474747; }',
+    '    .footer-bio { margin: 0 0 18px; font-size: 16px; line-height: 150%; color: #555B5C; }',
+    '    .footer-unsubscribe { margin: 0 0 4px; font-size: 16px; line-height: 150%; color: #555B5C; }',
+    '    .footer-link { font-size: 16px; line-height: 150%; color: #555B5C; text-decoration: underline; }',
+    '    .footer-address { margin: 22px 0 0; font-size: 12px; line-height: 150%; color: #777777; }',
     '    @media (max-width: 640px) { .email-content { padding: 36px 24px 32px; } p { font-size: 15px; } }',
     '  </style>',
     '</head>',
@@ -328,7 +342,13 @@ const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) =
     if (!text) continue;
     if (block.type === 'compliance_footer') {
       lines.push('      <hr style="border:0;border-top:1px solid #E3E7EA;margin:32px 0 18px;">');
-      lines.push('      <p class="footer">Recibes este correo porque pediste recursos de Coherencia Creativa. Puedes darte de baja desde el enlace de suscripcion incluido por la plataforma.</p>');
+      lines.push('      <div class="footer">');
+      lines.push(`        <p class="footer-name">${escape(CANONICAL_AUTHOR_NAME)}</p>`);
+      lines.push(`        <p class="footer-bio">${escape(CANONICAL_AUTHOR_BIO)}</p>`);
+      lines.push(`        <p class="footer-unsubscribe">${escape(CANONICAL_UNSUBSCRIBE_TEXT)}</p>`);
+      lines.push(`        <p><a class="footer-link" href="${escape(CANONICAL_UNSUBSCRIBE_HREF)}">${escape(CANONICAL_UNSUBSCRIBE_LABEL)}</a></p>`);
+      lines.push(`        <p class="footer-address">${escape(CANONICAL_POSTAL_ADDRESS)}<br>${escape(CANONICAL_COUNTRY)}</p>`);
+      lines.push('      </div>');
     } else if (block.type === 'cta') {
       const placeholder = cleanString(block?.placeholder?.value) ?? cleanString(block?.destination) ?? 'inert_placeholder';
       lines.push(`      <p><a class="cta-placeholder" href="${escape(placeholder)}">${escape(text)}</a></p>`);

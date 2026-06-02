@@ -205,6 +205,15 @@ const hasReplyCtaFor = (target) => (target.contentBlocks ?? [])
 const rendersRawReplyDestination = (html) =>
   /<span class="placeholder-note">\s*reply\s*<\/span>/i.test(String(html ?? ''));
 
+const hasCanonicalFooterIdentity = (html) =>
+  String(html ?? '').includes('Alejandro Gómez Bernal')
+  && String(html ?? '').includes('Psicólogo · Monje · Desarrollador de proyectos con sentido.')
+  && String(html ?? '').includes('Te envío este correo porque te suscribiste a mi boletín.')
+  && String(html ?? '').includes('Darme de baja')
+  && String(html ?? '').includes('href="{$unsubscribe}"')
+  && String(html ?? '').includes('Finca el Amanecer, vereda Alatania, Subachoque')
+  && String(html ?? '').includes('Colombia');
+
 const buildStaticChecksForEmail = ({ target, html }) => {
   const publicTextScan = scanPublicText(html);
   const urlPlaceholders = expectedUrlPlaceholdersFor(target);
@@ -304,6 +313,13 @@ const buildStaticChecksForEmail = ({ target, html }) => {
       evidence: visualSignatureAssetVerified
         ? 'Local draft references the visual signature asset through a private asset digest; exact asset URL is not printed in this packet.'
         : 'Local draft has text signature; real visual signature asset is still MailerLite/Brand QA dependent.',
+    },
+    {
+      id: 'canonical_author_footer',
+      status: hasCanonicalFooterIdentity(html) ? 'green' : 'red',
+      evidence: hasCanonicalFooterIdentity(html)
+        ? 'Footer includes Alejandro full identity, bio, visible unsubscribe link token and postal/country compliance text.'
+        : 'Footer is missing the canonical author identity, bio, unsubscribe token or postal/country compliance text.',
     },
   ];
 

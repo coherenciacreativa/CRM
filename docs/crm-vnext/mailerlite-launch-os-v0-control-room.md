@@ -5335,3 +5335,46 @@ Operating meaning:
 - It is not yet green for CEO review because Gmail blocks the visual signature image by default; MailerLite preview showed the signature, and Gmail exposes the image element/alt text, but the received inbox bitmap was not rendered.
 - The next real human decision is whether to approve loading external images for this one seed message to prove the visual signature render, knowing that it may create an external image/open tracking event, or to accept element-level signature evidence and proceed to E02-E04 with that limitation documented.
 - Do not create E02-E04 replacements, send the full set, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this partial QA.
+
+## Launch OS v0 footer canon local repair checkpoint - 2026-06-02
+
+Status: active goal, Alejandro approved loading images for the seed proof and confirmed the visual signature appears on his side. He also supplied the regular newsletter footer reference and asked that the mini-launch emails use the same author identity/footer posture. The local email builder now renders the canonical author footer, and a fresh local render QA is green for all four emails. No MailerLite draft was created, edited or sent by this checkpoint.
+
+Evidence:
+
+- Footer canon reference receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_footer_canon_reference_current_inteligencia_descansar_2026-06-02.json`
+- Footer canon reference receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_footer_canon_reference_current_inteligencia_descansar_2026-06-02.md`
+- Footer canon render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_canon_inteligencia_descansar_2026-06-02.json`
+- Footer canon render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_canon_inteligencia_descansar_2026-06-02.md`
+- Footer canon render previews: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_canon_inteligencia_descansar_2026-06-02/`
+
+Confirmed results:
+
+- Footer canon reference: `ok=true`, `status=footer_canon_reference_applied_to_local_render_qa_no_live_changes`.
+- Local render QA: `ok=true`, `status=mini_launch_email_render_qa_green_no_live_changes`.
+- Email count: `4`; static green count: `4`; render preview non-empty count: `4`.
+- Red check count: `0`; visible URL/link token hits: `0`.
+- Visual signature asset ready count: `4`; signature fallback count: `0`.
+- Canonical author footer check: `green`.
+- Footer identity: `Alejandro Gómez Bernal`; bio: `Psicólogo · Monje · Desarrollador de proyectos con sentido.`
+- Unsubscribe posture: visible `Darme de baja` link using MailerLite's `{$unsubscribe}` token, plus postal/country compliance text.
+- Typography remains aligned with the existing email canon/reference: Poppins body and Georgia author/accent.
+
+Safety:
+
+- Gmail reference lookup was read-only.
+- Screenshot/footer reference was local-only.
+- Local HTML/PNG/report generation only.
+- MailerLite API called by this checkpoint: `false`.
+- MailerLite UI mutations and draft edits: `false`.
+- Sends, audience sends, publish, schedule, subscribers, groups, segments, workflows and automations: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw message IDs, raw campaign/group IDs, sender values, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The current best local payload now includes the visual signature reference and the regular newsletter-style author footer.
+- This closes the local footer/bio gap, but it does not mutate MailerLite and does not make the campaign CEO-review ready until fresh MailerLite drafts and seed inbox QA prove the real received emails.
+- The next real boundary is an exact approval to create a new MailerLite replacement set, likely all four drafts, assigned only to the empty Null Audience group, using this footer-canon local payload.
+- Do not edit existing MailerLite drafts, create replacement drafts, send tests, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this local repair alone.
