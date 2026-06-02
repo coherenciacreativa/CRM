@@ -1127,7 +1127,10 @@ const buildCurrentState = ({
       nullAudienceSeedInboxQaDeliveredToApprovedSeed: miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
       nullAudienceSeedInboxQaExpectedSeedMessages: miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
       nullAudienceSeedInboxQaCorrectedOutsideSeedCount: miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.newCorrectedMessagesFoundOutsideApprovedSeed ?? null,
-      nullAudienceSeedInboxQaRecommendedNextBoundary: miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary ?? null,
+      nullAudienceSeedInboxQaRecommendedNextBoundary:
+        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.recommendedNextBoundary
+        ?? miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary
+        ?? null,
       nullAudienceSeedInboxQaNeedsHumanApprovalBeforeAdditionalSend:
         miniLaunchNullAudienceSeedInboxQa?.decision?.needsHumanApprovalBeforeAnyAdditionalSend ?? null,
       seedInboxCorrectionPlanStatus: miniLaunchSeedInboxCorrectionPlan?.status ?? null,
@@ -2003,6 +2006,13 @@ const buildSeedInboxQaMove = (currentState) => {
   const miniLaunch = currentState?.miniLaunch ?? {};
   if (miniLaunch.publicLaunchReadinessPacketStatus === 'mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes') {
     return `Seed inbox QA is green and now has a public-launch readiness packet: Null Audience drafts ready ${miniLaunch.publicLaunchReadinessNullAudienceDraftsReady}, preview links ready ${miniLaunch.publicLaunchReadinessPreviewLinksReady}, public/audience URL gate ready ${miniLaunch.publicLaunchReadinessPublicAudienceSendUrlGateReady}, audience scope ready ${miniLaunch.publicLaunchReadinessPublicAudienceScopeReady}; post-launch CRM observed events ready ${miniLaunch.publicLaunchReadinessCrmObservedEventsReady}. Do not request public/audience send approval until URL and audience gates are ready for exact approval.`;
+  }
+  if (
+    miniLaunch.nullAudienceSeedInboxQaStatus === 'mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes'
+    && miniLaunch.nullAudienceSeedInboxQaGreen === true
+    && miniLaunch.nullAudienceSeedInboxQaDeliveredToApprovedSeed === miniLaunch.nullAudienceSeedInboxQaExpectedSeedMessages
+  ) {
+    return `Null Audience seed inbox QA is green: ${miniLaunch.nullAudienceSeedInboxQaDeliveredToApprovedSeed}/${miniLaunch.nullAudienceSeedInboxQaExpectedSeedMessages} current asset-ready messages reached the approved seed. Next boundary is ${miniLaunch.nullAudienceSeedInboxQaRecommendedNextBoundary ?? 'read-only artifact QA before any public/audience send approval'}; do not send more tests, publish or audience-send from seed QA alone.`;
   }
   if (miniLaunch.nullAudienceSeedInboxQaStatus === 'mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed') {
     return `Null Audience seed inbox QA is partial: ${miniLaunch.nullAudienceSeedInboxQaDeliveredToApprovedSeed ?? 'unknown'}/${miniLaunch.nullAudienceSeedInboxQaExpectedSeedMessages ?? 'unknown'} corrected messages reached the approved seed, corrected E04 was found outside the seed, and the next boundary is ${miniLaunch.nullAudienceSeedInboxQaRecommendedNextBoundary ?? 'E04-only seed resend approval'}; do not resend, publish or audience-send until Alejandro gives the exact E04-only phrase.`;

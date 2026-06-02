@@ -88,41 +88,54 @@ action that a resumed Goal should continue before replanning.
 - `status`: `completed`
 - `created_at`: `2026-06-02`
 - `completed_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 asset-ready seed inbox QA partial checkpoint - 2026-06-02`
+- `source_checkpoint`: `Launch OS v0 asset-ready E04 seed resend and seed inbox QA green checkpoint - 2026-06-02`
 - `completion_evidence`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_asset_ready_inteligencia_descansar_2026-06-02.json`
 
+- `next_action_id`: `mailerlite_asset_ready_e04_seed_resend_approval_boundary_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 asset-ready E04 seed resend and seed inbox QA green checkpoint - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
+
 ## Active Next Action
 
-- `next_action_id`: `mailerlite_asset_ready_e04_seed_resend_approval_boundary_inteligencia_descansar`
-- `status`: `blocked`
+- `next_action_id`: `mailerlite_asset_ready_seed_inbox_artifact_qa_inteligencia_descansar`
+- `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 asset-ready seed inbox QA partial checkpoint - 2026-06-02`
-- `objective`: Stop at the human approval boundary before any additional send.
-  The only useful live-adjacent recovery is an E04-only asset-ready test resend
-  to the approved seed recipient after fresh MailerLite API QA.
-- `why_now`: Read-only Gmail seed inbox QA found current asset-ready/footer-canon
-  messages for `E01`, `E02` and `E03`, but did not find the current
-  asset-ready `E04` at the approved seed recipient. The latest matching E04
-  seed message is stale/non-footer-canon and cannot close the current receipt.
+- `source_checkpoint`: `Launch OS v0 asset-ready E04 seed resend and seed inbox QA green checkpoint - 2026-06-02`
+- `objective`: Perform the next read-only artifact/experience QA pass from the
+  current asset-ready seed inbox evidence before any public/audience-send
+  approval boundary is prepared.
+- `why_now`: The E04-only resend approval was consumed, the fresh preflight was
+  green, one E04 test was sent through MailerLite UI to the approved seed, and
+  read-only Gmail QA now proves all four current asset-ready/footer-canon
+  messages reached the seed. The next useful work is artifact QA and readiness
+  evidence, not another test send.
 - `allowed_scope`:
-  - Explain the E04 seed inbox blocker if Alejandro asks.
-  - Provide an exact E04-only approval phrase only if Alejandro asks for the
-    next approval boundary.
-  - If exact E04-only approval is later provided, run a fresh MailerLite API
-    preflight proving the E04 asset-ready draft still matches the creation
-    receipt, remains draft-only, points only to the empty Null Audience group,
-    and has no placeholders or redacted tokens.
-  - After an approved E04-only resend, rerun read-only seed inbox QA and keep
-    all reports redacted.
+  - Read local reports and current seed inbox QA receipts.
+  - Use read-only Gmail evidence only if needed to verify received-message
+    artifact state; do not mutate Gmail labels or send Gmail messages.
+  - Produce or refresh a local artifact QA/readiness packet that states whether
+    the received messages and destination artifacts are coherent enough for a
+    later public/audience-send approval packet.
+  - Keep evidence redacted and hashed where receipts identify campaigns,
+    groups, recipients, private URLs or Gmail messages.
 - `forbidden_scope`:
   - Do not repeat the asset-ready replacement draft creation.
-  - Do not resend `E01`, `E02` or `E03`.
+  - Do not resend `E01`, `E02`, `E03` or `E04`.
   - Do not rerun the consumed four-email seed-test approval.
+  - Do not ask for another seed-test approval from the green seed inbox QA
+    state.
   - No additional MailerLite test send, draft creation, edit, publish, schedule
-    or audience action without a new exact E04-only approval.
+    or audience action without a fresh exact approval for that separate
+    boundary.
   - No Shopify additional mutation, publish, theme push, live form wiring or
     public navigation/SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
@@ -140,39 +153,40 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - A new local artifact QA/readiness packet, if generated.
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - Read-only local report inspection and approval-packet preparation for the
-    E04-only boundary.
-  - Fresh MailerLite/API read-only preflight commands only after exact E04-only
-    approval and only to verify safety before the E04 resend.
+  - Read-only Gmail connector search/read if local artifact QA needs received
+    message evidence.
+  - Local report generation commands that do not call MailerLite, Shopify, CRM,
+    ledgers, cards, scoring or Fact Store.
 - `validation_commands`:
   - `git diff --check`
   - Focused syntax/tests for any touched local scripts.
-- `live_gate_status`: blocked until Alejandro gives a new exact approval for
-  E04-only seed resend. Public/audience sends, MailerLite draft mutations,
-  subscribers, workflows, Shopify and CRM remain closed.
+- `live_gate_status`: seed-test resend boundary completed. Public/audience
+  sends, MailerLite draft mutations, subscribers, workflows, Shopify and CRM
+  remain closed.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Any evidence suggests `E01`-`E03` would be resent.
-  - E04 no longer matches the asset-ready creation receipt or no longer points
-    exclusively to the empty Null Audience group.
+  - Any requested action would send another test email or prepare a public send
+    approval before artifact/readiness QA is complete.
   - A requested action would send, publish, schedule, assign a real audience,
     mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store without a new exact approval.
-- `resume_instruction`: Continue from the partial asset-ready seed inbox QA
-  receipt. Do not recreate drafts, do not ask again for draft creation approval,
-  and do not ask again for the already consumed four-email seed-test approval.
-  Stop at the E04-only approval boundary unless Alejandro explicitly approves
-  that narrow resend.
-- `completion_definition`: With exact E04-only approval, one fresh E04 test
-  email is sent only to the approved seed after fresh API QA, then read-only
-  seed inbox QA proves whether all four current asset-ready messages reached the
-  seed. Without that approval, this action remains blocked.
-- `next_checkpoint_expected`: `Launch OS v0 asset-ready E04 seed resend checkpoint - 2026-06-02`
+- `resume_instruction`: Continue from the green asset-ready seed inbox QA
+  receipt and E04 resend receipt. Do not recreate drafts, do not ask again for
+  draft creation approval, and do not ask again for either consumed seed-test
+  approval.
+- `completion_definition`: A redacted local artifact/readiness packet states
+  whether the four current received seed messages and local destination evidence
+  are coherent enough to prepare the next approval packet. No public/audience
+  send approval is requested from this action unless the user explicitly asks
+  for that boundary after QA is green.
+- `next_checkpoint_expected`: `Launch OS v0 asset-ready seed inbox artifact QA checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 

@@ -161,6 +161,8 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     expect(options.targetLabels).toEqual(["E04"]);
     expect(options.uiSentLabels).toEqual(["E04"]);
     expect(expectedApprovalPhraseFor(options.targetLabels)).toBe(EXPECTED_E04_RESEND_APPROVAL_PHRASE);
+    expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("E04 asset-ready Null Audience");
+    expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("receipt de creación asset-ready");
     expect(EXPECTED_E04_RESEND_APPROVAL_PHRASE).toContain("sin reenviar E01-E03");
   });
 

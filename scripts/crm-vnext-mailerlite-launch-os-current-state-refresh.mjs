@@ -443,11 +443,20 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_null_audience_replacement_approval_packet',
       date,
     ),
-    miniLaunchNullAudienceReplacementExecutionReceipt: latestExistingMiniLaunchCurrentReportPath(
-      reportsDir,
-      'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
-      date,
-    ),
+    miniLaunchNullAudienceReplacementExecutionReceipt: (() => {
+      const assetReadyReceiptPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready',
+        date,
+      );
+      return existsSync(assetReadyReceiptPath)
+        ? assetReadyReceiptPath
+        : latestExistingMiniLaunchCurrentReportPath(
+          reportsDir,
+          'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
+          date,
+        );
+    })(),
     miniLaunchNullAudienceSeedInboxQa: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_null_audience_seed_inbox_qa',
@@ -2343,40 +2352,44 @@ const summarizeGeneratedReports = async (paths) => {
       sendsPerformed: miniLaunchNullAudienceReplacementExecutionReceipt?.safety?.sendsPerformed ?? null,
       tokensPrinted: miniLaunchNullAudienceReplacementExecutionReceipt?.safety?.tokensPrinted ?? null,
     },
-    miniLaunchNullAudienceSeedInboxQa: {
-      path: paths.miniLaunchNullAudienceSeedInboxQa,
-      markdownPath: paths.miniLaunchNullAudienceSeedInboxQaMarkdown,
-      status: miniLaunchNullAudienceSeedInboxQa?.status ?? null,
-      ok: miniLaunchNullAudienceSeedInboxQa?.ok ?? null,
-      sourceReplacementReceiptPath:
-        miniLaunchNullAudienceSeedInboxQa?.sourceEvidence?.replacementDraftReceipt ?? null,
-      appliesToCurrentReplacementReceipt: pathsMatch(
-        miniLaunchNullAudienceSeedInboxQa?.sourceEvidence?.replacementDraftReceipt,
-        paths.miniLaunchNullAudienceReplacementExecutionReceipt,
-      ),
-      seedInboxQaGreen:
-        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen ?? null,
-      effectiveSeedInboxQaGreen: pathsMatch(
-        miniLaunchNullAudienceSeedInboxQa?.sourceEvidence?.replacementDraftReceipt,
-        paths.miniLaunchNullAudienceReplacementExecutionReceipt,
-      )
-        ? miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen ?? null
-        : false,
-      deliveredToApprovedSeed:
-        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
-      expectedSeedMessages:
-        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
-      correctedOutsideSeedCount:
-        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.newCorrectedMessagesFoundOutsideApprovedSeed ?? null,
-      needsHumanApprovalBeforeAdditionalSend:
-        miniLaunchNullAudienceSeedInboxQa?.decision?.needsHumanApprovalBeforeAnyAdditionalSend ?? null,
-      recommendedNextBoundary:
-        miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary ?? null,
-      gmailReadOnly:
-        miniLaunchNullAudienceSeedInboxQa?.safety?.gmailReadOnly ?? null,
-      sendsPerformedByQa:
-        miniLaunchNullAudienceSeedInboxQa?.safety?.mailerLiteSendsPerformedByThisQa ?? null,
-    },
+    miniLaunchNullAudienceSeedInboxQa: (() => {
+      const sourceReplacementReceiptPath =
+        miniLaunchNullAudienceSeedInboxQa?.sourceEvidence?.replacementDraftReceipt
+        ?? miniLaunchNullAudienceSeedInboxQa?.replacementReceipt?.path
+        ?? null;
+      const appliesToCurrentReplacementReceipt =
+        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.appliesToCurrentReplacementReceipt
+        ?? pathsMatch(sourceReplacementReceiptPath, paths.miniLaunchNullAudienceReplacementExecutionReceipt);
+      const seedInboxQaGreen = miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen ?? null;
+      return {
+        path: paths.miniLaunchNullAudienceSeedInboxQa,
+        markdownPath: paths.miniLaunchNullAudienceSeedInboxQaMarkdown,
+        status: miniLaunchNullAudienceSeedInboxQa?.status ?? null,
+        ok: miniLaunchNullAudienceSeedInboxQa?.ok ?? null,
+        sourceReplacementReceiptPath,
+        appliesToCurrentReplacementReceipt,
+        seedInboxQaGreen,
+        effectiveSeedInboxQaGreen:
+          miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.effectiveSeedInboxQaGreen
+          ?? (appliesToCurrentReplacementReceipt ? seedInboxQaGreen : false),
+        deliveredToApprovedSeed:
+          miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
+        expectedSeedMessages:
+          miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.expectedSeedMessages ?? null,
+        correctedOutsideSeedCount:
+          miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.newCorrectedMessagesFoundOutsideApprovedSeed ?? null,
+        needsHumanApprovalBeforeAdditionalSend:
+          miniLaunchNullAudienceSeedInboxQa?.decision?.needsHumanApprovalBeforeAnyAdditionalSend ?? null,
+        recommendedNextBoundary:
+          miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.recommendedNextBoundary
+          ?? miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary
+          ?? null,
+        gmailReadOnly:
+          miniLaunchNullAudienceSeedInboxQa?.safety?.gmailReadOnly ?? null,
+        sendsPerformedByQa:
+          miniLaunchNullAudienceSeedInboxQa?.safety?.mailerLiteSendsPerformedByThisQa ?? null,
+      };
+    })(),
     miniLaunchPublicLaunchReadinessPacket: {
       path: paths.miniLaunchPublicLaunchReadinessPacket,
       markdownPath: paths.miniLaunchPublicLaunchReadinessPacketMarkdown,

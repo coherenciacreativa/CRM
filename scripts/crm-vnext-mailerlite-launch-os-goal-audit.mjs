@@ -1015,7 +1015,8 @@ const buildRequirementChecks = ({
   const miniLaunchNullAudienceSeedInboxQaNeedsHumanApproval = miniLaunchNullAudienceSeedInboxQa?.decision?.needsHumanApprovalBeforeAnyAdditionalSend
     ?? runbook?.currentState?.miniLaunch?.nullAudienceSeedInboxQaNeedsHumanApprovalBeforeAdditionalSend
     ?? null;
-  const miniLaunchNullAudienceSeedInboxQaRecommendedNextBoundary = miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary
+  const miniLaunchNullAudienceSeedInboxQaRecommendedNextBoundary = miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.recommendedNextBoundary
+    ?? miniLaunchNullAudienceSeedInboxQa?.decision?.recommendedNextBoundary
     ?? runbook?.currentState?.miniLaunch?.nullAudienceSeedInboxQaRecommendedNextBoundary
     ?? null;
   const miniLaunchSeedInboxCorrectionPlanStatus = miniLaunchSeedInboxCorrectionPlan?.status
@@ -2891,9 +2892,14 @@ const buildGoalAudit = ({
   const nullAudienceSeedInboxQaNeedsHumanApproval = nullAudienceSeedInboxQa?.decision?.needsHumanApprovalBeforeAnyAdditionalSend
     ?? values.runbook?.currentState?.miniLaunch?.nullAudienceSeedInboxQaNeedsHumanApprovalBeforeAdditionalSend
     ?? null;
-  const nullAudienceSeedInboxQaRecommendedNextBoundary = nullAudienceSeedInboxQa?.decision?.recommendedNextBoundary
+  const nullAudienceSeedInboxQaRecommendedNextBoundary = nullAudienceSeedInboxQa?.deliverySummary?.recommendedNextBoundary
+    ?? nullAudienceSeedInboxQa?.decision?.recommendedNextBoundary
     ?? values.runbook?.currentState?.miniLaunch?.nullAudienceSeedInboxQaRecommendedNextBoundary
     ?? null;
+  const nullAudienceSeedInboxQaGreenComplete =
+    nullAudienceSeedInboxQaStatus === 'mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes'
+    && nullAudienceSeedInboxQaGreen === true
+    && nullAudienceSeedInboxQaDeliveredToApprovedSeed === nullAudienceSeedInboxQaExpectedSeedMessages;
   const nullAudienceSeedInboxQaPartialE04 =
     nullAudienceSeedInboxQaStatus === 'mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed'
     && nullAudienceSeedInboxQaGreen === false
@@ -3192,7 +3198,9 @@ const buildGoalAudit = ({
     && (seedTestQaPacket?.readiness?.canAskSeedSendApprovalNow
       ?? values.runbook?.currentState?.miniLaunch?.seedTestQaCanAskApprovalNow
       ?? false) === false;
-  const seedRecipientMove = nullAudienceSeedInboxQaPartialE04
+  const seedRecipientMove = nullAudienceSeedInboxQaGreenComplete
+    ? `Null Audience seed inbox QA is green: ${nullAudienceSeedInboxQaDeliveredToApprovedSeed}/${nullAudienceSeedInboxQaExpectedSeedMessages} current asset-ready messages reached the approved seed. Next boundary is ${nullAudienceSeedInboxQaRecommendedNextBoundary ?? 'read-only artifact QA before any public/audience send approval'}; do not ask for another seed test, publish or audience-send from seed QA alone.`
+    : nullAudienceSeedInboxQaPartialE04
     ? `Null Audience seed inbox QA is partial: ${nullAudienceSeedInboxQaDeliveredToApprovedSeed}/${nullAudienceSeedInboxQaExpectedSeedMessages} corrected messages reached the approved seed, corrected E04 was found outside the seed (${nullAudienceSeedInboxQaCorrectedOutsideSeedCount ?? 'unknown'}), and the next human boundary is ${nullAudienceSeedInboxQaRecommendedNextBoundary ?? 'approve_resending_only_E04_test_to_exact_seed_after_fresh_rescan'}; ask only for the exact E04-only resend phrase before any additional test send.`
     : publicLaunchReadinessPacketStatus === 'mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes'
     ? `Seed inbox QA is green and public-launch readiness is explicit: readyForExactPublicSendApproval=${publicLaunchReadinessReadyForExactApproval}, publicAudienceSendUrlGateReady=${publicLaunchReadinessPublicAudienceSendUrlGateReady}, publicAudienceScopeReady=${publicLaunchReadinessPublicAudienceScopeReady}, blockers=${publicLaunchReadinessBlockerCount ?? 'unknown'}; postLaunchCrmObservedEventsReady=${publicLaunchReadinessCrmObservedEventsReady}. Keep public/audience send approval closed until URL and audience gates are ready.`
@@ -3474,6 +3482,7 @@ const buildGoalAudit = ({
       nullAudienceSeedInboxQaCorrectedOutsideSeedCount,
       nullAudienceSeedInboxQaNeedsHumanApproval,
       nullAudienceSeedInboxQaRecommendedNextBoundary,
+      nullAudienceSeedInboxQaGreenComplete,
       nullAudienceSeedInboxQaPartialE04,
       publicLaunchReadinessPacketStatus,
       publicLaunchReadinessReadyForExactApproval,

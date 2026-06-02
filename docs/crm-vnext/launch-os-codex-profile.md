@@ -82,8 +82,12 @@ For current Launch OS MailerLite seed/test emails:
     when browser choice matters.
   - Mantis/OpenClaw operator: Chrome relay UI route if that is the configured
     operator lane.
-- Do not fall back to screenshot-plus-coordinate clicking for MailerLite UI.
-  If semantic UI is unavailable, stabilize/report that blocker.
+- Prefer semantic UI controls. If Computer Use semantic clicking fails with a
+  transient window/app-state error after an exact approval has already been
+  consumed, a system click is allowed only after verifying the front Safari
+  window, campaign subject, Null Audience recipient group and target button
+  position, and only with an immediate post-click state check. Never click the
+  public campaign `Send` button by coordinate.
 - After UI completion, record the result through the local receipt path instead
   of rediscovering API endpoint limitations.
 

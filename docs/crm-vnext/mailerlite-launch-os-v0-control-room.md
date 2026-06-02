@@ -5614,3 +5614,52 @@ Operating meaning:
 - Do not resend `E01`, `E02` or `E03`; those current asset-ready messages are already present at the seed.
 - The only plausible recovery boundary is a separate exact approval to resend one `E04` asset-ready Null Audience test email to the approved seed recipient after fresh API QA proves E04 is still safe.
 - Without that exact E04-only approval, stop here and report the partial QA blocker.
+
+## Launch OS v0 asset-ready E04 seed resend and seed inbox QA green checkpoint - 2026-06-02
+
+Status: active goal, Alejandro approved the narrow E04-only resend edge after the partial seed inbox QA. A fresh MailerLite API preflight was green for only the current asset-ready `E04` draft, one E04 test email was sent through MailerLite UI to the approved seed recipient, and read-only Gmail QA now proves all four current asset-ready/footer-canon messages reached the seed. This checkpoint consumes the E04-only resend approval and does not authorize another test email, public/audience send, publish, schedule, workflow, subscriber action, Shopify action, CRM write, ledger, card, scoring or Fact Store write.
+
+Evidence:
+
+- E04-only seed resend preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+- E04-only seed resend execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+- E04-only seed resend execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.md`
+- Asset-ready seed inbox QA current JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
+- Asset-ready seed inbox QA current markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.md`
+- Asset-ready seed inbox QA copy JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_asset_ready_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- E04 preflight: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `targetCount=1`, `qaGreenCount=1`, `testEmailsSent=0`.
+- E04 execution receipt: `ok=true`, `status=mailerlite_null_audience_seed_test_send_completed_test_only`, `mode=record_ui_sent`, `targetCount=1`, `qaGreenCount=1`, `testEmailsSent=1`.
+- E04 UI send confirmation observed: MailerLite displayed `Test email sent.` on the current asset-ready `E04` schedule page.
+- Gmail seed inbox QA: `ok=true`, `status=mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes`.
+- Current asset-ready messages delivered to approved seed: `4/4`.
+- Effective seed inbox QA green: `true`.
+- `E04`: latest received test message is current asset-ready/footer-canon, delivered to the approved seed, has reply CTA copy, has canonical author/footer, and has no placeholder or redacted-token text pending.
+- Previous stale/non-current E04 seed evidence remains historical only and no longer blocks the current replacement receipt.
+- Recommended next boundary: `asset_ready_seed_inbox_artifact_qa_read_only_before_any_public_audience_send_approval`.
+
+Safety:
+
+- MailerLite API called for E04 re-scan: `true`.
+- MailerLite test emails sent in this checkpoint: `1`, only within the approved E04-only seed-test scope.
+- `E01`, `E02` and `E03` resent: `false`.
+- Campaigns published: `false`.
+- Campaigns scheduled: `false`.
+- Audience sends performed: `false`.
+- Subscribers read: `false`.
+- Subscriber mutations: `false`.
+- Groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw campaign/group IDs, raw recipients, raw Gmail IDs and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The E04-only resend approval has been consumed; do not rerun it or ask for it again.
+- The four-email seed-test approval remains consumed; do not rerun it or ask for it again.
+- The asset-ready seed inbox QA blocker is closed green, but this is still test-only proof, not public/audience launch authorization.
+- The next real boundary is read-only artifact/experience QA from the received seed evidence and local destination packets.
+- Do not ask for tester/micro-cohort/audience/public send or CEO-review readiness until that artifact/readiness QA has its own green checkpoint and any later live edge has a fresh exact approval.
