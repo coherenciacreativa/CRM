@@ -259,12 +259,13 @@ action that a resumed Goal should continue before replanning.
   emails, recreate drafts, ask for public/audience send approval, or use stale
   seed inbox QA as v2 evidence.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_visual_readback_evidence_boundary_inteligencia_descansar`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
 - `source_checkpoint`: `Launch OS v0 compact footer v2 seed inbox readback QA blocked - 2026-06-02`
 - `objective`: Resolve only the missing visual readback evidence for the four
   compact-footer v2 seed emails before CEO-review readiness can be considered.
@@ -320,7 +321,82 @@ action that a resumed Goal should continue before replanning.
 - `completion_definition`: Visual signature and footer hierarchy evidence for
   the four v2 seed emails is captured or explicitly rejected, and the artifact
   QA packet is refreshed. No live audience action occurs.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 visual readback evidence - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.md`
+- `completion_note`: The visual read-only Computer Use inspection verified
+  signature rendering, compact footer hierarchy, compact author-name scale, no
+  duplicate postal address display and no duplicated typed `Alejandro` after
+  `Un abrazo,` across all four recent v2 seed messages. The refreshed artifact
+  QA packet is green for CEO review and does not authorize any send or live
+  mutation.
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_ceo_review_readiness_packet_inteligencia_descansar`
+- `status`: `active`
+- `created_at`: `2026-06-02`
+- `updated_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 visual readback QA green - 2026-06-02`
+- `objective`: Convert the now-green compact-footer v2 seed inbox evidence into
+  a CEO-review/readiness packet and a clear next decision boundary, without
+  asking for or executing any public/audience send.
+- `why_now`: Four current compact-footer v2 seed emails are now delivery,
+  clickthrough, footer/copy and visual-readback green. The previous blocker
+  `visual_signature_asset_not_verified` is closed by evidence, so the next
+  useful move is a local CEO-review/readiness synthesis.
+- `allowed_scope`:
+  - Read the v2 visual observation and refreshed artifact QA packet.
+  - Refresh local-only CEO-review/readiness/current-state evidence if needed.
+  - Prepare a concise CEO-review packet or next-decision note with caveats and
+    explicit closed live gates.
+- `forbidden_scope`:
+  - Do not recreate replacement drafts.
+  - Do not resend seed/test emails.
+  - Do not ask for or execute public/audience-send approval from this boundary.
+  - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
+    mutation or automation action.
+  - No Shopify mutation, publish, theme push, live form wiring, public
+    navigation or SEO promotion.
+  - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
+  - No secret reads, env dumps, raw token output, raw private URLs, raw asset
+    URLs, recipient lists or broad mailbox inspection.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`
+  - Optional refreshed CEO/current-state/readiness packets under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `allowed_commands`:
+  - `git status --short`
+  - `git diff --stat`
+  - Read-only local file/report inspection.
+  - Local-only report generation/validation commands that do not call live APIs.
+- `validation_commands`:
+  - `jq empty <new JSON reports>`
+  - `node --check <local report scripts used>`
+  - Focused `npx vitest run <relevant specs>` when a script is used.
+  - `git diff --check`
+- `live_gate_status`: V2 replacement-draft creation approval, v2 seed-test
+  approval, v2 read-only seed inbox QA approval and v2 visual readback approval
+  are all consumed. Public/audience sends, MailerLite publish/schedule,
+  subscribers, workflows, Shopify and CRM remain closed until a separate exact
+  approval.
+- `human_boundary_id`: `mailerlite_footer_compact_v2_ceo_review_readiness_packet_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_required_for_local_readiness_synthesis`
+- `stop_conditions`:
+  - Newer user instruction supersedes this contract.
+  - Git state is unexpected.
+  - Required local visual/QA evidence is missing or fails validation.
+  - Any requested action would resend tests, publish, schedule, assign a real
+    audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
+    scoring/Fact Store without a separate exact approval.
+- `resume_instruction`: Prepare or refresh only the local CEO-review/readiness
+  synthesis. Do not revisit sends, draft creation or public/audience execution.
+- `completion_definition`: A local CEO-review/readiness synthesis is current,
+  cites the visual-readback green packet, preserves all live gates as closed and
+  names the next human decision without executing a live action.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 CEO-review readiness packet - 2026-06-02`
 
 ## Stop/Change Conditions
 

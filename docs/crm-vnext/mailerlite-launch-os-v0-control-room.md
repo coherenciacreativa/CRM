@@ -6898,3 +6898,71 @@ Operating meaning:
   read-only visual UI inspection route.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 visual readback QA green - 2026-06-02
+
+Status: active goal, approved read-only visual UI inspection completed through
+Computer Use/Gmail for the four current compact-footer v2 seed messages. The
+previous formal artifact QA blocker is closed. This checkpoint performs no
+reply, forward, archive, delete, label, filter, MailerLite send/resend,
+publish, schedule, audience assignment, subscriber/group/workflow mutation,
+Shopify mutation, CRM write, ledger, card, scoring or Fact Store action.
+
+Evidence:
+
+- V2 visual readback observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 visual readback observation markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_visual_readback_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 visual artifact QA packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.json`
+- V2 visual artifact QA packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_qa_packet_footer_compact_v2_visual_canon_inteligencia_descansar_2026-06-02.md`
+- Prior blocked connector observation JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_artifact_observation_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Visual route: Computer Use/Gmail read-only, restricted to the four recent v2
+  seed messages.
+- Inspected messages: `4/4`.
+- Visual signature rendered: `4/4`.
+- Footer hierarchy compact: `4/4`.
+- Footer author-name scale compact enough for the current canon: `4/4`.
+- Duplicate postal address visible after expanding Gmail reduced content:
+  `0/4`.
+- Duplicate typed `Alejandro` after `Un abrazo,`: `0/4`.
+- Refreshed artifact QA status:
+  `seed_inbox_artifact_qa_ready_for_ceo_review_no_live_changes`.
+- Refreshed artifact QA pass: `true`.
+- Real seed clickthrough verified: `true`.
+- Visible raw URL text count: `0`.
+- Canonical MailerLite footer verified: `true`.
+- Visual signature asset verified: `true`.
+- Blocker count: `0`.
+
+Safety:
+
+- Gmail inspection was read-only and limited to the four current v2 seed
+  messages.
+- External images were loaded only for the latest matching v2 seed messages as
+  part of the approved visual proof.
+- Gmail reduced content was expanded only on the latest matching v2 seed
+  messages to verify the postal address appeared once.
+- Messages replied, forwarded, archived, deleted, labeled or filtered: `false`.
+- MailerLite API or UI mutation in this visual-readback step: `false`.
+- Test emails sent or resent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Exact URLs, tokens, raw IDs and recipient lists printed: `false`.
+
+Operating meaning:
+
+- The v2 visual-signature blocker is closed green for CEO review.
+- The v2 replacement-draft creation approval, v2 seed-test approval, v2
+  read-only seed inbox QA approval and v2 visual-readback approval are consumed;
+  do not reuse them for another mutation or resend.
+- The next useful edge is a local CEO-review/readiness synthesis from the green
+  visual artifact QA packet.
+- This is not public/audience-send approval and does not authorize any launch
+  execution.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
