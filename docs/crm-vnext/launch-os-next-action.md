@@ -66,26 +66,39 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.json`
 
+- `next_action_id`: `mailerlite_replacement_draft_creation_asset_ready_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 asset-ready Null Audience replacement drafts created - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+
 ## Active Next Action
 
-- `next_action_id`: `mailerlite_replacement_draft_approval_boundary_inteligencia_descansar`
+- `next_action_id`: `mailerlite_asset_ready_seed_test_approval_boundary_inteligencia_descansar`
 - `status`: `blocked`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 asset destination readiness checkpoint - 2026-06-02`
-- `objective`: Stop at the human approval boundary before creating new
-  MailerLite replacement drafts from the updated, asset-ready local payload.
-- `why_now`: Destination/assets and Product/Value are now locally green. The next
-  material move toward CEO-review readiness is to create fresh Null Audience
-  replacement drafts in MailerLite, but that is a live MailerLite mutation and
+- `source_checkpoint`: `Launch OS v0 asset-ready Null Audience replacement drafts created - 2026-06-02`
+- `objective`: Stop at the human approval boundary before sending test emails
+  from the asset-ready Null Audience replacement drafts to the seed recipient.
+- `why_now`: Four new MailerLite replacement drafts now exist from the
+  asset-ready/footer-canon payload, are still draft-only, and point exclusively
+  to the empty Null Audience safety group. A read-only seed-test preflight is
+  green, but sending test emails is a separate MailerLite live action and
   requires exact approval.
 - `allowed_scope`:
-  - Explain the decision and provide the exact approval phrase if Alejandro asks.
+  - Explain the seed-test decision if Alejandro asks.
+  - Provide the exact approval phrase for seed-test sends only if Alejandro asks.
   - Before any execution after approval, run a fresh MailerLite/API preflight
-    that verifies draft target scope, Null Audience group exclusivity and
-    `active_count=0`.
+    that verifies the four drafts still match the creation receipt, remain
+    draft-only, point exclusively to Null Audience and contain no placeholders or
+    redacted final-link tokens.
   - Keep any pre-approval work local-only/report-only.
 - `forbidden_scope`:
+  - Do not repeat the asset-ready replacement draft creation.
   - No MailerLite draft creation, edit, send, publish, schedule or audience
     action without exact approval.
   - No Shopify additional mutation, publish, theme push, live form wiring or
@@ -100,6 +113,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_reason_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
@@ -111,7 +126,7 @@ action that a resumed Goal should continue before replanning.
   - `git diff --check`
   - Focused syntax/tests for any touched local scripts.
 - `live_gate_status`: closed until Alejandro gives an exact approval phrase for
-  MailerLite replacement draft creation.
+  seed-test sends from these four asset-ready Null Audience drafts.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
@@ -120,15 +135,17 @@ action that a resumed Goal should continue before replanning.
   - A requested action would send, publish, schedule, assign a real audience,
     mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store without exact approval.
-- `resume_instruction`: Explain that the next move is MailerLite replacement
-  draft creation from the updated local payload, why it is a live mutation, and
-  ask for exact approval before proceeding. Do not create or edit drafts from a
-  generic "adelante".
-- `completion_definition`: Fresh MailerLite replacement drafts are created only
-  after exact approval, remain draft-only, point exclusively to the empty Null
-  Audience safety group, contain the updated asset-ready payload, pass
-  post-create QA, and generate a local execution receipt.
-- `next_checkpoint_expected`: `Launch OS v0 MailerLite replacement drafts checkpoint - 2026-06-02`
+- `resume_instruction`: Continue from the asset-ready replacement execution
+  receipt and seed-test preflight. Do not recreate drafts or ask again for draft
+  creation approval. Stop before asking for or executing seed-test sends unless
+  Alejandro explicitly requests that next approval boundary.
+- `completion_definition`: Seed-test sends are performed only after exact
+  approval, only to the approved seed recipient, from the four current
+  asset-ready Null Audience drafts, with no publish, schedule, audience send,
+  subscribers, group/segment changes, workflows, Shopify, CRM, ledgers, cards,
+  scoring or Fact Store writes, followed by fresh seed inbox QA and local
+  receipts.
+- `next_checkpoint_expected`: `Launch OS v0 asset-ready seed test checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 

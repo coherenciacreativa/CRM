@@ -5467,3 +5467,55 @@ Operating meaning:
 - The Launch OS should now stop at the MailerLite live-mutation boundary. New replacement drafts must not be created from generic permission; they require a fresh exact approval phrase and fresh preflight.
 - The next real boundary is exact approval to create new MailerLite replacement drafts from the updated asset-ready local payload, assigned only to the empty `CC · Safety · Null audience · DO NOT SEND` group with `active_count=0`, with rollback/delete-on-failed-QA behavior.
 - Do not ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness, until new drafts are created under approval and fresh seed inbox QA proves the received emails.
+
+## Launch OS v0 asset-ready Null Audience replacement drafts created - 2026-06-02
+
+Status: active goal, synchronized from the completed MailerLite API execution receipt. The four new `Inteligencia para descansar` replacement drafts were created from the asset-ready/footer-canon/Product-Value-green payload and assigned only to the empty `CC · Safety · Null audience · DO NOT SEND` group. This checkpoint records that the creation approval has already been consumed: do not repeat the draft creation and do not ask for that approval again. No seed test, audience send, publish, schedule, workflow, subscriber action, Shopify action, CRM write, ledger, card, scoring or Fact Store write is authorized by this checkpoint.
+
+Evidence:
+
+- Asset-ready Null Audience replacement execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
+- Asset-ready seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Replacement execution receipt: `ok=true`, `status=mailerlite_null_audience_replacement_execution_completed_no_sends`, `mode=execute_requested`.
+- Execution decision: `canExecute=true`, blockers `0`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`, active count `0`.
+- Created draft count: `4`; created statuses: `draft`; labels: `E01`, `E02`, `E03`, `E04`.
+- Old drafts left intact: `true`.
+- Post-create QA: `replacementDraftCount=4`, `nullAudienceSafeCount=4`, `contentGreenCount=4`.
+- Post-create QA: every replacement draft is `status=draft`, `nullAudienceSafe=true`, no failed Null Audience checks, no placeholder content, expected URL hash present and exact URLs not printed.
+- Cleanup was not needed: `attempted=false`, `deletedCount=0`, `goneCount=0`.
+- Seed-test preflight: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- Seed-test preflight: `targetCount=4`, `qaGreenCount=4`, safety group active count `0`, sent tests `0`.
+- Seed-test preflight: all four target rows match the creation receipt, remain draft regular campaigns, are Null Audience safe, have placeholder count `0`, redacted final-link token count `0` and row blocker count `0`.
+
+Safety:
+
+- MailerLite API called for creation: `true`, only inside the completed approved replacement-draft creation scope.
+- MailerLite drafts created: `4`.
+- Allowed mutation type: `create_four_null_audience_replacement_drafts_only_and_cleanup_created_drafts_on_failure`.
+- Old drafts edited/deleted/archived: `false`.
+- Campaigns published: `false`.
+- Campaigns scheduled: `false`.
+- Sends performed by creation receipt: `false`.
+- MailerLite seed-test preflight was read-only; `mailerLiteTestEmailsSent=0` and `mailerLiteMutationsPerformed=false`.
+- Subscribers read: `false`.
+- Subscriber rows printed: `false`.
+- Subscriber mutations: `false`.
+- Additional groups created/assigned: `false`.
+- Non-Null Audience groups assigned: `false`.
+- Segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw campaign/group IDs, raw seed recipient and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The asset-ready replacement draft creation gate is now closed and reference-only.
+- The Active Next Action must no longer ask for replacement-draft creation approval or recreate drafts.
+- The next real boundary is separate and narrower: exact approval for seed-test sends from the four current asset-ready Null Audience drafts to the approved seed recipient.
+- Stop before asking for or executing seed-test sends unless Alejandro explicitly requests that boundary.
+- Do not ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness, until fresh seed inbox QA proves these current received emails.
