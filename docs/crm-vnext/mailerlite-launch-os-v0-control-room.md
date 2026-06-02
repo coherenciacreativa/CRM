@@ -5425,3 +5425,45 @@ Operating meaning:
 - Newsletter/article campaigns may continue using the newsletter-specific reason line separately.
 - The next real boundary is still a separate exact approval before creating or editing MailerLite replacement drafts with this updated footer-reason payload.
 - Do not edit MailerLite drafts, create replacement drafts, send tests, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this local repair alone.
+
+## Launch OS v0 asset destination readiness checkpoint - 2026-06-02
+
+Status: active goal, local-only asset destination repair completed for `Inteligencia para descansar`. The Shopify preview destination source now presents a fuller resource experience before any new MailerLite replacement drafts: four rest-entry paths, a 3/7/10 minute practice, and a real editorial note. The former inert capture widget no longer renders input fields or form-like placeholder copy; it remains a no-live preview marker. No Shopify publish/API call, MailerLite mutation, send, subscriber action, CRM write, ledger, card, scoring or Fact Store write was performed by this checkpoint.
+
+Evidence:
+
+- Asset manifest JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-02.json`
+- Asset manifest markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-02.md`
+- Product/Value review JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
+- Product/Value review markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.md`
+- Integrated experience QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+- Integrated experience QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.md`
+- Local Shopify files touched for this hito: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite/sections/result-inteligencia-para-descansar.liquid` and `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite/snippets/mailerlite-inteligencia-para-descansar-form.liquid`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Asset manifest: `ok=true`, `status=mini_launch_asset_manifest_ready_for_correction_inputs_no_live_changes`.
+- Asset manifest: `finalPublicLinksReady=true`, `localAssetSlotReadyCount=3`, `publicUrlReadyCount=3`, `requiresAlejandroManualLinks=false`.
+- Product/Value review: `ok=true`, `status=product_value_review_ready_for_ceo_review_no_live_changes`.
+- Product/Value review: `productValueReviewPassed=true`, `ceoReviewValueReady=true`, ready gates `7`, blocked gates `0`, blockers `0`.
+- Product/Value review: `shopifyPlaceholderHitCount=0`, `visibleUrlTextCount=0`, `seedRawUrlVisibleCount=0`, `clickthroughVerified=true`.
+- Integrated experience QA remains blocked before CEO review because the latest real MailerLite received-email proof still belongs to the older draft payload: blockers are `visual_signature_asset_not_verified`, `signature_fallback_still_present_in_payload`, and `platform_footer_policy_is_not_canonical_footer_proof`.
+- Integrated experience QA still reports the destination side clean: `shopifyPlaceholderHitCount=0`, `visibleUrlTextCount=0`, `seedRawUrlVisibleCount=0`, `productValueReviewPassed=true`.
+
+Safety:
+
+- Shopify local repo edits only.
+- Shopify API called: `false`.
+- Shopify publish/theme push/navigation/SEO public promotion: `false`.
+- MailerLite API/UI mutations and draft edits: `false`.
+- Sends, audience sends, publish, schedule, subscribers, groups, segments, workflows and automations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw message IDs, raw campaign/group IDs, sender values, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- The asset-destination hito is closed locally: the resource destination is no longer the active reason to delay new draft creation.
+- The Launch OS should now stop at the MailerLite live-mutation boundary. New replacement drafts must not be created from generic permission; they require a fresh exact approval phrase and fresh preflight.
+- The next real boundary is exact approval to create new MailerLite replacement drafts from the updated asset-ready local payload, assigned only to the empty `CC · Safety · Null audience · DO NOT SEND` group with `active_count=0`, with rollback/delete-on-failed-QA behavior.
+- Do not ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness, until new drafts are created under approval and fresh seed inbox QA proves the received emails.

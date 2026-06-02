@@ -54,87 +54,81 @@ action that a resumed Goal should continue before replanning.
 - `completion_definition`:
 - `next_checkpoint_expected`:
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `asset_destination_readiness_inteligencia_descansar`
-- `status`: `active`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 asset destination readiness checkpoint - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_replacement_draft_approval_boundary_inteligencia_descansar`
+- `status`: `blocked`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 mini-launch footer reason canon checkpoint - 2026-06-02`
-- `objective`: Review and repair the preview destination experience for
-  `Inteligencia para descansar` before creating any new MailerLite replacement
-  drafts.
-- `why_now`: Email rendering is now locally green, but Alejandro observed that
-  earlier CTA destinations still contained visible placeholders. The next
-  useful pilot milestone is a complete CEO-review package: emails plus
-  destination assets that deliver real value.
+- `source_checkpoint`: `Launch OS v0 asset destination readiness checkpoint - 2026-06-02`
+- `objective`: Stop at the human approval boundary before creating new
+  MailerLite replacement drafts from the updated, asset-ready local payload.
+- `why_now`: Destination/assets and Product/Value are now locally green. The next
+  material move toward CEO-review readiness is to create fresh Null Audience
+  replacement drafts in MailerLite, but that is a live MailerLite mutation and
+  requires exact approval.
 - `allowed_scope`:
-  - Read the current Control Room, this contract, git status and directly
-    related local reports.
-  - Inspect local-only/no-live Shopify preview route evidence and local Shopify
-    repo files for the three mini-launch destinations: result/resource page,
-    practice section and editorial note section.
-  - Prepare local-only repairs for placeholder text, incomplete copy, broken
-    internal links, SEO noindex/unlisted posture, mobile/desktop readability and
-    value clarity, when those repairs stay local/no-live and do not require API
-    calls or publication.
-  - Generate or refresh local-only QA evidence and reports when scripts declare
-    no live APIs, no sends and no mutations.
-  - Update this contract and the Control Room with the resulting checkpoint.
+  - Explain the decision and provide the exact approval phrase if Alejandro asks.
+  - Before any execution after approval, run a fresh MailerLite/API preflight
+    that verifies draft target scope, Null Audience group exclusivity and
+    `active_count=0`.
+  - Keep any pre-approval work local-only/report-only.
 - `forbidden_scope`:
   - No MailerLite draft creation, edit, send, publish, schedule or audience
-    action.
-  - No Shopify publish, theme push, live form wiring, Shopify API mutation or
-    navigation/SEO public promotion.
+    action without exact approval.
+  - No Shopify additional mutation, publish, theme push, live form wiring or
+    public navigation/SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
   - No subscriber, group, segment, workflow or automation mutation.
   - No secret reads, env dumps, raw token output, raw private URLs or recipient
     lists.
-  - No broad architecture rewrite and no autonomous weekly proposal engine build
-    in this next action.
 - `expected_files`:
   - `docs/crm-vnext/launch-os-next-action.md`
   - `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_shopify_preview_route_execution_receipt_current_inteligencia_descansar_2026-05-31.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_reason_canon_inteligencia_descansar_2026-06-02.json`
-  - Local Shopify preview route files identified from the preview-route receipt
-    or Shopify repo inspection.
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
-  - `rg`, `sed`, `ls`, `find` and read-only local file inspection.
-  - `node --check` for touched scripts, if any.
-  - Focused local tests for touched scripts, if any.
-  - Local-only report generators after confirming their help/source declares no
-    live APIs, no sends and no mutations.
+  - Read-only local file/report inspection.
+  - Fresh preflight commands only after confirming they do not mutate drafts,
+    sends, subscribers, groups, workflows, Shopify, CRM, ledgers, cards, scoring
+    or Fact Store.
 - `validation_commands`:
   - `git diff --check`
-  - Focused checks/tests for any touched local asset or QA script.
-  - Browser/preview QA for local or preview URLs only when it does not publish,
-    submit forms, send emails or mutate live systems.
-- `live_gate_status`: closed. This action does not authorize any live
-  MailerLite, Shopify, CRM, subscriber, group, workflow, campaign, send, ledger,
-  card, scoring or Fact Store mutation.
+  - Focused syntax/tests for any touched local scripts.
+- `live_gate_status`: closed until Alejandro gives an exact approval phrase for
+  MailerLite replacement draft creation.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
-  - Git state is unexpected or includes unrelated dirty files that affect the
-    target files.
-  - Required preview-route evidence is missing, stale or contradicts the Control
-    Room.
-  - Any repair requires live Shopify/MailerLite/CRM access, publication, live
-    forms, real subscribers or real sends.
-  - Local QA cannot prove that destination placeholders are gone.
-  - The Control Room or current-state refresh says the phase changed.
-  - The active `next_action_id` is already completed.
-- `resume_instruction`: Continue with Asset Destination Readiness for
-  `Inteligencia para descansar`: inspect the three preview destinations, repair
-  visible placeholders and incomplete local asset copy if safely local-only, then
-  generate local QA evidence. Do not create or edit MailerLite drafts until this
-  next action is completed and Alejandro gives a separate exact approval.
-- `completion_definition`: The three preview destinations have no visible
-  placeholders, no raw internal tokens, coherent final-ish copy, working CTA
-  paths, noindex/unlisted posture preserved, and local QA evidence is recorded.
-- `next_checkpoint_expected`: `Launch OS v0 asset destination readiness checkpoint - 2026-06-02`
+  - Git state is unexpected.
+  - Any target draft or Null Audience evidence is stale or contradicts current
+    reports.
+  - A requested action would send, publish, schedule, assign a real audience,
+    mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
+    Store without exact approval.
+- `resume_instruction`: Explain that the next move is MailerLite replacement
+  draft creation from the updated local payload, why it is a live mutation, and
+  ask for exact approval before proceeding. Do not create or edit drafts from a
+  generic "adelante".
+- `completion_definition`: Fresh MailerLite replacement drafts are created only
+  after exact approval, remain draft-only, point exclusively to the empty Null
+  Audience safety group, contain the updated asset-ready payload, pass
+  post-create QA, and generate a local execution receipt.
+- `next_checkpoint_expected`: `Launch OS v0 MailerLite replacement drafts checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 
