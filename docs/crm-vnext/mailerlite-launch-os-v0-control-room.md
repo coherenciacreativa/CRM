@@ -6726,3 +6726,65 @@ Operating meaning:
   primary compact-footer test-send route.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 seed tests completed - 2026-06-02
+
+Status: active goal, approved seed/test-only MailerLite UI operation completed.
+Alejandro provided the exact compact-footer v2 seed-test approval phrase. A
+fresh API re-scan/preflight was green, then the four compact-footer v2 Null
+Audience drafts were sent as test emails through MailerLite UI/Computer Use and
+recorded locally.
+
+Evidence:
+
+- V2 seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 seed-test preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 seed-test execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- Current-state refresh: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Mantis digest: `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_compact_footer_v2_seed_tests_completed_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Fresh preflight status:
+  `mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`.
+- Execution receipt status:
+  `mailerlite_null_audience_seed_test_send_completed_test_only`.
+- Execution mode: `record_ui_sent`.
+- MailerLite test emails sent: `4`, recorded as
+  `safety.mailerLiteTestEmailsSent=4`.
+- Test send route: `mailerlite_ui_manual_assisted`.
+- Audience sends performed: `false`.
+- Campaigns published: `false`.
+- Campaigns scheduled: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups or segments created/assigned: `false`.
+- Workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Exact URLs and tokens printed: `false`.
+- Current-state refresh status:
+  `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+
+Safety:
+
+- The MailerLite API was used for fresh QA/preflight and local receipt context.
+- Actual test sends were completed through the MailerLite UI/Computer Use route
+  and then recorded locally; no API audience send or public send endpoint was
+  used.
+- The seed-test approval is consumed. Do not reuse it for another resend.
+- The execution receipt is the authoritative compact-footer v2 seed-test
+  evidence. The general current-state refresh remains contextual and is not the
+  v2 seed-inbox readback authority.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
+
+Operating meaning:
+
+- The v2 replacement-draft creation and v2 seed-test approvals are both
+  consumed and should not be repeated.
+- The next real boundary is seed inbox/readback QA for the four received v2
+  tests: visible rendering, footer hierarchy, duplicate address check, body
+  closing/signature behavior, CTA links and placeholder/token absence.
+- A future resend, correction cycle, or public/audience-send readiness packet
+  must be a separate exact boundary.

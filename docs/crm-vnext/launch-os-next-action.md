@@ -206,93 +206,89 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_seed_test_approval_boundary_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 seed tests completed - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- `completion_note`: The execution receipt is the authoritative v2 seed-test
+  evidence for this boundary. It records four UI-assisted MailerLite test sends
+  as `safety.mailerLiteTestEmailsSent=4`; the general current-state refresh is
+  context, not the v2 seed-inbox authority.
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_seed_inbox_readback_qa_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 compact footer v2 Null Audience replacement drafts created - 2026-06-02`
-- `objective`: Wait for exact compact-footer v2 seed-test approval, then use
-  the MailerLite UI/Computer Use route for the four v2 Null Audience drafts and
-  record the result locally after fresh QA remains green.
-- `why_now`: The v2 replacement-draft approval was consumed and executed.
-  Four new v2 drafts exist, all assigned exclusively to the empty Null Audience
-  safety group, with post-create QA green and no sends/publish/schedule. The old
-  compact-footer seed inbox QA is not current for this v2 draft set. Fresh v2
-  seed-test preflight is now green with four targets, 0 blockers and 0 test
-  emails sent, so the next useful boundary is exact seed-test approval.
+- `source_checkpoint`: `Launch OS v0 compact footer v2 seed tests completed - 2026-06-02`
+- `objective`: Review the four received compact-footer v2 seed/test emails for
+  visual, copy, link and footer readback QA before any public/audience-send
+  approval packet is considered.
+- `why_now`: The exact compact-footer v2 seed-test approval was consumed after
+  fresh API QA stayed green, and four test emails were sent by the MailerLite
+  UI/Computer Use route to the approved seed recipient. The next useful work is
+  CEO/seed inbox readback, not another draft creation or resend.
 - `allowed_scope`:
-  - Re-run read-only/API QA for the four v2 replacement drafts immediately
-    before any approved UI send attempt.
-  - Confirm the drafts remain draft-only and assigned exclusively to the empty
-    safety group with `active_count=0`.
-  - After exact approval only, use MailerLite UI/Computer Use to send test
-    emails to the approved seed recipient.
-  - Record UI-assisted sends locally with `--record-ui-sent` after successful
-    UI operation.
+  - Inspect local v2 receipts, local render QA and current-state reports.
+  - Review only the four received seed/test emails through a user-approved
+    read-only inbox route or user-provided evidence.
+  - Compare visible email rendering against the v2 canon: compact footer,
+    single postal-address display, no duplicate typed `Alejandro` before the
+    signature, CTA link behavior and no visible placeholder/token artifacts.
+  - Produce a local readback QA packet or short CEO decision note.
 - `forbidden_scope`:
-  - Do not reuse the consumed v2 replacement-draft creation approval.
-  - Do not reuse old asset-ready, compact-footer or seed-test receipts as
-    current v2 seed evidence.
-  - Do not send/resend any test email without a separate exact seed-test
-    approval.
-  - Do not ask for or execute public/audience send approval from this boundary.
+  - Do not recreate replacement drafts.
+  - Do not resend seed/test emails without a new exact approval.
+  - Do not ask for or execute public/audience-send approval from this boundary.
   - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
     mutation or automation action.
   - No Shopify mutation, publish, theme push, live form wiring, public
     navigation or SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
   - No secret reads, env dumps, raw token output, raw private URLs, raw asset
-    URLs or recipient lists.
+    URLs, recipient lists or broad mailbox inspection.
 - `expected_files`:
   - `docs/crm-vnext/launch-os-next-action.md`
   - `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
-  - `scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
-  - `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - Optional local readback QA packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - `npm run crm:vnext:mailerlite-mini-launch-null-audience-seed-test-send -- --replacement-receipt <v2 replacement receipt> --out <v2 seed preflight path> --markdown-out <v2 seed preflight md>`
-  - MailerLite UI/Computer Use test-send flow only after exact seed-test
-    approval is provided and fresh QA is green.
-  - `npm run crm:vnext:mailerlite-mini-launch-null-audience-seed-test-send -- --replacement-receipt <v2 replacement receipt> --record-ui-sent --ui-sent-labels E01,E02,E03,E04 --approval-phrase <exact seed-test phrase> --out <v2 seed execution receipt> --markdown-out <v2 seed execution md>` after successful UI sends only.
-  - `npm run crm:vnext:mailerlite-launch-os-current-state-refresh -- --date 2026-06-02`
+  - Read-only inbox/UI inspection only after Alejandro explicitly approves the
+    route for seed inbox QA.
 - `validation_commands`:
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
-  - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
-- `live_gate_status`: Replacement-draft creation approval is consumed. Seed
-  test emails, public/audience sends, MailerLite publish/schedule, subscribers,
-  workflows, Shopify and CRM remain closed until a separate exact approval.
-- `human_boundary_id`: `mailerlite_footer_compact_v2_seed_test_approval_boundary_inteligencia_descansar`
-- `human_boundary_notification_status`: `pending`
+- `live_gate_status`: V2 replacement-draft creation approval and v2 seed-test
+  approval are consumed. Public/audience sends, MailerLite publish/schedule,
+  subscribers, workflows, Shopify and CRM remain closed until a separate exact
+  approval.
+- `human_boundary_id`: `mailerlite_footer_compact_v2_seed_inbox_readback_qa_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_needed`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - V2 replacement receipt is missing, stale or not QA-green.
-  - Fresh seed-test preflight shows the safety group is not empty.
-  - Any v2 draft is no longer draft-only or exclusively assigned to the empty
-    safety group.
-  - Exact seed-test approval phrase is missing or does not match the generated
-    preflight/approval packet.
-  - Any requested action would publish, schedule, assign a real audience, mutate
-    subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
-    Store without a separate exact approval.
-- `resume_instruction`: If Alejandro provides exact seed-test approval, re-run
-  fresh v2 seed-test preflight, use the UI/Computer Use route required by the
-  Launch OS profile, then record the UI-sent receipt. If approval is absent or
-  inexact, stop with the exact phrase needed.
-- `completion_definition`: The four compact-footer v2 seed/test emails are
-  either preflighted and awaiting exact approval, or sent only to the approved
-  seed recipient after exact approval and recorded in a local receipt. No
-  public/audience send, publish, schedule, subscriber/workflow/Shopify/CRM/
-  ledger/card/scoring/Fact Store action occurred.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 seed-test approval boundary - 2026-06-02`
+  - The requested route would inspect unrelated inbox/mailbox content.
+  - Any requested action would resend tests, publish, schedule, assign a real
+    audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
+    scoring/Fact Store without a separate exact approval.
+- `resume_instruction`: Continue with compact-footer v2 seed inbox/readback QA
+  only. Use the v2 execution receipt as the authoritative seed-test evidence;
+  do not treat the general current-state refresh as proof of inbox quality.
+- `completion_definition`: The four compact-footer v2 seed emails are reviewed
+  for visual/copy/link/footer quality and the next boundary is declared as
+  either correction, resend approval, or a separate public/audience-send
+  readiness packet. No live audience action occurs.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 seed inbox readback QA - 2026-06-02`
 
 ## Stop/Change Conditions
 
