@@ -6229,3 +6229,140 @@ Operating meaning:
   different route for those three test sends.
 - Public/audience send approval, Shopify publish, CRM writes, ledgers, cards,
   scoring and Fact Store remain closed.
+
+## Launch OS v0 CEO Proposal Packet native lane checkpoint - 2026-06-02
+
+Status: active goal, no live action. The Launch OS now has a lightweight native
+CEO Proposal Packet for the current `Inteligencia para descansar` pilot, built
+from existing Product Value, Integrated QA, Web/Shopify, MailerLite, CRM signal
+design, pilot distribution and CEO delta evidence. This does not activate the
+future autonomous weekly proposal machine; it makes the current pilot reviewable
+as a CEO proposal artifact.
+
+Evidence:
+
+- CEO Proposal Packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+- CEO Proposal Packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.md`
+- Product/Value review packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
+- Integrated-experience QA packet: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-06-02.json`
+- CEO-review readiness delta: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- CEO Proposal Packet status:
+  `ceo_proposal_packet_ready_for_ceo_review_with_seed_execution_caveat_no_live_changes`.
+- CEO proposal review ready: `true`.
+- Ready with seed caveat: `true`.
+- Pilot launch execution ready: `false`.
+- Product Value ready: `true`.
+- Integrated experience ready: `true`.
+- Web/Shopify ready: `true`.
+- MailerLite delivery ready: `true`.
+- Compact seed execution complete: `false`.
+- CRM signal design ready: `true`.
+- Public send approval ready: `false`.
+- Live action allowed now: `false`.
+- Proposal blockers: `0`.
+- Execution caveats:
+  `compact_footer_seed_execution_partial_e02_e03_e04_unsent`,
+  `public_send_approval_not_ready_or_not_requested`.
+
+Proposal content covered:
+
+- Idea: brief quiz/resource for recognizing what kind of rest the mind is
+  asking for and trying a small practice without turning rest into another
+  task.
+- Market hypothesis: a rest frame built around criterion, permission and small
+  action may resonate more than generic calm/wellness language.
+- Community signal posture:
+  `hypothesis_and_local_copy_signal_ready_real_community_signal_pending`.
+- Value promise: useful rest reflection/practice without diagnostic, cure or
+  pressure claims.
+- Product Value Gate, assets, suggested funnel, Brand gate,
+  Web/Shopify readiness, MailerLite delivery logic, CRM signal design and
+  learning criteria are all represented in the packet.
+
+Safety:
+
+- CEO Proposal Packet was local/report-only.
+- UI opened: `false`.
+- MailerLite, Shopify and CRM live APIs called: `false`.
+- Test emails sent by this packet: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Signal Ledger, CRM cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- The pilot is now CEO-reviewable as a proposal with an explicit seed caveat.
+- This packet is not approval to send, publish, assign an audience, mutate
+  workflows, write CRM, append ledgers, update cards/scoring or write Fact
+  Store.
+- The next real boundary remains unchanged: either continue `E02`, `E03` and
+  `E04` only after fresh API re-scan/preflight and semantic Computer Use control
+  exposure, explicitly approve a different test-send route for those three
+  labels, or review the CEO proposal with the seed caveat.
+
+## Launch OS v0 CEO Proposal Packet current-state wiring checkpoint - 2026-06-02
+
+Status: active goal, no live action. The CEO Proposal Packet is now wired into
+the current-state refresh as a native local/report-only evidence lane, not just
+as a standalone packet. The refresh regenerates the packet after Product/Value
+and Integrated Experience evidence, summarizes the CEO-review posture, and keeps
+pilot execution, public send and live gates closed.
+
+Evidence:
+
+- CEO Proposal Packet script: `scripts/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs`
+- CEO Proposal Packet test: `__tests__/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.spec.ts`
+- Current-state refresh script: `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+- Current-state refresh test: `__tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
+- Package command: `crm:vnext:mailerlite-mini-launch-ceo-proposal-packet`
+- CEO Proposal Packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+- CEO Proposal Packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.md`
+- Current-state refresh JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Current-state refresh markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.md`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Current-state refresh status:
+  `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state refresh validation: `testFiles=39`, `testCount=247`.
+- Current-state refresh safety: `mailerLiteApiCalled=false`,
+  `shopifyApiCalled=false`, `crmLiveApiCalled=false`, `sendsPerformed=false`.
+- Current-state CEO proposal status:
+  `ceo_proposal_packet_ready_for_ceo_review_with_seed_execution_caveat_no_live_changes`.
+- Current-state CEO proposal review ready: `true`.
+- Current-state CEO proposal ready with seed caveat: `true`.
+- Current-state pilot launch execution ready: `false`.
+- Current-state public send approval ready: `false`.
+- Current-state live action allowed now: `false`.
+- CEO proposal blocker count: `0`.
+- CEO proposal execution caveat count: `2`.
+- CEO proposal next boundary:
+  `choose_route_for_remaining_compact_footer_seed_tests_or_review_proposal_with_seed_caveat`.
+
+Safety:
+
+- This checkpoint was local/report-only.
+- UI opened: `false`.
+- MailerLite, Shopify and CRM live APIs called by the refresh: `false`.
+- Test emails sent by this checkpoint: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Signal Ledger, CRM cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- The current pilot is CEO-reviewable as a proposal with an explicit seed caveat.
+- This wiring is not approval to send, publish, assign an audience, mutate
+  workflows, write CRM, append ledgers, update cards/scoring or write Fact
+  Store.
+- The live boundary remains unchanged: do not resend `E01`; continue `E02`,
+  `E03` and `E04` only after fresh API re-scan/preflight and semantic Computer
+  Use control exposure, or after Alejandro explicitly approves a different
+  test-send route for those three labels.

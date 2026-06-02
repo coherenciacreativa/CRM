@@ -99,6 +99,7 @@
     "crm:vnext:mailerlite-mini-launch-seed-inbox-artifact-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-inbox-artifact-qa-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-product-value-review-packet": "node scripts/crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-ceo-proposal-packet": "node scripts/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-input-request-packet": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-input-request-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-decision-intake": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.mjs",

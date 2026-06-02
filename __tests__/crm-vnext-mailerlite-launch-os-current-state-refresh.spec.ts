@@ -270,6 +270,9 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(plan.paths.miniLaunchIntegratedExperienceQaPacket).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_integrated_experience_qa_packet_current_inteligencia_descansar_2026-05-31.json",
     );
+    expect(plan.paths.miniLaunchCeoProposalPacket).toBe(
+      "/tmp/mantis-reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(plan.paths.miniLaunchCadenceBoard).toBe(
       "/tmp/mantis-reports/mailerlite_mini_launch_cadence_board_current_2026-06-01.json",
     );
@@ -350,6 +353,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-artifact-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs");
@@ -378,6 +382,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-artifact-qa-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-product-value-review-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-ceo-proposal-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-input-request-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-decision-intake");
@@ -919,6 +924,30 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
           exactUrlsPrinted: false,
           tokensPrinted: false,
         },
+        miniLaunchCeoProposalPacket: {
+          path: paths.miniLaunchCeoProposalPacket,
+          markdownPath: paths.miniLaunchCeoProposalPacketMarkdown,
+          status: "ceo_proposal_packet_ready_for_ceo_review_with_seed_execution_caveat_no_live_changes",
+          ok: true,
+          ceoProposalReviewReady: true,
+          ceoProposalReviewReadyWithSeedCaveat: true,
+          pilotLaunchExecutionReady: false,
+          productValueReady: true,
+          integratedExperienceReady: true,
+          webShopifyReady: true,
+          mailerLiteDeliveryReady: true,
+          compactSeedExecutionComplete: false,
+          crmSignalDesignReady: true,
+          publicSendApprovalReady: false,
+          liveActionAllowedNow: false,
+          blockerCount: 0,
+          executionCaveatCount: 2,
+          nextBoundary: "choose_route_for_remaining_compact_footer_seed_tests_or_review_proposal_with_seed_caveat",
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          recipientsPrinted: false,
+          tokensPrinted: false,
+        },
         miniLaunchPilotDistributionStrategyPacket: {
           path: paths.miniLaunchPilotDistributionStrategyPacket,
           markdownPath: paths.miniLaunchPilotDistributionStrategyPacketMarkdown,
@@ -1114,5 +1143,6 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(renderMarkdown(receipt)).toContain("seed inbox artifact QA");
     expect(renderMarkdown(receipt)).toContain("Product/Value review");
     expect(renderMarkdown(receipt)).toContain("integrated experience QA");
+    expect(renderMarkdown(receipt)).toContain("CEO proposal");
   });
 });
