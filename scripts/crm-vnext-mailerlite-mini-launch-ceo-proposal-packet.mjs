@@ -400,7 +400,11 @@ const buildCeoProposalPacket = ({
         publicAudienceSendUrlGateReady: assetSummary.publicAudienceSendUrlGateReady ?? null,
       },
       mailerLiteDeliveryLogic: {
-        status: mailerLiteDeliveryReady ? 'null_audience_compact_drafts_ready_seed_partial' : 'blocked',
+        status: mailerLiteDeliveryReady
+          ? compactSeedExecutionComplete
+            ? 'null_audience_compact_drafts_ready_seed_execution_complete'
+            : 'null_audience_compact_drafts_ready_seed_partial'
+          : 'blocked',
         compactSeedExecutionState: deltaSummary.compactFooterSeedExecutionState ?? null,
         sentLabels: deltaSummary.sentLabels ?? [],
         unsentLabels: deltaSummary.unsentLabels ?? [],

@@ -141,214 +141,111 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
-- `status`: `blocked`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer seed tests completed - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_seed_inbox_qa_read_only_inteligencia_descansar`
+- `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 compact footer Null Audience replacement drafts created - 2026-06-02`
-- `objective`: Stop before any compact-footer seed/test email send. Treat the
-  newly created compact-footer drafts as inert Null Audience draft evidence
-  until the approved seed-test edge is executed through a semantic Computer Use
-  UI route after fresh API QA.
-- `why_now`: The compact-footer replacement execution receipt is green for four
-  new draft-only campaigns assigned exclusively to the empty Null Audience
-  safety group. The current approval queue now exposes the generic
-  `mini_launch_null_audience_seed_test_send` boundary for the current compact
-  evidence set, but that queue readiness is not approval and must not reuse the
-  consumed asset-ready seed-test or E04-only resend approvals.
-  Current-state refresh explicitly marks the historical asset-ready seed inbox
-  QA as not applicable to the compact-footer replacement receipt, so effective
-  seed inbox QA remains false until fresh compact-footer seed evidence exists.
-  Alejandro provided the fresh exact compact-footer seed-test approval, and
-  fresh API re-scans stayed green. A Computer Use semantic UI path exposed the
-  `Send a test` control and completed the `E01` test send to the exact seed
-  recipient, with semantic success text observed. The full approved edge is
-  still not closed: `E02`, `E03` and `E04` were not sent, no full
-  `record_ui_sent` receipt exists, and the approval is now partially consumed
-  for `E01` only. A later retry recovered the MailerLite window and loaded the
-  `E02` schedule page semantically after a fresh green preflight, but the
-  `Send a test` control was not exposed as a semantic control for `E02`; no
-  seed was typed and no `E02` send occurred. A second retry used a direct
-  Dashboard-to-Drafts semantic route, loaded the current compact-footer draft
-  list, returned to the `E02` schedule context, recovered the Drafts list with
-  Escape, and attempted the `Overview` route; the `Send a test` control still
-  was not exposed semantically for `E02`, so `E02`, `E03` and `E04` remain
-  unsent. Do not resend `E01`. Alejandro then clarified that UI operations must
-  use Computer Use only, with no screenshots/captures or coordinates. A local
-  CEO-review readiness delta was generated from receipts only: Product/Value is
-  ready, compact-footer drafts and fresh preflight are green, but the
-  CEO-review package is not ready because compact-footer seed execution remains
-  partial and integrated-experience proof still has blockers. A later local QA
-  repair taught integrated-experience QA to treat the current compact-footer
-  local render as authoritative for the current draft set and to ignore
-  historical seed artifacts when public-readiness marks them not applicable to
-  the compact replacement receipt. Current-state refresh now reports
-  integrated-experience CEO-review local QA green; the CEO delta remains not
-  ready only because compact-footer seed execution is still partial and
-  public/audience send remains closed. A lightweight native CEO Proposal Packet
-  was then generated for the pilot: idea, market hypothesis, community-signal
-  posture, value promise, Product Value Gate, assets, funnel, Brand/Web/
-  MailerLite/CRM QA, learning criteria and next decision are now represented as
-  a local no-live CEO-review artifact with an explicit seed-execution caveat.
-  Current-state refresh now regenerates and summarizes the CEO Proposal Packet
-  as a native evidence lane; latest validation is `testFiles=39`,
-  `testCount=247`, with `liveGatesClosed=true`. Alejandro then clarified the
-  MailerLite UI operating rule: Computer Use remains the preferred/default
-  route because it is quieter and usually more robust, but screenshot/coordinate
-  or other fallback routes are not categorically forbidden when they are the
-  pragmatic way to finish a routine test email. Future MailerLite UI attempts
-  should use a short Computer Use reset protocol before fallback, not repeat a
-  long hidden-control search.
+- `source_checkpoint`: `Launch OS v0 compact footer seed tests completed - 2026-06-02`
+- `objective`: Review the received compact-footer seed/test emails in a
+  read-only inbox/artifact QA lane, then refresh Launch OS state before any
+  pilot distribution conversation.
+- `why_now`: The compact-footer seed-test approval has been consumed for all
+  four labels and the local `record_ui_sent` receipt is complete. Current-state
+  now reports `compactSeedExecutionComplete=true`,
+  `miniLaunchCeoProposalReviewReadyWithSeedCaveat=false` and
+  `miniLaunchCeoProposalNextBoundary=prepare_pilot_distribution_decision_without_send_approval`.
+  The historical asset-ready seed inbox QA is still not applicable to the
+  compact-footer replacement receipt, so the immediate operational evidence gap
+  is read-only compact-footer inbox QA/readback, not another send.
 - `allowed_scope`:
-  - Inspect compact-footer replacement receipts and current-state evidence.
-  - Inspect or regenerate the local CEO-review readiness delta as a no-live,
-    report-only artifact when the seed-test UI route remains blocked.
-  - Inspect or regenerate the local CEO Proposal Packet as a no-live,
-    report-only artifact for CEO review with the seed-execution caveat.
-  - Generate or refresh a compact-footer seed-test preflight/approval packet
-    only as a local/reporting or read-only API action.
-  - Use the received compact-footer seed-test approval only for the remaining
-    unsent compact-footer labels after a fresh API re-scan remains green. Do
-    not ask for the same approval again unless Alejandro supersedes it or the
-    evidence set changes.
-  - Route the remaining `E02`, `E03` and `E04` test sends through MailerLite UI
-    with Computer Use as the first route in this Codex thread, then record a
-    local receipt for the full `E01`-`E04` set; do not use API as the primary
-    test-send route.
-  - Before declaring Computer Use blocked, run the compact UI reset protocol:
-    refresh, close duplicate MailerLite tabs, reopen MailerLite in a clean
-    Safari window if practical, navigate from Campaigns/Drafts, and retry the
-    canonical draft/test-send flow. Keep this to one reset plus at most two
-    canonical semantic routes.
-  - If Computer Use still cannot expose and operate the required test-send
-    controls within that budget, a fallback route may be used only when it is
-    explicitly approved for the exact operation and does not broaden scope. The
-    fallback must remain time-boxed, must not resend already-sent labels, and
-    must be recorded in the local receipt.
-  - Before any seed-test send, re-scan by API and require QA green that the four
-    current compact-footer drafts are still draft-only, unpublished,
-    unscheduled, workflow-free and assigned only to
-    `CC · Safety · Null audience · DO NOT SEND` with `active_count=0`.
-  - Keep all evidence redacted and hashed where receipts identify campaigns,
-    groups, recipients, private URLs or Gmail messages.
+  - Inspect the compact-footer seed execution receipt, CEO delta, CEO proposal,
+    current-state refresh and digest.
+  - Run only read-only seed inbox/artifact QA for the compact-footer received
+    test messages.
+  - Refresh local Launch OS reports after read-only QA.
+  - Keep all evidence redacted or hashed where messages, campaigns, recipients,
+    private URLs or raw IDs appear.
+  - Prepare a later no-send pilot distribution decision packet only after the
+    inbox/artifact QA evidence is recorded.
 - `forbidden_scope`:
-  - Do not repeat the asset-ready replacement draft creation.
-  - Do not repeat the compact-footer replacement draft creation.
-  - Do not resend `E01`; Computer Use semantic UI already observed a successful
-    `E01` test send under this approval.
-  - Do not send `E02`, `E03` or `E04` more than once under this approval.
-  - Do not record any `record_ui_sent` receipt unless the test emails were
-    actually sent through Computer Use semantic UI operation.
-  - Do not rerun the consumed four-email seed-test approval.
-  - Do not rerun the consumed E04-only seed resend approval.
-  - Do not perform artifact/CEO-readiness QA from the stale oversized-footer
-    seed evidence.
-  - No MailerLite test send without a fresh exact compact-footer seed-test
-    approval after green re-scan/preflight.
-  - No public/audience send, publish or schedule from this boundary.
-  - No Shopify additional mutation, publish, theme push, live form wiring or
-    public navigation/SEO promotion.
+  - Do not resend any compact-footer seed/test email.
+  - Do not recreate asset-ready drafts or compact-footer replacement drafts.
+  - Do not reuse the consumed asset-ready seed approvals, E04-only resend
+    approval or compact-footer seed-test approval.
+  - Do not ask for or execute public/audience send approval from this boundary.
+  - No MailerLite publish, schedule, group/segment/subscriber/workflow mutation
+    or automation action.
+  - No Shopify mutation, publish, theme push, live form wiring, public
+    navigation or SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
-  - No subscriber, group, segment, workflow or automation mutation.
   - No secret reads, env dumps, raw token output, raw private URLs or recipient
     lists.
 - `expected_files`:
   - `docs/crm-vnext/launch-os-next-action.md`
   - `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_reason_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_asset_manifest_current_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_product_value_review_packet_current_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_asset_ready_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_compact_footer_seed_tests_completed_inteligencia_descansar_2026-06-02.json`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - Fresh MailerLite API read-only re-scan/preflight before any compact-footer
-    seed-test approval request or execution.
-  - Local seed-test approval packet generation that does not send email.
-  - Local report generation commands that do not call MailerLite, Shopify, CRM,
-    ledgers, cards, scoring or Fact Store.
-  - `npm run crm:vnext:mailerlite-mini-launch-ceo-proposal-packet -- --asset-manifest <path> --product-value-review-packet <path> --integrated-experience-qa-packet <path> --crm-signal-projection-packet <path> --pilot-distribution-strategy-packet <path> --ceo-review-readiness-delta <path> --public-launch-readiness-packet <path> --out <path> --markdown-out <path>`
+  - Read-only seed inbox/artifact QA commands that do not send, publish,
+    schedule or mutate subscribers/workflows.
+  - `npm run crm:vnext:mailerlite-launch-os-current-state-refresh -- --date 2026-06-02`
 - `validation_commands`:
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs`
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs`
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs`
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs`
   - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
-- `live_gate_status`: partially consumed after approval. `E01` was sent through
-  MailerLite UI by Computer Use semantic controls after fresh API re-scan, but
-  `E02`, `E03` and `E04` remain unsent and the full `record_ui_sent` receipt
-  has not been created. A second Computer Use retry confirmed the direct
-  Dashboard/Drafts route is reachable semantically, but the `E02` test-send
-  control remains unavailable as a semantic control. Continue only after another
-  fresh API re-scan and a short Computer Use reset/canonical-route attempt; if
-  the control is still unavailable, use only an exact route-specific fallback
-  approval for the remaining labels. Queue readiness is not approval. Local integrated-experience
-  CEO-review QA is green, but compact-footer seed evidence is still incomplete.
-  Current-state refresh now carries `miniLaunchCeoProposalReviewReady=true`,
-  `miniLaunchCeoProposalReviewReadyWithSeedCaveat=true`,
-  `miniLaunchCeoProposalPilotLaunchExecutionReady=false`,
-  `miniLaunchCeoProposalPublicSendApprovalReady=false` and
-  `miniLaunchCeoProposalLiveActionAllowedNow=false`.
-  Public/audience sends, MailerLite publish/schedule, subscribers, workflows,
-  Shopify and CRM remain closed.
-- `human_boundary_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
-- `human_boundary_notification_status`: `pending`
+- `live_gate_status`: compact-footer seed-test approval consumed for `E01`-
+  `E04`; no resend is allowed. Current CEO proposal is review-ready without a
+  seed execution caveat, but `pilotLaunchExecutionReady=false`,
+  `publicSendApprovalReady=false` and `liveActionAllowedNow=false`. Public/
+  audience sends, MailerLite publish/schedule, subscribers, workflows, Shopify
+  and CRM remain closed.
+- `human_boundary_id`: `mailerlite_footer_compact_seed_inbox_qa_read_only_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_needed`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Any requested action would send a test email without a fresh API re-scan.
-  - Any requested fallback action would use screenshots, coordinate clicks,
-    system-click fallbacks or browser DOM/AppleScript click injection without a
-    route-specific approval and exact send scope.
-  - Any requested action would resend `E01`.
-  - Any requested action would prepare a public send approval before fresh
-    compact-footer seed inbox evidence exists.
-  - A requested action would send, publish, schedule, assign a real audience,
-    mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
+  - Any requested action would send or resend any email.
+  - Any requested action would prepare public/audience send approval before
+    compact-footer seed inbox QA/readback is recorded.
+  - Any requested action would publish, schedule, assign a real audience, mutate
+    subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store without a new exact approval.
-- `resume_instruction`: Continue from the compact-footer replacement execution
-  receipt and compact-footer seed-test preflight. Do not recreate old
-  asset-ready drafts, do not recreate the compact replacements, do not rerun
-  either consumed asset-ready seed approval, and do not perform
-  artifact/CEO-readiness QA from the stale oversized-footer seed messages. Use
-  the CEO-review readiness delta to preserve the current distinction: value and
-  local integrated experience are ready, but compact-footer seed evidence is not
-  complete. Use the CEO Proposal Packet as the CEO-review artifact; it is not
-  approval to send, publish, assign audience, or write CRM.
-- `completion_definition`: A later compact-footer seed-test checkpoint has a
-  fresh API re-scan/preflight, the received exact approval consumed exactly
-  once, a Computer Use semantic UI-recorded test-send receipt and then seed
-  inbox QA, all without public/audience send, publish, schedule,
+- `resume_instruction`: Continue from the compact-footer seed execution receipt
+  and latest Current State. Do not touch MailerLite UI for sending. The next
+  useful work is read-only inbox/artifact QA for the compact-footer received
+  tests, then a refreshed local state and only then a no-send pilot distribution
+  decision conversation.
+- `completion_definition`: A later checkpoint records compact-footer seed inbox
+  QA/readback evidence for all four received tests and refreshes Current State,
+  with no email sends, public/audience send, publish, schedule,
   subscriber/workflow, Shopify, CRM, ledger, card, scoring or Fact Store
   effects.
-- `next_checkpoint_expected`: `Launch OS v0 MailerLite UI reset/fallback policy checkpoint - 2026-06-02`
+- `next_checkpoint_expected`: `Launch OS v0 compact footer seed inbox QA read-only checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 

@@ -85,6 +85,17 @@ const ceoReviewReadinessDelta = {
   },
 };
 
+const completedSeedCeoReviewReadinessDelta = {
+  executiveSummary: {
+    ...ceoReviewReadinessDelta.executiveSummary,
+    compactFooterSeedExecutionComplete: true,
+    compactFooterSeedExecutionState: "complete_e01_e02_e03_e04",
+    sentLabels: ["E01", "E02", "E03", "E04"],
+    unsentLabels: [],
+    doNotResendLabels: ["E01", "E02", "E03", "E04"],
+  },
+};
+
 const publicLaunchReadinessPacket = {
   status: "mini_launch_public_launch_readiness_blocked_missing_evidence_no_live_changes",
   executiveSummary: {
@@ -161,6 +172,31 @@ describe("CRM vNext MailerLite mini-launch CEO proposal packet", () => {
     });
     expect(report.gateMatrix.find((entry) => entry.id === "mailerlite_delivery_logic")?.blockers)
       .toContain("compact_footer_seed_execution_partial_e02_e03_e04_unsent");
+    expect(safetyClosed(report.safety)).toBe(true);
+  });
+
+  test("removes the seed execution caveat when compact-footer seed tests are complete", () => {
+    const report = buildCeoProposalPacket({
+      ...baseInput,
+      ceoReviewReadinessDelta: completedSeedCeoReviewReadinessDelta,
+    });
+
+    expect(report.status).toBe("ceo_proposal_packet_ready_for_ceo_review_no_live_changes");
+    expect(report.executiveSummary).toMatchObject({
+      ceoProposalReviewReady: true,
+      ceoProposalReviewReadyWithSeedCaveat: false,
+      compactSeedExecutionComplete: true,
+      publicSendApprovalReady: false,
+      liveActionAllowedNow: false,
+      executionCaveatCount: 1,
+      nextBoundary: "prepare_pilot_distribution_decision_without_send_approval",
+    });
+    expect(report.executiveSummary.executionCaveats).not.toContain(
+      "compact_footer_seed_execution_partial_e02_e03_e04_unsent",
+    );
+    expect(report.proposalSections.mailerLiteDeliveryLogic.status)
+      .toBe("null_audience_compact_drafts_ready_seed_execution_complete");
+    expect(report.proposalSections.nextApprovalOrDecision.asksPublicSendApprovalNow).toBe(false);
     expect(safetyClosed(report.safety)).toBe(true);
   });
 

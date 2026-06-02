@@ -36,7 +36,7 @@ Options:
   --public-launch-readiness-packet <path>    Public launch readiness JSON. Defaults to ${DEFAULT_PUBLIC_LAUNCH_READINESS_PACKET}
   --compact-footer-replacement-receipt <path> Compact-footer Null Audience replacement receipt. Defaults to ${DEFAULT_COMPACT_FOOTER_REPLACEMENT_RECEIPT}
   --compact-footer-seed-preflight <path>     Compact-footer seed-test preflight JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_SEED_PREFLIGHT}
-  --compact-footer-seed-ui-blocker <path>    Compact-footer seed-test UI blocker/partial receipt JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_SEED_UI_BLOCKER}
+  --compact-footer-seed-ui-blocker <path>    Compact-footer seed-test UI blocker, partial receipt, or final record_ui_sent execution receipt JSON. Defaults to ${DEFAULT_COMPACT_FOOTER_SEED_UI_BLOCKER}
   --current-state-refresh <path>             Current-state refresh JSON. Defaults to ${DEFAULT_CURRENT_STATE_REFRESH}
   --goal-audit <path>                        Goal audit JSON. Defaults to ${DEFAULT_GOAL_AUDIT}
   --out <path>                               Write JSON report. Defaults to ${DEFAULT_OUTPUT}
@@ -156,6 +156,64 @@ const expectedLabelCoverage = (labels) =>
 const countReadyRows = (rows, predicate) =>
   asArray(rows).filter((row) => predicate(row)).length;
 
+const labelsFromRows = (rows) => unique(asArray(rows).map((row) => row?.label));
+
+const executionReceiptSafetyGreen = (safety = {}) => safety.audienceSendsPerformed === false
+  && safety.campaignsPublished === false
+  && safety.campaignsScheduled === false
+  && safety.subscribersRead === false
+  && safety.subscriberMutationsPerformed === false
+  && safety.additionalGroupsCreatedOrAssigned === false
+  && safety.workflowMutationsPerformed === false
+  && safety.exactUrlsPrinted === false
+  && safety.tokensPrinted === false;
+
+const normalizeSeedExecutionEvidence = (seedEvidence = {}) => {
+  const receiptSentLabels = labelsFromRows(seedEvidence.sentTests);
+  const receiptTargetLabels = labelsFromRows(seedEvidence.targetPlan);
+  const receiptUnsentLabels = EXPECTED_LABELS.filter((label) => !receiptSentLabels.includes(label));
+  const receiptComplete = seedEvidence?.ok === true
+    && seedEvidence?.status === 'mailerlite_null_audience_seed_test_send_completed_test_only'
+    && seedEvidence?.mode === 'record_ui_sent'
+    && expectedLabelCoverage(receiptSentLabels)
+    && receiptTargetLabels.length === EXPECTED_LABELS.length
+    && executionReceiptSafetyGreen(seedEvidence?.safety);
+
+  if (receiptComplete) {
+    return {
+      evidenceKind: 'record_ui_sent_execution_receipt',
+      uiApproval: {
+        compactFooterSeedTestApprovalConsumed: 'complete_e01_e02_e03_e04',
+        remainingUnsentLabels: receiptUnsentLabels,
+        doNotResendLabels: receiptSentLabels,
+      },
+      uiExecution: {
+        sentLabels: receiptSentLabels,
+        unsentLabels: receiptUnsentLabels,
+        recordUiSentReceiptCreated: true,
+        computerUseSemanticSendCompleted: 'all_e01_e02_e03_e04',
+        testSendExecutionChannel: seedEvidence?.safety?.testSendExecutionChannel ?? null,
+        finalReceiptStatus: seedEvidence?.status ?? null,
+        finalReceiptMode: seedEvidence?.mode ?? null,
+      },
+      uiPolicy: {
+        apiTestSendEndpointAllowedAsPrimaryRoute: false,
+      },
+      freshPreflight: seedEvidence?.preflight ?? {},
+      nextBoundary: {},
+    };
+  }
+
+  return {
+    evidenceKind: 'semantic_ui_blocker_or_partial_receipt',
+    uiApproval: seedEvidence?.approval ?? {},
+    uiExecution: seedEvidence?.uiExecution ?? {},
+    uiPolicy: seedEvidence?.operatorPolicy ?? {},
+    freshPreflight: seedEvidence?.freshPreflight ?? {},
+    nextBoundary: seedEvidence?.nextBoundary ?? {},
+  };
+};
+
 const buildCeoReviewReadinessDelta = ({
   productValueReviewPacket,
   integratedExperienceQaPacket,
@@ -175,10 +233,14 @@ const buildCeoReviewReadinessDelta = ({
   const replacementQa = compactFooterReplacementReceipt?.postCreateQa ?? {};
   const replacementRows = asArray(replacementQa.rows);
   const seedPreflight = compactFooterSeedPreflight?.preflight ?? {};
-  const uiApproval = compactFooterSeedUiBlocker?.approval ?? {};
-  const uiExecution = compactFooterSeedUiBlocker?.uiExecution ?? {};
-  const uiPolicy = compactFooterSeedUiBlocker?.operatorPolicy ?? {};
-  const freshPreflight = compactFooterSeedUiBlocker?.freshPreflight ?? {};
+  const {
+    evidenceKind: seedExecutionEvidenceKind,
+    uiApproval,
+    uiExecution,
+    uiPolicy,
+    freshPreflight,
+    nextBoundary,
+  } = normalizeSeedExecutionEvidence(compactFooterSeedUiBlocker);
   const goalSummary = goalAudit?.executiveSummary ?? {};
 
   const productValueReady = productSummary.productValueReviewPassed === true
@@ -295,6 +357,10 @@ const buildCeoReviewReadinessDelta = ({
         doNotResendLabels,
         recordUiSentReceiptCreated: uiExecution.recordUiSentReceiptCreated ?? false,
         semanticSuccessObservedText: uiExecution.semanticSuccessObservedText ?? null,
+        testSendExecutionChannel: uiExecution.testSendExecutionChannel ?? null,
+        finalReceiptStatus: uiExecution.finalReceiptStatus ?? null,
+        finalReceiptMode: uiExecution.finalReceiptMode ?? null,
+        evidenceKind: seedExecutionEvidenceKind,
         strictSemanticUiPolicy,
       },
     }),
@@ -370,7 +436,7 @@ const buildCeoReviewReadinessDelta = ({
       unsentLabels,
       doNotResendLabels,
       nextSafeAction: seedExecutionBlocked
-        ? 'choose_semantic_ui_retry_only_if_control_is_exposed_or_explicitly_approve_a_different_test_send_route_before_e02_e03_e04'
+        ? 'choose_computer_use_retry_or_explicitly_approve_a_different_test_send_route_before_e02_e03_e04'
         : 'rerun_seed_inbox_qa_then_integrated_experience_qa_before_distribution_decision',
     },
     gateMatrix,
@@ -380,16 +446,21 @@ const buildCeoReviewReadinessDelta = ({
         : 'seed_execution_complete_continue_local_qa',
       currentApprovalState: uiApproval.compactFooterSeedTestApprovalConsumed ?? 'unknown',
       doNotAskSameApprovalAgainUnlessEvidenceChanges:
-        compactFooterSeedUiBlocker?.nextBoundary?.doNotAskSameApprovalAgainUnlessEvidenceChanges ?? true,
-      allowedNextChoices: [
-        'continue_e02_e03_e04_only_after_fresh_preflight_if_computer_use_exposes_semantic_controls',
-        'explicitly_approve_a_different_test_send_route_for_e02_e03_e04_only',
-        'park_compact_seed_completion_and_hold_ceo_review_as_value_ready_but_integrated_experience_not_ready',
-        'repair_signature_and_footer_proof_inputs_then_rerun_integrated_experience_qa',
-      ],
+        nextBoundary.doNotAskSameApprovalAgainUnlessEvidenceChanges ?? true,
+      allowedNextChoices: seedExecutionComplete
+        ? [
+          'rerun_seed_inbox_qa_read_only_for_compact_footer_receipts',
+          'review_ceo_proposal_without_send_approval',
+          'choose_pilot_distribution_lane_without_send_approval',
+        ]
+        : [
+          'continue_e02_e03_e04_only_after_fresh_preflight_with_computer_use',
+          'explicitly_approve_a_different_test_send_route_for_e02_e03_e04_only',
+          'park_compact_seed_completion_and_hold_ceo_review_as_value_ready_but_integrated_experience_not_ready',
+          'repair_signature_and_footer_proof_inputs_then_rerun_integrated_experience_qa',
+        ],
       notAllowedWithoutFreshApprovalOrEvidence: [
-        'resend_e01',
-        'use_screenshots_or_coordinates_for_ui_operation',
+        seedExecutionComplete ? 'resend_any_compact_footer_seed_test' : 'resend_e01',
         'use_api_test_send_as_primary_route',
         'public_or_audience_send',
         'shopify_publish_or_live_form_wiring',
@@ -400,9 +471,11 @@ const buildCeoReviewReadinessDelta = ({
     safety,
     hardStops: [
       'This delta is not approval for a tester, audience, public send, publish, workflow or CRM write.',
-      'Do not resend E01 under the compact-footer seed-test approval.',
+      seedExecutionComplete
+        ? 'Do not resend any compact-footer seed test under the consumed approval.'
+        : 'Do not resend E01 under the compact-footer seed-test approval.',
       'Before any remaining seed send, run a fresh API re-scan/preflight and require QA green.',
-      'Operate MailerLite UI only through Computer Use semantic controls unless Alejandro explicitly approves a different route.',
+      'Operate MailerLite UI through Computer Use; use fallback UI routes only with explicit scope-specific approval.',
       'Exact URLs, recipients, raw IDs and tokens must remain unprinted.',
     ],
     inputStatuses: {
@@ -502,7 +575,7 @@ const main = async () => {
     readJsonWithDigest(options.publicLaunchReadinessPacket, 'public/audience send gate posture'),
     readJsonWithDigest(options.compactFooterReplacementReceipt, 'compact-footer Null Audience replacement draft QA'),
     readJsonWithDigest(options.compactFooterSeedPreflight, 'compact-footer seed-test fresh preflight evidence'),
-    readJsonWithDigest(options.compactFooterSeedUiBlocker, 'compact-footer seed-test semantic UI blocker and partial send state'),
+    readJsonWithDigest(options.compactFooterSeedUiBlocker, 'compact-footer seed-test semantic UI blocker, partial state, or final execution receipt'),
     readJsonWithDigest(options.currentStateRefresh, 'Launch OS current-state no-live posture'),
     readJsonWithDigest(options.goalAudit, 'Launch OS goal audit posture'),
   ]);

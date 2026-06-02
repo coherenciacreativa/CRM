@@ -167,6 +167,29 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     }
   });
 
+  test("prefers compact footer seed-test execution evidence when present", () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-compact-seed-send-"));
+
+    try {
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+
+      const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
+
+      expect(paths.miniLaunchNullAudienceSeedTestSendExecutionReceipt).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("does not carry stale asset-ready seed inbox QA into compact footer replacements", async () => {
     const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-stale-seed-inbox-"));
 
@@ -353,6 +376,7 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-seed-inbox-artifact-qa-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-product-value-review-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.mjs");
+    expect(commands).toContain("crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.mjs");
     expect(commands).toContain("crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.mjs");
@@ -382,6 +406,11 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-seed-inbox-artifact-qa-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-product-value-review-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-integrated-experience-qa-packet");
+    expect(commands).toContain("crm:vnext:mailerlite-mini-launch-ceo-review-readiness-delta");
+    expect(commands).toContain("--compact-footer-seed-ui-blocker");
+    expect(commands).toContain(
+      "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_current_inteligencia_descansar_2026-05-31.json",
+    );
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-ceo-proposal-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-strategy-packet");
     expect(commands).toContain("crm:vnext:mailerlite-mini-launch-pilot-distribution-input-request-packet");

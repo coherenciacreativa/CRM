@@ -491,18 +491,42 @@ const buildReportPaths = ({ date, reportsDir }) => {
       );
     })(),
     miniLaunchNullAudienceSeedTestSendExecutionReceipt: (() => {
+      const compactFooterReceiptPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon',
+        date,
+      );
       const assetReadyReceiptPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready',
         date,
       );
-      return existsSync(assetReadyReceiptPath)
-        ? assetReadyReceiptPath
-        : latestExistingMiniLaunchCurrentReportPath(
-          reportsDir,
-          'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt',
-          date,
-        );
+      if (existsSync(compactFooterReceiptPath)) return compactFooterReceiptPath;
+      if (existsSync(assetReadyReceiptPath)) return assetReadyReceiptPath;
+      return latestExistingMiniLaunchCurrentReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt',
+        date,
+      );
+    })(),
+    miniLaunchNullAudienceSeedTestSendPreflight: (() => {
+      const compactFooterPreflightPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon',
+        date,
+      );
+      const assetReadyPreflightPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready',
+        date,
+      );
+      if (existsSync(compactFooterPreflightPath)) return compactFooterPreflightPath;
+      if (existsSync(assetReadyPreflightPath)) return assetReadyPreflightPath;
+      return latestExistingMiniLaunchCurrentReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_preflight',
+        date,
+      );
     })(),
     miniLaunchNullAudienceSeedInboxQa: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
@@ -705,6 +729,12 @@ const validationCommands = () => [
     'syntax-check mini-launch integrated experience QA packet',
   ),
   command(
+    'node_check_mini_launch_ceo_review_readiness_delta',
+    'node',
+    ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.mjs'],
+    'syntax-check mini-launch CEO review readiness delta',
+  ),
+  command(
     'node_check_mini_launch_ceo_proposal_packet',
     'node',
     ['--check', 'scripts/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.mjs'],
@@ -884,6 +914,7 @@ const validationCommands = () => [
       '__tests__/crm-vnext-mailerlite-mini-launch-seed-inbox-artifact-qa-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-product-value-review-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-integrated-experience-qa-packet.spec.ts',
+      '__tests__/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-ceo-proposal-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-strategy-packet.spec.ts',
       '__tests__/crm-vnext-mailerlite-mini-launch-pilot-distribution-input-request-packet.spec.ts',
@@ -1578,6 +1609,36 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchIntegratedExperienceQaPacketMarkdown,
       ],
       'regenerate current mini-launch integrated experience QA packet before any distribution/tester decision',
+    ),
+    command(
+      'refresh_mini_launch_ceo_review_readiness_delta',
+      'npm',
+      [
+        'run',
+        'crm:vnext:mailerlite-mini-launch-ceo-review-readiness-delta',
+        '--',
+        '--product-value-review-packet',
+        paths.miniLaunchProductValueReviewPacket,
+        '--integrated-experience-qa-packet',
+        paths.miniLaunchIntegratedExperienceQaPacket,
+        '--public-launch-readiness-packet',
+        paths.miniLaunchPublicLaunchReadinessPacket,
+        '--compact-footer-replacement-receipt',
+        paths.miniLaunchNullAudienceReplacementExecutionReceipt,
+        '--compact-footer-seed-preflight',
+        paths.miniLaunchNullAudienceSeedTestSendPreflight,
+        '--compact-footer-seed-ui-blocker',
+        paths.miniLaunchNullAudienceSeedTestSendExecutionReceipt,
+        '--current-state-refresh',
+        paths.currentStateRefresh,
+        '--goal-audit',
+        paths.goalAudit,
+        '--out',
+        paths.miniLaunchCeoReviewReadinessDelta,
+        '--markdown-out',
+        paths.miniLaunchCeoReviewReadinessDeltaMarkdown,
+      ],
+      'regenerate current mini-launch CEO review readiness delta from compact-footer seed execution evidence',
     ),
     command(
       'refresh_mini_launch_ceo_proposal_packet',

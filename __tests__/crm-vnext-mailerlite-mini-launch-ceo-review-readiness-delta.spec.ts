@@ -143,6 +143,31 @@ const completedUiReceipt = {
   operatorPolicy: partialUiBlocker.operatorPolicy,
 };
 
+const completedRecordUiSentReceipt = {
+  ok: true,
+  status: "mailerlite_null_audience_seed_test_send_completed_test_only",
+  mode: "record_ui_sent",
+  preflight: {
+    targetCount: 4,
+    qaGreenCount: 4,
+    safetyGroupActiveCount: 0,
+  },
+  targetPlan: ["E01", "E02", "E03", "E04"].map((label) => ({ label })),
+  sentTests: ["E01", "E02", "E03", "E04"].map((label) => ({ label })),
+  safety: {
+    testSendExecutionChannel: "mailerlite_ui_manual_assisted",
+    audienceSendsPerformed: false,
+    campaignsPublished: false,
+    campaignsScheduled: false,
+    subscribersRead: false,
+    subscriberMutationsPerformed: false,
+    additionalGroupsCreatedOrAssigned: false,
+    workflowMutationsPerformed: false,
+    exactUrlsPrinted: false,
+    tokensPrinted: false,
+  },
+};
+
 const baseInput = {
   productValueReviewPacket: productValueReadyPacket,
   publicLaunchReadinessPacket: publicClosedPacket,
@@ -217,7 +242,8 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
       "visual_signature_asset_not_verified",
       "compact_footer_remaining_seed_tests_unsent",
     ]));
-    expect(report.decisionBoundary.notAllowedWithoutFreshApprovalOrEvidence).toContain("use_screenshots_or_coordinates_for_ui_operation");
+    expect(report.decisionBoundary.notAllowedWithoutFreshApprovalOrEvidence)
+      .toContain("use_api_test_send_as_primary_route");
     expect(safetyClosed(report.safety)).toBe(true);
   });
 
@@ -235,5 +261,33 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
     expect(report.executiveSummary.liveActionAllowedNow).toBe(false);
     expect(report.gateMatrix.find((entry) => entry.id === "public_or_audience_send")?.status)
       .toBe("closed_not_ready_for_exact_public_send_approval");
+  });
+
+  test("treats final record_ui_sent execution receipt as complete seed execution evidence", () => {
+    const report = buildCeoReviewReadinessDelta({
+      ...baseInput,
+      integratedExperienceQaPacket: integratedReadyPacket,
+      compactFooterSeedUiBlocker: completedRecordUiSentReceipt,
+    });
+
+    expect(report.status).toBe("ceo_review_readiness_delta_ready_no_live_changes");
+    expect(report.executiveSummary).toMatchObject({
+      ceoReviewPackageReady: true,
+      compactFooterSeedExecutionComplete: true,
+      compactFooterSeedExecutionState: "complete_e01_e02_e03_e04",
+      sentLabels: ["E01", "E02", "E03", "E04"],
+      unsentLabels: [],
+      doNotResendLabels: ["E01", "E02", "E03", "E04"],
+    });
+    const seedGate = report.gateMatrix.find((entry) => entry.id === "compact_footer_seed_execution");
+    expect(seedGate?.evidence).toMatchObject({
+      evidenceKind: "record_ui_sent_execution_receipt",
+      finalReceiptStatus: "mailerlite_null_audience_seed_test_send_completed_test_only",
+      finalReceiptMode: "record_ui_sent",
+      testSendExecutionChannel: "mailerlite_ui_manual_assisted",
+    });
+    expect(report.decisionBoundary.notAllowedWithoutFreshApprovalOrEvidence)
+      .toContain("resend_any_compact_footer_seed_test");
+    expect(safetyClosed(report.safety)).toBe(true);
   });
 });
