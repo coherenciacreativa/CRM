@@ -170,7 +170,12 @@ action that a resumed Goal should continue before replanning.
   for `E01` only. A later retry recovered the MailerLite window and loaded the
   `E02` schedule page semantically after a fresh green preflight, but the
   `Send a test` control was not exposed as a semantic control for `E02`; no
-  seed was typed and no `E02` send occurred. Do not resend `E01`.
+  seed was typed and no `E02` send occurred. A second retry used a direct
+  Dashboard-to-Drafts semantic route, loaded the current compact-footer draft
+  list, returned to the `E02` schedule context, recovered the Drafts list with
+  Escape, and attempted the `Overview` route; the `Send a test` control still
+  was not exposed semantically for `E02`, so `E02`, `E03` and `E04` remain
+  unsent. Do not resend `E01`.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Generate or refresh a compact-footer seed-test preflight/approval packet
@@ -257,10 +262,14 @@ action that a resumed Goal should continue before replanning.
 - `live_gate_status`: partially consumed after approval. `E01` was sent through
   MailerLite UI by Computer Use semantic controls after fresh API re-scan, but
   `E02`, `E03` and `E04` remain unsent and the full `record_ui_sent` receipt
-  has not been created. Continue only after another fresh API re-scan and only
-  if Computer Use can operate the remaining test-send UI semantically. Queue
-  readiness is not approval. Public/audience sends, MailerLite publish/schedule,
-  subscribers, workflows, Shopify and CRM remain closed.
+  has not been created. A second Computer Use retry confirmed the direct
+  Dashboard/Drafts route is reachable semantically, but the `E02` test-send
+  control remains unavailable as a semantic control. Continue only after another
+  fresh API re-scan and only if Computer Use can operate the remaining
+  test-send UI semantically, or if Alejandro explicitly approves a different
+  test-send route. Queue readiness is not approval. Public/audience sends,
+  MailerLite publish/schedule, subscribers, workflows, Shopify and CRM remain
+  closed.
 - `human_boundary_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
