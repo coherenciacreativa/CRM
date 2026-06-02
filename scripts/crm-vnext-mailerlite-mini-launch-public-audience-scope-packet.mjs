@@ -508,7 +508,7 @@ const loadPacketFromFiles = async (options) => {
     readJsonWithDigest(options.onboardingV2DesignPacket, 'future audience eligibility group and migration blockers'),
     readJsonWithDigest(options.onboardingHandoffPolicy, 'mini-launch to onboarding boundary and audience eligible target'),
     readJsonWithDigest(options.miniLaunchGroupDryRun, 'receipt groups and active counts without subscriber rows'),
-    readJsonWithDigest(options.nullAudienceReplacementExecutionReceipt, 'current Null Audience safety draft assignment'),
+    readOptionalJsonWithDigest(options.nullAudienceReplacementExecutionReceipt, 'current Null Audience safety draft assignment'),
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox QA status as test-only evidence'),
     readJsonWithDigest(options.shopifyPublicUrlGate, 'URL lifecycle gate before any audience scope can be used'),
     readOptionalJsonWithDigest(options.publicAudienceScanPacket, 'fresh aggregate public/audience membership and suppression-status scan'),

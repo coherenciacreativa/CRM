@@ -181,41 +181,55 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02/`
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_null_audience_replacement_approval_boundary_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 Null Audience replacement approval packet checkpoint - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+
+## Active Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_null_audience_replacement_execution_boundary_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 footer compact v2 local render checkpoint - 2026-06-02`
-- `objective`: Prepare the next exact approval boundary for creating four new
-  MailerLite Null Audience replacement drafts using the corrected compact
-  footer v2 local render canon, while leaving existing compact-footer drafts
-  intact as no-use.
-- `why_now`: The received compact-footer seed emails proved that the first
-  compact footer still over-weighted the footer identity, duplicated the postal
-  address and repeated the typed name before the visual signature. The local v2
-  render now fixes those three issues and is green for all four emails, but no
-  MailerLite draft has been updated yet.
+- `source_checkpoint`: `Launch OS v0 compact footer v2 Null Audience replacement approval packet checkpoint - 2026-06-02`
+- `objective`: Wait for exact human approval, then run fresh MailerLite API
+  preflight and create exactly four new compact-footer v2 Null Audience
+  replacement drafts if every QA gate stays green.
+- `why_now`: Alejandro locally reviewed the v2 HTML and confirmed it works. The
+  v2 replacement approval packet is green with four targets, 0 blockers,
+  Null Audience recipe ready, local render ready, no visible link tokens and no
+  live mutations. Current State is green and treats the missing v2 execution
+  receipt as `pending_exact_approval_not_created_yet`, not as reusable compact
+  evidence. The remaining step is a MailerLite draft mutation, so it needs the
+  exact approval phrase from the v2 packet.
 - `allowed_scope`:
-  - Inspect the v2 render QA packet and generated local HTML.
-  - Generate or refresh a local-only replacement approval/preflight packet for
-    compact-footer v2 if needed.
-  - Refresh local Launch OS reports so Current State points at the v2 render
-    canon.
-  - Keep evidence redacted or hashed where campaigns, recipients, private URLs,
-    raw IDs or asset URLs appear.
-  - Ask for one exact human approval only if moving from local evidence to
-    MailerLite replacement draft creation.
+  - On exact approval only, run fresh API preflight for the four compact-footer
+    v2 replacement targets.
+  - Confirm the safety group is still empty with `active_count=0`.
+  - Confirm replacement draft names do not already exist.
+  - Create exactly four new MailerLite draft campaigns assigned exclusively to
+    the empty safety group.
+  - Keep old asset-ready and compact-footer drafts intact as no-use evidence.
+  - Delete drafts created by this execution if post-create QA fails.
+  - Generate local preflight/execution receipts with redacted/hash-only
+    evidence.
 - `forbidden_scope`:
-  - Do not create, edit or delete MailerLite drafts without a new exact
-    approval for the v2 replacement boundary.
+  - Do not proceed on vague approval such as `adelante`; require exact phrase.
   - Do not send or resend any test email from this boundary.
   - Do not reuse consumed asset-ready, E04-only, compact-footer replacement or
     compact-footer seed-test approvals.
   - Do not ask for or execute public/audience send approval from this boundary.
-  - No MailerLite publish, schedule, group/segment/subscriber/workflow mutation
-    or automation action.
+  - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
+    mutation or automation action.
   - No Shopify mutation, publish, theme push, live form wiring, public
     navigation or SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
@@ -224,50 +238,52 @@ action that a resumed Goal should continue before replanning.
 - `expected_files`:
   - `docs/crm-vnext/launch-os-next-action.md`
   - `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
-  - `scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs`
-  - `scripts/crm-vnext-mailerlite-mini-launch-email-asset-build.mjs`
-  - `scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs`
+  - `scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs`
+  - `scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs`
   - `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - `npm run crm:vnext:mailerlite-mini-launch-email-render-qa-packet -- --help`
+  - `npm run crm:vnext:mailerlite-mini-launch-null-audience-replacement-create -- --approval-packet <v2 packet> --email-render-qa <v2 render> --replacement-suffix "API Null Audience compact footer v2 canon" --out <v2 preflight path> --markdown-out <v2 preflight md>`
+  - Same command with `--execute --approval-phrase <exact phrase>` only after
+    exact approval is provided.
   - `npm run crm:vnext:mailerlite-launch-os-current-state-refresh -- --date 2026-06-02`
 - `validation_commands`:
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs`
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-email-asset-build.mjs`
-  - `node --check scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs`
   - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-email-asset-build.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
-- `live_gate_status`: The v2 correction is local-only. Existing compact-footer
-  replacement drafts and their consumed seed-test receipt remain historical
-  evidence/no-use for this visual issue. `publicSendApprovalReady=false` and
-  `liveActionAllowedNow=false`; public/audience sends, MailerLite
-  publish/schedule, subscribers, workflows, Shopify and CRM remain closed.
-- `human_boundary_id`: `mailerlite_footer_compact_v2_null_audience_replacement_approval_boundary_inteligencia_descansar`
-- `human_boundary_notification_status`: `not_needed`
+- `live_gate_status`: The v2 approval packet is local-only and not itself an
+  approval. Draft creation remains blocked until exact phrase is provided.
+  Test sends, public/audience sends, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
+- `human_boundary_id`: `mailerlite_footer_compact_v2_null_audience_replacement_execution_boundary_inteligencia_descansar`
+- `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - Any requested action would create/edit MailerLite drafts without new exact
-    v2 replacement approval.
-  - Any requested action would send or resend any email.
-  - Any requested action would publish, schedule, assign a real audience, mutate
-    subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
-    Store without a new exact approval.
-- `resume_instruction`: Continue from the v2 local render evidence. If the next
-  user instruction grants exact v2 replacement draft approval, run fresh API
-  QA/preflight first and create only the four new Null Audience replacement
-  drafts under that approval; otherwise stay local/report-only.
-- `completion_definition`: A later checkpoint records either a local-only v2
-  replacement approval/preflight packet, or an executed v2 replacement receipt
-  after exact approval, with old drafts left intact as no-use and no test sends
-  performed.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 Null Audience replacement boundary checkpoint - 2026-06-02`
+  - Exact approval phrase is missing or does not match the v2 packet.
+  - Fresh API preflight shows the safety group is not empty.
+  - Any replacement name already exists.
+  - Any source draft is no longer draft/available.
+  - Any created draft fails post-create QA or is not exclusively assigned to
+    the empty safety group.
+  - Any requested action would send/resend email, publish, schedule, assign a
+    real audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/
+    cards/scoring/Fact Store without a separate exact approval.
+- `resume_instruction`: If Alejandro provides the exact v2 approval phrase,
+  execute the fresh preflight and replacement-create route. If approval is not
+  exact, report the needed phrase and stop.
+- `completion_definition`: Four new compact-footer v2 Null Audience
+  replacement drafts exist in MailerLite, post-create QA is green, old drafts
+  remain intact as no-use, local preflight and execution receipts are generated,
+  and no test sends/public sends/publish/schedule/subscriber/workflow/Shopify/
+  CRM/ledger/card/scoring/Fact Store action occurred.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 Null Audience replacement drafts created - 2026-06-02`
 
 ## Stop/Change Conditions
 

@@ -253,6 +253,36 @@ describe("CRM vNext MailerLite mini-launch public send preflight decision packet
     });
   });
 
+  test("blocks explanation when the current replacement execution receipt is pending", () => {
+    const report = buildReport({
+      publicLaunchReadinessPacket: {
+        ...publicLaunchReadinessPacket,
+        executiveSummary: {
+          ...publicLaunchReadinessPacket.executiveSummary,
+          nullAudienceReplacementDraftsReady: false,
+        },
+      },
+      nullAudienceReplacementExecutionReceipt: null,
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.status).toBe("public_send_preflight_decision_packet_blocked_missing_evidence_no_live_changes");
+    expect(report.executiveSummary.replacementDraftsSafe).toBe(false);
+    expect(report.executiveSummary.decisionExplanationReady).toBe(false);
+    expect(report.blockersBeforeHumanExplanation).toContain("null_audience_replacement_drafts_not_safe");
+    expect(report.blockersBeforeHumanExplanation).toContain("public_launch_readiness_packet_not_aligned");
+    expect(report.executiveSummary.liveActionAllowedNow).toBe(false);
+    expect(report.safety).toMatchObject({
+      mailerLiteApiCalled: false,
+      mailerLiteMutationsPerformed: false,
+      subscribersRead: false,
+      sendsPerformed: false,
+      exactUrlsPrinted: false,
+      recipientsPrinted: false,
+      tokensPrinted: false,
+    });
+  });
+
   test("blocks explanation when exact URLs would be stored in the report", () => {
     const report = buildReport({
       assetManifest: {

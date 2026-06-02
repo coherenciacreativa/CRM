@@ -150,6 +150,10 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
         "{}\n",
       );
       writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
         join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json"),
         "{}\n",
       );
@@ -157,15 +161,86 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
         join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
         "{}\n",
       );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
 
       const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
 
       expect(paths.miniLaunchNullAudienceReplacementApprovalPacket).toBe(
-        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
       );
       expect(paths.miniLaunchNullAudienceReplacementExecutionReceipt).toBe(
-        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
       );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("does not treat old compact replacement execution as current when only v2 approval exists", () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-v2-replacement-pending-"));
+
+    try {
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+
+      const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
+
+      expect(paths.miniLaunchNullAudienceReplacementExecutionReceipt).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+      expect(paths.miniLaunchNullAudienceSeedTestSendExecutionReceipt).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+      expect(paths.miniLaunchNullAudienceSeedTestSendPreflight).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("summarizes pending v2 replacement execution as optional exact-approval evidence", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-v2-optional-replacement-"));
+
+    try {
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        `${JSON.stringify({
+          ok: true,
+          status: "mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes",
+          executiveSummary: {
+            canAskAlejandroForApproval: true,
+          },
+        })}\n`,
+      );
+
+      const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
+      const reports = await summarizeGeneratedReports(paths);
+
+      expect(reports.miniLaunchNullAudienceReplacementExecutionReceipt).toMatchObject({
+        status: "pending_exact_approval_not_created_yet",
+        ok: false,
+        optional: true,
+        pendingExactApproval: true,
+        mode: "not_run",
+      });
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -183,11 +258,26 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
         join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
         "{}\n",
       );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
 
       const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
 
       expect(paths.miniLaunchNullAudienceSeedTestSendExecutionReceipt).toBe(
-        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+      expect(paths.miniLaunchNullAudienceSeedTestSendPreflight).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
       );
     } finally {
       rmSync(dir, { recursive: true, force: true });

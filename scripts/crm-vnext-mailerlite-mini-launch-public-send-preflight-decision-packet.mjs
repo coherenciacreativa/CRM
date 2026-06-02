@@ -99,6 +99,37 @@ const readJsonWithDigest = async (path, consultedFor) => {
   };
 };
 
+const readOptionalJsonWithDigest = async (path, consultedFor) => {
+  const resolved = resolve(path);
+  try {
+    const raw = await readFile(resolved, 'utf8');
+    return {
+      value: JSON.parse(raw),
+      digest: {
+        path: resolved,
+        present: true,
+        private: false,
+        chars: raw.length,
+        sha256: sha256(raw),
+        consultedFor,
+      },
+    };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return {
+      value: null,
+      digest: {
+        path: resolved,
+        present: false,
+        private: false,
+        chars: 0,
+        sha256: null,
+        consultedFor,
+      },
+    };
+  }
+};
+
 const buildSafety = () => ({
   localOnly: true,
   reportsOnly: true,
@@ -358,7 +389,7 @@ const loadPacketFromFiles = async (options) => {
     readJsonWithDigest(options.publicAudienceScopePacket, 'audience-scope options and aggregate audience evidence'),
     readJsonWithDigest(options.publicAudienceSuppressionPolicyPacket, 'suppression/exclusion local policy'),
     readJsonWithDigest(options.publicLaunchReadinessPacket, 'current public launch readiness blockers'),
-    readJsonWithDigest(options.nullAudienceReplacementExecutionReceipt, 'current replacement draft Null Audience safety'),
+    readOptionalJsonWithDigest(options.nullAudienceReplacementExecutionReceipt, 'current replacement draft Null Audience safety'),
     readJsonWithDigest(options.nullAudienceSeedInboxQa, 'seed inbox QA status'),
   ]);
 

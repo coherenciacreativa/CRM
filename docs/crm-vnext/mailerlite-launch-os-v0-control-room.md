@@ -6547,3 +6547,68 @@ Operating meaning:
   would be a separate boundary after v2 replacement drafts exist and pass QA.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 Null Audience replacement approval packet checkpoint - 2026-06-02
+
+Status: active goal, local/report-only approval boundary prepared. Alejandro
+reviewed the local compact-footer v2 HTML and confirmed it works. The
+replacement approval packet now uses the v2 local render canon and a dedicated
+v2 replacement suffix, but it is not itself permission to mutate MailerLite.
+
+Evidence:
+
+- V2 replacement approval packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 replacement approval packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 local render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Current-state refresh: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Mantis digest: `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_compact_footer_v2_replacement_boundary_inteligencia_descansar_2026-06-02.json`
+- Current-state refresh routing: `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Approval packet status:
+  `mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes`.
+- Can ask Alejandro for approval: `true`.
+- Replacement target count: `4`.
+- Safety group active count observed in lab: `0`.
+- Null Audience recipe ready: `true`.
+- Local render ready: `true`.
+- Red check count: `0`.
+- Visible link token hits: `0`.
+- Plain-text fallback link token hits: `0`.
+- Final public links ready: `true`.
+- Public audience send URL gate ready: `false`.
+- Source campaign ID count: `4`.
+- Blocker count: `0`.
+- Approval scope description: `el footer compacto v2 canon`.
+- Current-state refresh status:
+  `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current replacement execution receipt status:
+  `pending_exact_approval_not_created_yet`.
+
+Safety:
+
+- This checkpoint was local/report-only.
+- UI opened: `false`.
+- MailerLite, Shopify and CRM live APIs called: `false`.
+- MailerLite drafts created or edited: `false`.
+- Test emails sent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Signal Ledger, CRM cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs, raw asset URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- `adelante` closed the local v2 approval packet, not the MailerLite mutation.
+- The next real boundary requires the exact approval phrase from the v2 packet.
+- Current State now points at the expected v2 receipt path and does not treat
+  old compact-footer replacement execution evidence as current.
+- After exact approval, run fresh API preflight, create exactly four v2 Null
+  Audience replacement drafts only if QA stays green, and generate a local
+  execution receipt.
+- No seed/test resend is approved yet. Seed tests become a later separate
+  boundary after the v2 drafts exist and pass post-create QA.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.

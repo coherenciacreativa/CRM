@@ -263,6 +263,39 @@ describe("CRM vNext MailerLite mini-launch CEO-review readiness delta", () => {
       .toBe("closed_not_ready_for_exact_public_send_approval");
   });
 
+  test("keeps CEO readiness blocked when compact-footer v2 replacement drafts are pending", () => {
+    const report = buildCeoReviewReadinessDelta({
+      ...baseInput,
+      integratedExperienceQaPacket: integratedReadyPacket,
+      compactFooterReplacementReceipt: null,
+      compactFooterSeedPreflight: null,
+      compactFooterSeedUiBlocker: null,
+    });
+
+    expect(report.status).toBe("ceo_review_readiness_delta_not_ready_no_live_changes");
+    expect(report.executiveSummary.ceoReviewPackageReady).toBe(false);
+    expect(report.executiveSummary.compactFooterDraftsReady).toBe(false);
+    expect(report.executiveSummary.compactFooterSeedPreflightGreen).toBe(false);
+    expect(report.executiveSummary.compactFooterSeedExecutionComplete).toBe(false);
+    expect(report.executiveSummary.readyForPilotDistributionDecisionNow).toBe(false);
+    expect(report.executiveSummary.nextSafeAction)
+      .toBe("get_exact_approval_then_create_compact_footer_v2_null_audience_replacement_drafts");
+    expect(report.executiveSummary.blockerIds).toEqual(expect.arrayContaining([
+      "compact_footer_replacement_receipt_not_green",
+      "fresh_compact_footer_seed_preflight_not_green",
+      "remaining_seed_tests_not_completed",
+    ]));
+    expect(report.gateMatrix.find((entry) => entry.id === "compact_footer_null_audience_drafts")).toMatchObject({
+      ready: false,
+      status: "blocked_or_unproven",
+    });
+    expect(report.gateMatrix.find((entry) => entry.id === "compact_footer_seed_preflight")).toMatchObject({
+      ready: false,
+      status: "blocked_or_stale",
+    });
+    expect(safetyClosed(report.safety)).toBe(true);
+  });
+
   test("treats final record_ui_sent execution receipt as complete seed execution evidence", () => {
     const report = buildCeoReviewReadinessDelta({
       ...baseInput,

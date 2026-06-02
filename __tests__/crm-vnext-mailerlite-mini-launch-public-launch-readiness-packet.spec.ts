@@ -211,6 +211,36 @@ describe("CRM vNext MailerLite mini-launch public launch readiness packet", () =
     });
   });
 
+  test("keeps public launch blocked when the current replacement execution receipt is pending", () => {
+    const report = buildPublicLaunchReadinessPacket({
+      assetManifest,
+      shopifyPublicUrlGate,
+      shopifyPreviewRouteExecutionReceipt,
+      publicAudienceScopePacket,
+      nullAudienceReplacementExecutionReceipt: null,
+      nullAudienceSeedInboxQa,
+      crmWriteApprovalPacket,
+      approvalQueue,
+      generatedAt: "2026-06-02T00:00:00.000Z",
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.status).toBe("mini_launch_public_launch_readiness_blocked_after_green_seed_qa_no_live_changes");
+    expect(report.executiveSummary.nullAudienceReplacementDraftsReady).toBe(false);
+    expect(report.executiveSummary.replacementDraftCount).toBe(null);
+    expect(report.blockersBeforePublicLaunch).toContain("null_audience_replacement_drafts_not_green");
+    expect(report.executiveSummary.readyForExactPublicSendApproval).toBe(false);
+    expect(report.executiveSummary.liveActionAllowedNow).toBe(false);
+    expect(report.safety).toMatchObject({
+      mailerLiteApiCalled: false,
+      mailerLiteMutationsPerformed: false,
+      sendsPerformed: false,
+      rawIdsPrinted: false,
+      recipientsPrinted: false,
+      tokensPrinted: false,
+    });
+  });
+
   test("treats CRM observed events and approval text as post-readiness boundaries, not pre-send blockers", () => {
     const report = buildPublicLaunchReadinessPacket({
       assetManifest: {

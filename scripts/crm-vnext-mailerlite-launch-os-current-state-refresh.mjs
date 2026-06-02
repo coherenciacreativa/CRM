@@ -464,11 +464,17 @@ const buildReportPaths = ({ date, reportsDir }) => {
       date,
     ),
     miniLaunchNullAudienceReplacementApprovalPacket: (() => {
+      const compactFooterV2PacketPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon',
+        date,
+      );
       const compactFooterPacketPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon',
         date,
       );
+      if (existsSync(compactFooterV2PacketPath)) return compactFooterV2PacketPath;
       return existsSync(compactFooterPacketPath)
         ? compactFooterPacketPath
         : miniLaunchReportPath(
@@ -478,6 +484,16 @@ const buildReportPaths = ({ date, reportsDir }) => {
         );
     })(),
     miniLaunchNullAudienceReplacementExecutionReceipt: (() => {
+      const compactFooterV2PacketPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon',
+        date,
+      );
+      const compactFooterV2ReceiptPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon',
+        date,
+      );
       const compactFooterReceiptPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon',
@@ -488,6 +504,8 @@ const buildReportPaths = ({ date, reportsDir }) => {
         'mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready',
         date,
       );
+      if (existsSync(compactFooterV2ReceiptPath)) return compactFooterV2ReceiptPath;
+      if (existsSync(compactFooterV2PacketPath)) return compactFooterV2ReceiptPath;
       if (existsSync(compactFooterReceiptPath)) return compactFooterReceiptPath;
       if (existsSync(assetReadyReceiptPath)) return assetReadyReceiptPath;
       return latestExistingMiniLaunchCurrentReportPath(
@@ -497,6 +515,16 @@ const buildReportPaths = ({ date, reportsDir }) => {
       );
     })(),
     miniLaunchNullAudienceSeedTestSendExecutionReceipt: (() => {
+      const compactFooterV2PacketPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon',
+        date,
+      );
+      const compactFooterV2ReceiptPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon',
+        date,
+      );
       const compactFooterReceiptPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_canon',
@@ -507,6 +535,8 @@ const buildReportPaths = ({ date, reportsDir }) => {
         'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready',
         date,
       );
+      if (existsSync(compactFooterV2ReceiptPath)) return compactFooterV2ReceiptPath;
+      if (existsSync(compactFooterV2PacketPath)) return compactFooterV2ReceiptPath;
       if (existsSync(compactFooterReceiptPath)) return compactFooterReceiptPath;
       if (existsSync(assetReadyReceiptPath)) return assetReadyReceiptPath;
       return latestExistingMiniLaunchCurrentReportPath(
@@ -516,6 +546,16 @@ const buildReportPaths = ({ date, reportsDir }) => {
       );
     })(),
     miniLaunchNullAudienceSeedTestSendPreflight: (() => {
+      const compactFooterV2PacketPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_v2_canon',
+        date,
+      );
+      const compactFooterV2PreflightPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon',
+        date,
+      );
       const compactFooterPreflightPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon',
@@ -526,6 +566,8 @@ const buildReportPaths = ({ date, reportsDir }) => {
         'mailerlite_mini_launch_null_audience_seed_test_send_preflight_asset_ready',
         date,
       );
+      if (existsSync(compactFooterV2PreflightPath)) return compactFooterV2PreflightPath;
+      if (existsSync(compactFooterV2PacketPath)) return compactFooterV2PreflightPath;
       if (existsSync(compactFooterPreflightPath)) return compactFooterPreflightPath;
       if (existsSync(assetReadyPreflightPath)) return assetReadyPreflightPath;
       return latestExistingMiniLaunchCurrentReportPath(
@@ -2089,6 +2131,12 @@ const summarizeGeneratedReports = async (paths) => {
     readOptionalJson(paths.validationReceipt),
   ]);
 
+  const pendingNullAudienceReplacementExecutionReceipt =
+    miniLaunchNullAudienceReplacementExecutionReceipt == null
+    && miniLaunchNullAudienceReplacementApprovalPacket?.status ===
+      'mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes'
+    && miniLaunchNullAudienceReplacementApprovalPacket?.executiveSummary?.canAskAlejandroForApproval === true;
+
   return {
     crmSignalProjectionPacket: {
       path: paths.miniLaunchCrmSignalProjectionPacket,
@@ -2489,9 +2537,14 @@ const summarizeGeneratedReports = async (paths) => {
     miniLaunchNullAudienceReplacementExecutionReceipt: {
       path: paths.miniLaunchNullAudienceReplacementExecutionReceipt,
       markdownPath: paths.miniLaunchNullAudienceReplacementExecutionReceiptMarkdown,
-      status: miniLaunchNullAudienceReplacementExecutionReceipt?.status ?? null,
-      ok: miniLaunchNullAudienceReplacementExecutionReceipt?.ok ?? null,
-      mode: miniLaunchNullAudienceReplacementExecutionReceipt?.mode ?? null,
+      status: miniLaunchNullAudienceReplacementExecutionReceipt?.status
+        ?? (pendingNullAudienceReplacementExecutionReceipt ? 'pending_exact_approval_not_created_yet' : null),
+      ok: miniLaunchNullAudienceReplacementExecutionReceipt?.ok
+        ?? (pendingNullAudienceReplacementExecutionReceipt ? false : null),
+      optional: pendingNullAudienceReplacementExecutionReceipt,
+      pendingExactApproval: pendingNullAudienceReplacementExecutionReceipt,
+      mode: miniLaunchNullAudienceReplacementExecutionReceipt?.mode
+        ?? (pendingNullAudienceReplacementExecutionReceipt ? 'not_run' : null),
       createdDraftCount: miniLaunchNullAudienceReplacementExecutionReceipt?.createdDrafts?.length ?? null,
       nullAudienceSafeCount:
         miniLaunchNullAudienceReplacementExecutionReceipt?.postCreateQa?.nullAudienceSafeCount ?? null,

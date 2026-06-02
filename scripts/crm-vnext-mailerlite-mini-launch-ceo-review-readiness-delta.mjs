@@ -106,6 +106,37 @@ const readJsonWithDigest = async (path, consultedFor) => {
   };
 };
 
+const readOptionalJsonWithDigest = async (path, consultedFor) => {
+  const resolved = resolve(path);
+  try {
+    const raw = await readFile(resolved, 'utf8');
+    return {
+      value: JSON.parse(raw),
+      digest: {
+        path: resolved,
+        present: true,
+        private: false,
+        chars: raw.length,
+        sha256: sha256(raw),
+        consultedFor,
+      },
+    };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return {
+      value: null,
+      digest: {
+        path: resolved,
+        present: false,
+        private: false,
+        chars: 0,
+        sha256: null,
+        consultedFor,
+      },
+    };
+  }
+};
+
 const buildSafety = () => ({
   localOnly: true,
   reportsOnly: true,
@@ -168,7 +199,8 @@ const executionReceiptSafetyGreen = (safety = {}) => safety.audienceSendsPerform
   && safety.exactUrlsPrinted === false
   && safety.tokensPrinted === false;
 
-const normalizeSeedExecutionEvidence = (seedEvidence = {}) => {
+const normalizeSeedExecutionEvidence = (seedEvidenceInput = {}) => {
+  const seedEvidence = seedEvidenceInput ?? {};
   const receiptSentLabels = labelsFromRows(seedEvidence.sentTests);
   const receiptTargetLabels = labelsFromRows(seedEvidence.targetPlan);
   const receiptUnsentLabels = EXPECTED_LABELS.filter((label) => !receiptSentLabels.includes(label));
@@ -299,7 +331,16 @@ const buildCeoReviewReadinessDelta = ({
   const ceoReviewPackageReady = productValueReady
     && integratedExperienceReady
     && compactFooterDraftsReady
+    && seedPreflightGreen
     && seedExecutionComplete;
+
+  const nextSafeAction = !compactFooterDraftsReady
+    ? 'get_exact_approval_then_create_compact_footer_v2_null_audience_replacement_drafts'
+    : !seedPreflightGreen
+      ? 'run_fresh_compact_footer_seed_preflight_after_replacement_drafts_exist'
+      : seedExecutionBlocked
+        ? 'choose_computer_use_retry_or_explicitly_approve_a_different_test_send_route_before_e02_e03_e04'
+        : 'rerun_seed_inbox_qa_then_integrated_experience_qa_before_distribution_decision';
 
   const gateMatrix = [
     buildGate({
@@ -421,6 +462,7 @@ const buildCeoReviewReadinessDelta = ({
           ? 'partial_e01_only_remaining_e02_e03_e04_blocked'
           : 'not_started_or_unproven',
       readyForPilotDistributionDecisionNow: integratedExperienceReady
+        && compactFooterDraftsReady
         && seedExecutionComplete
         && integratedSummary.canAskPilotDistributionDecisionNow === true,
       readyForPublicSendApprovalNow: false,
@@ -435,9 +477,7 @@ const buildCeoReviewReadinessDelta = ({
       sentLabels,
       unsentLabels,
       doNotResendLabels,
-      nextSafeAction: seedExecutionBlocked
-        ? 'choose_computer_use_retry_or_explicitly_approve_a_different_test_send_route_before_e02_e03_e04'
-        : 'rerun_seed_inbox_qa_then_integrated_experience_qa_before_distribution_decision',
+      nextSafeAction,
     },
     gateMatrix,
     decisionBoundary: {
@@ -573,9 +613,9 @@ const main = async () => {
     readJsonWithDigest(options.productValueReviewPacket, 'Product/Value CEO-review gate'),
     readJsonWithDigest(options.integratedExperienceQaPacket, 'integrated experience CEO-review gate'),
     readJsonWithDigest(options.publicLaunchReadinessPacket, 'public/audience send gate posture'),
-    readJsonWithDigest(options.compactFooterReplacementReceipt, 'compact-footer Null Audience replacement draft QA'),
-    readJsonWithDigest(options.compactFooterSeedPreflight, 'compact-footer seed-test fresh preflight evidence'),
-    readJsonWithDigest(options.compactFooterSeedUiBlocker, 'compact-footer seed-test semantic UI blocker, partial state, or final execution receipt'),
+    readOptionalJsonWithDigest(options.compactFooterReplacementReceipt, 'compact-footer Null Audience replacement draft QA'),
+    readOptionalJsonWithDigest(options.compactFooterSeedPreflight, 'compact-footer seed-test fresh preflight evidence'),
+    readOptionalJsonWithDigest(options.compactFooterSeedUiBlocker, 'compact-footer seed-test semantic UI blocker, partial state, or final execution receipt'),
     readJsonWithDigest(options.currentStateRefresh, 'Launch OS current-state no-live posture'),
     readJsonWithDigest(options.goalAudit, 'Launch OS goal audit posture'),
   ]);

@@ -267,6 +267,41 @@ describe("CRM vNext MailerLite mini-launch public audience scope packet", () => 
     });
   });
 
+  test("keeps scope blocked when the current Null Audience replacement execution receipt is pending", () => {
+    const report = buildPublicAudienceScopePacket({
+      miniLaunchOsPacket,
+      miniLaunchPathPacket,
+      onboardingTrunkMap,
+      onboardingV2DesignPacket,
+      onboardingHandoffPolicy,
+      miniLaunchGroupDryRun,
+      nullAudienceReplacementExecutionReceipt: null,
+      nullAudienceSeedInboxQa,
+      shopifyPublicUrlGate,
+      publicAudienceScanPacket,
+      publicAudienceSuppressionPolicyPacket,
+      generatedAt: "2026-06-02T00:00:00.000Z",
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.status).toBe("public_audience_scope_packet_ready_blocked_no_live_changes");
+    expect(report.executiveSummary.currentDraftAudience).toBe("null_audience_safety_group_only");
+    expect(report.executiveSummary.currentSafetyGroupName).toBe("CC · Safety · Null audience · DO NOT SEND");
+    expect(report.executiveSummary.currentSafetyGroupActiveCount).toBe(0);
+    expect(report.executiveSummary.publicAudienceScopeReady).toBe(false);
+    expect(report.executiveSummary.canAskAudienceScopeApprovalNow).toBe(false);
+    expect(report.executiveSummary.massSubscriberSendRecommendedNow).toBe(false);
+    expect(report.audienceAssignmentExecutionBlockers).toContain("current_drafts_point_only_to_empty_safety_group");
+    expect(report.safety).toMatchObject({
+      mailerLiteApiCalled: false,
+      mailerLiteMutationsPerformed: false,
+      sendsPerformed: false,
+      rawIdsPrinted: false,
+      recipientsPrinted: false,
+      tokensPrinted: false,
+    });
+  });
+
   test("consumes a local suppression policy packet and removes only that policy blocker", () => {
     const report = buildPublicAudienceScopePacket({
       miniLaunchOsPacket,
