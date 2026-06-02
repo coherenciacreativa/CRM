@@ -104,8 +104,10 @@ const parseTargetLabels = (value) => [...new Set(String(value ?? '')
 const buildE01CanaryApprovalPhrase = () =>
   `Apruebo crear por API únicamente 1 borrador canario de reemplazo para E01 del mini-lanzamiento Inteligencia para descansar en MailerLite, asignado solo al grupo vacío de seguridad ${SAFETY_GROUP_NAME} con active_count=0, usando el HTML local QA-green con firma visual, CTA en href y fallback sin URLs/tokens visibles, reemplazando en memoria solo el token redacted final_public_link_ready_redacted:result_or_resource_link por la URL preview unlisted/noindex ya registrada, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify adicional, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar el borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si el borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.`;
 const canaryTargetLabelsSupported = (labels = []) => labels.length === 1 && labels[0] === 'E01';
-const expectedApprovalPhraseFor = (labels = []) =>
-  canaryTargetLabelsSupported(labels) ? buildE01CanaryApprovalPhrase() : buildExactApprovalPhrase();
+const expectedApprovalPhraseFor = (labels = [], approvalPacket = null) =>
+  canaryTargetLabelsSupported(labels)
+    ? buildE01CanaryApprovalPhrase()
+    : cleanString(approvalPacket?.decision?.exactApprovalPhrase) ?? buildExactApprovalPhrase();
 const replacementDraftNameWithSuffix = (name, suffix) => {
   const cleanName = cleanString(name);
   const cleanSuffix = cleanString(suffix);
@@ -546,7 +548,7 @@ const targetRecords = async ({
 
 const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, approvalPhrase, targetLabels = [] }) => {
   const blockers = [];
-  const expectedPhrase = expectedApprovalPhraseFor(targetLabels);
+  const expectedPhrase = expectedApprovalPhraseFor(targetLabels, approvalPacket);
   const approvalPacketExpectedPhrase = buildExactApprovalPhrase();
   const expectedTargetCount = targetLabels.length || 4;
   const approvalMatched = normalizeApprovalPhrase(approvalPhrase) === normalizeApprovalPhrase(expectedPhrase);
@@ -570,7 +572,10 @@ const buildPreflight = ({ approvalPacket, targets, groups, campaigns, execute, a
   if (approvalPacket?.executiveSummary?.canAskAlejandroForApproval !== true) blockers.push('approval_packet_cannot_ask_approval_now');
   if (approvalPacket?.decision?.packetIsApprovalByItself !== false) blockers.push('approval_packet_self_authorizes_unexpectedly');
   if (approvalPacket?.decision?.canCreateReplacementDraftsNow !== false) blockers.push('approval_packet_create_gate_unexpectedly_open');
-  if (normalizeApprovalPhrase(approvalPacket?.decision?.exactApprovalPhrase) !== normalizeApprovalPhrase(approvalPacketExpectedPhrase)) {
+  if (!canaryTargetLabelsSupported(targetLabels) && !cleanString(approvalPacket?.decision?.exactApprovalPhrase)) {
+    blockers.push('approval_packet_exact_phrase_missing');
+  }
+  if (canaryTargetLabelsSupported(targetLabels) && normalizeApprovalPhrase(approvalPacket?.decision?.exactApprovalPhrase) !== normalizeApprovalPhrase(approvalPacketExpectedPhrase)) {
     blockers.push('approval_packet_exact_phrase_mismatch');
   }
   if (approvalPacket?.safety?.mailerLiteApiCalled !== false) blockers.push('approval_packet_reports_mailerlite_api_call');

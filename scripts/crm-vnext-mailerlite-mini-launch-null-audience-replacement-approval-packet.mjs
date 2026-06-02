@@ -14,6 +14,7 @@ const DEFAULT_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlit
 const DEFAULT_MARKDOWN_OUTPUT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-05-31.md';
 const SAFETY_GROUP_NAME = 'CC · Safety · Null audience · DO NOT SEND';
 const REPLACEMENT_SUFFIX = 'API Null Audience CTA fallback repair';
+const DEFAULT_APPROVAL_SCOPE_DESCRIPTION = null;
 const PLACEHOLDERS = [
   'result_or_resource_link_placeholder',
   'practice_link_placeholder',
@@ -31,6 +32,7 @@ Options:
   --null-audience-lab <path>                   Completed MailerLite API Null Audience lab receipt. Defaults to ${DEFAULT_NULL_AUDIENCE_LAB}
   --real-mailerlite-render-qa <path>           Existing real MailerLite draft QA with source campaign IDs. Defaults to ${DEFAULT_REAL_MAILERLITE_RENDER_QA}
   --replacement-suffix <text>                  Suffix for replacement draft names. Defaults to ${REPLACEMENT_SUFFIX}
+  --approval-scope-description <text>          Optional phrase qualifier for a fresh exact approval, e.g. compact footer canon
   --out <path>                                 Write JSON approval packet. Defaults to ${DEFAULT_OUTPUT}
   --markdown-out <path>                        Write Markdown approval packet. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                                       Show this help
@@ -59,6 +61,7 @@ const parseArgs = (argv) => {
     nullAudienceLab: DEFAULT_NULL_AUDIENCE_LAB,
     realMailerLiteRenderQa: DEFAULT_REAL_MAILERLITE_RENDER_QA,
     replacementSuffix: REPLACEMENT_SUFFIX,
+    approvalScopeDescription: DEFAULT_APPROVAL_SCOPE_DESCRIPTION,
     out: DEFAULT_OUTPUT,
     markdownOut: DEFAULT_MARKDOWN_OUTPUT,
     help: false,
@@ -73,6 +76,7 @@ const parseArgs = (argv) => {
     else if (arg === '--null-audience-lab') options.nullAudienceLab = argv[++index];
     else if (arg === '--real-mailerlite-render-qa') options.realMailerLiteRenderQa = argv[++index];
     else if (arg === '--replacement-suffix') options.replacementSuffix = argv[++index];
+    else if (arg === '--approval-scope-description') options.approvalScopeDescription = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
     else if (arg === '--markdown-out') options.markdownOut = argv[++index];
     else throw new Error(`unknown_arg:${arg}`);
@@ -145,8 +149,13 @@ const buildSafety = () => ({
   tokensPrinted: false,
 });
 
-const buildExactApprovalPhrase = () =>
-  `Apruebo crear por API únicamente 4 nuevos borradores de reemplazo del mini-lanzamiento Inteligencia para descansar en MailerLite, asignados solo al grupo vacío de seguridad ${SAFETY_GROUP_NAME} con active_count=0, usando los 4 HTML locales QA-green con CTA en href y fallback de texto sin URLs/tokens visibles, y reemplazando en memoria solo los tokens redacted final_public_link_ready_redacted:* por las URLs preview unlisted/noindex ya registradas en el Shopify preview route execution receipt, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar cualquier borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si cualquier borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.`;
+const approvalScopeClause = (approvalScopeDescription) => {
+  const scope = cleanString(approvalScopeDescription);
+  return scope ? ` para aplicar ${scope}` : '';
+};
+
+const buildExactApprovalPhrase = ({ approvalScopeDescription = DEFAULT_APPROVAL_SCOPE_DESCRIPTION } = {}) =>
+  `Apruebo crear por API únicamente 4 nuevos borradores de reemplazo${approvalScopeClause(approvalScopeDescription)} del mini-lanzamiento Inteligencia para descansar en MailerLite, asignados solo al grupo vacío de seguridad ${SAFETY_GROUP_NAME} con active_count=0, usando los 4 HTML locales QA-green con CTA en href y fallback de texto sin URLs/tokens visibles, y reemplazando en memoria solo los tokens redacted final_public_link_ready_redacted:* por las URLs preview unlisted/noindex ya registradas en el Shopify preview route execution receipt, sin enviar correos, sin publicar, sin programar, sin workflows, sin subscribers, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; dejar los borradores viejos intactos como no-use, borrar cualquier borrador creado por esta ejecución si el post-create QA falla, detenerse si el grupo no está vacío o si cualquier borrador no queda apuntando exclusivamente a ese grupo, y generar re-scan fresco y recibo local.`;
 
 const rowByStep = (rows = []) => new Map(rows.map((row) => [Number(row?.step), row]).filter(([step]) => Number.isFinite(step)));
 const campaignIdFor = (row) => cleanString(row?.campaignId);
@@ -223,6 +232,7 @@ const buildPacket = ({
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
   replacementSuffix = REPLACEMENT_SUFFIX,
+  approvalScopeDescription = DEFAULT_APPROVAL_SCOPE_DESCRIPTION,
 }) => {
   const blockers = [];
   const safety = buildSafety();
@@ -329,7 +339,8 @@ const buildPacket = ({
     decision: {
       packetIsApprovalByItself: false,
       canCreateReplacementDraftsNow: false,
-      exactApprovalPhrase: buildExactApprovalPhrase(),
+      approvalScopeDescription: cleanString(approvalScopeDescription),
+      exactApprovalPhrase: buildExactApprovalPhrase({ approvalScopeDescription }),
       exactApprovalPhrasePrintedByConsole: false,
       allowedAfterExactApproval: [
         `read MailerLite groups and confirm ${SAFETY_GROUP_NAME} exists with active_count=0`,
@@ -473,6 +484,7 @@ const main = async () => {
       })),
     ],
     replacementSuffix: options.replacementSuffix,
+    approvalScopeDescription: options.approvalScopeDescription,
   });
 
   await writeOutputs(packet, options);

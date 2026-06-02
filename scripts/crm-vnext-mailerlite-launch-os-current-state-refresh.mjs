@@ -466,6 +466,20 @@ const buildReportPaths = ({ date, reportsDir }) => {
           date,
         );
     })(),
+    miniLaunchNullAudienceSeedTestSendExecutionReceipt: (() => {
+      const assetReadyReceiptPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_asset_ready',
+        date,
+      );
+      return existsSync(assetReadyReceiptPath)
+        ? assetReadyReceiptPath
+        : latestExistingMiniLaunchCurrentReportPath(
+          reportsDir,
+          'mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt',
+          date,
+        );
+    })(),
     miniLaunchNullAudienceSeedInboxQa: latestExistingMiniLaunchCurrentReportPath(
       reportsDir,
       'mailerlite_mini_launch_null_audience_seed_inbox_qa',
@@ -1266,6 +1280,8 @@ const buildReportCommands = (paths, validationResult) => {
         paths.miniLaunchNullAudienceReplacementApprovalPacket,
         '--mini-launch-null-audience-replacement-execution-receipt',
         paths.miniLaunchNullAudienceReplacementExecutionReceipt,
+        '--mini-launch-null-audience-seed-test-send-execution-receipt',
+        paths.miniLaunchNullAudienceSeedTestSendExecutionReceipt,
         '--mini-launch-null-audience-seed-inbox-qa',
         paths.miniLaunchNullAudienceSeedInboxQa,
         '--mini-launch-mailerlite-api-existing-draft-update-strategy',

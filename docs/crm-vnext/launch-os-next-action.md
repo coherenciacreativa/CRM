@@ -113,29 +113,40 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02/`
 
+- `next_action_id`: `mailerlite_footer_compact_null_audience_replacement_approval_boundary_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer Null Audience approval boundary checkpoint - 2026-06-02`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+
 ## Active Next Action
 
-- `next_action_id`: `mailerlite_footer_compact_null_audience_replacement_approval_boundary_inteligencia_descansar`
+- `next_action_id`: `mailerlite_footer_compact_null_audience_replacement_execution_boundary_inteligencia_descansar`
 - `status`: `blocked`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 footer compact canon local render checkpoint - 2026-06-02`
-- `objective`: Stop at the next exact approval boundary before applying the
-  compact footer canon to real MailerLite Null Audience drafts.
-- `why_now`: The current seed inbox evidence is green for delivery, but
-  Alejandro's screenshot showed the author/legal footer overpowering the email
-  body. Local render QA now proves a compact footer hierarchy for all four
-  emails. Existing MailerLite drafts and received seed messages still reflect
-  the prior footer scale, so artifact/CEO-readiness QA should not proceed from
-  those stale visuals.
+- `source_checkpoint`: `Launch OS v0 compact footer Null Audience approval boundary checkpoint - 2026-06-02`
+- `objective`: Stop before executing the approved-only API creation of four new
+  compact-footer Null Audience replacement drafts.
+- `why_now`: Local compact-footer render QA is green and fresh read-only
+  MailerLite preflight confirms the Null Audience safety group is empty and the
+  new compact-footer replacement names do not collide. Existing asset-ready seed
+  evidence remains delivery-green but visually stale for footer scale, so the
+  next live-adjacent edge is draft replacement, not another seed/test send.
 - `allowed_scope`:
-  - Explain the compact footer local QA result.
-  - Prepare a redacted approval packet for creating a new compact-footer Null
-    Audience replacement set or updating only safe draft replacements, after
-    fresh MailerLite API preflight.
-  - Keep the replacement strategy aligned with the existing Launch OS pattern:
-    Null Audience only, draft-only, safety group active count `0`, rollback or
-    stop on failed QA.
+  - Explain the compact-footer approval packet and read-only preflight result.
+  - If Alejandro later provides the exact compact-footer approval phrase from
+    the packet, execute only the existing guarded Null Audience replacement
+    runner with the compact-footer packet, compact render QA and compact suffix.
+  - After execution, verify all four created drafts remain draft-only and point
+    exclusively to `CC · Safety · Null audience · DO NOT SEND` with
+    `active_count=0`.
+  - Stop after creation/post-create QA and refresh local evidence; seed-test
+    approval remains a later separate boundary.
   - Keep all evidence redacted and hashed where receipts identify campaigns,
     groups, recipients, private URLs or Gmail messages.
 - `forbidden_scope`:
@@ -144,8 +155,10 @@ action that a resumed Goal should continue before replanning.
   - Do not rerun the consumed four-email seed-test approval.
   - Do not perform artifact/CEO-readiness QA from the stale oversized-footer
     seed evidence.
-  - No MailerLite draft creation, draft edit, test send, publish, schedule or
-    audience action without a fresh exact approval for that separate boundary.
+  - No MailerLite draft creation or draft edit without the fresh exact
+    compact-footer approval phrase from the packet.
+  - No MailerLite test send, public/audience send, publish or schedule from
+    this boundary.
   - No Shopify additional mutation, publish, theme push, live form wiring or
     public navigation/SEO promotion.
   - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
@@ -166,21 +179,25 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_e04_seed_resend_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
-  - A new compact-footer replacement approval packet, if generated.
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - Fresh MailerLite API read-only preflight only when preparing the exact
-    compact-footer draft replacement/update approval packet.
+  - Fresh MailerLite API read-only preflight before any compact-footer execution.
+  - `npm run crm:vnext:mailerlite-mini-launch-null-audience-replacement-create -- --approval-packet /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json --email-render-qa /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json --replacement-suffix "API Null Audience compact footer canon" --execute --approval-phrase "<exact compact-footer phrase>"`
   - Local report generation commands that do not call MailerLite, Shopify, CRM,
     ledgers, cards, scoring or Fact Store.
 - `validation_commands`:
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
-  - Focused syntax/tests for any touched local scripts.
 - `live_gate_status`: blocked until Alejandro gives a new exact compact-footer
-  MailerLite draft replacement/update approval. Public/audience sends,
-  MailerLite test sends, subscribers, workflows, Shopify and CRM remain closed.
+  MailerLite draft replacement approval. Public/audience sends, MailerLite test
+  sends, subscribers, workflows, Shopify and CRM remain closed.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
@@ -192,13 +209,15 @@ action that a resumed Goal should continue before replanning.
     mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store without a new exact approval.
 - `resume_instruction`: Continue from the compact footer local render QA. Do
-  not recreate the prior asset-ready drafts, do not rerun either consumed
+  not recreate the prior asset-ready drafts unless the exact compact-footer
+  phrase is provided for the new compact set, do not rerun either consumed
   seed-test approval, and do not perform artifact/CEO-readiness QA from the
   stale oversized-footer seed messages.
-- `completion_definition`: A redacted approval packet exists for the next
-  exact human decision: create/update compact-footer Null Audience drafts only,
-  with no sends and no live audience/workflow/subscriber/Shopify/CRM effects.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer Null Audience approval boundary checkpoint - 2026-06-02`
+- `completion_definition`: The compact-footer replacement execution receipt is
+  green for four newly created Null Audience drafts, with no sends and no live
+  audience/workflow/subscriber/Shopify/CRM effects; current-state evidence is
+  refreshed; the next action stops before any compact-footer seed-test approval.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer Null Audience replacement drafts created - 2026-06-02`
 
 ## Stop/Change Conditions
 

@@ -5705,3 +5705,52 @@ Operating meaning:
 - Existing MailerLite asset-ready drafts and received seed messages still reflect the prior oversized footer; do not use them for final artifact/CEO-readiness QA.
 - The next real boundary is a separate exact approval to create or update compact-footer Null Audience draft replacements after fresh API preflight.
 - Do not resend tests, ask for public/audience send, or claim CEO-review readiness until compact-footer drafts and fresh seed evidence exist under their own approval gates.
+
+## Launch OS v0 compact footer Null Audience approval boundary checkpoint - 2026-06-02
+
+Status: active goal, compact-footer local render QA has been promoted into a fresh Null Audience replacement approval boundary. A new redacted approval packet and a fresh MailerLite API read-only preflight are green for creating a new compact-footer replacement draft set. No MailerLite draft was created or edited, no test email was sent, and no audience/public action was performed by this checkpoint.
+
+Evidence:
+
+- Compact-footer approval packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Compact-footer approval packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Compact-footer read-only preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Compact-footer read-only preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Compact-footer local render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Current-state refresh JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Current approval queue JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Approval packet: `ok=true`, `status=mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes`.
+- Approval packet scope: new exact approval phrase is specific to applying `el footer compacto canon`; this prevents reuse of the already consumed asset-ready draft creation approval.
+- Replacement target count: `4`; blocker count: `0`.
+- Local render evidence: compact-footer QA green, `redCheckCount=0`, `localRenderReady=true`, `seedSendReady=false`, `publicUseReady=false`.
+- Read-only MailerLite preflight: `ok=true`, `status=mailerlite_null_audience_replacement_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- MailerLite preflight read counts: groups read `90`, campaigns read `43`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`, observed active count `0`.
+- Replacement name collision count: `0`.
+- Drafts created in this checkpoint: `0`.
+- Approval queue after refresh: `readyApprovalRequestCount=0`, `readyApprovalIds=[]`, `blockedApprovalIds=["crm_signal_writes"]`, `openLiveMutationGateCount=0`; the stale seed-test request is no longer queued.
+- Current-state refresh: `status=mailerlite_launch_os_current_state_refresh_ready_no_live_changes`, `testFiles=38`, `testCount=239`, `liveGatesClosed=true`.
+
+Safety:
+
+- MailerLite API called only for the read-only preflight: `true`.
+- MailerLite drafts created or edited: `0`.
+- MailerLite mutations performed: `false`.
+- Test sends, audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact preview URLs, raw campaign/group IDs, raw recipients, sender values and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The next exact human boundary is compact-footer replacement draft creation only.
+- The execution, if later approved with the exact phrase from the packet, must use the existing guarded API Null Audience replacement runner with the compact-footer approval packet, compact render QA and suffix `API Null Audience compact footer canon`.
+- This boundary does not authorize any seed/test email. After compact-footer drafts exist and post-create QA is green, seed testing remains a later separate exact approval.
+- Do not use the asset-ready seed inbox messages for final artifact/CEO-readiness QA, because they are delivery-green but visually stale for footer scale.
+- Continue to block public/audience sends, publish/schedule, workflows, subscribers, Shopify live changes, CRM writes, ledgers, cards, scoring and Fact Store.

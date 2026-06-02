@@ -247,6 +247,65 @@ describe("CRM vNext MailerLite Null Audience replacement route", () => {
     expect(preflight.targetPlan[0]._exactPreviewUrlForRun).toBe(exactUrl);
   });
 
+  test("preflight accepts a fresh scoped approval phrase from the packet", () => {
+    const scopedPhrase = buildExactApprovalPhrase({
+      approvalScopeDescription: "el footer compacto canon",
+    });
+    const targets = [1, 2, 3, 4].map((step) => ({
+      step,
+      label: `E0${step}`,
+      role: step === 4 ? "invitation_or_feedback" : "delivery_and_orientation",
+      subject: `S${step}`,
+      sourceCampaignId: `c${step}`,
+      sourceCampaignIdSha256: `hash-c${step}`,
+      replacementDraftName: `Draft E0${step} · API Null Audience compact footer canon`,
+      correctedHtml: step === 4
+        ? "<p>reply</p>".repeat(20)
+        : `<p>final_public_link_ready_redacted:result_or_resource_link</p>`.repeat(3),
+      correctedHtmlPath: `/tmp/e0${step}.html`,
+      correctedHtmlStats: htmlStats(step === 4
+        ? "<p>reply</p>".repeat(20)
+        : "final_public_link_ready_redacted:result_or_resource_link"),
+      finalPublicLinkKey: step === 4 ? null : "result_or_resource_link",
+      exactPreviewUrl: step === 4 ? null : "https://example.test/result",
+      expectedFinalPublicUrlSha256: step === 4
+        ? null
+        : "84bf31001f25fa12068d8dc53ffb65a66f76cf0c9d608846d9879c756f67de70",
+    }));
+
+    const preflight = buildPreflight({
+      approvalPacket: {
+        ok: true,
+        status: "mailerlite_null_audience_replacement_approval_packet_ready_for_exact_human_approval_no_live_changes",
+        executiveSummary: {
+          canAskAlejandroForApproval: true,
+        },
+        decision: {
+          packetIsApprovalByItself: false,
+          canCreateReplacementDraftsNow: false,
+          exactApprovalPhrase: scopedPhrase,
+        },
+        safety: {
+          mailerLiteApiCalled: false,
+          mailerLiteMutationsPerformed: false,
+          sendsPerformed: false,
+          exactUrlsPrinted: false,
+          tokensPrinted: false,
+        },
+      },
+      targets,
+      groups: [{ id: "group-null", name: SAFETY_GROUP_NAME, active_count: 0 }],
+      campaigns: [],
+      execute: true,
+      approvalPhrase: scopedPhrase,
+    });
+
+    expect(scopedPhrase).toContain("para aplicar el footer compacto canon");
+    expect(scopedPhrase).not.toBe(buildExactApprovalPhrase());
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.blockers).toEqual([]);
+  });
+
   test("preflight supports the E01 canary approval without opening the full four-draft route", () => {
     const exactUrl = "https://example.test/result";
     const targets = [{
