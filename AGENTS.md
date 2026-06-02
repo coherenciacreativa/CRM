@@ -6,6 +6,22 @@
 - In every new session, assume strict mode is ON unless the user explicitly asks to disable it for that session.
 - Before any credential task, restate: `Strict secret mode ON (no secret output, no env dumps).`
 
+## Project Routing: Launch OS Work
+
+For Launch OS, MailerLite, microproduct market-learning, or Goals/play resume
+work, use the Launch OS context routing docs before broad hydration:
+
+1. `docs/crm-vnext/launch-os-codex-profile.md`
+2. `docs/crm-vnext/launch-os-next-action.md`
+3. `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
+
+Do not deep-read OpenClaw/Mantis soul, identity, broad memory, or unrelated
+repos by default for routine Launch OS development. Escalate only when the
+Codex Profile or active next action calls for it.
+
+This routing does not weaken strict secret mode, live-gate discipline, exact
+approval requirements, or the prohibition on printing secrets.
+
 ## Strict Secret Mode Rules
 
 1. Never print secret values to terminal output or chat.
@@ -50,4 +66,3 @@ If a secret is printed or pasted accidentally:
 2. Treat the secret as compromised.
 3. Rotate and revoke it.
 4. Record the incident and remediation.
-

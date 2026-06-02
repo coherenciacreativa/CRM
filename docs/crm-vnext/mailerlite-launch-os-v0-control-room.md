@@ -16,9 +16,11 @@ Build MailerLite Launch OS v0: a safe, documented, tested architecture for onboa
 
 ## Goal/play resume pointer
 
-Goal/play resumes should consult `docs/crm-vnext/launch-os-next-action.md`
-before replanning. The Control Room remains the historical ledger; the next
-action contract is the active pointer for the first move after resume.
+Goal/play resumes should consult `docs/crm-vnext/launch-os-codex-profile.md`
+for hydration scope, then `docs/crm-vnext/launch-os-next-action.md` before
+replanning. The Control Room remains the historical ledger; the Codex Profile
+routes context, and the next action contract is the active pointer for the
+first move after resume.
 
 ## Operating principles
 

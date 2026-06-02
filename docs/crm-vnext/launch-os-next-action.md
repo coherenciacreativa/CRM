@@ -10,17 +10,22 @@ This file does not replace the Control Room, current-state refresh, operator
 runbook, continuation guard, approval queue or validation receipt. It is the
 small active pointer that tells the next run what to do first.
 
+Use `docs/crm-vnext/launch-os-codex-profile.md` as the context-routing filter
+for Goals/play resumes before broad hydration. This file remains the tactical
+active pointer once the profile has set the hydration lane.
+
 ## Resume Policy
 
 On each Goal/play resume:
 
-1. Read this file first.
-2. Read the latest relevant checkpoint in
+1. Apply `docs/crm-vnext/launch-os-codex-profile.md` for hydration scope.
+2. Read this file as the active next-action pointer.
+3. Read the latest relevant checkpoint in
    `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`.
-3. Check `git status --short`.
-4. Continue the active `next_action_id` unless one of the stop/change
+4. Check `git status --short`.
+5. Continue the active `next_action_id` unless one of the stop/change
    conditions applies.
-5. If choosing a different next action, explain why before editing files.
+6. If choosing a different next action, explain why before editing files.
 
 ## Existing Related Controls
 
