@@ -336,14 +336,16 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     expect(html).toContain("Si no quieres recibir más correos, puedes darte de baja aquí:");
     expect(html).toContain('href="{$unsubscribe}"');
     expect(html).toContain("Darme de baja");
-    expect(html).toContain(".footer-name { margin: 0 0 8px; font-family: Georgia, serif; font-size: 24px;");
-    expect(html).toContain(".footer-bio { margin: 0 0 16px; font-size: 14px;");
+    expect(html).toContain(".footer-name { margin: 0 0 6px; font-family: Georgia, serif; font-size: 20px;");
+    expect(html).toContain(".footer-bio { margin: 0 0 14px; font-size: 13px;");
     expect(html).toContain(".footer-unsubscribe { margin: 0 0 4px; font-size: 12px;");
     expect(html).toContain(".footer-link { font-size: 12px;");
-    expect(html).toContain(".footer-address { margin: 18px 0 0; font-size: 11px;");
+    expect(html).not.toContain(".footer-address");
     expect(html).not.toContain("font-size: 34px");
-    expect(html).toContain("Finca el Amanecer, vereda Alatania, Subachoque");
-    expect(html).toContain("Colombia");
+    expect(html).not.toContain("Finca el Amanecer, vereda Alatania, Subachoque");
+    expect(html).not.toContain("Finca el Amanecer, vereda Altania, Subachoque");
+    expect(html).not.toContain("Un abrazo, Alejandro");
+    expect(html).toContain("<p>Un abrazo,</p>");
     expect(html).not.toContain('<span class="placeholder-note">result_or_resource_link_placeholder</span>');
     expect(html).not.toContain("Recibes este correo porque pediste recursos de Coherencia Creativa");
     expect(html).not.toContain("<script");
@@ -371,7 +373,7 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
       width: 189,
     });
     expect(html).toContain('class="signature-image"');
-    expect(html).toContain('alt="Firma de Alejandro"');
+    expect(html).toContain('alt=""');
     expect(html).toContain('data-signature-asset-sha256="f4af67564b7ca921fafc612eb7eaeaecab3f1e1148e85a7cb111fb7195adfab8"');
     expect(html).toContain('src="https://storage.mlcdn.com/account/signature.png"');
     expect(html).not.toContain('<p class="signature">Alejandro</p>');

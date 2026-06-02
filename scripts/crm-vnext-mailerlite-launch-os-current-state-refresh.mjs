@@ -394,11 +394,17 @@ const buildReportPaths = ({ date, reportsDir }) => {
       date,
     ),
     miniLaunchEmailRenderQa: (() => {
+      const compactFooterV2RenderQaPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon',
+        date,
+      );
       const compactFooterRenderQaPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_email_render_qa_footer_compact_canon',
         date,
       );
+      if (existsSync(compactFooterV2RenderQaPath)) return compactFooterV2RenderQaPath;
       return existsSync(compactFooterRenderQaPath)
         ? compactFooterRenderQaPath
         : latestExistingMiniLaunchDatedReportPath(

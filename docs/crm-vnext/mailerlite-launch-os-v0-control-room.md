@@ -6484,3 +6484,66 @@ Operating meaning:
   evidence is reviewed.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 footer compact v2 local render checkpoint - 2026-06-02
+
+Status: active goal, local/report-only correction. Alejandro reviewed a received
+compact-footer test email and found three visual/copy issues: the postal address
+appeared in the custom footer and again in the MailerLite platform footer, the
+footer identity name still felt too large, and the typed closing repeated
+`Alejandro` immediately before the visual signature. The local email canon now
+has a compact-footer v2 render for all four emails.
+
+Evidence:
+
+- Footer v2 render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Footer v2 render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- Footer v2 render directory: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02/`
+- Email asset builder: `scripts/crm-vnext-mailerlite-mini-launch-email-asset-build.mjs`
+- Email builder payload manifest: `scripts/crm-vnext-mailerlite-mini-launch-email-builder-payload-manifest.mjs`
+- Email render QA packet: `scripts/crm-vnext-mailerlite-mini-launch-email-render-qa-packet.mjs`
+- Current-state refresh: `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed corrections:
+
+- Body closing is normalized from `Un abrazo, Alejandro` /
+  `Un abrazo,\nAlejandro` to `Un abrazo,` before the visual signature.
+- The custom author footer no longer renders a postal address; the postal
+  address remains the responsibility of the MailerLite platform footer to avoid
+  duplicate address display.
+- Footer identity hierarchy is smaller: author name `20px`, bio `13px`,
+  unsubscribe text and link `12px`.
+- Visual signature image has empty alt text so a blocked image does not repeat
+  a visible typed signature label.
+- Render QA green for all four local emails:
+  `canonical_author_footer=green`, `footer_compact_hierarchy=green`,
+  `closing_signature_no_duplicate_name=green`.
+- Render QA summary: `localRenderReady=true`, `emailCount=4`,
+  `renderPreviewNonEmptyCount=4`, `redCheckCount=0`,
+  `visualSignatureAssetReadyCount=4`.
+
+Safety:
+
+- This checkpoint was local/report-only.
+- UI opened: `false`.
+- MailerLite, Shopify and CRM live APIs called: `false`.
+- MailerLite drafts created or edited: `false`.
+- Test emails sent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Signal Ledger, CRM cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs, raw asset URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- Existing compact-footer replacement drafts and seed-test receipts remain
+  historical/no-use for this visual issue; they were not edited by this local
+  correction.
+- The next real boundary is exact approval to create four new v2 Null Audience
+  replacement drafts after fresh API re-scan/preflight, with old drafts left
+  intact as no-use.
+- No seed/test resend is approved by this checkpoint. A later test-send approval
+  would be a separate boundary after v2 replacement drafts exist and pass QA.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.

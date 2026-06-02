@@ -227,6 +227,7 @@ describe("CRM vNext MailerLite mini-launch email builder payload manifest", () =
     });
     expect(payloads[0].contentBlocks.map((block) => block.type)).toContain("paragraph");
     expect(payloads[0].contentBlocks.map((block) => block.type)).toContain("compliance_footer");
+    expect(payloads[0].contentBlocks.find((block) => block.type === "closing")?.text).toBe("Un abrazo,");
     expect(payloads[3].cta.destinationType).toBe("reply_to_email");
     expect(payloads[3].cta.placeholder).toBe(null);
     expect(payloads[0].hardExclusions).toContain("send_email");

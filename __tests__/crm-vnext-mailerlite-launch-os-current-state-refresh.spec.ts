@@ -122,11 +122,15 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
         join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
         "{}\n",
       );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
 
       const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
 
       expect(paths.miniLaunchEmailRenderQa).toBe(
-        join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json"),
       );
     } finally {
       rmSync(dir, { recursive: true, force: true });

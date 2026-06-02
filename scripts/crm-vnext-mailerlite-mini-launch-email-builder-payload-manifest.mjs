@@ -102,6 +102,13 @@ const firstText = (items = []) => cleanString(items.find((item) => cleanString(i
 
 const canonIncludes = (canon, text) => canon.toLowerCase().includes(text.toLowerCase());
 
+const canonicalClosingText = (value) => {
+  const text = cleanString(value);
+  if (!text) return 'Un abrazo,';
+  if (/^un abrazo,?\s+alejandro\.?$/iu.test(text)) return 'Un abrazo,';
+  return text;
+};
+
 const styleTokensFromCanon = (emailStyleCanon) => ({
   outerBackground: canonIncludes(emailStyleCanon, '#F4F7FA') ? '#F4F7FA' : 'review_canon_background',
   containerBackground: canonIncludes(emailStyleCanon, '#FFFFFF') ? '#FFFFFF' : 'review_canon_container',
@@ -173,7 +180,7 @@ const contentBlocksFor = ({ email, planAsset, scopeAsset }) => {
   blocks.push({
     id: `email_${email.step}_closing`,
     type: 'closing',
-    text: cleanString(body.closing) ?? 'Un abrazo,\nAlejandro',
+    text: canonicalClosingText(body.closing),
   });
   blocks.push({
     id: `email_${email.step}_signature`,

@@ -201,8 +201,11 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(generatedEmails[0].html).toContain("Psicólogo · Monje · Desarrollador de proyectos con sentido.");
     expect(generatedEmails[0].html).toContain('href="{$unsubscribe}"');
     expect(generatedEmails[0].html).toContain("Darme de baja");
-    expect(generatedEmails[0].html).toContain("Finca el Amanecer, vereda Alatania, Subachoque");
-    expect(generatedEmails[0].html).toContain("Colombia");
+    expect(generatedEmails[0].html).not.toContain("Finca el Amanecer, vereda Alatania, Subachoque");
+    expect(generatedEmails[0].html).not.toContain("Finca el Amanecer, vereda Altania, Subachoque");
+    expect(generatedEmails[0].html).not.toContain('class="footer-address"');
+    expect(generatedEmails[0].html).toContain("Un abrazo,");
+    expect(generatedEmails[0].html).not.toContain("Un abrazo, Alejandro");
     expect(generatedEmails[0].html).not.toContain('<span class="placeholder-note">result_or_resource_link_placeholder</span>');
     expect(generatedEmails[0].html).not.toContain("MailerLite unsubscribe footer");
   });
@@ -215,6 +218,7 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(generatedEmails[0].staticQa.plainTextFallbackScan.clean).toBe(true);
     expect(generatedEmails[0].staticQa.checks.find((check) => check.id === "canonical_author_footer")?.status).toBe("green");
     expect(generatedEmails[0].staticQa.checks.find((check) => check.id === "footer_compact_hierarchy")?.status).toBe("green");
+    expect(generatedEmails[0].staticQa.checks.find((check) => check.id === "closing_signature_no_duplicate_name")?.status).toBe("green");
     expect(generatedEmails[3].staticQa.hasReplyCta).toBe(true);
     expect(generatedEmails[3].staticQa.expectedUrlPlaceholders).toEqual([]);
     expect(generatedEmails[3].staticQa.rawReplyDestinationRendered).toBe(false);

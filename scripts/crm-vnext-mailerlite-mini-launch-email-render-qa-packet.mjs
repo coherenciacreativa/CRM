@@ -211,18 +211,23 @@ const hasCanonicalFooterIdentity = (html) =>
   && String(html ?? '').includes('Te envío este correo porque pediste recibir este resultado o recurso de Coherencia Creativa.')
   && String(html ?? '').includes('Darme de baja')
   && String(html ?? '').includes('href="{$unsubscribe}"')
-  && String(html ?? '').includes('Finca el Amanecer, vereda Alatania, Subachoque')
-  && String(html ?? '').includes('Colombia');
+  && !String(html ?? '').includes('class="footer-address"')
+  && !String(html ?? '').includes('Finca el Amanecer, vereda Alatania, Subachoque')
+  && !String(html ?? '').includes('Finca el Amanecer, vereda Altania, Subachoque');
 
 const hasCompactFooterHierarchy = (html) => {
   const source = String(html ?? '');
-  return source.includes('.footer-name { margin: 0 0 8px; font-family: Georgia, serif; font-size: 24px;')
-    && source.includes('.footer-bio { margin: 0 0 16px; font-size: 14px;')
+  return source.includes('.footer-name { margin: 0 0 6px; font-family: Georgia, serif; font-size: 20px;')
+    && source.includes('.footer-bio { margin: 0 0 14px; font-size: 13px;')
     && source.includes('.footer-unsubscribe { margin: 0 0 4px; font-size: 12px;')
     && source.includes('.footer-link { font-size: 12px;')
-    && source.includes('.footer-address { margin: 18px 0 0; font-size: 11px;')
+    && !source.includes('.footer-address')
+    && !source.includes('.footer-name { margin: 0 0 8px; font-family: Georgia, serif; font-size: 24px;')
     && !source.includes('.footer-name { margin: 0 0 12px; font-family: Georgia, serif; font-size: 34px;');
 };
+
+const closingAvoidsNameDuplication = (html) =>
+  !/Un abrazo,?\s*(?:<\/[^>]+>\s*)?Alejandro/iu.test(String(html ?? ''));
 
 const buildStaticChecksForEmail = ({ target, html }) => {
   const publicTextScan = scanPublicText(html);
@@ -328,15 +333,22 @@ const buildStaticChecksForEmail = ({ target, html }) => {
       id: 'canonical_author_footer',
       status: hasCanonicalFooterIdentity(html) ? 'green' : 'red',
       evidence: hasCanonicalFooterIdentity(html)
-        ? 'Footer includes Alejandro full identity, bio, visible unsubscribe link token and postal/country compliance text.'
-        : 'Footer is missing the canonical author identity, bio, unsubscribe token or postal/country compliance text.',
+        ? 'Footer includes Alejandro full identity, bio and visible unsubscribe link token; custom postal address is omitted to avoid duplicating the MailerLite platform footer.'
+        : 'Footer is missing the canonical author identity, bio or unsubscribe token, or it repeats a custom postal address.',
     },
     {
       id: 'footer_compact_hierarchy',
       status: hasCompactFooterHierarchy(html) ? 'green' : 'red',
       evidence: hasCompactFooterHierarchy(html)
-        ? 'Footer name, bio, unsubscribe line, unsubscribe link and postal address use compact secondary sizing.'
+        ? 'Footer name, bio, unsubscribe line and unsubscribe link use compact secondary sizing; postal address is left to the platform footer.'
         : 'Footer typography is not using the compact hierarchy.',
+    },
+    {
+      id: 'closing_signature_no_duplicate_name',
+      status: closingAvoidsNameDuplication(html) ? 'green' : 'red',
+      evidence: closingAvoidsNameDuplication(html)
+        ? 'Closing does not repeat Alejandro immediately before the visual/text signature.'
+        : 'Closing repeats Alejandro before the signature.',
     },
   ];
 

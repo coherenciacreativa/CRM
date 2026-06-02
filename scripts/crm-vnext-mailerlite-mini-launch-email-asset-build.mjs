@@ -283,8 +283,13 @@ const CANONICAL_UNSUBSCRIBE_TEXT =
   'Te envío este correo porque pediste recibir este resultado o recurso de Coherencia Creativa. Si no quieres recibir más correos, puedes darte de baja aquí:';
 const CANONICAL_UNSUBSCRIBE_LABEL = 'Darme de baja';
 const CANONICAL_UNSUBSCRIBE_HREF = '{$unsubscribe}';
-const CANONICAL_POSTAL_ADDRESS = 'Finca el Amanecer, vereda Alatania, Subachoque';
-const CANONICAL_COUNTRY = 'Colombia';
+
+const normalizeClosingText = (value) => {
+  const text = cleanString(value);
+  if (!text) return null;
+  if (/^un abrazo,?\s+alejandro\.?$/iu.test(text)) return 'Un abrazo,';
+  return text;
+};
 
 const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) => {
   const escape = (value) => String(value ?? '')
@@ -310,11 +315,10 @@ const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) =
     '    .signature { margin: 28px 0 0; font-family: Georgia, serif; color: #2F3E63; }',
     '    .signature-image { display: block; width: 189px; max-width: 60%; height: auto; border: 0; }',
     '    .footer { color: #5F6668; }',
-    '    .footer-name { margin: 0 0 8px; font-family: Georgia, serif; font-size: 24px; line-height: 120%; font-weight: 700; color: #4A4A4A; }',
-    '    .footer-bio { margin: 0 0 16px; font-size: 14px; line-height: 150%; color: #5F6668; }',
-    '    .footer-unsubscribe { margin: 0 0 4px; font-size: 12px; line-height: 155%; color: #6F7678; }',
+    '    .footer-name { margin: 0 0 6px; font-family: Georgia, serif; font-size: 20px; line-height: 125%; font-weight: 700; color: #4A4A4A; }',
+    '    .footer-bio { margin: 0 0 14px; font-size: 13px; line-height: 150%; color: #5F6668; }',
+    '    .footer-unsubscribe { margin: 0 0 4px; font-size: 12px; line-height: 150%; color: #6F7678; }',
     '    .footer-link { font-size: 12px; line-height: 155%; color: #6F7678; text-decoration: underline; }',
-    '    .footer-address { margin: 18px 0 0; font-size: 11px; line-height: 150%; color: #858A8C; }',
     '    @media (max-width: 640px) { .email-content { padding: 36px 24px 32px; } p { font-size: 15px; } }',
     '  </style>',
     '</head>',
@@ -332,7 +336,7 @@ const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) =
     if (block.type === 'signature') {
       if (signatureAsset) {
         const heightAttr = signatureAsset.height ? ` height="${escape(signatureAsset.height)}"` : '';
-        lines.push(`      <p class="signature"><img class="signature-image" src="${escape(signatureAsset.src)}" alt="Firma de Alejandro" width="${escape(signatureAsset.width)}"${heightAttr} data-signature-asset-sha256="${escape(signatureAsset.srcSha256)}"></p>`);
+        lines.push(`      <p class="signature"><img class="signature-image" src="${escape(signatureAsset.src)}" alt="" width="${escape(signatureAsset.width)}"${heightAttr} data-signature-asset-sha256="${escape(signatureAsset.srcSha256)}"></p>`);
       } else {
         lines.push('      <p class="signature">Alejandro</p>');
       }
@@ -347,7 +351,6 @@ const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) =
       lines.push(`        <p class="footer-bio">${escape(CANONICAL_AUTHOR_BIO)}</p>`);
       lines.push(`        <p class="footer-unsubscribe">${escape(CANONICAL_UNSUBSCRIBE_TEXT)}</p>`);
       lines.push(`        <p><a class="footer-link" href="${escape(CANONICAL_UNSUBSCRIBE_HREF)}">${escape(CANONICAL_UNSUBSCRIBE_LABEL)}</a></p>`);
-      lines.push(`        <p class="footer-address">${escape(CANONICAL_POSTAL_ADDRESS)}<br>${escape(CANONICAL_COUNTRY)}</p>`);
       lines.push('      </div>');
     } else if (block.type === 'cta') {
       const placeholder = cleanString(block?.placeholder?.value) ?? cleanString(block?.destination) ?? 'inert_placeholder';
@@ -355,7 +358,8 @@ const buildHtmlForPayload = (payload, { signatureAssetReference = null } = {}) =
     } else if (block.type === 'reply_cta') {
       lines.push(`      <p><span class="cta-placeholder">${escape(text)}</span></p>`);
     } else {
-      for (const paragraph of text.split('\n').map(cleanString).filter(Boolean)) {
+      const paragraphText = block.type === 'closing' ? normalizeClosingText(text) : text;
+      for (const paragraph of paragraphText.split('\n').map(cleanString).filter(Boolean)) {
         lines.push(`      <p>${escape(paragraph)}</p>`);
       }
     }
