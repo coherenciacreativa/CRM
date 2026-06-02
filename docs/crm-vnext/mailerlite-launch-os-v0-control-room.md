@@ -6091,3 +6091,71 @@ Operating meaning:
   receipts.
 - A different test-send route requires a new explicit approval from Alejandro
   because the current route policy remains Computer Use semantic UI only.
+
+## Launch OS v0 compact footer CEO-review readiness delta checkpoint - 2026-06-02
+
+Status: active goal, no live action. Alejandro clarified the UI operating edge:
+no screenshots/captures and no coordinates; MailerLite UI operations must use
+Computer Use only. Since the compact-footer seed-test route is blocked for
+`E02`, `E03` and `E04` under that semantic-only rule, a local CEO-review
+readiness delta was generated from existing receipts instead of forcing another
+UI attempt.
+
+Evidence:
+
+- CEO-review readiness delta JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+- CEO-review readiness delta markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.md`
+- Compact-footer seed-test UI blocker receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Compact-footer seed-test fresh preflight: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- CEO-review delta status: `ceo_review_readiness_delta_not_ready_no_live_changes`.
+- CEO-review package ready: `false`.
+- CEO-review value ready: `true`.
+- Compact-footer drafts ready: `true`.
+- Compact-footer seed preflight green: `true`.
+- Compact-footer seed execution state:
+  `partial_e01_only_remaining_e02_e03_e04_blocked`.
+- Integrated experience ready: `false`.
+- Remaining unsent compact-footer labels: `E02`, `E03`, `E04`.
+- Do not resend label: `E01`.
+- Ready for pilot distribution decision now: `false`.
+- Ready for public send approval now: `false`.
+- Live action allowed now: `false`.
+
+Current blockers:
+
+- `E02` `Send a test` is not exposed semantically after direct Dashboard/Drafts
+  route and `Overview` alternative.
+- `visual_signature_asset_not_verified`.
+- `signature_fallback_still_present_in_payload`.
+- `platform_footer_policy_is_not_canonical_footer_proof`.
+- Compact-footer remaining seed tests are unsent.
+- Public/audience send remains outside this CEO delta.
+
+Safety:
+
+- CEO-review delta was local/report-only.
+- UI opened by this delta: `false`.
+- MailerLite API called by this delta: `false`.
+- MailerLite UI used by this delta: `false`.
+- Test emails sent by this delta: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, additional groups, segments, workflows and automations mutated:
+  `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- The compact-footer seed-test approval is partially consumed for `E01` only.
+- Do not ask for the same approval again unless the evidence set changes.
+- Continue `E02`, `E03` and `E04` only after fresh API re-scan/preflight and
+  only if Computer Use exposes the MailerLite test-send controls semantically.
+- If Alejandro wants a different route for `E02`-`E04`, that needs a fresh,
+  explicit route-specific approval.
+- Alternatively, the compact seed completion can be parked and CEO review can be
+  held as value-ready but integrated-experience-not-ready, with the caveat made
+  explicit.

@@ -175,9 +175,16 @@ action that a resumed Goal should continue before replanning.
   list, returned to the `E02` schedule context, recovered the Drafts list with
   Escape, and attempted the `Overview` route; the `Send a test` control still
   was not exposed semantically for `E02`, so `E02`, `E03` and `E04` remain
-  unsent. Do not resend `E01`.
+  unsent. Do not resend `E01`. Alejandro then clarified that UI operations must
+  use Computer Use only, with no screenshots/captures or coordinates. A local
+  CEO-review readiness delta was generated from receipts only: Product/Value is
+  ready, compact-footer drafts and fresh preflight are green, but the
+  CEO-review package is not ready because compact-footer seed execution remains
+  partial and integrated-experience proof still has blockers.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
+  - Inspect or regenerate the local CEO-review readiness delta as a no-live,
+    report-only artifact when the seed-test UI route remains blocked.
   - Generate or refresh a compact-footer seed-test preflight/approval packet
     only as a local/reporting or read-only API action.
   - Use the received compact-footer seed-test approval only for the remaining
@@ -241,6 +248,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
 - `allowed_commands`:
@@ -256,8 +265,9 @@ action that a resumed Goal should continue before replanning.
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-approval-packet.mjs`
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-replacement-create.mjs`
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.mjs`
   - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
-  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-ceo-review-readiness-delta.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
 - `live_gate_status`: partially consumed after approval. `E01` was sent through
   MailerLite UI by Computer Use semantic controls after fresh API re-scan, but
@@ -288,14 +298,17 @@ action that a resumed Goal should continue before replanning.
   receipt and compact-footer seed-test preflight. Do not recreate old
   asset-ready drafts, do not recreate the compact replacements, do not rerun
   either consumed asset-ready seed approval, and do not perform
-  artifact/CEO-readiness QA from the stale oversized-footer seed messages.
+  artifact/CEO-readiness QA from the stale oversized-footer seed messages. Use
+  the CEO-review readiness delta to preserve the current distinction: value is
+  ready, but integrated experience and compact-footer seed evidence are not
+  complete.
 - `completion_definition`: A later compact-footer seed-test checkpoint has a
   fresh API re-scan/preflight, the received exact approval consumed exactly
   once, a Computer Use semantic UI-recorded test-send receipt and then seed
   inbox QA, all without public/audience send, publish, schedule,
   subscriber/workflow, Shopify, CRM, ledger, card, scoring or Fact Store
   effects.
-- `next_checkpoint_expected`: `Launch OS v0 compact footer seed-test approval boundary checkpoint - 2026-06-02`
+- `next_checkpoint_expected`: `Launch OS v0 compact footer CEO-review readiness delta checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 
