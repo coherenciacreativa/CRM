@@ -5913,3 +5913,61 @@ Operating meaning:
   receipts to close this boundary.
 - Public/audience sends, publish/schedule, workflows, subscribers, Shopify live
   changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.
+
+## Launch OS v0 compact footer E01 partial seed-test checkpoint - 2026-06-02
+
+Status: active goal, partial UI execution. A fresh MailerLite API read-only
+re-scan/preflight remained green for the four compact-footer Null Audience
+replacement drafts. Computer Use then operated MailerLite UI semantically for
+`E01`: the `Schedule` link, `Send a test` button, email field and modal `Send`
+button were all exposed as semantic controls, the exact approved seed recipient
+was set in the UI field, and MailerLite exposed `Test email sent.` after the
+modal send. The full seed-test edge is not closed because `E02`, `E03` and
+`E04` were not sent, no full `record_ui_sent` receipt exists, and Safari focus
+was lost to another window/menu before a clean semantic route could continue.
+
+Evidence:
+
+- Compact-footer seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Partial UI blocker/receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Partial UI blocker/receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Fresh seed-test preflight: `ok=true`, `status=mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`, `mode=read_only_preflight`.
+- Target count: `4`; QA green count: `4`; blocker count: `0`; error count: `0`.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`; active count `0`.
+- UI semantic route for `E01`: completed.
+- Semantic success text observed: `Test email sent.`
+- Test emails sent by UI: `1`, label `E01`.
+- Remaining unsent labels: `E02`, `E03`, `E04`.
+- Full `record_ui_sent` receipt created: `false`.
+- Approval status: partially consumed for `E01` only. Do not resend `E01`.
+
+Safety:
+
+- MailerLite API called only for read-only re-scan/preflight: `true`.
+- MailerLite API test-send called: `false`.
+- MailerLite UI semantic test send completed for `E01`: `true`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups, non-Null Audience groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Screenshots/captures, coordinate clicks, system-click fallbacks and browser
+  DOM/AppleScript click injection used as UI route: `false`.
+- Exact preview URLs, raw campaign/group IDs, raw recipients, sender values and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- Do not resend `E01`.
+- Continue this approval only for `E02`, `E03` and `E04`, and only after another
+  fresh API re-scan/preflight remains green.
+- Continue UI only through Computer Use semantic controls. If Safari remains
+  stuck in the unrelated window/menu state or Computer Use cannot expose the
+  remaining MailerLite controls semantically, stop and report the blocker.
+- After `E02`-`E04` are actually sent by valid UI, record the full
+  `record_ui_sent` receipt for `E01`-`E04`, then run seed inbox QA.
+- Public/audience sends, publish/schedule, workflows, subscribers, Shopify live
+  changes, CRM writes, ledgers, cards, scoring and Fact Store remain closed.

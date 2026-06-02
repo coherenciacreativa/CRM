@@ -162,19 +162,24 @@ action that a resumed Goal should continue before replanning.
   QA as not applicable to the compact-footer replacement receipt, so effective
   seed inbox QA remains false until fresh compact-footer seed evidence exists.
   Alejandro provided the fresh exact compact-footer seed-test approval, and
-  fresh API re-scans stayed green, but no valid UI send was completed. The
-  approval remains received but unconsumed because no Computer Use semantic
-  test-send receipt exists and test emails sent remains `0`.
+  fresh API re-scans stayed green. A Computer Use semantic UI path exposed the
+  `Send a test` control and completed the `E01` test send to the exact seed
+  recipient, with semantic success text observed. The full approved edge is
+  still not closed: `E02`, `E03` and `E04` were not sent, no full
+  `record_ui_sent` receipt exists, and the approval is now partially consumed
+  for `E01` only. Do not resend `E01`.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Generate or refresh a compact-footer seed-test preflight/approval packet
     only as a local/reporting or read-only API action.
-  - Use the received compact-footer seed-test approval only once, and only after
-    a fresh API re-scan remains green. Do not ask for the same approval again
-    unless Alejandro supersedes it or the evidence set changes.
-  - Route the actual test sends through MailerLite UI by Computer Use semantic
-    UI actions only in this Codex thread, then record a local receipt; do not
-    use API as the primary test-send route.
+  - Use the received compact-footer seed-test approval only for the remaining
+    unsent compact-footer labels after a fresh API re-scan remains green. Do
+    not ask for the same approval again unless Alejandro supersedes it or the
+    evidence set changes.
+  - Route the remaining `E02`, `E03` and `E04` test sends through MailerLite UI
+    by Computer Use semantic UI actions only in this Codex thread, then record a
+    local receipt for the full `E01`-`E04` set; do not use API as the primary
+    test-send route.
   - If Computer Use cannot expose and operate the required test-send controls
     semantically, stop and report the UI-route blocker. Do not use screenshots,
     coordinate clicks, system-click fallbacks or browser DOM/AppleScript click
@@ -188,7 +193,9 @@ action that a resumed Goal should continue before replanning.
 - `forbidden_scope`:
   - Do not repeat the asset-ready replacement draft creation.
   - Do not repeat the compact-footer replacement draft creation.
-  - Do not send `E01`, `E02`, `E03` or `E04` more than once under this approval.
+  - Do not resend `E01`; Computer Use semantic UI already observed a successful
+    `E01` test send under this approval.
+  - Do not send `E02`, `E03` or `E04` more than once under this approval.
   - Do not record any `record_ui_sent` receipt unless the test emails were
     actually sent through Computer Use semantic UI operation.
   - Do not rerun the consumed four-email seed-test approval.
@@ -224,6 +231,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_ui_blocker_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_approval_queue_current_2026-06-02.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
 - `allowed_commands`:
@@ -242,12 +251,13 @@ action that a resumed Goal should continue before replanning.
   - `node --check scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
   - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.spec.ts __tests__/crm-vnext-mailerlite-mini-launch-null-audience-replacement.spec.ts __tests__/crm-vnext-mailerlite-launch-os-current-state-refresh.spec.ts`
   - `git diff --check`
-- `live_gate_status`: blocked after approval until Computer Use can operate the
-  MailerLite test-send UI semantically after a fresh API re-scan. The exact
-  compact-footer seed-test approval has been received but remains unconsumed
-  because no valid UI send occurred. Queue readiness is not approval.
-  Public/audience sends, MailerLite publish/schedule, subscribers, workflows,
-  Shopify and CRM remain closed.
+- `live_gate_status`: partially consumed after approval. `E01` was sent through
+  MailerLite UI by Computer Use semantic controls after fresh API re-scan, but
+  `E02`, `E03` and `E04` remain unsent and the full `record_ui_sent` receipt
+  has not been created. Continue only after another fresh API re-scan and only
+  if Computer Use can operate the remaining test-send UI semantically. Queue
+  readiness is not approval. Public/audience sends, MailerLite publish/schedule,
+  subscribers, workflows, Shopify and CRM remain closed.
 - `human_boundary_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
@@ -256,6 +266,7 @@ action that a resumed Goal should continue before replanning.
   - Any requested action would send a test email without a fresh API re-scan.
   - Any requested action would use screenshots, coordinate clicks, system-click
     fallbacks or browser DOM/AppleScript click injection for MailerLite UI.
+  - Any requested action would resend `E01`.
   - Any requested action would prepare a public send approval before fresh
     compact-footer seed inbox evidence exists.
   - A requested action would send, publish, schedule, assign a real audience,
