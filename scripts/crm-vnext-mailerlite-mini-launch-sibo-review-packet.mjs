@@ -20,7 +20,7 @@ const DEFAULT_HTML_OUTPUT =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.html`;
 
 const STRATEGY_DECISION_PHRASE =
-  'Elijo `keep_null_audience_no_public_send` como estrategia no-send para el mini-lanzamiento Inteligencia para descansar; quiero mantener el microproducto como rehearsal/control-plane para seguir construyendo la maquina de Launch OS v0 con simulaciones internas y seed tests bajo aprobaciones separadas, sin enviar correos a personas reales, sin publicar, sin programar, sin asignar audiencia, sin tocar MailerLite, Shopify, CRM, subscribers, groups, workflows, ledgers, cards, scoring ni Fact Store, y manteniendo cerrada cualquier aprobacion de public/audience send.';
+  'Elijo `keep_null_audience_no_public_send` como estrategia no-send para el mini-lanzamiento Inteligencia para descansar; quiero mantener el microproducto como rehearsal/control-plane para seguir construyendo la maquina de Launch OS v0 con simulaciones internas y seed tests a recipients aprobados bajo la Standing Delegation vigente cuando el QA este verde, sin enviar correos a personas reales, sin publicar, sin programar, sin asignar audiencia, sin tocar MailerLite fuera del test-send delegado, Shopify, CRM, subscribers, groups, workflows, ledgers, cards, scoring ni Fact Store, y manteniendo cerrada cualquier aprobacion de public/audience send.';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-mini-launch-sibo-review-packet.mjs [options]
@@ -301,7 +301,7 @@ const buildSiboReviewPacket = ({
       decisionOptions: buildDecisionOptions(),
       exactStrategyDecisionPhrase: STRATEGY_DECISION_PHRASE,
       afterDecisionNextStep:
-        'If accepted, run only local strategy-decision intake and prepare a Launch Rehearsal protocol packet. Seed emails or personal-email simulations remain separate future approvals.',
+        'If accepted, run only local strategy-decision intake and prepare a Launch Rehearsal protocol packet. Seed emails or personal-email simulations may use the standing seed-test delegation when all conditions pass; otherwise they remain separate future approval boundaries.',
     },
     notApprovalFor: [
       'MailerLite send or resend',

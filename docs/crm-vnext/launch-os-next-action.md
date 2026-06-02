@@ -469,7 +469,9 @@ action that a resumed Goal should continue before replanning.
 - `why_now`: The compact-footer v2 CEO packet, no-send pilot distribution
   decision packet and SIBO review packet are green. Alejandro clarified that the
   current operating goal is to build and rehearse the frequent-launch machine,
-  so the recommended immediate choice is `keep_null_audience_no_public_send`.
+  and delegated routine seed/test emails to approved seed recipients under
+  strict Null Audience QA conditions. The recommended immediate strategy choice
+  remains `keep_null_audience_no_public_send`.
 - `allowed_scope`:
   - Read the no-send pilot distribution decision packet.
   - Present the SIBO review packet and exact strategy decision phrase.
@@ -509,9 +511,10 @@ action that a resumed Goal should continue before replanning.
   - Focused `npx vitest run <relevant specs>` when a script is used.
   - `git diff --check`
 - `live_gate_status`: All prior compact-footer v2 approvals are consumed.
-  Public/audience sends, MailerLite publish/schedule, audience assignment,
-  subscribers, workflows, Shopify and CRM remain closed until a separate exact
-  approval.
+  Routine seed/test email sends are standing-delegated only under
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`. Public/audience
+  sends, MailerLite publish/schedule, audience assignment, subscribers,
+  workflows, Shopify and CRM remain closed until a separate exact approval.
 - `human_boundary_id`: `mailerlite_footer_compact_v2_pilot_distribution_lane_choice_no_send_inteligencia_descansar`
 - `human_boundary_notification_status`: `pending`
 - `stop_conditions`:

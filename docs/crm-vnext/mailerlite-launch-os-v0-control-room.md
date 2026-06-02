@@ -7147,3 +7147,42 @@ Operating meaning:
   with their own exact approvals.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 standing seed-test delegation policy - 2026-06-02
+
+Status: active goal, local policy checkpoint. Alejandro delegated routine
+MailerLite seed/test emails to previously approved seed recipients when the
+draft is in Null Audience, the safety group has `active_count=0`, fresh QA is
+green, no placeholders/tokens remain, no audience send/publish/schedule/workflow
+is involved and a local receipt is generated. This checkpoint records authority
+only; it performs no MailerLite API/UI call, test send, publish, schedule,
+audience assignment, subscriber/group/workflow mutation, Shopify mutation, CRM
+write, ledger, card, scoring or Fact Store action.
+
+Evidence:
+
+- Standing delegation policy:
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`
+- Codex profile routing:
+  `docs/crm-vnext/launch-os-codex-profile.md`
+- Updated SIBO review generator:
+  `scripts/crm-vnext-mailerlite-mini-launch-sibo-review-packet.mjs`
+- Refreshed SIBO review packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+- Refreshed SIBO review packet markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.md`
+- Refreshed SIBO review packet HTML:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.html`
+- Mantis digest:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_standing_seed_test_delegation_2026-06-02.json`
+
+Operating meaning:
+
+- Routine test emails to the approved seed recipient can now proceed without a
+  new exact approval phrase when every standing-delegation condition passes.
+- The approved seed recipient recorded now is `saludoalsol+seedmail@gmail.com`.
+- This does not authorize public/audience sends, audience assignment,
+  subscriber/group/segment/workflow mutation, publish/schedule, Shopify changes,
+  CRM writes, Signal Ledger, cards, scoring or Fact Store.
+- If any QA/preflight condition fails or the operation leaves the delegated
+  lane, Codex must stop and request a fresh explicit approval.

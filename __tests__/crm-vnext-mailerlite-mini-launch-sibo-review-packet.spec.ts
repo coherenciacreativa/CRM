@@ -111,6 +111,7 @@ describe("CRM vNext MailerLite mini-launch SIBO review packet", () => {
       blockerCount: 0,
     });
     expect(report.siboReview.exactStrategyDecisionPhrase).toBe(STRATEGY_DECISION_PHRASE);
+    expect(report.siboReview.exactStrategyDecisionPhrase).toContain("Standing Delegation vigente");
     expect(report.siboReview.decisionOptions[0]).toMatchObject({
       id: "keep_null_audience_no_public_send",
       recommendedForCurrentStrategy: true,
@@ -119,6 +120,7 @@ describe("CRM vNext MailerLite mini-launch SIBO review packet", () => {
     expect(report.notApprovalFor).toContain("public/audience send");
     expect(markdown).toContain("SIBO Review Packet No-Send");
     expect(markdown).toContain("Exact Strategy Decision Phrase");
+    expect(markdown).toContain("standing seed-test delegation");
     expect(html).toContain("<title>SIBO Review Packet - Inteligencia para descansar</title>");
     expect(html).toContain("Would authorize send:");
     expect(safetyClosed(report.safety)).toBe(true);

@@ -70,6 +70,8 @@ reads.
 - Operational evidence: `/Users/alejandrogomez/Documents/Mantis-Reports`
 - Human-boundary notifications:
   `docs/crm-vnext/launch-os-human-boundary-notification-policy.md`
+- Standing delegations:
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`
 - CRM/Launch OS implementation: `/Users/alejandrogomez/CRM`
 - Shopify/Web assets: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite`
 - Brand/voice/value canon: Brand Hub documents, only when the active next
@@ -82,6 +84,11 @@ reads.
 
 For current Launch OS MailerLite seed/test emails:
 
+- If a seed/test send fits
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`, Codex may execute
+  it as a delegated routine operation after fresh preflight/QA and local
+  receipt generation, without asking Alejandro for a new exact phrase each
+  time.
 - Do not treat the MailerLite API as the primary test-send route.
 - Use the MailerLite API for draft creation, read-only preflight, fresh QA,
   group/audience safety checks and local receipts.
@@ -150,10 +157,16 @@ how the system should operate later.
 Exact approvals are one-shot. Before repeating any approved action, verify
 whether the approval was already consumed by a current receipt.
 
+Standing delegations are narrow exceptions only when they are explicitly
+recorded in `docs/crm-vnext/launch-os-standing-delegation-policy.md` and every
+condition is still satisfied by fresh evidence.
+
 Never infer that approval for one boundary authorizes the next boundary. Draft
-creation, test email sending, public/audience send, workflow mutation, Shopify
-publish, CRM write, ledger/card/scoring update and Fact Store write remain
-separate gates unless Alejandro explicitly combines them in a fresh approval.
+creation, public/audience send, workflow mutation, Shopify publish, CRM write,
+ledger/card/scoring update and Fact Store write remain separate gates unless
+Alejandro explicitly combines them in a fresh approval. Test email sending is a
+standing-delegated operation only inside the seed-recipient/Null Audience
+conditions defined in the standing delegation policy.
 
 ## Human Boundary Notifications
 
