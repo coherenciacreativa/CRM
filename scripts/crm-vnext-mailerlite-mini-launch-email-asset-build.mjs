@@ -280,7 +280,7 @@ const signatureAssetFor = (signatureAssetReference) => {
 const CANONICAL_AUTHOR_NAME = 'Alejandro Gómez Bernal';
 const CANONICAL_AUTHOR_BIO = 'Psicólogo · Monje · Desarrollador de proyectos con sentido.';
 const CANONICAL_UNSUBSCRIBE_TEXT =
-  'Te envío este correo porque te suscribiste a mi boletín. Si deseas darte de baja, haz clic aquí:';
+  'Te envío este correo porque pediste recibir este resultado o recurso de Coherencia Creativa. Si no quieres recibir más correos, puedes darte de baja aquí:';
 const CANONICAL_UNSUBSCRIBE_LABEL = 'Darme de baja';
 const CANONICAL_UNSUBSCRIBE_HREF = '{$unsubscribe}';
 const CANONICAL_POSTAL_ADDRESS = 'Finca el Amanecer, vereda Alatania, Subachoque';

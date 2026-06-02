@@ -332,7 +332,8 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     expect(html).toContain("Gracias por hacer el quiz.");
     expect(html).toContain("Alejandro Gómez Bernal");
     expect(html).toContain("Psicólogo · Monje · Desarrollador de proyectos con sentido.");
-    expect(html).toContain("Te envío este correo porque te suscribiste a mi boletín.");
+    expect(html).toContain("Te envío este correo porque pediste recibir este resultado o recurso de Coherencia Creativa.");
+    expect(html).toContain("Si no quieres recibir más correos, puedes darte de baja aquí:");
     expect(html).toContain('href="{$unsubscribe}"');
     expect(html).toContain("Darme de baja");
     expect(html).toContain("Finca el Amanecer, vereda Alatania, Subachoque");

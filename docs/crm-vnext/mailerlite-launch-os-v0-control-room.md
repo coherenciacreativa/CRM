@@ -5378,3 +5378,44 @@ Operating meaning:
 - This closes the local footer/bio gap, but it does not mutate MailerLite and does not make the campaign CEO-review ready until fresh MailerLite drafts and seed inbox QA prove the real received emails.
 - The next real boundary is an exact approval to create a new MailerLite replacement set, likely all four drafts, assigned only to the empty Null Audience group, using this footer-canon local payload.
 - Do not edit existing MailerLite drafts, create replacement drafts, send tests, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this local repair alone.
+
+## Launch OS v0 mini-launch footer reason canon checkpoint - 2026-06-02
+
+Status: active goal, Alejandro accepted a microlaunch-specific footer reason line. The author identity remains canonical and fixed, while the subscription/reason line no longer claims newsletter subscription for people who requested a quiz result, guide, game or resource. The local email builder and render QA now verify this microlaunch footer reason. No MailerLite draft was created, edited or sent by this checkpoint.
+
+Accepted footer reason:
+
+- `Te envío este correo porque pediste recibir este resultado o recurso de Coherencia Creativa. Si no quieres recibir más correos, puedes darte de baja aquí:`
+
+Evidence:
+
+- Footer reason render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_reason_canon_inteligencia_descansar_2026-06-02.json`
+- Footer reason render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_reason_canon_inteligencia_descansar_2026-06-02.md`
+- Footer reason render previews: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_reason_canon_inteligencia_descansar_2026-06-02/`
+
+Confirmed results:
+
+- Local render QA: `ok=true`, `status=mini_launch_email_render_qa_green_no_live_changes`.
+- Email count: `4`; render preview non-empty count: `4`; local render ready: `true`.
+- Canonical author footer check: `green` for all four emails.
+- Red check count: `0`; visible link token hits: `0`.
+- Visual signature asset ready count: `4`; signature fallback count: `0`.
+- Footer identity remains fixed: `Alejandro Gómez Bernal`; bio remains fixed: `Psicólogo · Monje · Desarrollador de proyectos con sentido.`
+- Unsubscribe posture remains fixed: visible `Darme de baja` link using MailerLite's `{$unsubscribe}` token, plus postal/country compliance text.
+
+Safety:
+
+- Local HTML/PNG/report generation only.
+- MailerLite API called by this checkpoint: `false`.
+- MailerLite UI mutations and draft edits: `false`.
+- Sends, audience sends, publish, schedule, subscribers, groups, segments, workflows and automations: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw message IDs, raw campaign/group IDs, sender values, recipients and tokens printed: `false`.
+
+Operating meaning:
+
+- For mini-launches, use the fixed author identity plus the accepted resource/result reason line rather than the regular newsletter reason line.
+- Newsletter/article campaigns may continue using the newsletter-specific reason line separately.
+- The next real boundary is still a separate exact approval before creating or editing MailerLite replacement drafts with this updated footer-reason payload.
+- Do not edit MailerLite drafts, create replacement drafts, send tests, ask for tester/micro-cohort/audience/public send, or claim CEO-review readiness from this local repair alone.

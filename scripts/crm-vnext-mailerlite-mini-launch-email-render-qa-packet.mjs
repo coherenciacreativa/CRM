@@ -208,7 +208,7 @@ const rendersRawReplyDestination = (html) =>
 const hasCanonicalFooterIdentity = (html) =>
   String(html ?? '').includes('Alejandro Gómez Bernal')
   && String(html ?? '').includes('Psicólogo · Monje · Desarrollador de proyectos con sentido.')
-  && String(html ?? '').includes('Te envío este correo porque te suscribiste a mi boletín.')
+  && String(html ?? '').includes('Te envío este correo porque pediste recibir este resultado o recurso de Coherencia Creativa.')
   && String(html ?? '').includes('Darme de baja')
   && String(html ?? '').includes('href="{$unsubscribe}"')
   && String(html ?? '').includes('Finca el Amanecer, vereda Alatania, Subachoque')
