@@ -68,6 +68,8 @@ reads.
 - Macro state, checkpoints and gates:
   `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
 - Operational evidence: `/Users/alejandrogomez/Documents/Mantis-Reports`
+- Human-boundary notifications:
+  `docs/crm-vnext/launch-os-human-boundary-notification-policy.md`
 - CRM/Launch OS implementation: `/Users/alejandrogomez/CRM`
 - Shopify/Web assets: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite`
 - Brand/voice/value canon: Brand Hub documents, only when the active next
@@ -139,6 +141,13 @@ Never infer that approval for one boundary authorizes the next boundary. Draft
 creation, test email sending, public/audience send, workflow mutation, Shopify
 publish, CRM write, ledger/card/scoring update and Fact Store write remain
 separate gates unless Alejandro explicitly combines them in a fresh approval.
+
+## Human Boundary Notifications
+
+When a Goal/play run is blocked by a real human decision or exact approval, use
+`docs/crm-vnext/launch-os-human-boundary-notification-policy.md` before
+notifying Alejandro. Notifications are for surfacing blockers only; they are
+not approval, execution or permission to mutate live systems.
 
 ## Completion Standard
 

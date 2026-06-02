@@ -54,6 +54,8 @@ action that a resumed Goal should continue before replanning.
 - `allowed_commands`:
 - `validation_commands`:
 - `live_gate_status`:
+- `human_boundary_id`:
+- `human_boundary_notification_status`: `not_needed | pending | sent | deferred`
 - `stop_conditions`:
 - `resume_instruction`:
 - `completion_definition`:
@@ -233,6 +235,8 @@ action that a resumed Goal should continue before replanning.
   seed-test approval. The compact-footer preflight is ready, but approval is not
   consumed. Queue readiness is not approval. Public/audience sends, MailerLite
   publish/schedule, subscribers, workflows, Shopify and CRM remain closed.
+- `human_boundary_id`: `mailerlite_footer_compact_seed_test_approval_boundary_inteligencia_descansar`
+- `human_boundary_notification_status`: `pending`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
