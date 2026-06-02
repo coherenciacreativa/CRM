@@ -105,6 +105,7 @@
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-input-request-packet": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-input-request-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-decision-packet": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-pilot-distribution-decision-intake": "node scripts/crm-vnext-mailerlite-mini-launch-pilot-distribution-decision-intake.mjs",
+    "crm:vnext:mailerlite-mini-launch-sibo-review-packet": "node scripts/crm-vnext-mailerlite-mini-launch-sibo-review-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-preview-route-decision-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-decision-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-preview-route-approval-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-preview-route-approval-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-shopify-handoff-packet": "node scripts/crm-vnext-mailerlite-mini-launch-shopify-handoff-packet.mjs",

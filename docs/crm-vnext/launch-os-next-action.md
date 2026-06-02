@@ -376,22 +376,103 @@ action that a resumed Goal should continue before replanning.
   `wouldAuthorizeSend=false`, `wouldAuthorizeAudienceAssignment=false` and
   `blockerCount=0`.
 
+## Completed Next Action
+
+- `next_action_id`: `mailerlite_footer_compact_v2_sibo_review_packet_no_send_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-02`
+- `updated_at`: `2026-06-02`
+- `completed_at`: `2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 pilot distribution decision packet no-send - 2026-06-02`
+- `objective`: Prepare a CEO/SIBO-facing no-send review packet so Alejandro can
+  review the current pilot distribution choice before any local decision intake.
+- `why_now`: Alejandro clarified that the operating goal is to build and
+  rehearse the frequent-launch machine, not distribute this microproduct to
+  real people now. The existing no-send decision packet needs a human-facing
+  review layer, not a live-send path.
+- `allowed_scope`:
+  - Read the no-send pilot distribution decision packet and current
+    compact-footer v2 CEO evidence.
+  - Generate only local JSON, Markdown and HTML review artifacts.
+  - Include the exact strategy decision phrase for
+    `keep_null_audience_no_public_send`.
+  - Keep all live gates closed.
+- `forbidden_scope`:
+  - Do not recreate replacement drafts.
+  - Do not resend seed/test emails.
+  - Do not ask for or execute public/audience-send approval from this boundary.
+  - Do not assign any audience, group or segment.
+  - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
+    mutation or automation action.
+  - No Shopify mutation, publish, theme push, live form wiring, public
+    navigation or SEO promotion.
+  - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
+  - No secret reads, env dumps, raw token output, raw private URLs, raw asset
+    URLs, recipient lists or broad mailbox inspection.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.html`
+- `allowed_commands`:
+  - `npm run crm:vnext:mailerlite-mini-launch-sibo-review-packet`
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-sibo-review-packet.mjs`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-sibo-review-packet.spec.ts`
+  - `jq empty <new JSON report>`
+  - `git diff --check`
+- `validation_commands`:
+  - `node --check scripts/crm-vnext-mailerlite-mini-launch-sibo-review-packet.mjs`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-mini-launch-sibo-review-packet.spec.ts`
+  - `jq empty /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `git diff --check`
+- `live_gate_status`: All prior compact-footer v2 approvals are consumed.
+  Public/audience sends, MailerLite publish/schedule, audience assignment,
+  subscribers, workflows, Shopify and CRM remain closed until a separate exact
+  approval.
+- `human_boundary_id`: `mailerlite_footer_compact_v2_sibo_review_packet_no_send_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Newer user instruction supersedes this contract.
+  - Git state is unexpected.
+  - Required no-send decision packet evidence is missing or fails validation.
+  - Any requested action would resend tests, publish, schedule, assign a real
+    audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
+    scoring/Fact Store without a separate exact approval.
+- `resume_instruction`: Generate/present only the SIBO review packet. After it
+  is ready, ask for the strategy-only no-send decision phrase; do not ask for
+  public/audience send approval.
+- `completion_definition`: The local SIBO review packet exists, validates, and
+  gives Alejandro a reviewable artifact plus exact no-send strategy phrase. No
+  live audience action occurs.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.html`
+- `completion_note`: The SIBO review packet is ready with
+  `reviewPacketReady=true`,
+  `recommendedStrategyChoice=keep_null_audience_no_public_send`,
+  `strategyDecisionPhraseAvailable=true`,
+  `exactApprovalPhraseAvailable=false`,
+  `asksPublicSendApprovalNow=false`, `liveActionAllowedNow=false`,
+  `wouldAuthorizeSend=false` and `wouldAuthorizeAudienceAssignment=false`.
+- `next_checkpoint_expected`: `Launch OS v0 compact footer v2 SIBO review packet no-send - 2026-06-02`
+
 ## Active Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_pilot_distribution_lane_choice_no_send_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `source_checkpoint`: `Launch OS v0 compact footer v2 pilot distribution decision packet no-send - 2026-06-02`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 SIBO review packet no-send - 2026-06-02`
 - `objective`: Capture Alejandro's strategy-only no-send pilot lane choice for
   `Inteligencia para descansar`, without asking for or executing any public/
   audience send.
-- `why_now`: The compact-footer v2 CEO packet and the no-send pilot
-  distribution decision packet are both green. The next useful move is one
-  human lane choice: keep the current Null Audience/no-send posture, prepare a
-  manual micro-cohort packet, or prepare an opt-in testers packet.
+- `why_now`: The compact-footer v2 CEO packet, no-send pilot distribution
+  decision packet and SIBO review packet are green. Alejandro clarified that the
+  current operating goal is to build and rehearse the frequent-launch machine,
+  so the recommended immediate choice is `keep_null_audience_no_public_send`.
 - `allowed_scope`:
   - Read the no-send pilot distribution decision packet.
+  - Present the SIBO review packet and exact strategy decision phrase.
   - Present only the three strategy choices:
     `keep_null_audience_no_public_send`, `manual_micro_cohort_next`,
     `opt_in_testers_next`.
@@ -413,6 +494,9 @@ action that a resumed Goal should continue before replanning.
     URLs, recipient lists or broad mailbox inspection.
 - `expected_files`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.html`
   - Optional future lane-specific no-live roster/preflight packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
 - `allowed_commands`:
   - `git status --short`
@@ -437,8 +521,9 @@ action that a resumed Goal should continue before replanning.
   - Any requested action would resend tests, publish, schedule, assign a real
     audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
     scoring/Fact Store without a separate exact approval.
-- `resume_instruction`: Ask only for the strategy-only no-send lane choice. Do
-  not revisit sends, draft creation, inbox QA or public/audience execution.
+- `resume_instruction`: Present the SIBO review packet and ask only for the
+  strategy-only no-send lane choice. Do not revisit sends, draft creation,
+  inbox QA or public/audience execution.
 - `completion_definition`: Alejandro chooses one of the three no-send lanes and
   any resulting local checkpoint preserves all live gates closed.
 - `next_checkpoint_expected`: `Launch OS v0 compact footer v2 pilot distribution lane choice no-send - 2026-06-02`
