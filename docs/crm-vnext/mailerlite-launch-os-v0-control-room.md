@@ -6612,3 +6612,62 @@ Operating meaning:
   boundary after the v2 drafts exist and pass post-create QA.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 Null Audience replacement drafts created - 2026-06-02
+
+Status: active goal, approved MailerLite API draft creation completed. Alejandro
+provided the exact compact-footer v2 replacement approval phrase. A fresh API
+preflight was green, then four new compact-footer v2 Null Audience replacement
+drafts were created and post-create QA passed.
+
+Evidence:
+
+- V2 replacement preflight: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 replacement preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 replacement execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 replacement execution receipt markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- Current-state refresh: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Mantis digest: `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_compact_footer_v2_replacement_drafts_created_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Preflight status:
+  `mailerlite_null_audience_replacement_preflight_ready_for_exact_approval`.
+- Execution receipt status:
+  `mailerlite_null_audience_replacement_execution_completed_no_sends`.
+- Created draft count: `4`.
+- Expected target count: `4`.
+- Post-create Null Audience safe count: `4`.
+- Post-create content green count: `4`.
+- Blocker count: `0`.
+- Cleanup attempted: `false`.
+- Current-state refresh status:
+  `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- Current-state replacement execution created draft count: `4`.
+- Current seed inbox QA applies to current replacement: `false`.
+
+Safety:
+
+- MailerLite API called for approved draft creation: `true`.
+- MailerLite drafts created: `4`.
+- Old asset-ready and compact-footer drafts left intact as no-use evidence:
+  `true`.
+- Test emails sent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups or segments created/assigned: `false`.
+- Workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs, raw asset URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- The compact-footer v2 replacement-draft creation approval is consumed. Do not
+  run it again or create another duplicate v2 draft set under that approval.
+- The previous compact-footer seed inbox QA remains historical/no-use for this
+  v2 draft set; it does not unlock public/audience readiness.
+- The next real boundary is compact-footer v2 seed-test preflight and exact
+  seed-test approval. No test send is approved by this checkpoint.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
