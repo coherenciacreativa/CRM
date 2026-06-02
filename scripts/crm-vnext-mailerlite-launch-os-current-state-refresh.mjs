@@ -447,24 +447,38 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_api_null_audience_lab',
       date,
     ),
-    miniLaunchNullAudienceReplacementApprovalPacket: miniLaunchReportPath(
-      reportsDir,
-      'mailerlite_mini_launch_null_audience_replacement_approval_packet',
-      date,
-    ),
+    miniLaunchNullAudienceReplacementApprovalPacket: (() => {
+      const compactFooterPacketPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon',
+        date,
+      );
+      return existsSync(compactFooterPacketPath)
+        ? compactFooterPacketPath
+        : miniLaunchReportPath(
+          reportsDir,
+          'mailerlite_mini_launch_null_audience_replacement_approval_packet',
+          date,
+        );
+    })(),
     miniLaunchNullAudienceReplacementExecutionReceipt: (() => {
+      const compactFooterReceiptPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon',
+        date,
+      );
       const assetReadyReceiptPath = miniLaunchDatedReportPath(
         reportsDir,
         'mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready',
         date,
       );
-      return existsSync(assetReadyReceiptPath)
-        ? assetReadyReceiptPath
-        : latestExistingMiniLaunchCurrentReportPath(
-          reportsDir,
-          'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
-          date,
-        );
+      if (existsSync(compactFooterReceiptPath)) return compactFooterReceiptPath;
+      if (existsSync(assetReadyReceiptPath)) return assetReadyReceiptPath;
+      return latestExistingMiniLaunchCurrentReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_null_audience_replacement_execution_receipt',
+        date,
+      );
     })(),
     miniLaunchNullAudienceSeedTestSendExecutionReceipt: (() => {
       const assetReadyReceiptPath = miniLaunchDatedReportPath(
@@ -2382,9 +2396,10 @@ const summarizeGeneratedReports = async (paths) => {
         miniLaunchNullAudienceSeedInboxQa?.sourceEvidence?.replacementDraftReceipt
         ?? miniLaunchNullAudienceSeedInboxQa?.replacementReceipt?.path
         ?? null;
-      const appliesToCurrentReplacementReceipt =
-        miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.appliesToCurrentReplacementReceipt
-        ?? pathsMatch(sourceReplacementReceiptPath, paths.miniLaunchNullAudienceReplacementExecutionReceipt);
+      const appliesToCurrentReplacementReceipt = pathsMatch(
+        sourceReplacementReceiptPath,
+        paths.miniLaunchNullAudienceReplacementExecutionReceipt,
+      );
       const seedInboxQaGreen = miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.seedInboxQaGreen ?? null;
       return {
         path: paths.miniLaunchNullAudienceSeedInboxQa,
@@ -2394,9 +2409,7 @@ const summarizeGeneratedReports = async (paths) => {
         sourceReplacementReceiptPath,
         appliesToCurrentReplacementReceipt,
         seedInboxQaGreen,
-        effectiveSeedInboxQaGreen:
-          miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.effectiveSeedInboxQaGreen
-          ?? (appliesToCurrentReplacementReceipt ? seedInboxQaGreen : false),
+        effectiveSeedInboxQaGreen: appliesToCurrentReplacementReceipt ? seedInboxQaGreen : false,
         deliveredToApprovedSeed:
           miniLaunchNullAudienceSeedInboxQa?.deliverySummary?.deliveredToApprovedSeed ?? null,
         expectedSeedMessages:
@@ -3428,4 +3441,5 @@ export {
   parseArgs,
   parseVitestCounts,
   renderMarkdown,
+  summarizeGeneratedReports,
 };

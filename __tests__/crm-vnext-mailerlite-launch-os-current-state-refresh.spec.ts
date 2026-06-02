@@ -13,6 +13,7 @@ import {
   parseArgs,
   parseVitestCounts,
   renderMarkdown,
+  summarizeGeneratedReports,
 } from "../scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs";
 
 const reportsDir = "/tmp/mantis-reports";
@@ -127,6 +128,94 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
       expect(paths.miniLaunchEmailRenderQa).toBe(
         join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
       );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("prefers compact footer replacement approval and execution evidence when present", () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-compact-replacement-"));
+
+    try {
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_current_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+
+      const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
+
+      expect(paths.miniLaunchNullAudienceReplacementApprovalPacket).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_approval_packet_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+      expect(paths.miniLaunchNullAudienceReplacementExecutionReceipt).toBe(
+        join(dir, "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("does not carry stale asset-ready seed inbox QA into compact footer replacements", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-stale-seed-inbox-"));
+
+    try {
+      const assetReadyReceiptPath = join(
+        dir,
+        "mailerlite_mini_launch_null_audience_replacement_execution_receipt_asset_ready_inteligencia_descansar_2026-06-02.json",
+      );
+      const compactReceiptPath = join(
+        dir,
+        "mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_canon_inteligencia_descansar_2026-06-02.json",
+      );
+      const seedInboxQaPath = join(
+        dir,
+        "mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json",
+      );
+
+      writeFileSync(assetReadyReceiptPath, "{}\n");
+      writeFileSync(compactReceiptPath, "{}\n");
+      writeFileSync(
+        seedInboxQaPath,
+        `${JSON.stringify({
+          status: "mailerlite_null_audience_seed_inbox_qa_completed_green_no_live_changes",
+          ok: true,
+          sourceEvidence: {
+            replacementDraftReceipt: assetReadyReceiptPath,
+          },
+          deliverySummary: {
+            seedInboxQaGreen: true,
+            appliesToCurrentReplacementReceipt: true,
+            effectiveSeedInboxQaGreen: true,
+            deliveredToApprovedSeed: 4,
+            expectedSeedMessages: 4,
+          },
+          safety: {
+            gmailReadOnly: true,
+            mailerLiteSendsPerformedByThisQa: false,
+          },
+        })}\n`,
+      );
+
+      const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
+      const reports = await summarizeGeneratedReports(paths);
+
+      expect(paths.miniLaunchNullAudienceReplacementExecutionReceipt).toBe(compactReceiptPath);
+      expect(reports.miniLaunchNullAudienceSeedInboxQa.seedInboxQaGreen).toBe(true);
+      expect(reports.miniLaunchNullAudienceSeedInboxQa.sourceReplacementReceiptPath).toBe(assetReadyReceiptPath);
+      expect(reports.miniLaunchNullAudienceSeedInboxQa.appliesToCurrentReplacementReceipt).toBe(false);
+      expect(reports.miniLaunchNullAudienceSeedInboxQa.effectiveSeedInboxQaGreen).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
