@@ -5563,5 +5563,54 @@ Operating meaning:
 
 - The four-email asset-ready seed-test approval has been consumed; do not rerun or ask for that same approval again.
 - The asset-ready drafts remain Null Audience draft evidence, not public/audience launch evidence.
-- The next useful edge is read-only seed inbox QA/readback for these four current seed messages, followed by artifact QA or a local repair plan depending on the evidence.
+- The read-only seed inbox QA edge is now closed by the following partial checkpoint.
 - Any additional test send, MailerLite draft mutation, public/audience send, external-image loading side effect, Shopify action, CRM write, ledger, card, scoring or Fact Store write requires a separate exact approval.
+
+## Launch OS v0 asset-ready seed inbox QA partial checkpoint - 2026-06-02
+
+Status: active goal, read-only Gmail seed inbox QA was performed for the asset-ready/footer-canon replacement set. The current asset-ready `E01`, `E02` and `E03` test messages reached the approved seed recipient, but the current asset-ready `E04` was not found at the seed. The latest matching E04 seed message is stale/non-footer-canon, so it cannot close the current replacement receipt. This checkpoint performs no MailerLite send, publish, schedule, workflow, subscriber action, Shopify action, CRM write, ledger, card, scoring or Fact Store write.
+
+Evidence:
+
+- Asset-ready seed inbox QA current JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.json`
+- Asset-ready seed inbox QA current markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_current_inteligencia_descansar_2026-06-02.md`
+- Asset-ready seed inbox QA copy JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_inbox_qa_asset_ready_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Seed inbox QA: `ok=true`, `status=mailerlite_null_audience_seed_inbox_qa_partial_blocked_e04_not_delivered_to_seed`.
+- Current replacement receipt applies: `appliesToCurrentReplacementReceipt=true`.
+- Effective seed inbox QA green: `false`.
+- Current asset-ready messages delivered to approved seed: `3/4`.
+- `E01`: current asset-ready/footer-canon message found, footer canon observed, placeholders `false`, preview link observed.
+- `E02`: current asset-ready/footer-canon message found, footer canon observed, placeholders `false`, preview link observed.
+- `E03`: current asset-ready/footer-canon message found, footer canon observed, placeholders `false`, preview link observed.
+- `E04`: current asset-ready message not found at the approved seed; latest matching seed message is stale/non-footer-canon and has no preview link.
+- Blocker: `e04_current_asset_ready_seed_message_not_found_at_approved_seed`.
+- Recommended next boundary: `approve_resending_only_E04_asset_ready_test_to_exact_seed_after_fresh_rescan`.
+
+Safety:
+
+- Gmail evidence source: connector read-only.
+- Local `gog` fallback attempted but blocked by OAuth `invalid_grant`; Gmail connector evidence was used instead.
+- Gmail labels mutated: `false`.
+- Gmail messages sent by this QA: `false`.
+- MailerLite API/UI/sends by this QA: `false/false/false`.
+- Campaigns published: `false`.
+- Campaigns scheduled: `false`.
+- Audience sends performed: `false`.
+- Subscribers read: `false`.
+- Subscriber mutations: `false`.
+- Groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw recipients, raw Gmail IDs and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- Do not treat the asset-ready seed inbox QA as green.
+- Do not ask for tester/micro-cohort/audience/public send or CEO-review readiness.
+- Do not resend `E01`, `E02` or `E03`; those current asset-ready messages are already present at the seed.
+- The only plausible recovery boundary is a separate exact approval to resend one `E04` asset-ready Null Audience test email to the approved seed recipient after fresh API QA proves E04 is still safe.
+- Without that exact E04-only approval, stop here and report the partial QA blocker.
