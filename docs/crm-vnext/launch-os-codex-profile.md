@@ -90,17 +90,30 @@ For current Launch OS MailerLite seed/test emails:
     when browser choice matters.
   - Mantis/OpenClaw operator: Chrome relay UI route if that is the configured
     operator lane.
-- Prefer semantic UI controls. For Codex-operated MailerLite UI work, do not
-  use screenshot/capture inspection, coordinate clicks, system-click fallbacks,
-  AppleScript/DOM click injection or other non-semantic browser control. If
-  Computer Use cannot expose and operate the required control semantically,
-  stop, preserve the approval as unconsumed when no send occurred, and report
-  the UI-route blocker.
+- Prefer Computer Use semantic UI controls as the first route. Treat MailerLite
+  UI failures as browser/app state before treating them as capability failure:
+  refresh the page, close duplicate MailerLite tabs, reopen MailerLite in a
+  clean Safari window when practical, navigate from Campaigns/Drafts instead of
+  a stale deep URL, and retry the canonical draft/test-send flow.
+- Keep MailerLite UI attempts time-boxed. Default budget: one clean browser
+  reset plus at most two canonical semantic routes before changing strategy.
+  Do not spend a long run repeatedly searching for the same hidden control.
+- Screenshot/capture inspection, coordinate clicks, system-click fallbacks,
+  AppleScript/DOM click injection or other non-semantic browser control are not
+  the default route. They may be used only as a short, explicit fallback when
+  Alejandro approves that route for the exact operation and the fallback does
+  not broaden the live/action scope.
+- If Computer Use and the reset protocol cannot expose and operate the required
+  control within the budget, preserve any unconsumed portion of the approval,
+  record which labels were actually sent, and either use the approved fallback
+  route or report the remaining UI-route blocker.
 - After UI completion, record the result through the local receipt path instead
   of rediscovering API endpoint limitations.
 
 This rule prevents repeated token spend on relearning that API preflight is
-useful but API test-send is not the stable operating path for this system.
+useful but API test-send is not the stable operating path for this system. The
+goal is operational reliability: routine test emails should normally be a short
+Computer Use flow with reset/fallback handling, not an hour-long UI incident.
 
 ## Side Conversation Handoff
 

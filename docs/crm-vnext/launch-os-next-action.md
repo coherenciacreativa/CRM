@@ -194,7 +194,13 @@ action that a resumed Goal should continue before replanning.
   a local no-live CEO-review artifact with an explicit seed-execution caveat.
   Current-state refresh now regenerates and summarizes the CEO Proposal Packet
   as a native evidence lane; latest validation is `testFiles=39`,
-  `testCount=247`, with `liveGatesClosed=true`.
+  `testCount=247`, with `liveGatesClosed=true`. Alejandro then clarified the
+  MailerLite UI operating rule: Computer Use remains the preferred/default
+  route because it is quieter and usually more robust, but screenshot/coordinate
+  or other fallback routes are not categorically forbidden when they are the
+  pragmatic way to finish a routine test email. Future MailerLite UI attempts
+  should use a short Computer Use reset protocol before fallback, not repeat a
+  long hidden-control search.
 - `allowed_scope`:
   - Inspect compact-footer replacement receipts and current-state evidence.
   - Inspect or regenerate the local CEO-review readiness delta as a no-live,
@@ -208,13 +214,19 @@ action that a resumed Goal should continue before replanning.
     not ask for the same approval again unless Alejandro supersedes it or the
     evidence set changes.
   - Route the remaining `E02`, `E03` and `E04` test sends through MailerLite UI
-    by Computer Use semantic UI actions only in this Codex thread, then record a
+    with Computer Use as the first route in this Codex thread, then record a
     local receipt for the full `E01`-`E04` set; do not use API as the primary
     test-send route.
-  - If Computer Use cannot expose and operate the required test-send controls
-    semantically, stop and report the UI-route blocker. Do not use screenshots,
-    coordinate clicks, system-click fallbacks or browser DOM/AppleScript click
-    injection for MailerLite UI operations.
+  - Before declaring Computer Use blocked, run the compact UI reset protocol:
+    refresh, close duplicate MailerLite tabs, reopen MailerLite in a clean
+    Safari window if practical, navigate from Campaigns/Drafts, and retry the
+    canonical draft/test-send flow. Keep this to one reset plus at most two
+    canonical semantic routes.
+  - If Computer Use still cannot expose and operate the required test-send
+    controls within that budget, a fallback route may be used only when it is
+    explicitly approved for the exact operation and does not broaden scope. The
+    fallback must remain time-boxed, must not resend already-sent labels, and
+    must be recorded in the local receipt.
   - Before any seed-test send, re-scan by API and require QA green that the four
     current compact-footer drafts are still draft-only, unpublished,
     unscheduled, workflow-free and assigned only to
@@ -295,9 +307,9 @@ action that a resumed Goal should continue before replanning.
   has not been created. A second Computer Use retry confirmed the direct
   Dashboard/Drafts route is reachable semantically, but the `E02` test-send
   control remains unavailable as a semantic control. Continue only after another
-  fresh API re-scan and only if Computer Use can operate the remaining
-  test-send UI semantically, or if Alejandro explicitly approves a different
-  test-send route. Queue readiness is not approval. Local integrated-experience
+  fresh API re-scan and a short Computer Use reset/canonical-route attempt; if
+  the control is still unavailable, use only an exact route-specific fallback
+  approval for the remaining labels. Queue readiness is not approval. Local integrated-experience
   CEO-review QA is green, but compact-footer seed evidence is still incomplete.
   Current-state refresh now carries `miniLaunchCeoProposalReviewReady=true`,
   `miniLaunchCeoProposalReviewReadyWithSeedCaveat=true`,
@@ -312,8 +324,9 @@ action that a resumed Goal should continue before replanning.
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
   - Any requested action would send a test email without a fresh API re-scan.
-  - Any requested action would use screenshots, coordinate clicks, system-click
-    fallbacks or browser DOM/AppleScript click injection for MailerLite UI.
+  - Any requested fallback action would use screenshots, coordinate clicks,
+    system-click fallbacks or browser DOM/AppleScript click injection without a
+    route-specific approval and exact send scope.
   - Any requested action would resend `E01`.
   - Any requested action would prepare a public send approval before fresh
     compact-footer seed inbox evidence exists.
@@ -335,7 +348,7 @@ action that a resumed Goal should continue before replanning.
   inbox QA, all without public/audience send, publish, schedule,
   subscriber/workflow, Shopify, CRM, ledger, card, scoring or Fact Store
   effects.
-- `next_checkpoint_expected`: `Launch OS v0 CEO Proposal Packet current-state wiring checkpoint - 2026-06-02`
+- `next_checkpoint_expected`: `Launch OS v0 MailerLite UI reset/fallback policy checkpoint - 2026-06-02`
 
 ## Stop/Change Conditions
 

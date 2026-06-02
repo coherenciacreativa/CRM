@@ -6366,3 +6366,58 @@ Operating meaning:
   `E03` and `E04` only after fresh API re-scan/preflight and semantic Computer
   Use control exposure, or after Alejandro explicitly approves a different
   test-send route for those three labels.
+
+## Launch OS v0 MailerLite UI reset/fallback policy checkpoint - 2026-06-02
+
+Status: active goal, no live action. Alejandro clarified that the prior
+preference against screenshots, coordinates and non-semantic routes was a
+practical reliability preference, not an absolute allergy. Computer Use remains
+the default route for MailerLite UI because it is quieter and usually more
+convenient, but future routine test-email operations should not spend long
+runs repeatedly searching for a hidden control. The operating policy now uses a
+short Computer Use reset protocol first and permits an explicitly approved,
+time-boxed fallback route when that is the pragmatic way to finish the exact
+approved operation.
+
+Evidence:
+
+- Codex Profile: `docs/crm-vnext/launch-os-codex-profile.md`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+- Current-state refresh JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- CEO Proposal Packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-02.json`
+
+Confirmed operating policy:
+
+- Computer Use semantic UI remains the first/default MailerLite test-email
+  route.
+- Treat MailerLite UI failure as browser/app state before capability failure:
+  refresh, close duplicate MailerLite tabs, reopen a clean Safari window when
+  practical, navigate from Campaigns/Drafts instead of stale deep URLs, and
+  retry the canonical draft/test-send flow.
+- Keep attempts short: one clean reset plus at most two canonical semantic
+  routes before changing strategy.
+- Screenshot/capture, coordinate, system-click, DOM/AppleScript or other
+  non-semantic routes are not default routes, but can be used as a short
+  fallback when Alejandro approves that fallback for the exact operation.
+- Fallback does not broaden scope. It must not resend labels already sent, must
+  preserve one-shot approval accounting, and must be recorded in the local
+  receipt.
+
+Safety:
+
+- This checkpoint was docs-only.
+- UI opened: `false`.
+- MailerLite, Shopify and CRM live APIs called: `false`.
+- Test emails sent by this checkpoint: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Signal Ledger, CRM cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- The previous semantic-only policy was too rigid for routine test emails.
+- Future `E02`-`E04` recovery should first try a clean Computer Use reset flow,
+  then use an exact approved fallback route if needed.
+- This checkpoint is not itself approval to send `E02`, `E03` or `E04`; a fresh
+  API preflight and exact route/scope approval still gate any test email send.
