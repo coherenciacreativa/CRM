@@ -214,6 +214,7 @@ describe("CRM vNext MailerLite mini-launch email render QA packet", () => {
     expect(generatedEmails[0].staticQa.visibleLinkTokenHitCount).toBe(0);
     expect(generatedEmails[0].staticQa.plainTextFallbackScan.clean).toBe(true);
     expect(generatedEmails[0].staticQa.checks.find((check) => check.id === "canonical_author_footer")?.status).toBe("green");
+    expect(generatedEmails[0].staticQa.checks.find((check) => check.id === "footer_compact_hierarchy")?.status).toBe("green");
     expect(generatedEmails[3].staticQa.hasReplyCta).toBe(true);
     expect(generatedEmails[3].staticQa.expectedUrlPlaceholders).toEqual([]);
     expect(generatedEmails[3].staticQa.rawReplyDestinationRendered).toBe(false);

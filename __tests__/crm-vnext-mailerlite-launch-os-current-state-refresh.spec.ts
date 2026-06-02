@@ -109,6 +109,29 @@ describe("CRM vNext MailerLite Launch OS current-state refresh", () => {
     }
   });
 
+  test("prefers compact footer render QA when present for the requested date", () => {
+    const dir = mkdtempSync(join(tmpdir(), "launch-os-refresh-compact-footer-"));
+
+    try {
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+      writeFileSync(
+        join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+        "{}\n",
+      );
+
+      const paths = buildReportPaths({ date: "2026-06-02", reportsDir: dir });
+
+      expect(paths.miniLaunchEmailRenderQa).toBe(
+        join(dir, "mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json"),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("builds a local-only command plan for current-state report regeneration", () => {
     const plan = buildCurrentStateRefreshPlan({
       date: "2026-05-31",

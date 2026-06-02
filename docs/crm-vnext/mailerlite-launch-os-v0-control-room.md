@@ -5663,3 +5663,45 @@ Operating meaning:
 - The asset-ready seed inbox QA blocker is closed green, but this is still test-only proof, not public/audience launch authorization.
 - The next real boundary is read-only artifact/experience QA from the received seed evidence and local destination packets.
 - Do not ask for tester/micro-cohort/audience/public send or CEO-review readiness until that artifact/readiness QA has its own green checkpoint and any later live edge has a fresh exact approval.
+
+## Launch OS v0 footer compact canon local render checkpoint - 2026-06-02
+
+Status: active goal, Alejandro flagged an aesthetic/convenience issue from the received E04 seed screenshot: the author/legal footer was visually oversized, especially the full author name and unsubscribe reason line. The local email builder now renders a compact footer hierarchy while preserving the canonical author identity, bio, unsubscribe token/label and postal/country compliance text. A fresh local render QA is green for all four `Inteligencia para descansar` emails. No MailerLite draft was created, edited or sent by this checkpoint.
+
+Evidence:
+
+- Compact footer render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.json`
+- Compact footer render QA markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02.md`
+- Compact footer render previews: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_canon_inteligencia_descansar_2026-06-02/`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Local render QA: `ok=true`, `status=mini_launch_email_render_qa_green_no_live_changes`.
+- Email count: `4`; HTML written count: `4`; non-empty preview count: `4`.
+- Static render QA green count: `4`; red check count: `0`.
+- New static check `footer_compact_hierarchy`: green for all four emails.
+- Footer name scale: compact secondary hierarchy rather than headline scale.
+- Footer legal/unsubscribe reason and unsubscribe link remain present, legible and compliant, but visually secondary to the email body and CTA.
+- Canonical author/footer remains present: full author identity, bio, resource/result reason line, unsubscribe token/label, postal address and country.
+- Visual signature asset ready count: `4`; signature fallback count: `0`.
+- Local render ready: `true`.
+- Public use ready: `false`; MailerLite builder ready: `false`; seed send ready: `false`.
+
+Safety:
+
+- Local HTML/PNG/report generation only.
+- MailerLite API called: `false`.
+- MailerLite drafts created or edited: `false`.
+- Test sends, audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Shopify API/mutations: `false`.
+- CRM live API, Signal Ledger, cards, scoring and Fact Store writes: `false`.
+- Exact URLs, raw campaign/group IDs, raw recipients, raw Gmail IDs and tokens printed in this checkpoint: `false`.
+
+Operating meaning:
+
+- The compact footer is now the preferred local canon for this mini-launch.
+- Existing MailerLite asset-ready drafts and received seed messages still reflect the prior oversized footer; do not use them for final artifact/CEO-readiness QA.
+- The next real boundary is a separate exact approval to create or update compact-footer Null Audience draft replacements after fresh API preflight.
+- Do not resend tests, ask for public/audience send, or claim CEO-review readiness until compact-footer drafts and fresh seed evidence exist under their own approval gates.

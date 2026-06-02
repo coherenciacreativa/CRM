@@ -383,11 +383,20 @@ const buildReportPaths = ({ date, reportsDir }) => {
       'mailerlite_mini_launch_seed_inbox_correction_preview',
       date,
     ),
-    miniLaunchEmailRenderQa: latestExistingMiniLaunchDatedReportPath(
-      reportsDir,
-      'mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview',
-      date,
-    ),
+    miniLaunchEmailRenderQa: (() => {
+      const compactFooterRenderQaPath = miniLaunchDatedReportPath(
+        reportsDir,
+        'mailerlite_mini_launch_email_render_qa_footer_compact_canon',
+        date,
+      );
+      return existsSync(compactFooterRenderQaPath)
+        ? compactFooterRenderQaPath
+        : latestExistingMiniLaunchDatedReportPath(
+          reportsDir,
+          'mailerlite_mini_launch_email_render_qa_after_seed_inbox_correction_preview',
+          date,
+        );
+    })(),
     miniLaunchEmailBuilderPayloadManifestAfterSeedInboxCorrectionPreview: staticReportPath(
       reportsDir,
       'mailerlite_mini_launch_email_builder_payload_manifest_after_seed_inbox_correction_preview_inteligencia_descansar_2026-05-31.redacted.json',

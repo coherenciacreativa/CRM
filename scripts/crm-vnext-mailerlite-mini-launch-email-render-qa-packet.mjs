@@ -214,6 +214,16 @@ const hasCanonicalFooterIdentity = (html) =>
   && String(html ?? '').includes('Finca el Amanecer, vereda Alatania, Subachoque')
   && String(html ?? '').includes('Colombia');
 
+const hasCompactFooterHierarchy = (html) => {
+  const source = String(html ?? '');
+  return source.includes('.footer-name { margin: 0 0 8px; font-family: Georgia, serif; font-size: 24px;')
+    && source.includes('.footer-bio { margin: 0 0 16px; font-size: 14px;')
+    && source.includes('.footer-unsubscribe { margin: 0 0 4px; font-size: 12px;')
+    && source.includes('.footer-link { font-size: 12px;')
+    && source.includes('.footer-address { margin: 18px 0 0; font-size: 11px;')
+    && !source.includes('.footer-name { margin: 0 0 12px; font-family: Georgia, serif; font-size: 34px;');
+};
+
 const buildStaticChecksForEmail = ({ target, html }) => {
   const publicTextScan = scanPublicText(html);
   const urlPlaceholders = expectedUrlPlaceholdersFor(target);
@@ -320,6 +330,13 @@ const buildStaticChecksForEmail = ({ target, html }) => {
       evidence: hasCanonicalFooterIdentity(html)
         ? 'Footer includes Alejandro full identity, bio, visible unsubscribe link token and postal/country compliance text.'
         : 'Footer is missing the canonical author identity, bio, unsubscribe token or postal/country compliance text.',
+    },
+    {
+      id: 'footer_compact_hierarchy',
+      status: hasCompactFooterHierarchy(html) ? 'green' : 'red',
+      evidence: hasCompactFooterHierarchy(html)
+        ? 'Footer name, bio, unsubscribe line, unsubscribe link and postal address use compact secondary sizing.'
+        : 'Footer typography is not using the compact hierarchy.',
     },
   ];
 

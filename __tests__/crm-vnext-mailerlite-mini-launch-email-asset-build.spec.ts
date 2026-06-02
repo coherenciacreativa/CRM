@@ -336,6 +336,12 @@ describe("CRM vNext MailerLite mini-launch email asset build runner", () => {
     expect(html).toContain("Si no quieres recibir más correos, puedes darte de baja aquí:");
     expect(html).toContain('href="{$unsubscribe}"');
     expect(html).toContain("Darme de baja");
+    expect(html).toContain(".footer-name { margin: 0 0 8px; font-family: Georgia, serif; font-size: 24px;");
+    expect(html).toContain(".footer-bio { margin: 0 0 16px; font-size: 14px;");
+    expect(html).toContain(".footer-unsubscribe { margin: 0 0 4px; font-size: 12px;");
+    expect(html).toContain(".footer-link { font-size: 12px;");
+    expect(html).toContain(".footer-address { margin: 18px 0 0; font-size: 11px;");
+    expect(html).not.toContain("font-size: 34px");
     expect(html).toContain("Finca el Amanecer, vereda Alatania, Subachoque");
     expect(html).toContain("Colombia");
     expect(html).not.toContain('<span class="placeholder-note">result_or_resource_link_placeholder</span>');
