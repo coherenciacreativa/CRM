@@ -238,6 +238,8 @@ action that a resumed Goal should continue before replanning.
   CEO/seed inbox readback, not another draft creation or resend.
 - `allowed_scope`:
   - Inspect local v2 receipts, local render QA and current-state reports.
+  - Use the seed inbox readback approval packet to request the exact read-only
+    inbox QA phrase before inspecting the seed inbox.
   - Review only the four received seed/test emails through a user-approved
     read-only inbox route or user-provided evidence.
   - Compare visible email rendering against the v2 canon: compact footer,
@@ -259,13 +261,14 @@ action that a resumed Goal should continue before replanning.
   - `docs/crm-vnext/launch-os-next-action.md`
   - `docs/crm-vnext/mailerlite-launch-os-v0-control-room.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_readback_qa_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
   - Optional local readback QA packet under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
-  - Read-only inbox/UI inspection only after Alejandro explicitly approves the
-    route for seed inbox QA.
+  - Read-only inbox/UI inspection only after Alejandro provides the exact
+    phrase from the seed inbox readback QA approval packet.
 - `validation_commands`:
   - `git diff --check`
 - `live_gate_status`: V2 replacement-draft creation approval and v2 seed-test
@@ -273,17 +276,23 @@ action that a resumed Goal should continue before replanning.
   subscribers, workflows, Shopify and CRM remain closed until a separate exact
   approval.
 - `human_boundary_id`: `mailerlite_footer_compact_v2_seed_inbox_readback_qa_inteligencia_descansar`
-- `human_boundary_notification_status`: `not_needed`
+- `human_boundary_notification_status`: `pending`
+- `human_boundary_packet`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_readback_qa_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
+  - The exact read-only seed inbox QA phrase is absent or materially changed.
   - The requested route would inspect unrelated inbox/mailbox content.
   - Any requested action would resend tests, publish, schedule, assign a real
     audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
     scoring/Fact Store without a separate exact approval.
 - `resume_instruction`: Continue with compact-footer v2 seed inbox/readback QA
-  only. Use the v2 execution receipt as the authoritative seed-test evidence;
-  do not treat the general current-state refresh as proof of inbox quality.
+  only. If the exact read-only seed inbox QA phrase has not been provided, give
+  Alejandro the phrase from the approval packet and stop. Use the v2 execution
+  receipt as the authoritative seed-test evidence; do not treat the general
+  current-state refresh or older seed inbox QA artifacts as proof of v2 inbox
+  quality.
 - `completion_definition`: The four compact-footer v2 seed emails are reviewed
   for visual/copy/link/footer quality and the next boundary is declared as
   either correction, resend approval, or a separate public/audience-send

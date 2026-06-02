@@ -6788,3 +6788,55 @@ Operating meaning:
   closing/signature behavior, CTA links and placeholder/token absence.
 - A future resend, correction cycle, or public/audience-send readiness packet
   must be a separate exact boundary.
+
+## Launch OS v0 compact footer v2 seed inbox readback QA boundary prepared - 2026-06-02
+
+Status: active goal, local/report-only human boundary prepared. The v2 seed
+tests are recorded as sent, but v2 inbox/readback QA has not been performed in
+this checkpoint. The next useful step requires either Alejandro-provided
+evidence or the exact read-only seed inbox QA approval phrase.
+
+Evidence:
+
+- Seed inbox readback QA approval packet JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_readback_qa_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Seed inbox readback QA approval packet markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_seed_inbox_readback_qa_approval_packet_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 seed-test execution receipt JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 local render QA JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_email_render_qa_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Approval packet status:
+  `seed_inbox_readback_qa_approval_packet_ready_for_exact_human_approval_no_live_changes`.
+- V2 seed inbox/readback QA completed: `false`.
+- Exact inbox QA approval phrase available in local packet: `true`.
+- Current v2 seed-test execution receipt remains authoritative for send
+  completion.
+- Existing `mailerlite_mini_launch_seed_inbox_artifact_observation_current`,
+  `mailerlite_mini_launch_seed_inbox_artifact_qa_packet_current` and
+  `mailerlite_mini_launch_null_audience_seed_inbox_qa_current` reports remain
+  historical/stale for compact-footer v2 inbox quality because they were
+  produced before the v2 seed-test receipt.
+
+Safety:
+
+- This checkpoint was local/report-only.
+- UI opened: `false`.
+- Gmail, MailerLite, Shopify and CRM live APIs called: `false`.
+- Test emails sent or resent: `false`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers, groups, segments, workflows and automations mutated: `false`.
+- Signal Ledger, CRM cards, scoring and Fact Store touched: `false`.
+- Broad mailbox inspection: `false`.
+- Raw URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- Stop for the exact read-only seed inbox QA phrase before inspecting the seed
+  inbox.
+- After exact approval, review only the four compact-footer v2 seed/test
+  messages and generate redacted inbox/readback evidence.
+- Do not use stale seed inbox QA reports to declare CEO review or public launch
+  readiness.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
