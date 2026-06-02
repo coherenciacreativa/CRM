@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   EXPECTED_APPROVAL_PHRASE,
   EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
+  EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE,
   EXPECTED_E01_CANARY_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,
@@ -62,6 +63,18 @@ const compactNames = [
 ];
 
 const compactCampaigns = compactNames.map((name, index) => campaign({
+  label: `E0${index + 1}`,
+  name,
+}));
+
+const compactV2Names = [
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E01 Delivery orientation · API Null Audience compact footer v2 canon",
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E02 Practice · API Null Audience compact footer v2 canon",
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E03 Editorial depth · API Null Audience compact footer v2 canon",
+  "ML Draft · mini_2026_06_rehearsal_inteligencia_para_descansar · E04 Feedback invitation · API Null Audience compact footer v2 canon",
+];
+
+const compactV2Campaigns = compactV2Names.map((name, index) => campaign({
   label: `E0${index + 1}`,
   name,
 }));
@@ -129,6 +142,25 @@ const compactReplacementReceipt = {
     workflowMutationsPerformed: false,
     exactUrlsPrinted: false,
     tokensPrinted: false,
+  },
+};
+
+const compactV2ReplacementReceipt = {
+  ...compactReplacementReceipt,
+  createdDrafts: compactV2Names.map((name, index) => ({
+    step: index + 1,
+    label: `E0${index + 1}`,
+    campaignIdSha256: null,
+    name,
+  })),
+  postCreateQa: {
+    replacementDraftCount: 4,
+    nullAudienceSafeCount: 4,
+    contentGreenCount: 4,
+    rows: compactV2Campaigns.map((row, index) => ({
+      label: `E0${index + 1}`,
+      contentSha256: htmlStats(row.emails[0].content).sha256,
+    })),
   },
 };
 
@@ -230,6 +262,30 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
     );
     expect(EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE).toContain("compact-footer Null Audience");
     expect(EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE).toContain("receipt de creación compact-footer");
+    expect(preflight.blockers).toEqual([]);
+    expect(preflight.approvalMatched).toBe(true);
+    expect(preflight.compactFooterSet).toBe(true);
+  });
+
+  test("supports a compact-footer v2 seed-test boundary with its own exact phrase", () => {
+    const details = new Map(compactV2Campaigns.map((row) => [row.id, row]));
+    const preflight = buildPreflight({
+      replacementReceipt: compactV2ReplacementReceipt,
+      groups: [safetyGroup],
+      campaigns: compactV2Campaigns,
+      details,
+      seedEmail: "saludoalsol+seedmail@gmail.com",
+      execute: true,
+      recordUiSent: true,
+      approvalPhrase: EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE,
+    });
+
+    expect(expectedApprovalPhraseFor(["E01", "E02", "E03", "E04"], compactV2ReplacementReceipt)).toBe(
+      EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE,
+    );
+    expect(EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE).toContain("compact-footer v2 Null Audience");
+    expect(EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE).toContain("receipt de creación compact-footer v2");
+    expect(preflight.expectedApprovalPhrase).toBe(EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE);
     expect(preflight.blockers).toEqual([]);
     expect(preflight.approvalMatched).toBe(true);
     expect(preflight.compactFooterSet).toBe(true);
@@ -400,6 +456,11 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
       status: "mailerlite_null_audience_seed_test_send_completed_test_only",
       ok: true,
       decision: {
+        approvalRequest: {
+          exactApprovalPhrase: EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE,
+          exactApprovalPhrasePrinted: false,
+          targetLabels: ["E01", "E02", "E03", "E04"],
+        },
         approval: { status: "exact_approval_phrase_matched" },
         canExecute: true,
         exactApprovalPhrasePrinted: false,
@@ -451,6 +512,7 @@ describe("CRM vNext MailerLite Null Audience seed test send", () => {
 
     expect(markdown).toContain("Test emails sent: 1");
     expect(markdown).not.toContain("saludoalsol+seedmail@gmail.com");
+    expect(markdown).not.toContain(EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE);
     expect(markdown).not.toContain("https://preview.example.test");
   });
 });

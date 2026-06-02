@@ -29,6 +29,7 @@ const PLACEHOLDERS = [
 
 const EXPECTED_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 borradores asset-ready Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que los 4 borradores siguen en draft, apuntan exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coinciden con el receipt de creación asset-ready, no tienen placeholders ni tokens redacted pendientes, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
 const EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 borradores compact-footer Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que los 4 borradores siguen en draft, apuntan exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coinciden con el receipt de creación compact-footer, no tienen placeholders ni tokens redacted pendientes, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
+const EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE = 'Apruebo enviar únicamente test emails desde los 4 borradores compact-footer v2 Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que los 4 borradores siguen en draft, apuntan exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coinciden con el receipt de creación compact-footer v2, no tienen placeholders ni tokens redacted pendientes, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
 const EXPECTED_E01_CANARY_APPROVAL_PHRASE = 'Apruebo enviar únicamente un test email desde el borrador canario E01 Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, no tiene placeholders ni tokens redacted pendientes, sin reenviar E02-E04, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.';
 const EXPECTED_E04_RESEND_APPROVAL_PHRASE = 'Apruebo reenviar únicamente un test email del borrador E04 asset-ready Null Audience del mini-lanzamiento Inteligencia para descansar al seed recipient exacto saludoalsol+seedmail@gmail.com, después de re-scan fresco por API y QA verde de que el borrador sigue en draft, apunta exclusivamente al grupo vacío CC · Safety · Null audience · DO NOT SEND con active_count=0, coincide con el receipt de creación asset-ready, no tiene placeholders ni tokens redacted pendientes, sin reenviar E01-E03, sin publicar, sin programar, sin workflows, sin audience send, sin subscribers fuera del seed recipient, sin crear ni asignar grupos o segmentos adicionales, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si el recipient no queda exactamente en el seed o cualquier QA falla, detenerse y reportar.';
 const DEFAULT_TARGET_LABELS = ['E01', 'E02', 'E03', 'E04'];
@@ -404,7 +405,10 @@ const htmlStats = (html) => {
 const targetLabelsAreE01Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E01';
 const targetLabelsAreE04Only = (targetLabels = []) => targetLabels.length === 1 && targetLabels[0] === 'E04';
 const replacementReceiptIsCompactFooter = (receipt) =>
-  (receipt?.createdDrafts ?? []).some((row) => normalizeName(row?.name)?.includes('compact footer canon'));
+  (receipt?.createdDrafts ?? []).some((row) => normalizeName(row?.name)?.includes('compact footer canon')
+    || normalizeName(row?.name)?.includes('compact footer v2 canon'));
+const replacementReceiptIsCompactFooterV2 = (receipt) =>
+  (receipt?.createdDrafts ?? []).some((row) => normalizeName(row?.name)?.includes('compact footer v2 canon'));
 
 const replacementReceiptGreen = (receipt, targetLabels = DEFAULT_TARGET_LABELS) => {
   const labels = Array.isArray(targetLabels) && targetLabels.length ? targetLabels : DEFAULT_TARGET_LABELS;
@@ -436,7 +440,9 @@ const replacementReceiptGreen = (receipt, targetLabels = DEFAULT_TARGET_LABELS) 
 };
 
 const expectedApprovalPhraseFor = (targetLabels = DEFAULT_TARGET_LABELS, replacementReceipt = null) =>
-  replacementReceiptIsCompactFooter(replacementReceipt) && !targetLabelsAreE01Only(targetLabels) && !targetLabelsAreE04Only(targetLabels)
+  replacementReceiptIsCompactFooterV2(replacementReceipt) && !targetLabelsAreE01Only(targetLabels) && !targetLabelsAreE04Only(targetLabels)
+    ? EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE
+    : replacementReceiptIsCompactFooter(replacementReceipt) && !targetLabelsAreE01Only(targetLabels) && !targetLabelsAreE04Only(targetLabels)
     ? EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE
     : targetLabelsAreE01Only(targetLabels)
     ? EXPECTED_E01_CANARY_APPROVAL_PHRASE
@@ -550,6 +556,7 @@ const buildPreflight = ({
 
   return {
     approvalMatched,
+    expectedApprovalPhrase,
     expectedApprovalPhraseSha256: sha256(expectedApprovalPhrase),
     targetLabels,
     compactFooterSet,
@@ -859,6 +866,13 @@ const buildRun = async (options) => {
       credentialSource: credential?.source ? 'configured_not_printed' : null,
     },
     decision: {
+      approvalRequest: !executionRequested
+        ? {
+          exactApprovalPhrase: preflight.expectedApprovalPhrase,
+          exactApprovalPhrasePrinted: false,
+          targetLabels: preflight.targetLabels,
+        }
+        : null,
       approval: {
         provided: Boolean(cleanString(options.approvalPhrase)),
         status: !executionRequested
@@ -1040,6 +1054,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 export {
   EXPECTED_APPROVAL_PHRASE,
   EXPECTED_COMPACT_FOOTER_APPROVAL_PHRASE,
+  EXPECTED_COMPACT_FOOTER_V2_APPROVAL_PHRASE,
   EXPECTED_E01_CANARY_APPROVAL_PHRASE,
   EXPECTED_E04_RESEND_APPROVAL_PHRASE,
   buildPreflight,

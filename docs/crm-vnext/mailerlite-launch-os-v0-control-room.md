@@ -6671,3 +6671,58 @@ Operating meaning:
   seed-test approval. No test send is approved by this checkpoint.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 compact footer v2 seed-test preflight ready - 2026-06-02
+
+Status: active goal, read-only/API preflight completed. The four compact-footer
+v2 Null Audience drafts were re-scanned for seed-test readiness after the v2
+draft creation receipt. The preflight is green and provides the current exact
+approval boundary, but no seed/test email has been sent.
+
+Evidence:
+
+- V2 seed-test preflight JSON: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- V2 seed-test preflight markdown: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.md`
+- V2 replacement execution receipt: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+- Current-state refresh: `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_current_state_refresh_current_2026-06-02.json`
+- Mantis digest: `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_compact_footer_v2_seed_test_preflight_ready_inteligencia_descansar_2026-06-02.json`
+- Active next-action contract: `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Preflight status:
+  `mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`.
+- Mode: `read_only_preflight`.
+- Target count: `4`.
+- QA green count: `4`.
+- Blocker count: `0`.
+- Exact approval phrase available in local preflight: `true`.
+- Exact approval phrase printed by the preflight: `false`.
+- Test emails sent: `0`.
+- Current-state refresh status:
+  `mailerlite_launch_os_current_state_refresh_ready_no_live_changes`.
+- CEO Proposal Packet status:
+  `ceo_proposal_packet_ready_for_ceo_review_with_seed_execution_caveat_no_live_changes`.
+
+Safety:
+
+- MailerLite API called for read-only QA/preflight: `true`.
+- MailerLite test emails sent: `0`.
+- Audience sends, publish and schedule: `false`.
+- Subscribers read or mutated: `false`.
+- Additional groups or segments created/assigned: `false`.
+- Workflows and automations mutated: `false`.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: `false`.
+- Raw IDs, recipients, exact URLs, raw asset URLs and tokens printed: `false`.
+
+Operating meaning:
+
+- The compact-footer v2 seed-test boundary is ready for Alejandro's exact
+  approval. The approval must be separate from the consumed v2 replacement-draft
+  creation approval.
+- The current route for actual test sends is MailerLite UI/Computer Use, with a
+  local `record-ui-sent` receipt after successful UI sends.
+- The MailerLite API remains useful for preflight/QA/receipts, not as the
+  primary compact-footer test-send route.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.

@@ -213,21 +213,24 @@ action that a resumed Goal should continue before replanning.
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
 - `source_checkpoint`: `Launch OS v0 compact footer v2 Null Audience replacement drafts created - 2026-06-02`
-- `objective`: Prepare the separate compact-footer v2 seed-test boundary:
-  run fresh API preflight/read-only QA for the four v2 Null Audience drafts and
-  stop before any test email unless Alejandro gives exact seed-test approval.
+- `objective`: Wait for exact compact-footer v2 seed-test approval, then use
+  the MailerLite UI/Computer Use route for the four v2 Null Audience drafts and
+  record the result locally after fresh QA remains green.
 - `why_now`: The v2 replacement-draft approval was consumed and executed.
   Four new v2 drafts exist, all assigned exclusively to the empty Null Audience
   safety group, with post-create QA green and no sends/publish/schedule. The old
-  compact-footer seed inbox QA is not current for this v2 draft set, so the next
-  useful boundary is a fresh v2 seed-test preflight and exact approval request.
+  compact-footer seed inbox QA is not current for this v2 draft set. Fresh v2
+  seed-test preflight is now green with four targets, 0 blockers and 0 test
+  emails sent, so the next useful boundary is exact seed-test approval.
 - `allowed_scope`:
-  - Run read-only/API QA for the four v2 replacement drafts.
-  - Generate a compact-footer v2 seed-test preflight/approval packet.
+  - Re-run read-only/API QA for the four v2 replacement drafts immediately
+    before any approved UI send attempt.
   - Confirm the drafts remain draft-only and assigned exclusively to the empty
     safety group with `active_count=0`.
-  - Stop before UI operation or any test email unless a fresh exact approval is
-    provided for the seed recipient and labels.
+  - After exact approval only, use MailerLite UI/Computer Use to send test
+    emails to the approved seed recipient.
+  - Record UI-assisted sends locally with `--record-ui-sent` after successful
+    UI operation.
 - `forbidden_scope`:
   - Do not reuse the consumed v2 replacement-draft creation approval.
   - Do not reuse old asset-ready, compact-footer or seed-test receipts as
@@ -248,13 +251,15 @@ action that a resumed Goal should continue before replanning.
   - `scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
   - `scripts/crm-vnext-mailerlite-launch-os-current-state-refresh.mjs`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_replacement_execution_receipt_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_null_audience_seed_test_send_preflight_footer_compact_v2_canon_inteligencia_descansar_2026-06-02.json`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
   - `npm run crm:vnext:mailerlite-mini-launch-null-audience-seed-test-send -- --replacement-receipt <v2 replacement receipt> --out <v2 seed preflight path> --markdown-out <v2 seed preflight md>`
-  - Same command with `--execute --approval-phrase <exact seed-test phrase>`
-    only after exact seed-test approval is provided.
+  - MailerLite UI/Computer Use test-send flow only after exact seed-test
+    approval is provided and fresh QA is green.
+  - `npm run crm:vnext:mailerlite-mini-launch-null-audience-seed-test-send -- --replacement-receipt <v2 replacement receipt> --record-ui-sent --ui-sent-labels E01,E02,E03,E04 --approval-phrase <exact seed-test phrase> --out <v2 seed execution receipt> --markdown-out <v2 seed execution md>` after successful UI sends only.
   - `npm run crm:vnext:mailerlite-launch-os-current-state-refresh -- --date 2026-06-02`
 - `validation_commands`:
   - `node --check scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
@@ -278,9 +283,10 @@ action that a resumed Goal should continue before replanning.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store without a separate exact approval.
-- `resume_instruction`: Run the fresh v2 seed-test preflight/approval packet.
-  If Alejandro provides exact seed-test approval, use the UI/Computer Use route
-  required by the Launch OS profile; otherwise stop with the exact phrase needed.
+- `resume_instruction`: If Alejandro provides exact seed-test approval, re-run
+  fresh v2 seed-test preflight, use the UI/Computer Use route required by the
+  Launch OS profile, then record the UI-sent receipt. If approval is absent or
+  inexact, stop with the exact phrase needed.
 - `completion_definition`: The four compact-footer v2 seed/test emails are
   either preflighted and awaiting exact approval, or sent only to the approved
   seed recipient after exact approval and recorded in a local receipt. No
