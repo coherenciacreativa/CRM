@@ -839,6 +839,8 @@ action that a resumed Goal should continue before replanning.
     system-click fallback routes unless Alejandro explicitly approves that
     fallback for this exact operation.
 - `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_handoff_with_seed_caveat_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_handoff_with_seed_caveat_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.json`
@@ -871,6 +873,8 @@ action that a resumed Goal should continue before replanning.
 - `human_boundary_id`: `launch_rehearsal_ceo_proposal_with_seed_caveat_or_remaining_route_decision_inteligencia_descansar`
 - `human_boundary_notification_status`: `sent`
 - `human_boundary_notification_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_handoff_with_seed_caveat_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_handoff_with_seed_caveat_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.json`
@@ -879,11 +883,12 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
-- `human_boundary_notification_note`: The Codex thread should offer the CEO two
-  clean choices: review the CEO Proposal Packet now with the seed execution
-  caveat, or approve the already-captured fallback route phrase to complete
-  only `E02`/`E03`/`E04`. The fallback phrase authorizes only the UI-control
-  route, not a new seed-send approval or any public/audience send.
+- `human_boundary_notification_note`: The CEO Review Handoff offers three clean
+  choices: review the CEO Proposal Packet now with the seed execution caveat,
+  approve the already-captured fallback route phrase to complete only
+  `E02`/`E03`/`E04`, or pause the seed route and continue local Launch OS work.
+  The fallback phrase authorizes only the UI-control route, not a new seed-send
+  approval or any public/audience send.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
@@ -895,11 +900,11 @@ action that a resumed Goal should continue before replanning.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store.
-- `resume_instruction`: Start from the 2026-06-03 CEO Proposal Packet and
-  readiness delta. Do not spend a long run rediscovering the same MailerLite
-  accessibility limitation. If Alejandro approves fallback, refresh preflight
-  and attempt only `E02`/`E03`/`E04`; otherwise keep the pilot no-send/local and
-  present the CEO-review packet with the seed caveat.
+- `resume_instruction`: Start from the 2026-06-03 CEO Review Handoff, CEO
+  Proposal Packet and readiness delta. Do not spend a long run rediscovering
+  the same MailerLite accessibility limitation. If Alejandro approves fallback,
+  refresh preflight and attempt only `E02`/`E03`/`E04`; otherwise keep the
+  pilot no-send/local and present the CEO-review packet with the seed caveat.
 - `completion_definition`: Alejandro has either reviewed/decided on the CEO
   Proposal Packet with the seed caveat, or the remaining `E02`, `E03` and `E04`
   delegated seed-test sends are completed and locally receipted without
