@@ -2134,12 +2134,13 @@ Use deep hydration only for:
   - Open live mutation gate count: 0.
   - Live action allowed now: false.
 
-## Active Next Action - Launch OS v0 Taxonomy Local Apply Decision - 2026-06-03
+## Completed Next Action - Launch OS v0 Taxonomy Local Apply Decision - 2026-06-03
 
 - `next_action_id`: `launch_os_v0_taxonomy_local_apply_decision_after_preview`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
 - `source_checkpoint`: `Launch OS v0 taxonomy local patch preview ready - 2026-06-03`
 - `objective`: Let Alejandro review or approve only the local Brand dictionary
   and CRM manifest patch described by the preview. Do not apply it without the
@@ -2198,3 +2199,96 @@ Use deep hydration only for:
   is generated, or Alejandro explicitly defers the local apply boundary.
 - `next_checkpoint_expected`: Control Room checkpoint after approved local apply
   receipt, or after Alejandro defers this local apply boundary.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_receipt_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_receipt_current_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_brand_diff_current_2026-06-03.diff`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_crm_diff_current_2026-06-03.diff`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_combined_diff_current_2026-06-03.diff`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_post_local_apply_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_post_local_apply_current_2026-06-03.md`
+- `resulting_status`:
+  - Apply receipt:
+    `taxonomy_local_patch_apply_completed_no_live_changes`.
+  - Brand status replacements: 14.
+  - Brand verification lines added: 14.
+  - CRM existing manifest rows updated: 7.
+  - CRM manifest entries added: 7.
+  - Post-apply consolidation audit:
+    `taxonomy_receipts_consolidated_no_live_changes`.
+  - Post-apply taxonomy refresh handoff:
+    `taxonomy_refresh_handoff_not_needed_no_live_changes`.
+  - Brand promotion needed count: 0.
+  - CRM manifest refresh needed count: 0.
+  - MailerLite, Shopify and CRM live APIs called: false.
+  - Subscribers read or mutated: false.
+  - Groups, tags, segments, workflows, audiences, campaigns or sends mutated:
+    false.
+  - Ledgers, cards, scoring and Fact Store touched: false.
+- `brand_repo_note`:
+  - The approved Brand dictionary target lives in
+    `/Users/alejandrogomez/Projects/hub-de-marca`, whose git status had broad
+    pre-existing dirty/untracked work. Only
+    `90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md` was edited under this
+    approval. Do not broad-stage or broad-commit the Brand repo from this
+    Launch OS lane.
+
+## Active Next Action - Launch OS v0 CRM Observed Events Input Request - 2026-06-03
+
+- `next_action_id`: `launch_os_v0_crm_observed_events_input_request_after_taxonomy_apply`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 taxonomy local patch applied - 2026-06-03`
+- `objective`: Request or receive the missing private CRM observed-events input
+  for `Inteligencia para descansar` so CRM signal-write readiness can be
+  evaluated locally without inventing events.
+- `why_now`: Taxonomy drift is locally consolidated. The remaining CRM readiness
+  blocker from the baseline is not technical; Launch OS needs real observed
+  events with exact people before it can prepare any CRM write/readiness packet.
+- `allowed_scope`:
+  - Present the exact private input request.
+  - If Alejandro provides the private file, run only local/redacted CRM
+    write-readiness intake and packets.
+  - Keep any exact people or private values out of public reports unless the
+    private-input format explicitly permits redaction.
+- `forbidden_scope`:
+  - Do not invent observed events, exact people, sample identities or `.invalid`
+    placeholders.
+  - Do not use seed/internal QA messages as real observed CRM events.
+  - Do not write CRM live records, ledgers, cards, scoring or Fact Store.
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not read, assign or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, audiences,
+    workflows, campaigns or sends.
+  - Do not run seed tests.
+  - Do not publish, schedule or audience-send.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+- `exact_input_request`:
+  - Private observed-events file path:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+  - Each real observed event must include an exact person key such as `email`,
+    `instagramHandle` or `personId`, plus the real observed event/signal and
+    enough context to decide whether CRM can write it.
+- `live_gate_status`: CRM writes, Fact Store writes, public/audience sends,
+  publish, schedule, subscriber/group/workflow mutations, MailerLite, Shopify,
+  CRM live APIs, ledgers, cards and scoring remain closed.
+- `human_boundary_id`: `crm_observed_events_private_input_not_approval`
+- `human_boundary_notification_status`: `copy_ready_request_available`
+- `stop_conditions`:
+  - No private observed-events file is provided.
+  - The supplied file contains invented/sample events, `.invalid` identities or
+    seed/internal QA messages instead of real observed CRM events.
+  - A requested next step would require live CRM writes, Fact Store writes,
+    live APIs, UI or public reports of private values.
+- `resume_instruction`: Present or receive only the private observed-events
+  input. Do not run live APIs, UI, sends, workflow mutation, audience
+  assignment, CRM writes or Fact Store writes. If the file appears, run only
+  local/redacted readiness packets.
+- `completion_definition`: A valid private observed-events file exists and the
+  CRM write-readiness packet is refreshed locally/redacted, or Alejandro
+  explicitly defers CRM signal-write readiness.
+- `next_checkpoint_expected`: Control Room checkpoint after the private input is
+  supplied and local readiness changes, or after Alejandro defers this input.

@@ -9013,3 +9013,117 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 taxonomy local patch applied - 2026-06-03
+
+Status: checkpoint completed, approved local-file mutation only. Alejandro's
+exact local patch approval was consumed once. The approved taxonomy patch was
+applied only to the local Brand dictionary and the local CRM receipt taxonomy
+manifest. No live MailerLite, Shopify, CRM, subscriber, workflow, audience,
+campaign, send, ledger, card, scoring or Fact Store operation was performed.
+
+What changed:
+
+- Updated the Brand dictionary local target:
+  `/Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md`.
+- Updated the CRM manifest local target:
+  `docs/crm-vnext/mailerlite-receipt-taxonomy-v0.md`.
+- Promoted 14 Brand rows from `proposed_local` to `live_canonical`.
+- Added 14 Brand verification lines for the approved empty MailerLite groups.
+- Updated 7 existing CRM manifest rows with `liveGroupId` and `liveStatus`.
+- Added 7 missing CRM manifest entries.
+- Generated local diff and receipt artifacts.
+- Re-ran local taxonomy consolidation audit; it is now consolidated.
+- Re-ran taxonomy refresh handoff; no further Brand/CRM taxonomy refresh handoff
+  is needed.
+
+Evidence:
+
+- Apply receipt JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_receipt_current_2026-06-03.json`
+- Apply receipt markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_receipt_current_2026-06-03.md`
+- Brand diff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_brand_diff_current_2026-06-03.diff`
+- CRM diff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_crm_diff_current_2026-06-03.diff`
+- Combined diff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_apply_combined_diff_current_2026-06-03.diff`
+- Post-apply consolidation audit JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.json`
+- Post-apply consolidation audit markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.md`
+- Post-apply handoff JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_post_local_apply_current_2026-06-03.json`
+- Post-apply handoff markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_post_local_apply_current_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Apply receipt status:
+  `taxonomy_local_patch_apply_completed_no_live_changes`.
+- Brand status replacements: 14.
+- Brand verification lines added: 14.
+- CRM existing manifest rows updated: 7.
+- CRM manifest entries added: 7.
+- Post-apply consolidation audit:
+  `taxonomy_receipts_consolidated_no_live_changes`.
+- Live evidence group count: 19.
+- Brand promotion needed count: 0.
+- CRM manifest refresh needed count: 0.
+- Post-apply taxonomy refresh handoff:
+  `taxonomy_refresh_handoff_not_needed_no_live_changes`.
+- Brand promotion decision count after apply: 0.
+- CRM manifest patch count after apply: 0.
+- Open live mutation gate count: 0.
+
+Validation:
+
+- Preview digest preflight matched both target files before apply.
+- `jq empty` passed for the apply receipt and preview JSON.
+- `node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.mjs`
+- `npx vitest run __tests__/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.spec.ts __tests__/crm-vnext-mailerlite-launch-os-taxonomy-consolidation-audit.spec.ts`
+- `npm run crm:vnext:mailerlite-launch-os-taxonomy-consolidation-audit -- --brand-dictionary /Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md --crm-manifest /Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-receipt-taxonomy-v0.md --out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.json --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.md`
+- `npm run crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff -- --taxonomy-consolidation-audit /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_consolidation_audit_post_local_apply_current_2026-06-03.json --brand-dictionary /Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md --crm-manifest /Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-receipt-taxonomy-v0.md --out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_post_local_apply_current_2026-06-03.json --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_handoff_post_local_apply_current_2026-06-03.md`
+
+Operating meaning:
+
+- Continue with
+  `launch_os_v0_crm_observed_events_input_request_after_taxonomy_apply`.
+- The Brand/CRM taxonomy final-response and local apply lane is closed for this
+  patch.
+- The remaining CRM signal-write blocker is the private observed-events input;
+  do not invent it or use seed/internal QA messages as real CRM events.
+- Brand Hub repo note: the approved Brand dictionary target was edited locally,
+  but `/Users/alejandrogomez/Projects/hub-de-marca` had broad pre-existing
+  dirty/untracked work. Do not broad-stage or broad-commit that repo from this
+  Launch OS lane.
+- The private CRM observed-events input remains separate and missing:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+
+Safety:
+
+- Approved local Brand dictionary mutation: true.
+- Approved local CRM manifest mutation: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Workflow mutations performed: false.
+- Productive Onboarding v1 touched: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

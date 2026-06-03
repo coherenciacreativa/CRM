@@ -102,11 +102,18 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "layer": "Source",
       "object": "IG onboarding",
       "purpose": "Marks people who entered through the Instagram welcome/email capture route.",
-      "relatedHistoricGroups": ["leads_instagram.csv", "Instagram"],
-      "relatedWorkflows": ["Onboarding flow"],
+      "relatedHistoricGroups": [
+        "leads_instagram.csv",
+        "Instagram"
+      ],
+      "relatedWorkflows": [
+        "Onboarding flow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667906749367606",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Source · Resource · Brújula",
@@ -116,8 +123,13 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Resource",
       "detail": "Brújula",
       "purpose": "Marks people who entered via the Brújula guide opt-in.",
-      "relatedHistoricGroups": ["Brújula de Claridad — Guía gratuita", "Notas de Alejandro — opt-in Brújula"],
-      "relatedWorkflows": ["Brújula de Claridad - Guía gratuita Workflow"],
+      "relatedHistoricGroups": [
+        "Brújula de Claridad — Guía gratuita",
+        "Notas de Alejandro — opt-in Brújula"
+      ],
+      "relatedWorkflows": [
+        "Brújula de Claridad - Guía gratuita Workflow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
@@ -128,8 +140,12 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Resource",
       "detail": "Perfect Week",
       "purpose": "Marks people who entered via the Perfect Week resource opt-in.",
-      "relatedHistoricGroups": ["Perfect Week Leads"],
-      "relatedWorkflows": ["Perfect Week — Email 0 + handoff 24h"],
+      "relatedHistoricGroups": [
+        "Perfect Week Leads"
+      ],
+      "relatedWorkflows": [
+        "Perfect Week — Email 0 + handoff 24h"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 3
@@ -140,7 +156,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Quiz",
       "detail": "Energia renovada",
       "purpose": "Candidate marker for people who entered via the energy/renewal quiz route; requires verification of real quiz name before creation.",
-      "relatedHistoricGroups": ["Quiz Subscribers"],
+      "relatedHistoricGroups": [
+        "Quiz Subscribers"
+      ],
       "relatedWorkflows": [],
       "safeToCreateEmpty": false,
       "safeToUseInDisabledPilotAfterQa": false,
@@ -152,7 +170,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Product",
       "detail": "Arte de No Reventar",
       "purpose": "Review-only candidate; the historical group appears to describe buyers and may belong in CRM/customer/audience semantics instead of Source.",
-      "relatedHistoricGroups": ["Arte de no reventar — Compradores"],
+      "relatedHistoricGroups": [
+        "Arte de no reventar — Compradores"
+      ],
       "relatedWorkflows": [],
       "safeToCreateEmpty": false,
       "safeToUseInDisabledPilotAfterQa": false,
@@ -165,7 +185,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "detail": "Encuentro Feliz",
       "purpose": "Candidate marker for people entering through Encuentro Feliz registration or event route; create only if routing need becomes concrete.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Encuentro Feliz"],
+      "relatedWorkflows": [
+        "Encuentro Feliz"
+      ],
       "safeToCreateEmpty": false,
       "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 5
@@ -180,7 +202,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "contentId": "guide_brujula_claridad",
       "purpose": "Receipt that the Brújula guide delivery step has completed.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Brújula de Claridad - Guía gratuita Workflow"],
+      "relatedWorkflows": [
+        "Brújula de Claridad - Guía gratuita Workflow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
@@ -193,7 +217,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "contentId": "guide_perfect_week",
       "purpose": "Receipt that Perfect Week delivery has completed.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Perfect Week — Email 0 + handoff 24h"],
+      "relatedWorkflows": [
+        "Perfect Week — Email 0 + handoff 24h"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 3
@@ -218,7 +244,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "detail": "Encuentro Feliz",
       "purpose": "Candidate marker that Encuentro Feliz access was delivered; replaces the fragile generic Link wording if routing needs it.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Encuentro Feliz"],
+      "relatedWorkflows": [
+        "Encuentro Feliz"
+      ],
       "safeToCreateEmpty": false,
       "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 4
@@ -232,8 +260,14 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "detail": "Sobre el amor",
       "contentId": "article_sobre_el_amor",
       "purpose": "Canonical marker that this reusable article has been sent, independent of its position in any workflow. It does not imply opened, read, clicked, or interested.",
-      "relatedHistoricGroups": ["Received second email"],
-      "relatedWorkflows": ["Onboarding flow", "Onboarding for legacy subscribers", "Brújula de Claridad - Guía gratuita Workflow"],
+      "relatedHistoricGroups": [
+        "Received second email"
+      ],
+      "relatedWorkflows": [
+        "Onboarding flow",
+        "Onboarding for legacy subscribers",
+        "Brújula de Claridad - Guía gratuita Workflow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
@@ -246,10 +280,14 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "contentId": "article_relaciones_aumentan_energia",
       "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Onboarding flow"],
+      "relatedWorkflows": [
+        "Onboarding flow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667909471471351",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Sent · Article · Navegar los bajonazos",
@@ -259,10 +297,14 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "contentId": "article_navegar_bajonazos",
       "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Onboarding flow"],
+      "relatedWorkflows": [
+        "Onboarding flow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667909995758708",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Sent · Article · Volver a fluir",
@@ -272,10 +314,14 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "contentId": "article_volver_a_fluir",
       "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Onboarding flow"],
+      "relatedWorkflows": [
+        "Onboarding flow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667910534727436",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Sent · Article · Algo para perder el miedo",
@@ -285,10 +331,14 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "contentId": "article_algo_para_perder_miedo",
       "purpose": "Canonical sent marker for the reusable article, independent of workflow position.",
       "relatedHistoricGroups": [],
-      "relatedWorkflows": ["Onboarding flow"],
+      "relatedWorkflows": [
+        "Onboarding flow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667911054820635",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Journey · Editorial onboarding · Eligible",
@@ -298,8 +348,13 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Editorial onboarding",
       "detail": "Eligible",
       "purpose": "Marks that a person is eligible to enter editorial onboarding after receiving a resource.",
-      "relatedHistoricGroups": ["will get first email"],
-      "relatedWorkflows": ["Onboarding flow", "Brújula de Claridad - Guía gratuita Workflow"],
+      "relatedHistoricGroups": [
+        "will get first email"
+      ],
+      "relatedWorkflows": [
+        "Onboarding flow",
+        "Brújula de Claridad - Guía gratuita Workflow"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": true,
       "pilotPriority": 1
@@ -310,11 +365,20 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Editorial onboarding",
       "detail": "In progress",
       "purpose": "Marks that a person is currently in editorial onboarding.",
-      "relatedHistoricGroups": ["will get first email", "Se le envió el primer boletín", "Received second email"],
-      "relatedWorkflows": ["Onboarding flow", "Onboarding for legacy subscribers"],
+      "relatedHistoricGroups": [
+        "will get first email",
+        "Se le envió el primer boletín",
+        "Received second email"
+      ],
+      "relatedWorkflows": [
+        "Onboarding flow",
+        "Onboarding for legacy subscribers"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667908183820180",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Journey · Editorial onboarding · Complete",
@@ -322,11 +386,18 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "Editorial onboarding",
       "detail": "Complete",
       "purpose": "Marks completion of editorial onboarding.",
-      "relatedHistoricGroups": ["Onboarding complete"],
-      "relatedWorkflows": ["Onboarding flow", "Onboarding for legacy subscribers"],
+      "relatedHistoricGroups": [
+        "Onboarding complete"
+      ],
+      "relatedWorkflows": [
+        "Onboarding flow",
+        "Onboarding for legacy subscribers"
+      ],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
-      "pilotPriority": 2
+      "pilotPriority": 2,
+      "liveGroupId": "188667908780459589",
+      "liveStatus": "live_canonical_empty_created_2026-05-28"
     },
     {
       "name": "CC · Audience · General newsletter · Eligible",
@@ -336,7 +407,9 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "object": "General newsletter",
       "detail": "Eligible",
       "purpose": "Coarse audience marker for people who can receive fresh general campaigns.",
-      "relatedHistoricGroups": ["Onboarding complete"],
+      "relatedHistoricGroups": [
+        "Onboarding complete"
+      ],
       "relatedWorkflows": [],
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
@@ -353,6 +426,110 @@ Checkpoint 2026-05-27: after a separate explicit test-only approval, one approve
       "safeToCreateEmpty": true,
       "safeToUseInDisabledPilotAfterQa": false,
       "pilotPriority": 3
+    },
+    {
+      "name": "CC · Sent · Article · Encontrar compañeros de camino",
+      "liveGroupId": "188667911596934150",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Sent",
+      "object": "Article",
+      "detail": "Encontrar compañeros de camino",
+      "contentId": "article_encontrar_companeros_camino",
+      "purpose": "Marcador de envio de articulo canonico.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
+    },
+    {
+      "name": "CC · Sent · Article · La clave que facilita el trabajo",
+      "liveGroupId": "188667912118076979",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Sent",
+      "object": "Article",
+      "detail": "La clave que facilita el trabajo",
+      "contentId": "article_clave_facilita_trabajo",
+      "purpose": "Marcador de envio de articulo canonico.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
+    },
+    {
+      "name": "CC · Sent · Article · Esto mejoro mi relacion",
+      "liveGroupId": "188667912645510264",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Sent",
+      "object": "Article",
+      "detail": "Esto mejoro mi relacion",
+      "contentId": "article_esto_mejoro_mi_relacion",
+      "purpose": "Marcador de envio de articulo canonico.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
+    },
+    {
+      "name": "CC · Sent · Article · Que hacer cuando no quiero hacer",
+      "liveGroupId": "188667913162458805",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Sent",
+      "object": "Article",
+      "detail": "Que hacer cuando no quiero hacer",
+      "contentId": "article_que_hacer_cuando_no_quiero_hacer",
+      "purpose": "Marcador de envio de articulo canonico.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
+    },
+    {
+      "name": "CC · Sent · Article · Esto me sirve para el malestar",
+      "liveGroupId": "188667913690940616",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Sent",
+      "object": "Article",
+      "detail": "Esto me sirve para el malestar",
+      "contentId": "article_esto_me_sirve_malestar",
+      "purpose": "Marcador de envio de articulo canonico.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
+    },
+    {
+      "name": "CC · Source · Quiz · Inteligencia para descansar",
+      "liveGroupId": "188664860533327011",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Source",
+      "object": "Quiz",
+      "detail": "Inteligencia para descansar",
+      "purpose": "Posible origen de personas que entran por el quiz/test Inteligencia para descansar.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
+    },
+    {
+      "name": "CC · Delivered · Quiz result · Inteligencia para descansar",
+      "liveGroupId": "188664861144647593",
+      "liveStatus": "live_canonical_empty_created_2026-05-28",
+      "layer": "Delivered",
+      "object": "Quiz result",
+      "detail": "Inteligencia para descansar",
+      "contentId": "quiz_result_inteligencia_para_descansar",
+      "purpose": "Se entrego el resultado/recurso prometido del quiz/test Inteligencia para descansar.",
+      "relatedHistoricGroups": [],
+      "relatedWorkflows": [],
+      "safeToCreateEmpty": true,
+      "safeToUseInDisabledPilotAfterQa": false,
+      "pilotPriority": 4
     }
   ]
 }
