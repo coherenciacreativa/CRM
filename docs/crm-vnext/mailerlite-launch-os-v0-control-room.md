@@ -7824,6 +7824,10 @@ Evidence:
   `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.json`
 - Computer Use click blocker markdown:
   `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
+- Computer Use click blocker retry 2 JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.json`
+- Computer Use click blocker retry 2 markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.md`
 - Standing Delegation policy:
   `docs/crm-vnext/launch-os-standing-delegation-policy.md`
 
@@ -7840,6 +7844,8 @@ Confirmed results:
 - Delegated visual/coordinate fallback attempted: true.
 - Coordinate fallback result:
   `Computer Use server error -10005: noWindowsAvailable`.
+- Same blocker retry count: 2 consecutive goal turns.
+- Strict blocked-audit threshold reached: false.
 
 Safety:
 
@@ -7857,9 +7863,11 @@ Operating meaning:
 - Do not ask Alejandro for another seed-test approval phrase for `E02`, `E03`
   or `E04` if fresh QA remains green and the route stays inside Standing
   Delegation.
-- The next operator should retry the same delegated seed/test route in a fresh
-  Computer Use-capable session or after Computer Use coordinate-click behavior
-  recovers, then record a local execution receipt for the labels actually sent.
+- Do not spend another long run repeating the same coordinate click in the same
+  Computer Use state. The next operator should retry the same delegated
+  seed/test route only in a fresh Computer Use-capable session or after Computer
+  Use coordinate-click behavior recovers, then record a local execution receipt
+  for the labels actually sent.
 - Public/audience send approval, MailerLite publish/schedule, subscriber/group/
   workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
   writes remain closed.

@@ -855,6 +855,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
 - `allowed_commands`:
@@ -896,6 +898,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.md`
 - `human_boundary_notification_note`: Alejandro clarified that routine
   MailerLite seed/test emails to approved seed recipients should not require
   repeated approvals. The remaining `E02`/`E03`/`E04` seed sends should proceed
@@ -906,7 +910,13 @@ action that a resumed Goal should continue before replanning.
   exposed Safari and the MailerLite draft list semantically, but the `Send a
   test` control was not exposed semantically and delegated visual/coordinate
   clicks failed with `Computer Use server error -10005: noWindowsAvailable`.
-  No seed recipient was typed and no test emails were sent.
+  A second continuation retried after fresh green preflight and hit the same
+  `noWindowsAvailable` blocker. No seed recipient was typed and no test emails
+  were sent.
+- `blocked_audit_note`: Same blocker count is now 2 consecutive goal turns. The
+  strict blocked-audit threshold is not reached; keep the goal active. Do not
+  spend another long run repeating the same coordinate click in the same
+  Computer Use state.
 - `anti_blocker_rule`: A fresh seed-test approval phrase is not needed for this
   active action. If a future resume sees older "decision request" or
   "approval boundary" language for these same seed/test sends, treat it as
@@ -933,7 +943,9 @@ action that a resumed Goal should continue before replanning.
   approval just because MailerLite requires a minimal Computer Use
   visual/coordinate fallback for a visible `Send a test` control. If Computer
   Use still returns `noWindowsAvailable` for the delegated fallback, report the
-  tool-route blocker and preserve the unsent labels.
+  tool-route blocker and preserve the unsent labels. Prefer a fresh
+  Computer Use-capable session or evidence that coordinate-click behavior has
+  recovered before retrying the same fallback again.
 - `completion_definition`: The remaining `E02`, `E03` and `E04` delegated
   seed-test sends are completed and locally receipted without resending `E01`,
   then CEO-review delta/proposal artifacts are regenerated without the seed
