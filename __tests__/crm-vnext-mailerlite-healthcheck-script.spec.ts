@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -58,6 +58,15 @@ const startFakeMailerLite = async (mode: "ok" | "unauthenticated") => {
   };
 };
 
+const createFakeSecurityPath = async (dir: string) => {
+  const binDir = join(dir, "bin");
+  await mkdir(binDir, { recursive: true });
+  const securityBin = join(binDir, "security");
+  await writeFile(securityBin, "#!/bin/sh\nexit 1\n", "utf8");
+  await chmod(securityBin, 0o755);
+  return `${binDir}:${process.env.PATH ?? ""}`;
+};
+
 describe("CRM vNext MailerLite healthcheck script", () => {
   test("reports healthy MailerLite lane without leaking subscriber content", async () => {
     const fake = await startFakeMailerLite("ok");
@@ -66,6 +75,7 @@ describe("CRM vNext MailerLite healthcheck script", () => {
       await mkdir(dir, { recursive: true });
       const out = join(dir, "health.json");
       const markdownOut = join(dir, "health.md");
+      const path = await createFakeSecurityPath(dir);
 
       const { stdout } = await execFileAsync("node", [
         "scripts/crm-vnext-mailerlite-healthcheck.mjs",
@@ -84,7 +94,7 @@ describe("CRM vNext MailerLite healthcheck script", () => {
         "--fail-on-blocked",
       ], {
         cwd: process.cwd(),
-        env: { ...process.env, MAILERLITE_API_KEY: "test-mailerlite-key" },
+        env: { PATH: path, MAILERLITE_API_KEY: "test-mailerlite-key" },
       });
 
       const compact = JSON.parse(stdout);
@@ -92,7 +102,20 @@ describe("CRM vNext MailerLite healthcheck script", () => {
       const markdown = await readFile(markdownOut, "utf8");
 
       expect(compact.ok).toBe(true);
+      expect(compact).not.toHaveProperty("keychain");
+      expect(compact.credential).toMatchObject({
+        credentialPresent: true,
+        storedCredentialChecked: true,
+        credentialMode: "stored_credential_checked",
+      });
       expect(report.status).toBe("ok");
+      expect(report).not.toHaveProperty("apiBase");
+      expect(report).not.toHaveProperty("keychain");
+      expect(report.credential).toMatchObject({
+        credentialPresent: true,
+        storedCredentialChecked: true,
+        credentialMode: "stored_credential_checked",
+      });
       expect(report.summary.blocked).toBe(0);
       expect(report.summary.subscriberPages).toBe(2);
       expect(report.summary.subscribersScanned).toBe(3);
@@ -109,6 +132,12 @@ describe("CRM vNext MailerLite healthcheck script", () => {
       expect(serialized).not.toContain("Private One");
       expect(serialized).not.toContain("PRIVATE GROUP SHOULD NOT LEAK");
       expect(serialized).not.toContain("test-mailerlite-key");
+      expect(serialized).not.toContain("__missing__");
+      expect(serialized).not.toContain("keychain:");
+      expect(serialized).not.toContain("Credential source");
+      expect(serialized).not.toContain("credentialSource");
+      expect(serialized).not.toContain("credentialLength");
+      expect(serialized).not.toContain("credentialFingerprint");
     } finally {
       await fake.close();
       await rm(dir, { recursive: true, force: true });
@@ -117,7 +146,9 @@ describe("CRM vNext MailerLite healthcheck script", () => {
 
   test("classifies 401 as a credential unblock", async () => {
     const fake = await startFakeMailerLite("unauthenticated");
+    const dir = await mkdtemp(join(tmpdir(), "crm-vnext-mailerlite-healthcheck-"));
     try {
+      const path = await createFakeSecurityPath(dir);
       let error: unknown;
       try {
         await execFileAsync("node", [
@@ -131,7 +162,7 @@ describe("CRM vNext MailerLite healthcheck script", () => {
           "--fail-on-blocked",
         ], {
           cwd: process.cwd(),
-          env: { ...process.env, MAILERLITE_API_KEY: "test-mailerlite-key" },
+          env: { PATH: path, MAILERLITE_API_KEY: "test-mailerlite-key" },
         });
       } catch (caught) {
         error = caught;
@@ -145,9 +176,16 @@ describe("CRM vNext MailerLite healthcheck script", () => {
         service: "groups_probe",
         reason: "mailerlite_unauthenticated",
       });
-      expect(compact.blockedChecks[0].unblockAction).toContain("Refresh the MailerLite API key");
+      expect(compact.blockedChecks[0].unblockAction).toContain("Refresh the stored MailerLite API key");
+      const serialized = JSON.stringify(compact);
+      expect(serialized).not.toContain("__missing__");
+      expect(serialized).not.toContain("keychain:");
+      expect(serialized).not.toContain("credentialSource");
+      expect(serialized).not.toContain("credentialLength");
+      expect(serialized).not.toContain("credentialFingerprint");
     } finally {
       await fake.close();
+      await rm(dir, { recursive: true, force: true });
     }
   });
 });

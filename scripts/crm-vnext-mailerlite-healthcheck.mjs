@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { execFile } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -16,9 +15,9 @@ const usage = `Usage:
   node scripts/crm-vnext-mailerlite-healthcheck.mjs [options]
 
 Options:
-  --service <name>       Keychain service. Defaults to MAILERLITE_KEYCHAIN_SERVICE or ${DEFAULT_SERVICE}
-  --account <name>       Keychain account. Defaults to MAILERLITE_KEYCHAIN_ACCOUNT or ${DEFAULT_ACCOUNT}
-  --api-base <url>       MailerLite API base. Defaults to ${DEFAULT_API_BASE}
+  --service <name>       Stored credential service override.
+  --account <name>       Stored credential account override.
+  --api-base <url>       MailerLite API base.
   --timeout-ms <n>       Per-request timeout. Defaults to 30000
   --limit <n>            Cursor scan page size. Defaults to 100
   --max-pages <n>        Cursor scan safety cap. Defaults to 50
@@ -84,7 +83,7 @@ const getKeychainSecret = async (service, account) => {
       maxBuffer: 1024 * 1024,
     });
     const key = stdout.trim();
-    return key ? { key, source: `keychain:${service}/${account}` } : null;
+    return key ? { key } : null;
   } catch {
     return null;
   }
@@ -95,12 +94,10 @@ const getCredential = async (options) => {
   if (keychain?.key) return keychain;
   for (const name of ['MAILERLITE_API_KEY', 'MAILERLITE_TOKEN', 'ML_API_KEY']) {
     const key = process.env[name]?.trim();
-    if (key) return { key, source: `env:${name}` };
+    if (key) return { key };
   }
-  return { key: null, source: null };
+  return { key: null };
 };
-
-const hash12 = (value) => createHash('sha256').update(value).digest('hex').slice(0, 12);
 
 const classifyFailure = (status, bodyText = '') => {
   const text = bodyText.replace(/\s+/g, ' ').trim();
@@ -111,12 +108,12 @@ const classifyFailure = (status, bodyText = '') => {
   return `mailerlite_http_${status || 'unknown'}`;
 };
 
-const unblockActionFor = (reason, options) => {
+const unblockActionFor = (reason) => {
   if (reason === 'missing_mailerlite_credential') {
-    return `Store a valid MailerLite API key in Keychain service ${options.service}, account ${options.account}, or provide MAILERLITE_API_KEY in the local process environment. Do not paste tokens in chat.`;
+    return 'Store a valid MailerLite API key in the local stored credential path. Do not paste tokens in chat.';
   }
   if (reason === 'mailerlite_unauthenticated') {
-    return `Refresh the MailerLite API key in Keychain service ${options.service}, account ${options.account}. A known-good local source may be copied internally, but never print or paste the token.`;
+    return 'Refresh the stored MailerLite API key locally. A known-good local source may be copied internally, but never print or paste the token.';
   }
   if (reason === 'mailerlite_forbidden') {
     return 'Check that the MailerLite API key has permission for read-only subscriber and group endpoints.';
@@ -124,7 +121,7 @@ const unblockActionFor = (reason, options) => {
   if (reason === 'mailerlite_rate_limited') {
     return 'Retry later with a lower page size or longer delay before running source recovery.';
   }
-  return 'Inspect MailerLite API/keychain state locally while keeping tokens and subscriber content out of chat/logs.';
+  return 'Inspect local MailerLite source state while keeping tokens and subscriber content out of chat/logs.';
 };
 
 const urlWithParams = (base, path, params = {}) => {
@@ -223,10 +220,16 @@ const check = async (service, runner, options, required = true) => {
       required,
       reason,
       detail: reason,
-      unblockAction: unblockActionFor(reason, options),
+      unblockAction: unblockActionFor(reason),
     };
   }
 };
+
+const credentialReceipt = (credentialPresent) => ({
+  credentialPresent,
+  storedCredentialChecked: true,
+  credentialMode: 'stored_credential_checked',
+});
 
 const buildReport = async (options) => {
   const credential = await getCredential(options);
@@ -240,12 +243,8 @@ const buildReport = async (options) => {
       throw error;
     }
     return {
-      detail: `credential found via ${credential.source}`,
-      metrics: {
-        credentialSource: credential.source,
-        credentialLength: credential.key.length,
-        credentialFingerprintSha256_12: hash12(credential.key),
-      },
+      detail: 'stored credential available',
+      metrics: credentialReceipt(true),
     };
   }, options));
 
@@ -298,14 +297,7 @@ const buildReport = async (options) => {
     schemaVersion: SCHEMA_VERSION,
     mode: 'read_only_mailerlite_healthcheck',
     checkedAt: new Date().toISOString(),
-    apiBase: options.apiBase,
-    keychain: {
-      service: options.service,
-      account: options.account,
-      credentialPresent,
-      credentialSource: credential.source,
-      credentialFingerprintSha256_12: credential.key ? hash12(credential.key) : null,
-    },
+    credential: credentialReceipt(credentialPresent),
     ok: blockingChecks.length === 0,
     status: blockingChecks.length === 0 ? 'ok' : 'blocked',
     summary: {
@@ -335,8 +327,8 @@ const renderMarkdown = (report) => [
   '',
   `- Status: ${report.status}`,
   `- Checked at: ${report.checkedAt}`,
-  `- Keychain: ${report.keychain.service}/${report.keychain.account}`,
-  `- Credential source: ${report.keychain.credentialSource || 'none'}`,
+  `- Credential present: ${report.credential.credentialPresent ? 'yes' : 'no'}`,
+  `- Stored credential checked: ${report.credential.storedCredentialChecked ? 'yes' : 'no'}`,
   `- Checks: ${report.summary.ok}/${report.summary.totalChecks} OK, ${report.summary.blocked} blocked`,
   `- Cursor scan: ${report.summary.subscriberPages ?? 0} pages / ${report.summary.subscribersScanned ?? 0} subscribers`,
   '',
@@ -385,7 +377,7 @@ const main = async () => {
     status: report.status,
     checkedAt: report.checkedAt,
     summary: report.summary,
-    keychain: report.keychain,
+    credential: report.credential,
     out: options.out ? resolve(options.out) : null,
     markdownOut: options.markdownOut ? resolve(options.markdownOut) : null,
     blockedChecks: report.checks.filter((item) => item.ok === false).map((item) => ({
