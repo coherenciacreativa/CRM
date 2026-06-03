@@ -1297,3 +1297,95 @@ Use deep hydration only for:
   microproduct preparation, validation and launch governance.
 - `next_checkpoint_expected`: Control Room checkpoint after the baseline
   operability gap audit is generated and validated.
+
+## Completed Next Action - Launch OS v0 Baseline Operability Gap Audit - 2026-06-03
+
+- `previous_next_action_id`: `launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 post-seed Launch Rehearsal learning digest - 2026-06-03`
+- `completion_summary`:
+  - Generated a local baseline operability gap audit for Launch OS v0 after the
+    completed `Inteligencia para descansar` pilot.
+  - Confirmed Launch OS v0 is baseline-operable for local rehearsal/control-
+    plane use: CEO review, Product Value Gate, Brand/Web/MailerLite/CRM local
+    QA, Null Audience seed validation, no-send strategy handling and reporting.
+  - Confirmed Launch OS v0 is not yet baseline-operable for public/audience
+    distribution or CRM-signal writing.
+  - Identified the concrete remaining gaps: Onboarding v2 activation, taxonomy
+    final responses, CRM observed-event inputs, public distribution validation
+    and the still-missing autonomous proposal machine.
+  - No live APIs, UI, sends, publish, schedule, audience assignment,
+    subscribers, groups, tags, segments, workflows, Shopify, CRM, ledgers,
+    cards, scoring or Fact Store were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar_2026-06-03.md`
+- `resulting_status`:
+  - Audit:
+    `launch_os_v0_baseline_operability_gap_audit_ready_local_only`.
+  - Baseline for internal rehearsal and CEO review:
+    `ready_with_controlled_gaps`.
+  - Baseline for public/audience or CRM-integrated live operation:
+    `not_ready`.
+  - Ready lanes: 10.
+  - Partial lanes: 3.
+  - Requires live approval later: 1.
+  - Missing lanes: 1.
+  - Public/audience send authorized: `false`.
+  - Live action allowed now: `false`.
+
+## Active Next Action - Launch OS v0 Baseline Hardening Plan - 2026-06-03
+
+- `next_action_id`: `launch_os_v0_baseline_hardening_plan_after_gap_audit`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 baseline operability gap audit after pilot - 2026-06-03`
+- `objective`: Convert the baseline operability gap audit into a focused local
+  hardening plan for the partial and missing Launch OS v0 lanes, without
+  starting live execution.
+- `why_now`: The audit shows the rehearsal/control-plane is usable, but the
+  system should not claim repeatable live operation until the known gaps are
+  sequenced into a small hardening plan.
+- `allowed_scope`:
+  - Read the baseline operability gap audit and current local Launch OS docs.
+  - Produce a local hardening plan that ranks the gaps by operating leverage and
+    next safe local move.
+  - Keep Onboarding v2, taxonomy, CRM observed-event inputs, public distribution
+    and autonomous proposal-machine work as separate lanes with explicit gates.
+  - Update Control Room/Next Action only if the hardening plan changes the
+    active operating posture.
+- `forbidden_scope`:
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not send or resend emails.
+  - Do not publish, schedule, assign audience, mutate subscribers, groups,
+    tags, segments, workflows or automations.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+  - Do not build an autonomous weekly proposal machine in this hito.
+- `expected_files`:
+  - A local hardening plan under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - Optional Control Room checkpoint if generated and validated.
+- `allowed_commands`:
+  - `git status --short`
+  - `rg`/`sed`/`jq` read-only local inspection.
+  - Local-only report generation that does not call live systems.
+- `validation_commands`:
+  - `jq empty` on generated JSON reports.
+  - `git diff --check`
+- `live_gate_status`: Public/audience send, publish, schedule, real audience
+  assignment, subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `not_needed_for_local_hardening_plan`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - User asks to open a live boundary.
+  - The hardening plan would require live verification or mutation.
+  - Required local evidence contradicts the baseline audit.
+- `resume_instruction`: Prepare only the local hardening plan. Do not run live
+  preflights, sends, UI operations, public/audience decisions, CRM writes or
+  integrations.
+- `completion_definition`: A validated local hardening plan sequences the
+  partial/missing Launch OS v0 lanes into small safe next moves.
+- `next_checkpoint_expected`: Control Room checkpoint after the hardening plan
+  is generated and validated.

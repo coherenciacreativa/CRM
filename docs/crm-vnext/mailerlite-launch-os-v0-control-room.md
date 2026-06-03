@@ -8272,3 +8272,80 @@ Operating meaning:
 - Public/audience send, publish, schedule, real audience assignment,
   subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
   Fact Store remain closed.
+
+## Launch OS v0 baseline operability gap audit after pilot - 2026-06-03
+
+Status: checkpoint completed, local/report-only. A baseline operability gap
+audit was created after the completed `Inteligencia para descansar` rehearsal
+and no-send decision. The audit confirms Launch OS v0 is usable as a
+rehearsal/control-plane for microproduct preparation, CEO review, Product Value
+Gate, Brand/Web/MailerLite/CRM local QA, Null Audience seed validation and
+no-send governance. It also confirms Launch OS v0 is not yet ready for public/
+audience distribution or CRM-integrated live signal writing.
+
+What changed:
+
+- The pilot is no longer just a completed seed rehearsal; it is now mapped into
+  Launch OS v0 baseline operability.
+- Ten lanes are marked ready for local/rehearsal operation.
+- Three lanes are marked partial: Onboarding v2 activation, taxonomy final
+  responses and CRM signal writes.
+- Public/audience distribution is marked as requiring a future live approval
+  boundary.
+- The weekly/autonomous proposal machine is explicitly kept as missing/roadmap,
+  not current implementation.
+- The active next action moved to a local baseline hardening plan.
+
+Evidence:
+
+- Baseline operability gap audit JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar_2026-06-03.json`
+- Baseline operability gap audit markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Audit status:
+  `launch_os_v0_baseline_operability_gap_audit_ready_local_only`.
+- Baseline for internal rehearsal and CEO review:
+  `ready_with_controlled_gaps`.
+- Baseline for public/audience or CRM-integrated live operation:
+  `not_ready`.
+- Ready lanes: 10.
+- Partial lanes: 3.
+- Requires live approval later: 1.
+- Missing lanes: 1.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Concrete gaps:
+
+- Onboarding v2 is designed but not activated.
+- Taxonomy final Brand/CRM responses are still missing.
+- CRM signal writes lack real observed events, exact people, writable event
+  screen and aggregate review/facts.
+- Public distribution was intentionally not validated.
+- Weekly/autonomous proposal generation remains roadmap only.
+
+Safety:
+
+- Local/report-only gap audit: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Test emails sent: false.
+- Audience sends, publish and schedule: false.
+- Subscriber, group, tag, segment, workflow and automation mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw IDs, recipients, exact URLs and tokens printed: false.
+
+Operating meaning:
+
+- Continue with `launch_os_v0_baseline_hardening_plan_after_gap_audit`.
+- Do not ask Alejandro again for the `keep_null_audience_no_public_send`
+  decision unless strategy changes.
+- Do not resend `E01`-`E04` from this checkpoint.
+- Public/audience send, publish, schedule, real audience assignment,
+  subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
+  Fact Store remain closed.
