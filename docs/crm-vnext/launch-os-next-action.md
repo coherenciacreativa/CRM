@@ -1206,3 +1206,94 @@ Use deep hydration only for:
   mutation.
 - `next_checkpoint_expected`: Control Room checkpoint after the learning digest
   is generated and validated.
+
+## Completed Next Action - Post-seed Launch Rehearsal Learning Digest - 2026-06-03
+
+- `previous_next_action_id`: `launch_rehearsal_learning_digest_post_seed_test_inteligencia_descansar`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 post-seed no-send decision recorded and protocol refreshed - 2026-06-03`
+- `completion_summary`:
+  - Generated a local learning digest for the completed
+    `Inteligencia para descansar` rehearsal.
+  - Captured what the pilot proved about CEO Proposal Packet, Product Value
+    Gate, Brand/Web/MailerLite/CRM QA, Null Audience seed rehearsal, visual
+    readback, Standing Delegation and no-send progress.
+  - Identified known limits: no real-person audience response, no CRM/ledger/
+    card/scoring/Fact Store writes, and no weekly autonomous proposal machine.
+  - No live APIs, UI, sends, publish, schedule, audience assignment,
+    subscribers, groups, workflows, Shopify, CRM, ledgers, cards, scoring or
+    Fact Store were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_learning_digest_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_learning_digest_post_seed_test_current_inteligencia_descansar_2026-06-03.md`
+- `resulting_status`:
+  - Learning digest:
+    `launch_rehearsal_learning_digest_ready_local_only`.
+  - CEO-review readiness proven: `true`.
+  - Product Value Gate native lane proven: `true`.
+  - CEO Proposal Packet native lane proven: `true`.
+  - Public/audience send authorized: `false`.
+  - Live action allowed now: `false`.
+
+## Active Next Action - Launch OS v0 Baseline Operability Gap Audit - 2026-06-03
+
+- `next_action_id`: `launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 post-seed Launch Rehearsal learning digest - 2026-06-03`
+- `objective`: Audit whether the current Launch OS v0 architecture is
+  baseline-operable for frequent microproducts after the completed pilot, and
+  list only the concrete gaps that still block repeatable operation.
+- `why_now`: The pilot reached CEO-review readiness and produced a no-send
+  rehearsal learning digest. The next move toward the larger goal is not
+  another send or approval packet; it is checking which v0 lanes are reusable
+  and what still needs local hardening.
+- `allowed_scope`:
+  - Read local docs, scripts, tests and Mantis reports.
+  - Audit current evidence for onboarding productive preservation, Onboarding
+    v2 design, taxonomy/groups/tags/receipts, mini-launch infrastructure,
+    Brand/Web/Shopify/MailerLite/CRM coordination, Product Value Gate, CEO
+    Proposal Packet, dry-runs and reporting.
+  - Produce a local JSON/Markdown gap audit with evidence-backed statuses:
+    `ready`, `partial`, `missing`, `blocked_by_decision`, or
+    `requires_live_approval_later`.
+  - Keep the audit at local/report level.
+- `forbidden_scope`:
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not send or resend emails.
+  - Do not publish, schedule, assign audience, mutate subscribers, groups,
+    tags, segments, workflows or automations.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+  - Do not create a new autonomous weekly proposal machine; mention it only as
+    roadmap if relevant.
+- `expected_files`:
+  - A local baseline operability gap audit under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - Optional Control Room checkpoint if the audit changes the active next
+    action.
+- `allowed_commands`:
+  - `git status --short`
+  - `rg`/`sed`/`jq` read-only inspection of local docs, scripts, tests and
+    reports.
+  - Local-only report generation that does not call live systems.
+- `validation_commands`:
+  - `jq empty` on generated JSON reports.
+  - `git diff --check`
+- `live_gate_status`: Public/audience send, publish, schedule, real audience
+  assignment, subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `not_needed_for_local_gap_audit`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - User asks to open a live boundary.
+  - Required evidence is missing and cannot be inferred from local files.
+  - The audit would require live verification rather than local evidence.
+- `resume_instruction`: Run only the local baseline operability gap audit. Do
+  not re-run sends, live preflights, public/audience decisions or integrations.
+- `completion_definition`: A validated local audit identifies what is ready and
+  what remains to make Launch OS v0 baseline-operable for repeatable
+  microproduct preparation, validation and launch governance.
+- `next_checkpoint_expected`: Control Room checkpoint after the baseline
+  operability gap audit is generated and validated.

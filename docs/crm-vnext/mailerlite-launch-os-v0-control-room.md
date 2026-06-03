@@ -8175,3 +8175,100 @@ Operating meaning:
 - Public/audience send, publish, schedule, real audience assignment,
   subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
   Fact Store remain closed.
+
+## Launch OS v0 post-seed Launch Rehearsal learning digest - 2026-06-03
+
+Status: checkpoint completed, local/report-only. A learning digest was created
+from the completed `Inteligencia para descansar` rehearsal. The digest captures
+what the pilot proved for Launch OS v0 as an interdepartmental market-learning
+machine, without opening any public send, MailerLite mutation, Shopify mutation,
+CRM write, ledger, card, scoring or Fact Store boundary.
+
+What changed:
+
+- The rehearsal outcome is now documented as learning, not only as delivery QA.
+- CEO Proposal Packet is recorded as a native Launch OS v0 lane proven by this
+  pilot.
+- Product Value Gate is recorded as a native Launch OS v0 lane proven by this
+  pilot.
+- Null Audience seed rehearsal, visual readback and Standing Delegation are
+  captured as reusable operating patterns.
+- The digest records that no-send can still be progress when the current goal
+  is Launch OS machine-building rather than real-person distribution.
+- The active next action moved to a baseline operability gap audit for Launch OS
+  v0.
+
+Evidence:
+
+- Learning digest JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_learning_digest_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+- Learning digest markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_learning_digest_post_seed_test_current_inteligencia_descansar_2026-06-03.md`
+- CEO-review readiness delta:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+- CEO proposal packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+- Launch Rehearsal Protocol:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Learning digest status:
+  `launch_rehearsal_learning_digest_ready_local_only`.
+- CEO-review readiness proven: true.
+- CEO Proposal Packet native lane proven: true.
+- Product Value Gate native lane proven: true.
+- Brand/Web/MailerLite/CRM local QA green: true.
+- Seed-tested package complete: true.
+- No-send decision recorded: true.
+- Launch Rehearsal Protocol ready: true.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+- Blocker count: 0.
+
+Reusable operating pattern:
+
+- Start with CEO Proposal Packet and Product Value Gate.
+- Prepare Brand/Web/Shopify/MailerLite/CRM local QA as separate receipt-backed
+  gates.
+- Use preview/noindex assets and Null Audience drafts until a live boundary is
+  explicitly opened.
+- Run seed/internal tests only under Standing Delegation when fresh QA passes.
+- Keep received-email artifact QA and visual readback before any broader
+  exposure.
+- Separate strategy decisions from send approvals.
+- Convert meaningful milestones into Control Room, Next Action and digest-level
+  memory.
+
+Known limits:
+
+- Real-person audience response has not been validated.
+- CRM signals, ledgers, cards, scoring and Fact Store writes remain untested by
+  live operation.
+- The weekly/autonomous proposal machine remains roadmap only.
+- A baseline operability audit is still needed before claiming Launch OS v0 is
+  repeatable beyond this pilot.
+
+Safety:
+
+- Local/report-only learning digest: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Test emails sent: false.
+- Audience sends, publish and schedule: false.
+- Subscriber, group, segment, workflow and automation mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw IDs, recipients, exact URLs and tokens printed: false.
+
+Operating meaning:
+
+- Continue with
+  `launch_os_v0_baseline_operability_gap_audit_after_pilot_inteligencia_descansar`.
+- Do not ask Alejandro again for the `keep_null_audience_no_public_send`
+  decision unless strategy changes.
+- Do not retry or resend `E01`-`E04` from this checkpoint.
+- Public/audience send, publish, schedule, real audience assignment,
+  subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
+  Fact Store remain closed.
