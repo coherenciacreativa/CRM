@@ -52,6 +52,7 @@
     "crm:vnext:mailerlite-mini-launch-path-packet": "node scripts/crm-vnext-mailerlite-mini-launch-path-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-v0-packet": "node scripts/crm-vnext-mailerlite-mini-launch-v0-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-rehearsal-packet": "node scripts/crm-vnext-mailerlite-mini-launch-rehearsal-packet.mjs",
+    "crm:vnext:mailerlite-mini-launch-rehearsal-protocol-packet": "node scripts/crm-vnext-mailerlite-mini-launch-rehearsal-protocol-packet.mjs",
     "crm:vnext:mailerlite-mini-launch-event-contract": "node scripts/crm-vnext-mailerlite-mini-launch-event-contract.mjs",
     "crm:vnext:mailerlite-mini-launch-onboarding-handoff-policy": "node scripts/crm-vnext-mailerlite-mini-launch-onboarding-handoff-policy.mjs",
     "crm:vnext:mailerlite-mini-launch-seed-test-qa-packet": "node scripts/crm-vnext-mailerlite-mini-launch-seed-test-qa-packet.mjs",

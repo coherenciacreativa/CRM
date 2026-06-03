@@ -7186,3 +7186,105 @@ Operating meaning:
   CRM writes, Signal Ledger, cards, scoring or Fact Store.
 - If any QA/preflight condition fails or the operation leaves the delegated
   lane, Codex must stop and request a fresh explicit approval.
+
+## Launch OS v0 compact footer v2 no-send lane decision recorded - 2026-06-03
+
+Status: active goal, local-only strategy decision intake completed. Alejandro
+selected `keep_null_audience_no_public_send` for `Inteligencia para descansar`.
+The microproduct remains a rehearsal/control-plane asset for building Launch OS
+v0 through simulations and seed tests under the standing delegation when QA is
+green. This checkpoint performs no MailerLite API/UI call, test send, resend,
+publish, schedule, audience assignment, subscriber/group/workflow mutation,
+Shopify mutation, CRM write, ledger, card, scoring or Fact Store action.
+
+Evidence:
+
+- Decision intake JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-02.json`
+- Decision intake markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-02.md`
+- No-send pilot distribution decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+- SIBO review packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+- Mantis digest:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_no_send_lane_decision_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Decision intake status:
+  `pilot_distribution_decision_intake_lane_selected_no_live_changes`.
+- Strategy boundary ready: `true`.
+- Decision packet ready: `true`.
+- SIBO review ready: `true`.
+- Selected pilot lane: `keep_null_audience_no_public_send`.
+- Lane decision ready: `true`.
+- Roster required next: `false`.
+- Can ask final send approval now: `false`.
+- Live action allowed now: `false`.
+- Test emails sent: `false`.
+- Public/audience send authorized: `false`.
+- Blocker count: `0`.
+
+Operating meaning:
+
+- The current compact-footer v2 microproduct is not moving to real-person
+  distribution.
+- The next useful edge is a local Launch Rehearsal Protocol for seed-only/
+  internal simulations, QA evidence, receipts and future approval boundaries.
+- Routine seed/test emails may use the standing delegation only when all
+  delegation conditions pass; otherwise a fresh explicit approval is required.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 launch rehearsal protocol no-send - 2026-06-03
+
+Status: active goal, local-only protocol packet completed for the selected
+`keep_null_audience_no_public_send` lane. The packet turns the compact-footer
+v2 mini-launch into a repeatable rehearsal/control-plane circuit for Launch OS
+v0: CEO/SIBO review, fresh preflight, conditional delegated seed test, seed
+inbox readback, learning digest and next CEO boundary. This checkpoint performs
+no MailerLite API/UI call, test send, resend, publish, schedule, audience
+assignment, subscriber/group/workflow mutation, Shopify mutation, CRM write,
+ledger, card, scoring or Fact Store action.
+
+Evidence:
+
+- Launch Rehearsal Protocol JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.json`
+- Launch Rehearsal Protocol markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.md`
+- Decision intake JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-02.json`
+- SIBO review packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+- Mantis digest:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_launch_rehearsal_protocol_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Protocol packet status:
+  `launch_rehearsal_protocol_no_send_ready_local_only`.
+- Protocol ready: `true`.
+- Selected pilot lane: `keep_null_audience_no_public_send`.
+- Standing seed-test delegation available: `true`.
+- First run can send now: `false`.
+- Fresh preflight required before any seed send: `true`.
+- Public/audience send authorized: `false`.
+- Live action allowed now: `false`.
+- Blocker count: `0`.
+
+Operating meaning:
+
+- The no-send lane now has a practical rehearsal circuit rather than a vague
+  hold.
+- The next useful edge is a fresh preflight packet for a possible future
+  delegated seed/internal rehearsal run.
+- The protocol itself does not authorize a send; the standing delegation applies
+  only after fresh QA/preflight passes.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.

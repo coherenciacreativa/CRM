@@ -456,12 +456,13 @@ action that a resumed Goal should continue before replanning.
   `wouldAuthorizeSend=false` and `wouldAuthorizeAudienceAssignment=false`.
 - `next_checkpoint_expected`: `Launch OS v0 compact footer v2 SIBO review packet no-send - 2026-06-02`
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `mailerlite_footer_compact_v2_pilot_distribution_lane_choice_no_send_inteligencia_descansar`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-02`
-- `updated_at`: `2026-06-02`
+- `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
 - `source_checkpoint`: `Launch OS v0 compact footer v2 SIBO review packet no-send - 2026-06-02`
 - `objective`: Capture Alejandro's strategy-only no-send pilot lane choice for
   `Inteligencia para descansar`, without asking for or executing any public/
@@ -529,7 +530,165 @@ action that a resumed Goal should continue before replanning.
   inbox QA or public/audience execution.
 - `completion_definition`: Alejandro chooses one of the three no-send lanes and
   any resulting local checkpoint preserves all live gates closed.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-02.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_sibo_review_packet_no_send_current_inteligencia_descansar_2026-06-02.json`
+- `completion_note`: Alejandro selected
+  `keep_null_audience_no_public_send` as the no-send strategy lane. The local
+  decision intake is green with `laneDecisionReady=true`,
+  `rosterRequiredNext=false`, `canAskFinalSendApprovalNow=false`,
+  `liveActionAllowedNow=false`, `wouldAuthorizeSend=false` and
+  `blockerCount=0`.
 - `next_checkpoint_expected`: `Launch OS v0 compact footer v2 pilot distribution lane choice no-send - 2026-06-02`
+
+## Completed Next Action
+
+- `next_action_id`: `launch_rehearsal_protocol_no_send_inteligencia_descansar`
+- `status`: `completed`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 compact footer v2 pilot distribution lane choice no-send - 2026-06-03`
+- `objective`: Prepare a local Launch Rehearsal Protocol for
+  `Inteligencia para descansar` so the miniproduct can remain a
+  rehearsal/control-plane asset while Launch OS v0 becomes repeatable for future
+  microproducts.
+- `why_now`: The CEO/SIBO review package is green and Alejandro selected
+  `keep_null_audience_no_public_send`. The next useful move is not real-person
+  distribution; it is a reusable local protocol for seed-only/internal
+  rehearsal, QA review, receipts and next approvals under the standing
+  seed-test delegation.
+- `allowed_scope`:
+  - Use current SIBO review packet, decision intake receipt, standing delegation
+    policy and compact-footer v2 evidence.
+  - Prepare local JSON/Markdown protocol artifacts only.
+  - Define rehearsal stages, allowed seed/internal actions, required evidence,
+    stop conditions and next approval boundaries.
+  - Keep public/audience sends and live mutations closed.
+- `forbidden_scope`:
+  - Do not recreate replacement drafts.
+  - Do not send or resend test emails from this boundary.
+  - Do not ask for or execute public/audience-send approval from this boundary.
+  - Do not assign any audience, group or segment.
+  - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
+    mutation or automation action.
+  - No Shopify mutation, publish, theme push, live form wiring, public
+    navigation or SEO promotion.
+  - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
+  - No secret reads, env dumps, raw token output, raw private URLs, raw asset
+    URLs, recipient lists or broad mailbox inspection.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.md`
+- `allowed_commands`:
+  - `git status --short`
+  - `git diff --stat`
+  - Read-only local file/report inspection.
+  - Local-only report generation/validation commands that do not call live APIs.
+- `validation_commands`:
+  - `jq empty <new JSON reports>`
+  - `node --check <local report scripts used>`
+  - Focused `npx vitest run <relevant specs>` when a script is used.
+  - `git diff --check`
+- `live_gate_status`: Routine seed/test emails remain standing-delegated only
+  under `docs/crm-vnext/launch-os-standing-delegation-policy.md`. Public/
+  audience sends, MailerLite publish/schedule, audience assignment, subscribers,
+  workflows, Shopify and CRM remain closed until a separate exact approval.
+- `human_boundary_id`: `launch_rehearsal_protocol_no_send_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Newer user instruction supersedes this contract.
+  - Git state is unexpected.
+  - Required decision-intake or SIBO evidence is missing or fails validation.
+  - Any requested action would resend tests, publish, schedule, assign a real
+    audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
+    scoring/Fact Store without a separate exact approval.
+- `resume_instruction`: Prepare the local Launch Rehearsal Protocol. Do not
+  touch live systems, resend tests or ask for public/audience send approval.
+- `completion_definition`: A local protocol packet defines how this
+  microproduct remains useful for Launch OS v0 rehearsal while all live gates
+  remain closed.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-02.json`
+- `completion_note`: The local Launch Rehearsal Protocol is ready with
+  `protocolReady=true`, `selectedPilotLane=keep_null_audience_no_public_send`,
+  `firstRunCanSendNow=false`,
+  `freshPreflightRequiredBeforeAnySeedSend=true`,
+  `publicAudienceSendAuthorized=false`, `liveActionAllowedNow=false` and
+  `blockerCount=0`.
+- `next_checkpoint_expected`: `Launch OS v0 launch rehearsal protocol no-send - 2026-06-03`
+
+## Active Next Action
+
+- `next_action_id`: `launch_rehearsal_preflight_refresh_seed_delegation_inteligencia_descansar`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 launch rehearsal protocol no-send - 2026-06-03`
+- `objective`: Prepare a fresh rehearsal preflight packet for the no-send lane
+  before any future delegated seed/internal run.
+- `why_now`: The Launch Rehearsal Protocol is green and explicitly says a fresh
+  preflight is required before any seed send. The next useful move is to prove
+  whether a delegated seed/internal rehearsal run would be safe, not to send it
+  yet.
+- `allowed_scope`:
+  - Read the Launch Rehearsal Protocol, decision intake, SIBO review packet and
+    standing delegation policy.
+  - Prepare local/read-only preflight evidence for draft state, Null Audience
+    exclusivity, `active_count=0`, seed allowlist, placeholder/token/raw URL
+    hygiene and negative publish/schedule/workflow/audience-send checks.
+  - Use MailerLite API only for read-only preflight/QA if the operator chooses
+    to execute this boundary.
+  - Generate local preflight receipts.
+- `forbidden_scope`:
+  - Do not send or resend test emails from this boundary.
+  - Do not recreate replacement drafts.
+  - Do not ask for or execute public/audience-send approval from this boundary.
+  - Do not assign any audience, group or segment.
+  - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
+    mutation or automation action.
+  - No Shopify mutation, publish, theme push, live form wiring, public
+    navigation or SEO promotion.
+  - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
+  - No secret reads, env dumps, raw token output, raw private URLs, raw asset
+    URLs, recipient lists or broad mailbox inspection.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+- `allowed_commands`:
+  - `git status --short`
+  - `git diff --stat`
+  - Read-only local file/report inspection.
+  - Local-only or read-only preflight commands that do not mutate live systems.
+- `validation_commands`:
+  - `jq empty <new JSON reports>`
+  - `node --check <local report scripts used>`
+  - Focused `npx vitest run <relevant specs>` when a script is used.
+  - `git diff --check`
+- `live_gate_status`: Routine seed/test emails remain standing-delegated only
+  after this kind of fresh preflight is green. This boundary itself does not
+  send. Public/audience sends, MailerLite publish/schedule, audience assignment,
+  subscribers, workflows, Shopify and CRM remain closed until a separate exact
+  approval.
+- `human_boundary_id`: `launch_rehearsal_preflight_refresh_seed_delegation_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Newer user instruction supersedes this contract.
+  - Git state is unexpected.
+  - Required protocol/decision evidence is missing or fails validation.
+  - Any requested action would send tests, publish, schedule, assign a real
+    audience, mutate subscribers/workflows, or touch Shopify/CRM/ledgers/cards/
+    scoring/Fact Store without a separate exact approval.
+- `resume_instruction`: Prepare only the fresh preflight packet. Do not send
+  seed tests, publish, schedule, assign audiences or ask for public/audience
+  send approval.
+- `completion_definition`: A fresh preflight packet states whether a future
+  delegated seed/internal rehearsal run is safe, blocked or needs human input.
+- `next_checkpoint_expected`: `Launch OS v0 launch rehearsal preflight seed delegation - 2026-06-03`
 
 ## Stop/Change Conditions
 

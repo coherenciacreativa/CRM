@@ -34,6 +34,60 @@ const inputRequestPacket = {
   },
 };
 
+const staleInputRequestPacket = {
+  ...inputRequestPacket,
+  status: "pilot_distribution_input_request_packet_blocked_missing_evidence_no_live_changes",
+  executiveSummary: {
+    ...inputRequestPacket.executiveSummary,
+    inputRequestReady: false,
+    canAskPilotLaneDecisionNow: false,
+  },
+};
+
+const decisionPacket = {
+  status: "pilot_distribution_decision_packet_no_send_ready_no_live_changes",
+  launch: inputRequestPacket.launch,
+  executiveSummary: {
+    decisionPacketReady: true,
+    canAskPilotLaneDecisionNow: true,
+    asksPublicSendApprovalNow: false,
+    canAskFinalSendApprovalNow: false,
+    liveActionAllowedNow: false,
+    wouldAuthorizeSend: false,
+    wouldAuthorizeAudienceAssignment: false,
+    blockerCount: 0,
+    recommendedDecisionOptions: [
+      "keep_null_audience_no_public_send",
+      "manual_micro_cohort_next",
+      "opt_in_testers_next",
+    ],
+  },
+  requestedHumanText: {
+    notApprovalFor: [
+      "MailerLite send",
+      "public/audience send",
+      "audience assignment",
+    ],
+  },
+};
+
+const siboReviewPacket = {
+  status: "sibo_review_packet_no_send_ready_no_live_changes",
+  launch: inputRequestPacket.launch,
+  executiveSummary: {
+    reviewPacketReady: true,
+    recommendedStrategyChoice: "keep_null_audience_no_public_send",
+    asksPublicSendApprovalNow: false,
+    liveActionAllowedNow: false,
+    wouldAuthorizeSend: false,
+    blockerCount: 0,
+  },
+  notApprovalFor: [
+    "MailerLite send or resend",
+    "public/audience send",
+  ],
+};
+
 const noDecision = {
   source: "none",
   raw: null,
@@ -74,6 +128,8 @@ describe("CRM vNext MailerLite mini-launch pilot distribution decision intake", 
     ]);
 
     expect(parsed.inputRequestPacket).toBe("/tmp/input.json");
+    expect(parseArgs(["--decision-packet", "/tmp/decision.json"]).decisionPacket).toBe("/tmp/decision.json");
+    expect(parseArgs(["--sibo-review-packet", "/tmp/sibo.json"]).siboReviewPacket).toBe("/tmp/sibo.json");
     expect(parsed.decisionText).toBe("manual_micro_cohort_next");
     expect(parsed.out).toBe("/tmp/out.json");
     expect(parsed.markdownOut).toBe("/tmp/out.md");
@@ -135,6 +191,33 @@ describe("CRM vNext MailerLite mini-launch pilot distribution decision intake", 
     expect(report.executiveSummary.selectedPilotLane).toBe("keep_null_audience_no_public_send");
     expect(report.executiveSummary.rosterRequiredNext).toBe(false);
     expect(report.blockers).toEqual([]);
+  });
+
+  test("accepts current decision-packet evidence when older input request evidence is stale", () => {
+    const report = buildPilotDistributionDecisionIntake({
+      inputRequestPacket: staleInputRequestPacket,
+      decisionPacket,
+      siboReviewPacket,
+      decisionSource: decision("Elijo `keep_null_audience_no_public_send` como estrategia no-send"),
+      generatedAt: "2026-06-02T00:00:00.000Z",
+    });
+    const markdown = renderMarkdown(report);
+
+    expect(report.status).toBe("pilot_distribution_decision_intake_lane_selected_no_live_changes");
+    expect(report.executiveSummary).toMatchObject({
+      inputRequestReady: false,
+      decisionPacketReady: true,
+      siboReviewReady: true,
+      strategyBoundaryReady: true,
+      selectedPilotLane: "keep_null_audience_no_public_send",
+      laneDecisionReady: true,
+      liveActionAllowedNow: false,
+      wouldAuthorizeSend: false,
+      blockerCount: 0,
+    });
+    expect(report.decisionIntake.notApprovalFor).toContain("public/audience send");
+    expect(markdown).toContain("Strategy boundary ready: true");
+    expect(markdown).not.toContain("Elijo");
   });
 
   test("rejects ambiguous or unrecognized strategy text without printing the raw text", () => {

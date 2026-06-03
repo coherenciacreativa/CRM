@@ -8,6 +8,8 @@ const SCHEMA_VERSION = 'crm-vnext-mailerlite-mini-launch-pilot-distribution-deci
 const DEFAULT_REPORTS_DIR = '/Users/alejandrogomez/Documents/Mantis-Reports';
 const DEFAULT_INPUT_REQUEST_PACKET =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_pilot_distribution_input_request_packet_current_inteligencia_descansar_2026-06-01.json`;
+const DEFAULT_DECISION_PACKET = null;
+const DEFAULT_SIBO_REVIEW_PACKET = null;
 const DEFAULT_OUTPUT =
   `${DEFAULT_REPORTS_DIR}/mailerlite_mini_launch_pilot_distribution_decision_intake_current_inteligencia_descansar_2026-06-01.json`;
 const DEFAULT_MARKDOWN_OUTPUT =
@@ -18,6 +20,8 @@ const usage = `Usage:
 
 Options:
   --input-request-packet <path>  Pilot distribution input request JSON. Defaults to ${DEFAULT_INPUT_REQUEST_PACKET}
+  --decision-packet <path>       Optional current no-send decision packet JSON. When provided, this can satisfy the strategy boundary even if an older input-request packet is stale.
+  --sibo-review-packet <path>    Optional SIBO review packet JSON. When provided, it must be green and no-send.
   --decision-text <text>         Optional strategy-only human lane decision
   --decision-file <path>         Optional file with strategy-only human lane decision
   --out <path>                   Write JSON report. Defaults to ${DEFAULT_OUTPUT}
@@ -76,6 +80,8 @@ const LANE_ALIASES = {
 const parseArgs = (argv) => {
   const options = {
     inputRequestPacket: DEFAULT_INPUT_REQUEST_PACKET,
+    decisionPacket: DEFAULT_DECISION_PACKET,
+    siboReviewPacket: DEFAULT_SIBO_REVIEW_PACKET,
     decisionText: null,
     decisionFile: null,
     out: DEFAULT_OUTPUT,
@@ -87,6 +93,8 @@ const parseArgs = (argv) => {
     const arg = argv[index];
     if (arg === '--help') options.help = true;
     else if (arg === '--input-request-packet') options.inputRequestPacket = argv[++index];
+    else if (arg === '--decision-packet') options.decisionPacket = argv[++index];
+    else if (arg === '--sibo-review-packet') options.siboReviewPacket = argv[++index];
     else if (arg === '--decision-text') options.decisionText = argv[++index];
     else if (arg === '--decision-file') options.decisionFile = argv[++index];
     else if (arg === '--out') options.out = argv[++index];
@@ -119,6 +127,24 @@ const readJsonWithDigest = async (path, consultedFor) => {
       consultedFor,
     },
   };
+};
+
+const readOptionalJsonWithDigest = async (path, consultedFor) => {
+  if (!path) {
+    return {
+      value: null,
+      digest: {
+        path: null,
+        present: false,
+        private: false,
+        chars: 0,
+        sha256: null,
+        consultedFor,
+      },
+    };
+  }
+
+  return readJsonWithDigest(path, consultedFor);
 };
 
 const readDecisionSource = async ({ decisionText, decisionFile }) => {
@@ -262,6 +288,8 @@ const laneRequiresRoster = (laneId) =>
 
 const buildPilotDistributionDecisionIntake = ({
   inputRequestPacket,
+  decisionPacket = null,
+  siboReviewPacket = null,
   decisionSource,
   sourceDigests = [],
   generatedAt = new Date().toISOString(),
@@ -273,21 +301,44 @@ const buildPilotDistributionDecisionIntake = ({
     && inputRequestPacket?.executiveSummary?.canAskPilotLaneDecisionNow === true
     && inputRequestPacket?.executiveSummary?.canAskFinalSendApprovalNow === false
     && inputRequestPacket?.executiveSummary?.liveActionAllowedNow === false;
+  const decisionPacketReady =
+    decisionPacket?.status === 'pilot_distribution_decision_packet_no_send_ready_no_live_changes'
+    && decisionPacket?.executiveSummary?.decisionPacketReady === true
+    && decisionPacket?.executiveSummary?.canAskPilotLaneDecisionNow === true
+    && decisionPacket?.executiveSummary?.asksPublicSendApprovalNow === false
+    && decisionPacket?.executiveSummary?.canAskFinalSendApprovalNow === false
+    && decisionPacket?.executiveSummary?.liveActionAllowedNow === false
+    && decisionPacket?.executiveSummary?.wouldAuthorizeSend === false
+    && decisionPacket?.executiveSummary?.wouldAuthorizeAudienceAssignment === false
+    && (decisionPacket?.executiveSummary?.blockerCount ?? 0) === 0;
+  const siboReviewReady = siboReviewPacket == null
+    || (
+      siboReviewPacket?.status === 'sibo_review_packet_no_send_ready_no_live_changes'
+      && siboReviewPacket?.executiveSummary?.reviewPacketReady === true
+      && siboReviewPacket?.executiveSummary?.recommendedStrategyChoice === 'keep_null_audience_no_public_send'
+      && siboReviewPacket?.executiveSummary?.asksPublicSendApprovalNow === false
+      && siboReviewPacket?.executiveSummary?.liveActionAllowedNow === false
+      && siboReviewPacket?.executiveSummary?.wouldAuthorizeSend === false
+      && (siboReviewPacket?.executiveSummary?.blockerCount ?? 0) === 0
+    );
+  const strategyBoundaryReady = inputRequestReady || (decisionPacketReady && siboReviewReady);
   const detected = detectLane(decisionSource.raw);
   const decisionTextProvided = decisionSource.source !== 'none';
-  const selectedPilotLane = inputRequestReady && detected.valid ? detected.selectedLaneId : null;
+  const selectedPilotLane = strategyBoundaryReady && detected.valid ? detected.selectedLaneId : null;
   const laneDecisionReady = Boolean(selectedPilotLane);
   const rosterRequiredNext = selectedPilotLane ? laneRequiresRoster(selectedPilotLane) : false;
   const blockers = [
-    inputRequestReady ? null : 'pilot_distribution_input_request_not_ready',
+    strategyBoundaryReady ? null : 'pilot_distribution_strategy_boundary_not_ready',
+    decisionPacket == null || decisionPacketReady ? null : 'pilot_distribution_decision_packet_not_ready',
+    siboReviewPacket == null || siboReviewReady ? null : 'sibo_review_packet_not_ready',
     decisionTextProvided ? null : 'pilot_lane_strategy_decision_missing',
     decisionTextProvided && !detected.valid && detected.ambiguous ? 'pilot_lane_strategy_decision_ambiguous' : null,
     decisionTextProvided && !detected.valid && !detected.ambiguous ? 'pilot_lane_strategy_decision_unrecognized' : null,
     rosterRequiredNext ? `${selectedPilotLane}_roster_needed_before_any_future_audience_step` : null,
   ].filter(Boolean);
 
-  const status = !inputRequestReady
-    ? 'pilot_distribution_decision_intake_blocked_missing_input_request_no_live_changes'
+  const status = !strategyBoundaryReady
+    ? 'pilot_distribution_decision_intake_blocked_missing_strategy_boundary_no_live_changes'
     : !decisionTextProvided
       ? 'pilot_distribution_decision_intake_waiting_for_strategy_choice_no_live_changes'
       : detected.valid
@@ -304,16 +355,19 @@ const buildPilotDistributionDecisionIntake = ({
     generatedAt,
     ok: true,
     status,
-    launch: inputRequestPacket?.launch ?? {
+    launch: inputRequestPacket?.launch ?? decisionPacket?.launch ?? siboReviewPacket?.launch ?? {
       launchId: 'mini_2026_06_rehearsal_inteligencia_para_descansar',
       resourceName: 'Inteligencia para descansar',
       resourceType: 'quiz',
     },
     executiveSummary: {
       inputRequestReady,
+      decisionPacketReady,
+      siboReviewReady,
+      strategyBoundaryReady,
       decisionTextProvided,
       decisionTextSource: decisionSource.source,
-      acceptedDecisionOptions: ALLOWED_LANES,
+      acceptedDecisionOptions: decisionPacket?.executiveSummary?.recommendedDecisionOptions ?? ALLOWED_LANES,
       matchedLaneCount: detected.matchedLaneIds.length,
       selectedPilotLane,
       selectedPilotLaneLabel: selectedPilotLane ? laneLabel(selectedPilotLane) : null,
@@ -341,7 +395,10 @@ const buildPilotDistributionDecisionIntake = ({
         label: laneLabel(laneId),
         aliasesAccepted: LANE_ALIASES[laneId],
       })),
-      notApprovalFor: inputRequestPacket?.requestedHumanText?.notApprovalFor ?? [
+      notApprovalFor: (inputRequestReady ? inputRequestPacket?.requestedHumanText?.notApprovalFor : null)
+        ?? decisionPacket?.requestedHumanText?.notApprovalFor
+        ?? siboReviewPacket?.notApprovalFor
+        ?? [
         'MailerLite send',
         'audience assignment',
         'subscriber/group/segment mutation',
@@ -360,16 +417,26 @@ const buildPilotDistributionDecisionIntake = ({
 };
 
 const loadFromFiles = async (options) => {
-  const input = await readJsonWithDigest(
+  const input = await readOptionalJsonWithDigest(
     options.inputRequestPacket,
     'pilot distribution input request packet; no send approval phrase',
+  );
+  const decisionPacket = await readOptionalJsonWithDigest(
+    options.decisionPacket,
+    'current no-send pilot distribution decision packet; no live approval',
+  );
+  const siboReviewPacket = await readOptionalJsonWithDigest(
+    options.siboReviewPacket,
+    'current SIBO review packet; strategy-only no-send decision',
   );
   const decisionSource = await readDecisionSource(options);
 
   return buildPilotDistributionDecisionIntake({
     inputRequestPacket: input.value,
+    decisionPacket: decisionPacket.value,
+    siboReviewPacket: siboReviewPacket.value,
     decisionSource,
-    sourceDigests: [input.digest],
+    sourceDigests: [input.digest, decisionPacket.digest, siboReviewPacket.digest],
   });
 };
 
@@ -385,6 +452,9 @@ const renderMarkdown = (report) => [
   '## Executive Summary',
   '',
   `- Input request ready: ${report.executiveSummary.inputRequestReady}`,
+  `- Decision packet ready: ${report.executiveSummary.decisionPacketReady}`,
+  `- SIBO review ready: ${report.executiveSummary.siboReviewReady}`,
+  `- Strategy boundary ready: ${report.executiveSummary.strategyBoundaryReady}`,
   `- Decision text provided: ${report.executiveSummary.decisionTextProvided}`,
   `- Decision text source: ${report.executiveSummary.decisionTextSource}`,
   `- Selected pilot lane: ${report.executiveSummary.selectedPilotLane ?? 'none'}`,
@@ -459,6 +529,9 @@ const main = async () => {
     status: report.status,
     generatedAt: report.generatedAt,
     decisionTextProvided: report.executiveSummary.decisionTextProvided,
+    strategyBoundaryReady: report.executiveSummary.strategyBoundaryReady,
+    decisionPacketReady: report.executiveSummary.decisionPacketReady,
+    siboReviewReady: report.executiveSummary.siboReviewReady,
     selectedPilotLane: report.executiveSummary.selectedPilotLane,
     laneDecisionReady: report.executiveSummary.laneDecisionReady,
     rosterRequiredNext: report.executiveSummary.rosterRequiredNext,
