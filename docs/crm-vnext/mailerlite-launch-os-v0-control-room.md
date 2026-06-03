@@ -8485,3 +8485,69 @@ Safety:
 - Subscriber, group, tag, segment mutation: false.
 - Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
 - Raw IDs, recipients, exact URLs and tokens printed: false.
+
+## Onboarding v2 disabled draft build boundary packet - 2026-06-03
+
+Status: checkpoint completed, local/report-only. A current boundary packet was
+created for a possible future disabled Onboarding v2 draft creation or clone.
+It does not authorize workflow mutation. It clarifies that the old empty-group
+creation prerequisite should not be repeated, because those groups were already
+created in a prior approved execution and now only need fresh verification
+before workflow use.
+
+What changed:
+
+- Future build scope is narrowed to one disabled/inactive workflow draft:
+  `Onboarding editorial v2 - DRAFT`.
+- The next needed evidence is a fresh read-only MailerLite preflight, not a
+  workflow mutation.
+- The exact approval phrase for that read-only preflight is now available.
+- Disabled draft build approval remains unavailable until the preflight is
+  green.
+- Seed test, subscriber assignment, production entry switch and v1 migration
+  remain separate gates.
+- The active next action moved to the read-only preflight boundary.
+
+Evidence:
+
+- Boundary packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_boundary_packet_current_2026-06-03.json`
+- Boundary packet markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_boundary_packet_current_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Boundary packet status:
+  `onboarding_v2_disabled_draft_build_boundary_packet_ready_local_only`.
+- Workflow mutation authorized now: false.
+- Fresh preflight required before workflow mutation: true.
+- Read-only preflight request ready: true.
+- Disabled draft build approval ready now: false.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with `onboarding_v2_disabled_draft_build_fresh_preflight_boundary`.
+- Do not call live APIs until Alejandro approves the read-only preflight.
+- Do not create/clone/edit/activate/pause/disable workflows.
+- Do not touch productive Onboarding v1.
+- Do not create, rename, assign or mutate subscribers, groups, tags or
+  segments.
+- Do not run seed tests or production routing.
+- Public/audience send, publish, schedule, Shopify, CRM, ledgers, cards,
+  scoring and Fact Store remain closed.
+
+Safety:
+
+- Local/report-only boundary packet: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Workflow mutation: false.
+- Productive Onboarding v1 touched: false.
+- Test emails sent: false.
+- Subscriber, group, tag, segment mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw IDs, recipients, exact URLs and tokens printed: false.

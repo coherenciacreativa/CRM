@@ -1576,3 +1576,93 @@ Use deep hydration only for:
   without ambiguity.
 - `next_checkpoint_expected`: Control Room checkpoint after the boundary packet
   is generated and validated.
+
+## Completed Next Action - Onboarding v2 Disabled Draft Build Boundary Packet - 2026-06-03
+
+- `previous_next_action_id`: `onboarding_v2_disabled_draft_build_boundary_packet_current`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Onboarding v2 draft/content mapping hardening - 2026-06-03`
+- `completion_summary`:
+  - Generated a current local boundary packet for a possible future disabled
+    Onboarding v2 draft creation or clone.
+  - Confirmed the old empty-group prerequisite should not be repeated: the
+    12 v2 groups were already created in a prior approved execution and must
+    only be freshly verified before workflow use.
+  - Defined the future build scope as one disabled/inactive workflow draft only:
+    `Onboarding editorial v2 - DRAFT`.
+  - Kept workflow build, seed contact test, production entry switch and v1
+    migration as separate gates.
+  - Produced the exact phrase for the next read-only preflight boundary, not
+    for workflow mutation.
+  - No live APIs, UI, workflow changes, productive onboarding changes, sends,
+    subscribers, groups, tags, segments, Shopify, CRM, ledgers, cards, scoring
+    or Fact Store were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_boundary_packet_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_boundary_packet_current_2026-06-03.md`
+- `resulting_status`:
+  - Boundary packet:
+    `onboarding_v2_disabled_draft_build_boundary_packet_ready_local_only`.
+  - Future boundary:
+    `disabled_v2_draft_creation_or_clone_only`.
+  - Workflow mutation authorized now: `false`.
+  - Fresh preflight required before workflow mutation: `true`.
+  - Read-only preflight request ready: `true`.
+  - Disabled draft build approval ready now: `false`.
+  - Public/audience send authorized: `false`.
+  - Live action allowed now: `false`.
+
+## Active Next Action - Onboarding v2 Disabled Draft Build Fresh Preflight Boundary - 2026-06-03
+
+- `next_action_id`: `onboarding_v2_disabled_draft_build_fresh_preflight_boundary`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Onboarding v2 disabled draft build boundary packet - 2026-06-03`
+- `objective`: Stop at the read-only fresh preflight boundary for the future
+  disabled Onboarding v2 draft build and wait for Alejandro to approve or defer
+  that preflight.
+- `why_now`: The local boundary packet is complete. The next evidence needed is
+  current MailerLite state, but this requires a live read-only API preflight,
+  which is outside the completed local-only edge.
+- `allowed_scope`:
+  - Present the exact read-only preflight approval phrase when needed.
+  - If Alejandro approves it, run only the fresh read-only preflight and produce
+    a local receipt.
+  - Keep any future workflow mutation approval separate and unavailable until
+    preflight is green.
+- `forbidden_scope`:
+  - Do not call live APIs until Alejandro approves this read-only preflight
+    boundary.
+  - Do not open MailerLite UI.
+  - Do not create, clone, edit, activate, pause or disable workflows.
+  - Do not touch productive Onboarding v1.
+  - Do not create, rename, assign or mutate groups, tags, segments or
+    subscribers.
+  - Do not send or resend emails.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+- `expected_files`:
+  - If approved: local read-only preflight receipt JSON/Markdown under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `approval_phrase`:
+  - `Apruebo realizar únicamente un re-scan/preflight read-only por API de MailerLite para preparar el boundary de un futuro workflow draft disabled de Onboarding v2, verificando que Onboarding flow v1 sigue enabled=true, complete=true y broken=false, que los grupos v2 requeridos existen y tienen active_count=0, que no existe workflow activo o draft conflictivo para Onboarding editorial v2 - DRAFT, y generando recibo local, sin crear, clonar, editar, activar, pausar ni desactivar workflows, sin tocar productive Onboarding v1, sin leer ni mutar subscribers fuera de conteos agregados de grupos, sin crear, renombrar, asignar ni mutar groups, tags, segments, audiences, campaigns o sends, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si cualquier QA falla, detenerse y reportar.`
+- `live_gate_status`: MailerLite read-only API preflight is not approved yet;
+  workflow changes, productive onboarding changes, subscriber/group/tag/segment
+  mutation, sends, publish, schedule, Shopify, CRM, ledgers, cards, scoring and
+  Fact Store remain closed.
+- `human_boundary_id`: `onboarding_v2_disabled_draft_build_read_only_preflight`
+- `human_boundary_notification_status`: `approval_phrase_ready_not_consumed`
+- `stop_conditions`:
+  - Alejandro does not approve the read-only preflight.
+  - The requested action would go beyond read-only preflight.
+  - The preflight would require UI or mutation rather than read-only API
+    inspection.
+- `resume_instruction`: Do not proceed to live API preflight unless Alejandro
+  gives the exact approval phrase. Do not ask for workflow build approval until
+  a fresh preflight receipt is green.
+- `completion_definition`: Either Alejandro approves and the read-only preflight
+  receipt is generated, or this boundary remains awaiting approval.
+- `next_checkpoint_expected`: Control Room checkpoint after approval is
+  consumed by a read-only preflight receipt, or after Alejandro defers the
+  boundary.
