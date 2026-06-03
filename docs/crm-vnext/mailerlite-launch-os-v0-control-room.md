@@ -8915,3 +8915,101 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 taxonomy local patch preview ready - 2026-06-03
+
+Status: checkpoint completed, local/report-only. A reusable local runner now
+turns the accepted Brand/CRM taxonomy decisions into an exact preview of the
+local file changes that could be applied later. The preview is green, but it is
+not approval and no Brand dictionary or CRM manifest patch was applied.
+
+What changed:
+
+- Added a local-only taxonomy patch preview runner.
+- Added focused tests for the preview runner.
+- Added the package command for the runner.
+- Generated the current local preview JSON/Markdown in Mantis Reports.
+- Confirmed the preview can represent both existing CRM manifest row updates
+  and missing CRM manifest entries to add.
+- Left the active boundary as a local apply decision with an exact approval
+  phrase ready.
+
+Evidence:
+
+- Preview JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.json`
+- Preview markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.md`
+- Runner:
+  `scripts/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.mjs`
+- Tests:
+  `__tests__/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.spec.ts`
+- Package command:
+  `crm:vnext:mailerlite-launch-os-taxonomy-local-patch-preview`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Preview status:
+  `taxonomy_local_patch_preview_ready_no_live_changes`.
+- Brand patch preview rows: 14.
+- Brand status changes: 14.
+- CRM manifest patch preview rows: 14.
+- CRM manifest entries to add: 7.
+- CRM liveGroupId changes: 14.
+- CRM liveStatus changes: 14.
+- Blocker count: 0.
+- Warning count: 0.
+- Can ask approval now: false.
+- Can apply Brand dictionary patch now: false.
+- Can apply CRM manifest patch now: false.
+- Open live mutation gate count: 0.
+- Live action allowed now: false.
+
+Validation:
+
+- `node --check scripts/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.mjs`
+- `npx vitest run __tests__/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.spec.ts`
+- Preview generation command completed with `ok=true`.
+
+Operating meaning:
+
+- Continue with `launch_os_v0_taxonomy_local_apply_decision_after_preview`.
+- Do not apply the preview unless Alejandro gives the exact local patch apply
+  phrase recorded in `docs/crm-vnext/launch-os-next-action.md`.
+- If approved, the apply is limited to the local Brand dictionary and local CRM
+  manifest targets named in the preview, followed by local diff/receipt and
+  validation.
+- This local apply boundary is not a live MailerLite/Shopify/CRM permission.
+- The private CRM observed-events input remains separate and missing:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+- If Alejandro gives the exact Onboarding v2 disabled-draft workflow approval
+  phrase, that live workflow boundary supersedes this local apply boundary for
+  that turn.
+
+Safety:
+
+- Local/report-only patch preview: true.
+- Brand dictionary mutated: false.
+- CRM manifest mutated: false.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Workflow mutations performed: false.
+- Productive Onboarding v1 touched: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

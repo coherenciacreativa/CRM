@@ -142,6 +142,7 @@
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-handoff": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-handoff.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-workspace": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-workspace.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-decision-intake": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-decision-intake.mjs",
+    "crm:vnext:mailerlite-launch-os-taxonomy-local-patch-preview": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.mjs",
     "crm:vnext:mailerlite-launch-os-taxonomy-refresh-response-request-bundle": "node scripts/crm-vnext-mailerlite-launch-os-taxonomy-refresh-response-request-bundle.mjs",
     "crm:vnext:mailerlite-launch-os-continuation-guard": "node scripts/crm-vnext-mailerlite-launch-os-continuation-guard.mjs",
     "crm:vnext:mailerlite-launch-os-operator-runbook": "node scripts/crm-vnext-mailerlite-launch-os-operator-runbook.mjs",

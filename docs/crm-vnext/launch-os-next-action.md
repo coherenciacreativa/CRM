@@ -2043,12 +2043,13 @@ Use deep hydration only for:
   - Open live mutation gate count: 0.
   - Live action allowed now: false.
 
-## Active Next Action - Launch OS v0 Taxonomy Local Patch Preview - 2026-06-03
+## Completed Next Action - Launch OS v0 Taxonomy Local Patch Preview - 2026-06-03
 
 - `next_action_id`: `launch_os_v0_taxonomy_local_patch_preview_after_final_responses`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
 - `source_checkpoint`: `Launch OS v0 Brand/CRM taxonomy final responses prepared - 2026-06-03`
 - `objective`: Prepare only a local patch preview from the accepted Brand/CRM
   taxonomy decisions, without applying files and without touching live systems.
@@ -2111,3 +2112,89 @@ Use deep hydration only for:
   dictionary/manifest targets are missing or unsafe.
 - `next_checkpoint_expected`: Control Room checkpoint after the local preview is
   generated or blocked.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.md`
+  - `scripts/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.mjs`
+  - `__tests__/crm-vnext-mailerlite-launch-os-taxonomy-local-patch-preview.spec.ts`
+- `resulting_status`:
+  - Local patch preview:
+    `taxonomy_local_patch_preview_ready_no_live_changes`.
+  - Brand patch preview rows: 14.
+  - Brand status changes: 14.
+  - CRM manifest patch preview rows: 14.
+  - CRM manifest entries to add: 7.
+  - CRM liveGroupId changes: 14.
+  - CRM liveStatus changes: 14.
+  - Blocker count: 0.
+  - Warning count: 0.
+  - Can ask approval now: false.
+  - Can apply Brand dictionary patch now: false.
+  - Can apply CRM manifest patch now: false.
+  - Open live mutation gate count: 0.
+  - Live action allowed now: false.
+
+## Active Next Action - Launch OS v0 Taxonomy Local Apply Decision - 2026-06-03
+
+- `next_action_id`: `launch_os_v0_taxonomy_local_apply_decision_after_preview`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 taxonomy local patch preview ready - 2026-06-03`
+- `objective`: Let Alejandro review or approve only the local Brand dictionary
+  and CRM manifest patch described by the preview. Do not apply it without the
+  exact approval phrase.
+- `why_now`: The preview is green and shows exactly what would change locally:
+  14 Brand status promotions, 14 CRM live receipt updates and 7 new CRM manifest
+  entries. Applying those local files is a separate cross-department mutation,
+  even though it is not a live MailerLite/Shopify/CRM mutation.
+- `allowed_scope`:
+  - Present the preview and the exact local-apply approval phrase.
+  - If Alejandro approves the exact phrase, apply only the local file changes
+    described by the current preview to:
+    `/Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md`
+    and `docs/crm-vnext/mailerlite-receipt-taxonomy-v0.md`.
+  - Generate a local diff/receipt after any approved apply.
+  - Re-run local validation after any approved apply.
+- `forbidden_scope`:
+  - Do not apply the preview without the exact approval phrase.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not create, clone, edit, activate, pause or disable workflows.
+  - Do not touch productive `Onboarding flow` v1.
+  - Do not read, assign or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, audiences,
+    campaigns or sends.
+  - Do not run seed tests.
+  - Do not publish, schedule or audience-send.
+  - Do not write CRM live records, ledgers, cards, scoring or Fact Store.
+- `approval_phrase`:
+  - `Apruebo aplicar únicamente el patch local de taxonomía descrito en /Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.json para actualizar solo el Brand dictionary local /Users/alejandrogomez/Projects/hub-de-marca/90_sources/email/MAILERLITE_GROUP_DICTIONARY_V0.md y el CRM manifest local /Users/alejandrogomez/CRM/docs/crm-vnext/mailerlite-receipt-taxonomy-v0.md, sin tocar MailerLite, Shopify, CRM live, subscribers, groups, tags, segments, workflows, audiences, campaigns, sends, ledgers, cards, scoring ni Fact Store, sin publicar, programar, enviar, asignar audiencia ni crear grupos, sin tocar CRM Core docs ni /Users/alejandrogomez/CRM-core, generando diff y recibo local, y deteniéndose si el preview ya no coincide con los archivos actuales o cualquier QA falla.`
+- `source_preview`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_local_patch_preview_current_2026-06-03.md`
+- `separate_open_input`:
+  - CRM observed-events private file remains missing and is not solved by the
+    taxonomy preview/apply boundary:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+- `live_gate_status`: Brand dictionary local apply and CRM manifest local apply
+  are not approved yet. MailerLite, Shopify, CRM live APIs, workflows,
+  subscribers, groups, tags, segments, audiences, campaigns, sends, ledgers,
+  cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `local_taxonomy_patch_apply_not_live_system_mutation`
+- `human_boundary_notification_status`: `approval_phrase_ready_not_consumed`
+- `stop_conditions`:
+  - Alejandro does not approve the exact local patch apply phrase.
+  - The preview digest no longer matches current local target files.
+  - The apply would touch any file outside the two approved local targets.
+  - A route would call live APIs, open UI or touch CRM Core.
+  - The user asks to execute a live boundary without the exact approval phrase
+    for that boundary.
+- `resume_instruction`: Do not apply the preview unless Alejandro gives the
+  exact local patch apply phrase. If approved, apply only those local file
+  changes, generate a local receipt and validate. Otherwise present the preview
+  and keep live systems closed.
+- `completion_definition`: Alejandro approves and the local patch apply receipt
+  is generated, or Alejandro explicitly defers the local apply boundary.
+- `next_checkpoint_expected`: Control Room checkpoint after approved local apply
+  receipt, or after Alejandro defers this local apply boundary.
