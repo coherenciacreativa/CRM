@@ -55,53 +55,60 @@ routing and completion pointer.
   surface, and not-yet-automated areas; no live systems or CRM state were
   touched.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_community_source_health_verification_packets_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-02`
 - `updated_at`: `2026-06-02`
-- `objective`: Prepare read-only/no-live source-health verification packets for
-  Instagram, MailerLite/email and Gmail/newsletter replies. The packets should
-  define what can be verified safely, what would require approval, what commands
-  or UI/manual evidence routes would be used, what must not be printed, and what
-  would still remain unknown.
-- `why_now`: The reality audit showed that local adapters/contracts exist, but
-  live/source availability, snapshot freshness, Gmail metadata health and
-  Instagram source access are not yet verified. Before identity bridge work, heat
-  preview, or CEO/operator brief automation, CRM Core needs source-health
-  verification boundaries.
+- `completed_at`: `2026-06-02`
+- `completion_artifact`:
+  `docs/crm-vnext/community-source-health-verification-packets-v0.md`
+- `completion_definition`: CRM Core has read-only/no-live source-health
+  verification packets for Instagram, MailerLite/email and Gmail/newsletter
+  replies that define safe verification boundaries, approval requirements,
+  routes, forbidden actions, redaction rules, output artifacts, and what remains
+  unknown; no verification was run and no live systems or CRM state were touched.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_first_source_health_verification_decision_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `objective`: Choose which source family should receive the first real
+  source-health verification and by which safe route.
+- `why_now`: The verification packet plan is ready, but running any verification
+  would cross a new approval boundary. Alejandro must choose the first source
+  family and approve the route before CRM Core performs any source-health check.
 - `allowed_scope`:
-  - Update CRM Core docs only.
-  - Prepare approval/verification packets.
-  - No live execution.
-  - No connector/API calls.
-  - No secrets.
-  - No source-system mutation.
-  - No CRM state mutation.
+  - Summarize the three available verification options.
+  - Recommend the safest first verification.
+  - Wait for Alejandro's decision.
+  - No execution.
 - `forbidden_scope`:
-  - No live checks yet.
-  - No Instagram browsing.
+  - No live API calls.
+  - No Instagram UI.
   - No Gmail search.
   - No MailerLite API call.
-  - No card/ledger/scoring/Fact Store writes.
+  - No source snapshots/exports unless explicitly supplied/approved.
+  - No CRM state mutation.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. Instagram source-health verification packet.
+  2. MailerLite/email snapshot or no-secret health verification packet.
+  3. Gmail/newsletter reply metadata-only verification packet.
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
-  - Any verification would require live API, UI login, credentials, private
-    message content, source mutation, or CRM state write.
-  - Root is not `/Users/alejandrogomez/CRM-core`.
-  - Branch is not `codex/crm-core-reentry`.
-  - Launch OS docs would be touched.
+  - Any attempted source-health verification.
+  - Any live API call, UI access, credential access, private content read, source
+    mutation, CRM state mutation, Launch OS doc touch, or use of
+    `/Users/alejandrogomez/CRM`.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read
   `docs/crm-vnext/crm-core-codex-profile.md`, this file,
-  `docs/crm-vnext/community-signal-readiness-board-v0.md` and
-  `docs/crm-vnext/community-source-health-reality-audit-v0.md`. Prepare
-  verification packets only; do not run verification.
-- `completion_definition`: CRM Core has read-only/no-live verification packets
-  for Instagram, MailerLite/email, and Gmail/newsletter replies that define safe
-  verification boundaries, approval requirements, commands or UI/manual evidence
-  routes, secret/private-content redaction rules, and what remains unknown.
+  `docs/crm-vnext/community-source-health-reality-audit-v0.md`, and
+  `docs/crm-vnext/community-source-health-verification-packets-v0.md`. Do not
+  run verification. Present the choice to Alejandro and stop.
+- `completion_definition`: Alejandro chooses one first verification route and
+  gives explicit approval or declines all options.
