@@ -1114,3 +1114,95 @@ Use deep hydration only for:
   performed.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO review notes or
   no-send hold decision are recorded.
+
+## Completed Next Action - Post-seed CEO/SIBO No-send Decision - 2026-06-03
+
+- `previous_next_action_id`: `launch_rehearsal_ceo_sibo_no_send_review_inteligencia_descansar`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 post-seed-test CEO/SIBO no-send packet ready - 2026-06-03`
+- `completion_summary`:
+  - Alejandro selected `keep_null_audience_no_public_send` as the post-seed
+    no-send strategy for `Inteligencia para descansar`.
+  - The local decision intake accepted the choice as strategy-only and did not
+    turn it into send approval.
+  - The Launch Rehearsal Protocol was refreshed against the post-seed SIBO
+    packet and standing delegation policy.
+  - A local Mantis digest was created for the strategic decision and operating
+    posture.
+  - No MailerLite API/UI call, email send, publish, schedule, audience
+    assignment, subscriber/group/workflow mutation, Shopify, CRM, ledger, card,
+    scoring or Fact Store action was performed.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_post_seed_test_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_post_seed_test_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_post_seed_no_send_decision_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_post_seed_no_send_decision_inteligencia_descansar_2026-06-03.md`
+- `resulting_status`:
+  - Decision intake:
+    `pilot_distribution_decision_intake_lane_selected_no_live_changes`.
+  - Selected pilot lane: `keep_null_audience_no_public_send`.
+  - Protocol:
+    `launch_rehearsal_protocol_no_send_ready_local_only`.
+  - Public/audience send authorized: `false`.
+  - Live action allowed now: `false`.
+
+## Active Next Action - Post-seed Launch Rehearsal Learning Digest - 2026-06-03
+
+- `next_action_id`: `launch_rehearsal_learning_digest_post_seed_test_inteligencia_descansar`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 post-seed no-send decision recorded and protocol refreshed - 2026-06-03`
+- `objective`: Prepare a local learning digest that states what the completed
+  `Inteligencia para descansar` rehearsal proves about Launch OS v0 and what
+  should carry into future frequent microproduct launches.
+- `why_now`: The pilot is CEO-review ready, seed-tested, and intentionally kept
+  in no-send rehearsal/control-plane mode. The next useful move is to extract
+  learning-system implications, not to send or build more approval machinery.
+- `allowed_scope`:
+  - Read existing local post-seed artifacts, receipts and packets.
+  - Produce a local JSON/Markdown learning digest for Launch OS v0 operations.
+  - Identify reusable operating patterns for Product Value Gate, CEO Proposal
+    Packet, Brand/Web/MailerLite/CRM QA, Standing Delegation, and Null Audience
+    safety.
+  - Keep findings at digest/control-plane level; avoid raw IDs, URLs,
+    recipients and tokens.
+- `forbidden_scope`:
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not send or resend emails.
+  - Do not publish, schedule or audience-send any campaign.
+  - Do not assign real audiences, groups or segments.
+  - Do not read or mutate subscribers, workflows or automations.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+- `expected_files`:
+  - A local learning digest under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - Optional Control Room checkpoint if the digest materially changes the next
+    operating posture.
+- `allowed_commands`:
+  - `git status --short`
+  - `jq` readback of existing local JSON reports.
+  - Read-only local file inspection.
+  - Local-only report generation that does not call live systems.
+- `validation_commands`:
+  - `jq empty` on generated JSON reports.
+  - `git diff --check`
+- `live_gate_status`: Public/audience send, publish, schedule, real audience
+  assignment, subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `not_needed_for_local_learning_digest`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - User asks to open a live boundary.
+  - Required local evidence is missing or contradicts the post-seed ready state.
+  - The digest would require CRM/Fact Store writes instead of staying local.
+- `resume_instruction`: Build only the local learning digest from existing
+  evidence. Do not re-run sends, preflight, public/audience decisions or live
+  integrations.
+- `completion_definition`: A validated local digest captures the rehearsal
+  lessons and next operator implications for Launch OS v0 without live
+  mutation.
+- `next_checkpoint_expected`: Control Room checkpoint after the learning digest
+  is generated and validated.

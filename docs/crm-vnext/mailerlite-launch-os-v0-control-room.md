@@ -8094,3 +8094,84 @@ Operating meaning:
 - Public/audience send, publish, schedule, real audience assignment,
   subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
   Fact Store remain closed.
+
+## Launch OS v0 post-seed no-send decision recorded and protocol refreshed - 2026-06-03
+
+Status: checkpoint completed, local/report-only. Alejandro selected
+`keep_null_audience_no_public_send` after reviewing the post-seed CEO/SIBO
+packet for `Inteligencia para descansar`. The decision was recorded as a
+strategy-only no-send lane choice, not as approval to send, publish, schedule,
+assign an audience or mutate live systems. The Launch Rehearsal Protocol was
+refreshed against the post-seed SIBO packet, and a local Mantis digest was
+created for the strategic operating posture.
+
+What changed:
+
+- Local decision intake recorded the selected lane:
+  `keep_null_audience_no_public_send`.
+- The decision intake stayed strategy-only:
+  `wouldAuthorizeSend=false`, `wouldAuthorizeAudienceAssignment=false`,
+  `liveActionAllowedNow=false`.
+- The post-seed Launch Rehearsal Protocol is ready and keeps first-run sending
+  closed until a future fresh preflight/QA edge.
+- The digest records that this microproduct remains a rehearsal/control-plane
+  asset, not a real-person distribution campaign.
+- The active next action moved to a local learning digest for Launch OS v0.
+
+Evidence:
+
+- Decision intake JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+- Decision intake markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_pilot_distribution_decision_intake_post_seed_test_current_inteligencia_descansar_2026-06-03.md`
+- Launch Rehearsal Protocol JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_post_seed_test_current_inteligencia_descansar_2026-06-03.json`
+- Launch Rehearsal Protocol markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_post_seed_test_current_inteligencia_descansar_2026-06-03.md`
+- Mantis digest JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_post_seed_no_send_decision_inteligencia_descansar_2026-06-03.json`
+- Mantis digest markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_post_seed_no_send_decision_inteligencia_descansar_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Decision intake status:
+  `pilot_distribution_decision_intake_lane_selected_no_live_changes`.
+- Strategy boundary ready: true.
+- Selected pilot lane: `keep_null_audience_no_public_send`.
+- Lane decision ready: true.
+- Roster required next: false.
+- Can ask final send approval now: false.
+- Live action allowed now: false.
+- Would authorize send: false.
+- Would authorize audience assignment: false.
+- Protocol packet status:
+  `launch_rehearsal_protocol_no_send_ready_local_only`.
+- Protocol ready: true.
+- First run can send now: false.
+- Fresh preflight required before any future seed send: true.
+- Public audience send authorized: false.
+- Blocker count: 0.
+
+Safety:
+
+- Local/report-only decision intake, protocol refresh and digest: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Test emails sent: false.
+- Audience sends, publish and schedule: false.
+- Subscriber, group, segment, workflow and automation mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw IDs, recipients, exact URLs and tokens printed: false.
+
+Operating meaning:
+
+- Do not ask Alejandro again for the no-send lane choice unless he changes
+  strategy.
+- Do not retry or resend `E01`-`E04` from this checkpoint.
+- Continue with `launch_rehearsal_learning_digest_post_seed_test_inteligencia_descansar`.
+- Public/audience send, publish, schedule, real audience assignment,
+  subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
+  Fact Store remain closed.
