@@ -7569,3 +7569,76 @@ Operating meaning:
 - Do not ask again for a broad seed-send approval; standing delegation already
   covers seed tests when fresh QA is green.
 - Do not repeat the `E01` send.
+
+## Launch OS v0 CEO proposal with seed caveat current delta - 2026-06-03
+
+Status: active goal, local-only/report-only CEO-review delta and CEO Proposal
+Packet regenerated against the 2026-06-03 partial `E01` seed-test checkpoint.
+This checkpoint performs no MailerLite API/UI call, test send, resend, publish,
+schedule, audience assignment, subscriber/group/workflow mutation, Shopify
+mutation, CRM write, ledger, card, scoring or Fact Store action.
+
+Evidence:
+
+- CEO-review readiness delta JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.json`
+- CEO-review readiness delta markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.md`
+- CEO Proposal Packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.json`
+- CEO Proposal Packet markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
+- Remaining E02-E04 fallback route decision request:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- CEO-review readiness delta status:
+  `ceo_review_readiness_delta_not_ready_no_live_changes`.
+- CEO-review value ready: true.
+- Integrated experience ready: true.
+- Compact-footer drafts ready: true.
+- Compact-footer seed preflight green: true.
+- Seed execution state: `partial_e01_only_remaining_e02_e03_e04_blocked`.
+- Seed inbox artifact QA ready: true.
+- Visual readback green: true.
+- Strict CEO-review package ready: false.
+- Ready for pilot distribution decision now: false.
+- CEO Proposal Packet status:
+  `ceo_proposal_packet_ready_for_ceo_review_with_seed_execution_caveat_no_live_changes`.
+- CEO proposal review ready with seed caveat: true.
+- Product Value ready: true.
+- Web/Shopify ready: true.
+- MailerLite delivery ready: true, with execution caveat.
+- CRM signal design ready: true.
+- Public send approval ready: false.
+- Live action allowed now: false.
+- Sent labels: `E01`.
+- Remaining unsent labels: `E02`, `E03`, `E04`.
+- Do not resend labels: `E01`.
+
+Safety:
+
+- Local-only/report-only packet generation: true.
+- MailerLite API/UI called by this checkpoint: false.
+- Test emails sent by this checkpoint: `0`.
+- Audience sends, publish and schedule: false.
+- Subscribers, groups, segments, workflows and automations mutated: false.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: false.
+- Raw URLs, raw IDs, recipients and tokens printed: false.
+
+Operating meaning:
+
+- The pilot has a CEO-reviewable proposal packet if Alejandro accepts the seed
+  execution caveat.
+- The stricter CEO-review readiness delta correctly remains not ready until
+  `E02`, `E03` and `E04` are sent and receipted, or Alejandro explicitly
+  chooses to review with the caveat.
+- The next human boundary is not a broad approval: either review the CEO
+  Proposal Packet with caveat, or approve the already captured fallback route
+  phrase to complete only the remaining `E02`/`E03`/`E04` seed tests after
+  fresh preflight.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.

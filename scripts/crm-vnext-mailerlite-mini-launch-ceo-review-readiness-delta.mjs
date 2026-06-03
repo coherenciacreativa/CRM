@@ -211,6 +211,57 @@ const executionReceiptSafetyGreen = (safety = {}) => safety.audienceSendsPerform
 
 const normalizeSeedExecutionEvidence = (seedEvidenceInput = {}) => {
   const seedEvidence = seedEvidenceInput ?? {};
+  const route = seedEvidence?.uiRoute;
+  if (route && Array.isArray(route.sentLabels)) {
+    const sentLabels = unique(route.sentLabels);
+    const unsentLabels = unique(route.unsentLabels ?? EXPECTED_LABELS.filter((label) => !sentLabels.includes(label)));
+    const doNotResendLabels = unique(route.doNotResendLabels ?? sentLabels);
+    const e02Blocker = route.e02?.blocker ?? null;
+
+    return {
+      evidenceKind: 'computer_use_semantic_partial_receipt',
+      uiApproval: {
+        compactFooterSeedTestApprovalConsumed: sentLabels.length > 0
+          ? `partial_${sentLabels.join('_').toLowerCase()}`
+          : 'not_consumed',
+        remainingUnsentLabels: unsentLabels,
+        doNotResendLabels,
+      },
+      uiExecution: {
+        sentLabels,
+        unsentLabels,
+        recordUiSentReceiptCreated: route.recordUiSentReceiptCreated === true,
+        computerUseSemanticSendCompleted: expectedLabelCoverage(sentLabels)
+          ? 'all_e01_e02_e03_e04'
+          : sentLabels.length > 0
+            ? `partial_${sentLabels.join('_').toLowerCase()}_only`
+            : 'not_started',
+        testSendExecutionChannel: route.route ?? null,
+        semanticSuccessObservedText: route.e01?.semanticSuccessObservedText ?? null,
+        blocker: e02Blocker ?? (unsentLabels.length > 0 ? 'remaining_seed_tests_not_completed' : null),
+        finalReceiptStatus: seedEvidence?.status ?? null,
+        finalReceiptMode: seedEvidence?.operation ?? null,
+      },
+      uiPolicy: {
+        screenshotsOrCapturesAllowedForUiOperation:
+          seedEvidence?.safety?.screenshotsOrCapturesUsedAsUiRoute === false ? false : null,
+        coordinateClicksAllowed:
+          seedEvidence?.safety?.coordinateClicksUsed === false ? false : null,
+        systemClickFallbackAllowed:
+          seedEvidence?.safety?.systemClickFallbackUsed === false ? false : null,
+        browserDomOrAppleScriptClickInjectionAllowed:
+          seedEvidence?.safety?.browserDomInjectionUsed === false
+            && seedEvidence?.safety?.appleScriptInjectionUsed === false
+            ? false
+            : null,
+        apiTestSendEndpointAllowedAsPrimaryRoute:
+          seedEvidence?.safety?.mailerLiteApiTestSendCalled === false ? false : null,
+      },
+      freshPreflight: seedEvidence?.freshPreflight ?? {},
+      nextBoundary: seedEvidence?.nextBoundary ?? {},
+    };
+  }
+
   const receiptSentLabels = labelsFromRows(seedEvidence.sentTests);
   const receiptTargetLabels = labelsFromRows(seedEvidence.targetPlan);
   const receiptUnsentLabels = EXPECTED_LABELS.filter((label) => !receiptSentLabels.includes(label));

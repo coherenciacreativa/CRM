@@ -799,28 +799,31 @@ action that a resumed Goal should continue before replanning.
 
 ## Active Next Action
 
-- `next_action_id`: `launch_rehearsal_delegated_seed_test_remaining_e02_e04_route_decision_inteligencia_descansar`
+- `next_action_id`: `launch_rehearsal_ceo_proposal_with_seed_caveat_or_remaining_route_decision_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
-- `source_checkpoint`: `Launch OS v0 launch rehearsal partial E01 semantic seed-test blocker - 2026-06-03`
-- `objective`: Complete or route-decide only the remaining delegated seed-test
-  sends for `E02`, `E03` and `E04` after a fresh green preflight. `E01` was
-  already sent successfully in the current checkpoint and must not be resent.
-- `why_now`: Computer Use is available and worked for `E01`, but MailerLite did
-  not expose the remaining `Send a test` control semantically after the `E02`
-  schedule context loaded. The next useful move is a narrow remaining-label
-  route decision, not new infrastructure, draft recreation, public
-  distribution or a repeat of `E01`.
+- `source_checkpoint`: `Launch OS v0 CEO proposal with seed caveat current delta - 2026-06-03`
+- `objective`: Present or continue from the current CEO Proposal Packet for
+  `Inteligencia para descansar`, which is CEO-review ready with a seed
+  execution caveat, while keeping the remaining `E02`/`E03`/`E04` seed-test
+  route decision explicit and closed until approved. `E01` was already sent and
+  must not be resent.
+- `why_now`: The current delta proves product value, Brand/Web/Shopify
+  readiness, MailerLite drafts/preflight, seed inbox QA and visual readback are
+  green, but strict CEO-review readiness is not fully complete because
+  `E02`/`E03`/`E04` remain unsent. The proposal packet can still be reviewed by
+  the CEO with that caveat, and the exact fallback phrase already exists for
+  closing the remaining seed-test route if Alejandro chooses that path.
 - `allowed_scope`:
-  - Refresh the read-only MailerLite preflight before any remaining send.
-  - If Computer Use exposes the remaining MailerLite controls semantically,
-    execute only `E02`, `E03` and `E04` test sends to the approved seed
-    recipient and record a local execution receipt for the actual sent labels.
-  - If the remaining controls are still not semantically exposed, stop and ask
-    for a scope-specific fallback route authorization instead of improvising.
-    This is not a new seed-send approval; the seed-send operation remains
-    standing-delegated when QA is green.
+  - Review or summarize the current CEO Proposal Packet with the seed caveat.
+  - Continue local/no-live readiness synthesis from the current delta and
+    proposal packet.
+  - If Alejandro approves the fallback route phrase, refresh read-only
+    MailerLite preflight and execute only `E02`, `E03` and `E04` seed test sends
+    to the approved seed recipient, then record a local receipt.
+  - If Alejandro declines or does not approve fallback, keep the pilot no-send
+    and local-only, and do not build more infrastructure around the UI blocker.
 - `forbidden_scope`:
   - Do not resend `E01`.
   - Do not send to a public audience, group, segment or subscriber list.
@@ -836,6 +839,10 @@ action that a resumed Goal should continue before replanning.
     system-click fallback routes unless Alejandro explicitly approves that
     fallback for this exact operation.
 - `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
@@ -846,6 +853,7 @@ action that a resumed Goal should continue before replanning.
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
+  - Local CEO Proposal Packet or CEO-review delta regeneration.
   - Read-only MailerLite preflight/QA commands if freshness must be refreshed.
   - Computer Use semantic UI operation for MailerLite test sends, scoped only
     to the remaining `E02`, `E03` and `E04` drafts and approved seed
@@ -860,39 +868,43 @@ action that a resumed Goal should continue before replanning.
   policy conditions and fresh green preflight. Public/audience sends,
   MailerLite publish/schedule, audience assignment, subscribers, workflows,
   Shopify and CRM remain closed until a separate exact approval.
-- `human_boundary_id`: `launch_rehearsal_delegated_seed_test_remaining_e02_e04_route_decision_inteligencia_descansar`
+- `human_boundary_id`: `launch_rehearsal_ceo_proposal_with_seed_caveat_or_remaining_route_decision_inteligencia_descansar`
 - `human_boundary_notification_status`: `sent`
 - `human_boundary_notification_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
-- `human_boundary_notification_note`: Notify in the Codex thread that `E01` was
-  sent, `E02`/`E03`/`E04` were not sent, and a fallback route needs explicit
-  approval if Computer Use continues to see but not semantically expose the
-  remaining `Send a test` controls. The exact phrase is captured in the
-  fallback route decision request packet. The fallback phrase authorizes only
-  the UI-control route, not a new seed-send approval.
+- `human_boundary_notification_note`: The Codex thread should offer the CEO two
+  clean choices: review the CEO Proposal Packet now with the seed execution
+  caveat, or approve the already-captured fallback route phrase to complete
+  only `E02`/`E03`/`E04`. The fallback phrase authorizes only the UI-control
+  route, not a new seed-send approval or any public/audience send.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
-  - The preflight is stale, missing or no longer green.
-  - The remaining `Send a test` controls are not semantically exposed and no
-    explicit fallback route authorization is provided.
+  - Any report claims full CEO-review readiness without acknowledging the
+    current `E02`/`E03`/`E04` seed execution caveat.
+  - A remaining seed send is requested without fresh green preflight and valid
+    UI route or explicit fallback approval.
   - The operation would send to anyone outside the approved seed recipient.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store.
-- `resume_instruction`: Do not spend a long run rediscovering the same
-  MailerLite accessibility limitation. After freshness QA, attempt only the
-  remaining `E02`/`E03`/`E04` test sends if semantic Computer Use controls are
-  available. If they are not, stop quickly and provide the exact fallback-route
-  approval phrase.
-- `completion_definition`: Either the remaining `E02`, `E03` and `E04`
+- `resume_instruction`: Start from the 2026-06-03 CEO Proposal Packet and
+  readiness delta. Do not spend a long run rediscovering the same MailerLite
+  accessibility limitation. If Alejandro approves fallback, refresh preflight
+  and attempt only `E02`/`E03`/`E04`; otherwise keep the pilot no-send/local and
+  present the CEO-review packet with the seed caveat.
+- `completion_definition`: Alejandro has either reviewed/decided on the CEO
+  Proposal Packet with the seed caveat, or the remaining `E02`, `E03` and `E04`
   delegated seed-test sends are completed and locally receipted without
-  resending `E01`, or Alejandro has made a clear fallback decision for this
-  exact remaining-label operation.
-- `next_checkpoint_expected`: `Launch OS v0 launch rehearsal remaining E02-E04 delegated seed-test route decision - 2026-06-03`
+  resending `E01`.
+- `next_checkpoint_expected`: `Launch OS v0 CEO proposal with seed caveat or remaining route decision - 2026-06-03`
 
 ## Stop/Change Conditions
 
