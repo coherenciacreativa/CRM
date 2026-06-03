@@ -7804,3 +7804,62 @@ Operating meaning:
 - Public/audience send approval, MailerLite publish/schedule, subscriber/group/
   workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
   writes remain closed.
+
+## Launch OS v0 remaining E02-E04 Computer Use click blocker - 2026-06-03
+
+Status: active goal, delegated seed/test send still pending because the current
+Computer Use session could not operate MailerLite's visible `Send a test`
+control. This checkpoint ran fresh read-only MailerLite preflight for `E02`,
+`E03` and `E04`; it sent no test emails, published/scheduled nothing, mutated
+no subscribers/groups/workflows, and touched no Shopify, CRM, ledger, card,
+scoring or Fact Store state.
+
+Evidence:
+
+- Fresh E02-E04 preflight JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+- Fresh E02-E04 preflight markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+- Computer Use click blocker JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.json`
+- Computer Use click blocker markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
+- Standing Delegation policy:
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`
+
+Confirmed results:
+
+- Fresh preflight target count: 3.
+- Fresh preflight QA green count: 3.
+- Fresh preflight blocker/error count: 0/0.
+- `E01` resent: false.
+- `E02`, `E03` and `E04` sent: false.
+- Computer Use semantic state readable: true.
+- MailerLite `Send a test` visible on E02 Schedule: true.
+- MailerLite `Send a test` exposed semantically: false.
+- Delegated visual/coordinate fallback attempted: true.
+- Coordinate fallback result:
+  `Computer Use server error -10005: noWindowsAvailable`.
+
+Safety:
+
+- MailerLite API called: true, read-only preflight only.
+- MailerLite UI opened: true.
+- MailerLite test emails sent: 0.
+- Public/audience send, publish and schedule: false.
+- Subscriber, group, segment and workflow mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw URLs and tokens printed: false.
+
+Operating meaning:
+
+- This is a Computer Use tool-route blocker, not an approval blocker.
+- Do not ask Alejandro for another seed-test approval phrase for `E02`, `E03`
+  or `E04` if fresh QA remains green and the route stays inside Standing
+  Delegation.
+- The next operator should retry the same delegated seed/test route in a fresh
+  Computer Use-capable session or after Computer Use coordinate-click behavior
+  recovers, then record a local execution receipt for the labels actually sent.
+- Public/audience send approval, MailerLite publish/schedule, subscriber/group/
+  workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
+  writes remain closed.

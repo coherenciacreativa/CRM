@@ -805,7 +805,7 @@ action that a resumed Goal should continue before replanning.
 - `status`: `active`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
-- `source_checkpoint`: `Launch OS v0 standing seed-test route clarification - 2026-06-03`
+- `source_checkpoint`: `Launch OS v0 remaining E02-E04 Computer Use click blocker - 2026-06-03`
 - `objective`: Complete the remaining delegated seed/test sends for `E02`,
   `E03` and `E04` after fresh green MailerLite preflight, using Computer Use
   semantic controls or the delegated minimal Computer Use visual/coordinate
@@ -851,6 +851,10 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
 - `allowed_commands`:
@@ -888,11 +892,21 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e02_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
 - `human_boundary_notification_note`: Alejandro clarified that routine
   MailerLite seed/test emails to approved seed recipients should not require
   repeated approvals. The remaining `E02`/`E03`/`E04` seed sends should proceed
   autonomously under Standing Delegation after fresh green QA, including the
   delegated minimal Computer Use visual/coordinate fallback if needed.
+- `current_route_blocker`: Fresh E02-E04 preflight is green, but this session
+  could not operate the visible MailerLite `Send a test` control. Computer Use
+  exposed Safari and the MailerLite draft list semantically, but the `Send a
+  test` control was not exposed semantically and delegated visual/coordinate
+  clicks failed with `Computer Use server error -10005: noWindowsAvailable`.
+  No seed recipient was typed and no test emails were sent.
 - `anti_blocker_rule`: A fresh seed-test approval phrase is not needed for this
   active action. If a future resume sees older "decision request" or
   "approval boundary" language for these same seed/test sends, treat it as
@@ -912,12 +926,14 @@ action that a resumed Goal should continue before replanning.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store.
-- `resume_instruction`: Start with fresh read-only preflight. If QA is green,
-  send only `E02`/`E03`/`E04` to the approved seed recipient under Standing
-  Delegation. Do not ask Alejandro for another approval just because MailerLite
-  requires a minimal Computer Use visual/coordinate fallback for a visible
-  `Send a test` control. Stop only on QA failure, scope expansion or non-
-  delegated route requirement.
+- `resume_instruction`: Start with fresh read-only preflight, or reuse the
+  2026-06-03 E02-E04 preflight only if it is still fresh by current operating
+  standards. If QA is green, retry only `E02`/`E03`/`E04` to the approved seed
+  recipient under Standing Delegation. Do not ask Alejandro for another
+  approval just because MailerLite requires a minimal Computer Use
+  visual/coordinate fallback for a visible `Send a test` control. If Computer
+  Use still returns `noWindowsAvailable` for the delegated fallback, report the
+  tool-route blocker and preserve the unsent labels.
 - `completion_definition`: The remaining `E02`, `E03` and `E04` delegated
   seed-test sends are completed and locally receipted without resending `E01`,
   then CEO-review delta/proposal artifacts are regenerated without the seed
