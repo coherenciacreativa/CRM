@@ -1484,3 +1484,95 @@ Use deep hydration only for:
   sequence while preserving productive v1.
 - `next_checkpoint_expected`: Control Room checkpoint after the Onboarding v2
   hardening packet is generated and validated.
+
+## Completed Next Action - Onboarding v2 Draft/Content Mapping Hardening - 2026-06-03
+
+- `previous_next_action_id`: `onboarding_v2_draft_content_mapping_hardening`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 baseline hardening plan after gap audit - 2026-06-03`
+- `completion_summary`:
+  - Generated a local Onboarding v2 draft/content mapping hardening packet.
+  - Froze the v2 draft skeleton, content receipt map, first-email
+    welcome-only boundary, future seed-test posture and rollout gates.
+  - Preserved productive `Onboarding flow` v1 as enabled, complete and not
+    broken.
+  - Confirmed Email 1 remains welcome/orientation only, with no `content_id`
+    or canonical Sent receipt group.
+  - Mapped 10 canonical article receipts for Emails 2-11 and flagged the v1
+    sender-name anomaly that v2 should not copy.
+  - No live APIs, UI, workflow changes, productive onboarding changes, sends,
+    subscribers, groups, tags, segments, Shopify, CRM, ledgers, cards, scoring
+    or Fact Store were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_draft_content_mapping_hardening_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_draft_content_mapping_hardening_2026-06-03.md`
+- `resulting_status`:
+  - Mapping packet:
+    `onboarding_v2_draft_content_mapping_hardening_ready_local_only`.
+  - Recommended path:
+    `option_b_light_clone_onboarding_v2_then_switch_entry`.
+  - Productive v1 preserved: `true`.
+  - v2 draft created now: `false`.
+  - Welcome-only email count: 1.
+  - Canonical article receipt count: 10.
+  - Future gate count: 4.
+  - Public/audience send authorized: `false`.
+  - Live action allowed now: `false`.
+
+## Active Next Action - Onboarding v2 Disabled Draft Build Boundary Packet - 2026-06-03
+
+- `next_action_id`: `onboarding_v2_disabled_draft_build_boundary_packet_current`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Onboarding v2 draft/content mapping hardening - 2026-06-03`
+- `objective`: Prepare a current local boundary packet for a possible future
+  disabled Onboarding v2 draft creation or clone, using the new mapping packet,
+  without executing any workflow change.
+- `why_now`: The mapping packet clarifies the v2 skeleton and receipt map. The
+  next useful step is to define the exact future live boundary for a disabled
+  draft build, not to open MailerLite or mutate workflows.
+- `allowed_scope`:
+  - Read local Onboarding v1/v2 reports, the mapping hardening packet and the
+    disabled draft-build packet.
+  - Produce a local JSON/Markdown boundary packet that states prerequisites,
+    exact scope, hard stops and evidence needed before any future approval.
+  - Formulate the future request clearly if the packet reaches a true human
+    boundary.
+- `forbidden_scope`:
+  - Do not call live APIs or open MailerLite UI.
+  - Do not create, clone, edit, activate, pause or disable workflows.
+  - Do not touch productive Onboarding v1.
+  - Do not create, rename, assign or mutate groups, tags, segments or
+    subscribers.
+  - Do not send or resend emails.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+- `expected_files`:
+  - Local disabled draft build boundary packet JSON/Markdown under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `allowed_commands`:
+  - `git status --short`
+  - `rg`/`sed`/`jq` read-only local inspection.
+  - Local-only report generation that does not call live systems.
+- `validation_commands`:
+  - `jq empty` on generated JSON reports.
+  - `git diff --check`
+- `live_gate_status`: MailerLite API/UI, workflow changes, productive
+  onboarding changes, subscriber/group/tag/segment mutation, sends, publish,
+  schedule, Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `possible_future_disabled_v2_draft_build_approval`
+- `human_boundary_notification_status`: `not_requested_yet`
+- `stop_conditions`:
+  - The packet would require live MailerLite verification or mutation.
+  - Local evidence is not enough to define the boundary safely.
+  - The work would combine workflow creation with seed testing, subscriber
+    assignment, production entry switch or v1 edits.
+- `resume_instruction`: Prepare only the local disabled-draft build boundary
+  packet. Do not perform live checks, UI work, workflow changes, subscriber
+  assignments, seed tests or production routing.
+- `completion_definition`: A validated local packet defines the future disabled
+  draft build boundary clearly enough for Alejandro to approve or defer it
+  without ambiguity.
+- `next_checkpoint_expected`: Control Room checkpoint after the boundary packet
+  is generated and validated.

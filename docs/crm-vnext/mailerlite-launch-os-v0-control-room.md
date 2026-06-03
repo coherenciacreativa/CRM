@@ -8418,3 +8418,70 @@ Safety:
 - Subscriber, group, tag, segment, workflow and automation mutation: false.
 - Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
 - Raw IDs, recipients, exact URLs and tokens printed: false.
+
+## Onboarding v2 draft/content mapping hardening - 2026-06-03
+
+Status: checkpoint completed, local/report-only. A local Onboarding v2
+draft/content mapping hardening packet was created. It freezes the v2 draft
+skeleton, content receipt map, first-email welcome-only boundary, seed-test
+posture and rollout gates while preserving productive `Onboarding flow` v1.
+
+What changed:
+
+- Onboarding v2 now has a current local mapping packet that can guide a future
+  disabled draft-build boundary.
+- The recommended path remains
+  `option_b_light_clone_onboarding_v2_then_switch_entry`.
+- Productive v1 remains protected: enabled, complete and not broken.
+- Email 1 is explicitly welcome/orientation only: no `content_id`, no canonical
+  Sent receipt group and no inference from historical first-email markers.
+- Emails 2-11 map to 10 canonical article Sent receipts.
+- A v1 sender-name anomaly is flagged so v2 does not copy `Sender Alejandro
+  Gómez` into future drafts.
+- The active next action moved to a current disabled-draft build boundary
+  packet, still local-only.
+
+Evidence:
+
+- Onboarding v2 mapping hardening JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_draft_content_mapping_hardening_2026-06-03.json`
+- Onboarding v2 mapping hardening markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_draft_content_mapping_hardening_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Mapping packet status:
+  `onboarding_v2_draft_content_mapping_hardening_ready_local_only`.
+- v2 draft created now: false.
+- Productive v1 touched: false.
+- Welcome-only email count: 1.
+- Canonical article receipt count: 10.
+- Future gate count: 4.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with `onboarding_v2_disabled_draft_build_boundary_packet_current`.
+- Do not create/clone/edit/activate/pause/disable workflows from this
+  checkpoint.
+- Do not touch productive Onboarding v1.
+- Do not create, rename, assign or mutate subscribers, groups, tags or
+  segments.
+- Do not run seed tests or production routing.
+- Public/audience send, publish, schedule, workflow mutation, Shopify, CRM,
+  ledgers, cards, scoring and Fact Store remain closed.
+
+Safety:
+
+- Local/report-only mapping packet: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Workflow mutation: false.
+- Productive Onboarding v1 touched: false.
+- Test emails sent: false.
+- Subscriber, group, tag, segment mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw IDs, recipients, exact URLs and tokens printed: false.
