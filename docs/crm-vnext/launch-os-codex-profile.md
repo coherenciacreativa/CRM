@@ -111,6 +111,31 @@ For current Launch OS MailerLite seed/test emails:
   refresh the page, close duplicate MailerLite tabs, reopen MailerLite in a
   clean Safari window when practical, navigate from Campaigns/Drafts instead of
   a stale deep URL, and retry the canonical draft/test-send flow.
+- Durable Safari/Computer Use recovery procedure for MailerLite test sends:
+  1. Stop after the first stale MailerLite state, hidden semantic control or
+     `noWindowsAvailable` symptom. Do not repeat the same coordinate click.
+  2. Open a real fresh Safari window from `File > New Window`. Do not rely on
+     `Cmd+N` if Safari opens another tab in the stale window.
+  3. Navigate to Campaigns/Drafts in that fresh window. If Safari offers or
+     performs `Switch to Tab`, bypass the stale tab by loading the Drafts route
+     with a harmless fresh-window query counter such as
+     `codex_fresh_window_reset=<n>`.
+  4. From Drafts, select the current target draft's `Schedule` link. If
+     MailerLite routes through `Details`, use the visible `Continue` button to
+     reach `Schedule`.
+  5. Proceed only when Computer Use exposes `Send a test` as a semantic button
+     and the campaign summary shows the Null Audience safety group.
+  6. In the modal, replace MailerLite's default sender email with the approved
+     seed recipient, verify the field value, then click the modal `Send`
+     button.
+  7. Treat the UI text `Test email sent.` as the success observation for that
+     label, then record the UI-assisted send through the local receipt helper.
+- The fresh-window reset is the preferred recovery path because historical
+  failures came from stale MailerLite tabs/windows where the button was visible
+  in the page but not available to Computer Use as an operable semantic
+  control. In the 2026-06-03 rehearsal, a real Safari fresh window plus the
+  fresh-window query counter restored the semantic `Send a test` button and
+  completed the pending sends.
 - Keep MailerLite UI attempts time-boxed. Default budget: one clean browser
   reset plus at most two canonical semantic routes before changing strategy.
   Do not spend a long run repeatedly searching for the same hidden control.
@@ -131,7 +156,11 @@ For current Launch OS MailerLite seed/test emails:
   otherwise preserve any unconsumed portion of the operation, record which
   labels were actually sent, and report the remaining UI-route blocker.
 - After UI completion, record the result through the local receipt path instead
-  of rediscovering API endpoint limitations.
+  of rediscovering API endpoint limitations. The `record-ui-sent` helper path
+  uses fresh MailerLite API QA and the Standing Delegation; it must not ask for
+  a fresh exact seed-send approval phrase when every delegation condition is
+  green. API `--execute` remains exact-approval gated and is not the primary
+  route.
 
 This rule prevents repeated token spend on relearning that API preflight is
 useful but API test-send is not the stable operating path for this system. The

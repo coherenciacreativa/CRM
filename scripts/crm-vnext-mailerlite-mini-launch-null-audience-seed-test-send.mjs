@@ -55,13 +55,14 @@ Options:
   --markdown-out <path>         Write Markdown receipt. Defaults to ${DEFAULT_MARKDOWN_OUTPUT}
   --help                        Show this help
 
-Guarded runner for the exact approved Null Audience seed test. It validates the
-four replacement drafts by fresh MailerLite API scan and sends only test emails
-to the exact seed recipient after the approval phrase matches. It never
-publishes, schedules, audience-sends, reads or mutates subscribers, creates or
-assigns groups, touches workflows, Shopify, CRM, ledgers, cards, scoring or Fact
-Store, and it never prints tokens, raw campaign/group IDs, sender values or
-exact public URLs.`;
+Guarded runner for Null Audience seed tests. It validates the replacement drafts
+by fresh MailerLite API scan. API execution still requires the exact approval
+phrase. UI-assisted test sends covered by the Launch OS Standing Delegation can
+be recorded with --record-ui-sent after green QA, without asking for a new exact
+approval phrase. It never publishes, schedules, audience-sends, reads or mutates
+subscribers, creates or assigns groups, touches workflows, Shopify, CRM,
+ledgers, cards, scoring or Fact Store, and it never prints tokens, raw
+campaign/group IDs, sender values or exact public URLs.`;
 
 const cleanString = (value) => {
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
@@ -473,7 +474,7 @@ const buildPreflight = ({
   if (!emailLooksValid(normalizedSeed)) blockers.push('seed_email_invalid');
   if (normalizedSeed !== expectedSeed) blockers.push('seed_email_not_exact_approved_recipient');
   if (execute && !recordUiSent && compactFooterSet) blockers.push('compact_footer_seed_test_requires_ui_record_mode');
-  if (execute && !approvalMatched) {
+  if (execute && !recordUiSent && !approvalMatched) {
     blockers.push(cleanString(approvalPhrase) ? 'blocked_approval_phrase_mismatch' : 'blocked_missing_exact_approval_phrase');
   }
 
@@ -877,11 +878,13 @@ const buildRun = async (options) => {
         provided: Boolean(cleanString(options.approvalPhrase)),
         status: !executionRequested
           ? 'read_only_preflight_no_live_approval_required'
-          : preflight.approvalMatched
-            ? 'exact_approval_phrase_matched'
-            : cleanString(options.approvalPhrase)
-              ? 'blocked_approval_phrase_mismatch'
-              : 'blocked_missing_exact_approval_phrase',
+          : options.recordUiSent
+            ? 'standing_delegation_record_ui_sent_no_exact_approval_required'
+            : preflight.approvalMatched
+              ? 'exact_approval_phrase_matched'
+              : cleanString(options.approvalPhrase)
+                ? 'blocked_approval_phrase_mismatch'
+                : 'blocked_missing_exact_approval_phrase',
       },
       canExecute: executionRequested && preflight.blockers.length === 0,
       expectedPhraseSha256: preflight.expectedApprovalPhraseSha256,

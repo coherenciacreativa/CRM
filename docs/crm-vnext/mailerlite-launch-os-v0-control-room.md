@@ -7765,6 +7765,122 @@ Operating meaning:
   workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
   writes remain closed.
 
+## Launch OS v0 current checkpoint - E02-E04 seed-test blocker resolved - 2026-06-03
+
+Status: latest authoritative checkpoint. The immediately previous
+`remaining E02-E04 Computer Use click blocker` checkpoint is superseded. A fresh
+Safari window reset restored MailerLite Computer Use semantics and the
+remaining `E02`, `E03` and `E04` delegated seed/test emails were completed and
+locally receipted.
+
+Authoritative evidence:
+
+- UI execution receipt JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
+- UI execution receipt markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
+- Fresh-window recovery procedure receipt JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.json`
+- Fresh-window recovery procedure receipt markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.md`
+
+Confirmed current facts:
+
+- `E02`, `E03` and `E04` sent: true.
+- `E01` resent: false.
+- UI execution receipt: `ok=true`, `mode=record_ui_sent`,
+  `testEmailsSent=3`, `blockerCount=0`, `errorCount=0`.
+- Approval status:
+  `standing_delegation_record_ui_sent_no_exact_approval_required`.
+- Procedure documented in `docs/crm-vnext/launch-os-codex-profile.md`.
+- Receipt helper patched so Standing Delegation UI records do not block on
+  obsolete exact-approval wording; API `--execute` remains exact-approval
+  gated.
+
+Operating meaning:
+
+- Resume from `docs/crm-vnext/launch-os-codex-profile.md`, then
+  `docs/crm-vnext/launch-os-next-action.md`, then this Control Room.
+- The next Launch OS action is post-seed-test review delta/internal packet
+  refresh, not another attempt to send `E02`-`E04`.
+- Public/audience send, publish, schedule, real audience assignment,
+  subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
+  Fact Store remain closed.
+
+## Launch OS v0 remaining E02-E04 seed tests completed under Standing Delegation - 2026-06-03
+
+Status: checkpoint completed. The prior Computer Use blocker is superseded for
+this hito. The remaining compact-footer v2 delegated seed/test emails for
+`Inteligencia para descansar` were sent only to the approved seed recipient
+through MailerLite UI/Computer Use after fresh green QA. This checkpoint did not
+publish, schedule, audience-send, assign a real audience, read or mutate
+subscribers, create or assign groups/segments, mutate workflows, touch Shopify,
+touch CRM, append ledgers, write cards, change scoring or write Fact Store.
+
+What changed:
+
+- Fresh read-only MailerLite preflight for `E03` and `E04` returned
+  `ok=true`, `targetCount=2`, `qaGreenCount=2`, `blockerCount=0`,
+  `errorCount=0`.
+- The stale UI route was recovered by opening a real fresh Safari window from
+  `File > New Window`, entering MailerLite from Campaigns/Drafts, bypassing
+  Safari stale-tab reuse with a harmless fresh-window query counter, then using
+  semantic Computer Use controls.
+- MailerLite exposed `Send a test` as a semantic button in the fresh window.
+- `E02`, `E03` and `E04` were sent to the approved seed recipient through
+  MailerLite UI/Computer Use.
+- `E01` was not resent.
+- The local UI execution receipt is green: `ok=true`,
+  `status=mailerlite_null_audience_seed_test_send_completed_test_only`,
+  `mode=record_ui_sent`, `testEmailsSent=3`, `blockerCount=0`,
+  `errorCount=0`.
+- The helper now records delegated UI sends under Standing Delegation without
+  requiring another exact approval phrase. API `--execute` remains exact-
+  approval gated and is not the primary route.
+
+Evidence:
+
+- Fresh E03/E04 preflight JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e03_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+- Fresh E03/E04 preflight markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_remaining_e03_e04_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+- UI execution receipt JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
+- UI execution receipt markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
+- Fresh-window recovery procedure receipt JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.json`
+- Fresh-window recovery procedure receipt markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.md`
+- Codex Profile procedure:
+  `docs/crm-vnext/launch-os-codex-profile.md`
+- Receipt helper:
+  `scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
+
+Safety:
+
+- MailerLite API called: true, for preflight/QA/receipt scan.
+- MailerLite UI called: true, for delegated test-send UI only.
+- MailerLite test emails sent: 3, only through UI/Computer Use to the approved
+  seed recipient.
+- Public/audience send, publish and schedule: false.
+- Subscriber read or mutation: false.
+- Additional group/segment assignment or creation: false.
+- Workflow/automation mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw URLs and tokens printed: false.
+
+Operating meaning:
+
+- This was a stale Safari/MailerLite window-state issue, not an approval issue.
+- Future Standing Delegation seed/test sends should not ask Alejandro for a new
+  exact approval phrase when fresh QA is green and scope has not expanded.
+- If `Send a test` is visible but not operable, use the documented real fresh
+  Safari window reset before declaring a Computer Use blocker.
+- The next Launch OS step is to refresh the CEO/SIBO review delta or next
+  internal review packet using the completed seed-test receipt. Public/audience
+  send remains closed.
+
 ## Launch OS v0 delegated seed-test anti-blocker hardening - 2026-06-03
 
 Status: active goal, local policy hardening after Alejandro observed that Launch
@@ -7875,3 +7991,23 @@ Operating meaning:
 - Public/audience send approval, MailerLite publish/schedule, subscriber/group/
   workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
   writes remain closed.
+
+## Launch OS v0 latest resume pointer - E02-E04 blocker resolved - 2026-06-03
+
+This is the latest Control Room pointer. The `remaining E02-E04 Computer Use
+click blocker` checkpoint above is historical and superseded.
+
+- `E02`, `E03` and `E04` sent: true.
+- `E01` resent: false.
+- Execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
+- Procedure receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.json`
+- Documented procedure:
+  `docs/crm-vnext/launch-os-codex-profile.md`
+- Next Launch OS action:
+  `launch_rehearsal_post_seed_test_review_delta_inteligencia_descansar`.
+
+Do not retry or resend `E02`-`E04` from this checkpoint. Public/audience send,
+publish, schedule, real audience assignment, subscriber/group/workflow mutation,
+Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.

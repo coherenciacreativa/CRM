@@ -956,6 +956,43 @@ action that a resumed Goal should continue before replanning.
   execution caveat.
 - `next_checkpoint_expected`: `Launch OS v0 remaining E02-E04 seed tests completed under Standing Delegation - 2026-06-03`
 
+## Active Next Action - Post Delegated Seed Test Checkpoint - 2026-06-03
+
+- `previous_next_action_id`: `launch_rehearsal_remaining_e02_e04_seed_test_under_standing_delegation_inteligencia_descansar`
+- `previous_next_action_status`: `completed`
+- `next_action_id`: `launch_rehearsal_post_seed_test_review_delta_inteligencia_descansar`
+- `status`: `ready_not_started`
+- `source_checkpoint`: `Launch OS v0 remaining E02-E04 seed tests completed under Standing Delegation - 2026-06-03`
+- `what_changed`:
+  - Fresh E03/E04 preflight was green.
+  - Computer Use recovered the MailerLite `Send a test` route by using a real
+    fresh Safari window, MailerLite Drafts reload with a fresh-window query
+    counter, and semantic UI controls.
+  - `E02`, `E03` and `E04` were sent to the approved seed recipient through
+    MailerLite UI/Computer Use.
+  - `E01` was not resent.
+  - The local `record-ui-sent` receipt is green and no longer blocks on an
+    obsolete exact-approval requirement when Standing Delegation applies.
+- `authoritative_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_fresh_window_reset_procedure_current_inteligencia_descansar_2026-06-03.md`
+  - `docs/crm-vnext/launch-os-codex-profile.md`
+  - `scripts/crm-vnext-mailerlite-mini-launch-null-audience-seed-test-send.mjs`
+- `next_step`:
+  - Refresh the CEO/SIBO review delta or next internal review packet using the
+    completed delegated seed-test receipt.
+  - Keep public/audience send, publish, schedule, real audience assignment,
+    subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring
+    and Fact Store closed.
+- `anti_blocker_rule`:
+  - Do not ask Alejandro for another routine seed-test approval when a future
+    Standing Delegation seed/test operation has fresh green QA and remains
+    inside the approved seed-recipient route.
+  - If the MailerLite UI route becomes stale again, use the documented fresh
+    Safari window reset before reporting a Computer Use blocker.
+
 ## Stop/Change Conditions
 
 A future resume may choose a different action only if:
