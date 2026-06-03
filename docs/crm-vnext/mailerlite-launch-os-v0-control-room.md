@@ -7351,3 +7351,60 @@ Operating meaning:
   seed-test rehearsal under the standing delegation and UI/Computer Use route.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 launch rehearsal delegated seed test UI route blocker - 2026-06-03
+
+Status: active goal, delegated seed-test execution blocked by operator-tool
+availability, not by MailerLite QA. The 2026-06-03 preflight is green, but this
+Codex session does not expose the required Computer Use semantic UI tool for
+the actual MailerLite test-send route. The only discovered browser automation
+route was `node_repl`/Playwright-style control, which is not the authorized
+Safari/Computer Use route for this boundary and was not used as a fallback.
+
+Evidence:
+
+- UI route blocker JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_ui_route_blocker_current_inteligencia_descansar_2026-06-03.json`
+- UI route blocker markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_ui_route_blocker_current_inteligencia_descansar_2026-06-03.md`
+- Rehearsal preflight JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Required route: Computer Use semantic UI controls, preferably Safari.
+- Computer Use tool exposed in this session: `false`.
+- Fallback route used: `false`.
+- Send attempted: `false`.
+- Sent labels: none.
+- Unsent labels: `E01`, `E02`, `E03`, `E04`.
+- `record_ui_sent` receipt created: `false`.
+- Test emails sent by this boundary: `0`.
+- Preflight target count: `4`.
+- Preflight QA green count: `4`.
+- Null Audience `active_count`: `0`.
+- Preflight blocker count: `0`.
+
+Safety:
+
+- MailerLite UI opened: false.
+- MailerLite API called by blocker report: false.
+- Audience sends performed: false.
+- Campaign publish/schedule performed: false.
+- Subscribers read/mutated: false/false.
+- Additional groups, segments, workflows or automations mutated: false.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: false.
+- Raw IDs, exact URLs, raw recipient and tokens printed: false.
+
+Operating meaning:
+
+- The no-send lane remains valid, but the delegated seed-test run needs either
+  a session where Computer Use semantic UI is available or a fresh
+  scope-specific fallback approval from Alejandro.
+- Do not recreate drafts, ask for public/audience send approval, or spend a
+  long run repeating the same tool-discovery loop.
+- If Computer Use becomes available, reuse or refresh the green preflight and
+  execute only the E01-E04 seed tests to the approved seed recipient, then
+  record the local execution receipt.
