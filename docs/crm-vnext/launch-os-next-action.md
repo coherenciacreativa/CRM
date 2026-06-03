@@ -838,6 +838,8 @@ action that a resumed Goal should continue before replanning.
 - `expected_files`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
 - `allowed_commands`:
@@ -859,15 +861,18 @@ action that a resumed Goal should continue before replanning.
   MailerLite publish/schedule, audience assignment, subscribers, workflows,
   Shopify and CRM remain closed until a separate exact approval.
 - `human_boundary_id`: `launch_rehearsal_delegated_seed_test_remaining_e02_e04_route_decision_inteligencia_descansar`
-- `human_boundary_notification_status`: `pending`
+- `human_boundary_notification_status`: `sent`
 - `human_boundary_notification_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
 - `human_boundary_notification_note`: Notify in the Codex thread that `E01` was
   sent, `E02`/`E03`/`E04` were not sent, and a fallback route needs explicit
   approval if Computer Use continues to see but not semantically expose the
-  remaining `Send a test` controls. The fallback phrase authorizes only the
-  UI-control route, not a new seed-send approval.
+  remaining `Send a test` controls. The exact phrase is captured in the
+  fallback route decision request packet. The fallback phrase authorizes only
+  the UI-control route, not a new seed-send approval.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.

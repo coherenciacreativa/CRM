@@ -7516,3 +7516,56 @@ Operating meaning:
 - If the operator wants to use coordinates, screenshot/capture, system-click,
   DOM/AppleScript or Browser/Playwright fallback routes, Alejandro must approve
   that route explicitly for this exact remaining-label operation first.
+
+## Launch OS v0 launch rehearsal remaining E02-E04 route decision request - 2026-06-03
+
+Status: active goal, human-boundary request captured locally and surfaced in
+the Codex thread. This checkpoint does not send emails, open MailerLite UI,
+call MailerLite API, or mutate Shopify/CRM. It turns the partial `E01` success
+and remaining `E02`/`E03`/`E04` UI blocker into a concrete CEO/operator route
+decision instead of spending another long run on the same hidden-control issue.
+
+Evidence:
+
+- Remaining E02-E04 fallback route decision request JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
+- Remaining E02-E04 fallback route decision request markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
+- Partial semantic UI blocker JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- `E01` sent in the prior checkpoint: true.
+- `E02`, `E03` and `E04` sent by this checkpoint: false.
+- Do not resend `E01`.
+- Remaining labels: `E02`, `E03`, `E04`.
+- Human-boundary notification status in Active Next Action: `sent`.
+- Exact fallback phrase captured: true.
+- The phrase authorizes only a scoped fallback UI route for the remaining
+  labels after fresh green preflight; it is not a public/audience-send approval
+  and not permission to touch Shopify/CRM/ledgers/cards/scoring/Fact Store.
+
+Safety:
+
+- Local request only: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Test emails sent by this checkpoint: `0`.
+- Audience sends, publish and schedule: false.
+- Subscribers, groups, segments, workflows and automations mutated: false.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: false.
+- Raw URLs and tokens printed: false.
+
+Operating meaning:
+
+- Launch OS can continue only in one of two directions:
+  - Alejandro approves the scoped fallback phrase, then the next operator
+    refreshes preflight and sends only `E02`/`E03`/`E04`.
+  - Alejandro declines or does not approve fallback, then Launch OS should keep
+    the pilot no-send/local and continue with non-live readiness work.
+- Do not ask again for a broad seed-send approval; standing delegation already
+  covers seed tests when fresh QA is green.
+- Do not repeat the `E01` send.
