@@ -1861,3 +1861,131 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after approval is
   consumed by a disabled draft build receipt, or after Alejandro defers this
   live boundary.
+
+## Local Progress - Launch OS v0 Input Collection Refresh While Onboarding v2 Live Boundary Remains Closed - 2026-06-03
+
+- `related_open_boundary_id`: `onboarding_v2_disabled_draft_build_live_mutation`
+- `status`: `completed_local_progress`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Onboarding v2 disabled draft build approval packet ready - 2026-06-03`
+- `completion_summary`:
+  - Preserved the Onboarding v2 disabled-draft workflow build as an unconsumed
+    live boundary.
+  - Regenerated current local request bundles for the remaining input-only
+    Launch OS v0 gaps from the baseline operability audit.
+  - Refreshed the Brand/CRM taxonomy final-response request bundle.
+  - Refreshed the CRM write-readiness packet and confirmed it is still blocked
+    before any approval request because no real observed events or exact people
+    are present.
+  - Refreshed the missing-inputs request bundle from current evidence; it now
+    requests only CRM signal-write inputs, not the old seed-recipient input.
+  - No live APIs, UI, sends, publish, schedule, audience assignment,
+    subscribers, groups, tags, segments, workflows, Shopify, CRM, ledgers,
+    cards, scoring or Fact Store were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-06-03.md`
+- `resulting_status`:
+  - Taxonomy request bundle:
+    `taxonomy_refresh_response_request_bundle_ready_no_live_changes`.
+  - Taxonomy request count: 2.
+  - Taxonomy pending actors: `brand`, `crm`.
+  - Taxonomy asks approval: false.
+  - CRM write packet:
+    `crm_write_approval_packet_blocked_missing_observed_events_no_live_changes`.
+  - CRM write approval request ready: false.
+  - CRM exact event count ready: 0.
+  - CRM exact person count ready: 0.
+  - CRM blocker count: 7.
+  - Missing-inputs request bundle:
+    `missing_inputs_request_bundle_ready_no_live_changes`.
+  - Missing-inputs request count: 4.
+  - Missing-input ids:
+    `real_observed_events_file`, `exact_people`, `writable_event_screen`,
+    `fact_store_market_review`.
+  - Missing-inputs asks approval: false.
+  - Missing-inputs creates private files: false.
+  - Public/audience send authorized: false.
+  - Live action allowed now: false.
+
+## Active Next Action - Launch OS v0 Input Collection Request Delivery - 2026-06-03
+
+- `next_action_id`: `launch_os_v0_input_collection_request_delivery_after_pilot`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 input collection refresh while Onboarding v2 live boundary remains closed - 2026-06-03`
+- `objective`: Deliver the exact input requests that remain after the completed
+  pilot and refreshed reports, without treating any input as approval or
+  execution.
+- `why_now`: The pilot is CEO-review ready and Onboarding v2 is waiting behind
+  a separate live workflow boundary. The remaining non-live work is to collect
+  the concrete Brand/CRM taxonomy responses and CRM observed-event evidence
+  needed for later local validation.
+- `superseding_condition`:
+  - If Alejandro gives the exact Onboarding v2 disabled-draft workflow approval
+    phrase, the `onboarding_v2_disabled_draft_build_live_mutation` boundary
+    supersedes this input-collection action for that turn.
+- `allowed_scope`:
+  - Present the current copy-ready input requests from the generated reports.
+  - Collect or review final Brand taxonomy response file only if Alejandro or
+    the operator provides it.
+  - Collect or review final CRM taxonomy response file only if Alejandro or
+    the operator provides it.
+  - Collect or review a private real observed-events file only if Alejandro or
+    the operator provides it.
+  - After inputs exist, run only local/redacted intake and readiness packets.
+- `forbidden_scope`:
+  - Do not create private input files with invented values.
+  - Do not treat input delivery as approval for seed sends, CRM writes, group
+    assignments, workflows, subscribers, public sends, Shopify, CRM, ledgers,
+    cards, scoring or Fact Store.
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not create, clone, edit, activate, pause or disable workflows.
+  - Do not touch productive `Onboarding flow` v1.
+  - Do not send or resend emails.
+  - Do not publish, schedule or assign audience.
+- `exact_input_requests`:
+  - Brand taxonomy final response file:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/brand_taxonomy_refresh_response.json`
+  - CRM taxonomy final response file:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/crm_taxonomy_refresh_response.json`
+  - Real observed-events file for CRM signal-write readiness:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+  - Exact people: included inside each real observed event as `email`,
+    `instagramHandle` or `personId`.
+  - Writable-event screen: rerun the local CRM write-readiness packet after the
+    real observed-events file exists.
+  - Fact Store market review: include reviewed aggregate facts only if the
+    future write family includes Fact Store.
+- `expected_files_after_inputs_exist`:
+  - Refreshed taxonomy response workspace and decision intake.
+  - Refreshed missing-inputs intake.
+  - Refreshed CRM write approval/readiness packet.
+  - Refreshed Control Room checkpoint if readiness changes.
+- `live_gate_status`: Onboarding v2 workflow mutation, public/audience send,
+  publish, schedule, real audience assignment, subscriber/group/workflow
+  mutation, Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `input_collection_only_not_approval`
+- `human_boundary_notification_status`: `copy_ready_requests_available`
+- `stop_conditions`:
+  - The user asks to execute a live boundary without the exact approval phrase
+    for that boundary.
+  - A requested input would require opening a live API/UI or reading private
+    values into a public report.
+  - The operator proposes invented/sample events, `.invalid` identities or
+    seed/internal QA messages as real observed CRM events.
+- `resume_instruction`: Present or collect only the named inputs. Do not run
+  live APIs, UI, sends, workflow mutation, audience assignment, CRM writes or
+  Fact Store writes. If the Onboarding v2 exact approval phrase is provided,
+  switch to that boundary and execute only that approved route.
+- `completion_definition`: Brand and CRM final taxonomy response files exist,
+  CRM observed-event evidence is supplied with exact people, and local/redacted
+  intake packets are refreshed without live mutation.
+- `next_checkpoint_expected`: Control Room checkpoint after either inputs are
+  supplied and local intake changes, or Alejandro explicitly chooses to defer
+  input collection and instead open a separate live boundary.

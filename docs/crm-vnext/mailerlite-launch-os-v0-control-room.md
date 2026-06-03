@@ -8713,3 +8713,103 @@ Safety:
 - Exact URLs printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 input collection refresh while Onboarding v2 live boundary remains closed - 2026-06-03
+
+Status: checkpoint completed, local/report-only. The Onboarding v2 disabled-
+draft workflow build remains an unconsumed live boundary, so the next safe
+Launch OS v0 movement was to refresh the current input-only requests for the
+remaining baseline gaps: Brand/CRM taxonomy final responses and CRM observed-
+event readiness. No approval was requested or consumed.
+
+What changed:
+
+- Regenerated the current Brand/CRM taxonomy final-response request bundle.
+- Regenerated the current CRM write-readiness packet for `Inteligencia para
+  descansar`; it remains blocked before any approval request because there are
+  no real observed events or exact people.
+- Regenerated the current missing-inputs request bundle from current evidence;
+  it now asks only for CRM signal-write inputs and does not revive the stale
+  seed-recipient request.
+- Recorded the next active action as input collection only, with the Onboarding
+  v2 disabled-draft workflow approval phrase still able to supersede it if
+  Alejandro provides that exact approval.
+
+Evidence:
+
+- Taxonomy request bundle JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-06-03.json`
+- Taxonomy request bundle markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_2026-06-03.md`
+- CRM write-readiness packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-06-03.json`
+- CRM write-readiness packet markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_crm_write_approval_packet_current_inteligencia_descansar_2026-06-03.md`
+- Missing-inputs request bundle JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-06-03.json`
+- Missing-inputs request bundle markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_missing_inputs_request_bundle_current_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Taxonomy request bundle status:
+  `taxonomy_refresh_response_request_bundle_ready_no_live_changes`.
+- Taxonomy pending actors: `brand`, `crm`.
+- Taxonomy request count: 2.
+- Taxonomy asks approval: false.
+- Taxonomy creates final response files: false.
+- CRM write packet status:
+  `crm_write_approval_packet_blocked_missing_observed_events_no_live_changes`.
+- CRM write approval request ready: false.
+- CRM exact writable event count: 0.
+- CRM exact person count: 0.
+- CRM blocker count: 7.
+- Missing-inputs request bundle status:
+  `missing_inputs_request_bundle_ready_no_live_changes`.
+- Missing-input ids:
+  `real_observed_events_file`, `exact_people`, `writable_event_screen`,
+  `fact_store_market_review`.
+- Missing-inputs request count: 4.
+- Missing-inputs asks approval: false.
+- Missing-inputs creates private files: false.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with `launch_os_v0_input_collection_request_delivery_after_pilot`.
+- Present or collect only the named input files; do not treat them as approval.
+- If Alejandro provides the exact Onboarding v2 disabled-draft workflow build
+  approval phrase, that live boundary supersedes this input-collection action.
+- Do not invent private inputs, sample observed events or exact people.
+- Do not use seed/internal QA messages as real observed CRM events.
+- Do not run seed tests, CRM writes, Fact Store writes, public/audience sends,
+  workflow mutation, audience assignment or production routing.
+- Onboarding v2 workflow mutation, productive Onboarding v1, public/audience
+  send, publish, schedule, Shopify, CRM, ledgers, cards, scoring and Fact
+  Store remain closed.
+
+Safety:
+
+- Local/report-only request refresh: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Workflow mutations performed: false.
+- Productive Onboarding v1 touched: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- Private input files created: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
