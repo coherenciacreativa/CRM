@@ -6692,6 +6692,9 @@ Confirmed results:
 
 - Preflight status:
   `mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`.
+- Status naming note: this runner status predates the standing delegation; it
+  means the preflight is green, not that Alejandro must provide a new phrase
+  for a seed test that remains fully inside the standing delegation.
 - Mode: `read_only_preflight`.
 - Target count: `4`.
 - QA green count: `4`.
@@ -7286,5 +7289,65 @@ Operating meaning:
   delegated seed/internal rehearsal run.
 - The protocol itself does not authorize a send; the standing delegation applies
   only after fresh QA/preflight passes.
+- Public/audience send approval, MailerLite publish/schedule, subscribers,
+  workflows, Shopify and CRM remain closed.
+
+## Launch OS v0 launch rehearsal preflight seed delegation - 2026-06-03
+
+Status: active goal, fresh read-only MailerLite preflight completed for the
+selected `keep_null_audience_no_public_send` lane. This checkpoint proves the
+compact-footer v2 Null Audience drafts are ready for a possible future
+standing-delegated seed/internal rehearsal run. It performs no test send,
+resend, publish, schedule, audience assignment, subscriber/group/workflow
+mutation, Shopify mutation, CRM write, ledger, card, scoring or Fact Store
+action.
+
+Evidence:
+
+- Rehearsal preflight JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+- Rehearsal preflight markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+- Launch Rehearsal Protocol JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_protocol_no_send_current_inteligencia_descansar_2026-06-03.json`
+- Mantis digest:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_launch_rehearsal_preflight_seed_delegation_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Preflight status:
+  `mailerlite_null_audience_seed_test_send_preflight_ready_for_exact_approval`.
+- Mode: `read_only_preflight`.
+- Target count: `4`.
+- QA green count: `4`.
+- Null Audience safety group: `CC · Safety · Null audience · DO NOT SEND`.
+- Null Audience `active_count`: `0`.
+- Content matches compact-footer v2 creation receipt: `true` for E01-E04.
+- Placeholder count: `0` for E01-E04.
+- Redacted final-link token count: `0` for E01-E04.
+- Blocker count: `0`.
+- Error count: `0`.
+- Test emails sent: `0`.
+
+Safety:
+
+- MailerLite API called: true, read-only preflight/QA only.
+- MailerLite UI used: false.
+- Audience sends performed: false.
+- Campaign publish/schedule performed: false.
+- Subscribers read/mutated: false/false.
+- Additional groups, segments, workflows or automations mutated: false.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: false.
+- Raw IDs, exact URLs, sender values, raw recipient and tokens printed: false.
+
+Operating meaning:
+
+- The no-send lane is now ready for the next rehearsal edge: a delegated
+  seed-only test send to the approved seed recipient, if the operator chooses
+  to execute it while this preflight is still fresh.
+- The next action is not public/audience distribution. It is a routine
+  seed-test rehearsal under the standing delegation and UI/Computer Use route.
 - Public/audience send approval, MailerLite publish/schedule, subscribers,
   workflows, Shopify and CRM remain closed.

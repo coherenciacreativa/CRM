@@ -622,12 +622,13 @@ action that a resumed Goal should continue before replanning.
   `blockerCount=0`.
 - `next_checkpoint_expected`: `Launch OS v0 launch rehearsal protocol no-send - 2026-06-03`
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `launch_rehearsal_preflight_refresh_seed_delegation_inteligencia_descansar`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
 - `source_checkpoint`: `Launch OS v0 launch rehearsal protocol no-send - 2026-06-03`
 - `objective`: Prepare a fresh rehearsal preflight packet for the no-send lane
   before any future delegated seed/internal run.
@@ -688,7 +689,101 @@ action that a resumed Goal should continue before replanning.
   send approval.
 - `completion_definition`: A fresh preflight packet states whether a future
   delegated seed/internal rehearsal run is safe, blocked or needs human input.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_mantis_digest_launch_rehearsal_preflight_seed_delegation_inteligencia_descansar_2026-06-03.json`
+- `completion_note`: Fresh MailerLite API preflight completed in
+  `read_only_preflight` mode with `ok=true`, target count `4`, QA green count
+  `4`, Null Audience `active_count=0`, blocker count `0`, test emails sent
+  `0`, no subscribers read, no audience send, no publish/schedule/workflow and
+  no Shopify/CRM/ledger/card/scoring/Fact Store action. The preflight runner's
+  legacy status says `ready_for_exact_approval`; for this lane the standing
+  delegation policy is the controlling authority when every condition remains
+  green.
 - `next_checkpoint_expected`: `Launch OS v0 launch rehearsal preflight seed delegation - 2026-06-03`
+
+## Active Next Action
+
+- `next_action_id`: `launch_rehearsal_delegated_seed_test_execution_inteligencia_descansar`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 launch rehearsal preflight seed delegation - 2026-06-03`
+- `objective`: Execute the seed-only/internal rehearsal test send from the four
+  compact-footer v2 Null Audience drafts only if the standing-delegation
+  conditions still hold.
+- `why_now`: The no-send strategy lane is selected and the fresh preflight is
+  green. The next useful edge is to rehearse the routine seed-test operation
+  under the standing delegation, not to move toward public/audience
+  distribution.
+- `allowed_scope`:
+  - Use the 2026-06-03 preflight receipt as current evidence, or rerun the same
+    read-only preflight if freshness becomes unclear.
+  - Send only MailerLite test emails from E01-E04 compact-footer v2 Null
+    Audience drafts to the approved seed recipient recorded in
+    `docs/crm-vnext/launch-os-standing-delegation-policy.md`.
+  - Use Computer Use semantic UI controls in Safari for the actual test-send
+    operation when Codex is the native operator route.
+  - After UI completion, record the result through a local execution receipt.
+- `forbidden_scope`:
+  - Do not send to a public audience, group, segment or subscriber list.
+  - Do not recreate replacement drafts unless a later boundary explicitly says
+    to do so.
+  - Do not ask for or execute public/audience-send approval from this boundary.
+  - Do not assign any audience, group or segment.
+  - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
+    mutation or automation action.
+  - No Shopify mutation, publish, theme push, live form wiring, public
+    navigation or SEO promotion.
+  - No CRM live API calls, ledgers, cards, scoring or Fact Store writes.
+  - No secret reads, env dumps, raw token output, raw private URLs, raw asset
+    URLs, broad recipient lists or mailbox inspection.
+  - Do not use screenshot/coordinate fallback routes unless Alejandro explicitly
+    approves that fallback for this exact operation.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_execution_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_execution_current_inteligencia_descansar_2026-06-03.md`
+- `allowed_commands`:
+  - `git status --short`
+  - `git diff --stat`
+  - Read-only local file/report inspection.
+  - Read-only MailerLite preflight/QA commands if freshness must be refreshed.
+  - Computer Use semantic UI operation for MailerLite test sends, scoped to the
+    four E01-E04 drafts and approved seed recipient.
+  - Local receipt recording after UI completion.
+- `validation_commands`:
+  - `jq empty <new JSON reports>`
+  - `node --check <local report scripts used>`
+  - Focused `npx vitest run <relevant specs>` when a script is changed.
+  - `git diff --check`
+- `live_gate_status`: Seed/test emails are standing-delegated only inside the
+  policy conditions and current green preflight. Public/audience sends,
+  MailerLite publish/schedule, audience assignment, subscribers, workflows,
+  Shopify and CRM remain closed until a separate exact approval.
+- `human_boundary_id`: `launch_rehearsal_delegated_seed_test_execution_inteligencia_descansar`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Newer user instruction supersedes this contract.
+  - Git state is unexpected.
+  - The 2026-06-03 preflight is stale, missing or no longer green.
+  - Any draft is no longer draft/test state, no longer Null Audience exclusive,
+    has unresolved placeholders/tokens/raw URLs, or is published/scheduled/
+    workflow-attached.
+  - The Null Audience safety group has active subscribers.
+  - The operation would send to anyone outside the approved seed recipient.
+  - The UI route requires an unapproved screenshot/coordinate/system fallback.
+  - Any requested action would publish, schedule, assign a real audience, mutate
+    subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
+    Store.
+- `resume_instruction`: If freshness remains green and the operator chooses to
+  proceed, execute only the delegated E01-E04 seed test via UI/Computer Use and
+  record a local execution receipt. Stop on any QA or UI-route blocker.
+- `completion_definition`: Four seed-only MailerLite test emails are sent to
+  the approved seed recipient under the standing delegation and recorded in a
+  local execution receipt, with public/audience and live mutation gates still
+  closed.
+- `next_checkpoint_expected`: `Launch OS v0 launch rehearsal delegated seed test execution - 2026-06-03`
 
 ## Stop/Change Conditions
 
