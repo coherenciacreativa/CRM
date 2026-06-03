@@ -8813,3 +8813,105 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Brand/CRM taxonomy final responses prepared - 2026-06-03
+
+Status: checkpoint completed, local/report-only. The Brand and CRM final
+response files for the taxonomy refresh were prepared using the recommended
+criterion and accepted by the local intake pipeline. This does not approve or
+apply any Brand dictionary, CRM manifest or live-system change.
+
+What changed:
+
+- Created the Brand final response file with 14/14 rows accepted as
+  `promote_to_live_canonical`.
+- Created the CRM final response file with 14/14 rows accepted as
+  `prepare_local_manifest_patch_after_brand`.
+- Kept every CRM patch row `applyNow=false`.
+- Refreshed the taxonomy response workspace, decision intake and request
+  bundle from the final response files.
+- Cleared the Brand/CRM final-response input gap.
+- Left the CRM observed-events private input gap open and separate.
+- Moved the active next action to local taxonomy patch preview only.
+
+Evidence:
+
+- Brand final response JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/brand_taxonomy_refresh_response.json`
+- CRM final response JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/crm_taxonomy_refresh_response.json`
+- Response workspace JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_current_2026-06-03.json`
+- Response workspace markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_current_2026-06-03.md`
+- Decision intake JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_current_2026-06-03.json`
+- Decision intake markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_current_2026-06-03.md`
+- Request bundle JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_after_final_responses_2026-06-03.json`
+- Request bundle markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_after_final_responses_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Response workspace status:
+  `taxonomy_refresh_response_workspace_ready_for_intake_no_live_changes`.
+- Decision intake status:
+  `taxonomy_refresh_decision_intake_ready_for_local_patch_preview_no_live_changes`.
+- Request bundle status:
+  `taxonomy_refresh_response_request_bundle_all_responses_present_no_live_changes`.
+- Accepted actors: `brand`, `crm`.
+- Pending actors: none.
+- Missing final-response actors: none.
+- Brand decision rows present: 14/14.
+- Brand promote count: 14.
+- CRM manifest patch rows accepted: 14/14.
+- Ready for local patch preview: true.
+- Can ask approval now: false.
+- Can apply Brand dictionary patch now: false.
+- Can apply CRM manifest patch now: false.
+- Open live mutation gate count: 0.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with
+  `launch_os_v0_taxonomy_local_patch_preview_after_final_responses`.
+- Prepare only a local patch preview from accepted Brand/CRM taxonomy decisions.
+- Do not apply the preview.
+- Do not mutate Brand dictionary or CRM manifest.
+- Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+- The private CRM observed-events input remains separate and missing:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+- If Alejandro gives the exact Onboarding v2 disabled-draft workflow approval
+  phrase, that live workflow boundary supersedes the local preview for that
+  turn.
+
+Safety:
+
+- Local/report-only final response preparation: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Brand dictionary mutated: false.
+- CRM manifest mutated: false.
+- Workflow mutations performed: false.
+- Productive Onboarding v1 touched: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

@@ -1912,12 +1912,14 @@ Use deep hydration only for:
   - Public/audience send authorized: false.
   - Live action allowed now: false.
 
-## Active Next Action - Launch OS v0 Input Collection Request Delivery - 2026-06-03
+## Superseded / Split Next Action - Launch OS v0 Input Collection Request Delivery - 2026-06-03
 
 - `next_action_id`: `launch_os_v0_input_collection_request_delivery_after_pilot`
-- `status`: `active`
+- `status`: `superseded`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
+- `superseded_at`: `2026-06-03`
+- `superseded_by`: `launch_os_v0_taxonomy_local_patch_preview_after_final_responses`
 - `source_checkpoint`: `Launch OS v0 input collection refresh while Onboarding v2 live boundary remains closed - 2026-06-03`
 - `objective`: Deliver the exact input requests that remain after the completed
   pilot and refreshed reports, without treating any input as approval or
@@ -1989,3 +1991,123 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after either inputs are
   supplied and local intake changes, or Alejandro explicitly chooses to defer
   input collection and instead open a separate live boundary.
+
+## Completed Local Progress - Brand/CRM Taxonomy Final Responses Prepared - 2026-06-03
+
+- `previous_next_action_id`: `launch_os_v0_input_collection_request_delivery_after_pilot`
+- `status`: `completed_local_progress`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 input collection refresh while Onboarding v2 live boundary remains closed - 2026-06-03`
+- `completion_summary`:
+  - Prepared the local final response files for Brand and CRM using the
+    recommended criterion.
+  - Brand accepted 14/14 rows as `promote_to_live_canonical`, with final names
+    matching the observed canonical names and no Brand dictionary mutation.
+  - CRM accepted 14/14 rows as
+    `prepare_local_manifest_patch_after_brand`, with every row `applyNow=false`
+    and no CRM manifest mutation.
+  - Refreshed the local response workspace, decision intake and request bundle.
+  - The refreshed request bundle has no pending Brand/CRM final-response actors.
+  - This checkpoint resolves only the Brand/CRM taxonomy final-response input;
+    the private CRM observed-events input remains separate and unsupplied.
+  - No live APIs, UI, sends, publish, schedule, audience assignment,
+    subscribers, groups, tags, segments, workflows, Shopify, CRM, ledgers,
+    cards, scoring, Fact Store, CRM Core docs or `/Users/alejandrogomez/CRM-core`
+    were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/brand_taxonomy_refresh_response.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/crm_taxonomy_refresh_response.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_workspace_current_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_current_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_after_final_responses_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_response_request_bundle_current_after_final_responses_2026-06-03.md`
+- `resulting_status`:
+  - Response workspace:
+    `taxonomy_refresh_response_workspace_ready_for_intake_no_live_changes`.
+  - Decision intake:
+    `taxonomy_refresh_decision_intake_ready_for_local_patch_preview_no_live_changes`.
+  - Request bundle:
+    `taxonomy_refresh_response_request_bundle_all_responses_present_no_live_changes`.
+  - Accepted actors: `brand`, `crm`.
+  - Pending actors: none.
+  - Missing final-response actors: none.
+  - Brand decision rows present: 14/14.
+  - Brand promote count: 14.
+  - CRM manifest patch rows accepted: 14/14.
+  - Ready for local patch preview: true.
+  - Can ask approval now: false.
+  - Can apply Brand dictionary patch now: false.
+  - Can apply CRM manifest patch now: false.
+  - Open live mutation gate count: 0.
+  - Live action allowed now: false.
+
+## Active Next Action - Launch OS v0 Taxonomy Local Patch Preview - 2026-06-03
+
+- `next_action_id`: `launch_os_v0_taxonomy_local_patch_preview_after_final_responses`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 Brand/CRM taxonomy final responses prepared - 2026-06-03`
+- `objective`: Prepare only a local patch preview from the accepted Brand/CRM
+  taxonomy decisions, without applying files and without touching live systems.
+- `why_now`: The Brand and CRM final response files are accepted and the
+  decision intake says the next safe action is a local patch preview. Applying
+  the Brand dictionary or CRM manifest remains closed.
+- `superseding_condition`:
+  - If Alejandro gives the exact Onboarding v2 disabled-draft workflow approval
+    phrase, the `onboarding_v2_disabled_draft_build_live_mutation` boundary
+    supersedes this local preview action for that turn.
+- `allowed_scope`:
+  - Inspect only local Launch OS/CRM repo files needed to locate current
+    taxonomy dictionary and manifest targets.
+  - Generate a local preview JSON/Markdown describing the exact Brand
+    dictionary and CRM manifest changes that would be applied later.
+  - Keep the preview as a report-only artifact under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - Update the Control Room only if the preview changes readiness.
+- `forbidden_scope`:
+  - Do not apply Brand dictionary or CRM manifest patches.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+  - Do not call live APIs or open MailerLite/Shopify/CRM UI.
+  - Do not create, clone, edit, activate, pause or disable workflows.
+  - Do not touch productive `Onboarding flow` v1.
+  - Do not read, assign or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, audiences,
+    campaigns or sends.
+  - Do not run seed tests.
+  - Do not publish, schedule or audience-send.
+  - Do not write CRM live records, ledgers, cards, scoring or Fact Store.
+- `expected_files`:
+  - Local taxonomy patch preview JSON/Markdown under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `source_inputs`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/brand_taxonomy_refresh_response.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_responses_2026-05-28/crm_taxonomy_refresh_response.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_taxonomy_refresh_decision_intake_current_2026-06-03.json`
+- `separate_open_input`:
+  - CRM observed-events private file remains missing and is not solved by the
+    taxonomy preview:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/private/mailerlite_mini_launch_observed_events_inteligencia_descansar_2026-05-28.json`
+- `live_gate_status`: Brand dictionary apply, CRM manifest apply, Onboarding v2
+  workflow mutation, public/audience send, publish, schedule, real audience
+  assignment, subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `local_taxonomy_patch_preview_only_not_approval`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - The local dictionary/manifest target paths cannot be found safely.
+  - A preview route would require applying patches or mutating repo files beyond
+    report-only artifacts.
+  - A route would call live APIs, open UI or touch CRM Core.
+  - The user asks to execute a live boundary without the exact approval phrase
+    for that boundary.
+- `resume_instruction`: Generate only the local patch preview from accepted
+  Brand/CRM final responses. Do not apply it. Do not run live APIs, UI, sends,
+  workflow mutation, audience assignment, CRM writes or Fact Store writes.
+- `completion_definition`: Local patch preview JSON/Markdown is generated and
+  validated, or the run stops with a clear blocker if the source
+  dictionary/manifest targets are missing or unsafe.
+- `next_checkpoint_expected`: Control Room checkpoint after the local preview is
+  generated or blocked.
