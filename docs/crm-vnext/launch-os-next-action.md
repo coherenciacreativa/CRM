@@ -1666,3 +1666,100 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after approval is
   consumed by a read-only preflight receipt, or after Alejandro defers the
   boundary.
+
+## Completed Next Action - Onboarding v2 Disabled Draft Build Fresh Preflight - 2026-06-03
+
+- `previous_next_action_id`: `onboarding_v2_disabled_draft_build_fresh_preflight_boundary`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Onboarding v2 disabled draft build boundary packet - 2026-06-03`
+- `approval_consumed`: Read-only MailerLite API preflight approval only.
+- `completion_summary`:
+  - Ran a fresh read-only MailerLite API preflight for the future disabled
+    Onboarding v2 draft build boundary.
+  - Verified productive `Onboarding flow` v1 remains `enabled=true`,
+    `complete=true` and `broken=false`.
+  - Verified the 12 required Onboarding v2 groups exist and have
+    `active_count=0`.
+  - Verified no exact `Onboarding editorial v2 - DRAFT` workflow conflict is
+    present.
+  - Added a dedicated reproducible preflight runner for this boundary.
+  - No workflow was created, cloned, edited, activated, paused or disabled.
+  - No subscriber rows were read; no groups, tags, segments, campaigns or sends
+    were mutated.
+  - No Shopify, CRM, ledgers, cards, scoring or Fact Store action was
+    performed.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_fresh_preflight_current_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_fresh_preflight_current_2026-06-03.md`
+  - `scripts/crm-vnext-mailerlite-onboarding-v2-disabled-draft-preflight.mjs`
+  - `__tests__/crm-vnext-mailerlite-onboarding-v2-disabled-draft-preflight.spec.ts`
+- `resulting_status`:
+  - Preflight: `onboarding_v2_disabled_draft_build_fresh_preflight_green`.
+  - Groups read: 90.
+  - Automations read: 13.
+  - V2 groups found: 12.
+  - V2 groups empty: 12.
+  - V2 workflow conflict count: 0.
+  - Disabled draft build approval ready now: true.
+  - Workflow mutation authorized now: false.
+  - Seed test authorized now: false.
+  - Public/audience send authorized: false.
+  - Live action allowed now: false.
+
+## Active Next Action - Onboarding v2 Disabled Draft Build Approval Boundary - 2026-06-03
+
+- `next_action_id`: `onboarding_v2_disabled_draft_build_approval_boundary`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Onboarding v2 disabled draft build fresh preflight green - 2026-06-03`
+- `objective`: Present the separate exact approval boundary for creating or
+  cloning only one disabled/inactive Onboarding v2 workflow draft, without
+  executing it unless Alejandro approves that live mutation.
+- `why_now`: The read-only preflight is green, so the previous blocker has
+  moved from "current MailerLite state unknown" to a clean human decision:
+  whether to build the disabled draft boundary now or defer it.
+- `allowed_scope`:
+  - Present the exact disabled-draft build approval phrase when needed.
+  - If Alejandro approves it, execute only the approved disabled/inactive draft
+    build route and generate a local receipt.
+  - Keep seed tests, subscriber assignment, production entry switch and v1
+    migration as separate future gates.
+- `forbidden_scope`:
+  - Do not create, clone, edit, activate, pause or disable workflows until
+    Alejandro gives the exact build approval phrase.
+  - Do not touch productive `Onboarding flow` v1.
+  - Do not assign, read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, audiences,
+    campaigns or sends.
+  - Do not run seed tests.
+  - Do not publish, schedule or audience-send.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+- `expected_files`:
+  - If approved: local disabled-draft build execution receipt JSON/Markdown
+    under `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `approval_phrase`:
+  - `Apruebo crear o clonar únicamente un workflow draft disabled/inactive de MailerLite llamado Onboarding editorial v2 - DRAFT para preparar Onboarding v2, usando el preflight verde mailerlite_onboarding_v2_disabled_draft_build_fresh_preflight_current_2026-06-03 como evidencia de que Onboarding flow v1 sigue enabled=true, complete=true y broken=false, los 12 grupos v2 requeridos existen con active_count=0 y no hay workflow v2 conflictivo, sin activar el workflow, sin conectarlo a tráfico real, sin tocar productive Onboarding flow v1, sin leer ni mutar subscribers, sin asignar seed contacts, sin crear, renombrar, asignar ni mutar groups, tags, segments, audiences, campaigns o sends, sin enviar correos, sin publicar, sin programar, sin Shopify, sin CRM, sin ledgers, sin cards, sin scoring y sin Fact Store; si antes de ejecutar no se puede garantizar que el workflow quedará disabled/inactive y sin tráfico real, detenerse y reportar; si cualquier QA falla, detenerse y generar recibo local.`
+- `live_gate_status`: Disabled draft workflow build is not approved yet. Seed
+  tests, subscriber assignment, production entry switch, productive v1 edits,
+  public/audience sends, Shopify, CRM, ledgers, cards, scoring and Fact Store
+  remain closed.
+- `human_boundary_id`: `onboarding_v2_disabled_draft_build_live_mutation`
+- `human_boundary_notification_status`: `approval_phrase_ready_not_consumed`
+- `stop_conditions`:
+  - Alejandro does not approve the disabled draft build phrase.
+  - Fresh preflight evidence becomes stale or contradicted.
+  - The requested route would activate a workflow, touch v1, read or mutate
+    subscribers, assign groups, send emails, or combine seed/production
+    routing with the build.
+- `resume_instruction`: Do not execute workflow build unless Alejandro gives
+  the exact approval phrase. If he approves, run only the disabled/inactive
+  draft build and receipt it. Otherwise keep moving only on local non-live
+  Launch OS hardening that does not bypass this boundary.
+- `completion_definition`: Either Alejandro approves and the disabled/inactive
+  draft build receipt is generated, or this boundary remains awaiting/deferring
+  approval with no live mutation.
+- `next_checkpoint_expected`: Control Room checkpoint after approval is
+  consumed by a disabled draft build receipt, or after Alejandro defers the
+  boundary.

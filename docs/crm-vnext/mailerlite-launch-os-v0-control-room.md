@@ -8551,3 +8551,78 @@ Safety:
 - Subscriber, group, tag, segment mutation: false.
 - Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
 - Raw IDs, recipients, exact URLs and tokens printed: false.
+
+## Onboarding v2 disabled draft build fresh preflight - 2026-06-03
+
+Status: checkpoint completed, read-only MailerLite API preflight. Alejandro's
+exact approval for this read-only preflight was consumed. A dedicated
+preflight runner was added because the older empty-groups packet was designed
+for pre-creation state and would incorrectly treat already-created v2 groups as
+blockers. The new runner verifies the current boundary conditions without
+mutating MailerLite.
+
+What changed:
+
+- A fresh MailerLite read-only preflight was executed for the future disabled
+  Onboarding v2 draft build boundary.
+- Productive `Onboarding flow` v1 remains green:
+  `enabled=true`, `complete=true`, `broken=false`.
+- The 12 required Onboarding v2 groups exist and each has `active_count=0`.
+- No exact `Onboarding editorial v2 - DRAFT` workflow conflict exists.
+- The active next action moved to a separate disabled-draft build approval
+  boundary. That future workflow mutation is not approved or executed.
+
+Evidence:
+
+- Fresh preflight JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_fresh_preflight_current_2026-06-03.json`
+- Fresh preflight markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_fresh_preflight_current_2026-06-03.md`
+- Runner:
+  `scripts/crm-vnext-mailerlite-onboarding-v2-disabled-draft-preflight.mjs`
+- Tests:
+  `__tests__/crm-vnext-mailerlite-onboarding-v2-disabled-draft-preflight.spec.ts`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Preflight status:
+  `onboarding_v2_disabled_draft_build_fresh_preflight_green`.
+- Groups read: 90.
+- Automations read: 13.
+- V1 green: true.
+- V2 groups found: 12/12.
+- V2 groups with `active_count=0`: 12/12.
+- V2 workflow conflict count: 0.
+- Disabled draft build approval ready now: true.
+- Workflow mutation authorized now: false.
+- Seed test authorized now: false.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with `onboarding_v2_disabled_draft_build_approval_boundary`.
+- Do not create/clone/edit/activate/pause/disable workflows unless Alejandro
+  gives the exact disabled-draft build approval phrase.
+- Do not touch productive `Onboarding flow` v1.
+- Do not read or mutate subscribers.
+- Do not create, rename, assign or mutate groups, tags, segments, audiences,
+  campaigns or sends.
+- Do not run seed tests or production routing.
+- Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.
+
+Safety:
+
+- Read-only MailerLite API called: true.
+- MailerLite UI opened: false.
+- MailerLite mutations performed: false.
+- Workflow mutations performed: false.
+- Group mutations performed: false.
+- Subscriber rows read: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Tokens printed: false.
+- Raw IDs printed: false.
