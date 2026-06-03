@@ -29,9 +29,15 @@ Autonomous checks must stay read-only and must produce compact, redacted
 operator-facing receipts. They may summarize aggregate source-health state,
 freshness, field availability, blocker classes, and safe next steps.
 
-Configured read-only connectors or scripts may be used under this policy only if
-they do not require printing, reading, refreshing, rotating, or exposing
-credentials, and only if outputs are redacted metadata/aggregate receipts.
+Configured read-only connectors or scripts may use existing stored credentials
+internally under this policy only if all of the following are true:
+
+- Codex does not print, inspect, refresh, rotate, modify, export, or expose
+  credentials;
+- the command is documented or verified as read-only;
+- the command does not mutate source systems or CRM state;
+- the output is redacted aggregate/metadata only;
+- any ambiguity about read-only behavior causes a stop.
 
 ## Required Redaction
 
