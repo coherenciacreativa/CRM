@@ -802,7 +802,7 @@ action that a resumed Goal should continue before replanning.
 ## Active Next Action
 
 - `next_action_id`: `launch_rehearsal_remaining_e02_e04_seed_test_under_standing_delegation_inteligencia_descansar`
-- `status`: `active`
+- `status`: `blocked`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
 - `source_checkpoint`: `Launch OS v0 remaining E02-E04 Computer Use click blocker - 2026-06-03`
@@ -857,6 +857,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry3_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry3_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
 - `allowed_commands`:
@@ -900,6 +902,8 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry2_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry3_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_computer_use_click_blocker_retry3_current_inteligencia_descansar_2026-06-03.md`
 - `human_boundary_notification_note`: Alejandro clarified that routine
   MailerLite seed/test emails to approved seed recipients should not require
   repeated approvals. The remaining `E02`/`E03`/`E04` seed sends should proceed
@@ -911,12 +915,11 @@ action that a resumed Goal should continue before replanning.
   test` control was not exposed semantically and delegated visual/coordinate
   clicks failed with `Computer Use server error -10005: noWindowsAvailable`.
   A second continuation retried after fresh green preflight and hit the same
-  `noWindowsAvailable` blocker. No seed recipient was typed and no test emails
-  were sent.
-- `blocked_audit_note`: Same blocker count is now 2 consecutive goal turns. The
-  strict blocked-audit threshold is not reached; keep the goal active. Do not
-  spend another long run repeating the same coordinate click in the same
-  Computer Use state.
+  `noWindowsAvailable` blocker. A third controlled recovery check hit the same
+  blocker again. No seed recipient was typed and no test emails were sent.
+- `blocked_audit_note`: Same blocker count is now 3 consecutive goal turns. The
+  strict blocked-audit threshold is reached. The active action is blocked by
+  Computer Use tool-route failure, not by missing approval.
 - `anti_blocker_rule`: A fresh seed-test approval phrase is not needed for this
   active action. If a future resume sees older "decision request" or
   "approval boundary" language for these same seed/test sends, treat it as
@@ -943,9 +946,10 @@ action that a resumed Goal should continue before replanning.
   approval just because MailerLite requires a minimal Computer Use
   visual/coordinate fallback for a visible `Send a test` control. If Computer
   Use still returns `noWindowsAvailable` for the delegated fallback, report the
-  tool-route blocker and preserve the unsent labels. Prefer a fresh
-  Computer Use-capable session or evidence that coordinate-click behavior has
-  recovered before retrying the same fallback again.
+  tool-route blocker and preserve the unsent labels. Resume only after a fresh
+  Computer Use-capable session is available, coordinate-click behavior recovers,
+  or Alejandro explicitly authorizes a non-Computer-Use fallback route for this
+  exact operation.
 - `completion_definition`: The remaining `E02`, `E03` and `E04` delegated
   seed-test sends are completed and locally receipted without resending `E01`,
   then CEO-review delta/proposal artifacts are regenerated without the seed
