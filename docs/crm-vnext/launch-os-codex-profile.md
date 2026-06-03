@@ -89,6 +89,15 @@ For current Launch OS MailerLite seed/test emails:
   it as a delegated routine operation after fresh preflight/QA and local
   receipt generation, without asking Alejandro for a new exact phrase each
   time.
+- Resume invariant: do not convert a delegated seed/test send into a human
+  approval boundary just because an older checkpoint, old approval packet,
+  historical receipt or stale next-action entry used exact-approval language for
+  seed sends. The Standing Delegation policy is the current authority for this
+  narrow operation.
+- If the policy conditions are green, proceed through the delegated route. If
+  they are not green, stop and report the concrete failed condition. The default
+  response should not be another request for Alejandro to approve the same seed
+  test email operation.
 - Do not treat the MailerLite API as the primary test-send route.
 - Use the MailerLite API for draft creation, read-only preflight, fresh QA,
   group/audience safety checks and local receipts.

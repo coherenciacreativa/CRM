@@ -648,6 +648,8 @@ action that a resumed Goal should continue before replanning.
 - `forbidden_scope`:
   - Do not send or resend test emails from this boundary.
   - Do not recreate replacement drafts.
+  - Do not ask for another seed-test approval when the Standing Delegation
+    conditions and fresh preflight/QA are green.
   - Do not ask for or execute public/audience-send approval from this boundary.
   - Do not assign any audience, group or segment.
   - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
@@ -828,6 +830,8 @@ action that a resumed Goal should continue before replanning.
   - Do not resend `E01`.
   - Do not send to a public audience, group, segment or subscriber list.
   - Do not recreate replacement drafts.
+  - Do not ask for another seed-test approval when the Standing Delegation
+    conditions and fresh preflight/QA are green.
   - Do not ask for or execute public/audience-send approval from this boundary.
   - Do not assign any audience, group or segment.
   - No MailerLite publish, schedule, non-null group/segment/subscriber/workflow
@@ -847,8 +851,6 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
 - `allowed_commands`:
@@ -884,8 +886,6 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_review_readiness_delta_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_ceo_proposal_packet_current_inteligencia_descansar_2026-06-03.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_remaining_e02_e04_fallback_route_decision_request_current_inteligencia_descansar_2026-06-03.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
 - `human_boundary_notification_note`: Alejandro clarified that routine
@@ -893,6 +893,12 @@ action that a resumed Goal should continue before replanning.
   repeated approvals. The remaining `E02`/`E03`/`E04` seed sends should proceed
   autonomously under Standing Delegation after fresh green QA, including the
   delegated minimal Computer Use visual/coordinate fallback if needed.
+- `anti_blocker_rule`: A fresh seed-test approval phrase is not needed for this
+  active action. If a future resume sees older "decision request" or
+  "approval boundary" language for these same seed/test sends, treat it as
+  superseded by the Standing Delegation and this active next action. Stop only
+  for a concrete QA failure, scope expansion, non-delegated route requirement,
+  unexpected git state or newer user instruction.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
@@ -900,6 +906,9 @@ action that a resumed Goal should continue before replanning.
     current `E02`/`E03`/`E04` seed execution caveat.
   - Fresh preflight/QA is missing, stale or not green.
   - The operation would send to anyone outside the approved seed recipient.
+  - The requested route would require approval because it falls outside
+    Computer Use semantic UI or the delegated minimal Computer Use
+    visual/coordinate fallback for the visible `Send a test` flow.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store.

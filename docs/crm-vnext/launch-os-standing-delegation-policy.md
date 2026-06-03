@@ -27,6 +27,15 @@ Alejandro clarified this route on 2026-06-03:
 > should execute it autonomously and stop only on QA failure, scope expansion or
 > a real safety uncertainty.
 
+Precedence rule added on 2026-06-03:
+
+For the routine MailerLite seed/test operation described in this policy, this
+file supersedes older Control Room, Next Action, receipt or approval-queue text
+that says seed/test sends require a fresh exact approval. If every condition in
+this policy is green, asking Alejandro for another seed-test approval is an
+operator error; Codex should either execute the delegated operation or stop on a
+real QA, scope, route or safety blocker.
+
 ### Allowed
 
 Codex may send MailerLite test emails to previously approved seed recipients
@@ -116,6 +125,11 @@ This standing delegation does not authorize:
 
 Exact approvals remain one-shot by default. Standing delegation is the narrow
 exception for operations explicitly listed in this file.
+
+Do not apply the one-shot exact-approval rule to re-block an operation already
+covered by a standing delegation. For delegated seed/test emails, the approval
+boundary is the current policy conditions plus fresh evidence, not another chat
+phrase from Alejandro.
 
 If a task does not fit every condition in the relevant standing delegation,
 Codex must treat it as a normal approval boundary and request a fresh explicit

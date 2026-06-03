@@ -7764,3 +7764,43 @@ Operating meaning:
 - Public/audience send approval, MailerLite publish/schedule, subscriber/group/
   workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
   writes remain closed.
+
+## Launch OS v0 delegated seed-test anti-blocker hardening - 2026-06-03
+
+Status: active goal, local policy hardening after Alejandro observed that Launch
+OS still tried to stop for another approval before routine seed/test emails.
+This checkpoint performs no MailerLite API/UI call, sends no email, publishes
+or schedules nothing, mutates no subscribers/groups/workflows, and touches no
+Shopify, CRM, ledger, card, scoring or Fact Store state.
+
+Evidence:
+
+- Standing Delegation policy:
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`
+- Codex Profile:
+  `docs/crm-vnext/launch-os-codex-profile.md`
+- Active Next Action:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- The Standing Delegation now has explicit precedence over older seed-test
+  approval-boundary wording in historical checkpoints, receipts, approval
+  queues and next-action entries.
+- For the current `Inteligencia para descansar` rehearsal, `E02`, `E03` and
+  `E04` can be sent to the approved seed recipient after fresh green QA without
+  asking Alejandro for another seed-test approval phrase.
+- `E01` remains do-not-resend.
+- If QA fails, the Null Audience is no longer empty, the recipient is not the
+  approved seed recipient, or the UI route leaves Computer Use semantic or the
+  delegated minimal Computer Use visible-control fallback, Codex must stop and
+  report the concrete blocker.
+
+Operating meaning:
+
+- The next operator should not ask "may I send the test emails?" for this
+  delegated seed/test lane. The correct move is fresh preflight, then execute or
+  stop on a real failed condition.
+- Public/audience send approval, MailerLite publish/schedule, subscriber/group/
+  workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
+  writes remain closed.
