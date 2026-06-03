@@ -799,27 +799,30 @@ action that a resumed Goal should continue before replanning.
 
 ## Active Next Action
 
-- `next_action_id`: `launch_rehearsal_delegated_seed_test_route_unblock_inteligencia_descansar`
+- `next_action_id`: `launch_rehearsal_delegated_seed_test_remaining_e02_e04_route_decision_inteligencia_descansar`
 - `status`: `active`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
-- `source_checkpoint`: `Launch OS v0 launch rehearsal delegated seed test UI route blocker - 2026-06-03`
-- `objective`: Unblock the same delegated E01-E04 seed-test operation by using
-  a session with Computer Use semantic UI available, or by obtaining a fresh
-  scope-specific fallback approval from Alejandro.
-- `why_now`: The QA/preflight gate is green and the standing delegation applies,
-  but the required UI operator route is unavailable in the current session. The
-  next useful move is not new infrastructure or public distribution; it is
-  route availability or a clear fallback-route decision.
+- `source_checkpoint`: `Launch OS v0 launch rehearsal partial E01 semantic seed-test blocker - 2026-06-03`
+- `objective`: Complete or route-decide only the remaining delegated seed-test
+  sends for `E02`, `E03` and `E04` after a fresh green preflight. `E01` was
+  already sent successfully in the current checkpoint and must not be resent.
+- `why_now`: Computer Use is available and worked for `E01`, but MailerLite did
+  not expose the remaining `Send a test` control semantically after the `E02`
+  schedule context loaded. The next useful move is a narrow remaining-label
+  route decision, not new infrastructure, draft recreation, public
+  distribution or a repeat of `E01`.
 - `allowed_scope`:
-  - Reuse or refresh the read-only MailerLite preflight if freshness is unclear.
-  - If Computer Use semantic UI is available, execute only E01-E04 test sends
-    to the approved seed recipient and record a local execution receipt.
-  - If Computer Use is not available, request or wait for a scope-specific
-    fallback route authorization instead of improvising. This is not a new
-    seed-send approval; the seed-send operation remains standing-delegated when
-    QA is green.
+  - Refresh the read-only MailerLite preflight before any remaining send.
+  - If Computer Use exposes the remaining MailerLite controls semantically,
+    execute only `E02`, `E03` and `E04` test sends to the approved seed
+    recipient and record a local execution receipt for the actual sent labels.
+  - If the remaining controls are still not semantically exposed, stop and ask
+    for a scope-specific fallback route authorization instead of improvising.
+    This is not a new seed-send approval; the seed-send operation remains
+    standing-delegated when QA is green.
 - `forbidden_scope`:
+  - Do not resend `E01`.
   - Do not send to a public audience, group, segment or subscriber list.
   - Do not recreate replacement drafts.
   - Do not ask for or execute public/audience-send approval from this boundary.
@@ -833,15 +836,18 @@ action that a resumed Goal should continue before replanning.
     system-click fallback routes unless Alejandro explicitly approves that
     fallback for this exact operation.
 - `expected_files`:
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_execution_current_inteligencia_descansar_2026-06-03.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_execution_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_remaining_e02_e04_execution_current_inteligencia_descansar_2026-06-03.md`
 - `allowed_commands`:
   - `git status --short`
   - `git diff --stat`
   - Read-only local file/report inspection.
   - Read-only MailerLite preflight/QA commands if freshness must be refreshed.
-  - Computer Use semantic UI operation for MailerLite test sends, scoped to the
-    four E01-E04 drafts and approved seed recipient.
+  - Computer Use semantic UI operation for MailerLite test sends, scoped only
+    to the remaining `E02`, `E03` and `E04` drafts and approved seed
+    recipient.
   - Local receipt recording after valid UI completion.
 - `validation_commands`:
   - `jq empty <new JSON reports>`
@@ -852,35 +858,36 @@ action that a resumed Goal should continue before replanning.
   policy conditions and fresh green preflight. Public/audience sends,
   MailerLite publish/schedule, audience assignment, subscribers, workflows,
   Shopify and CRM remain closed until a separate exact approval.
-- `human_boundary_id`: `launch_rehearsal_delegated_seed_test_route_unblock_inteligencia_descansar`
-- `human_boundary_notification_status`: `sent`
+- `human_boundary_id`: `launch_rehearsal_delegated_seed_test_remaining_e02_e04_route_decision_inteligencia_descansar`
+- `human_boundary_notification_status`: `pending`
 - `human_boundary_notification_evidence`:
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.md`
-- `human_boundary_notification_note`: The unblock request was prepared for the
-  Codex thread, not sent via Telegram or email. It gives two choices: resume in
-  a Computer Use-capable session, or authorize the scope-specific
-  Browser/Playwright semantic fallback route. The fallback phrase authorizes
-  only the UI-control route, not a new seed-send approval.
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
+- `human_boundary_notification_note`: Notify in the Codex thread that `E01` was
+  sent, `E02`/`E03`/`E04` were not sent, and a fallback route needs explicit
+  approval if Computer Use continues to see but not semantically expose the
+  remaining `Send a test` controls. The fallback phrase authorizes only the
+  UI-control route, not a new seed-send approval.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
   - The preflight is stale, missing or no longer green.
-  - Computer Use remains unavailable and no explicit fallback route
-    authorization is provided.
+  - The remaining `Send a test` controls are not semantically exposed and no
+    explicit fallback route authorization is provided.
   - The operation would send to anyone outside the approved seed recipient.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
     Store.
-- `resume_instruction`: Do not spend a long run rediscovering the same UI-route
-  limitation. If Computer Use is available, proceed through the delegated
-  seed-test route after freshness QA. If it is not available, stop and ask for
-  either a Computer Use-capable session or explicit fallback route
-  authorization.
-- `completion_definition`: Either the E01-E04 delegated seed-test execution is
-  completed and locally receipted, or Alejandro has made a clear fallback
-  decision for this exact operation.
-- `next_checkpoint_expected`: `Launch OS v0 launch rehearsal delegated seed test route unblock - 2026-06-03`
+- `resume_instruction`: Do not spend a long run rediscovering the same
+  MailerLite accessibility limitation. After freshness QA, attempt only the
+  remaining `E02`/`E03`/`E04` test sends if semantic Computer Use controls are
+  available. If they are not, stop quickly and provide the exact fallback-route
+  approval phrase.
+- `completion_definition`: Either the remaining `E02`, `E03` and `E04`
+  delegated seed-test sends are completed and locally receipted without
+  resending `E01`, or Alejandro has made a clear fallback decision for this
+  exact remaining-label operation.
+- `next_checkpoint_expected`: `Launch OS v0 launch rehearsal remaining E02-E04 delegated seed-test route decision - 2026-06-03`
 
 ## Stop/Change Conditions
 

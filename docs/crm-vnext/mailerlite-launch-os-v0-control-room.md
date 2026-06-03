@@ -7449,3 +7449,70 @@ Operating meaning:
 - Browser/Playwright fallback requires Alejandro's exact fallback-route
   authorization for this operation before use. That authorization is about the
   UI-control route, not about re-approving seed sends.
+
+## Launch OS v0 launch rehearsal partial E01 semantic seed-test blocker - 2026-06-03
+
+Status: active goal, Computer Use became available in the Codex session and the
+same standing-delegated seed-test edge was retried through Safari semantic UI.
+Fresh MailerLite API read-only preflight stayed green. `E01` was sent as a
+test email to the approved seed recipient through the MailerLite `Send a test`
+modal, and MailerLite exposed `Test email sent.` afterward. The run stopped on
+`E02` because the `E02 Practice` schedule context loaded and visibly showed
+`Send a test`, but that control was not exposed as a semantic accessibility
+button/link. No seed recipient was typed for `E02`, and `E02`, `E03` and `E04`
+were not sent.
+
+Evidence:
+
+- Partial semantic UI blocker JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.json`
+- Partial semantic UI blocker markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_partial_e01_ui_semantic_blocker_current_inteligencia_descansar_2026-06-03.md`
+- Fresh rehearsal preflight JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_preflight_seed_delegation_current_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Fresh preflight: `ok=true`, target count `4`, QA green count `4`,
+  Null Audience active count `0`, blocker count `0`, error count `0`.
+- Computer Use tool available: `true`.
+- MailerLite UI opened in Safari: `true`.
+- UI semantic route for `E01`: completed.
+- Semantic success text observed for `E01`: `Test email sent.`
+- Test emails sent in this checkpoint: `1`, label `E01`.
+- Do not resend label: `E01`.
+- Remaining unsent labels: `E02`, `E03`, `E04`.
+- `E02` schedule context loaded and subject observed:
+  `Una práctica pequeña para descansar sin exigirte calma`.
+- `E02` `Send a test` control visible but not semantically exposed: `true`.
+- Full `record_ui_sent` receipt created: `false`.
+
+Safety:
+
+- MailerLite API called only for read-only preflight: true.
+- MailerLite API test-send called: false.
+- Audience sends performed: false.
+- Campaign publish/schedule performed: false.
+- Subscribers read/mutated: false/false.
+- Additional groups, segments, workflows or automations mutated: false.
+- Shopify, CRM, Signal Ledger, cards, scoring and Fact Store touched: false.
+- Screenshot/capture route, coordinate clicks, system-click fallback, DOM
+  injection and AppleScript injection used: false.
+- Raw campaign IDs, group IDs, raw recipient, exact URLs and tokens printed:
+  false.
+
+Operating meaning:
+
+- The route is no longer blocked by Computer Use availability; it is blocked by
+  MailerLite failing to expose the remaining `Send a test` control
+  semantically.
+- Do not resend `E01`.
+- Continue only for `E02`, `E03` and `E04`, after another fresh API
+  re-scan/preflight remains green.
+- If Computer Use later exposes the remaining test-send controls semantically,
+  send only the remaining labels and record the local execution receipt.
+- If the operator wants to use coordinates, screenshot/capture, system-click,
+  DOM/AppleScript or Browser/Playwright fallback routes, Alejandro must approve
+  that route explicitly for this exact remaining-label operation first.
