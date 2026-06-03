@@ -810,13 +810,15 @@ action that a resumed Goal should continue before replanning.
 - `why_now`: The QA/preflight gate is green and the standing delegation applies,
   but the required UI operator route is unavailable in the current session. The
   next useful move is not new infrastructure or public distribution; it is
-  route availability or a clear fallback decision.
+  route availability or a clear fallback-route decision.
 - `allowed_scope`:
   - Reuse or refresh the read-only MailerLite preflight if freshness is unclear.
   - If Computer Use semantic UI is available, execute only E01-E04 test sends
     to the approved seed recipient and record a local execution receipt.
   - If Computer Use is not available, request or wait for a scope-specific
-    fallback approval instead of improvising.
+    fallback route authorization instead of improvising. This is not a new
+    seed-send approval; the seed-send operation remains standing-delegated when
+    QA is green.
 - `forbidden_scope`:
   - Do not send to a public audience, group, segment or subscriber list.
   - Do not recreate replacement drafts.
@@ -857,14 +859,15 @@ action that a resumed Goal should continue before replanning.
   - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.md`
 - `human_boundary_notification_note`: The unblock request was prepared for the
   Codex thread, not sent via Telegram or email. It gives two choices: resume in
-  a Computer Use-capable session, or approve the scope-specific
-  Browser/Playwright semantic fallback phrase.
+  a Computer Use-capable session, or authorize the scope-specific
+  Browser/Playwright semantic fallback route. The fallback phrase authorizes
+  only the UI-control route, not a new seed-send approval.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
   - The preflight is stale, missing or no longer green.
-  - Computer Use remains unavailable and no explicit fallback approval is
-    provided.
+  - Computer Use remains unavailable and no explicit fallback route
+    authorization is provided.
   - The operation would send to anyone outside the approved seed recipient.
   - Any requested action would publish, schedule, assign a real audience, mutate
     subscribers/workflows, or touch Shopify/CRM/ledgers/cards/scoring/Fact
@@ -872,7 +875,8 @@ action that a resumed Goal should continue before replanning.
 - `resume_instruction`: Do not spend a long run rediscovering the same UI-route
   limitation. If Computer Use is available, proceed through the delegated
   seed-test route after freshness QA. If it is not available, stop and ask for
-  either a Computer Use-capable session or explicit fallback approval.
+  either a Computer Use-capable session or explicit fallback route
+  authorization.
 - `completion_definition`: Either the E01-E04 delegated seed-test execution is
   completed and locally receipted, or Alejandro has made a clear fallback
   decision for this exact operation.

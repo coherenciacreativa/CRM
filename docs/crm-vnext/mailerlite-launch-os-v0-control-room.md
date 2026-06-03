@@ -7438,13 +7438,14 @@ Confirmed results:
 - Public/audience send authorized: false.
 - The request offers two routes:
   - use a session with Computer Use semantic UI available;
-  - or approve a scope-specific Browser/Playwright semantic fallback phrase.
+  - or authorize a scope-specific Browser/Playwright semantic fallback route.
 
 Operating meaning:
 
 - The current Launch OS lane should pause at the route decision unless a
   Computer Use-capable session is available.
 - A Computer Use-capable session can proceed under the existing standing
-  delegation after freshness QA.
-- Browser/Playwright fallback requires Alejandro's exact fallback approval for
-  this operation before use.
+  delegation after freshness QA; no new seed-send approval is required.
+- Browser/Playwright fallback requires Alejandro's exact fallback-route
+  authorization for this operation before use. That authorization is about the
+  UI-control route, not about re-approving seed sends.
