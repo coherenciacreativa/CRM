@@ -1389,3 +1389,98 @@ Use deep hydration only for:
   partial/missing Launch OS v0 lanes into small safe next moves.
 - `next_checkpoint_expected`: Control Room checkpoint after the hardening plan
   is generated and validated.
+
+## Completed Next Action - Launch OS v0 Baseline Hardening Plan - 2026-06-03
+
+- `previous_next_action_id`: `launch_os_v0_baseline_hardening_plan_after_gap_audit`
+- `status`: `completed`
+- `completed_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 baseline operability gap audit after pilot - 2026-06-03`
+- `completion_summary`:
+  - Generated a local hardening plan for the partial and missing Launch OS v0
+    lanes.
+  - Selected `onboarding_v2_draft_content_mapping_hardening` as the next
+    immediate local track because it increases repeatability without live APIs,
+    UI, sends, audience assignment or CRM writes.
+  - Kept taxonomy and CRM signal-write gaps as input-collection-only tracks,
+    not approval or execution requests.
+  - Kept public/audience distribution as a future live boundary and the weekly
+    autonomous proposal machine as roadmap only.
+  - No live APIs, UI, sends, publish, schedule, audience assignment,
+    subscribers, groups, tags, segments, workflows, Shopify, CRM, ledgers,
+    cards, scoring or Fact Store were touched.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_hardening_plan_after_gap_audit_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_hardening_plan_after_gap_audit_2026-06-03.md`
+- `resulting_status`:
+  - Hardening plan:
+    `launch_os_v0_baseline_hardening_plan_ready_local_only`.
+  - Recommended immediate track:
+    `onboarding_v2_draft_content_mapping_hardening`.
+  - Tracks total: 5.
+  - Tracks local now: 1.
+  - Tracks input collection only: 2.
+  - Tracks future live boundary: 1.
+  - Tracks roadmap only: 1.
+  - Public/audience send authorized: `false`.
+  - Live action allowed now: `false`.
+
+## Active Next Action - Onboarding v2 Draft/Content Mapping Hardening - 2026-06-03
+
+- `next_action_id`: `onboarding_v2_draft_content_mapping_hardening`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `source_checkpoint`: `Launch OS v0 baseline hardening plan after gap audit - 2026-06-03`
+- `objective`: Prepare a local Onboarding v2 draft/content mapping hardening
+  packet that freezes the draft skeleton, content receipt map, first-email
+  boundary, seed-test posture and rollout gates without touching MailerLite or
+  productive onboarding.
+- `why_now`: The baseline hardening plan ranks Onboarding v2 mapping as the
+  highest-leverage local move because it strengthens the Launch OS handoff
+  layer while preserving productive v1 and avoiding live execution.
+- `allowed_scope`:
+  - Read local Onboarding v1/v2 reports, blueprint and Launch OS docs.
+  - Produce local JSON/Markdown hardening artifacts under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - Make the first-email `content_id` versus welcome-only boundary explicit.
+  - Keep seed-test, workflow creation and production entry switch as separate
+    future gates.
+  - Update Control Room/Next Action if the packet is generated and validated.
+- `forbidden_scope`:
+  - Do not call live APIs or open MailerLite UI.
+  - Do not create, clone, edit, activate, pause or disable workflows.
+  - Do not touch productive Onboarding v1.
+  - Do not create, rename, assign or mutate groups, tags, segments or
+    subscribers.
+  - Do not send or resend emails.
+  - Do not touch Shopify, CRM, ledgers, cards, scoring or Fact Store.
+- `expected_files`:
+  - Local Onboarding v2 draft/content mapping hardening JSON/Markdown under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `allowed_commands`:
+  - `git status --short`
+  - `rg`/`sed`/`jq` read-only local inspection.
+  - Local-only report generation that does not call live systems.
+- `validation_commands`:
+  - `jq empty` on generated JSON reports.
+  - `git diff --check`
+- `live_gate_status`: MailerLite API/UI, workflow changes, productive
+  onboarding changes, subscriber/group/tag/segment mutation, sends, publish,
+  schedule, Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `not_needed_for_local_onboarding_v2_mapping_packet`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - The packet would require live MailerLite verification or mutation.
+  - Required local Onboarding v1/v2 evidence is missing or contradicts the
+    baseline plan.
+  - The work would ask for workflow activation, seed tests or production entry
+    switch instead of staying local.
+- `resume_instruction`: Prepare only the local Onboarding v2 draft/content
+  mapping hardening packet. Do not perform live checks, UI work, workflow
+  changes, subscriber assignments, seed tests or production routing.
+- `completion_definition`: A validated local packet states the Onboarding v2
+  draft skeleton, content receipt mapping, first-email boundary and future gate
+  sequence while preserving productive v1.
+- `next_checkpoint_expected`: Control Room checkpoint after the Onboarding v2
+  hardening packet is generated and validated.

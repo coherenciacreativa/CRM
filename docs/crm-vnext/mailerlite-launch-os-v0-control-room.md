@@ -8349,3 +8349,72 @@ Operating meaning:
 - Public/audience send, publish, schedule, real audience assignment,
   subscriber/group/workflow mutation, Shopify, CRM, ledgers, cards, scoring and
   Fact Store remain closed.
+
+## Launch OS v0 baseline hardening plan after gap audit - 2026-06-03
+
+Status: checkpoint completed, local/report-only. A hardening plan was created
+from the baseline operability gap audit. It sequences the remaining Launch OS
+v0 gaps without opening live execution. The plan recommends Onboarding v2
+draft/content mapping as the immediate local track, keeps taxonomy and CRM
+signal-write work as input collection only, keeps public/audience distribution
+as a future live boundary and keeps the weekly autonomous proposal machine as
+roadmap only.
+
+What changed:
+
+- The baseline gaps are now ordered by operating leverage and safe next move.
+- Immediate local track:
+  `onboarding_v2_draft_content_mapping_hardening`.
+- Input-only tracks:
+  Brand/CRM taxonomy final responses and CRM observed-event readiness.
+- Future live boundary:
+  public/audience distribution.
+- Roadmap-only:
+  weekly autonomous proposal machine.
+- The active next action moved to the Onboarding v2 draft/content mapping
+  hardening packet.
+
+Evidence:
+
+- Baseline hardening plan JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_hardening_plan_after_gap_audit_2026-06-03.json`
+- Baseline hardening plan markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_baseline_hardening_plan_after_gap_audit_2026-06-03.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Hardening plan status:
+  `launch_os_v0_baseline_hardening_plan_ready_local_only`.
+- Recommended immediate track:
+  `onboarding_v2_draft_content_mapping_hardening`.
+- Tracks total: 5.
+- Tracks local now: 1.
+- Tracks input collection only: 2.
+- Tracks future live boundary: 1.
+- Tracks roadmap only: 1.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with `onboarding_v2_draft_content_mapping_hardening`.
+- Do not ask for public/audience send approval now.
+- Treat taxonomy and CRM signal-write gaps as input collection only, not live
+  approval or execution.
+- Do not build the autonomous weekly proposal machine in this hito.
+- Public/audience send, publish, schedule, workflow mutation, productive
+  onboarding changes, real audience assignment, subscriber/group/tag/segment
+  mutation, Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.
+
+Safety:
+
+- Local/report-only hardening plan: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Test emails sent: false.
+- Audience sends, publish and schedule: false.
+- Subscriber, group, tag, segment, workflow and automation mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw IDs, recipients, exact URLs and tokens printed: false.
