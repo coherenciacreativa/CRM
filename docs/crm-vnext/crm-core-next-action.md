@@ -68,47 +68,79 @@ routing and completion pointer.
   routes, forbidden actions, redaction rules, output artifacts, and what remains
   unknown; no verification was run and no live systems or CRM state were touched.
 
+- `next_action_id`: `crm_core_first_source_health_verification_decision_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
+- `decision`: Email/MailerLite first.
+- `selected_route_preference`: Local snapshot/export freshness or no-secret
+  metadata verification before any live API route.
+- `note`: No verification was run.
+- `completion_definition`: Alejandro chose Email/MailerLite as the first
+  verification route. No live API call, UI access, snapshot/export read, source
+  mutation, CRM state mutation, Launch OS doc touch, or use of
+  `/Users/alejandrogomez/CRM` occurred.
+
+- `next_action_id`: `crm_core_mailerlite_email_source_health_approval_packet_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `completed_at`: `2026-06-03`
+- `completion_artifact`:
+  `docs/crm-vnext/mailerlite-email-source-health-approval-packet-v0.md`
+- `completion_definition`: CRM Core has a compact no-live Email/MailerLite
+  source-health approval packet that defines the selected source family,
+  preferred local snapshot/export metadata route, forbidden actions, output
+  artifacts, exact approval phrase, and what remains forbidden after a green
+  result. No verification was run.
+
 ## Active Next Action
 
-- `next_action_id`: `crm_core_first_source_health_verification_decision_v0`
+- `next_action_id`: `crm_core_mailerlite_email_source_health_verification_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
-- `objective`: Choose which source family should receive the first real
-  source-health verification and by which safe route.
-- `why_now`: The verification packet plan is ready, but running any verification
-  would cross a new approval boundary. Alejandro must choose the first source
-  family and approve the route before CRM Core performs any source-health check.
+- `objective`: Wait for Alejandro's exact approval phrase before running the
+  local snapshot/export metadata-only Email/MailerLite source-health
+  verification.
+- `why_now`: The approval packet exists, but executing even a local metadata
+  verification crosses a new approval boundary. The system must wait for
+  Alejandro to paste the exact approval phrase or decline.
 - `allowed_scope`:
-  - Summarize the three available verification options.
-  - Recommend the safest first verification.
-  - Wait for Alejandro's decision.
+  - Present the exact approval phrase from the packet.
+  - Answer clarifying questions.
+  - Wait.
   - No execution.
 - `forbidden_scope`:
-  - No live API calls.
-  - No Instagram UI.
-  - No Gmail search.
-  - No MailerLite API call.
+  - No verification run.
+  - No live MailerLite API.
+  - No MailerLite UI.
+  - No Gmail.
+  - No Instagram.
   - No source snapshots/exports unless explicitly supplied/approved.
+  - No secrets.
+  - No subscriber list dumps.
+  - No raw rows.
   - No CRM state mutation.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `options_to_present`:
-  1. Instagram source-health verification packet.
-  2. MailerLite/email snapshot or no-secret health verification packet.
-  3. Gmail/newsletter reply metadata-only verification packet.
+- `approval_phrase_required`:
+  `I approve the CRM Core Email/MailerLite source-health verification using local snapshot/export metadata only. Do not call live APIs, open UI, print subscriber lists, mutate MailerLite, or write CRM state.`
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
-  - Any attempted source-health verification.
-  - Any live API call, UI access, credential access, private content read, source
+  - Alejandro has not provided the exact approval phrase.
+  - Alejandro declines or asks to modify the verification route.
+  - Any attempted source-health verification before exact approval.
+  - Any live API call, UI access, credential access, private content read,
+    snapshot/export inspection, subscriber list dump, raw row print, source
     mutation, CRM state mutation, Launch OS doc touch, or use of
     `/Users/alejandrogomez/CRM`.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read
-  `docs/crm-vnext/crm-core-codex-profile.md`, this file,
-  `docs/crm-vnext/community-source-health-reality-audit-v0.md`, and
-  `docs/crm-vnext/community-source-health-verification-packets-v0.md`. Do not
-  run verification. Present the choice to Alejandro and stop.
-- `completion_definition`: Alejandro chooses one first verification route and
-  gives explicit approval or declines all options.
+  `docs/crm-vnext/crm-core-codex-profile.md`, this file, and
+  `docs/crm-vnext/mailerlite-email-source-health-approval-packet-v0.md`. Do not
+  run verification unless Alejandro provides the exact approval phrase.
+- `completion_definition`: Alejandro either provides the exact approval phrase,
+  declines, or asks to modify the verification route.
