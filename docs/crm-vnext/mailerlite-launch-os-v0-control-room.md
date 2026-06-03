@@ -7708,3 +7708,59 @@ Operating meaning:
 - If Alejandro approves the fallback phrase, the next operator must run fresh
   preflight and attempt only `E02`/`E03`/`E04`; `E01` remains do-not-resend.
 - Do not ask for public/audience send approval from this boundary.
+
+## Launch OS v0 standing seed-test route clarification - 2026-06-03
+
+Status: active goal, policy clarification recorded after Alejandro noted that
+Launch OS had again stopped on approval friction for routine MailerLite
+seed/test emails. This checkpoint performs no MailerLite API/UI call, sends no
+email, publishes/schedules nothing, mutates no subscribers/groups/workflows,
+and touches no Shopify, CRM, ledger, card, scoring or Fact Store state.
+
+Evidence:
+
+- Standing seed/test route clarification JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_standing_seed_test_route_clarification_current_2026-06-03.json`
+- Standing seed/test route clarification markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_standing_seed_test_route_clarification_current_2026-06-03.md`
+- Standing Delegation policy:
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`
+- Codex Profile:
+  `docs/crm-vnext/launch-os-codex-profile.md`
+- Active Next Action:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Routine MailerLite seed/test emails to approved seed recipients no longer
+  require repeated approval when the Standing Delegation conditions are green.
+- The delegated route includes Computer Use semantic UI and, after reset/timebox
+  protocol, a minimal Computer Use visual/coordinate fallback for the same
+  visible MailerLite `Send a test` control.
+- Browser/Playwright, DOM injection, AppleScript injection, screenshot/capture
+  route and system-click fallback remain outside the default route unless
+  separately authorized later.
+- For `Inteligencia para descansar`, `E01` remains do-not-resend and `E02`,
+  `E03` and `E04` can proceed without a new approval after fresh green
+  preflight/QA.
+
+Safety:
+
+- Local-only/report-only clarification: true.
+- MailerLite API/UI called: false.
+- Emails sent by this checkpoint: false.
+- Public/audience send, publish and schedule: false.
+- Subscriber, group, segment and workflow mutation: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Raw URLs and tokens printed: false.
+
+Operating meaning:
+
+- Do not block the Launch OS goal waiting for another exact approval phrase for
+  seed/test emails that fit the Standing Delegation policy.
+- The next operator should run fresh read-only preflight and, if green, send
+  only `E02`/`E03`/`E04` to the approved seed recipient under the delegated
+  route, recording the UI route and sent labels in a local receipt.
+- Public/audience send approval, MailerLite publish/schedule, subscriber/group/
+  workflow mutation, Shopify mutation and CRM/ledger/card/scoring/Fact Store
+  writes remain closed.

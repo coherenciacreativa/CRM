@@ -19,6 +19,14 @@ Alejandro delegated this operation on 2026-06-02:
 > publish/schedule/workflow, y se genera receipt local. Si cualquier QA falla,
 > se detiene.
 
+Alejandro clarified this route on 2026-06-03:
+
+> Codex should not block the Launch OS goal on repeated approvals for routine
+> MailerLite seed/test emails to approved seed recipients. When the draft and
+> Null Audience QA are green, test-email sending is delegated; the operator
+> should execute it autonomously and stop only on QA failure, scope expansion or
+> a real safety uncertainty.
+
 ### Allowed
 
 Codex may send MailerLite test emails to previously approved seed recipients
@@ -38,6 +46,9 @@ conditions are true:
 - No Shopify, CRM, Signal Ledger, card, scoring or Fact Store mutation is
   involved.
 - A local execution receipt is generated.
+- The UI-control route stays inside the same delegated test-send operation.
+  Codex does not need a separate approval merely because MailerLite requires a
+  short UI fallback to operate the visible `Send a test` flow.
 
 ### Approved Seed Recipients
 
@@ -54,9 +65,18 @@ current local receipt before use.
   receipts.
 - Use the configured UI route for actual test-email sends, normally Computer
   Use semantic UI controls in Safari for Codex-native operation.
-- If the UI route fails within the reset/timebox protocol in the Codex Profile,
-  stop and report the route blocker unless a separate fallback has been
-  authorized.
+- If Computer Use semantic controls do not expose a visible MailerLite test-send
+  control, Codex may use a minimal Computer Use visual/coordinate-click fallback
+  for the same visible control without asking Alejandro again, only after the
+  reset/timebox protocol in the Codex Profile and only while every seed-test
+  condition in this policy remains true.
+- Fallback use must be narrow: it may click visible MailerLite controls and type
+  the approved seed recipient into the `Send a test` modal, but it must not
+  broaden the recipient, audience, campaign, workflow, publish/schedule,
+  subscriber, Shopify, CRM, ledger, card, scoring or Fact Store scope.
+- Browser/Playwright, DOM injection, AppleScript injection or system-level
+  automation remain outside the default route unless explicitly authorized or
+  later added to this policy.
 
 ### Stop Conditions
 
@@ -71,7 +91,8 @@ Stop before sending if any condition is unclear or false:
 - Placeholders, redacted tokens, visible raw URLs or stale asset references are
   found.
 - The campaign is published, scheduled, workflow-attached or no longer inert.
-- The UI route would require an unapproved fallback that could broaden scope.
+- The UI route would require a fallback that cannot be kept inside the narrow
+  Computer Use visible-control test-send operation, or could broaden scope.
 - Fresh QA or local receipt generation fails.
 
 ### Explicitly Not Delegated
@@ -87,6 +108,9 @@ This standing delegation does not authorize:
 - CRM live writes, Signal Ledger appends, cards, scoring or Fact Store writes.
 - Reading or printing secrets, tokens, raw private URLs, raw campaign IDs or
   broad recipient lists.
+- Requiring Alejandro to re-approve the same routine seed/test email send only
+  because MailerLite's UI did not expose the visible `Send a test` control
+  semantically.
 
 ## Relationship To Exact Approvals
 
@@ -105,6 +129,8 @@ Every delegated action must leave a local receipt that records:
 - The seed recipient class used, without broad recipient disclosure.
 - The fresh preflight/QA result.
 - The number of test emails sent.
+- The UI route used, including whether a Computer Use visual/coordinate fallback
+  was needed.
 - The exact stop conditions checked.
 - Confirmation that no public/audience send, publish, schedule, workflow,
   subscriber, Shopify, CRM, ledger, card, scoring or Fact Store mutation

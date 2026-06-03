@@ -105,15 +105,22 @@ For current Launch OS MailerLite seed/test emails:
 - Keep MailerLite UI attempts time-boxed. Default budget: one clean browser
   reset plus at most two canonical semantic routes before changing strategy.
   Do not spend a long run repeatedly searching for the same hidden control.
-- Screenshot/capture inspection, coordinate clicks, system-click fallbacks,
-  AppleScript/DOM click injection or other non-semantic browser control are not
-  the default route. They may be used only as a short, explicit fallback when
-  Alejandro approves that route for the exact operation and the fallback does
-  not broaden the live/action scope.
+- For seed/test sends covered by
+  `docs/crm-vnext/launch-os-standing-delegation-policy.md`, a minimal Computer
+  Use visual/coordinate-click fallback is part of the delegated operation after
+  the reset/timebox protocol. It does not require a new approval when every
+  seed-test condition remains green, the control is visible, and the action is
+  limited to MailerLite's `Send a test` flow for the approved seed recipient.
+- Screenshot/capture inspection, system-click fallbacks, AppleScript/DOM click
+  injection, Browser/Playwright fallback or other non-Computer-Use browser
+  control are not the default route. They may be used only as a short, explicit
+  fallback when Alejandro approves that route for the exact operation and the
+  fallback does not broaden the live/action scope.
 - If Computer Use and the reset protocol cannot expose and operate the required
-  control within the budget, preserve any unconsumed portion of the approval,
-  record which labels were actually sent, and either use the approved fallback
-  route or report the remaining UI-route blocker.
+  control within the budget, use the delegated minimal Computer Use
+  visual/coordinate fallback when it can remain inside the seed-test policy;
+  otherwise preserve any unconsumed portion of the operation, record which
+  labels were actually sent, and report the remaining UI-route blocker.
 - After UI completion, record the result through the local receipt path instead
   of rediscovering API endpoint limitations.
 
