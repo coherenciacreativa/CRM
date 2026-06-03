@@ -46,6 +46,7 @@
     "crm:vnext:mailerlite-onboarding-v2-empty-groups-packet": "node scripts/crm-vnext-mailerlite-onboarding-v2-empty-groups-packet.mjs",
     "crm:vnext:mailerlite-onboarding-v2-empty-groups-create": "node scripts/crm-vnext-mailerlite-onboarding-v2-empty-groups-create.mjs",
     "crm:vnext:mailerlite-onboarding-v2-disabled-draft-preflight": "node scripts/crm-vnext-mailerlite-onboarding-v2-disabled-draft-preflight.mjs",
+    "crm:vnext:mailerlite-onboarding-v2-disabled-draft-approval-packet": "node scripts/crm-vnext-mailerlite-onboarding-v2-disabled-draft-approval-packet.mjs",
     "crm:vnext:mailerlite-onboarding-v2-execution-packet": "node scripts/crm-vnext-mailerlite-onboarding-v2-execution-packet.mjs",
     "crm:vnext:mailerlite-onboarding-v2-first-email-map": "node scripts/crm-vnext-mailerlite-onboarding-v2-first-email-map.mjs",
     "crm:vnext:mailerlite-onboarding-v2-event-contract": "node scripts/crm-vnext-mailerlite-onboarding-v2-event-contract.mjs",

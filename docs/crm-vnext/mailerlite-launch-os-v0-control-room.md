@@ -8626,3 +8626,90 @@ Safety:
 - Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
 - Tokens printed: false.
 - Raw IDs printed: false.
+
+## Onboarding v2 disabled draft build approval packet - 2026-06-03
+
+Status: checkpoint completed, local/report-only approval boundary ready. The
+green read-only preflight has been promoted into a reviewable human decision
+packet for creating or cloning exactly one future `Onboarding editorial v2 -
+DRAFT` workflow, but the packet is not approval by itself and no live
+MailerLite operation was performed.
+
+What changed:
+
+- A local approval packet was generated for the next disabled/inactive
+  Onboarding v2 workflow draft build boundary.
+- The exact approval phrase is available for Alejandro review.
+- The packet confirms it can ask for approval, but cannot execute now.
+- The route keeps a hard stop: if the operator cannot guarantee the workflow
+  remains disabled/inactive and disconnected from real traffic, stop and
+  report.
+- The active next action moved to the human decision boundary for this one
+  live workflow mutation.
+
+Evidence:
+
+- Approval packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_approval_packet_current_2026-06-03.json`
+- Approval packet markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_onboarding_v2_disabled_draft_build_approval_packet_current_2026-06-03.md`
+- Runner:
+  `scripts/crm-vnext-mailerlite-onboarding-v2-disabled-draft-approval-packet.mjs`
+- Tests:
+  `__tests__/crm-vnext-mailerlite-onboarding-v2-disabled-draft-approval-packet.spec.ts`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Approval packet status:
+  `onboarding_v2_disabled_draft_build_approval_packet_ready_no_live_changes`.
+- Can ask Alejandro for approval: true.
+- Exact approval phrase available: true.
+- Packet is approval by itself: false.
+- Can execute now: false.
+- Blocker count: 0.
+- Productive `Onboarding flow` v1 green evidence: true.
+- V2 groups found: 12/12.
+- V2 groups with `active_count=0`: 12/12.
+- V2 workflow conflict count: 0.
+- Route must guarantee disabled/inactive before mutation: true.
+- Workflow mutation authorized now: false.
+- Seed test authorized now: false.
+- Public/audience send authorized: false.
+- Live action allowed now: false.
+
+Operating meaning:
+
+- Continue with `onboarding_v2_disabled_draft_build_human_decision`.
+- Do not create/clone/edit/activate/pause/disable workflows unless Alejandro
+  gives the exact disabled-draft build approval phrase.
+- If Alejandro approves, execute only the disabled/inactive draft build route
+  and generate a local receipt.
+- If the route cannot guarantee disabled/inactive state and no real traffic,
+  stop and report instead of improvising.
+- Do not touch productive `Onboarding flow` v1.
+- Do not read, assign or mutate subscribers.
+- Do not create, rename, assign or mutate groups, tags, segments, audiences,
+  campaigns or sends.
+- Do not run seed tests or production routing.
+- Shopify, CRM, ledgers, cards, scoring and Fact Store remain closed.
+
+Safety:
+
+- Local/report-only approval packet: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- MailerLite mutations performed: false.
+- Workflow mutations performed: false.
+- Productive Onboarding v1 touched: false.
+- Subscriber rows read: false.
+- Subscriber rows printed: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Shopify, CRM, ledger, card, scoring and Fact Store touched: false.
+- Exact URLs printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
