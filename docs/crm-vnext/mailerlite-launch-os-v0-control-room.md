@@ -7408,3 +7408,43 @@ Operating meaning:
 - If Computer Use becomes available, reuse or refresh the green preflight and
   execute only the E01-E04 seed tests to the approved seed recipient, then
   record the local execution receipt.
+
+## Launch OS v0 launch rehearsal delegated seed test route unblock request - 2026-06-03
+
+Status: active goal, human-boundary request prepared in the Codex thread. This
+checkpoint does not send emails, open MailerLite UI, call MailerLite API, or
+mutate Shopify/CRM. It turns the route blocker into a concrete choice instead
+of building more infrastructure around a missing operator route.
+
+Evidence:
+
+- Route unblock request JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.json`
+- Route unblock request markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.md`
+- UI route blocker JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_ui_route_blocker_current_inteligencia_descansar_2026-06-03.json`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Notification channel used: Codex thread.
+- Telegram sent: false.
+- Email sent: false.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Test emails sent: false.
+- Public/audience send authorized: false.
+- The request offers two routes:
+  - use a session with Computer Use semantic UI available;
+  - or approve a scope-specific Browser/Playwright semantic fallback phrase.
+
+Operating meaning:
+
+- The current Launch OS lane should pause at the route decision unless a
+  Computer Use-capable session is available.
+- A Computer Use-capable session can proceed under the existing standing
+  delegation after freshness QA.
+- Browser/Playwright fallback requires Alejandro's exact fallback approval for
+  this operation before use.

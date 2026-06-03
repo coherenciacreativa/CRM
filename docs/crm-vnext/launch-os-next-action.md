@@ -851,7 +851,14 @@ action that a resumed Goal should continue before replanning.
   MailerLite publish/schedule, audience assignment, subscribers, workflows,
   Shopify and CRM remain closed until a separate exact approval.
 - `human_boundary_id`: `launch_rehearsal_delegated_seed_test_route_unblock_inteligencia_descansar`
-- `human_boundary_notification_status`: `pending`
+- `human_boundary_notification_status`: `sent`
+- `human_boundary_notification_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_mini_launch_launch_rehearsal_delegated_seed_test_route_unblock_request_current_inteligencia_descansar_2026-06-03.md`
+- `human_boundary_notification_note`: The unblock request was prepared for the
+  Codex thread, not sent via Telegram or email. It gives two choices: resume in
+  a Computer Use-capable session, or approve the scope-specific
+  Browser/Playwright semantic fallback phrase.
 - `stop_conditions`:
   - Newer user instruction supersedes this contract.
   - Git state is unexpected.
