@@ -2298,12 +2298,13 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after the private input is
   supplied and local readiness changes, or after Alejandro defers this input.
 
-## Active Next Action - Launch OS v0 Microproduct Acceptance Packet v0 - 2026-06-04
+## Completed Next Action - Launch OS v0 Microproduct Acceptance Packet v0 - 2026-06-04
 
 - `next_action_id`: `launch_os_v0_microproduct_acceptance_packet_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-04`
 - `updated_at`: `2026-06-04`
+- `completed_at`: `2026-06-04`
 - `source_checkpoint`: `Launch OS v0 CRM signal-write readiness deferred after
   taxonomy local patch acceptance - 2026-06-04`
 - `objective`: Create a local-only, reusable acceptance packet that evaluates
@@ -2368,6 +2369,90 @@ Use deep hydration only for:
 - `completion_definition`: A validated local/redacted acceptance packet exists
   and explicitly reports gate status for Brand, Product Value, Web/Shopify,
   MailerLite, CRM and Safety without live mutations or invented evidence.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_microproduct_acceptance_packet_current_2026-06-04.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_microproduct_acceptance_packet_current_2026-06-04.md`
+- `completion_status`:
+  `microproduct_acceptance_packet_ready_local_only_with_crm_signal_deferred`
+- `completion_summary`:
+  - `taxonomy local consolidated = green`
+  - `CRM signal-write readiness = deferred_until_real_observed_events`
+  - `public/audience send = closed`
+  - `seed tests = only_under_standing_delegation_and_green_qa`
+  - `green gates = 5`
+  - `yellow gates = 1`
+  - `red gates = 0`
+  - `no CEO decision needed yet = true`
 - `next_checkpoint_expected`: Control Room checkpoint after the local acceptance
   packet is created and validated, or blocker report if any gate cannot be
   evaluated from existing local evidence.
+
+## Active Next Action - Launch OS v0 Next Microproduct Candidate Intake v0 - 2026-06-04
+
+- `next_action_id`: `launch_os_v0_next_microproduct_candidate_intake_v0`
+- `status`: `active`
+- `created_at`: `2026-06-04`
+- `updated_at`: `2026-06-04`
+- `source_checkpoint`: `Launch OS v0 microproduct acceptance packet v0 ready -
+  2026-06-04`
+- `objective`: Use the reusable acceptance packet as the v0 checklist for the
+  next microproduct candidate before any live approval boundary.
+- `why_now`: The current pilot is accepted as a positive control and the
+  reusable acceptance packet is green for local-only operation. The next local
+  leverage point is to prepare or receive the next candidate through that
+  checklist without reopening CRM writes or live systems.
+- `allowed_scope`:
+  - Local-only candidate intake/checklist preparation.
+  - Read existing local Launch OS reports, receipts, backlog boards or candidate
+    notes if they already exist.
+  - If no candidate evidence exists, ask Alejandro for a concise candidate input
+    instead of inventing one.
+  - Keep human/product blockers as clear requests.
+- `forbidden_scope`:
+  - Do not call live APIs.
+  - Do not send emails, publish, schedule or assign audience.
+  - Do not touch MailerLite live, Shopify live or CRM live.
+  - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
+    sends.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not reopen CRM signal-write readiness until real private observed events
+    exist.
+  - Do not invent a microproduct candidate, observed events, people, market
+    signals or evidence.
+  - Do not use seed tests, internal QA or Null Audience activity as real market
+    signals.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+- `expected_files`:
+  - A future local-only candidate intake/checklist packet JSON in
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`, if candidate evidence
+    exists.
+  - A future local-only candidate intake/checklist packet markdown in
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`, if candidate evidence
+    exists.
+- `allowed_commands`:
+  - Local file reads for existing Launch OS reports, receipts, backlog boards and
+    docs.
+  - Local validation commands only.
+- `validation_commands`:
+  - JSON syntax validation for any generated packet.
+  - Local-only safety assertions that no live APIs, sends, audience assignment,
+    CRM writes, ledgers, cards, scoring or Fact Store operations were performed.
+- `live_gate_status`: MailerLite live, Shopify live, CRM writes, public/audience
+  sends, publish, schedule, subscriber/group/workflow mutations, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `next_microproduct_candidate_input_if_missing`
+- `human_boundary_notification_status`: `not_needed_until_candidate_missing`
+- `stop_conditions`:
+  - No real next-candidate source exists in local evidence.
+  - Candidate evaluation would require live APIs, sends, audience assignment,
+    CRM writes, workflow mutation or private observed events.
+  - Any gate would require invented evidence or inferred market signals.
+- `resume_instruction`: Continue local-only by locating or preparing the next
+  microproduct candidate intake through the acceptance packet checklist. If no
+  candidate source exists, stop and ask Alejandro for the candidate input in a
+  short exact request.
+- `completion_definition`: A next-candidate local intake/checklist packet exists
+  and uses the acceptance packet gates, or a clear candidate-input request is
+  presented without live mutations or invented evidence.
+- `next_checkpoint_expected`: Control Room checkpoint after candidate intake is
+  prepared, or after a clear candidate-input blocker is reported.

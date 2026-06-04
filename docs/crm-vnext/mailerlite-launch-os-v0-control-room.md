@@ -9128,3 +9128,98 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 microproduct acceptance packet v0 - 2026-06-04
+
+Status: checkpoint completed, local/report-only. A reusable Launch OS v0
+microproduct acceptance packet was created from existing local evidence. It uses
+the current `Inteligencia para descansar` pilot as a positive control and turns
+the Launch OS gates into a decision-oriented checklist for future
+microproducts.
+
+What changed:
+
+- Added a local-only acceptance packet runner:
+  `scripts/crm-vnext-mailerlite-launch-os-microproduct-acceptance-packet.mjs`.
+- Added a focused test:
+  `__tests__/crm-vnext-mailerlite-launch-os-microproduct-acceptance-packet.spec.ts`.
+- Added the package command:
+  `crm:vnext:mailerlite-launch-os-microproduct-acceptance-packet`.
+- Generated the current JSON and markdown acceptance packet in Mantis Reports.
+- Marked the CRM signal-write readiness edge as deferred inside the packet until
+  real private observed events exist.
+- The active next action moved to local-only next microproduct candidate intake
+  through the acceptance checklist.
+
+Evidence:
+
+- Acceptance packet JSON:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_microproduct_acceptance_packet_current_2026-06-04.json`
+- Acceptance packet markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_microproduct_acceptance_packet_current_2026-06-04.md`
+- Active next-action contract:
+  `docs/crm-vnext/launch-os-next-action.md`
+
+Confirmed results:
+
+- Acceptance packet status:
+  `microproduct_acceptance_packet_ready_local_only_with_crm_signal_deferred`.
+- Reusable acceptance packet ready: true.
+- Current pilot accepted as positive control: true.
+- Ready for CEO review local-only: true.
+- Ready for next local gate: true.
+- Ready for public/audience send approval: false.
+- Ready for CRM signal-write approval: false.
+- Live action allowed now: false.
+- Taxonomy local consolidated: `green`.
+- CRM signal-write readiness:
+  `deferred_until_real_observed_events`.
+- Public/audience send: `closed`.
+- Seed tests: `only_under_standing_delegation_and_green_qa`.
+- Green gates: 5.
+- Yellow gates: 1 (`crm`).
+- Red gates: 0.
+- No CEO decision needed yet: true.
+
+Validation:
+
+- `node --check scripts/crm-vnext-mailerlite-launch-os-microproduct-acceptance-packet.mjs`
+- `npx vitest run __tests__/crm-vnext-mailerlite-launch-os-microproduct-acceptance-packet.spec.ts`
+- `npm run crm:vnext:mailerlite-launch-os-microproduct-acceptance-packet`
+
+Operating meaning:
+
+- Continue with `launch_os_v0_next_microproduct_candidate_intake_v0`.
+- Use the acceptance packet as the v0 checklist for the next microproduct
+  candidate before any live approval boundary.
+- If no real next-candidate evidence exists, ask Alejandro for a concise
+  candidate input instead of inventing one.
+- Keep CRM signal-write readiness deferred until real private observed events
+  exist.
+- Do not treat seed tests, internal QA or Null Audience activity as real market
+  signals.
+
+Safety:
+
+- Local/report-only packet: true.
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- Shopify API called: false.
+- CRM live API called: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- Test emails sent: false.
+- Campaigns published or scheduled: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Observed events invented: false.
+- Seed or QA treated as market signal: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
