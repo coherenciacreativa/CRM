@@ -1,7 +1,14 @@
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import { describe, expect, test } from 'vitest';
 import { buildCrmVNextMailerLiteEngagementSignals } from '../lib/crm/crm-vnext-mailerlite-engagement-signals.js';
 
 const NOW = '2026-05-15T12:00:00.000Z';
+const execFileAsync = promisify(execFile);
 
 describe('buildCrmVNextMailerLiteEngagementSignals', () => {
   test('converts subscriber rows into engagement-preview signals without live calls', () => {
@@ -131,5 +138,108 @@ describe('buildCrmVNextMailerLiteEngagementSignals', () => {
     expect(report.skippedRecords[0]).toMatchObject({ reason: 'missing_match_identity' });
     expect(JSON.stringify(report)).not.toContain('/Users/');
     expect(report.signals[0].sourceId).toContain('[local-path]');
+  });
+
+  test('redacted summary CLI omits subscriber-level arrays and identity values', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'crm-mailerlite-redacted-summary-'));
+    try {
+      const snapshotPath = join(tempDir, 'synthetic-snapshot.json');
+      const outPath = join(tempDir, 'redacted-summary.json');
+      await writeFile(snapshotPath, JSON.stringify({
+        rows: [
+          {
+            id: 'subscriber-secret-id',
+            email: 'synthetic-redaction@example.test',
+            instagramHandle: '@synthetic_private_handle',
+            phone: '+1 555 0100',
+            personId: 'person-secret-123',
+            subscriber_status: 'Unsubscribed',
+            opens30d: 4,
+            clicks30d: 2,
+            opens90d: 7,
+            clicks90d: 3,
+            lifetimeOpens: 11,
+            lifetimeClicks: 5,
+            last_open_at: '2026-05-14T10:00:00.000Z',
+            last_click_at: '2026-05-13T09:00:00.000Z',
+            groups: ['Synthetic Private Group'],
+            private_url: 'https://private.example.test/path',
+            campaign_body: 'Synthetic campaign body that must not leave the row.',
+          },
+          {
+            status: 'active',
+            opens30d: 1,
+            raw_payload: { internal: 'raw-row-sentinel' },
+          },
+        ],
+      }), 'utf8');
+
+      const scriptPath = fileURLToPath(new URL('../scripts/crm-vnext-mailerlite-engagement-signals.mjs', import.meta.url));
+      const { stdout, stderr } = await execFileAsync(process.execPath, [
+        scriptPath,
+        '--snapshot-file',
+        snapshotPath,
+        '--observed-at',
+        NOW,
+        '--redacted-summary',
+        '--out',
+        outPath,
+      ]);
+
+      expect(stderr).toBe('');
+      const terminalReport = JSON.parse(stdout);
+      const receiptReport = JSON.parse(await readFile(outPath, 'utf8'));
+
+      for (const report of [terminalReport, receiptReport]) {
+        expect(report).not.toHaveProperty('signals');
+        expect(report).not.toHaveProperty('skippedRecords');
+        expect(report.aggregateCounts).toMatchObject({
+          recordsInspected: 2,
+          adapterOutputRecords: 1,
+          recordsSkipped: 1,
+          liveApiCallsPerformed: false,
+          credentialsRead: false,
+          operationsExecuted: 0,
+        });
+        expect(report.identityCoverage).toMatchObject({
+          usableIdentityCount: 1,
+          missingIdentityCount: 1,
+          recordsWithEmailAnchor: 1,
+          recordsWithInstagramAnchor: 1,
+          recordsWithPhoneAnchor: 1,
+          recordsWithPersonIdAnchor: 1,
+        });
+        expect(report.recordsSkippedByReason).toMatchObject({ missing_match_identity: 1 });
+        expect(report.fieldAvailability.engagement).toMatchObject({
+          opens30d: 1,
+          clicks30d: 1,
+          opens90d: 1,
+          clicks90d: 1,
+          lifetimeOpens: 1,
+          lifetimeClicks: 1,
+        });
+        expect(report.outputPolicy).toMatchObject({
+          redactedAggregateOnly: true,
+          subscriberLevelArraysOmitted: true,
+          identityAnchorValuesOmitted: true,
+          rawRowsOmitted: true,
+        });
+
+        const serialized = JSON.stringify(report);
+        expect(serialized).not.toContain('signals');
+        expect(serialized).not.toContain('skippedRecords');
+        expect(serialized).not.toContain('synthetic-redaction@example.test');
+        expect(serialized).not.toContain('synthetic_private_handle');
+        expect(serialized).not.toContain('+1 555 0100');
+        expect(serialized).not.toContain('person-secret-123');
+        expect(serialized).not.toContain('subscriber-secret-id');
+        expect(serialized).not.toContain('Synthetic Private Group');
+        expect(serialized).not.toContain('https://private.example.test/path');
+        expect(serialized).not.toContain('Synthetic campaign body');
+        expect(serialized).not.toContain('raw-row-sentinel');
+      }
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   });
 });
