@@ -172,12 +172,13 @@ routing and completion pointer.
   with redacted aggregate receipts, no credential metadata leakage, no raw
   subscriber output, no MailerLite mutation and no CRM state mutation.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_mailerlite_engagement_metadata_intake_plan_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-03`
-- `updated_at`: `2026-06-03`
+- `updated_at`: `2026-06-04`
+- `completed_at`: `2026-06-04`
+- `completion_artifact`:
+  `docs/crm-vnext/mailerlite-engagement-metadata-intake-plan-v0.md`
 - `objective`: Plan the next no-write MailerLite engagement metadata intake
   step now that MailerLite source health is confirmed healthy.
 - `why_now`: CRM Core can read MailerLite safely at the source-health level. The
@@ -229,4 +230,75 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has a concise no-write MailerLite engagement
   metadata intake plan that defines safe source route, allowed fields, forbidden
   outputs, receipt paths, validation commands, dry-run adapter path and next stop
-  condition.
+  condition. No source check, live engagement intake, CRM write, ledger write,
+  scoring write, MailerLite mutation, Launch OS doc touch, or use of
+  `/Users/alejandrogomez/CRM` occurred.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_engagement_metadata_execution_approval_packet_v0`
+- `status`: `active`
+- `created_at`: `2026-06-04`
+- `updated_at`: `2026-06-04`
+- `objective`: Prepare a compact approval packet for the first no-write
+  MailerLite engagement metadata intake execution using supplied or approved
+  snapshot/export metadata only.
+- `why_now`: MailerLite source health is confirmed healthy and the no-write
+  intake plan exists, but even local engagement metadata processing can expose
+  subscriber-level rows if the route is not bounded and redacted. CRM Core needs
+  an exact approval boundary before running the adapter or consuming any
+  supplied source artifact.
+- `allowed_scope`:
+  - Read CRM Core routing docs, standing read-only source policy, command
+    inventory, and the MailerLite engagement metadata intake plan.
+  - Define the exact future source route, input artifact expectations, output
+    receipt paths, redaction rules, validation commands, and approval phrase.
+  - Keep the work non-executing.
+- `forbidden_scope`:
+  - No live engagement intake.
+  - No MailerLite API call.
+  - No MailerLite UI.
+  - No command execution that processes subscriber engagement rows.
+  - No snapshot/export inspection unless explicitly supplied and approved for
+    the execution step.
+  - No raw rows, subscriber lists, private emails, private URLs, campaign
+    bodies, raw payloads, credentials, tokens, headers, env values, or private
+    content.
+  - No card writes.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No Fact Store writes.
+  - No scoring writes.
+  - No MailerLite mutation.
+  - No outreach.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `expected_files`:
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`
+  - `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`
+  - `docs/crm-vnext/mailerlite-engagement-metadata-intake-plan-v0.md`
+- `validation_commands`:
+  - `git diff --check`
+- `stop_conditions`:
+  - Any request to run engagement intake, source checks, live APIs, UI routes, or
+    adapters before Alejandro approves the execution boundary.
+  - Any route would print or expose raw rows, subscriber lists, private emails,
+    private URLs, campaign bodies, raw payloads, credentials, tokens, headers,
+    env values, or private content.
+  - Any CRM write, ledger write, Fact Store write, scoring write, MailerLite
+    mutation, or outbound action would be required.
+  - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
+  - Root is not `/Users/alejandrogomez/CRM-core`.
+  - Branch is not `codex/crm-core-reentry`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `crm-core-readonly-source-command-inventory-v0.md`, and
+  `mailerlite-engagement-metadata-intake-plan-v0.md`. Prepare the approval
+  packet only; do not run intake, inspect snapshots/exports, call live systems,
+  or write CRM state.
+- `completion_definition`: CRM Core has a compact no-write execution approval
+  packet that defines the source route, input boundary, redaction guarantees,
+  receipt paths, validation commands, exact approval phrase, and stop
+  conditions, or Alejandro declines or modifies the route.
