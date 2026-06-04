@@ -2235,16 +2235,21 @@ Use deep hydration only for:
     approval. Do not broad-stage or broad-commit the Brand repo from this
     Launch OS lane.
 
-## Active Next Action - Launch OS v0 CRM Observed Events Input Request - 2026-06-03
+## Superseded/Deferred Next Action - Launch OS v0 CRM Observed Events Input Request - 2026-06-03
 
 - `next_action_id`: `launch_os_v0_crm_observed_events_input_request_after_taxonomy_apply`
-- `status`: `active`
+- `status`: `superseded`
 - `created_at`: `2026-06-03`
-- `updated_at`: `2026-06-03`
+- `updated_at`: `2026-06-04`
 - `source_checkpoint`: `Launch OS v0 taxonomy local patch applied - 2026-06-03`
 - `objective`: Request or receive the missing private CRM observed-events input
   for `Inteligencia para descansar` so CRM signal-write readiness can be
   evaluated locally without inventing events.
+- `defer_reason`: Alejandro accepted the local MailerLite taxonomy
+  consolidation hito as closed and explicitly deferred CRM signal-write
+  readiness until enough real observed events exist. Do not invent events, and
+  do not use seed tests, internal QA or Null Audience activity as real market
+  signals.
 - `why_now`: Taxonomy drift is locally consolidated. The remaining CRM readiness
   blocker from the baseline is not technical; Launch OS needs real observed
   events with exact people before it can prepare any CRM write/readiness packet.
@@ -2292,3 +2297,77 @@ Use deep hydration only for:
   explicitly defers CRM signal-write readiness.
 - `next_checkpoint_expected`: Control Room checkpoint after the private input is
   supplied and local readiness changes, or after Alejandro defers this input.
+
+## Active Next Action - Launch OS v0 Microproduct Acceptance Packet v0 - 2026-06-04
+
+- `next_action_id`: `launch_os_v0_microproduct_acceptance_packet_v0`
+- `status`: `active`
+- `created_at`: `2026-06-04`
+- `updated_at`: `2026-06-04`
+- `source_checkpoint`: `Launch OS v0 CRM signal-write readiness deferred after
+  taxonomy local patch acceptance - 2026-06-04`
+- `objective`: Create a local-only, reusable acceptance packet that evaluates
+  whether a future microproduct is ready for CEO review or the next gate using
+  the existing Launch OS gates: Brand, Product Value, Web/Shopify, MailerLite,
+  CRM and Safety.
+- `why_now`: MailerLite taxonomy is locally consolidated and CRM signal-write
+  readiness is intentionally deferred until real observed events exist. The
+  best safe next move is to make Launch OS more repeatable for future
+  microproducts without requiring live systems, sends, CRM writes or invented
+  evidence.
+- `allowed_scope`:
+  - Documentation local to Launch OS.
+  - Local-only/redacted packet generation.
+  - Read existing local reports and receipts.
+  - Make human/product blockers clear requests instead of building more
+    infrastructure around missing decisions or missing evidence.
+- `forbidden_scope`:
+  - Do not call live APIs.
+  - Do not send emails or run seed tests from this boundary.
+  - Do not publish, schedule or assign audience.
+  - Do not touch MailerLite live, Shopify live or CRM live.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
+    sends.
+  - Do not invent observed events, market signals, people or evidence.
+  - Do not use seed tests, internal QA or Null Audience activity as real market
+    signals.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+- `required_gate_markers`:
+  - `taxonomy local consolidated = green`
+  - `CRM signal-write readiness = deferred until real observed events`
+  - `public/audience send = closed`
+  - `seed tests = only under standing delegation and green QA`
+  - `human/product blockers must become clear requests, not more infrastructure`
+- `expected_files`:
+  - A future local-only acceptance packet JSON in
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - A future local-only acceptance packet markdown in
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `allowed_commands`:
+  - Local file reads for existing Launch OS reports, receipts and docs.
+  - Local validation commands only.
+- `validation_commands`:
+  - JSON syntax validation for the generated packet.
+  - Local-only safety assertions that no live APIs, sends, audience assignment,
+    CRM writes, ledgers, cards, scoring or Fact Store operations were performed.
+- `live_gate_status`: MailerLite live, Shopify live, CRM writes, public/audience
+  sends, publish, schedule, subscriber/group/workflow mutations, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `local_only_microproduct_acceptance_packet_no_live_approval`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - The packet would need live APIs, sends, audience assignment, CRM writes,
+    workflow mutation or private observed events.
+  - Any gate would require invented evidence or inferred market signals.
+  - Any blocker cannot be stated as a clear human/product request.
+- `resume_instruction`: Prepare only the local-only reusable acceptance packet
+  for future microproducts. Keep CRM signal-write readiness deferred until real
+  observed events exist. Do not touch live systems or create acceptance evidence
+  by inference.
+- `completion_definition`: A validated local/redacted acceptance packet exists
+  and explicitly reports gate status for Brand, Product Value, Web/Shopify,
+  MailerLite, CRM and Safety without live mutations or invented evidence.
+- `next_checkpoint_expected`: Control Room checkpoint after the local acceptance
+  packet is created and validated, or blocker report if any gate cannot be
+  evaluated from existing local evidence.

@@ -9091,7 +9091,8 @@ Validation:
 Operating meaning:
 
 - Continue with
-  `launch_os_v0_crm_observed_events_input_request_after_taxonomy_apply`.
+  `launch_os_v0_microproduct_acceptance_packet_v0`; CRM signal-write readiness
+  is deferred until real private observed events exist.
 - The Brand/CRM taxonomy final-response and local apply lane is closed for this
   patch.
 - The remaining CRM signal-write blocker is the private observed-events input;
