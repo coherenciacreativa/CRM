@@ -32,39 +32,42 @@ outside this command before the artifact was supplied.
 
 ## Inventory
 
-| Source family | Command or script | read_only_confidence | credential_behavior | output_safety | mutation_risk | allowed_under_standing_policy | Recommended next step |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| MailerLite/email source health | `npm run crm:vnext:mailerlite-healthcheck` / `scripts/crm-vnext-mailerlite-healthcheck.mjs` | confirmed | existing internal auth only | unknown | none | needs clarification | Best first live source-health candidate after a redaction guard suppresses credential source, credential length, and credential fingerprint metadata from terminal/chat and receipts. Use low page caps and aggregate-only output. |
-| MailerLite/email engagement/status metadata | `npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <path>` / `scripts/crm-vnext-mailerlite-engagement-signals.mjs` | confirmed | existing internal auth only | raw rows risk | none | yes | Run only after a dated MailerLite snapshot/export artifact is supplied and approved for metadata processing. Do not print adapter signals containing emails or private campaign context in chat. |
-| MailerLite/email identity evidence | `npm run crm:vnext:mailerlite-evidence -- --search-results-file <path> --text <text>` / `scripts/crm-vnext-mailerlite-evidence.mjs` | confirmed | existing internal auth only | raw rows risk | none | needs clarification | Keep for identity-evidence lanes, not the first engagement/source-health check. Use only with redacted supplied results and no raw-row chat output. |
-| MailerLite/email live identity evidence | `npm run crm:vnext:mailerlite-evidence -- --use-mailerlite-cli --text <text>` / `scripts/crm-vnext-mailerlite-evidence.mjs` | likely | existing internal auth only | raw rows risk | none | needs clarification | Do not use as the first source-health command. If needed later, require a redacted receipt path and explicit row-output guard because the source read is live. |
-| Gmail/newsletter reply metadata | `npm run crm:vnext:gmail-reply-engagement-signals -- --discovery-file <path>` / `scripts/crm-vnext-gmail-reply-engagement-signals.mjs` | confirmed | existing internal auth only | private content risk | none | yes | Run only after a dated metadata-only Gmail/newsletter reply discovery artifact is supplied and approved. Do not print reply activities, subjects, snippets, or headers in chat. |
-| Gmail/newsletter reply pipeline dry-run | `npm run crm:vnext:signal-event-pipeline -- --gmail-reply-discovery-file <path>` with no write flags | confirmed | existing internal auth only | private content risk | none | yes | Use after the metadata adapter step, not first. Never include `--write-events` or `--write-snapshot` in CRM Core source-intake work. |
-| Gmail evidence from supplied results | `npm run crm:vnext:gmail-evidence -- --search-results-file <path> --text <text>` / `scripts/crm-vnext-gmail-evidence.mjs` | confirmed | existing internal auth only | private content risk | none | needs clarification | Keep for identity-evidence lanes. Use only with redacted supplied results and avoid printing evidence packets containing private snippets. |
-| Gmail live evidence search | `npm run crm:vnext:gmail-evidence -- --use-gog --account <account> --text <text>` / `scripts/crm-vnext-gmail-evidence.mjs` | likely | existing internal auth only | private content risk | none | needs clarification | Do not use as the first source-health command. Require metadata-only query scope, redacted output, and stop on auth/UI/private-content ambiguity because the source read is live. |
-| Gmail/Google source-health | `npm run crm:vnext:gog-healthcheck` / `scripts/crm-vnext-gog-healthcheck.mjs` | confirmed | existing internal auth only | redacted aggregate | none | needs clarification | Do not use as the first Gmail reply check. If used later, scope and output should be narrowed to Gmail metadata health only because the command covers broader Google Workspace evidence lanes and prints the account identifier. |
+| Source family | Command or script | read_only_confidence | credential_behavior | output_safety | mutation_risk | allowed_under_standing_policy | latest_result | note | Recommended next step |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| MailerLite/email source health | `npm run crm:vnext:mailerlite-healthcheck` / `scripts/crm-vnext-mailerlite-healthcheck.mjs` | confirmed | existing internal auth only | redacted aggregate | none | yes | healthy on 2026-06-03 | Final bounded cursor check scanned 14 pages / 1373 subscribers and exhausted before cap without leaking credential metadata or raw subscriber rows. | Use the healthy source-health result to plan the next no-write MailerLite engagement metadata intake step. |
+| MailerLite/email engagement/status metadata | `npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <path>` / `scripts/crm-vnext-mailerlite-engagement-signals.mjs` | confirmed | existing internal auth only | raw rows risk | none | yes | not run | Requires a dated MailerLite snapshot/export artifact supplied or approved for metadata processing. | Define safe fields, redaction rules, receipt paths, and dry-run adapter flow before running. |
+| MailerLite/email identity evidence | `npm run crm:vnext:mailerlite-evidence -- --search-results-file <path> --text <text>` / `scripts/crm-vnext-mailerlite-evidence.mjs` | confirmed | existing internal auth only | raw rows risk | none | needs clarification | not run | Supplied subscriber results may include email, phone, status, groups, and fields. | Keep for identity-evidence lanes, not the first engagement/source-health check. Use only with redacted supplied results and no raw-row chat output. |
+| MailerLite/email live identity evidence | `npm run crm:vnext:mailerlite-evidence -- --use-mailerlite-cli --text <text>` / `scripts/crm-vnext-mailerlite-evidence.mjs` | likely | existing internal auth only | raw rows risk | none | needs clarification | not run | Source read is live and can return subscriber records before helper compaction. | Do not use as the first engagement intake path. If needed later, require a redacted receipt path and explicit row-output guard. |
+| Gmail/newsletter reply metadata | `npm run crm:vnext:gmail-reply-engagement-signals -- --discovery-file <path>` / `scripts/crm-vnext-gmail-reply-engagement-signals.mjs` | confirmed | existing internal auth only | private content risk | none | yes | not run | Requires a dated metadata-only Gmail/newsletter reply discovery artifact. | Run only after a supplied artifact is approved. Do not print reply activities, subjects, snippets, or headers in chat. |
+| Gmail/newsletter reply pipeline dry-run | `npm run crm:vnext:signal-event-pipeline -- --gmail-reply-discovery-file <path>` with no write flags | confirmed | existing internal auth only | private content risk | none | yes | not run | Output may include preview items and depends on supplied metadata quality. | Use after the metadata adapter step, not first. Never include `--write-events` or `--write-snapshot` in CRM Core source-intake work. |
+| Gmail evidence from supplied results | `npm run crm:vnext:gmail-evidence -- --search-results-file <path> --text <text>` / `scripts/crm-vnext-gmail-evidence.mjs` | confirmed | existing internal auth only | private content risk | none | needs clarification | not run | Supplied results can include sender, subject, snippets, and message IDs. | Keep for identity-evidence lanes. Use only with redacted supplied results and avoid printing evidence packets containing private snippets. |
+| Gmail live evidence search | `npm run crm:vnext:gmail-evidence -- --use-gog --account <account> --text <text>` / `scripts/crm-vnext-gmail-evidence.mjs` | likely | existing internal auth only | private content risk | none | needs clarification | not run | Source read is live and can return Gmail result metadata/snippets. | Do not use as the first source-health command. Require metadata-only query scope, redacted output, and stop on auth/UI/private-content ambiguity. |
+| Gmail/Google source-health | `npm run crm:vnext:gog-healthcheck` / `scripts/crm-vnext-gog-healthcheck.mjs` | confirmed | existing internal auth only | redacted aggregate | none | needs clarification | not run | The command covers broader Google Workspace evidence lanes and prints the account identifier. | Do not use as the first Gmail reply check. If used later, scope and output should be narrowed to Gmail metadata health only. |
 
-## Safest First Actual Command Candidate
+## Latest MailerLite Source-Health Result
 
-The safest first actual source command is the MailerLite source-health
-healthcheck, but only after a redaction guard is confirmed for credential
-metadata. The repo contract documents it as read-only and aggregate-oriented,
-and it directly answers whether MailerLite/email source health is available.
+The MailerLite source-health healthcheck is now confirmed safe under the
+standing read-only source policy after the credential metadata redaction patch
+and final bounded cursor verification.
 
-Recommended future command shape:
+Latest healthy receipt:
 
-```bash
-npm run crm:vnext:mailerlite-healthcheck -- \
-  --limit 1 \
-  --max-pages 1 \
-  --out /Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_healthcheck_redacted_<date>.json \
-  --markdown-out /Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_healthcheck_redacted_<date>.md
+```text
+/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_healthcheck_redacted_final_cursor_2026-06-03.json
+/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_healthcheck_redacted_final_cursor_2026-06-03.md
 ```
 
-Before running it, CRM Core should ensure terminal/chat and receipt output do
-not expose credential source, credential length, credential fingerprint, tokens,
-subscriber rows, subscriber emails, group membership rows, campaign bodies,
-headers, env values, or private content.
+Result summary:
+
+- source-health state: healthy;
+- groups probe: succeeded;
+- subscribers probe: succeeded;
+- subscriber cursor scan: succeeded;
+- pages scanned: 14;
+- subscribers scanned: 1373;
+- scan exhausted before cap;
+- credential metadata absent from terminal, Markdown receipt, and JSON receipt;
+- no source or CRM writes.
 
 ## Commands Not Recommended First
 

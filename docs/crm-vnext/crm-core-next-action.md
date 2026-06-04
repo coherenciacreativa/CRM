@@ -149,71 +149,84 @@ routing and completion pointer.
   source mutation, CRM state mutation, Launch OS doc touch, or use of
   `/Users/alejandrogomez/CRM` occurred.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_mailerlite_healthcheck_redacted_readonly_run_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-06-03`
 - `updated_at`: `2026-06-03`
-- `objective`: Run the first actual CRM Core read-only source-health command
-  only after confirming a redaction guard for MailerLite healthcheck output.
-- `why_now`: The command inventory identifies the MailerLite healthcheck as the
-  best first source-health candidate because it is documented as read-only and
-  directly tests the Email/MailerLite source. It remains blocked until terminal,
-  chat, and receipt output are guaranteed not to expose credential source,
-  credential length, credential fingerprint, tokens, subscriber rows, campaign
-  bodies, or private content.
+- `completed_at`: `2026-06-03`
+- `result`: `healthy`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_healthcheck_redacted_final_cursor_2026-06-03.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_healthcheck_redacted_final_cursor_2026-06-03.md`
+- `findings`:
+  - Groups probe succeeded.
+  - Subscribers probe succeeded.
+  - Subscriber cursor scan succeeded.
+  - Scan exhausted before cap.
+  - 14 pages scanned.
+  - 1373 subscribers scanned.
+  - Credential metadata absent from terminal, Markdown receipt, and JSON
+    receipt.
+  - No source or CRM writes.
+- `completion_definition`: CRM Core confirmed MailerLite read-only source health
+  with redacted aggregate receipts, no credential metadata leakage, no raw
+  subscriber output, no MailerLite mutation and no CRM state mutation.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_engagement_metadata_intake_plan_v0`
+- `status`: `active`
+- `created_at`: `2026-06-03`
+- `updated_at`: `2026-06-03`
+- `objective`: Plan the next no-write MailerLite engagement metadata intake
+  step now that MailerLite source health is confirmed healthy.
+- `why_now`: CRM Core can read MailerLite safely at the source-health level. The
+  next useful step is to define how engagement metadata should be ingested or
+  supplied for local dry-run processing without printing raw rows, writing CRM
+  state, writing ledgers, changing scoring, or mutating MailerLite.
 - `allowed_scope`:
-  - Follow `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`.
-  - Read `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`.
-  - Present or confirm the exact redaction guard for
-    `crm:vnext:mailerlite-healthcheck`.
-  - If approved and redaction-safe, run only the MailerLite healthcheck with low
-    page caps and aggregate-only receipt output.
-  - Produce redacted receipts in `/Users/alejandrogomez/Documents/Mantis-Reports`
-    if the command is run.
+  - Read CRM Core MailerLite engagement docs/scripts/tests.
+  - Inspect command contracts without running live engagement intake yet.
+  - Define safe fields, redaction rules, limits, output receipts, and dry-run
+    adapter path.
+  - Prepare the next execution plan.
 - `forbidden_scope`:
-  - No source check until the redaction guard is confirmed.
-  - No credential source, credential length, or credential fingerprint in
-    terminal, chat, or receipts.
-  - No token, header, cookie, env value, secret, subscriber list, raw row, full
-    email body, private URL, campaign body, or private content output.
+  - No live engagement intake yet.
+  - No raw subscriber row printing.
+  - No subscriber list dumps.
+  - No card writes.
+  - No ledger writes.
+  - No Fact Store writes.
+  - No scoring writes.
   - No MailerLite mutation.
-  - No Gmail, Shopify, Instagram, or UI access.
-  - No source mutation.
-  - No CRM state mutation.
-  - No card, ledger, Fact Store, Signal Event Ledger, Engagement Snapshot
-    Ledger, source-result ledger, or scoring write.
-  - No outbound action.
+  - No outreach.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
-  - `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`
-  - `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`
   - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`
+  - `docs/crm-vnext/mailerlite-engagement-signals.md`
+  - `scripts/crm-vnext-mailerlite-engagement-signals.mjs`
+  - `__tests__/crm-vnext-mailerlite-engagement-signals.spec.ts`
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
-  - Redaction guard is not confirmed.
-  - Command output would include credential source, credential length,
-    credential fingerprint, token, header, cookie, env value, secret,
-    subscriber row, campaign body, or private content.
-  - Any required credential, token, env, or secret print/inspection by Codex.
-  - Any need to open UI.
-  - Any request to print raw rows, subscriber lists, full email bodies, or
-    private content.
-  - Any mutation, write, or outbound action.
-  - Any ambiguity about whether a command is read-only.
+  - Any need to run live engagement intake before a plan is approved.
+  - Any need to print raw rows, subscriber lists, private emails, campaign
+    bodies, credentials, tokens, headers, env values, or private content.
+  - Any source mutation, CRM write, scoring write, ledger write, or outbound
+    action would be required.
+  - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
   - Root is not `/Users/alejandrogomez/CRM-core`.
   - Branch is not `codex/crm-core-reentry`.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read
   `docs/crm-vnext/crm-core-codex-profile.md`, this file,
-  `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`, and
-  `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`. Do not run
-  any source check until the MailerLite healthcheck redaction guard is confirmed.
-- `completion_definition`: CRM Core either confirms the redaction guard and runs
-  the first aggregate-only MailerLite source-health check, or blocks with the
-  exact output field or command behavior that prevents a safe run. No source
-  mutation, CRM write, private-content output, Launch OS doc touch, or use of
-  `/Users/alejandrogomez/CRM` occurs.
+  `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`,
+  `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`, and
+  relevant MailerLite engagement docs/scripts/tests. Do not run engagement
+  intake yet. Produce a no-write intake plan and stop.
+- `completion_definition`: CRM Core has a concise no-write MailerLite engagement
+  metadata intake plan that defines safe source route, allowed fields, forbidden
+  outputs, receipt paths, validation commands, dry-run adapter path and next stop
+  condition.
