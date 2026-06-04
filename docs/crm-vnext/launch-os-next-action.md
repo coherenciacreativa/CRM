@@ -2387,12 +2387,13 @@ Use deep hydration only for:
   packet is created and validated, or blocker report if any gate cannot be
   evaluated from existing local evidence.
 
-## Active Next Action - Launch OS v0 Next Microproduct Candidate Intake v0 - 2026-06-04
+## Completed Next Action - Launch OS v0 Next Microproduct Candidate Intake v0 - 2026-06-04
 
 - `next_action_id`: `launch_os_v0_next_microproduct_candidate_intake_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-04`
 - `updated_at`: `2026-06-04`
+- `completed_at`: `2026-06-04`
 - `source_checkpoint`: `Launch OS v0 microproduct acceptance packet v0 ready -
   2026-06-04`
 - `objective`: Use the reusable acceptance packet as the v0 checklist for the
@@ -2454,5 +2455,78 @@ Use deep hydration only for:
 - `completion_definition`: A next-candidate local intake/checklist packet exists
   and uses the acceptance packet gates, or a clear candidate-input request is
   presented without live mutations or invented evidence.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_next_microproduct_candidate_input_request_current_2026-06-04.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite_launch_os_v0_next_microproduct_candidate_input_request_current_2026-06-04.md`
+- `completion_status`:
+  `next_microproduct_candidate_input_request_ready_local_only`
+- `completion_summary`:
+  - `candidate evidence found = false`
+  - `safe to intake one more no-live idea = true`
+  - `safe to open live-adjacent launch = false`
+  - `requires Alejandro input = true`
+  - `live action allowed now = false`
+  - `candidate invented = false`
 - `next_checkpoint_expected`: Control Room checkpoint after candidate intake is
   prepared, or after a clear candidate-input blocker is reported.
+
+## Active Next Action - Launch OS v0 Next Microproduct Candidate Input Waiting - 2026-06-04
+
+- `next_action_id`: `launch_os_v0_next_microproduct_candidate_input_waiting_v0`
+- `status`: `active`
+- `created_at`: `2026-06-04`
+- `updated_at`: `2026-06-04`
+- `source_checkpoint`: `Launch OS v0 next microproduct candidate input request
+  ready - 2026-06-04`
+- `objective`: Wait for or receive Alejandro's real next microproduct candidate
+  fields, then prepare only a local-only candidate intake/checklist packet using
+  the microproduct acceptance packet gates.
+- `why_now`: The backlog allows one more no-live idea intake, but current local
+  evidence contains no real next candidate beyond `Inteligencia para descansar`.
+  Launch OS must not invent the next microproduct.
+- `allowed_scope`:
+  - Present the copy-ready candidate request.
+  - If Alejandro supplies the required fields, prepare a local-only candidate
+    intake/checklist packet.
+  - Keep human/product blockers as clear requests.
+- `forbidden_scope`:
+  - Do not call live APIs.
+  - Do not send emails, publish, schedule or assign audience.
+  - Do not touch MailerLite live, Shopify live or CRM live.
+  - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
+    sends.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not reopen CRM signal-write readiness until real private observed events
+    exist.
+  - Do not invent a microproduct candidate, observed events, people, market
+    signals or evidence.
+  - Do not use seed tests, internal QA or Null Audience activity as real market
+    signals.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+- `copy_ready_request`:
+  ```text
+  Nuevo candidato de microproducto:
+  - Tema:
+  - Tipo de recurso: guide / quiz / game / audio / email_course / checklist / worksheet
+  - Hipotesis de audiencia:
+  - Promesa publica en una frase:
+  - Pregunta de aprendizaje:
+  ```
+- `live_gate_status`: MailerLite live, Shopify live, CRM writes, public/audience
+  sends, publish, schedule, subscriber/group/workflow mutations, ledgers, cards,
+  scoring and Fact Store remain closed.
+- `human_boundary_id`: `next_microproduct_candidate_required`
+- `human_boundary_notification_status`: `copy_ready_request_available`
+- `stop_conditions`:
+  - Alejandro has not supplied the five required fields.
+  - Candidate evaluation would require live APIs, sends, audience assignment,
+    CRM writes, workflow mutation or private observed events.
+  - Any gate would require invented evidence or inferred market signals.
+- `resume_instruction`: Present or receive only the next candidate input. If the
+  five required fields appear, prepare a local-only candidate intake/checklist
+  packet. Otherwise stop with the copy-ready request.
+- `completion_definition`: Alejandro supplies the five required fields and a
+  local-only candidate intake/checklist packet is generated, or Alejandro
+  explicitly defers next-candidate intake.
+- `next_checkpoint_expected`: Control Room checkpoint after candidate input is
+  supplied and local intake changes, or after Alejandro defers this input.
