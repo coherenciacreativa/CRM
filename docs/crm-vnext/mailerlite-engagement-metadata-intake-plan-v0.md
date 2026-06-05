@@ -39,7 +39,7 @@ It does not authorize engagement metadata intake or subscriber-level output.
 Safest existing command:
 
 ```sh
-npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <approved-snapshot-path>
+npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <approved-snapshot-path> --redacted-summary
 ```
 
 Candidate script:
@@ -65,14 +65,29 @@ Route classification:
 - `raw_output_risk`: present if the command is run normally, because adapter
   output can include signal arrays, skipped-record details, identity anchors,
   group/tag/segment context, and campaign activity context.
-- `receipt_safety`: acceptable only if future execution keeps chat output to
-  aggregate counts and writes redacted receipts that exclude raw rows and bulk
-  subscriber-level detail.
+- `receipt_safety`: acceptable only when future execution uses
+  `--redacted-summary`, keeps chat output to aggregate counts, and writes
+  redacted receipts that exclude raw rows and bulk subscriber-level detail.
 
 The current safest route is therefore not a live MailerLite read. It is a
 local, no-write adapter route using a supplied or explicitly approved
 snapshot/export artifact, with a redacted receipt boundary around the adapter's
 normal output.
+
+## Redacted Execution Guard
+
+Future MailerLite engagement metadata execution must use `--redacted-summary`.
+Normal adapter output is not approved for chat or standard receipts because it
+can include subscriber-level arrays, identity anchors, skipped-record details,
+group/tag/segment context, and campaign activity context.
+
+No real MailerLite engagement snapshot/export has been inspected yet. The next
+blocker is whether an approved or supplied MailerLite engagement snapshot/export
+artifact exists and is fresh enough for redacted summary processing.
+
+Even a green redacted summary result does not authorize Signal Event Ledger
+writes, Engagement Snapshot Ledger writes, card writes, Fact Store writes,
+scoring writes, outreach, or MailerLite mutations.
 
 ## 3. Safe Fields
 
@@ -193,6 +208,7 @@ Lowest useful scope:
 
 - Use a supplied or explicitly approved local MailerLite engagement
   snapshot/export metadata artifact.
+- Use `--redacted-summary`.
 - Do not call the MailerLite API.
 - Do not open MailerLite UI.
 - Do not inspect credentials.

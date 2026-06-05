@@ -234,12 +234,17 @@ routing and completion pointer.
   scoring write, MailerLite mutation, Launch OS doc touch, or use of
   `/Users/alejandrogomez/CRM` occurred.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_mailerlite_engagement_metadata_execution_approval_packet_v0`
-- `status`: `active`
+- `status`: `superseded`
 - `created_at`: `2026-06-04`
-- `updated_at`: `2026-06-04`
+- `updated_at`: `2026-06-05`
+- `completed_at`: `2026-06-05`
+- `superseded_by`:
+  `crm_core_mailerlite_engagement_snapshot_artifact_readiness_v0`
+- `latest_guard`: `692771c Add redacted MailerLite engagement summary mode`
+- `note`: The generic approval-packet action is superseded because the
+  engagement adapter now has a committed redacted summary mode. The next
+  boundary is artifact readiness, not a generic execution packet.
 - `objective`: Prepare a compact approval packet for the first no-write
   MailerLite engagement metadata intake execution using supplied or approved
   snapshot/export metadata only.
@@ -302,3 +307,61 @@ routing and completion pointer.
   packet that defines the source route, input boundary, redaction guarantees,
   receipt paths, validation commands, exact approval phrase, and stop
   conditions, or Alejandro declines or modifies the route.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_engagement_snapshot_artifact_readiness_v0`
+- `status`: `active`
+- `created_at`: `2026-06-05`
+- `updated_at`: `2026-06-05`
+- `objective`: Determine whether there is an approved/supplied MailerLite
+  engagement snapshot/export artifact that can be used with the redacted summary
+  adapter, without inspecting raw rows or running intake yet.
+- `why_now`: MailerLite source health is healthy, and the engagement adapter now
+  has a safe redacted summary mode. The remaining blocker before first
+  engagement intake is whether an approved snapshot/export artifact exists and
+  is fresh enough to process.
+- `allowed_scope`:
+  - Inspect filenames/report metadata only.
+  - Identify candidate snapshot/export artifact paths if obvious.
+  - Do not read raw rows.
+  - Do not run the adapter.
+  - Do not call live APIs.
+  - Do not open UI.
+  - Produce a short readiness recommendation.
+- `forbidden_scope`:
+  - No engagement intake execution.
+  - No snapshot/export row inspection.
+  - No raw rows.
+  - No subscriber lists.
+  - No private emails in bulk.
+  - No MailerLite API call.
+  - No CRM writes.
+  - No ledgers/cards/scoring/Fact Store.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `expected_files`:
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`
+  - `docs/crm-vnext/mailerlite-engagement-metadata-intake-plan-v0.md`
+- `validation_commands`:
+  - `git diff --check`
+- `stop_conditions`:
+  - Any need to run engagement intake or the MailerLite engagement adapter.
+  - Any need to read snapshot/export rows or print subscriber-level content.
+  - Any need to call live APIs, use connectors, or open UI.
+  - Any source mutation, CRM write, ledger write, card write, Fact Store write,
+    scoring write, or outbound action would be required.
+  - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
+  - Root is not `/Users/alejandrogomez/CRM-core`.
+  - Branch is not `codex/crm-core-reentry`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `crm-core-readonly-source-command-inventory-v0.md`, and
+  `mailerlite-engagement-metadata-intake-plan-v0.md`. Determine artifact
+  readiness from filenames/report metadata only; do not inspect rows, run
+  intake, call live systems, or write CRM state.
+- `completion_definition`: CRM Core knows whether an approved/supplied
+  MailerLite engagement snapshot/export artifact exists for redacted summary
+  processing, or records that a new artifact/export route is needed.
