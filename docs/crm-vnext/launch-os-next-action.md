@@ -2470,12 +2470,18 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after candidate intake is
   prepared, or after a clear candidate-input blocker is reported.
 
-## Active Next Action - Launch OS v0 Next Microproduct Candidate Input Waiting - 2026-06-04
+## Superseded Next Action - Launch OS v0 Next Microproduct Candidate Input Waiting - 2026-06-04
 
 - `next_action_id`: `launch_os_v0_next_microproduct_candidate_input_waiting_v0`
-- `status`: `active`
+- `status`: `superseded`
 - `created_at`: `2026-06-04`
-- `updated_at`: `2026-06-04`
+- `updated_at`: `2026-06-05`
+- `superseded_by`: `launch_os_v0_microproduct_candidate_slate_v0`
+- `superseded_reason`: Strategic clarification from Alejandro: manual
+  candidate input remains valid when a specific idea is already chosen, but it
+  must not be the default next edge. A central Launch OS capability is proposing
+  candidate microproducts autonomously from Brand, CRM, community/market
+  learning hypotheses, Product Value Gate and launch feasibility evidence.
 - `source_checkpoint`: `Launch OS v0 next microproduct candidate input request
   ready - 2026-06-04`
 - `objective`: Wait for or receive Alejandro's real next microproduct candidate
@@ -2530,3 +2536,85 @@ Use deep hydration only for:
   explicitly defers next-candidate intake.
 - `next_checkpoint_expected`: Control Room checkpoint after candidate input is
   supplied and local intake changes, or after Alejandro defers this input.
+
+## Active Next Action - Launch OS v0 Microproduct Candidate Slate v0 - 2026-06-05
+
+- `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v0`
+- `status`: `active`
+- `created_at`: `2026-06-05`
+- `updated_at`: `2026-06-05`
+- `source_checkpoint`: `Launch OS v0 strategic clarification - autonomous
+  local candidate generation - 2026-06-05`
+- `objective`: Create a small local-only CEO-facing Microproduct Candidate
+  Slate v0 with 3-5 candidate microproducts proposed by Launch OS for future
+  testing.
+- `strategic_posture`:
+  - Alejandro should not always have to provide the next candidate manually.
+  - Launch OS should propose candidates from Brand, CRM, community/market
+    learning hypotheses, Product Value Gate and Launch OS feasibility evidence.
+  - Weak evidence must be marked as hypothesis, not fact.
+  - Candidates should offer real value to the person even if they never buy.
+  - Candidates should support ethical CRM learning signals without broad
+    audience sends by default.
+- `allowed_scope`:
+  - Read existing Brand, CRM, Launch OS docs and existing local reports/receipts.
+  - Prepare only local-only/redacted candidate-slate docs or reports.
+  - Use the existing Brand, Product Value, Web/Shopify, MailerLite, CRM and
+    Safety gates as evaluation structure.
+  - Include 3-5 proposed candidates for CEO review.
+  - Mark uncertain audience/community evidence as hypothesis.
+  - Keep human/product blockers as clear CEO requests.
+- `forbidden_scope`:
+  - Do not call live APIs.
+  - Do not build assets.
+  - Do not create MailerLite drafts.
+  - Do not touch Shopify live.
+  - Do not send emails, publish, schedule or assign audience.
+  - Do not touch MailerLite live, Shopify live or CRM live.
+  - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
+    sends.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not reopen CRM signal-write readiness until real private observed events
+    exist.
+  - Do not infer private CRM events that do not exist.
+  - Do not use seed tests, internal QA or Null Audience activity as real market
+    signals.
+  - Do not pretend any candidate is approved.
+  - Do not build a weekly autonomous proposal engine.
+  - Do not touch CRM Core docs or `/Users/alejandrogomez/CRM-core`.
+- `candidate_fields_required`:
+  - `microproduct_title`
+  - `format`: `guide`, `quiz`, `game`, `audio`, `email_course`, `checklist`,
+    `worksheet` or `hybrid`
+  - `audience_or_community_signal_or_strategic_rationale`
+  - `customer_value_promise`
+  - `preliminary_product_value_gate_assessment`
+  - `brand_fit_hypothesis`
+  - `crm_learning_hypothesis`
+  - `likely_funnel_path`
+  - `assets_needed`
+  - `complexity`: `low`, `medium` or `high`
+  - `risk`
+  - `smallest_responsible_test_path`
+  - `why_this_is_worth_testing_now`
+  - `what_ceo_would_need_to_approve_next`
+- `live_gate_status`: MailerLite live, Shopify live, CRM writes,
+  public/audience sends, publish, schedule, subscriber/group/workflow
+  mutations, ledgers, cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `microproduct_candidate_slate_review`
+- `human_boundary_notification_status`: `not_requested_yet`
+- `stop_conditions`:
+  - Candidate generation would require live APIs, sends, audience assignment,
+    CRM writes, workflow mutation or private observed events.
+  - Candidate rationale would require invented evidence, inferred private CRM
+    events or treating seed/internal/Null Audience activity as market signal.
+  - The available evidence is too weak to produce at least 3 honest candidates
+    even as hypotheses.
+- `resume_instruction`: Prepare only the local-only Microproduct Candidate Slate
+  v0. Do not build any candidate or create live objects. Stop with a CEO review
+  packet, or with a clear blocker if evidence is too weak.
+- `completion_definition`: Local-only/redacted Microproduct Candidate Slate v0
+  exists with 3-5 candidates, each containing all required fields and explicit
+  safety assertions; no live APIs or mutations occurred.
+- `next_checkpoint_expected`: Control Room checkpoint after the slate is
+  generated and validated, or after a clear evidence blocker is reported.

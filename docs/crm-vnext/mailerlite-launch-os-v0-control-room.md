@@ -9314,3 +9314,41 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 strategic clarification - microproduct candidate slate v0 - 2026-06-05
+
+Status: local/report-only pointer update, awaiting approval before functional
+packet work.
+
+Strategic clarification:
+
+- Manual next-candidate input remains valid when Alejandro already has a chosen
+  candidate, but it is no longer the default active edge.
+- Launch OS must be able to propose a small local-only slate of candidate
+  microproducts from Brand, CRM, community/market learning hypotheses, Product
+  Value Gate and launch feasibility evidence.
+- Weak evidence must be labeled as hypothesis, not fact.
+- Broad audience sends remain out of scope by default.
+
+Pointer change:
+
+- Superseded:
+  `launch_os_v0_next_microproduct_candidate_input_waiting_v0`
+- New active next action:
+  `launch_os_v0_microproduct_candidate_slate_v0`
+
+Not implemented yet:
+
+- No candidate slate created yet.
+- No assets built.
+- No MailerLite drafts created.
+- No Shopify live changes.
+- No CRM writes.
+- No live APIs called.
+- No sends, publishing, scheduling or audience assignment.
+- No subscribers, groups, workflows, ledgers, cards, scoring or Fact Store
+  touched.
+- No CRM Core docs or `/Users/alejandrogomez/CRM-core` touched.
+
+Continue next with the local-only Microproduct Candidate Slate v0 after approval
+of this pointer update.
