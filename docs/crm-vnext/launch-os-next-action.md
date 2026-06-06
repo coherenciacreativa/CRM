@@ -2537,12 +2537,14 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after candidate input is
   supplied and local intake changes, or after Alejandro defers this input.
 
-## Active Next Action - Launch OS v0 Microproduct Candidate Slate v0 - 2026-06-05
+## Completed Next Action - Launch OS v0 Microproduct Candidate Slate v0 - 2026-06-05
 
 - `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-05`
-- `updated_at`: `2026-06-05`
+- `updated_at`: `2026-06-06`
+- `completed_at`: `2026-06-05`
+- `superseded_by`: `launch_os_v0_test_claridad_ceo_decision_waiting_v0`
 - `source_checkpoint`: `Launch OS v0 strategic clarification - autonomous
   local candidate generation - 2026-06-05`
 - `objective`: Create a small local-only CEO-facing Microproduct Candidate
@@ -2616,5 +2618,79 @@ Use deep hydration only for:
 - `completion_definition`: Local-only/redacted Microproduct Candidate Slate v0
   exists with 3-5 candidates, each containing all required fields and explicit
   safety assertions; no live APIs or mutations occurred.
-- `next_checkpoint_expected`: Control Room checkpoint after the slate is
-  generated and validated, or after a clear evidence blocker is reported.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_microproduct_candidate_slate_current_2026-06-05.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_ceo_proposal_packet_current_2026-06-05.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_draft_asset_bundle_v0_current_2026-06-05.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_ceo_decision_brief_current_2026-06-05.md`
+- `completion_status`:
+  `microproduct_candidate_slate_ready_for_ceo_review_local_only`
+- `completion_summary`:
+  - Candidate slate exists with 5 candidates.
+  - Recommended candidate:
+    `Test de claridad antes de decidir`.
+  - CEO proposal packet, draft asset bundle v0 and CEO decision brief exist as
+    local-only review evidence.
+  - No live APIs, MailerLite drafts, Shopify live changes, sends, audience
+    assignment, CRM writes, ledgers, cards, scoring or Fact Store mutations
+    occurred.
+- `next_checkpoint_expected`: Control Room reconciliation checkpoint recording
+  the slate evidence and the CEO decision waiting boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad CEO Decision Waiting v0 - 2026-06-06
+
+- `next_action_id`: `launch_os_v0_test_claridad_ceo_decision_waiting_v0`
+- `status`: `active`
+- `created_at`: `2026-06-06`
+- `updated_at`: `2026-06-06`
+- `source_checkpoint`: `Launch OS v0 microproduct candidate slate
+  reconciliation - 2026-06-06`
+- `objective`: Wait for Alejandro's CEO decision on `Test de claridad antes de
+  decidir` before any Prototype Review Pack v1, final draft local-only work or
+  live-adjacent preparation.
+- `why_now`: The Microproduct Candidate Slate v0 and the local CEO review
+  packet already exist. The next responsible boundary is not more development;
+  it is the CEO decision on whether to advance, revise, discard or return to the
+  slate.
+- `allowed_scope`:
+  - Present, summarize or relay the existing local-only CEO decision brief.
+  - Receive Alejandro's decision.
+  - If Alejandro approves the exact local-only next step, record that decision
+    in a future documented boundary before any new work.
+  - Keep all live gates closed.
+- `forbidden_scope`:
+  - Do not call live APIs.
+  - Do not create MailerLite drafts.
+  - Do not touch Shopify live.
+  - Do not send emails, publish, schedule or assign audience.
+  - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
+    sends.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not advance Prototype Review Pack v1 or final draft asset v1 without
+    Alejandro's fresh CEO decision.
+- `decision_options`:
+  - Approve advancing to Prototype Review Pack v1 local-only as the next review
+    artifact.
+  - Request changes to approach, tone, quiz structure or result mapping.
+  - Discard `Test de claridad antes de decidir`.
+  - Return to the Microproduct Candidate Slate v0 and choose another candidate.
+- `live_gate_status`: MailerLite live, Shopify live, CRM writes,
+  public/audience sends, publish, schedule, subscriber/group/workflow
+  mutations, ledgers, cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `test_claridad_ceo_decision_required`
+- `human_boundary_notification_status`: `decision_brief_available`
+- `stop_conditions`:
+  - No explicit CEO decision has been given.
+  - Any requested next step would require live APIs, live assets, sends,
+    audience assignment, CRM writes, workflow mutation or private observed
+    events.
+  - The decision is ambiguous between local-only draft work and live execution.
+- `resume_instruction`: Do not develop further. Wait for or relay Alejandro's
+  CEO decision using the existing decision brief and keep all live gates closed.
+- `completion_definition`: Alejandro gives a clear CEO decision to advance,
+  revise, discard or return to slate, and the next local-only boundary can be
+  recorded without live mutation.
+- `next_checkpoint_expected`: Control Room checkpoint after Alejandro's CEO
+  decision, or a short blocker if the decision remains pending.
