@@ -368,26 +368,62 @@ routing and completion pointer.
   source-result ledgers, outbound channels, Launch OS docs, or
   `/Users/alejandrogomez/CRM`.
 
+- `next_action_id`: `crm_core_mailerlite_email_relationship_depth_preview_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-07`
+- `updated_at`: `2026-06-07`
+- `completed_at`: `2026-06-07`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_relationship_depth_preview_2026-06-07.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_relationship_depth_preview_2026-06-07.md`
+- `result`: `completed`
+- `findings`:
+  - Historical email relationship depth exists.
+  - Repeated-open and repeated-click cohorts exist.
+  - Email identity anchors are available.
+  - Suppression/status context is available.
+  - Recent heat, topic affinity, campaign-specific intent, last-open/last-click
+    recency, Instagram bridge readiness, and person-level outreach readiness
+    cannot be inferred from the aggregate result.
+  - Proposed no-write tiers: repeated-click depth, repeated-open depth, broad
+    historical reader, low/no historical email engagement, and
+    suppression/safety review.
+  - Opens remain weaker than clicks, lifetime engagement is not recent intent,
+    engagement is not permission to contact, and suppression/status outranks
+    warmth.
+  - No raw artifact rows, subscriber-level arrays, emails, names, private URLs,
+    campaign bodies, headers, tokens, env values, credential metadata, or private
+    content were inspected or printed.
+  - No CRM writes, Signal Event Ledger writes, Engagement Snapshot Ledger writes,
+    card writes, Fact Store writes, scoring writes, outbound actions, source
+    mutations, Launch OS doc touches, or `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core has a no-write email relationship-depth
+  preview that explains what can be inferred from historical MailerLite
+  engagement aggregates, what remains unknown, what gates stay closed, and what
+  would be needed before any person-level preview, scoring, or outreach.
+
 ## Active Next Action
 
-- `next_action_id`: `crm_core_mailerlite_email_relationship_depth_preview_v0`
+- `next_action_id`: `crm_core_mailerlite_email_person_level_private_preview_plan_v0`
 - `status`: `active`
 - `created_at`: `2026-06-07`
 - `updated_at`: `2026-06-07`
-- `objective`: Prepare the first no-write email relationship-depth preview from
-  MailerLite aggregate engagement signals, using only redacted/aggregate results
-  and without writing CRM state.
-- `why_now`: CRM Core now has a private MailerLite engagement artifact and a
-  redacted-summary adapter result showing historical email engagement depth. The
-  next useful step is to convert these aggregate signals into a no-write
-  preview/brief surface before any ledger/card/scoring decision.
+- `objective`: Plan, but do not run, a private person-level email
+  relationship-depth preview that can use the private artifact locally without
+  printing names/emails in chat and without writing CRM state.
+- `why_now`: CRM Core now has a redacted aggregate relationship-depth preview.
+  The next boundary is deciding whether and how a private person-level preview
+  could be produced locally while keeping names/emails, subscriber rows, and CRM
+  writes out of chat and standard receipts.
 - `allowed_scope`:
-  - Use only redacted receipts and aggregate outputs.
-  - Define preview tiers for historical email relationship depth.
-  - Distinguish repeated opens/clicks from single opens.
-  - Identify what cannot be inferred due to missing recency/campaign fields.
-  - Produce a no-write preview plan or report.
+  - Use CRM Core docs and redacted aggregate receipts only.
+  - Plan a private local person-level preview artifact format.
+  - Define redaction, storage, validation, and stop conditions.
+  - Define how identity anchors would be used without printing names or emails in
+    chat.
+  - Keep the work non-executing.
 - `forbidden_scope`:
+  - No person-level preview execution.
   - No raw artifact row inspection.
   - No subscriber-level arrays.
   - No emails or person names in chat.
@@ -403,16 +439,14 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
   - `docs/crm-vnext/crm-core-next-action.md`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_redacted_summary_2026-06-07.json`
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_redacted_summary_2026-06-07.md`
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
   - Root is not `/Users/alejandrogomez/CRM-core`.
   - Branch is not `codex/crm-core-reentry`.
-  - Any need to inspect raw artifact rows, subscriber-level arrays, emails, person
-    names, private URLs, campaign bodies, headers, tokens, env values, secrets,
-    or private content.
+  - Any need to run the person-level preview or inspect raw artifact rows.
+  - Any need to print subscriber-level arrays, emails, person names, private URLs,
+    campaign bodies, headers, tokens, env values, secrets, or private content.
   - Any need to call MailerLite, Gmail, Instagram, APIs, connectors, or UI.
   - Any source mutation, CRM write, ledger write, card write, Fact Store write,
     scoring write, or outbound action would be required.
@@ -421,9 +455,10 @@ routing and completion pointer.
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `crm-core-readonly-source-command-inventory-v0.md`, and the redacted
-  MailerLite engagement summary receipts. Use only aggregate/redacted outputs.
-  Do not inspect private artifact rows, call source systems, or write CRM state.
-- `completion_definition`: CRM Core has a no-write email relationship-depth
-  preview that explains what can be inferred from historical MailerLite
-  engagement aggregates, what remains unknown, what gates stay closed, and what
-  would be needed before any person-level preview, scoring, or outreach.
+  MailerLite engagement summary and relationship-depth preview receipts. Plan
+  only; do not inspect private artifact rows, produce person-level output, call
+  source systems, or write CRM state.
+- `completion_definition`: CRM Core has a no-run plan for a private person-level
+  email relationship-depth preview that defines artifact storage, redaction,
+  validation, stop conditions, identity handling, and what approval is required
+  before any local person-level processing.
