@@ -325,68 +325,105 @@ routing and completion pointer.
   keeps mutation/CRM flags false, and was validated without running the real
   export.
 
+- `next_action_id`: `crm_core_mailerlite_engagement_private_artifact_export_run_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-05`
+- `updated_at`: `2026-06-07`
+- `completed_at`: `2026-06-07`
+- `completion_artifacts`:
+  - `private_artifact_label`: `crm_core_mailerlite_engagement_source_artifact_2026-06-07.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_artifact_export_2026-06-07.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_artifact_export_2026-06-07.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_redacted_summary_2026-06-07.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_redacted_summary_2026-06-07.md`
+- `result`: `completed`
+- `findings`:
+  - Private artifact export completed with `1373` aggregate rows and no blockers.
+  - Redacted-summary adapter processing completed with `1373` records inspected
+    and `0` records skipped.
+  - `dryRunProcessingEligible`: `true`.
+  - `lifetimeOpens`: `12074`.
+  - `lifetimeClicks`: `305`.
+  - `lifetimeSent`: `20204`.
+  - `recordsWithRepeatedOpens`: `972`.
+  - `recordsWithRepeatedClicks`: `59`.
+  - Identity anchors summary: `1373` email anchors, `0` Instagram handles, and
+    `0` person ids.
+  - Lifetime engagement and repeated open/click patterns are available.
+  - Recent 30d/90d engagement is unavailable or zero.
+  - `lastOpenAt` and `lastClickAt` are unavailable.
+  - Campaign activity is unavailable.
+  - Status and suppression are available.
+  - No raw rows, subscriber lists, emails, private URLs, campaign bodies,
+    credentials, credential metadata, tokens, headers, env values, or private
+    content were printed.
+  - No CRM writes, Signal Event Ledger writes, Engagement Snapshot Ledger writes,
+    card writes, Fact Store writes, scoring writes, source mutations, outbound
+    actions, Launch OS doc touches, or `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core completed the bounded MailerLite engagement
+  private artifact export and local redacted-summary adapter processing using
+  aggregate/redacted outputs only. The run produced redacted receipts, kept the
+  private artifact path and contents out of chat and docs, avoided raw row output,
+  and did not mutate MailerLite, CRM state, cards, ledgers, Fact Store, scoring,
+  source-result ledgers, outbound channels, Launch OS docs, or
+  `/Users/alejandrogomez/CRM`.
+
 ## Active Next Action
 
-- `next_action_id`: `crm_core_mailerlite_engagement_private_artifact_export_run_v0`
+- `next_action_id`: `crm_core_mailerlite_email_relationship_depth_preview_v0`
 - `status`: `active`
-- `created_at`: `2026-06-05`
-- `updated_at`: `2026-06-06`
-- `objective`: Run the first bounded read-only MailerLite engagement private
-  artifact export with low caps, writing the private artifact outside the repo
-  and redacted receipts to Mantis-Reports.
-- `why_now`: The export command exists, redaction/error-path tests pass, and
-  standing read-only policy allows controlled MailerLite read-only source checks.
-  CRM Core can now create the private source artifact needed for later
-  `--redacted-summary` engagement processing.
+- `created_at`: `2026-06-07`
+- `updated_at`: `2026-06-07`
+- `objective`: Prepare the first no-write email relationship-depth preview from
+  MailerLite aggregate engagement signals, using only redacted/aggregate results
+  and without writing CRM state.
+- `why_now`: CRM Core now has a private MailerLite engagement artifact and a
+  redacted-summary adapter result showing historical email engagement depth. The
+  next useful step is to convert these aggregate signals into a no-write
+  preview/brief surface before any ledger/card/scoring decision.
 - `allowed_scope`:
-  - Run only `crm:vnext:mailerlite-engagement-artifact-export`.
-  - Use low caps.
-  - Write private artifact only under
-    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`.
-  - Write redacted receipts only under
-    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
-  - Produce aggregate/redacted output only.
+  - Use only redacted receipts and aggregate outputs.
+  - Define preview tiers for historical email relationship depth.
+  - Distinguish repeated opens/clicks from single opens.
+  - Identify what cannot be inferred due to missing recency/campaign fields.
+  - Produce a no-write preview plan or report.
 - `forbidden_scope`:
-  - No subscriber list printing.
-  - No raw rows in terminal/chat/receipts.
-  - No private URLs/campaign bodies.
-  - No secrets/credential metadata.
-  - No CRM state mutation.
-  - No Signal Event Ledger write.
-  - No Engagement Snapshot Ledger write.
-  - No card write.
-  - No Fact Store write.
-  - No scoring write.
-  - No MailerLite mutation.
+  - No raw artifact row inspection.
+  - No subscriber-level arrays.
+  - No emails or person names in chat.
+  - No CRM writes.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No card writes.
+  - No Fact Store writes.
+  - No scoring writes.
+  - No outreach.
+  - No MailerLite/Gmail/Instagram calls.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
-  - `scripts/crm-vnext-mailerlite-engagement-artifact-export.mjs`
-  - `__tests__/crm-vnext-mailerlite-engagement-artifact-export.spec.ts`
-  - `package.json`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_redacted_summary_2026-06-07.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_engagement_redacted_summary_2026-06-07.md`
 - `validation_commands`:
-  - `node --check scripts/crm-vnext-mailerlite-engagement-artifact-export.mjs`
-  - `npx vitest run __tests__/crm-vnext-mailerlite-engagement-artifact-export.spec.ts`
   - `git diff --check`
 - `stop_conditions`:
   - Root is not `/Users/alejandrogomez/CRM-core`.
   - Branch is not `codex/crm-core-reentry`.
-  - Working tree is not clean before the real export run.
-  - The command would print raw rows, subscriber lists, private URLs, campaign
-    bodies, credentials, credential metadata, tokens, headers, env values, or
-    private content.
-  - The command would write inside the repo or outside the approved private
-    artifact and report directories.
+  - Any need to inspect raw artifact rows, subscriber-level arrays, emails, person
+    names, private URLs, campaign bodies, headers, tokens, env values, secrets,
+    or private content.
+  - Any need to call MailerLite, Gmail, Instagram, APIs, connectors, or UI.
   - Any source mutation, CRM write, ledger write, card write, Fact Store write,
     scoring write, or outbound action would be required.
   - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `crm-core-readonly-source-command-inventory-v0.md`, and the export command. Run
-  only the bounded export command if the working tree is clean and root/branch
-  match.
-- `completion_definition`: A private MailerLite engagement source artifact exists
-  outside the repo, redacted JSON/Markdown receipts exist in Mantis-Reports, no
-  raw rows or secrets were printed, no source mutation or CRM write occurred, and
-  the next step can be `npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <private-artifact> --redacted-summary`.
+  `crm-core-readonly-source-command-inventory-v0.md`, and the redacted
+  MailerLite engagement summary receipts. Use only aggregate/redacted outputs.
+  Do not inspect private artifact rows, call source systems, or write CRM state.
+- `completion_definition`: CRM Core has a no-write email relationship-depth
+  preview that explains what can be inferred from historical MailerLite
+  engagement aggregates, what remains unknown, what gates stay closed, and what
+  would be needed before any person-level preview, scoring, or outreach.
