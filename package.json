@@ -171,6 +171,7 @@
     "crm:vnext:card-write-approval-packet": "node scripts/crm-vnext-card-write-approval-packet.mjs",
     "crm:vnext:card-write-apply": "node scripts/crm-vnext-card-write-apply.mjs",
     "crm:vnext:batch-operating-loop": "node scripts/crm-vnext-batch-operating-loop.mjs",
+    "crm:vnext:mailerlite-engagement-artifact-export": "node scripts/crm-vnext-mailerlite-engagement-artifact-export.mjs",
     "crm:vnext:mailerlite-engagement-signals": "node scripts/crm-vnext-mailerlite-engagement-signals.mjs",
     "crm:vnext:gmail-reply-engagement-signals": "node scripts/crm-vnext-gmail-reply-engagement-signals.mjs",
     "crm:vnext:signal-event-ledger": "node scripts/crm-vnext-signal-event-ledger.mjs",

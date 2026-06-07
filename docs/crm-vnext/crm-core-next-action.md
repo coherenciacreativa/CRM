@@ -308,60 +308,85 @@ routing and completion pointer.
   receipt paths, validation commands, exact approval phrase, and stop
   conditions, or Alejandro declines or modifies the route.
 
-## Active Next Action
-
-- `next_action_id`: `crm_core_mailerlite_engagement_snapshot_artifact_readiness_v0`
-- `status`: `active`
+- `next_action_id`: `crm_core_mailerlite_engagement_private_artifact_export_command_v0`
+- `status`: `completed`
 - `created_at`: `2026-06-05`
 - `updated_at`: `2026-06-05`
-- `objective`: Determine whether there is an approved/supplied MailerLite
-  engagement snapshot/export artifact that can be used with the redacted summary
-  adapter, without inspecting raw rows or running intake yet.
-- `why_now`: MailerLite source health is healthy, and the engagement adapter now
-  has a safe redacted summary mode. The remaining blocker before first
-  engagement intake is whether an approved snapshot/export artifact exists and
-  is fresh enough to process.
+- `completed_at`: `2026-06-05`
+- `completion_artifacts`:
+  - `scripts/crm-vnext-mailerlite-engagement-artifact-export.mjs`
+  - `__tests__/crm-vnext-mailerlite-engagement-artifact-export.spec.ts`
+  - `package.json`
+- `completion_definition`: CRM Core has a focused read-only MailerLite
+  engagement private artifact export command that writes raw source rows only to
+  a private local artifact path outside the repo, writes redacted JSON/Markdown
+  receipts, blocks artifact paths inside the repo before source access, avoids
+  raw terminal/receipt output, includes upstream HTTP failure redaction coverage,
+  keeps mutation/CRM flags false, and was validated without running the real
+  export.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_engagement_private_artifact_export_run_v0`
+- `status`: `active`
+- `created_at`: `2026-06-05`
+- `updated_at`: `2026-06-06`
+- `objective`: Run the first bounded read-only MailerLite engagement private
+  artifact export with low caps, writing the private artifact outside the repo
+  and redacted receipts to Mantis-Reports.
+- `why_now`: The export command exists, redaction/error-path tests pass, and
+  standing read-only policy allows controlled MailerLite read-only source checks.
+  CRM Core can now create the private source artifact needed for later
+  `--redacted-summary` engagement processing.
 - `allowed_scope`:
-  - Inspect filenames/report metadata only.
-  - Identify candidate snapshot/export artifact paths if obvious.
-  - Do not read raw rows.
-  - Do not run the adapter.
-  - Do not call live APIs.
-  - Do not open UI.
-  - Produce a short readiness recommendation.
+  - Run only `crm:vnext:mailerlite-engagement-artifact-export`.
+  - Use low caps.
+  - Write private artifact only under
+    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`.
+  - Write redacted receipts only under
+    `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+  - Produce aggregate/redacted output only.
 - `forbidden_scope`:
-  - No engagement intake execution.
-  - No snapshot/export row inspection.
-  - No raw rows.
-  - No subscriber lists.
-  - No private emails in bulk.
-  - No MailerLite API call.
-  - No CRM writes.
-  - No ledgers/cards/scoring/Fact Store.
+  - No subscriber list printing.
+  - No raw rows in terminal/chat/receipts.
+  - No private URLs/campaign bodies.
+  - No secrets/credential metadata.
+  - No CRM state mutation.
+  - No Signal Event Ledger write.
+  - No Engagement Snapshot Ledger write.
+  - No card write.
+  - No Fact Store write.
+  - No scoring write.
+  - No MailerLite mutation.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
-  - `docs/crm-vnext/crm-core-next-action.md`
-  - `docs/crm-vnext/crm-core-readonly-source-command-inventory-v0.md`
-  - `docs/crm-vnext/mailerlite-engagement-metadata-intake-plan-v0.md`
+  - `scripts/crm-vnext-mailerlite-engagement-artifact-export.mjs`
+  - `__tests__/crm-vnext-mailerlite-engagement-artifact-export.spec.ts`
+  - `package.json`
 - `validation_commands`:
+  - `node --check scripts/crm-vnext-mailerlite-engagement-artifact-export.mjs`
+  - `npx vitest run __tests__/crm-vnext-mailerlite-engagement-artifact-export.spec.ts`
   - `git diff --check`
 - `stop_conditions`:
-  - Any need to run engagement intake or the MailerLite engagement adapter.
-  - Any need to read snapshot/export rows or print subscriber-level content.
-  - Any need to call live APIs, use connectors, or open UI.
+  - Root is not `/Users/alejandrogomez/CRM-core`.
+  - Branch is not `codex/crm-core-reentry`.
+  - Working tree is not clean before the real export run.
+  - The command would print raw rows, subscriber lists, private URLs, campaign
+    bodies, credentials, credential metadata, tokens, headers, env values, or
+    private content.
+  - The command would write inside the repo or outside the approved private
+    artifact and report directories.
   - Any source mutation, CRM write, ledger write, card write, Fact Store write,
     scoring write, or outbound action would be required.
   - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
-  - Root is not `/Users/alejandrogomez/CRM-core`.
-  - Branch is not `codex/crm-core-reentry`.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `crm-core-readonly-source-command-inventory-v0.md`, and
-  `mailerlite-engagement-metadata-intake-plan-v0.md`. Determine artifact
-  readiness from filenames/report metadata only; do not inspect rows, run
-  intake, call live systems, or write CRM state.
-- `completion_definition`: CRM Core knows whether an approved/supplied
-  MailerLite engagement snapshot/export artifact exists for redacted summary
-  processing, or records that a new artifact/export route is needed.
+  `crm-core-readonly-source-command-inventory-v0.md`, and the export command. Run
+  only the bounded export command if the working tree is clean and root/branch
+  match.
+- `completion_definition`: A private MailerLite engagement source artifact exists
+  outside the repo, redacted JSON/Markdown receipts exist in Mantis-Reports, no
+  raw rows or secrets were printed, no source mutation or CRM write occurred, and
+  the next step can be `npm run crm:vnext:mailerlite-engagement-signals -- --snapshot-file <private-artifact> --redacted-summary`.
