@@ -402,26 +402,54 @@ routing and completion pointer.
   engagement aggregates, what remains unknown, what gates stay closed, and what
   would be needed before any person-level preview, scoring, or outreach.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_mailerlite_email_person_level_private_preview_plan_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-07`
 - `updated_at`: `2026-06-07`
-- `objective`: Plan, but do not run, a private person-level email
-  relationship-depth preview that can use the private artifact locally without
-  printing names/emails in chat and without writing CRM state.
-- `why_now`: CRM Core now has a redacted aggregate relationship-depth preview.
-  The next boundary is deciding whether and how a private person-level preview
-  could be produced locally while keeping names/emails, subscriber rows, and CRM
-  writes out of chat and standard receipts.
+- `completed_at`: `2026-06-07`
+- `completion_artifact`:
+  `docs/crm-vnext/mailerlite-email-person-level-private-preview-plan-v0.md`
+- `result`: `completed`
+- `findings`:
+  - A no-run plan exists for a private local person-level MailerLite email
+    relationship-depth preview.
+  - The plan requires private person-level artifacts to live outside the repo
+    under `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`.
+  - The plan defines redacted receipt rules for aggregate counts, tier counts,
+    blocker counts, suppression/status counts, confidence categories, and next
+    safe operator step.
+  - The plan forbids names, emails, subscriber IDs, raw rows, private artifact
+    contents, campaign bodies, private URLs, tokens, headers, env values,
+    credential metadata, and private content in chat or standard receipts.
+  - The plan defines preview-only private tiers: repeated-click depth,
+    repeated-open depth, broad historical reader, low/no historical email
+    engagement, suppression/safety review, and insufficient data / identity
+    review.
+  - The plan defines validation requirements and an exact future approval phrase.
+  - No person-level preview was executed.
+  - No raw rows, names, emails, CRM writes, source mutations, Launch OS docs, or
+    `/Users/alejandrogomez/CRM` were touched.
+- `completion_definition`: CRM Core has a no-run plan for a private person-level
+  email relationship-depth preview that defines artifact storage, redaction,
+  validation, stop conditions, identity handling, and what approval is required
+  before any local person-level processing.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_email_person_level_private_preview_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-07`
+- `updated_at`: `2026-06-07`
+- `objective`: Wait for Alejandro's exact approval phrase before executing any
+  private local person-level MailerLite email relationship-depth preview.
+- `why_now`: The no-run plan exists, but execution would produce person-level
+  private output from the local artifact. That crosses a new approval boundary
+  even if the output stays outside the repo and names/emails stay out of chat.
 - `allowed_scope`:
-  - Use CRM Core docs and redacted aggregate receipts only.
-  - Plan a private local person-level preview artifact format.
-  - Define redaction, storage, validation, and stop conditions.
-  - Define how identity anchors would be used without printing names or emails in
-    chat.
-  - Keep the work non-executing.
+  - Present the exact approval phrase.
+  - Answer clarifying questions about the no-run plan.
+  - Wait for approval, decline, or route modification.
+  - No execution.
 - `forbidden_scope`:
   - No person-level preview execution.
   - No raw artifact row inspection.
@@ -439,6 +467,7 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
   - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/mailerlite-email-person-level-private-preview-plan-v0.md`
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
@@ -451,14 +480,14 @@ routing and completion pointer.
   - Any source mutation, CRM write, ledger write, card write, Fact Store write,
     scoring write, or outbound action would be required.
   - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
+- `approval_phrase_required`:
+  `I approve the CRM Core MailerLite person-level private relationship-depth preview using the private local artifact only. Do not print names, emails, subscriber IDs, raw rows, private URLs, campaign bodies, secrets, or write CRM state.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `crm-core-readonly-source-command-inventory-v0.md`, and the redacted
-  MailerLite engagement summary and relationship-depth preview receipts. Plan
-  only; do not inspect private artifact rows, produce person-level output, call
-  source systems, or write CRM state.
-- `completion_definition`: CRM Core has a no-run plan for a private person-level
-  email relationship-depth preview that defines artifact storage, redaction,
-  validation, stop conditions, identity handling, and what approval is required
-  before any local person-level processing.
+  MailerLite engagement summary, relationship-depth preview receipts, and
+  `mailerlite-email-person-level-private-preview-plan-v0.md`. Do not execute the
+  person-level preview unless Alejandro provides the exact approval phrase.
+- `completion_definition`: Alejandro provides the exact approval phrase, declines
+  the private person-level preview, or asks to modify the route.
