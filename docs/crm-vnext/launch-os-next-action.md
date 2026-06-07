@@ -2637,12 +2637,14 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room reconciliation checkpoint recording
   the slate evidence and the CEO decision waiting boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad CEO Decision Waiting v0 - 2026-06-06
+## Completed Next Action - Launch OS v0 Test Claridad CEO Decision Waiting v0 - 2026-06-06
 
 - `next_action_id`: `launch_os_v0_test_claridad_ceo_decision_waiting_v0`
-- `status`: `active`
+- `status`: `completed_superseded`
 - `created_at`: `2026-06-06`
-- `updated_at`: `2026-06-06`
+- `updated_at`: `2026-06-07`
+- `completed_at`: `2026-06-07`
+- `superseded_by`: `launch_os_v0_test_claridad_final_public_copy_v1_local_only`
 - `source_checkpoint`: `Launch OS v0 microproduct candidate slate
   reconciliation - 2026-06-06`
 - `objective`: Wait for Alejandro's CEO decision on `Test de claridad antes de
@@ -2692,5 +2694,81 @@ Use deep hydration only for:
 - `completion_definition`: Alejandro gives a clear CEO decision to advance,
   revise, discard or return to slate, and the next local-only boundary can be
   recorded without live mutation.
-- `next_checkpoint_expected`: Control Room checkpoint after Alejandro's CEO
-  decision, or a short blocker if the decision remains pending.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_ux_review_pack_v1_current_2026-06-07.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_ux_review_pack_v1_current_2026-06-07.html`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_ux_review_pack_v1_desktop_check_2026-06-07.png`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_ux_review_pack_v1_mobile_check_2026-06-07.png`
+- `completion_status`:
+  `static_ux_review_pack_v1_accepted_local_only`
+- `completion_summary`:
+  - Static UX Review Pack v1 exists as local-only review evidence.
+  - Alejandro accepted Static UX Review Pack v1 as a local-only milestone.
+  - UX/copy direction is accepted for a future Final Public Copy v1 local-only
+    pass.
+  - Final Public Copy v1 itself is not approved yet.
+  - Build, Shopify preview/live, MailerLite drafts, sends, audience assignment,
+    CRM writes and live systems remain unapproved.
+- `next_checkpoint_expected`: Control Room reconciliation checkpoint recording
+  Static UX Review Pack v1 acceptance and the Final Public Copy v1 local-only
+  boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad Final Public Copy v1 Local Only - 2026-06-07
+
+- `next_action_id`: `launch_os_v0_test_claridad_final_public_copy_v1_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-07`
+- `updated_at`: `2026-06-07`
+- `source_checkpoint`: `Launch OS v0 Test Claridad Static UX Review Pack v1
+  accepted local-only - 2026-06-07`
+- `objective`: Prepare, after explicit approval to proceed, only a local-only
+  Final Public Copy v1 pass for `Test de claridad antes de decidir`.
+- `why_now`: Static UX Review Pack v1 exists and has been accepted as a
+  local-only milestone. The next responsible edge is copy refinement, not build
+  or live wiring.
+- `planned_copy_direction`:
+  - Shorter landing.
+  - Clearer mobile answer options.
+  - Results in two layers.
+  - Softer email capture.
+  - Briefer delivery note.
+- `allowed_scope`:
+  - Update or create local-only report artifacts for candidate public copy after
+    Alejandro explicitly approves the work.
+  - Use existing Brand, Product Value, UX review and Launch OS safety evidence.
+  - Keep hypotheses labeled as hypotheses, not observed events.
+  - Keep all live gates closed.
+- `forbidden_scope`:
+  - Do not call live APIs.
+  - Do not build assets or apps.
+  - Do not create MailerLite drafts.
+  - Do not touch Shopify preview or Shopify live.
+  - Do not send emails, publish, schedule or assign audience.
+  - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
+    sends.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat hypotheses as observed events.
+- `live_gate_status`: MailerLite live, Shopify preview/live, CRM writes,
+  public/audience sends, publish, schedule, subscriber/group/workflow/campaign
+  mutations, ledgers, cards, scoring and Fact Store remain closed.
+- `human_boundary_id`: `test_claridad_final_public_copy_v1_local_only_approval`
+- `human_boundary_notification_status`: `approval_needed_before_copy_pass`
+- `stop_conditions`:
+  - Alejandro has not explicitly approved preparing Final Public Copy v1
+    local-only.
+  - Any requested next step would require build, Shopify preview/live,
+    MailerLite drafts, sends, audience assignment, CRM writes, workflow
+    mutation or private observed events.
+  - The requested copy would introduce claims, canon or lineage not supported by
+    existing evidence.
+- `resume_instruction`: If Alejandro approves the local-only copy pass, prepare
+  Final Public Copy v1 as reviewable local artifacts only. Otherwise stop at
+  this boundary and keep all live gates closed.
+- `completion_definition`: Final Public Copy v1 local-only review artifact
+  exists, explicitly states it is not final/public/live approval, and reports
+  Brand/claims/Product Value/Safety status with all live gates closed.
+- `next_checkpoint_expected`: Control Room checkpoint after Final Public Copy v1
+  local-only artifact generation, or a blocker if approval/input is missing.
