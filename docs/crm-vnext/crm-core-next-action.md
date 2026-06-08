@@ -507,24 +507,58 @@ routing and completion pointer.
   and cannot be inferred, and the next safe gates before any CRM write, scoring,
   or outreach.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_mailerlite_email_private_review_queue_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-08`
 - `updated_at`: `2026-06-08`
-- `objective`: Design, but do not execute, a private review queue that would let
-  Mantis/Alejandro inspect selected relationship-depth cohorts safely without
-  exposing identities in chat or writing CRM state.
-- `why_now`: The redacted operator brief identifies useful cohorts and safety
-  blockers. The next safe step is queue design, not execution, so any future
-  private review can preserve identity privacy and all write gates.
+- `completed_at`: `2026-06-08`
+- `completion_artifact`:
+  `docs/crm-vnext/mailerlite-email-private-review-queue-design-v0.md`
+- `result`: `completed`
+- `findings`:
+  - A no-run private review queue design exists for selected MailerLite
+    relationship-depth cohorts.
+  - The design requires private queue artifacts to live outside the repo under
+    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`.
+  - The design allows redacted receipts to include total queue candidates, counts
+    by tier, counts by review status, suppression/safety counts, blocker counts,
+    and next safe operator step.
+  - The design forbids names, emails, subscriber IDs, raw rows, private artifact
+    contents, campaign bodies, private URLs, tokens, headers, env values,
+    credential metadata, and private content in redacted receipts and chat.
+  - Candidate selection rules prioritize `repeated_click_depth`, treat
+    `repeated_open_depth` as useful but weaker, keep `broad_historical_reader`
+    lower priority, route `suppression_safety_review` to safety review, and avoid
+    treating historical depth as recent heat.
+  - Review states are defined for private review only.
+  - Mantis behavior is limited to aggregate counts, private path labels, and
+    approval questions without revealing identities in general chat or storing
+    queue entries in general memory.
+  - A future exact approval phrase is defined for generating or opening the
+    private queue.
+  - No queue was executed.
+  - No private artifact rows, identities, CRM writes, source mutations, Launch OS
+    docs, or `/Users/alejandrogomez/CRM` were touched.
+- `completion_definition`: CRM Core has a private review queue design that
+  defines how Mantis/Alejandro could inspect selected MailerLite relationship
+  cohorts safely without exposing identities in chat or writing CRM state.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_email_private_review_queue_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-08`
+- `updated_at`: `2026-06-08`
+- `objective`: Wait for Alejandro approval before generating or opening any
+  private person-level MailerLite relationship-depth review queue.
+- `why_now`: The private review queue design exists, but generating or opening a
+  queue would create or expose a person-level private review surface. That
+  requires a separate approval boundary.
 - `allowed_scope`:
-  - Use only redacted receipts and aggregate tier counts.
-  - Define queue purpose, private artifact behavior, redacted receipt behavior,
-    cohort selection rules, review states, and stop conditions.
-  - Preserve all closed gates.
-  - Keep the work non-executing.
+  - Present the exact approval phrase.
+  - Answer clarifying questions about the queue design.
+  - Wait for approval, decline, or route modification.
+  - No execution.
 - `forbidden_scope`:
   - No private review queue execution.
   - No raw artifact row inspection.
@@ -542,6 +576,7 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
   - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/mailerlite-email-private-review-queue-design-v0.md`
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
@@ -554,14 +589,15 @@ routing and completion pointer.
   - Any source mutation, CRM write, ledger write, card write, Fact Store write,
     scoring write, or outbound action would be required.
   - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
+- `approval_phrase_required`:
+  `I approve the CRM Core MailerLite private review queue generation using the private local relationship-depth preview only. Do not print names, emails, subscriber IDs, raw rows, private URLs, campaign bodies, secrets, or write CRM state.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `crm-core-readonly-source-command-inventory-v0.md`, and the redacted
   MailerLite engagement summary, relationship-depth preview, person-level private
-  preview, closeout, and operator brief receipts. Design only; do not execute a
-  queue, inspect private artifacts, print identities, call source systems, or
-  write CRM state.
-- `completion_definition`: CRM Core has a private review queue design that
-  defines how Mantis/Alejandro could inspect selected MailerLite relationship
-  cohorts safely without exposing identities in chat or writing CRM state.
+  preview, closeout, operator brief receipts, and
+  `mailerlite-email-private-review-queue-design-v0.md`. Do not generate or open a
+  private review queue unless Alejandro provides the exact approval phrase.
+- `completion_definition`: Alejandro provides the exact approval phrase, declines
+  the private review queue, or asks to modify the route.
