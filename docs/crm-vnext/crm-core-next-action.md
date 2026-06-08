@@ -473,28 +473,63 @@ routing and completion pointer.
   scoring, outreach, source systems, Launch OS docs, and
   `/Users/alejandrogomez/CRM` untouched.
 
+- `next_action_id`: `crm_core_mailerlite_email_relationship_depth_operator_brief_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-07`
+- `updated_at`: `2026-06-08`
+- `completed_at`: `2026-06-08`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_relationship_depth_operator_brief_2026-06-07.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_relationship_depth_operator_brief_2026-06-07.md`
+- `result`: `completed`
+- `findings`:
+  - The brief explains that historical email relationship-depth cohorts exist at
+    aggregate level.
+  - The repeated-click cohort is the strongest candidate for future private
+    review design.
+  - The repeated-open cohort is useful for relationship awareness but remains
+    weaker than click behavior.
+  - Suppression/status context outranks warmth.
+  - Historical depth is not recent heat and does not authorize outreach.
+  - Recent heat, topic affinity, campaign-specific intent, last-open/last-click
+    recency, Instagram bridge readiness, and outreach readiness remain unknown.
+  - Recommended safe next steps are private review queue design, future
+    person-card bridge/write packet only after gates, Gmail reply metadata as a
+    possible next relationship-depth source, and keeping Launch OS separate.
+  - No private identities, raw rows, subscriber-level arrays, private artifact
+    contents, private URLs, campaign bodies, tokens, headers, env values,
+    credential metadata, or private content were printed.
+  - No CRM writes, card writes, Signal Event Ledger writes, Engagement Snapshot
+    Ledger writes, Fact Store writes, scoring writes, outreach, source mutation,
+    Launch OS doc touches, or `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core has a redacted operator brief explaining the
+  meaning of the MailerLite relationship-depth cohorts, safety blockers, what can
+  and cannot be inferred, and the next safe gates before any CRM write, scoring,
+  or outreach.
+
 ## Active Next Action
 
-- `next_action_id`: `crm_core_mailerlite_email_relationship_depth_operator_brief_v0`
+- `next_action_id`: `crm_core_mailerlite_email_private_review_queue_design_v0`
 - `status`: `active`
-- `created_at`: `2026-06-07`
-- `updated_at`: `2026-06-07`
-- `objective`: Prepare a no-write, redacted CEO/Mantis operator brief from the
-  MailerLite relationship-depth private preview, using only aggregate tier counts
-  and safety summaries.
-- `why_now`: CRM Core now has a private person-level relationship-depth preview.
-  The next useful step is to convert it into an operator-facing brief that helps
-  Alejandro understand cohorts, blockers, and safe next decisions without
-  exposing private identities or writing CRM state.
+- `created_at`: `2026-06-08`
+- `updated_at`: `2026-06-08`
+- `objective`: Design, but do not execute, a private review queue that would let
+  Mantis/Alejandro inspect selected relationship-depth cohorts safely without
+  exposing identities in chat or writing CRM state.
+- `why_now`: The redacted operator brief identifies useful cohorts and safety
+  blockers. The next safe step is queue design, not execution, so any future
+  private review can preserve identity privacy and all write gates.
 - `allowed_scope`:
   - Use only redacted receipts and aggregate tier counts.
-  - Explain cohort meaning.
-  - Recommend safe next decisions.
+  - Define queue purpose, private artifact behavior, redacted receipt behavior,
+    cohort selection rules, review states, and stop conditions.
   - Preserve all closed gates.
-  - No person-level names/emails in chat.
+  - Keep the work non-executing.
 - `forbidden_scope`:
+  - No private review queue execution.
   - No raw artifact row inspection.
   - No names/emails/subscriber IDs.
+  - No subscriber-level arrays in chat.
   - No CRM writes.
   - No Signal Event Ledger writes.
   - No Engagement Snapshot Ledger writes.
@@ -512,9 +547,9 @@ routing and completion pointer.
 - `stop_conditions`:
   - Root is not `/Users/alejandrogomez/CRM-core`.
   - Branch is not `codex/crm-core-reentry`.
-  - Any need to inspect raw artifact rows or print names, emails, subscriber IDs,
-    subscriber-level arrays, private URLs, campaign bodies, tokens, headers, env
-    values, credential metadata, or private content.
+  - Any need to execute a queue, inspect raw artifact rows, or print names,
+    emails, subscriber IDs, subscriber-level arrays, private URLs, campaign
+    bodies, tokens, headers, env values, credential metadata, or private content.
   - Any need to call MailerLite, Gmail, Instagram, APIs, connectors, or UI.
   - Any source mutation, CRM write, ledger write, card write, Fact Store write,
     scoring write, or outbound action would be required.
@@ -524,9 +559,9 @@ routing and completion pointer.
   `crm-core-standing-readonly-source-policy-v0.md`,
   `crm-core-readonly-source-command-inventory-v0.md`, and the redacted
   MailerLite engagement summary, relationship-depth preview, person-level private
-  preview, and closeout receipts. Use aggregate counts only; do not inspect
-  private artifacts, print identities, call source systems, or write CRM state.
-- `completion_definition`: CRM Core has a redacted operator brief explaining the
-  meaning of the MailerLite relationship-depth cohorts, safety blockers, what can
-  and cannot be inferred, and the next safe gates before any CRM write, scoring,
-  or outreach.
+  preview, closeout, and operator brief receipts. Design only; do not execute a
+  queue, inspect private artifacts, print identities, call source systems, or
+  write CRM state.
+- `completion_definition`: CRM Core has a private review queue design that
+  defines how Mantis/Alejandro could inspect selected MailerLite relationship
+  cohorts safely without exposing identities in chat or writing CRM state.
