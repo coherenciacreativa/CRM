@@ -737,12 +737,37 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves a specific first Instagram signal
   capture route, declines execution, or asks to revise the design.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_signal_surface_access_pilot_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-09`
-- `updated_at`: `2026-06-09`
+- `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-09`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_signal_surface_access_pilot_retry_2026-06-09.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_signal_surface_access_pilot_retry_2026-06-09.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_signal_surface_access_pilot_closeout_2026-06-09.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_signal_surface_access_pilot_closeout_2026-06-09.md`
+- `result`: `completed_partial`
+- `findings`:
+  - Notifications surface was reached.
+  - New follower notifications were visible in aggregate.
+  - Story-related notification groups were visible in aggregate.
+  - Notification time buckets were visible in aggregate.
+  - Messages inbox entry surface was reachable.
+  - Story viewer frequency requires repeated captures or an approved private
+    artifact.
+  - DM/email handoff detection requires a private-thread boundary.
+  - No Instagram actions were performed.
+  - No story viewer lists were collected and no private threads were opened.
+  - No private content, handles tied to private identities, names, emails, DMs,
+    screenshots, story viewer lists, private URLs, message bodies, tokens,
+    headers, env values, credential metadata, or private content were printed.
+  - No CRM writes, Signal Event Ledger writes, Engagement Snapshot Ledger writes,
+    card writes, Fact Store writes, source-result ledger writes, scoring writes,
+    source mutations, Launch OS doc touches, or `/Users/alejandrogomez/CRM` use
+    occurred.
 - `objective`: Wait for Alejandro approval before a second, more targeted UI /
   Computer Use read-only pilot that tests whether new follower, story viewer
   frequency, and DM/email handoff surfaces can be reached safely.
@@ -775,3 +800,56 @@ routing and completion pointer.
   Present the second targeted surface-access pilot options and stop.
 - `completion_definition`: Alejandro either approves the second targeted
   surface-access pilot, declines it, or modifies the route.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_capture_design_v0`
+- `status`: `active`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Design, but do not execute, the first minimal daily Instagram
+  notifications capture route for CRM Core using only notification-surface
+  observations, aggregate counts, private artifacts, and redacted receipts.
+- `why_now`: The surface-access pilot showed that the notifications surface is
+  reachable and can expose new follower and story-related signal groups. It is
+  the safest first executable Instagram capture route before deeper story viewer
+  lists, DM thread review, email handoff extraction, or welcome audio.
+- `allowed_scope`:
+  - Design only.
+  - Use the surface-access pilot receipt.
+  - Define notification-surface capture boundaries.
+  - Define private artifact behavior.
+  - Define redacted receipt behavior.
+  - Define dedupe/read-state safeguards.
+  - Define stop conditions.
+  - No execution.
+- `design_must_cover`:
+  1. New follower notifications.
+  2. Story-related notification groups.
+  3. Notification time buckets.
+  4. Dedupe / already-seen handling.
+  5. Read-state ambiguity.
+  6. Private artifact path.
+  7. Redacted receipt fields.
+  8. What remains blocked: full story viewer frequency, DM/email handoff
+     extraction, welcome audio sending, CRM writes, scoring, and outreach.
+- `forbidden_scope`:
+  - No Instagram UI execution.
+  - No Computer Use.
+  - No DMs opened.
+  - No story viewer collection.
+  - No welcome audio.
+  - No source action.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-signal-capture-design-v0.md`, and the latest Instagram
+  surface-access pilot receipts. Design only; do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions.
+- `completion_definition`: CRM Core has a no-run design for the first minimal
+  Instagram daily notifications capture route, with private artifact behavior,
+  redacted receipt behavior, dedupe/read-state safeguards, and clear boundaries
+  before any UI execution or outbound action.
