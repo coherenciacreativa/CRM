@@ -9642,3 +9642,93 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad static prototype accepted and Shopify preview preflight selected - 2026-06-09
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the static local prototype no-network/no-send as a closed
+technical local-only milestone and approved the CEO Build Decision Packet. The
+selected next environment is Shopify preview noindex/unlisted, but the active
+next action is preflight/plan/receipt only. This does not approve publication,
+public navigation, audience traffic, MailerLite drafts, sends, audience
+assignment, CRM writes or live systems.
+
+CEO decision:
+
+- Static local prototype no-network/no-send accepted as hito técnico local-only.
+- Do not create more static prototypes for this candidate.
+- Move toward Shopify preview noindex/unlisted because the local prototype
+  already validated enough and repeating local-only would not add meaningful
+  learning.
+- Next active pointer is Shopify preview noindex/unlisted preflight.
+- The next step is preflight/plan/receipt for preview, not publication and not
+  preview execution yet.
+
+Evidence:
+
+- Static local prototype:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_local_prototype_no_network_no_send_2026-06-08.html`
+- Static local prototype QA report:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_local_prototype_qa_report_2026-06-08.md`
+- CEO Build Decision Packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_ceo_build_decision_packet_local_only_2026-06-09.md`
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_static_local_prototype_no_network_no_send`
+- New active next action:
+  `launch_os_v0_test_claridad_shopify_preview_noindex_unlisted_preflight`
+
+Allowed next-scope after pointer approval:
+
+- Minimal tie-breaker Q2 cleanup if needed.
+- Remove or hide internal prototype labels.
+- Prepare Shopify preview noindex/unlisted preflight.
+- Define QA receipt and no-public gates.
+- Keep live navigation untouched.
+- Do not publish.
+- Do not create MailerLite drafts.
+- Do not write CRM.
+
+Operating meaning:
+
+- The next edge should prove that a future preview path can remain noindex,
+  unlisted, outside public navigation and outside audience traffic before any
+  preview execution is attempted.
+- MailerLite and CRM remain downstream; neither is approved by this decision.
+- CRM learning stays hypothesis-only until real observed events exist.
+- Future microproducts should consider merging Static UX Review Pack and Static
+  Local Prototype into an `Interactive Static UX Prototype Pack`, but this is
+  only a later process note and not a new hito now.
+
+Safety:
+
+- Documentation-only reconciliation: true.
+- Shopify preview created: false.
+- Shopify preview/live touched: false.
+- Live navigation touched: false.
+- Published: false.
+- Public/audience traffic invited: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite UI opened: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
