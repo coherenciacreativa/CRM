@@ -801,12 +801,22 @@ routing and completion pointer.
 - `completion_definition`: Alejandro either approves the second targeted
   surface-access pilot, declines it, or modifies the route.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_capture_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifact`: `docs/crm-vnext/instagram-daily-notifications-capture-design-v0.md`
+- `completion_definition`: CRM Core has a no-run design for the first minimal
+  Instagram daily notifications capture route, with notifications-surface-only
+  scope, aggregate capture fields, forbidden private content, dedupe/read-state
+  safeguards, private artifact behavior, redacted receipt behavior, stop
+  conditions, welcome-audio separation, and closed gates. No Instagram work,
+  Computer Use, UI, API, DMs, story viewer collection, welcome audio, source
+  action, private content print, CRM write, source mutation, Launch OS doc touch,
+  or `/Users/alejandrogomez/CRM` use occurred.
 - `objective`: Design, but do not execute, the first minimal daily Instagram
   notifications capture route for CRM Core using only notification-surface
   observations, aggregate counts, private artifacts, and redacted receipts.
@@ -849,7 +859,50 @@ routing and completion pointer.
   `instagram-daily-signal-capture-design-v0.md`, and the latest Instagram
   surface-access pilot receipts. Design only; do not execute Instagram UI,
   Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions.
-- `completion_definition`: CRM Core has a no-run design for the first minimal
-  Instagram daily notifications capture route, with private artifact behavior,
-  redacted receipt behavior, dedupe/read-state safeguards, and clear boundaries
-  before any UI execution or outbound action.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_capture_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Wait for Alejandro approval before any execution of the daily
+  notifications capture route.
+- `why_now`: The no-run design exists, but any Instagram UI or Computer Use
+  execution crosses a fresh approval boundary. CRM Core must wait before opening
+  the notifications surface again.
+- `allowed_scope`:
+  - Present the notifications capture design.
+  - Answer clarifying questions.
+  - Wait for Alejandro approval, decline, or route modification.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram UI execution.
+  - No Computer Use.
+  - No API or connector calls.
+  - No DMs opened.
+  - No story viewer collection.
+  - No welcome audio.
+  - No follow, like, react, comment, reply, archive, label, mark, or source
+    mutation.
+  - No private content, handles tied to private identities, names, emails, DMs,
+    screenshots, story viewer lists, private URLs, message bodies, tokens,
+    headers, env values, credential metadata, or private content printed.
+  - No CRM writes.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No card writes.
+  - No Fact Store writes.
+  - No source-result ledger writes.
+  - No scoring writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-signal-capture-design-v0.md`, and
+  `instagram-daily-notifications-capture-design-v0.md`. Do not execute Instagram
+  UI, Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions
+  unless Alejandro gives a fresh explicit approval for this exact route.
+- `completion_definition`: Alejandro approves the first daily notifications
+  capture execution route, declines it, or modifies the route.
