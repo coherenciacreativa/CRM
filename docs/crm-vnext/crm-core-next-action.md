@@ -592,12 +592,14 @@ routing and completion pointer.
   CRM state, scoring, creating outreach lists, or sending communications requires
   a future explicit approval and likely a dedicated private review surface.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_signal_capture_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-08`
-- `updated_at`: `2026-06-08`
+- `updated_at`: `2026-06-09`
+- `completed_at`: `2026-06-09`
+- `completion_artifact`: `docs/crm-vnext/instagram-daily-signal-capture-design-v0.md`
 - `objective`: Design, but do not execute, the first Instagram daily signal
   capture ritual for CRM Core, including frequent story viewers, new followers,
   DMs, story replies, comments, likes, Instagram-to-email bridge, and the future
@@ -658,3 +660,54 @@ routing and completion pointer.
   handoffs, likes/comments, redacted receipts, private artifacts, future
   welcome-audio lane, and clear approval boundaries before any UI/API/outbound
   action.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_signal_capture_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-09`
+- `updated_at`: `2026-06-09`
+- `objective`: Wait for Alejandro approval before any Instagram UI, Computer
+  Use, API, webhook, manual source capture, story viewer collection, DM
+  inspection, welcome audio, or source action execution.
+- `why_now`: CRM Core now has a no-run Instagram Daily Signal Capture v0 design.
+  Any real Instagram capture would cross a new source and private-context
+  boundary, so execution must wait for explicit approval of the exact route.
+- `allowed_scope`:
+  - Present the design and exact route options.
+  - Answer clarifying questions.
+  - Wait for Alejandro's approval or route changes.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram UI browsing.
+  - No Computer Use.
+  - No Instagram API or webhook calls.
+  - No DM opening or reading.
+  - No story viewer collection.
+  - No welcome audio sending.
+  - No follows, likes, reactions, comments, replies, archives, labels, or source
+    mutations.
+  - No private content printing.
+  - No CRM writes.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No card writes.
+  - No Fact Store writes.
+  - No scoring writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. Manual evidence packet route.
+  2. UI / Computer Use read-only route, only with explicit approval and stop
+     conditions.
+  3. Export/snapshot route if Alejandro supplies an approved artifact.
+  4. Separate future Instagram API/webhook source-health investigation.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `community-signal-readiness-board-v0.md`,
+  `community-source-health-reality-audit-v0.md`, and
+  `instagram-daily-signal-capture-design-v0.md`. Do not execute Instagram work.
+  Present the approval boundary and stop.
+- `completion_definition`: Alejandro approves a specific first Instagram signal
+  capture route, declines execution, or asks to revise the design.
