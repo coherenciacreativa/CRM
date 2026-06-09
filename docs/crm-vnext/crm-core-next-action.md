@@ -543,61 +543,118 @@ routing and completion pointer.
   defines how Mantis/Alejandro could inspect selected MailerLite relationship
   cohorts safely without exposing identities in chat or writing CRM state.
 
-## Active Next Action
-
 - `next_action_id`: `crm_core_mailerlite_email_private_review_queue_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-06-08`
 - `updated_at`: `2026-06-08`
-- `objective`: Wait for Alejandro approval before generating or opening any
-  private person-level MailerLite relationship-depth review queue.
-- `why_now`: The private review queue design exists, but generating or opening a
-  queue would create or expose a person-level private review surface. That
-  requires a separate approval boundary.
+- `completed_at`: `2026-06-08`
+- `completion_artifacts`:
+  - `private_queue_artifact_label`: `crm_core_mailerlite_email_private_review_queue_2026-06-08.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_private_review_queue_2026-06-08.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_private_review_queue_2026-06-08.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_private_review_queue_closeout_2026-06-08.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_mailerlite_email_private_review_queue_closeout_2026-06-08.md`
+- `result`: `completed`
+- `findings`:
+  - Private review queue was generated from the private local relationship-depth
+    preview.
+  - Private queue artifact was written outside the repo.
+  - Redacted receipt and closeout receipt were generated.
+  - `totalQueueCandidates`: `1373`.
+  - `countsByTier`: `repeated_click_depth=58`,
+    `repeated_open_depth=786`, `broad_historical_reader=59`,
+    `low_no_historical_email_engagement=260`,
+    `suppression_safety_review=210`,
+    `insufficient_data_identity_review=0`.
+  - `countsByReviewStatus`: `pending_private_review=903`,
+    `suppression_blocked=210`, `not_for_outreach=260`.
+  - `suppressionStatusSummary`: `active=1155`, `unsubscribed=136`,
+    `bounced=74`, `complained=0`, `unknown=8`.
+  - No names, emails, subscriber IDs, subscriber-level arrays, raw rows, private
+    URLs, campaign bodies, tokens, headers, env values, credential metadata, or
+    private content were printed.
+  - No CRM writes, Signal Event Ledger writes, Engagement Snapshot Ledger writes,
+    card writes, Fact Store writes, source-result ledger writes, scoring writes,
+    outreach, source mutations, Launch OS doc touches, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core generated the approved private MailerLite
+  relationship-depth review queue artifact outside the repo, generated redacted
+  receipts, recorded aggregate queue counts, printed no identities or raw rows,
+  and kept CRM state, ledgers, cards, Fact Store, scoring, outreach, source
+  systems, Launch OS docs, and `/Users/alejandrogomez/CRM` untouched.
+
+- `next_action_id`: `crm_core_mailerlite_email_private_review_queue_inspection_future_boundary`
+- `status`: `parked_blocked`
+- `created_at`: `2026-06-08`
+- `updated_at`: `2026-06-08`
+- `meaning`: MailerLite relationship-depth private review queue exists, but
+  opening or inspecting person-level queue entries, showing identities, writing
+  CRM state, scoring, creating outreach lists, or sending communications requires
+  a future explicit approval and likely a dedicated private review surface.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_signal_capture_design_v0`
+- `status`: `active`
+- `created_at`: `2026-06-08`
+- `updated_at`: `2026-06-08`
+- `objective`: Design, but do not execute, the first Instagram daily signal
+  capture ritual for CRM Core, including frequent story viewers, new followers,
+  DMs, story replies, comments, likes, Instagram-to-email bridge, and the future
+  welcome audio DM lane.
+- `why_now`: MailerLite now provides historical email relationship-depth and a
+  private review queue. The next highest-leverage CRM Core source is Instagram,
+  because it is Alejandro's main public/community channel and captures live
+  signals such as follows, story views, DMs, replies, email handoffs, likes, and
+  comments.
 - `allowed_scope`:
-  - Present the exact approval phrase.
-  - Answer clarifying questions about the queue design.
-  - Wait for approval, decline, or route modification.
-  - No execution.
-- `forbidden_scope`:
-  - No private review queue execution.
-  - No raw artifact row inspection.
-  - No names/emails/subscriber IDs.
-  - No subscriber-level arrays in chat.
+  - Design only.
+  - No Instagram UI execution.
+  - No API calls.
+  - No DMs sent.
+  - No story viewer inspection yet.
+  - No private thread opening.
+  - No source mutation.
   - No CRM writes.
-  - No Signal Event Ledger writes.
-  - No Engagement Snapshot Ledger writes.
-  - No card writes.
-  - No Fact Store writes.
+  - Define read-only capture ritual, private artifact behavior, redacted receipt
+    behavior, stop conditions, and future approval boundaries.
+- `forbidden_scope`:
+  - No Instagram UI browsing.
+  - No Computer Use execution.
+  - No API/webhook probing.
+  - No DM replies.
+  - No welcome audio sending.
+  - No follows/likes/reactions.
+  - No story viewer collection yet.
+  - No private content export.
+  - No CRM writes.
   - No scoring writes.
-  - No outreach.
-  - No MailerLite/Gmail/Instagram calls.
+  - No ledgers/cards/Fact Store writes.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `expected_files`:
   - `docs/crm-vnext/crm-core-next-action.md`
-  - `docs/crm-vnext/mailerlite-email-private-review-queue-design-v0.md`
 - `validation_commands`:
   - `git diff --check`
 - `stop_conditions`:
   - Root is not `/Users/alejandrogomez/CRM-core`.
   - Branch is not `codex/crm-core-reentry`.
-  - Any need to execute a queue, inspect raw artifact rows, or print names,
-    emails, subscriber IDs, subscriber-level arrays, private URLs, campaign
-    bodies, tokens, headers, env values, credential metadata, or private content.
-  - Any need to call MailerLite, Gmail, Instagram, APIs, connectors, or UI.
-  - Any source mutation, CRM write, ledger write, card write, Fact Store write,
-    scoring write, or outbound action would be required.
+  - Any need to browse Instagram UI, use Computer Use, call APIs/connectors, send
+    DMs, collect story viewers, open private threads, export private content,
+    perform source mutation, or write CRM state.
+  - Any need to write ledgers, cards, Fact Store, scoring, source-result ledgers,
+    outreach lists, or outbound actions.
   - Launch OS docs or `/Users/alejandrogomez/CRM` would be touched.
-- `approval_phrase_required`:
-  `I approve the CRM Core MailerLite private review queue generation using the private local relationship-depth preview only. Do not print names, emails, subscriber IDs, raw rows, private URLs, campaign bodies, secrets, or write CRM state.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `crm-core-readonly-source-command-inventory-v0.md`, and the redacted
-  MailerLite engagement summary, relationship-depth preview, person-level private
-  preview, closeout, operator brief receipts, and
-  `mailerlite-email-private-review-queue-design-v0.md`. Do not generate or open a
-  private review queue unless Alejandro provides the exact approval phrase.
-- `completion_definition`: Alejandro provides the exact approval phrase, declines
-  the private review queue, or asks to modify the route.
+  `crm-core-readonly-source-command-inventory-v0.md`, and the Instagram sections
+  of `community-signal-readiness-board-v0.md` and
+  `community-source-health-reality-audit-v0.md`. Design only; do not execute
+  Instagram UI/API/webhook/source actions, open private content, call connectors,
+  send messages, or write CRM state.
+- `completion_definition`: CRM Core has a no-run design for Instagram daily
+  signal capture that covers story viewers/frequency, new followers, DMs, email
+  handoffs, likes/comments, redacted receipts, private artifacts, future
+  welcome-audio lane, and clear approval boundaries before any UI/API/outbound
+  action.
