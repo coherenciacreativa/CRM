@@ -661,12 +661,37 @@ routing and completion pointer.
   welcome-audio lane, and clear approval boundaries before any UI/API/outbound
   action.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_signal_capture_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-09`
 - `updated_at`: `2026-06-09`
+- `completed_at`: `2026-06-09`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_signal_capture_pilot_2026-06-09.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_signal_capture_pilot_2026-06-09.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_signal_capture_pilot_closeout_2026-06-09.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_signal_capture_pilot_closeout_2026-06-09.md`
+- `result`: `completed_partial`
+- `findings`:
+  - Instagram UI was accessible without login, checkpoint, or CAPTCHA.
+  - Story tray was visible with 12 items.
+  - Feed viewport showed 3 posts.
+  - Messages entrypoint was visible.
+  - No useful CRM signal capture happened yet: no new follower signals, no story
+    viewer frequency signals, no DM/story reply indicators, and no email handoff
+    candidates were captured.
+  - No Instagram actions were performed.
+  - No DMs were opened, no story viewers were collected, and no welcome audio was
+    sent.
+  - No private content, handles tied to private identities, names, emails, DMs,
+    story viewer lists, screenshots, private URLs, message bodies, tokens,
+    headers, env values, credential metadata, or private content were printed.
+  - No CRM writes, Signal Event Ledger writes, Engagement Snapshot Ledger writes,
+    card writes, Fact Store writes, source-result ledger writes, scoring writes,
+    source mutations, Launch OS doc touches, or `/Users/alejandrogomez/CRM` use
+    occurred.
 - `objective`: Wait for Alejandro approval before any Instagram UI, Computer
   Use, API, webhook, manual source capture, story viewer collection, DM
   inspection, welcome audio, or source action execution.
@@ -711,3 +736,42 @@ routing and completion pointer.
   Present the approval boundary and stop.
 - `completion_definition`: Alejandro approves a specific first Instagram signal
   capture route, declines execution, or asks to revise the design.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_signal_surface_access_pilot_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-09`
+- `updated_at`: `2026-06-09`
+- `objective`: Wait for Alejandro approval before a second, more targeted UI /
+  Computer Use read-only pilot that tests whether new follower, story viewer
+  frequency, and DM/email handoff surfaces can be reached safely.
+- `why_now`: The first pilot proved basic Instagram UI access but did not reach
+  the surfaces where the highest-value CRM signals live. The next pilot should
+  test those surfaces explicitly, without capturing broad private content or
+  taking visible actions.
+- `allowed_scope`:
+  - Present the route options.
+  - Define exact UI surfaces to test.
+  - Wait for approval.
+  - No execution.
+- `surfaces_to_test_later`:
+  1. New followers / notifications surface.
+  2. Story viewer frequency surface.
+  3. DM/story reply/email handoff surface.
+- `forbidden_scope`:
+  - No execution until approval.
+  - No story viewer collection yet.
+  - No DM opening yet.
+  - No welcome audio.
+  - No source action.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`, and
+  `instagram-daily-signal-capture-design-v0.md`. Do not execute Instagram work.
+  Present the second targeted surface-access pilot options and stop.
+- `completion_definition`: Alejandro either approves the second targeted
+  surface-access pilot, declines it, or modifies the route.
