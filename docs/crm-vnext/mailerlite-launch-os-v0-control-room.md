@@ -9502,3 +9502,143 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad Final Public Copy v1 local-only candidate acceptance - 2026-06-09
+
+Status: checkpoint completed, documentation-only pointer reconciliation. Final
+Public Copy v1 exists as a local-only candidate artifact and Alejandro approved
+it as local-only candidate copy. This records state only; it does not approve
+build, publication, Shopify preview/live, MailerLite drafts, sends, audience
+assignment, CRM writes or live systems.
+
+CEO decision:
+
+- Final Public Copy v1 local-only candidate accepted as copy público candidato
+  local-only.
+- The next approved pointer is Implementation / UX Planning Pack v1 local-only.
+- Build, Shopify preview/live, MailerLite drafts, sends, audience assignment,
+  CRM writes and live systems are not approved.
+- GOG/auth dirty files remain out of scope.
+
+Evidence:
+
+- Final Public Copy v1 local-only candidate:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_final_public_copy_v1_local_only_candidate_2026-06-08.md`
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_final_public_copy_v1_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_implementation_ux_planning_pack_v1_local_only`
+
+Operating meaning:
+
+- The next edge is a local-only implementation/UX planning packet after explicit
+  approval to do that work.
+- The planning pack may describe screens, quiz logic, data/capture needs,
+  delivery/receipt planning, CRM learning hypotheses, build options, risks and
+  approvals.
+- The planning pack is not build, Shopify preview/live, MailerLite draft
+  creation, send authorization, audience assignment or CRM wiring.
+- Keep hypotheses labeled as hypotheses and do not treat them as observed
+  events.
+
+Safety:
+
+- Documentation-only reconciliation: true.
+- Build performed: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite UI opened: false.
+- Shopify preview/live touched: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
+
+## Launch OS v0 Test Claridad Implementation / UX Planning Pack v1 acceptance - 2026-06-09
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Implementation / UX Planning Pack v1 exists as a local-only review artifact and
+Alejandro approved it as the local-only construction base for a static prototype
+review boundary. This records state only; it does not approve Shopify
+preview/live, MailerLite drafts, live APIs, sends, audience assignment, CRM
+writes or live systems.
+
+CEO decision:
+
+- Implementation / UX Planning Pack v1 accepted as local-only construction base.
+- The next active pointer is static local prototype no-network/no-send.
+- Shopify preview/live, MailerLite drafts, sends, audience assignment, CRM
+  writes, CRM Core, Brand Hub patch and GOG/auth remain out of scope.
+
+Evidence:
+
+- Implementation / UX Planning Pack v1:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_implementation_ux_planning_pack_v1_local_only_2026-06-08.md`
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_implementation_ux_planning_pack_v1_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_static_local_prototype_no_network_no_send`
+
+Operating meaning:
+
+- The next edge is a local HTML/JS/CSS prototype with no network calls, no
+  persistence, no email sending, no MailerLite, no Shopify, no CRM writes, no
+  analytics and no publish.
+- The prototype may support review of landing, five questions, option
+  selection, tie-break logic, results A-E, optional simulated email capture,
+  simulated confirmation state, mobile readability, UX frictions and whether
+  the final copy candidate works in experience.
+- The prototype is not Shopify preview/live, MailerLite draft creation, send
+  authorization, audience assignment or CRM wiring.
+- Keep hypotheses labeled as hypotheses and do not treat them as observed
+  events.
+
+Safety:
+
+- Documentation-only reconciliation: true.
+- Static prototype created now: false.
+- Build beyond local static prototype approved: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite UI opened: false.
+- Shopify preview/live touched: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

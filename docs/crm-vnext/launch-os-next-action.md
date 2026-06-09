@@ -2713,36 +2713,74 @@ Use deep hydration only for:
   Static UX Review Pack v1 acceptance and the Final Public Copy v1 local-only
   boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad Final Public Copy v1 Local Only - 2026-06-07
+## Completed Next Action - Launch OS v0 Test Claridad Final Public Copy v1 Local Only - 2026-06-09
 
 - `next_action_id`: `launch_os_v0_test_claridad_final_public_copy_v1_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-07`
-- `updated_at`: `2026-06-07`
+- `completed_at`: `2026-06-09`
 - `source_checkpoint`: `Launch OS v0 Test Claridad Static UX Review Pack v1
   accepted local-only - 2026-06-07`
-- `objective`: Prepare, after explicit approval to proceed, only a local-only
-  Final Public Copy v1 pass for `Test de claridad antes de decidir`.
-- `why_now`: Static UX Review Pack v1 exists and has been accepted as a
-  local-only milestone. The next responsible edge is copy refinement, not build
-  or live wiring.
-- `planned_copy_direction`:
-  - Shorter landing.
-  - Clearer mobile answer options.
-  - Results in two layers.
-  - Softer email capture.
-  - Briefer delivery note.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_final_public_copy_v1_local_only_candidate_2026-06-08.md`
+- `completion_summary`:
+  - Final Public Copy v1 local-only candidate exists for `Test de claridad antes
+    de decidir`.
+  - Alejandro approved it as a local-only public copy candidate.
+  - This completion does not approve build, publication, Shopify preview/live,
+    MailerLite drafts, sends, audience assignment, CRM writes or live systems.
+- `next_checkpoint_expected`: Control Room checkpoint recording Final Public
+  Copy v1 local-only candidate acceptance and the new Implementation / UX
+  Planning Pack v1 local-only boundary.
+
+## Completed Next Action - Launch OS v0 Test Claridad Implementation / UX Planning Pack v1 Local Only - 2026-06-09
+
+- `next_action_id`: `launch_os_v0_test_claridad_implementation_ux_planning_pack_v1_local_only`
+- `status`: `completed`
+- `created_at`: `2026-06-09`
+- `completed_at`: `2026-06-09`
+- `source_checkpoint`: `Launch OS v0 Test Claridad Final Public Copy v1
+  local-only candidate accepted - 2026-06-09`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_implementation_ux_planning_pack_v1_local_only_2026-06-08.md`
+- `completion_summary`:
+  - Implementation / UX Planning Pack v1 exists as a local-only review artifact.
+  - Alejandro approved it as the local-only construction base for a static
+    prototype review boundary.
+  - This completion does not approve Shopify preview/live, MailerLite drafts,
+    live APIs, sends, audience assignment, CRM writes or live systems.
+- `next_checkpoint_expected`: Control Room checkpoint recording Implementation
+  / UX Planning Pack v1 local-only acceptance and the new static local prototype
+  no-network/no-send boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad Static Local Prototype No-network No-send - 2026-06-09
+
+- `next_action_id`: `launch_os_v0_test_claridad_static_local_prototype_no_network_no_send`
+- `status`: `active`
+- `created_at`: `2026-06-09`
+- `updated_at`: `2026-06-09`
+- `source_checkpoint`: `Launch OS v0 Test Claridad Implementation / UX
+  Planning Pack v1 accepted local-only - 2026-06-09`
+- `objective`: Prepare, after explicit approval to proceed, only a static local
+  HTML/JS/CSS prototype for `Test de claridad antes de decidir` that makes no
+  network calls, sends no emails and persists no data.
+- `why_now`: The implementation/UX plan is accepted as the local-only
+  construction base. The next responsible edge is UX validation in a static
+  local prototype, not Shopify preview/live, MailerLite drafts or CRM wiring.
 - `allowed_scope`:
-  - Update or create local-only report artifacts for candidate public copy after
-    Alejandro explicitly approves the work.
-  - Use existing Brand, Product Value, UX review and Launch OS safety evidence.
+  - One local HTML/JS/CSS prototype.
+  - Local-only QA report and desktop/mobile screenshots if useful for UX
+    review.
+  - Landing, five questions, option selection, tie-break logic, result A-E
+    rendering, optional simulated email capture and simulated confirmation
+    state.
+  - No-network/no-send behavior verification.
   - Keep hypotheses labeled as hypotheses, not observed events.
   - Keep all live gates closed.
 - `forbidden_scope`:
   - Do not call live APIs.
-  - Do not build assets or apps.
+  - Do not create Shopify preview/live pages.
   - Do not create MailerLite drafts.
-  - Do not touch Shopify preview or Shopify live.
   - Do not send emails, publish, schedule or assign audience.
   - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
     sends.
@@ -2751,24 +2789,30 @@ Use deep hydration only for:
   - Do not patch Brand Hub.
   - Do not touch GOG/auth dirty files.
   - Do not treat hypotheses as observed events.
+  - Do not persist data, add analytics or publish.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_local_prototype_no_network_no_send_2026-06-08.html`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_static_local_prototype_qa_report_2026-06-08.md`
 - `live_gate_status`: MailerLite live, Shopify preview/live, CRM writes,
   public/audience sends, publish, schedule, subscriber/group/workflow/campaign
   mutations, ledgers, cards, scoring and Fact Store remain closed.
-- `human_boundary_id`: `test_claridad_final_public_copy_v1_local_only_approval`
-- `human_boundary_notification_status`: `approval_needed_before_copy_pass`
+- `human_boundary_id`: `test_claridad_static_local_prototype_no_network_no_send_approval`
+- `human_boundary_notification_status`: `approval_needed_before_static_prototype`
 - `stop_conditions`:
-  - Alejandro has not explicitly approved preparing Final Public Copy v1
-    local-only.
-  - Any requested next step would require build, Shopify preview/live,
-    MailerLite drafts, sends, audience assignment, CRM writes, workflow
-    mutation or private observed events.
-  - The requested copy would introduce claims, canon or lineage not supported by
+  - Alejandro has not explicitly approved preparing the static local prototype.
+  - Any requested next step would require Shopify preview/live, MailerLite
+    drafts, sends, audience assignment, CRM writes, workflow mutation, live APIs
+    or private observed events.
+  - The prototype would introduce claims, canon or lineage not supported by
     existing evidence.
-- `resume_instruction`: If Alejandro approves the local-only copy pass, prepare
-  Final Public Copy v1 as reviewable local artifacts only. Otherwise stop at
-  this boundary and keep all live gates closed.
-- `completion_definition`: Final Public Copy v1 local-only review artifact
-  exists, explicitly states it is not final/public/live approval, and reports
-  Brand/claims/Product Value/Safety status with all live gates closed.
-- `next_checkpoint_expected`: Control Room checkpoint after Final Public Copy v1
-  local-only artifact generation, or a blocker if approval/input is missing.
+- `resume_instruction`: If Alejandro approves the local-only static prototype
+  boundary, prepare the no-network/no-send prototype and QA evidence as local
+  artifacts only. Otherwise stop at this boundary and keep all live gates
+  closed.
+- `completion_definition`: Static local prototype exists as local HTML/JS/CSS,
+  no network calls, no persistence, no sends, no Shopify, no MailerLite, no CRM
+  writes, with QA report, desktop/mobile screenshots if useful, UX semaforo and
+  next CEO decision.
+- `next_checkpoint_expected`: Control Room checkpoint after static local
+  prototype no-network/no-send artifact generation, or a blocker if
+  approval/input is missing.
