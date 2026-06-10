@@ -980,12 +980,36 @@ routing and completion pointer.
   notifications capture receipts. Design only; do not execute Instagram UI,
   Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_notifications_repeated_capture_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_repeated_capture_pilot_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_repeated_capture_pilot_2026-06-10.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_repeated_capture_pilot_closeout_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_repeated_capture_pilot_closeout_2026-06-10.md`
+- `result`: `completed_partial`
+- `findings`:
+  - Second repeated notifications capture completed partially.
+  - Total visible notification groups: 10.
+  - Visible new follower notification groups: 4.
+  - Visible story-related notification groups: 1.
+  - Visible notification time buckets: 3.
+  - Deltas from prior capture: -1 / 0 / +1 / +1.
+  - Blockers: `viewport_only_capture`,
+    `read_state_ambiguity_not_visibly_triggered_but_not_fully_provable`,
+    `story_viewer_frequency_not_available_from_notifications_surface`,
+    `dm_email_handoff_not_in_scope`, and
+    `dedupe_not_provable_without_private_anchors`.
+  - No Instagram actions were performed.
+  - No private content was printed.
+  - No CRM writes or source mutations occurred.
+  - Computer Use quality mode was not explicitly proven and requires future
+    instrumentation.
 - `objective`: Wait for Alejandro approval before running the next
   notifications capture under the repeated-capture protocol.
 - `why_now`: The repeated capture protocol exists, but another Instagram UI /
@@ -1026,6 +1050,49 @@ routing and completion pointer.
   Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, or
   CRM actions unless Alejandro gives a fresh explicit approval for the exact
   next capture.
-- `completion_definition`: Alejandro approves the next notification-surface
-  capture under the repeated-capture protocol, declines it, or modifies the
-  route.
+- `completion_definition`: CRM Core completed the second read-only Instagram
+  notifications repeated-capture pilot as partial source-health evidence,
+  created redacted aggregate receipts, kept all private/source/CRM gates closed,
+  and recorded that Computer Use quality mode must be explicitly instrumented in
+  future captures.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_notifications_quality_gated_capture_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Wait for Alejandro approval before running the next Instagram
+  notifications capture with the Computer Use Quality Gate explicitly enforced
+  and reported.
+- `why_now`: The notifications route is producing useful aggregate pulse
+  signals, but before it becomes a daily ritual, CRM Core must prove the UI /
+  Computer Use path is stable enough and not silently relying on fragile
+  coordinate/screenshot fallback.
+- `allowed_scope`:
+  - Present the quality-gated capture route.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No coordinate fallback execution.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-capture-design-v0.md`,
+  `instagram-notifications-repeated-capture-protocol-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, welcome audio, source, CRM, coordinate, or
+  screenshot fallback actions unless Alejandro gives a fresh explicit approval
+  for the exact quality-gated capture route.
+- `completion_definition`: Alejandro approves, declines, or modifies the next
+  quality-gated notifications capture pilot.

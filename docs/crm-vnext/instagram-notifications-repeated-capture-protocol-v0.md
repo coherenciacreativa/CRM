@@ -81,6 +81,32 @@ Each future run should be represented by a compact capture unit:
 The capture unit should describe the route and aggregate observations, not
 private identities.
 
+## Computer Use Quality Gate
+
+Future repeated captures must follow:
+
+```text
+docs/crm-vnext/instagram-computer-use-quality-gate-v0.md
+```
+
+Every receipt must include the Computer Use quality fields required by that
+quality gate:
+
+- `computerUseMode`;
+- `fallbackUsed`;
+- `fallbackReason`;
+- `freshWindowUsed`;
+- `coordinateBasedActions`;
+- `screenshotOnlyNavigation`;
+- `visiblePointerObservedByUser`;
+- `actionsPerformed`;
+- `qualityGateStatus`;
+- `qualityGateMeaning`.
+
+Captures with unknown or degraded quality should not count as fully stable for
+daily ritual promotion. A capture can still be useful as partial source-health
+evidence, but it must be labeled accordingly.
+
 ## Trend Fields
 
 Future repeated captures may compare only redacted aggregate fields:
