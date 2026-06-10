@@ -1201,12 +1201,38 @@ routing and completion pointer.
   redacted receipts, Mantis pulse boundaries, stop conditions, and what remains
   separate before any automation.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_ritual_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_ritual_pilot_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_ritual_pilot_2026-06-10.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_ritual_pilot_closeout_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_ritual_pilot_closeout_2026-06-10.md`
+- `result`: `completed_partial`
+- `findings`:
+  - First daily notifications ritual pilot executed.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=planned_safe_start_navigation`.
+  - `plannedSafeStartNavigation=true`.
+  - `plannedSafeStartSurface=instagram_notifications`.
+  - `fallbackUsed=false`.
+  - No coordinate-based actions occurred.
+  - No screenshot-only navigation occurred.
+  - Actions performed remained 0.
+  - Source health remained partial due to viewport/read-state/story-viewer/DM
+    and dedupe blockers.
+  - Aggregate counts: 12 total visible notification groups, 4 visible new
+    follower notification groups, 2 visible story-related notification groups,
+    and 2 visible notification time buckets.
+  - Aggregate deltas from prior capture: +1 total visible notification group, 0
+    new follower group delta, +1 story-related group, and 0 time-bucket delta.
+  - No private content was printed.
+  - No CRM writes or source mutations occurred.
 - `objective`: Wait for Alejandro approval before running the first Instagram
   Daily Notifications Ritual v0 pilot using the designed cadence, planned safe
   start, and quality gate.
@@ -1240,5 +1266,57 @@ routing and completion pointer.
   Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, CRM,
   coordinate, or screenshot fallback actions unless Alejandro gives fresh
   explicit approval for the exact ritual pilot.
-- `completion_definition`: Alejandro approves, declines, or modifies the first
-  Instagram Daily Notifications Ritual v0 pilot route.
+- `completion_definition`: CRM Core completed the first daily notifications
+  ritual pilot as a green no-action sample, recorded aggregate counts and
+  blockers in redacted receipts, kept source health partial, printed no private
+  content, and performed no CRM writes or source mutations.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_standing_ritual_design_v0`
+- `status`: `active`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Design, but do not execute, the standing daily Instagram
+  notifications ritual boundary for a 5 a.m. no-action pulse capture using
+  planned safe start, the Computer Use Quality Gate, redacted receipts, and
+  strict stop conditions.
+- `why_now`: CRM Core now has a green daily notifications ritual pilot, one
+  prior green quality-gated sample, and one acceptable yellow sample. The next
+  step is to design the standing ritual boundary before any repeated automation,
+  while keeping story viewer frequency, DM/email handoff, welcome audio, and CRM
+  writes as separate lanes.
+- `allowed_scope`:
+  - Design only.
+  - Use redacted receipts and existing protocols.
+  - Define 5 a.m. cadence.
+  - Define planned safe start.
+  - Define quality gate requirements.
+  - Define skip/stop conditions.
+  - Define Mantis daily pulse brief content.
+  - Define what must remain separate.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-ritual-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`,
+  `instagram-notifications-repeated-capture-protocol-v0.md`, and
+  `instagram-daily-notifications-capture-design-v0.md`. Design only; do not
+  execute Instagram UI, Computer Use, API, DM, story viewer, welcome audio,
+  source, CRM, coordinate, or screenshot fallback actions.
+- `completion_definition`: CRM Core has a no-run standing daily notifications
+  ritual design that explains schedule, start-surface handling, Computer Use
+  quality gates, receipts, daily pulse brief, skip/stop conditions, and explicit
+  separation from story viewers, DMs/email handoff, welcome audio, CRM writes,
+  and outreach.
