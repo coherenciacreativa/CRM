@@ -1056,12 +1056,31 @@ routing and completion pointer.
   and recorded that Computer Use quality mode must be explicitly instrumented in
   future captures.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_notifications_quality_gated_capture_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_capture_pilot_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_capture_pilot_2026-06-10.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_capture_closeout_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_capture_closeout_2026-06-10.md`
+- `result`: `completed_partial`
+- `findings`:
+  - Quality-gated notifications capture completed partially.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=native_computer_use`.
+  - No fallback was used.
+  - No coordinate-based actions occurred.
+  - No screenshot-only navigation occurred.
+  - Actions performed remained 0.
+  - Source health remained partial due to viewport/read-state/story-viewer/DM
+    and dedupe blockers.
+  - No private content was printed.
+  - No CRM writes or source mutations occurred.
 - `objective`: Wait for Alejandro approval before running the next Instagram
   notifications capture with the Computer Use Quality Gate explicitly enforced
   and reported.
@@ -1094,5 +1113,49 @@ routing and completion pointer.
   Computer Use, API, DM, story viewer, welcome audio, source, CRM, coordinate, or
   screenshot fallback actions unless Alejandro gives a fresh explicit approval
   for the exact quality-gated capture route.
+- `completion_definition`: CRM Core completed the quality-gated Instagram
+  notifications capture as partial source-health evidence, recorded
+  `qualityGateStatus=green`, confirmed native Computer Use with no fallback,
+  coordinate-based actions, screenshot-only navigation, or source actions, and
+  kept all private/source/CRM gates closed.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_notifications_quality_gated_capture_repeat_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Wait for Alejandro approval before running another quality-gated
+  notifications capture to gather a second green/acceptable sample for daily
+  ritual readiness.
+- `why_now`: The latest capture proved native Computer Use can work cleanly for
+  the notifications route, but one quality-gated green sample is not enough to
+  promote this to a daily ritual. CRM Core should gather at least one more
+  quality-gated capture before designing automation.
+- `allowed_scope`:
+  - Present the next quality-gated capture route.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No coordinate fallback execution.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-capture-design-v0.md`,
+  `instagram-notifications-repeated-capture-protocol-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, welcome audio, source, CRM, coordinate, or
+  screenshot fallback actions unless Alejandro gives a fresh explicit approval
+  for the exact next quality-gated capture.
 - `completion_definition`: Alejandro approves, declines, or modifies the next
-  quality-gated notifications capture pilot.
+  quality-gated notifications capture.
