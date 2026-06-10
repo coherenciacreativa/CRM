@@ -107,6 +107,11 @@ Captures with unknown or degraded quality should not count as fully stable for
 daily ritual promotion. A capture can still be useful as partial source-health
 evidence, but it must be labeled accordingly.
 
+Future repeated captures should distinguish planned safe start navigation from
+unplanned fallback. Daily ritual candidates should prefer a fresh known-safe
+start surface, and receipts should include planned safe start fields once the
+protocol supports them.
+
 ## Trend Fields
 
 Future repeated captures may compare only redacted aggregate fields:

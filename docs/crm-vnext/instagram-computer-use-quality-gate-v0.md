@@ -20,6 +20,7 @@ quality.
 | --- | --- | --- |
 | `native_computer_use` | Preferred mode. App/page interaction appears stable and tool-supported. | Approved quality target for future captures. |
 | `fresh_window_native_retry` | Allowed recovery mode after closing/reopening Safari or using a clean browser window. | Allowed once when the active action permits read-only recovery. |
+| `planned_safe_start_navigation` | Intentional route initialization to a known safe surface before observation. | Allowed for approved daily rituals when reported separately from unplanned fallback. |
 | `safari_url_fallback_navigation` | URL navigation to a known safe starting surface. | Allowed only for navigation to Instagram home or notifications, not signal collection by clicking. |
 | `screenshot_coordinate_fallback` | Coordinate or screenshot-driven interaction. | Not approved for Instagram signal capture unless Alejandro explicitly approves a narrow route. |
 | `unknown` | Quality mode cannot be proven. | Treat as partial/degraded source health. |
@@ -32,6 +33,9 @@ Every future Instagram UI capture receipt must include:
 - `fallbackUsed`;
 - `fallbackReason`;
 - `freshWindowUsed`;
+- `plannedSafeStartNavigation`;
+- `plannedSafeStartSurface`;
+- `plannedSafeStartReason`;
 - `coordinateBasedActions`;
 - `screenshotOnlyNavigation`;
 - `visiblePointerObservedByUser`: `true`, `false`, or `unknown`;
@@ -51,6 +55,37 @@ content.
 | `blocked` | Native Computer Use was unavailable and the next step required interaction, coordinate fallback, private-surface access, or any visible action risk. |
 
 Unknown quality must not be reported as green.
+
+## Planned Safe Start Navigation
+
+`planned_safe_start_navigation` means a future approved ritual intentionally
+starts by opening a fresh browser window or navigating to a known safe starting
+URL such as Instagram notifications.
+
+This is allowed only as route initialization. It is not signal capture by
+clicking, source action, or private-surface navigation.
+
+Rules:
+
+- planned safe start may be acceptable for daily ritual startup;
+- it must be reported separately from unplanned fallback;
+- it must not click notification items;
+- it must not open DMs, profiles, story viewers, or private threads;
+- it must not perform source actions;
+- after reaching the safe surface, native/stable Computer Use should be used for
+  observation;
+- if observation still requires coordinate or screenshot fallback, stop.
+
+Additional reporting fields:
+
+- `plannedSafeStartNavigation`;
+- `plannedSafeStartSurface`;
+- `plannedSafeStartReason`.
+
+`planned_safe_start_navigation` can still be `green` or `yellow` depending on
+whether observation after navigation used stable/native Computer Use and no
+coordinate/screenshot fallback. Unplanned fallback remains `yellow` or
+`blocked`.
 
 ## Preferred Route
 

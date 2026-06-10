@@ -1119,12 +1119,32 @@ routing and completion pointer.
   coordinate-based actions, screenshot-only navigation, or source actions, and
   kept all private/source/CRM gates closed.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_notifications_quality_gated_capture_repeat_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_repeat_capture_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_repeat_capture_2026-06-10.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_repeat_capture_closeout_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_notifications_quality_gated_repeat_capture_closeout_2026-06-10.md`
+- `result`: `completed_partial`
+- `findings`:
+  - Repeat quality-gated notifications capture completed partially.
+  - `qualityGateStatus=yellow`.
+  - `computerUseMode=safari_url_fallback_navigation`.
+  - Fallback was safe URL navigation only to reach the known notifications
+    surface.
+  - No coordinate-based actions occurred.
+  - No screenshot-only navigation occurred.
+  - Actions performed remained 0.
+  - Source health remained partial due to viewport/read-state/story-viewer/DM
+    and dedupe blockers.
+  - This counts as an acceptable yellow sample, but future rituals should
+    distinguish planned safe start navigation from fallback.
 - `objective`: Wait for Alejandro approval before running another quality-gated
   notifications capture to gather a second green/acceptable sample for daily
   ritual readiness.
@@ -1157,5 +1177,52 @@ routing and completion pointer.
   Computer Use, API, DM, story viewer, welcome audio, source, CRM, coordinate, or
   screenshot fallback actions unless Alejandro gives a fresh explicit approval
   for the exact next quality-gated capture.
-- `completion_definition`: Alejandro approves, declines, or modifies the next
-  quality-gated notifications capture.
+- `completion_definition`: CRM Core completed the quality-gated repeat
+  notifications capture as partial source-health evidence, recorded an
+  acceptable yellow quality sample, kept all private/source/CRM gates closed, and
+  clarified that future rituals should distinguish planned safe start navigation
+  from unplanned fallback.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_ritual_design_v0`
+- `status`: `active`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Design, but do not execute, the first Instagram Daily
+  Notifications Ritual v0 using the quality-gated notifications route, with
+  planned safe start navigation, redacted receipts, and no CRM/source mutations.
+- `why_now`: CRM Core has one green quality-gated capture and one acceptable
+  yellow capture. The next useful step is to design the daily ritual, not
+  execute automation yet, while preserving stop conditions and keeping story
+  viewers, DMs/email handoff, and welcome audio as separate lanes.
+- `allowed_scope`:
+  - Design only.
+  - Use redacted receipts and existing protocols.
+  - Define daily 5 a.m. ritual.
+  - Define planned safe start behavior.
+  - Define quality gate requirements.
+  - Define what counts as stable enough.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-capture-design-v0.md`,
+  `instagram-notifications-repeated-capture-protocol-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Design only; do not execute
+  Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, CRM,
+  coordinate, or screenshot fallback actions.
+- `completion_definition`: CRM Core has a no-run daily notifications ritual
+  design that explains cadence, start-surface handling, quality gate
+  requirements, redacted receipts, trend fields, stop conditions, and what
+  remains separate before any automation.
