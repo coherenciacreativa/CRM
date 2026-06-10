@@ -932,12 +932,21 @@ routing and completion pointer.
   CRM writes, ledgers, cards, Fact Store, scoring, source mutations, Launch OS
   docs, and `/Users/alejandrogomez/CRM`.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_notifications_repeated_capture_protocol_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifact`: `docs/crm-vnext/instagram-notifications-repeated-capture-protocol-v0.md`
+- `completion_definition`: CRM Core has a no-run repeated capture protocol for
+  Instagram notifications that explains how multiple notifications captures can
+  produce redacted trend signals, how dedupe/read-state ambiguity is handled,
+  what remains blocked, and when to graduate to a daily ritual. No new
+  Instagram work, UI, Computer Use, API, DMs, story viewer collection, welcome
+  audio, private content print, CRM write, source mutation, Launch OS doc touch,
+  or `/Users/alejandrogomez/CRM` use occurred.
 - `objective`: Design, but do not execute, the repeated capture protocol that
   would allow daily notifications captures to become useful over time through
   dedupe, time buckets, redacted trend counts, and source-health monitoring.
@@ -970,7 +979,53 @@ routing and completion pointer.
   `instagram-daily-notifications-capture-design-v0.md`, and the redacted
   notifications capture receipts. Design only; do not execute Instagram UI,
   Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions.
-- `completion_definition`: CRM Core has a no-run repeated capture protocol for
-  Instagram notifications that explains how multiple notifications captures can
-  produce redacted trend signals, how dedupe/read-state ambiguity is handled,
-  what remains blocked, and when to graduate to a daily ritual.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_notifications_repeated_capture_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Wait for Alejandro approval before running the next
+  notifications capture under the repeated-capture protocol.
+- `why_now`: The repeated capture protocol exists, but another Instagram UI /
+  Computer Use capture crosses a fresh approval boundary. CRM Core must wait
+  before running the next notification-surface capture.
+- `allowed_scope`:
+  - Present the repeated capture protocol.
+  - Answer clarifying questions.
+  - Wait for Alejandro approval, decline, or route modification.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No API or connector calls.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No follow, like, react, comment, reply, archive, label, mark, or source
+    mutation.
+  - No private content, handles tied to private identities, names, emails, DMs,
+    screenshots, story viewer lists, private URLs, message bodies, tokens,
+    headers, env values, credential metadata, or private content printed.
+  - No CRM writes.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No card writes.
+  - No Fact Store writes.
+  - No source-result ledger writes.
+  - No scoring writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-capture-design-v0.md`, and
+  `instagram-notifications-repeated-capture-protocol-v0.md`. Do not execute
+  Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, or
+  CRM actions unless Alejandro gives a fresh explicit approval for the exact
+  next capture.
+- `completion_definition`: Alejandro approves the next notification-surface
+  capture under the repeated-capture protocol, declines it, or modifies the
+  route.
