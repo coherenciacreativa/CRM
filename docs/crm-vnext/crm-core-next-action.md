@@ -1183,46 +1183,62 @@ routing and completion pointer.
   clarified that future rituals should distinguish planned safe start navigation
   from unplanned fallback.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_ritual_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-daily-notifications-ritual-v0.md`
 - `objective`: Design, but do not execute, the first Instagram Daily
   Notifications Ritual v0 using the quality-gated notifications route, with
   planned safe start navigation, redacted receipts, and no CRM/source mutations.
-- `why_now`: CRM Core has one green quality-gated capture and one acceptable
-  yellow capture. The next useful step is to design the daily ritual, not
-  execute automation yet, while preserving stop conditions and keeping story
-  viewers, DMs/email handoff, and welcome audio as separate lanes.
+- `completion_definition`: CRM Core has a no-run daily notifications ritual
+  design that explains cadence, start-surface handling, quality gate
+  requirements, capture scope, trend fields, dedupe/read-state handling,
+  redacted receipts, Mantis pulse boundaries, stop conditions, and what remains
+  separate before any automation.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_ritual_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Wait for Alejandro approval before running the first Instagram
+  Daily Notifications Ritual v0 pilot using the designed cadence, planned safe
+  start, and quality gate.
+- `why_now`: The no-run daily ritual design exists, but any Instagram UI /
+  Computer Use execution crosses a fresh approval boundary. CRM Core must wait
+  before opening Instagram, using Computer Use, or producing a new capture.
 - `allowed_scope`:
-  - Design only.
-  - Use redacted receipts and existing protocols.
-  - Define daily 5 a.m. ritual.
-  - Define planned safe start behavior.
-  - Define quality gate requirements.
-  - Define what counts as stable enough.
+  - Present the ritual pilot route.
+  - Answer clarifying questions.
+  - Wait for approval.
   - No execution.
 - `forbidden_scope`:
   - No Instagram execution.
   - No Computer Use.
   - No UI.
+  - No API or connector calls.
   - No DMs.
   - No story viewer collection.
   - No welcome audio.
+  - No source actions.
   - No CRM writes.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `instagram-daily-notifications-capture-design-v0.md`,
+  `instagram-daily-notifications-ritual-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`,
   `instagram-notifications-repeated-capture-protocol-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Design only; do not execute
+  `instagram-daily-notifications-capture-design-v0.md`. Do not execute
   Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, CRM,
-  coordinate, or screenshot fallback actions.
-- `completion_definition`: CRM Core has a no-run daily notifications ritual
-  design that explains cadence, start-surface handling, quality gate
-  requirements, redacted receipts, trend fields, stop conditions, and what
-  remains separate before any automation.
+  coordinate, or screenshot fallback actions unless Alejandro gives fresh
+  explicit approval for the exact ritual pilot.
+- `completion_definition`: Alejandro approves, declines, or modifies the first
+  Instagram Daily Notifications Ritual v0 pilot route.
