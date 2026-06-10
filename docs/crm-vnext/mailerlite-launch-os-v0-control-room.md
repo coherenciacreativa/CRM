@@ -9732,3 +9732,83 @@ Safety:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad Shopify isolated theme files ready and execution approval waiting - 2026-06-10
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Shopify preview real has not been executed. Shopify Admin/API has not been
+called. The isolated Shopify worktree exists, the Test Claridad theme files are
+QA-green and committed/pushed on the isolated branch, and the Shopify Preview
+Execution Packet is ready. The next boundary is CEO approval before any Shopify
+preview noindex/unlisted execution via Admin/API.
+
+Shopify isolated worktree:
+
+- Path:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
+- Base: `origin/main`.
+- Branch: `codex/shopify-test-claridad-preview`.
+- Commit: `325dbcd Add Test Claridad isolated preview theme files`.
+- Worktree status after push: clean against
+  `origin/codex/shopify-test-claridad-preview`.
+
+Theme files QA-green:
+
+- `sections/test-claridad-antes-de-decidir.liquid`
+- `snippets/test-claridad-inert-email-capture.liquid`
+- `templates/page.test-claridad-preview.liquid`
+
+Evidence:
+
+- Theme files local/no-live QA report:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_theme_files_local_no_live_qa_2026-06-10.md`
+- Shopify Preview Execution Packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_packet_local_only_2026-06-10.md`
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_shopify_preview_noindex_unlisted_preflight`
+- New active next action:
+  `launch_os_v0_test_claridad_shopify_preview_execution_approval_waiting`
+
+Operating meaning:
+
+- The next edge is not more local implementation and not execution by default.
+- Wait for exact CEO approval before calling Shopify Admin/API to create/update
+  the noindex/unlisted preview.
+- If approved later, execution must start from the isolated worktree and the
+  execution packet gates.
+- The dirty original Shopify worktree remains outside this lane.
+
+Closed gates:
+
+- Preview real executed: false.
+- Shopify Admin/API called: false.
+- Shopify UI opened: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite UI opened: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

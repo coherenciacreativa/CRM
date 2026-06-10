@@ -2780,38 +2780,66 @@ Use deep hydration only for:
   prototype acceptance, CEO Build Decision Packet acceptance and the new Shopify
   preview noindex/unlisted preflight boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad Shopify Preview Noindex Unlisted Preflight - 2026-06-09
+## Completed Next Action - Launch OS v0 Test Claridad Shopify Preview Noindex Unlisted Preflight - 2026-06-10
 
 - `next_action_id`: `launch_os_v0_test_claridad_shopify_preview_noindex_unlisted_preflight`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-09`
-- `updated_at`: `2026-06-09`
+- `completed_at`: `2026-06-10`
 - `source_checkpoint`: `Launch OS v0 Test Claridad static local prototype and
   CEO Build Decision Packet accepted local-only - 2026-06-09`
-- `objective`: Prepare, after explicit approval to proceed, only the preflight,
-  plan and receipt framework for a future Shopify preview noindex/unlisted of
-  `Test de claridad antes de decidir`; do not create the preview yet and do not
-  publish.
-- `why_now`: The static prototype already validates enough of the local
-  experience. The next meaningful environment is a controlled web preview, but
-  the responsible next edge is preflight and no-public gate design before any
-  Shopify preview work.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_noindex_unlisted_preflight_2026-06-09.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_theme_files_local_no_live_qa_2026-06-10.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_packet_local_only_2026-06-10.md`
+  - Shopify isolated worktree:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
+  - Shopify branch: `codex/shopify-test-claridad-preview`
+  - Shopify commit: `325dbcd Add Test Claridad isolated preview theme files`
+- `completion_summary`:
+  - Shopify isolated worktree was created from `origin/main`.
+  - Theme files for `Test de claridad antes de decidir` are QA-green and
+    committed/pushed on the isolated branch.
+  - Shopify Preview Execution Packet is ready for CEO review.
+  - Preview real has not been executed; Shopify Admin/API has not been called.
+  - This completion does not approve publish, public navigation, audience
+    traffic, MailerLite, CRM writes, analytics or live systems.
+- `theme_files_qa_green`:
+  - `sections/test-claridad-antes-de-decidir.liquid`
+  - `snippets/test-claridad-inert-email-capture.liquid`
+  - `templates/page.test-claridad-preview.liquid`
+- `next_checkpoint_expected`: Control Room checkpoint recording isolated
+  Shopify worktree, QA-green theme files, commit `325dbcd`, execution packet and
+  new CEO approval waiting boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad Shopify Preview Execution Approval Waiting - 2026-06-10
+
+- `next_action_id`: `launch_os_v0_test_claridad_shopify_preview_execution_approval_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `source_checkpoint`: `Launch OS v0 Test Claridad Shopify isolated theme files
+  QA-green and execution packet ready - 2026-06-10`
+- `objective`: Wait for an explicit CEO approval before executing the Shopify
+  preview noindex/unlisted via scoped Shopify Admin/API from the isolated
+  worktree; do not execute preview until that approval exists.
+- `why_now`: The local theme files are ready and the execution packet defines the
+  exact gates. The next real boundary is a human approval decision for the
+  scoped Admin/API execution, not more local implementation.
 - `allowed_scope`:
-  - Documentation-only preflight and plan for Shopify preview noindex/unlisted.
-  - Define QA receipt structure and no-public gates.
-  - Define checks for noindex/unlisted, no public navigation, no audience
-    traffic and no publish.
-  - Include minimal cleanup requirements for future execution if needed:
-    tie-breaker Q2 cleanup and removal/hiding of internal prototype labels.
-  - Use existing local artifacts as evidence.
+  - Read and reference the Shopify Preview Execution Packet.
+  - Provide the exact CEO approval phrase if requested.
+  - Perform read-only checks of the isolated Shopify worktree if needed.
+  - Keep the original dirty Shopify worktree untouched.
   - Keep hypotheses labeled as hypotheses, not observed events.
   - Keep all live gates closed.
 - `forbidden_scope`:
-  - Do not call live APIs.
-  - Do not create Shopify preview/live pages in this pointer update or
-    preflight step.
+  - Do not call Shopify Admin/API until the exact execution approval is given.
+  - Do not open Shopify UI.
+  - Do not create or update the Shopify preview.
   - Do not touch live navigation.
   - Do not publish.
+  - Do not send or invite audience traffic.
   - Do not create MailerLite drafts.
   - Do not send emails, publish, schedule or assign audience.
   - Do not mutate subscribers, groups, tags, segments, workflows, campaigns or
@@ -2822,27 +2850,33 @@ Use deep hydration only for:
   - Do not touch GOG/auth dirty files.
   - Do not treat hypotheses as observed events.
   - Do not add analytics, persistence or audience traffic.
-- `expected_files`:
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_noindex_unlisted_preflight_2026-06-09.md`
+- `approval_packet_ready`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_packet_local_only_2026-06-10.md`
+- `shopify_execution_candidate`:
+  - `worktree`: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
+  - `branch`: `codex/shopify-test-claridad-preview`
+  - `commit`: `325dbcd Add Test Claridad isolated preview theme files`
+  - `base`: `origin/main`
 - `live_gate_status`: MailerLite live, Shopify preview/live, CRM writes,
   public/audience sends, publish, schedule, subscriber/group/workflow/campaign
-  mutations, ledgers, cards, scoring and Fact Store remain closed.
-- `human_boundary_id`: `test_claridad_shopify_preview_noindex_unlisted_preflight`
-- `human_boundary_notification_status`: `approval_needed_before_preflight_or_execute_after_pointer_commit`
+  mutations, ledgers, cards, scoring, analytics and Fact Store remain closed.
+- `human_boundary_id`: `test_claridad_shopify_preview_execution_approval`
+- `human_boundary_notification_status`: `approval_needed_before_shopify_admin_api_execution`
 - `stop_conditions`:
-  - Any requested next step would create a Shopify preview before preflight and
-    no-public gates are defined.
-  - Any requested next step would publish, add public navigation, invite
-    audience traffic, create MailerLite drafts, send emails, assign audience,
-    write CRM, mutate workflows/subscribers/groups/tags/segments/campaigns or
-    touch live APIs without a separate exact approval.
-  - Any preview path cannot prove noindex/unlisted and no-public gates.
-- `resume_instruction`: If Alejandro approves continuing after this pointer
-  update, prepare only the Shopify preview noindex/unlisted preflight artifact
-  and receipt/gate plan. Do not create the preview until a later exact approval.
-- `completion_definition`: A local-only preflight artifact exists with evidence,
-  proposed preview gates, cleanup requirements, QA receipt structure, no-public
-  stop conditions and the exact next CEO approval packet for preview execution.
-- `next_checkpoint_expected`: Control Room checkpoint after Shopify preview
-  noindex/unlisted preflight artifact generation, or a blocker if approval/input
-  is missing.
+  - Alejandro has not provided exact approval to execute Shopify preview
+    noindex/unlisted via Admin/API.
+  - Any requested next step would publish, touch navigation, invite audience
+    traffic, create MailerLite drafts, send emails, assign audience, write CRM,
+    mutate workflows/subscribers/groups/tags/segments/campaigns, add analytics
+    or touch GOG/auth.
+  - The isolated Shopify worktree no longer matches commit `325dbcd` or the
+    expected QA-green file scope.
+- `resume_instruction`: If Alejandro approves execution, verify the isolated
+  worktree and approval packet first, then execute only the scoped preview
+  noindex/unlisted path and produce a receipt. Otherwise remain at approval
+  waiting with all live gates closed.
+- `completion_definition`: CEO has either approved execution and the execution
+  receipt exists, or has declined/paused the preview execution with a Control
+  Room checkpoint. Until then, this action remains waiting.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO approval,
+  execution receipt, or explicit pause/decline.
