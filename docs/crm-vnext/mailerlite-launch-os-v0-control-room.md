@@ -9991,3 +9991,99 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad rollback diagnosis accepted and base preview QA waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the read-only diagnosis of the Value Perception Microfix
+rollback. The microfix is deferred, not rejected. The restored base preview
+remains the active state for CEO/Web QA. No Shopify Admin/API retry, asset
+upload, rollback, MailerLite, CRM, sends, analytics or public-navigation work is
+approved by this checkpoint.
+
+Diagnosis:
+
+- Probable cause: Shopify asset eventual consistency / read-after-write delay.
+- Contributing cause: helper verification declared failure too immediately after
+  write instead of using retry/backoff and delayed verification.
+- Hash/encoding mismatch: unlikely.
+- Asset key issue: unlikely.
+- Target theme issue: unlikely.
+- Cause determinability: likely enough for process learning; no live retry now.
+
+Decision:
+
+- Do not retry the Value Perception Microfix now.
+- Value Perception Microfix status: deferred, not rejected.
+- Restored base preview remains the active state for CEO/Web QA.
+- The approved local microfix commit remains useful local/branch evidence but is
+  not the live preview state.
+
+Evidence:
+
+- Microfix rollback receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_value_perception_microfix_execution_receipt_2026-06-10.json`
+- Previous preview execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
+- Local microfix commit:
+  `eb65ab7 Refine Test Claridad result value perception`.
+- Restored base preview state: previous preview state `325dbcd`.
+
+Process learning:
+
+- Shopify asset micro-updates must use retry/backoff and delayed verification
+  before declaring failure.
+- Do not retry live micro-updates without a new execution packet.
+- Product/UX learning for next batch: do not use expandable CTAs if the expanded
+  content does not perceptibly change the experience.
+- For fast microproducts, improve perceived value first with result specificity,
+  a useful step and a conservable artifact/summary before adding animation or
+  extra design.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_value_perception_microfix_rollback_decision_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_shopify_preview_base_ceo_web_qa_waiting`
+
+Operating meaning:
+
+- The live preview is safe and restored to the base preview state.
+- The next edge is CEO/Web QA on the restored base preview.
+- No Shopify Admin/API retry is authorized.
+- No MailerLite, CRM, sends, analytics, public navigation, audience traffic or
+  distribution is authorized.
+
+Closed gates:
+
+- More Shopify changes approved now: false.
+- Shopify Admin/API retry approved now: false.
+- Shopify UI opened: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite forms real used: false.
+- MailerLite UI opened: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

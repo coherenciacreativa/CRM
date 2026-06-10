@@ -2899,28 +2899,51 @@ Use deep hydration only for:
   Value Perception Microfix attempted/rolled_back and the new read-only
   diagnosis/as-is decision boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad Value Perception Microfix Rollback Diagnosis Or As-Is Decision - 2026-06-11
+## Completed Next Action - Launch OS v0 Test Claridad Value Perception Microfix Rollback Diagnosis Or As-Is Decision - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_value_perception_microfix_rollback_decision_waiting`
+- `status`: `completed`
+- `created_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `source_checkpoint`: `Value Perception Microfix attempted and rolled back
+  after partial Shopify asset update - 2026-06-10`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_value_perception_microfix_execution_receipt_2026-06-10.json`
+- `completion_summary`:
+  - Rollback diagnosis accepted by CEO.
+  - Probable cause: Shopify asset eventual consistency / read-after-write delay
+    plus helper verification that declared failure too immediately.
+  - Value Perception Microfix remains deferred, not rejected.
+  - No retry now.
+  - The restored base preview remains the active state for CEO/Web QA.
+  - Shopify asset micro-updates should use retry/backoff and delayed
+    verification before declaring failure.
+  - Live micro-updates should not be retried without a new execution packet.
+  - Product/UX learning: do not use expandable CTAs if the expanded content does
+    not perceptibly change the experience; carry this into the next batch.
+- `next_checkpoint_expected`: Control Room checkpoint recording rollback
+  diagnosis acceptance, microfix deferred, process learning and restored base
+  preview CEO/Web QA boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad Shopify Preview Base CEO/Web QA Waiting - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_shopify_preview_base_ceo_web_qa_waiting`
 - `status`: `active`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
-- `source_checkpoint`: `Value Perception Microfix attempted and rolled back
-  after partial Shopify asset update - 2026-06-10`
-- `objective`: Decide whether to diagnose the Shopify micro-update verification
-  failure read-only, or leave the preview as-is for now. Do not retry Shopify
-  Admin/API or make any functional changes by default.
-- `why_now`: The value-perception issue is real, but the attempted remote
-  two-asset update rolled back to a safe previous preview state. The next
-  responsible edge is not another mutation; it is diagnosis or an explicit
-  decision to leave the preview as-is.
+- `source_checkpoint`: `Value Perception Microfix rollback diagnosis accepted;
+  base preview restored and remains active for CEO/Web QA - 2026-06-11`
+- `objective`: Wait for CEO/Web QA of the restored base Shopify preview. Do not
+  retry the deferred microfix or make more changes by default.
+- `why_now`: The microfix diagnosis is closed and the live preview is safely
+  restored to the previous base state. The next meaningful edge is Alejandro's
+  review of the base preview or an explicit decision to pause/change direction.
 - `allowed_scope`:
   - Read/reference existing local receipts and Launch OS docs.
   - Read local Shopify worktree state.
-  - Prepare a read-only diagnosis packet for the verification failure.
-  - Prepare a CEO decision packet comparing read-only diagnosis versus leaving
-    the preview as-is.
-  - Keep the isolated Shopify patch commit as local/branch evidence; do not
+  - Explain the base preview state and deferred microfix status.
+  - Prepare decision language for CEO/Web QA outcomes.
+  - Keep the isolated Shopify microfix commit as local/branch evidence; do not
     treat it as live preview state.
   - Keep hypotheses labeled as hypotheses, not observed events.
   - Keep all live gates closed.
@@ -2944,6 +2967,9 @@ Use deep hydration only for:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_value_perception_microfix_execution_receipt_2026-06-10.json`
 - `rollback_summary`:
   - `executionStatus`: `rolled_back`
+  - Probable cause: eventual consistency / read-after-write delay plus helper
+    verification too immediate.
+  - Microfix status: deferred, not rejected.
   - Actually changed before rollback:
     `sections/test-claridad-antes-de-decidir.liquid`
   - Final remote assets restored to previous preview state `325dbcd`.
@@ -2959,23 +2985,30 @@ Use deep hydration only for:
   - `branch`: `codex/shopify-test-claridad-preview`
   - `local_microfix_commit`: `eb65ab7 Refine Test Claridad result value perception`
   - `live_preview_remote_state`: restored to previous preview state `325dbcd`.
+- `process_learning`:
+  - Shopify asset micro-updates need retry/backoff and delayed verification
+    before declaring failure.
+  - Do not retry live micro-updates without a new execution packet.
+  - Do not use expandable CTAs if the expanded content does not perceptibly
+    change the experience; prioritize result specificity, useful step and a
+    conservable artifact/summary before animation or extra design.
 - `live_gate_status`: The live preview remains as-is at the previous preview
   state. Public navigation, publish, audience traffic, MailerLite, CRM writes,
   public/audience sends, schedule, subscriber/group/workflow/campaign mutations,
   ledgers, cards, scoring, analytics and Fact Store remain closed.
-- `human_boundary_id`: `test_claridad_value_perception_microfix_rollback_decision`
-- `human_boundary_notification_status`: `decision_needed_readonly_diagnosis_or_leave_as_is`
+- `human_boundary_id`: `test_claridad_shopify_preview_base_ceo_web_qa`
+- `human_boundary_notification_status`: `waiting_for_ceo_web_qa_on_restored_base_preview`
 - `stop_conditions`:
   - Any requested next step would retry Shopify Admin/API, make Shopify changes,
     publish, touch navigation, invite audience traffic, create MailerLite
     drafts, send emails, assign audience, write CRM, mutate workflows/
     subscribers/groups/tags/segments/campaigns, add analytics or touch GOG/auth.
-- `resume_instruction`: Remain in a no-mutation posture. If Alejandro chooses
-  diagnosis, prepare a read-only verification-failure diagnosis packet. If
-  Alejandro chooses to leave the preview as-is, record that decision and keep
-  Launch OS at the next non-live planning edge.
-- `completion_definition`: Alejandro either chooses read-only diagnosis, chooses
-  to leave the preview as-is, or provides a later exact approval packet for a
-  different next edge.
-- `next_checkpoint_expected`: Control Room checkpoint after the read-only
-  diagnosis/as-is decision, or explicit pause.
+- `resume_instruction`: Remain in a no-mutation posture. If Alejandro accepts
+  the base preview, record that decision and prepare the next exact approval
+  packet only if requested. If Alejandro asks for changes, keep them local-only
+  until a new execution packet exists.
+- `completion_definition`: Alejandro completes CEO/Web QA on the restored base
+  preview and chooses accept, pause, local-only revision, or a later exact
+  execution path.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO/Web QA on the
+  restored base preview, or explicit pause.
