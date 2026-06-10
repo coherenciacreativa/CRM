@@ -860,12 +860,33 @@ routing and completion pointer.
   surface-access pilot receipts. Design only; do not execute Instagram UI,
   Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_capture_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-10`
 - `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-10`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_capture_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_capture_2026-06-10.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_capture_closeout_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_capture_closeout_2026-06-10.md`
+- `result`: `completed_partial`
+- `findings`:
+  - First notifications capture executed.
+  - Source health state: partial.
+  - Notification surface reached.
+  - Total visible notification groups: 11.
+  - Visible new follower notification groups: 4.
+  - Visible story-related notification groups: 0.
+  - Visible notification time buckets: 2.
+  - Read-state ambiguity was not visibly triggered but is not fully provable.
+  - This route did not provide story viewer frequency.
+  - This route did not provide DM/email handoff evidence.
+  - No Instagram actions were performed.
+  - No private content was printed.
+  - No CRM writes or source mutations occurred.
 - `objective`: Wait for Alejandro approval before any execution of the daily
   notifications capture route.
 - `why_now`: The no-run design exists, but any Instagram UI or Computer Use
@@ -904,5 +925,52 @@ routing and completion pointer.
   `instagram-daily-notifications-capture-design-v0.md`. Do not execute Instagram
   UI, Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions
   unless Alejandro gives a fresh explicit approval for this exact route.
-- `completion_definition`: Alejandro approves the first daily notifications
-  capture execution route, declines it, or modifies the route.
+- `completion_definition`: CRM Core executed the first read-only Instagram
+  notifications capture from the notifications surface only, created redacted
+  aggregate receipts, recorded partial source health, and kept closed all gates
+  for DMs, story viewer lists, welcome audio, Instagram actions, private content,
+  CRM writes, ledgers, cards, Fact Store, scoring, source mutations, Launch OS
+  docs, and `/Users/alejandrogomez/CRM`.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_notifications_repeated_capture_protocol_v0`
+- `status`: `active`
+- `created_at`: `2026-06-10`
+- `updated_at`: `2026-06-10`
+- `objective`: Design, but do not execute, the repeated capture protocol that
+  would allow daily notifications captures to become useful over time through
+  dedupe, time buckets, redacted trend counts, and source-health monitoring.
+- `why_now`: The first notifications capture produced useful aggregate
+  follower-signal data but also showed viewport/read-state and frequency
+  limitations. Repeated captures are needed before notification-surface data can
+  support daily pulse trends.
+- `allowed_scope`:
+  - Design only.
+  - Use only redacted receipts from the first notifications capture.
+  - Define repeated capture cadence.
+  - Define dedupe/read-state safeguards.
+  - Define trend fields.
+  - Define when this route is useful enough for a daily Mantis brief.
+  - Define what still requires separate pilots: story viewers, DMs/email
+    handoff, welcome audio.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-capture-design-v0.md`, and the redacted
+  notifications capture receipts. Design only; do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, welcome audio, source, or CRM actions.
+- `completion_definition`: CRM Core has a no-run repeated capture protocol for
+  Instagram notifications that explains how multiple notifications captures can
+  produce redacted trend signals, how dedupe/read-state ambiguity is handled,
+  what remains blocked, and when to graduate to a daily ritual.
