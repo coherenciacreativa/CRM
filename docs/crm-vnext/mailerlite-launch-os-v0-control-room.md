@@ -9812,3 +9812,87 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad Shopify preview executed and CEO/Web QA waiting - 2026-06-10
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the Shopify Preview Execution Receipt as execution completed,
+pending CEO/Web QA. The Shopify preview noindex/unlisted was executed via the
+approved scoped path. No further functionality is advanced by this checkpoint.
+
+Execution evidence:
+
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
+- Worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
+- Branch: `codex/shopify-test-claridad-preview`.
+- Commit: `325dbcd Add Test Claridad isolated preview theme files`.
+- Redacted URL label: `test_claridad_preview_url_redacted`.
+- URL SHA-256:
+  `2bd110cdab0f1add7de9ba9096c5b248baa0af8421a1c117b843123e759c46f8`.
+
+Execution result:
+
+- Shopify preview noindex/unlisted executed: true.
+- Execution status: completed.
+- Blockers: none.
+- `noindex,nofollow,noarchive` confirmed: true.
+- Public navigation touched: false.
+- MailerLite used: false.
+- CRM used: false.
+- Analytics/tracking added: false.
+- Theme published: false.
+- Caution for future process: target theme role was `main/live`; no theme
+  publish occurred.
+- Exact URL printed in chat: false.
+- Exact URL stored in local receipt: false.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_shopify_preview_execution_approval_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_shopify_preview_ceo_web_qa_waiting`
+
+Operating meaning:
+
+- The next edge is CEO/Web QA of the preview exact-link.
+- No more implementation, Shopify changes or system mutations should occur
+  until Alejandro reviews and chooses the next edge.
+- The preview remains exact-link/noindex/unlisted; it is not public navigation,
+  audience traffic, MailerLite distribution or CRM learning evidence.
+- CRM learning remains hypothesis-only until real observed events exist.
+
+Closed gates:
+
+- More Shopify changes approved now: false.
+- Shopify Admin/API call approved now: false.
+- Shopify UI opened: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite forms real used: false.
+- MailerLite UI opened: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
