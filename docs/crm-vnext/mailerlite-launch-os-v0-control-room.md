@@ -9896,3 +9896,98 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad Value Perception Microfix attempted and rolled back - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+CEO/Web QA found that the result-screen CTA `Seguir leyendo` reduced perceived
+value because it did not reveal enough perceptibly new content. Value Perception
+Microfix option A was approved: remove `Seguir leyendo`, show the brief
+reflection before email capture, and keep the result complete before asking for
+email. The local Shopify patch was committed and pushed, but the Shopify
+Admin/API micro-update was attempted and rolled back after a partial remote
+asset state was detected.
+
+Execution evidence:
+
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_value_perception_microfix_execution_receipt_2026-06-10.json`
+- Worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
+- Branch: `codex/shopify-test-claridad-preview`.
+- Local microfix commit:
+  `eb65ab7 Refine Test Claridad result value perception`.
+
+Execution result:
+
+- Micro-update attempted: true.
+- `executionStatus`: `rolled_back`.
+- Actually changed before rollback:
+  `sections/test-claridad-antes-de-decidir.liquid`.
+- Final remote assets restored to previous preview state `325dbcd`: true.
+- `snippets/test-claridad-inert-email-capture.liquid` restored/matches previous
+  preview state: true.
+- Page object touched: false.
+- Template touched: false.
+- Layout touched: false.
+- Public navigation touched: false.
+- MailerLite used: false.
+- CRM used: false.
+- Analytics/tracking added: false.
+- Exact URL printed: false.
+
+Blockers:
+
+- `initial_remote_asset_verification_failed_for_section_after_upload`
+- `partial_update_detected_section_new_snippet_old`
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_shopify_preview_ceo_web_qa_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_value_perception_microfix_rollback_decision_waiting`
+
+Operating meaning:
+
+- The live preview remains as-is at previous preview state `325dbcd`.
+- The approved local microfix exists in the isolated Shopify branch, but it is
+  not live after rollback.
+- The next edge is either read-only diagnosis of the micro-update verification
+  failure or a CEO decision to leave the preview as-is.
+- Do not retry Shopify Admin/API by default.
+- Do not advance to MailerLite, CRM, sends, audience traffic, analytics,
+  distribution or public navigation.
+
+Closed gates:
+
+- More Shopify changes approved now: false.
+- Shopify Admin/API retry approved now: false.
+- Shopify UI opened: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite forms real used: false.
+- MailerLite UI opened: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

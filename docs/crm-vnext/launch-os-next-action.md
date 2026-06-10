@@ -2864,31 +2864,69 @@ Use deep hydration only for:
   completed, receipt accepted as pending CEO/Web QA, and new CEO/Web QA waiting
   boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad Shopify Preview CEO/Web QA Waiting - 2026-06-10
+## Completed Next Action - Launch OS v0 Test Claridad Shopify Preview CEO/Web QA Waiting - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_shopify_preview_ceo_web_qa_waiting`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-10`
-- `updated_at`: `2026-06-10`
+- `completed_at`: `2026-06-11`
 - `source_checkpoint`: `Shopify preview noindex/unlisted execution receipt
   accepted as completed, pending CEO/Web QA - 2026-06-10`
-- `objective`: Wait for Alejandro's CEO/Web QA of the exact-link Shopify
-  preview. Do not make more changes until Alejandro reviews and chooses the next
-  edge.
-- `why_now`: The scoped Shopify preview execution is completed and QA gates are
-  green. The next meaningful validation is human review of the exact-link web
-  experience, not more implementation.
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_value_perception_microfix_execution_receipt_2026-06-10.json`
+- `completion_summary`:
+  - CEO/Web QA was completed.
+  - CEO observation: the result-screen CTA `Seguir leyendo` felt like overkill
+    because it did not reveal enough perceptibly new content.
+  - Value Perception Microfix option A was approved and committed locally in the
+    isolated Shopify worktree.
+  - Shopify Admin/API micro-update was attempted for the approved two-asset
+    patch, then rolled back after a remote verification failure produced a
+    partial state.
+  - Actually changed before rollback:
+    `sections/test-claridad-antes-de-decidir.liquid`.
+  - Final remote assets were restored to previous preview state `325dbcd`.
+  - `snippets/test-claridad-inert-email-capture.liquid` remained/restored to
+    previous preview state.
+  - Page object, template, layout, navigation, MailerLite, CRM and analytics
+    were not touched.
+  - No exact URL was printed.
+  - Blockers:
+    `initial_remote_asset_verification_failed_for_section_after_upload`;
+    `partial_update_detected_section_new_snippet_old`.
+- `next_checkpoint_expected`: Control Room checkpoint recording
+  Value Perception Microfix attempted/rolled_back and the new read-only
+  diagnosis/as-is decision boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad Value Perception Microfix Rollback Diagnosis Or As-Is Decision - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_value_perception_microfix_rollback_decision_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `Value Perception Microfix attempted and rolled back
+  after partial Shopify asset update - 2026-06-10`
+- `objective`: Decide whether to diagnose the Shopify micro-update verification
+  failure read-only, or leave the preview as-is for now. Do not retry Shopify
+  Admin/API or make any functional changes by default.
+- `why_now`: The value-perception issue is real, but the attempted remote
+  two-asset update rolled back to a safe previous preview state. The next
+  responsible edge is not another mutation; it is diagnosis or an explicit
+  decision to leave the preview as-is.
 - `allowed_scope`:
-  - Read/reference the execution receipt and existing Launch OS docs.
-  - Provide the redacted URL label and URL SHA-256 if needed.
-  - Explain the current state and exact next approval options.
-  - Keep the original dirty Shopify worktree outside this lane.
+  - Read/reference existing local receipts and Launch OS docs.
+  - Read local Shopify worktree state.
+  - Prepare a read-only diagnosis packet for the verification failure.
+  - Prepare a CEO decision packet comparing read-only diagnosis versus leaving
+    the preview as-is.
+  - Keep the isolated Shopify patch commit as local/branch evidence; do not
+    treat it as live preview state.
   - Keep hypotheses labeled as hypotheses, not observed events.
-  - Keep all live gates closed except the already completed scoped preview
-    execution.
+  - Keep all live gates closed.
 - `forbidden_scope`:
-  - Do not make further Shopify changes.
-  - Do not call Shopify Admin/API.
+  - Do not retry Shopify Admin/API.
+  - Do not make Shopify changes.
   - Do not open Shopify UI.
   - Do not publish.
   - Do not touch public navigation.
@@ -2902,33 +2940,42 @@ Use deep hydration only for:
   - Do not patch Brand Hub.
   - Do not touch GOG/auth dirty files.
   - Do not add analytics, persistence or tracking.
-- `execution_receipt`:
-  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
-- `shopify_preview_context`:
+- `microfix_receipt`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_value_perception_microfix_execution_receipt_2026-06-10.json`
+- `rollback_summary`:
+  - `executionStatus`: `rolled_back`
+  - Actually changed before rollback:
+    `sections/test-claridad-antes-de-decidir.liquid`
+  - Final remote assets restored to previous preview state `325dbcd`.
+  - Snippet restored/matches previous preview state.
+  - Page/template/layout/navigation/MailerLite/CRM/analytics untouched.
+  - Exact URL printed: false.
+  - Blocker:
+    `initial_remote_asset_verification_failed_for_section_after_upload`
+  - Blocker:
+    `partial_update_detected_section_new_snippet_old`
+- `shopify_context`:
   - `worktree`: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
   - `branch`: `codex/shopify-test-claridad-preview`
-  - `commit`: `325dbcd Add Test Claridad isolated preview theme files`
-  - `redacted_url_label`: `test_claridad_preview_url_redacted`
-  - `url_sha256`: `2bd110cdab0f1add7de9ba9096c5b248baa0af8421a1c117b843123e759c46f8`
-  - `target_theme_role_caution`: `main/live`; no theme publish occurred.
-- `live_gate_status`: Shopify preview exact-link exists for CEO/Web QA, but
-  public navigation, publish, audience traffic, MailerLite, CRM writes,
+  - `local_microfix_commit`: `eb65ab7 Refine Test Claridad result value perception`
+  - `live_preview_remote_state`: restored to previous preview state `325dbcd`.
+- `live_gate_status`: The live preview remains as-is at the previous preview
+  state. Public navigation, publish, audience traffic, MailerLite, CRM writes,
   public/audience sends, schedule, subscriber/group/workflow/campaign mutations,
   ledgers, cards, scoring, analytics and Fact Store remain closed.
-- `human_boundary_id`: `test_claridad_shopify_preview_ceo_web_qa`
-- `human_boundary_notification_status`: `waiting_for_ceo_web_qa`
+- `human_boundary_id`: `test_claridad_value_perception_microfix_rollback_decision`
+- `human_boundary_notification_status`: `decision_needed_readonly_diagnosis_or_leave_as_is`
 - `stop_conditions`:
-  - Alejandro has not reviewed the exact-link preview or chosen a next edge.
-  - Any requested next step would make more Shopify changes, publish, touch
-    navigation, invite audience traffic, create MailerLite drafts, send emails,
-    assign audience, write CRM, mutate workflows/subscribers/groups/tags/
-    segments/campaigns, add analytics or touch GOG/auth.
-- `resume_instruction`: Remain waiting for CEO/Web QA. After Alejandro reviews,
-  record the decision and ask for/derive the exact next approval packet. Do not
-  change Shopify, MailerLite, CRM, analytics, public navigation or audience
-  surfaces by default.
-- `completion_definition`: Alejandro has completed CEO/Web QA and either
-  accepts the preview, requests local/theme changes, pauses the candidate or
-  chooses another next edge; the Control Room records that decision.
-- `next_checkpoint_expected`: Control Room checkpoint after CEO/Web QA decision,
-  or explicit pause/decline.
+  - Any requested next step would retry Shopify Admin/API, make Shopify changes,
+    publish, touch navigation, invite audience traffic, create MailerLite
+    drafts, send emails, assign audience, write CRM, mutate workflows/
+    subscribers/groups/tags/segments/campaigns, add analytics or touch GOG/auth.
+- `resume_instruction`: Remain in a no-mutation posture. If Alejandro chooses
+  diagnosis, prepare a read-only verification-failure diagnosis packet. If
+  Alejandro chooses to leave the preview as-is, record that decision and keep
+  Launch OS at the next non-live planning edge.
+- `completion_definition`: Alejandro either chooses read-only diagnosis, chooses
+  to leave the preview as-is, or provides a later exact approval packet for a
+  different next edge.
+- `next_checkpoint_expected`: Control Room checkpoint after the read-only
+  diagnosis/as-is decision, or explicit pause.
