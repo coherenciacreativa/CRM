@@ -10421,3 +10421,157 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite draft creation approval packet accepted and execution approval waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted `Test de claridad antes de decidir - MailerLite Draft
+Creation Approval Packet local-only` as a closed local-only hito. This does not
+approve MailerLite draft creation, MailerLite UI/API, sends, seed sends,
+audience assignment, subscriber reads or mutations, group/tag/segment/field/
+workflow/campaign/automation mutations, Shopify changes, CRM writes, ledgers,
+cards, scoring, Fact Store writes, CRM Core, Brand Hub patch or GOG/auth work.
+
+Evidence:
+
+- MailerLite draft creation approval packet artifact:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_approval_packet_local_only_2026-06-11.md`
+
+Accepted packet meaning:
+
+- Recommended future object: one regular campaign draft.
+- Exact future draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+- Future audience/group: only `CC · Safety · Null audience · DO NOT SEND`.
+- Future preconditions:
+  - Safety group exists exactly.
+  - Safety group `active_count=0`.
+  - No real audience.
+  - No new groups, tags, segments or fields.
+  - No automation/workflow.
+  - No sends.
+- Future draft creation requires a separate exact approval phrase.
+- Future seed-only QA send requires a separate exact approval phrase.
+- Future public/audience send remains a heavy separate gate.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_draft_creation_approval_packet_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_draft_creation_execution_approval_waiting`
+
+Operating meaning:
+
+- The next edge is waiting for CEO execution approval.
+- This is not draft creation.
+- This is not MailerLite UI/API authorization.
+- This is not seed send authorization.
+- This touches no live systems.
+
+Closed gates:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- MailerLite drafts created: false.
+- MailerLite forms created: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assigned: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite draft creation execution blocked-safe and API payload route decision waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the MailerLite draft creation execution receipt as
+blocked-safe. The approved API execution attempted to create only one regular
+campaign draft for `Test de claridad antes de decidir`, assigned only to the
+empty Null Audience safety group, but MailerLite rejected the create payload
+before returning any campaign ID. No draft was created and no rollback/delete
+was needed.
+
+Evidence:
+
+- Draft creation execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_execution_receipt_2026-06-11.json`
+- Draft name attempted:
+  `[NO SEND][TEST CLARIDAD] Receipt email v1`
+- Execution status: `blocked`.
+- Campaign ID returned: false.
+- Rollback/delete needed: false.
+- Safety group found exactly once:
+  `CC · Safety · Null audience · DO NOT SEND`.
+- Safety group `active_count`: `0`.
+- Final readback found `0` drafts with the approved name.
+- Blocker:
+  `mailerlite_create_payload_validation_failed_emails_0_must_be_array`.
+
+Pointer change:
+
+- Completed as blocked-safe:
+  `launch_os_v0_test_claridad_mailerlite_draft_creation_execution_approval_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
+
+Operating meaning:
+
+- The next edge is local-only MailerLite API payload revision / route decision.
+- This is not a retry.
+- This is not UI fallback authorization.
+- This is not draft creation.
+- No live-system step is open.
+- No retry should happen without a new approval.
+- No UI fallback should happen without a route decision and explicit approval.
+
+Closed gates:
+
+- MailerLite API retry approved: false.
+- MailerLite UI fallback approved: false.
+- MailerLite draft created: false.
+- MailerLite sends performed: false.
+- Seed sends performed: false.
+- Audience assigned: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

@@ -3268,7 +3268,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft Creation Approval Packet Local-only - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_creation_approval_packet_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
 - `source_checkpoint`: `MailerLite receipt HTML/render QA accepted as
@@ -3350,3 +3350,102 @@ Use deep hydration only for:
   closed.
 - `next_checkpoint_expected`: Control Room checkpoint recording the local-only
   MailerLite draft creation approval packet and the next exact human boundary.
+
+## Completed Next Action - Launch OS v0 Test Claridad MailerLite Draft Creation Execution Blocked Safe - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_creation_execution_approval_waiting`
+- `status`: `completed_blocked_safe`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `MailerLite draft creation execution receipt accepted as
+  blocked-safe - 2026-06-11`
+- `execution_status`: `blocked`
+- `blocking_reason`: `mailerlite_create_payload_validation_failed_emails_0_must_be_array`
+- `receipt`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_execution_receipt_2026-06-11.json`
+- `accepted_approval_packet_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_approval_packet_local_only_2026-06-11.md`
+- `execution_readback`:
+  - No MailerLite draft was created.
+  - No campaign ID was returned.
+  - No rollback/delete was needed.
+  - The safety group `CC · Safety · Null audience · DO NOT SEND` was found
+    exactly once.
+  - Safety group `active_count=0`.
+  - Final readback found `0` drafts with the approved name.
+  - No sends, seed sends, publish, schedule, audience assignment, subscriber
+    read/mutation, group/tag/segment/field/workflow/campaign/automation
+    mutation, Shopify change, CRM write, ledger/card/scoring/Fact Store write,
+    CRM Core work, Brand Hub patch or GOG/auth work occurred.
+- `human_boundary_id`: `test_claridad_mailerlite_draft_creation_execution_approval`
+- `human_boundary_notification_status`: `not_sent`
+- `completion_definition`: The approved draft creation execution attempt is
+  closed as blocked-safe and recorded by local receipt.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite API Payload Revision Route Decision Local-only - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `MailerLite draft creation execution blocked-safe
+  receipt accepted - 2026-06-11`
+- `objective`: Decide the next safe route for MailerLite draft creation after
+  the API create payload was blocked by MailerLite validation. This is a
+  local-only route/payload decision boundary, not a retry and not a UI fallback.
+- `why_now`: The approved API execution proved the Null Audience safety readback
+  is green, but the campaign creation payload shape is not yet reliable for the
+  receipt HTML/plain-text/preheader object. The machine needs an operator
+  decision before any further live attempt.
+- `evidence`:
+  - Draft creation execution receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_execution_receipt_2026-06-11.json`
+  - Execution status: `blocked`.
+  - No draft created.
+  - No campaign ID returned.
+  - No rollback/delete needed.
+  - Safety group found exactly once with `active_count=0`.
+  - Final readback found `0` drafts with approved name.
+  - Blocker:
+    `mailerlite_create_payload_validation_failed_emails_0_must_be_array`.
+- `allowed_scope`:
+  - Read local receipts, API docs, prior MailerLite API lab receipts and local
+    scripts.
+  - Prepare a local-only route decision packet for API payload revision vs UI
+    fallback vs pause.
+  - Identify the exact future approval phrase required for any retry or UI
+    fallback.
+- `forbidden_scope`:
+  - Do not retry MailerLite draft creation.
+  - Do not call MailerLite API or open MailerLite UI.
+  - Do not create MailerLite drafts.
+  - Do not send seed/test emails.
+  - Do not publish, schedule, activate workflows or assign audience.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, campaigns, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: No retry without new approval. No UI fallback without a
+  route decision. No draft creation, sends, seed sends, audience assignment,
+  subscriber/group/tag/segment/field/workflow/campaign/automation mutation,
+  Shopify change, CRM write, analytics or live-system action is approved by
+  this next action.
+- `expected_output`: A local-only MailerLite API payload revision / route
+  decision packet that explains why the API payload failed, whether a revised
+  API shape is credible, whether UI fallback is safer, and the exact approval
+  boundary for the next executable step.
+- `human_boundary_id`: `test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would call MailerLite API/UI, create/edit drafts, send,
+    assign audience, inspect subscribers, touch Shopify/CRM or mutate live
+    objects before a new explicit approval.
+- `completion_definition`: A local-only route decision packet exists and
+  Alejandro chooses whether to retry API later, use UI fallback later or pause.
+- `next_checkpoint_expected`: Control Room checkpoint recording the local-only
+  route decision outcome and any new exact execution boundary.
