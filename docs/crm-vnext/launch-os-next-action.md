@@ -3107,14 +3107,29 @@ Use deep hydration only for:
   MailerLite delivery / receipt preflight packet and the next exact approval
   boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft Creation Preflight Local-only - 2026-06-11
+## Completed Next Action - Launch OS v0 Test Claridad MailerLite Draft Creation Preflight Local-only - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_creation_preflight_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
 - `source_checkpoint`: `MailerLite delivery / receipt preflight accepted as
   completed local-only hito - 2026-06-11`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_preflight_local_only_2026-06-11.md`
+- `completion_summary`:
+  - MailerLite draft creation preflight was accepted as a closed local-only
+    hito.
+  - Recommended future execution object: one regular campaign draft.
+  - Future draft, if approved later, should be assigned only to
+    `CC · Safety · Null audience · DO NOT SEND`.
+  - No automation draft yet.
+  - No fields yet.
+  - No subscriber mutation.
+  - No workflow activation.
+  - Seed-only QA requires a separate approval later.
+  - Public/audience send remains a separate heavy gate.
 - `objective`: Prepare a local-only MailerLite draft creation preflight for the
   `Test de claridad antes de decidir` delivery/receipt email. This next action
   defines whether and how a future MailerLite draft could be created safely; it
@@ -3174,3 +3189,78 @@ Use deep hydration only for:
   and is ready for CEO review, with all live gates still closed.
 - `next_checkpoint_expected`: Control Room checkpoint recording the local-only
   MailerLite draft creation preflight packet and next exact approval boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Receipt HTML Render QA Local-only - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_receipt_html_render_qa_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `MailerLite draft creation preflight accepted as
+  completed local-only hito - 2026-06-11`
+- `objective`: Prepare local HTML/render QA for the `Test de claridad antes de
+  decidir` MailerLite receipt candidate, so a future draft creation packet has
+  a concrete QA-green HTML artifact to reference. This next action is local
+  HTML/render QA only.
+- `why_now`: The draft creation preflight recommends a single regular campaign
+  draft later, but also states not to jump directly into draft creation without
+  a local HTML/render QA packet. The next responsible edge is to prove the
+  receipt content, visual hierarchy, footer/compliance posture and mobile
+  rendering locally.
+- `accepted_preflight_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_preflight_local_only_2026-06-11.md`
+- `recommended_future_object`: one regular campaign draft.
+- `future_safety_audience`: `CC · Safety · Null audience · DO NOT SEND` only.
+- `automation_draft_status`: not yet.
+- `field_creation_status`: not yet.
+- `subscriber_mutation_status`: forbidden.
+- `workflow_activation_status`: forbidden.
+- `allowed_scope`:
+  - Read local Launch OS docs and local receipts.
+  - Read accepted copy and the accepted MailerLite delivery/draft preflight
+    artifacts.
+  - Read Brand email style canon.
+  - Prepare local HTML and/or render QA artifacts for the receipt candidate.
+  - Validate email style, footer/compliance, mobile readability, placeholder
+    hygiene and claims safety locally.
+- `forbidden_scope`:
+  - Do not create MailerLite drafts.
+  - Do not call MailerLite API.
+  - Do not open MailerLite UI.
+  - Do not send seed/test emails.
+  - Do not publish, schedule, activate workflows or assign audience.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, campaigns, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not add analytics, persistence or tracking.
+- `live_gate_status`: No live systems are approved. No MailerLite draft
+  creation, UI/API access, seed send, public/audience send, Shopify change, CRM
+  write, subscriber/group/tag/segment/field/workflow/campaign mutation,
+  analytics, CRM Core or Brand Hub patch is approved by this next action.
+- `future_boundaries`:
+  - Future draft creation requires separate exact approval after local
+    HTML/render QA is accepted and any fresh MailerLite safety preflight is
+    green.
+  - Future seed-only QA send requires separate exact approval after a draft
+    exists and fresh QA is green.
+  - Public/audience send remains closed and requires a separate distribution
+    packet.
+- `expected_output`: A local-only HTML/render QA packet for the MailerLite
+  receipt candidate, including source artifact paths, render evidence,
+  Email Style QA, footer/compliance QA, placeholder/token hygiene and next exact
+  approval boundary.
+- `human_boundary_id`: `test_claridad_mailerlite_receipt_html_render_qa_local_only`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would create or mutate MailerLite/Shopify/CRM objects,
+    send email, assign audience, publish, touch navigation, add analytics or
+    treat internal QA as real market evidence.
+- `completion_definition`: A local-only HTML/render QA packet exists and is
+  ready for CEO review, with all live gates still closed.
+- `next_checkpoint_expected`: Control Room checkpoint recording the local-only
+  MailerLite receipt HTML/render QA packet and next exact approval boundary.
