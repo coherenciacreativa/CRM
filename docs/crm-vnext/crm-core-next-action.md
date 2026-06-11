@@ -1290,12 +1290,40 @@ routing and completion pointer.
   separation from story viewers, DMs/email handoff, welcome audio, CRM writes,
   and outreach.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_standing_ritual_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_standing_ritual_run_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_standing_ritual_run_2026-06-11.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_standing_ritual_run_closeout_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_daily_notifications_standing_ritual_run_closeout_2026-06-11.md`
+- `result`: `completed_partial`
+- `findings`:
+  - First one-run standing ritual execution completed partially.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=planned_safe_start_navigation`.
+  - Planned safe start surface was `instagram_notifications`.
+  - `fallbackUsed=false`.
+  - No coordinate-based actions occurred.
+  - No screenshot-only navigation occurred.
+  - Actions performed remained 0.
+  - Source health remained partial due to viewport/read-state/story-viewer/DM
+    and dedupe blockers.
+  - Aggregate counts: 10 total visible notification groups, 2 visible new
+    follower notification groups, 2 visible story-related notification groups,
+    and 4 visible notification time buckets.
+  - Aggregate deltas: -2 total visible notification groups, -2 visible new
+    follower notification groups, 0 visible story-related notification groups,
+    and +2 visible notification time buckets.
+  - No private content was printed.
+  - No CRM writes or source mutations occurred.
+  - This run supports standing ritual readiness but does not authorize future
+    recurring execution.
 - `objective`: Wait for Alejandro approval before any standing daily Instagram
   notifications ritual execution.
 - `why_now`: The standing daily notifications ritual design exists, but
@@ -1328,5 +1356,51 @@ routing and completion pointer.
   Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, CRM,
   coordinate, screenshot fallback, or automation actions unless Alejandro gives
   fresh explicit approval for the exact standing ritual execution.
-- `completion_definition`: Alejandro approves, declines, or modifies the
-  standing daily Instagram notifications ritual execution boundary.
+- `completion_definition`: CRM Core completed the first one-run standing daily
+  notifications ritual execution as a green no-action sample, recorded aggregate
+  counts and blockers in redacted receipts, kept source health partial, printed
+  no private content, performed no CRM writes or source mutations, and did not
+  authorize future recurring execution.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_standing_operation_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Wait for Alejandro approval before enabling any recurring daily
+  Instagram notifications standing ritual operation.
+- `why_now`: CRM Core has a successful green no-action standing ritual run, but
+  recurring daily operation is a new automation boundary. Alejandro must decide
+  whether to approve standing operation, request another manual run, or shift
+  focus to the next Instagram lane such as story viewer surface/frequency.
+- `allowed_scope`:
+  - Present the standing operation choice.
+  - Summarize readiness evidence.
+  - Answer clarifying questions.
+  - Wait for approval, decline, or route modification.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No APIs/connectors.
+  - No DMs.
+  - No story viewer collection.
+  - No welcome audio.
+  - No CRM writes.
+  - No source mutations.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-standing-ritual-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`, and the latest standing ritual
+  run redacted receipt. Do not execute Instagram UI, Computer Use, API, DM,
+  story viewer, welcome audio, source, CRM, coordinate, screenshot fallback, or
+  automation actions unless Alejandro gives fresh explicit approval for the
+  exact next route.
+- `completion_definition`: Alejandro approves recurring standing operation,
+  asks for another manual standing ritual run, declines automation, or redirects
+  CRM Core to another Instagram lane.
