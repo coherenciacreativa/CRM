@@ -3193,7 +3193,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Receipt HTML Render QA Local-only - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_receipt_html_render_qa_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
 - `source_checkpoint`: `MailerLite draft creation preflight accepted as
@@ -3264,3 +3264,89 @@ Use deep hydration only for:
   ready for CEO review, with all live gates still closed.
 - `next_checkpoint_expected`: Control Room checkpoint recording the local-only
   MailerLite receipt HTML/render QA packet and next exact approval boundary.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft Creation Approval Packet Local-only - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_creation_approval_packet_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `MailerLite receipt HTML/render QA accepted as
+  completed local-only hito - 2026-06-11`
+- `objective`: Prepare a local-only approval packet for a possible future
+  MailerLite regular campaign draft creation for `Test de claridad antes de
+  decidir`. This next action is approval packet only.
+- `why_now`: CEO accepted the local HTML/render QA packet as closed. The next
+  responsible edge is to prepare the decision boundary for future draft
+  creation, without creating the draft, opening MailerLite, sending email or
+  touching any live system.
+- `accepted_html_render_qa_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_receipt_html_render_qa_local_only_2026-06-11.md`
+- `generated_artifacts`:
+  - `receipt_sample_result_d.html`
+  - `receipt_sample_result_d_plain_text.txt`
+  - `receipt_sample_result_d_desktop.png`
+  - `receipt_sample_result_d_mobile.png`
+- `representative_result_used`: `D - Una señal de realidad`.
+- `html_render_qa_read`:
+  - Result D was used as stress test.
+  - Footer is compact.
+  - Custom HTML has no duplicate postal address.
+  - No visible tokens, placeholders or internal labels.
+  - No MailerLite default visual feeling.
+  - No external URLs, scripts, forms, tracking, MailerLite API, sends,
+    Shopify changes or CRM writes.
+- `recommended_future_object`: one regular campaign draft, only if a later
+  exact approval is granted.
+- `future_safety_audience`: `CC · Safety · Null audience · DO NOT SEND` only,
+  pending fresh read-only preflight before any draft creation.
+- `allowed_scope`:
+  - Read local Launch OS docs and local receipts.
+  - Read the accepted MailerLite delivery/draft preflight artifacts.
+  - Read the accepted HTML/render QA packet and local sample artifacts.
+  - Prepare a local-only approval packet describing the exact future draft
+    creation boundary, expected MailerLite object, QA gates, rollback/delete
+    posture and approval phrase.
+  - Keep draft creation, seed QA send and public/audience send as separate
+    future approvals.
+- `forbidden_scope`:
+  - Do not create MailerLite drafts.
+  - Do not call MailerLite API.
+  - Do not open MailerLite UI.
+  - Do not send seed/test emails.
+  - Do not publish, schedule, activate workflows or assign audience.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, campaigns, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not add analytics, persistence or tracking.
+- `live_gate_status`: No live systems are approved. No MailerLite draft
+  creation, UI/API access, seed send, public/audience send, Shopify change, CRM
+  write, subscriber/group/tag/segment/field/workflow/campaign mutation,
+  analytics, CRM Core, Brand Hub patch or GOG/auth work is approved by this
+  next action.
+- `future_boundaries`:
+  - Future draft creation requires separate exact approval after this approval
+    packet is accepted and a fresh MailerLite safety preflight is green.
+  - Future seed-only QA send requires separate exact approval after draft
+    creation and fresh QA are green.
+  - Public/audience send remains closed and requires a separate heavy gate.
+- `expected_output`: A local-only MailerLite draft creation approval packet
+  that states the exact draft-creation scope, object, safety audience, QA gates,
+  rollback/delete conditions, non-approvals and the exact approval phrase needed
+  later.
+- `human_boundary_id`: `test_claridad_mailerlite_draft_creation_approval_packet_local_only`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would create or mutate MailerLite/Shopify/CRM objects,
+    send email, assign audience, publish, touch navigation, add analytics,
+    inspect subscribers or treat internal QA as real market evidence.
+- `completion_definition`: A local-only draft creation approval packet exists
+  and is ready for CEO review, with draft creation and all live gates still
+  closed.
+- `next_checkpoint_expected`: Control Room checkpoint recording the local-only
+  MailerLite draft creation approval packet and the next exact human boundary.

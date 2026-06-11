@@ -10340,3 +10340,84 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite receipt HTML/render QA accepted and draft creation approval packet waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted `Test de claridad antes de decidir - MailerLite Receipt
+HTML / Render QA local-only` as a closed local-only hito. This does not approve
+MailerLite drafts, MailerLite UI/API, sends, seed sends, audience assignment,
+subscriber reads or mutations, group/tag/segment/workflow/campaign/automation
+mutations, Shopify changes, CRM writes, ledgers, cards, scoring, Fact Store
+writes, CRM Core, Brand Hub patch or GOG/auth work.
+
+Evidence:
+
+- MailerLite receipt HTML/render QA artifact:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_receipt_html_render_qa_local_only_2026-06-11.md`
+- Generated local artifacts:
+  - `receipt_sample_result_d.html`
+  - `receipt_sample_result_d_plain_text.txt`
+  - `receipt_sample_result_d_desktop.png`
+  - `receipt_sample_result_d_mobile.png`
+
+Accepted QA meaning:
+
+- Result D was used as the stress test.
+- Footer is compact.
+- Custom HTML contains no duplicate postal address.
+- No visible tokens, placeholders or internal labels.
+- No MailerLite default visual feeling.
+- No external URLs, scripts, forms, tracking, MailerLite API, sends, Shopify
+  changes or CRM writes.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_receipt_html_render_qa_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_draft_creation_approval_packet_local_only`
+
+Operating meaning:
+
+- The next edge is approval packet only.
+- This is not MailerLite draft creation.
+- This is not MailerLite UI/API authorization.
+- This is not seed send authorization.
+- This touches no live systems.
+- Future draft creation requires separate exact approval.
+- Future seed-only QA send requires separate exact approval.
+- Public/audience send remains closed and would require a separate heavy gate.
+
+Closed gates:
+
+- MailerLite API called: false.
+- MailerLite UI opened: false.
+- MailerLite drafts created: false.
+- MailerLite forms created: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assigned: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
