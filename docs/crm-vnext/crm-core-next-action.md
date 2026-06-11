@@ -1362,14 +1362,18 @@ routing and completion pointer.
   no private content, performed no CRM writes or source mutations, and did not
   authorize future recurring execution.
 
-## Active Next Action
+## Parked / Blocked Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_standing_operation_approval_v0`
-- `status`: `blocked`
+- `status`: `parked_blocked`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
 - `objective`: Wait for Alejandro approval before enabling any recurring daily
   Instagram notifications standing ritual operation.
+- `meaning`: The notifications standing ritual is ready for future approval,
+  but Alejandro is intentionally shifting immediate CRM Core focus to the
+  higher-leverage story viewer frequency lane. Recurring notifications operation
+  remains blocked until explicitly approved.
 - `why_now`: CRM Core has a successful green no-action standing ritual run, but
   recurring daily operation is a new automation boundary. Alejandro must decide
   whether to approve standing operation, request another manual run, or shift
@@ -1404,3 +1408,42 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves recurring standing operation,
   asks for another manual standing ritual run, declines automation, or redirects
   CRM Core to another Instagram lane.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_viewer_surface_frequency_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Wait for Alejandro approval before any story viewer
+  surface/frequency UI/Computer Use/manual/artifact pilot execution.
+- `why_now`: The no-run story viewer pilot design exists or is being created,
+  but any actual story viewer surface access would expose private viewer data
+  and requires explicit approval.
+- `allowed_scope`:
+  - Present the pilot route options.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No story viewer collection.
+  - No viewer list printing.
+  - No DMs.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-viewer-surface-frequency-pilot-design-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`, and
+  `instagram-daily-signal-capture-design-v0.md`. Do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, welcome audio, source, CRM, coordinate,
+  screenshot fallback, or automation actions unless Alejandro gives fresh
+  explicit approval for the exact story viewer pilot route.
+- `completion_definition`: Alejandro approves, declines, or modifies the first
+  story viewer surface/frequency pilot route.
