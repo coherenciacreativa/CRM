@@ -1467,12 +1467,35 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, declines, or modifies the first
   story viewer surface/frequency pilot route.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_story_viewer_private_artifact_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_private_artifact_pilot_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_private_artifact_pilot_2026-06-11.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_private_artifact_pilot_closeout_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_private_artifact_pilot_closeout_2026-06-11.md`
+- `private_artifact_label`:
+  `crm_core_instagram_story_viewer_private_artifact_pilot_2026-06-11.json`
+- `result`: `completed_partial`
+- `findings`:
+  - Private artifact pilot completed partially.
+  - Story viewer surface was reached.
+  - Viewer list was opened.
+  - Aggregate viewer count was 17.
+  - Private viewer anchors captured count was 8.
+  - Full list was not exhausted.
+  - Modal close was not confirmed after native close retry.
+  - Frequency feasibility is `available_with_repeated_private_artifact_captures`.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=planned_safe_start_navigation`.
+  - No viewer handles or viewer lists were printed.
+  - No Instagram actions occurred.
+  - No CRM writes or source mutations occurred.
 - `objective`: Wait for Alejandro approval before any story viewer private
   artifact pilot that would capture viewer handles/anchors privately for
   frequency analysis.
@@ -1508,3 +1531,44 @@ routing and completion pointer.
   fresh explicit approval for the exact private artifact pilot route.
 - `completion_definition`: Alejandro approves, declines, or modifies the first
   story viewer private artifact pilot route.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_viewer_repeat_capture_protocol_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Wait for Alejandro approval before any repeated story viewer
+  private artifact capture or bounded full-list traversal.
+- `why_now`: The first private artifact pilot proved partial viewer-anchor
+  capture, but full-list traversal, repeated frequency capture, and modal-close
+  handling require a safer protocol and a fresh approval boundary.
+- `allowed_scope`:
+  - Present the repeat-capture protocol.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No viewer list opening.
+  - No viewer handle capture.
+  - No viewer list printing.
+  - No DMs.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-viewer-private-artifact-route-design-v0.md`,
+  `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, viewer list, traversal, welcome audio,
+  source, CRM, coordinate, screenshot fallback, or automation actions unless
+  Alejandro gives fresh explicit approval for the exact repeat-capture or
+  bounded traversal route.
+- `completion_definition`: Alejandro approves, declines, or modifies the first
+  repeated story viewer private artifact capture or bounded traversal route.
