@@ -10575,3 +10575,86 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad Campaign API Spike completed and real draft API approval waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the MailerLite Campaign API Spike execution receipt as a
+completed hito. The spike proved the API route is viable for Test Claridad when
+using the documented JSON shape and a disposable draft. This checkpoint does not
+approve creating the real draft, calling MailerLite again, sending emails,
+assigning live audience, mutating subscribers/groups/tags/segments/fields/
+workflows/campaigns/automations, Shopify, CRM, CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- Campaign API Spike execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_campaign_api_spike_execution_receipt_2026-06-11.json`
+- Stage A minimal create: completed.
+- Stage B update minimal HTML: completed.
+- Stage C update full QA HTML: completed.
+- Stage D readback: completed.
+- Disposable spike draft: deleted and confirmed gone.
+- Route decision: API viable.
+- Previous blocker resolved as likely shape/serialization/campos extra issue.
+
+API route requirements:
+
+- Use `Content-Type: application/json`.
+- Use `emails` as array.
+- Use `groups` as array.
+- Use `segments` as empty array.
+- Do not include `preheader`, `plain_text` or `preview_text` request fields
+  unless future official docs confirm support.
+- Use hidden preheader in HTML if needed.
+- UI/Computer Use is no longer default; keep it as fallback only.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_approval_waiting`
+
+Operating meaning:
+
+- The next edge is waiting for CEO approval to create the real MailerLite draft
+  by API.
+- This checkpoint does not create the draft.
+- This checkpoint does not approve sends or seed sends.
+- This checkpoint does not approve live audience, workflows or subscriber/
+  group/tag/field mutations.
+- This checkpoint does not approve CRM writes.
+- UI/Computer Use is now fallback only, not default.
+
+Closed gates:
+
+- Real MailerLite draft created now: false.
+- MailerLite API called by this checkpoint: false.
+- MailerLite UI opened by this checkpoint: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assigned: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations by this checkpoint: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

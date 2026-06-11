@@ -3382,24 +3382,23 @@ Use deep hydration only for:
 - `completion_definition`: The approved draft creation execution attempt is
   closed as blocked-safe and recorded by local receipt.
 
-## Active Next Action - Launch OS v0 Test Claridad MailerLite API Payload Revision Route Decision Local-only - 2026-06-11
+## Completed Next Action - Launch OS v0 Test Claridad MailerLite API Payload Revision Route Decision Local-only - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
 - `source_checkpoint`: `MailerLite draft creation execution blocked-safe
-  receipt accepted - 2026-06-11`
+  receipt accepted; Campaign API Spike completed - 2026-06-11`
 - `objective`: Decide the next safe route for MailerLite draft creation after
-  the API create payload was blocked by MailerLite validation. This is a
-  local-only route/payload decision boundary, not a retry and not a UI fallback.
-- `why_now`: The approved API execution proved the Null Audience safety readback
-  is green, but the campaign creation payload shape is not yet reliable for the
-  receipt HTML/plain-text/preheader object. The machine needs an operator
-  decision before any further live attempt.
+  the API create payload was blocked by MailerLite validation.
+- `completion_summary`: Campaign API Spike completed and proved the API route is
+  viable when using documented JSON shape.
 - `evidence`:
   - Draft creation execution receipt:
     `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_execution_receipt_2026-06-11.json`
+  - Campaign API Spike execution receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_campaign_api_spike_execution_receipt_2026-06-11.json`
   - Execution status: `blocked`.
   - No draft created.
   - No campaign ID returned.
@@ -3408,17 +3407,67 @@ Use deep hydration only for:
   - Final readback found `0` drafts with approved name.
   - Blocker:
     `mailerlite_create_payload_validation_failed_emails_0_must_be_array`.
+- `campaign_api_spike_readback`:
+  - Stage A minimal create: completed.
+  - Stage B update minimal HTML: completed.
+  - Stage C update full QA HTML: completed.
+  - Stage D readback: completed.
+  - Disposable spike draft: deleted and confirmed gone.
+  - Route decision: API viable.
+  - Previous blocker resolved as likely shape/serialization/campos extra issue.
+- `api_route_requirements`:
+  - Use `Content-Type: application/json`.
+  - Use `emails` as array.
+  - Use `groups` as array.
+  - Use `segments` as empty array.
+  - Do not include `preheader`, `plain_text` or `preview_text` request fields
+    unless future official docs confirm support.
+  - Use hidden preheader in HTML if needed.
+  - UI/Computer Use is no longer default; keep it as fallback only.
+- `human_boundary_id`: `test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
+- `human_boundary_notification_status`: `not_sent`
+- `completion_definition`: API route decision is closed with Campaign API Spike
+  evidence; the next boundary is CEO approval for real draft creation.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Real Draft Creation API Approval Waiting - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_approval_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `Campaign API Spike completed and accepted as hito -
+  2026-06-11`
+- `objective`: Wait for CEO approval to create the real MailerLite regular
+  campaign draft `[NO SEND][TEST CLARIDAD] Receipt email v1` by API using the
+  proven documented JSON route.
+- `why_now`: The disposable spike proved MailerLite API can create a regular
+  draft, update minimal HTML, update full QA HTML, read back safely, and delete
+  the disposable draft when using `Content-Type: application/json`, `emails` as
+  array, `groups` as array and no undocumented preheader/plain-text request
+  fields.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_campaign_api_spike_execution_receipt_2026-06-11.json`
+- `recommended_future_object`: one real regular campaign draft.
+- `exact_future_draft_name`: `[NO SEND][TEST CLARIDAD] Receipt email v1`
+- `future_audience_group`: `CC · Safety · Null audience · DO NOT SEND` only.
+- `future_api_requirements`:
+  - Fresh preflight must confirm safety group exact match and `active_count=0`.
+  - Use `Content-Type: application/json`.
+  - Use `emails` as array.
+  - Use `groups` as array with only the Null Audience group ID.
+  - Use `segments` as empty array.
+  - Do not send `preheader`, `plain_text` or `preview_text` request fields
+    unless future official docs confirm support.
+  - Include hidden preheader in HTML if needed.
+  - Use the approved local full QA HTML as source, adapted only for the proven
+    API route requirements.
 - `allowed_scope`:
-  - Read local receipts, API docs, prior MailerLite API lab receipts and local
-    scripts.
-  - Prepare a local-only route decision packet for API payload revision vs UI
-    fallback vs pause.
-  - Identify the exact future approval phrase required for any retry or UI
-    fallback.
+  - Wait for CEO approval to create the real draft.
+  - Prepare the exact approval phrase if Alejandro asks.
+  - Re-read local receipts and local HTML source if needed.
 - `forbidden_scope`:
-  - Do not retry MailerLite draft creation.
-  - Do not call MailerLite API or open MailerLite UI.
-  - Do not create MailerLite drafts.
+  - Do not create the real MailerLite draft now.
+  - Do not call MailerLite API or open MailerLite UI now.
   - Do not send seed/test emails.
   - Do not publish, schedule, activate workflows or assign audience.
   - Do not read or mutate subscribers.
@@ -3430,22 +3479,24 @@ Use deep hydration only for:
   - Do not patch Brand Hub.
   - Do not touch GOG/auth dirty files.
   - Do not treat QA as market signal.
-- `live_gate_status`: No retry without new approval. No UI fallback without a
-  route decision. No draft creation, sends, seed sends, audience assignment,
-  subscriber/group/tag/segment/field/workflow/campaign/automation mutation,
-  Shopify change, CRM write, analytics or live-system action is approved by
-  this next action.
-- `expected_output`: A local-only MailerLite API payload revision / route
-  decision packet that explains why the API payload failed, whether a revised
-  API shape is credible, whether UI fallback is safer, and the exact approval
-  boundary for the next executable step.
-- `human_boundary_id`: `test_claridad_mailerlite_api_payload_revision_route_decision_local_only`
+- `live_gate_status`: Waiting for CEO approval only. No draft creation now; no
+  sends, seed sends, live audience, workflows, subscriber/group/tag/field
+  mutations, CRM writes, Shopify changes, analytics or other live-system action
+  is approved by this next action.
+- `future_boundaries`:
+  - Real draft creation requires a separate exact approval phrase.
+  - Future seed-only QA send requires a separate exact approval after draft
+    creation and fresh QA are green.
+  - Public/audience send remains a separate heavy gate.
+- `expected_output`: No functional output until Alejandro gives explicit real
+  draft creation approval or pauses this MailerLite lane.
+- `human_boundary_id`: `test_claridad_mailerlite_real_draft_creation_api_approval`
 - `human_boundary_notification_status`: `not_sent`
 - `stop_conditions`:
   - Any requested step would call MailerLite API/UI, create/edit drafts, send,
     assign audience, inspect subscribers, touch Shopify/CRM or mutate live
     objects before a new explicit approval.
-- `completion_definition`: A local-only route decision packet exists and
-  Alejandro chooses whether to retry API later, use UI fallback later or pause.
-- `next_checkpoint_expected`: Control Room checkpoint recording the local-only
-  route decision outcome and any new exact execution boundary.
+- `completion_definition`: Alejandro either approves real draft creation by API,
+  pauses the lane, or redirects to another local-only edge.
+- `next_checkpoint_expected`: Control Room checkpoint after real draft creation
+  approval decision or deferral.
