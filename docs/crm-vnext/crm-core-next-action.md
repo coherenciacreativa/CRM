@@ -1678,19 +1678,49 @@ routing and completion pointer.
   source actions, CRM writes, source mutations, Launch OS docs, or
   `/Users/alejandrogomez/CRM` were exposed or touched.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_story_viewer_initial_window_long_story_repeat_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_repeat_capture_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_repeat_capture_2026-06-11.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_repeat_capture_closeout_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_repeat_capture_closeout_2026-06-11.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_frequency_summary_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_frequency_summary_2026-06-11.md`
+- `private_artifact_label`:
+  `crm_core_instagram_story_viewer_initial_window_long_story_repeat_capture_2026-06-11.json`
+- `result`: `completed_initial_visible_window`
+- `findings`:
+  - Latest long-story initial-window capture completed successfully.
+  - Viewer list opened.
+  - Aggregate viewer count was 13.
+  - Private viewer anchors captured count was 12.
+  - Capture was compared against 4 private capture windows.
+  - Repeated private anchors count was 8.
+  - Repeated-window class counts were `3plus=0`, `2_window=8`,
+    `single_window=4`.
+  - Full-list exhaustion was not attempted and was not approved.
+  - `viewerModalCloseStatus=closed_confirmed`.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=native_computer_use`.
+  - No fallback was used.
+  - No coordinate-based actions occurred.
+  - No screenshot-only navigation occurred.
+  - Actions performed remained 0.
+  - No viewer handles, viewer lists, or private anchors were printed.
+  - No Instagram actions occurred.
+  - No CRM writes or source mutations occurred.
 - `objective`: Wait for Alejandro approval before another
   initial-visible-window story viewer private-anchor capture, preferably using
   an operator-supplied capture-friendly long story.
-- `why_now`: The long-story capture succeeded cleanly and suggests that story
-  duration/timing was likely a key blocker in the prior stale-element run. More
-  long-story capture windows can build private frequency evidence before
-  considering full-list traversal.
+- `why_now`: The long-story capture succeeded cleanly and created the first
+  redacted initial-window frequency summary. More long-story capture windows can
+  build private frequency evidence before considering full-list traversal.
 - `allowed_scope`:
   - Present the long-story repeat capture route.
   - Answer clarifying questions.
@@ -1714,11 +1744,60 @@ routing and completion pointer.
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`,
-  `instagram-story-viewer-initial-window-frequency-protocol-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
-  Computer Use, API, DM, story viewer, viewer list, traversal, story
-  pausing/holding, welcome audio, source, CRM, coordinate, screenshot fallback,
-  or automation actions unless Alejandro gives fresh explicit approval for the
-  exact long-story initial-window capture route.
-- `completion_definition`: Alejandro approves, declines, or modifies the next
-  initial-visible-window long-story private-anchor capture route.
+  `instagram-story-viewer-initial-window-frequency-protocol-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`, and the latest redacted
+  frequency summary. Do not execute Instagram UI, Computer Use, API, DM, story
+  viewer, viewer list, traversal, story pausing/holding, welcome audio, source,
+  CRM, coordinate, screenshot fallback, or automation actions unless Alejandro
+  gives fresh explicit approval for the exact long-story initial-window capture
+  route.
+- `completion_definition`: Latest long-story initial-window capture completed
+  with redacted receipts, first redacted frequency summary, and private artifact
+  storage only. No viewer handles, viewer lists, private anchors, screenshots,
+  DMs, welcome audio, Instagram source actions, CRM writes, source mutations,
+  Launch OS docs, or `/Users/alejandrogomez/CRM` were exposed or touched.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_viewer_frequency_summary_review_v0`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Review the redacted initial-window story viewer frequency
+  summary and decide whether to approve another long-story initial-window
+  capture, continue accumulating 3-5 windows, or design a future standing
+  story-viewer capture boundary.
+- `why_now`: CRM Core now has 4 compared private story-viewer capture windows
+  and a first redacted frequency summary. The next useful step is a no-run
+  review/decision boundary, not another capture by default.
+- `allowed_scope`:
+  - Use redacted receipts only.
+  - Summarize aggregate frequency classes.
+  - Recommend next safe step.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No viewer list opening.
+  - No viewer handle capture.
+  - No viewer list printing.
+  - No DMs.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`,
+  `instagram-story-viewer-initial-window-frequency-protocol-v0.md`, and the
+  latest redacted story viewer initial-window frequency summary. Do not execute
+  Instagram UI, Computer Use, API, DM, story viewer, viewer list, traversal,
+  story pausing/holding, welcome audio, source, CRM, coordinate, screenshot
+  fallback, or automation actions unless Alejandro gives fresh explicit
+  approval for an exact route.
+- `completion_definition`: Alejandro approves another long-story
+  initial-window capture, pauses story-viewer capture, asks for a standing
+  story-viewer capture boundary design, or redirects CRM Core to another
+  Instagram lane.
