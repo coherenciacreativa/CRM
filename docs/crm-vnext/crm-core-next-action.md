@@ -1271,30 +1271,41 @@ routing and completion pointer.
   blockers in redacted receipts, kept source health partial, printed no private
   content, and performed no CRM writes or source mutations.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_daily_notifications_standing_ritual_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-10`
-- `updated_at`: `2026-06-10`
+- `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-daily-notifications-standing-ritual-v0.md`
 - `objective`: Design, but do not execute, the standing daily Instagram
   notifications ritual boundary for a 5 a.m. no-action pulse capture using
   planned safe start, the Computer Use Quality Gate, redacted receipts, and
   strict stop conditions.
-- `why_now`: CRM Core now has a green daily notifications ritual pilot, one
-  prior green quality-gated sample, and one acceptable yellow sample. The next
-  step is to design the standing ritual boundary before any repeated automation,
-  while keeping story viewer frequency, DM/email handoff, welcome audio, and CRM
-  writes as separate lanes.
+- `completion_definition`: CRM Core has a no-run standing daily notifications
+  ritual design that explains schedule, start-surface handling, Computer Use
+  quality gates, receipts, daily pulse brief, skip/stop conditions, and explicit
+  separation from story viewers, DMs/email handoff, welcome audio, CRM writes,
+  and outreach.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_daily_notifications_standing_ritual_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Wait for Alejandro approval before any standing daily Instagram
+  notifications ritual execution.
+- `why_now`: The standing daily notifications ritual design exists, but
+  executing it on a recurring or standing basis crosses a fresh approval
+  boundary. CRM Core must wait before any Instagram UI, Computer Use, source, or
+  automation execution.
 - `allowed_scope`:
-  - Design only.
-  - Use redacted receipts and existing protocols.
-  - Define 5 a.m. cadence.
-  - Define planned safe start.
-  - Define quality gate requirements.
-  - Define skip/stop conditions.
-  - Define Mantis daily pulse brief content.
-  - Define what must remain separate.
+  - Present the standing ritual boundary.
+  - Answer clarifying questions.
+  - Wait for approval.
   - No execution.
 - `forbidden_scope`:
   - No Instagram execution.
@@ -1309,14 +1320,13 @@ routing and completion pointer.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-daily-notifications-standing-ritual-v0.md`,
   `instagram-daily-notifications-ritual-v0.md`,
   `instagram-computer-use-quality-gate-v0.md`,
   `instagram-notifications-repeated-capture-protocol-v0.md`, and
-  `instagram-daily-notifications-capture-design-v0.md`. Design only; do not
-  execute Instagram UI, Computer Use, API, DM, story viewer, welcome audio,
-  source, CRM, coordinate, or screenshot fallback actions.
-- `completion_definition`: CRM Core has a no-run standing daily notifications
-  ritual design that explains schedule, start-surface handling, Computer Use
-  quality gates, receipts, daily pulse brief, skip/stop conditions, and explicit
-  separation from story viewers, DMs/email handoff, welcome audio, CRM writes,
-  and outreach.
+  `instagram-daily-notifications-capture-design-v0.md`. Do not execute
+  Instagram UI, Computer Use, API, DM, story viewer, welcome audio, source, CRM,
+  coordinate, screenshot fallback, or automation actions unless Alejandro gives
+  fresh explicit approval for the exact standing ritual execution.
+- `completion_definition`: Alejandro approves, declines, or modifies the
+  standing daily Instagram notifications ritual execution boundary.
