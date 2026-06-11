@@ -10658,3 +10658,178 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad QA Criteria Revision accepted and retry v2 approval waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the MailerLite Draft Creation QA Criteria Revision Packet as
+a closed local-only hito. This checkpoint does not retry draft creation, call
+MailerLite API/UI, send emails, seed-send, assign audience, mutate subscribers/
+groups/tags/segments/fields/workflows/campaigns/automations, Shopify, CRM,
+CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- QA Criteria Revision Packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_qa_criteria_revision_packet_local_only_2026-06-11.md`
+- Real draft creation API execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_execution_receipt_2026-06-11.json`
+
+What changed:
+
+- API route remains viable.
+- Previous real draft was created safely and deleted because exact HTML hash was
+  treated as a hard blocker.
+- QA Criteria v2 now separates real content/safety failures from normal
+  MailerLite HTML canonicalization.
+
+QA Criteria v2:
+
+- Exact byte hash is advisory if semantic/canonicalized HTML QA is green.
+- Required fragments present is hard.
+- Hidden preheader present is hard.
+- Forbidden strings absent is hard.
+- No scripts/forms/tracking/external URLs is hard.
+- Null Audience only and `active_count=0` is hard.
+- Sent/scheduled/published/workflow attached is hard.
+- Generated `plain_text` differs from local fallback is a soft blocker
+  requiring review before seed send.
+- If only exact hash fails with semantic QA green, keep draft in QA hold instead
+  of auto-delete.
+- Delete only on hard blocker.
+- No seed send without separate exact approval.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_approval_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_approval_waiting`
+
+Operating meaning:
+
+- The next edge is waiting for CEO approval to retry real draft creation by API
+  using QA Criteria v2.
+- This checkpoint does not approve a retry.
+- This checkpoint does not approve MailerLite API/UI.
+- This checkpoint does not approve sends or seed sends.
+- This checkpoint does not approve live audience, workflows or subscriber/
+  group/tag/field mutations.
+- This checkpoint does not approve CRM writes.
+
+Closed gates:
+
+- MailerLite API called by this checkpoint: false.
+- MailerLite UI opened by this checkpoint: false.
+- Real MailerLite draft created now: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assigned: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations by this checkpoint: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
+
+## Launch OS v0 Test Claridad real draft API retry v2 completed in QA hold and plain text review waiting - 2026-06-12
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro accepted the MailerLite real draft creation API retry v2 execution
+receipt as a completed hito in `qa_hold`. This checkpoint does not send, seed
+send, publish, schedule, activate workflows/automations, assign audience, mutate
+subscribers/groups/tags/segments/fields/workflows/campaigns/automations,
+Shopify, CRM, CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- Real draft creation API retry v2 execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+
+Execution readback:
+
+- Real draft created by API: true.
+- Execution status: `qa_hold`.
+- Draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+- Draft ID hash:
+  `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+- Audience: Null Audience only.
+- `active_count=0`.
+- Sent/scheduled/published: `false/false/false`.
+- Workflows/automations: none.
+- Semantic content QA: green.
+- Hard blockers: none.
+- Soft blockers:
+  - `exact_html_byte_hash_matches`
+  - `generated_plain_text_matches_local_fallback`
+- Exact hash mismatch is advisory under QA Criteria v2.
+- Generated plain text requires review before any seed send.
+- Draft remains in safe QA hold.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_approval_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only`
+
+Operating meaning:
+
+- The next edge is local-only review of generated plain text and render/readback
+  implications.
+- This checkpoint does not approve seed send.
+- This checkpoint does not approve any send.
+- This checkpoint does not approve audience assignment.
+- This checkpoint does not approve workflow/automation activation.
+- This checkpoint does not approve CRM writes.
+- This checkpoint does not approve any live mutation.
+
+Closed gates:
+
+- MailerLite API called by this checkpoint: false.
+- MailerLite UI opened by this checkpoint: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations by this checkpoint: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Published: false.
+- Scheduled: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

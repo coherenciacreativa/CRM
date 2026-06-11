@@ -3429,17 +3429,23 @@ Use deep hydration only for:
 - `completion_definition`: API route decision is closed with Campaign API Spike
   evidence; the next boundary is CEO approval for real draft creation.
 
-## Active Next Action - Launch OS v0 Test Claridad MailerLite Real Draft Creation API Approval Waiting - 2026-06-11
+## Completed Next Action - Launch OS v0 Test Claridad MailerLite Real Draft Creation API Approval Waiting - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_approval_waiting`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
-- `source_checkpoint`: `Campaign API Spike completed and accepted as hito -
-  2026-06-11`
+- `source_checkpoint`: `Campaign API Spike completed and accepted as hito;
+  real draft creation execution accepted as safe cleanup; QA Criteria Revision
+  Packet accepted as hito - 2026-06-11`
 - `objective`: Wait for CEO approval to create the real MailerLite regular
   campaign draft `[NO SEND][TEST CLARIDAD] Receipt email v1` by API using the
   proven documented JSON route.
+- `completion_summary`: Alejandro approved the real API draft creation attempt.
+  The real draft was created safely and then deleted because the post-create QA
+  treated exact HTML byte hash match as a hard blocker. Alejandro accepted the
+  follow-up QA Criteria Revision Packet as a closed local-only hito. The API
+  route remains viable under QA Criteria v2.
 - `why_now`: The disposable spike proved MailerLite API can create a regular
   draft, update minimal HTML, update full QA HTML, read back safely, and delete
   the disposable draft when using `Content-Type: application/json`, `emails` as
@@ -3447,6 +3453,36 @@ Use deep hydration only for:
   fields.
 - `evidence`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_campaign_api_spike_execution_receipt_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_execution_receipt_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_qa_criteria_revision_packet_local_only_2026-06-11.md`
+- `execution_readback`:
+  - Real draft was created safely by API.
+  - Null Audience exact match was confirmed.
+  - Null Audience `active_count=0`.
+  - Draft was not sent, not scheduled and not published.
+  - No workflow/automation attachment was detected.
+  - Required content fragments were present.
+  - Hidden preheader was present.
+  - Forbidden strings were absent.
+  - No scripts, forms, tracking or external URLs were detected.
+  - Footer/legal QA was green.
+  - Exact HTML hash mismatch was treated as hard blocker by the old QA.
+  - Generated `plain_text` differed from local fallback and needs review before
+    seed send.
+  - Draft was deleted safely and confirmed gone.
+- `qa_criteria_v2`:
+  - Exact byte hash is advisory if semantic/canonicalized HTML QA is green.
+  - Required fragments present is hard.
+  - Hidden preheader present is hard.
+  - Forbidden strings absent is hard.
+  - No scripts/forms/tracking/external URLs is hard.
+  - Null Audience only and `active_count=0` is hard.
+  - Sent/scheduled/published/workflow attached is hard.
+  - Generated `plain_text` differs from local fallback is a soft blocker
+    requiring review before seed send.
+  - If only exact hash fails with semantic QA green, keep draft in QA hold
+    instead of auto-delete.
+  - Delete only on hard blocker.
 - `recommended_future_object`: one real regular campaign draft.
 - `exact_future_draft_name`: `[NO SEND][TEST CLARIDAD] Receipt email v1`
 - `future_audience_group`: `CC · Safety · Null audience · DO NOT SEND` only.
@@ -3462,9 +3498,8 @@ Use deep hydration only for:
   - Use the approved local full QA HTML as source, adapted only for the proven
     API route requirements.
 - `allowed_scope`:
-  - Wait for CEO approval to create the real draft.
-  - Prepare the exact approval phrase if Alejandro asks.
-  - Re-read local receipts and local HTML source if needed.
+  - Record the safe-cleanup execution and accepted QA Criteria Revision Packet.
+  - Move the next boundary to API retry v2 approval waiting.
 - `forbidden_scope`:
   - Do not create the real MailerLite draft now.
   - Do not call MailerLite API or open MailerLite UI now.
@@ -3484,12 +3519,13 @@ Use deep hydration only for:
   mutations, CRM writes, Shopify changes, analytics or other live-system action
   is approved by this next action.
 - `future_boundaries`:
-  - Real draft creation requires a separate exact approval phrase.
+  - Real draft creation retry with QA Criteria v2 requires a separate exact
+    approval phrase.
   - Future seed-only QA send requires a separate exact approval after draft
     creation and fresh QA are green.
   - Public/audience send remains a separate heavy gate.
-- `expected_output`: No functional output until Alejandro gives explicit real
-  draft creation approval or pauses this MailerLite lane.
+- `expected_output`: Documentation-only closeout of the old approval-waiting
+  boundary and creation of the v2 retry approval-waiting boundary.
 - `human_boundary_id`: `test_claridad_mailerlite_real_draft_creation_api_approval`
 - `human_boundary_notification_status`: `not_sent`
 - `stop_conditions`:
@@ -3500,3 +3536,159 @@ Use deep hydration only for:
   pauses the lane, or redirects to another local-only edge.
 - `next_checkpoint_expected`: Control Room checkpoint after real draft creation
   approval decision or deferral.
+
+## Completed Next Action - Launch OS v0 Test Claridad MailerLite Real Draft Creation API Retry v2 Approval Waiting - 2026-06-12
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_approval_waiting`
+- `status`: `completed`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-12`
+- `source_checkpoint`: `MailerLite Draft Creation QA Criteria Revision Packet
+  accepted as hito; real draft creation API retry v2 completed in QA hold -
+  2026-06-12`
+- `objective`: Wait for CEO approval before retrying the real MailerLite
+  regular campaign draft creation by API using QA Criteria v2.
+- `completion_summary`: Alejandro approved the retry. The real regular
+  campaign draft was created by API and remains in safe QA hold. No send, seed
+  send, publish, schedule, audience send, workflow/automation activation,
+  subscriber/group/tag/segment/field mutation, Shopify change, CRM write, CRM
+  Core work, Brand Hub patch or GOG/auth work occurred.
+- `evidence`:
+  - QA Criteria Revision Packet:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_creation_qa_criteria_revision_packet_local_only_2026-06-11.md`
+  - Real draft creation API execution receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_execution_receipt_2026-06-11.json`
+  - Real draft creation API retry v2 execution receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+- `state_summary`:
+  - API route remains viable.
+  - Real draft created by API: true.
+  - Execution status: `qa_hold`.
+  - Draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+  - Draft ID hash:
+    `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+  - Audience: Null Audience only.
+  - `active_count=0`.
+  - Sent/scheduled/published: `false/false/false`.
+  - Workflows/automations: none.
+  - Semantic content QA: green.
+  - Hard blockers: none.
+  - Soft blockers:
+    - `exact_html_byte_hash_matches`
+    - `generated_plain_text_matches_local_fallback`
+  - Exact hash mismatch is advisory under QA Criteria v2.
+  - Generated plain text requires review before any seed send.
+  - Draft remains in safe QA hold.
+- `qa_criteria_v2_hard_blockers`:
+  - Wrong audience or more than one audience/group assigned.
+  - Null Audience `active_count` not `0`.
+  - Sent, scheduled, published, queued, currently sending or workflow attached.
+  - Missing required fragments.
+  - Hidden preheader missing.
+  - Forbidden strings, placeholders, tokens, redacted/internal labels.
+  - Scripts, forms, tracking or external URLs.
+  - Footer/legal red.
+- `qa_criteria_v2_soft_blockers`:
+  - Exact byte hash mismatch when semantic/canonicalized HTML QA is green.
+  - Generated `plain_text` differs from local fallback.
+  - Platform canonicalization/wrapping.
+- `allowed_scope`:
+  - Record the accepted `qa_hold` execution receipt.
+  - Move the next boundary to local-only plain text/render review.
+- `forbidden_scope`:
+  - Do not retry draft creation now.
+  - Do not call MailerLite API or open MailerLite UI now.
+  - Do not send seed/test emails.
+  - Do not publish, schedule, activate workflows or assign audience.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, campaigns, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Retry execution completed in `qa_hold`. No seed send,
+  send, publish, schedule, audience, workflow, subscriber/group/tag/field
+  mutation, CRM write, Shopify change or other live-system action is approved
+  by this completed next action.
+- `future_boundaries`:
+  - Plain text/render review is local-only and review-only.
+  - Future seed-only QA send requires a separate exact approval after QA hold
+    review is green.
+  - Public/audience send remains a separate heavy gate.
+- `expected_output`: Documentation-only closeout of the retry v2 approval
+  boundary and creation of the local-only plain text/render review boundary.
+- `human_boundary_id`: `test_claridad_mailerlite_real_draft_creation_api_retry_v2_approval`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would call MailerLite API/UI, create/edit drafts, send,
+    assign audience, inspect subscribers, touch Shopify/CRM or mutate live
+    objects before a new explicit approval.
+- `completion_definition`: Retry v2 execution receipt accepted as completed in
+  `qa_hold`.
+- `next_checkpoint_expected`: Control Room checkpoint for local-only plain
+  text/render review or its deferral.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft QA Hold Plain Text Render Review Local-only - 2026-06-12
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-12`
+- `updated_at`: `2026-06-12`
+- `source_checkpoint`: `MailerLite real draft creation API retry v2 accepted
+  as completed in qa_hold - 2026-06-12`
+- `objective`: Review the existing MailerLite draft QA hold evidence locally,
+  focusing on generated plain text and render/readback implications before any
+  seed-send decision.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+- `state_summary`:
+  - Draft exists in MailerLite QA hold.
+  - Null Audience only.
+  - `active_count=0`.
+  - Not sent, not scheduled and not published.
+  - No workflows/automations.
+  - Semantic content QA is green.
+  - Hard blockers: none.
+  - Soft blockers require review:
+    - exact HTML hash advisory mismatch;
+    - generated plain text differs from local fallback.
+- `allowed_scope`:
+  - Local-only review of the retry v2 receipt and local source artifacts.
+  - Prepare a review packet for plain text/render readiness.
+  - No MailerLite UI/API calls unless Alejandro gives a new exact approval.
+- `forbidden_scope`:
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not call MailerLite API/UI.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, campaigns, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Review only. No seed send, send, audience, workflow, CRM
+  write or mutation is open.
+- `future_boundaries`:
+  - Seed-only QA send requires a separate exact approval after review is green.
+  - Any MailerLite UI/API readback requires separate exact approval.
+  - Public/audience send remains a separate heavy gate.
+- `expected_output`: Local-only plain text/render review packet or a clear
+  blocker/defer recommendation.
+- `human_boundary_id`: `test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would call MailerLite API/UI, send, seed-send, publish,
+    schedule, assign audience, inspect subscribers, touch Shopify/CRM or mutate
+    live objects before a new explicit approval.
+- `completion_definition`: Plain text/render review packet exists and the next
+  CEO decision boundary is explicit.
+- `next_checkpoint_expected`: Control Room checkpoint after local-only review.
