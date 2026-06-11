@@ -10087,3 +10087,94 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad CEO/Web QA accepted and MailerLite delivery preflight waiting - 2026-06-11
+
+Status: checkpoint completed, documentation-only pointer reconciliation.
+Alejandro reviewed the Shopify preview noindex/unlisted for `Test de claridad
+antes de decidir` and accepted the restored base preview as sufficient to
+continue to the next gate. The Value Perception Microfix is deferred, not
+rejected, and does not block the next gate. No Shopify changes, Shopify
+Admin/API, MailerLite, CRM, sends, analytics, public navigation, publication or
+audience traffic are approved by this checkpoint.
+
+CEO/Web QA acceptance:
+
+- Preview accepted by CEO: true.
+- Accepted preview state: base restored preview.
+- Exact URL handling: redacted; do not print exact URL by default.
+- Base preview execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
+- CEO/Web QA acceptance receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_ceo_web_qa_acceptance_receipt_local_only_2026-06-11.json`
+- Rollback diagnosis / Value Perception Microfix:
+  deferred, not rejected, not blocking.
+
+Required continuing gates:
+
+- Noindex remains required.
+- No public navigation remains required.
+- No MailerLite remains required until a later explicit approval.
+- No CRM remains required until a later explicit approval.
+- No analytics remains required.
+- Exact URL remains redacted in receipts and docs.
+
+Explicit non-approvals:
+
+- Publication approved: false.
+- Public navigation link approved: false.
+- Audience traffic approved: false.
+- MailerLite drafts approved yet: false.
+- Sends approved: false.
+- CRM writes approved: false.
+- Ledgers, cards, scoring or Fact Store approved: false.
+- CRM Core approved: false.
+- Brand Hub patch approved: false.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_shopify_preview_base_ceo_web_qa_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_delivery_receipt_preflight_local_only`
+
+Operating meaning:
+
+- The next edge is a MailerLite delivery / receipt preflight local-only.
+- This is not draft creation.
+- This is not a MailerLite API/UI authorization.
+- This is not a send, audience assignment, workflow or campaign authorization.
+- CRM learning remains hypothesis-only; no CRM writes are authorized.
+
+Closed gates:
+
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Shopify UI opened: false.
+- Published: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- MailerLite API called: false.
+- MailerLite drafts created: false.
+- MailerLite forms real used: false.
+- MailerLite UI opened: false.
+- Emails sent: false.
+- Audience assigned: false.
+- Workflow mutations performed: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, audience, campaign or send mutations: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

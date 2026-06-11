@@ -2925,14 +2925,28 @@ Use deep hydration only for:
   diagnosis acceptance, microfix deferred, process learning and restored base
   preview CEO/Web QA boundary.
 
-## Active Next Action - Launch OS v0 Test Claridad Shopify Preview Base CEO/Web QA Waiting - 2026-06-11
+## Completed Next Action - Launch OS v0 Test Claridad Shopify Preview Base CEO/Web QA Waiting - 2026-06-11
 
 - `next_action_id`: `launch_os_v0_test_claridad_shopify_preview_base_ceo_web_qa_waiting`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
 - `source_checkpoint`: `Value Perception Microfix rollback diagnosis accepted;
   base preview restored and remains active for CEO/Web QA - 2026-06-11`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_ceo_web_qa_acceptance_receipt_local_only_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
+- `completion_summary`:
+  - Alejandro reviewed and accepted the Shopify preview noindex/unlisted as a
+    sufficient base preview for the next gate.
+  - Accepted preview state: base restored preview.
+  - Value Perception Microfix remains deferred, not rejected, and is not
+    blocking.
+  - Exact URL remains redacted in receipts and Launch OS docs.
+  - No publication, public navigation link, audience traffic, MailerLite drafts,
+    sends, CRM writes, ledgers, cards, scoring, Fact Store, CRM Core or Brand
+    Hub patch were approved by this acceptance.
 - `objective`: Wait for CEO/Web QA of the restored base Shopify preview. Do not
   retry the deferred microfix or make more changes by default.
 - `why_now`: The microfix diagnosis is closed and the live preview is safely
@@ -3012,3 +3026,68 @@ Use deep hydration only for:
   execution path.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO/Web QA on the
   restored base preview, or explicit pause.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Delivery / Receipt Preflight Local-only - 2026-06-11
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_delivery_receipt_preflight_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `source_checkpoint`: `CEO/Web QA accepted the restored Shopify preview base
+  as sufficient for the next gate - 2026-06-11`
+- `objective`: Prepare a local-only MailerLite delivery / receipt preflight for
+  `Test de claridad antes de decidir`. This is a planning and QA boundary for
+  how delivery/receipt would work later; it is not authorization to create
+  MailerLite drafts, forms, sends, audiences or workflows.
+- `why_now`: The Shopify preview base has been accepted as sufficient for the
+  next gate. The next useful machine-building edge is to define the delivery
+  and receipt boundary before any MailerLite object exists.
+- `accepted_preview_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_ceo_web_qa_acceptance_receipt_local_only_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_shopify_preview_execution_receipt_noindex_unlisted_2026-06-10.json`
+- `accepted_preview_state`: `base_restored_preview`
+- `microfix_status`: `deferred_not_rejected_not_blocking`
+- `url_handling`: exact URL remains redacted; use
+  `test_claridad_preview_url_redacted` and the stored SHA-256 evidence when
+  needed.
+- `allowed_scope`:
+  - Read local Launch OS docs and local receipts.
+  - Read local candidate copy, UX planning and preview packet artifacts.
+  - Prepare a local-only preflight for future MailerLite delivery / receipt
+    architecture.
+  - Define expected delivery copy, receipt fields, redaction rules, QA gates and
+    approval boundaries.
+  - Keep CRM learning as hypotheses only; do not treat seed/QA/internal events
+    as market evidence.
+- `forbidden_scope`:
+  - Do not call MailerLite API or open MailerLite UI.
+  - Do not create MailerLite drafts, forms, groups, tags, segments, campaigns,
+    sends, workflows or automations.
+  - Do not send emails, publish, schedule, assign audience or invite traffic.
+  - Do not call Shopify Admin/API, make Shopify changes, publish or touch public
+    navigation.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not mutate subscribers, groups, tags, segments, workflows, audiences,
+    campaigns or sends.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not add analytics, persistence or tracking.
+- `live_gate_status`: Shopify preview remains noindex/unlisted and accepted as
+  base preview; publication, public navigation, audience traffic, MailerLite
+  drafts/sends, CRM writes, analytics and distribution remain closed.
+- `expected_output`: A local-only MailerLite delivery / receipt preflight packet
+  that identifies required future objects, QA gates, receipt fields, redaction
+  handling and the exact approval language needed before any MailerLite draft or
+  send can be created.
+- `human_boundary_id`: `test_claridad_mailerlite_delivery_receipt_preflight_local_only`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would create or mutate MailerLite/Shopify/CRM objects,
+    send email, assign audience, publish, touch navigation, add analytics or
+    treat internal QA as real market evidence.
+- `completion_definition`: A local-only preflight packet exists and is ready for
+  CEO review, with all live gates still closed.
+- `next_checkpoint_expected`: Control Room checkpoint recording the local-only
+  MailerLite delivery / receipt preflight packet and the next exact approval
+  boundary.
