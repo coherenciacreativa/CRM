@@ -42,6 +42,24 @@ This baseline proves repeated private anchors across two captures. It does not
 prove full-list frequency, 7d frequency, 30d frequency, recent/archive story
 viewer access, or outreach readiness.
 
+## Operator-Supplied Long Story Best Practice
+
+Future initial-window captures should prefer operator-supplied,
+capture-friendly stories when Alejandro can provide them safely.
+
+Best practice:
+
+- capture-friendly stories should ideally be 15+ seconds, with 30 seconds
+  preferred for pilots;
+- use a simple visual layout;
+- avoid stickers, polls, links, or interactive elements where possible;
+- use a single active test story when practical;
+- record story duration in receipts as `storyDurationClass`;
+- treat `operatorSuppliedLongStory=true` as a source-health support condition,
+  not as permission to widen scope;
+- long-story support does not authorize full-list traversal, screenshots, DMs,
+  CRM writes, scoring, outreach, source mutation, or Launch OS touch.
+
 ## Capture Cadence
 
 Recommended cadence:

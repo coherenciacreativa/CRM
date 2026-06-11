@@ -42,6 +42,21 @@ recovery.
 `initial_visible_view_only` is the only mode proven by the first pilot. The
 other modes require a fresh approval boundary.
 
+## Operator-Supplied Long Story Pointer
+
+Repeated private-anchor captures should prefer operator-supplied,
+capture-friendly long stories when available. Longer stories may reduce
+stale-element and timing risk during native viewer-list opening.
+
+Receipts for these runs should include timing fields and operator-supplied story
+fields, including `operatorSuppliedLongStory`, `storyDurationClass`,
+`storyCaptureFriendliness`, `storySurfaceTimingStatus`,
+`storyRemainingTimeConfidence`, `storyWasStableBeforeOpenAttempt`,
+`storyAdvancedDuringAttempt`, and `viewerListOpenAttemptTiming`.
+
+Do not use story pausing, holding, or other timing manipulation unless Alejandro
+separately approves that exact action.
+
 ## Modal Close / Recovery Protocol
 
 The viewer modal must be closed or left in a known safe state before a run is

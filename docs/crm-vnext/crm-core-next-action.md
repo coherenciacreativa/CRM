@@ -1600,20 +1600,49 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, declines, or modifies the first
   repeated story viewer private artifact capture or bounded traversal route.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_story_viewer_initial_window_frequency_protocol_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_capture_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_capture_2026-06-11.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_capture_closeout_2026-06-11.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_initial_window_long_story_capture_closeout_2026-06-11.md`
+- `private_artifact_label`:
+  `crm_core_instagram_story_viewer_initial_window_long_story_capture_2026-06-11.json`
+- `result`: `completed_initial_visible_window`
+- `findings`:
+  - Initial-window long-story capture completed successfully.
+  - Operator-supplied long story was used.
+  - Viewer list opened.
+  - Aggregate viewer count was 9.
+  - Private viewer anchors captured count was 9.
+  - Capture was compared against 3 private capture windows.
+  - Repeated private anchors count was 0.
+  - Repeated-window classes were 9 single-window, 0 repeated.
+  - Full-list exhaustion was not attempted and was not approved.
+  - `viewerModalCloseStatus=closed_confirmed`.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=native_computer_use`.
+  - No fallback was used.
+  - No coordinate-based actions occurred.
+  - No screenshot-only navigation occurred.
+  - Actions performed remained 0.
+  - No viewer handles, viewer lists, or private anchors were printed.
+  - No Instagram actions occurred.
+  - No CRM writes or source mutations occurred.
 - `objective`: Wait for Alejandro approval before any further
   initial-visible-window story viewer private-anchor captures under the new
   frequency protocol.
-- `why_now`: The latest run proved repeated private anchors across two captures
-  with a clean modal close. More capture windows can start building a private
-  frequency signal, but each additional viewer capture still crosses a
-  private-data boundary and requires approval until a standing story-viewer
-  capture boundary is defined.
+- `why_now`: The latest run proved a clean long-story initial-window capture
+  with native Computer Use and a confirmed modal close. More long-story capture
+  windows can start building private frequency evidence, but each additional
+  viewer capture still crosses a private-data boundary and requires approval
+  until a standing story-viewer capture boundary is defined.
 - `allowed_scope`:
   - Present the initial-window frequency protocol.
   - Answer clarifying questions.
@@ -1626,6 +1655,8 @@ routing and completion pointer.
   - No viewer list opening.
   - No viewer handle capture.
   - No viewer list printing.
+  - No story pausing/holding.
+  - No full-list traversal.
   - No DMs.
   - No welcome audio.
   - No CRM writes.
@@ -1637,10 +1668,57 @@ routing and completion pointer.
   `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`,
   `instagram-story-viewer-initial-window-frequency-protocol-v0.md`, and
   `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
-  Computer Use, API, DM, story viewer, viewer list, traversal, welcome audio,
-  source, CRM, coordinate, screenshot fallback, or automation actions unless
-  Alejandro gives fresh explicit approval for the exact initial-window capture
-  route.
+  Computer Use, API, DM, story viewer, viewer list, traversal, story
+  pausing/holding, welcome audio, source, CRM, coordinate, screenshot fallback,
+  or automation actions unless Alejandro gives fresh explicit approval for the
+  exact initial-window capture route.
+- `completion_definition`: Initial-window long-story capture completed with
+  redacted receipts and private artifact storage only. No viewer handles,
+  viewer lists, private anchors, screenshots, DMs, welcome audio, Instagram
+  source actions, CRM writes, source mutations, Launch OS docs, or
+  `/Users/alejandrogomez/CRM` were exposed or touched.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_viewer_initial_window_long_story_repeat_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Wait for Alejandro approval before another
+  initial-visible-window story viewer private-anchor capture, preferably using
+  an operator-supplied capture-friendly long story.
+- `why_now`: The long-story capture succeeded cleanly and suggests that story
+  duration/timing was likely a key blocker in the prior stale-element run. More
+  long-story capture windows can build private frequency evidence before
+  considering full-list traversal.
+- `allowed_scope`:
+  - Present the long-story repeat capture route.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No viewer list opening.
+  - No viewer handle capture.
+  - No viewer list printing.
+  - No story pausing/holding.
+  - No full-list traversal.
+  - No DMs.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`,
+  `instagram-story-viewer-initial-window-frequency-protocol-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, viewer list, traversal, story
+  pausing/holding, welcome audio, source, CRM, coordinate, screenshot fallback,
+  or automation actions unless Alejandro gives fresh explicit approval for the
+  exact long-story initial-window capture route.
 - `completion_definition`: Alejandro approves, declines, or modifies the next
-  initial-visible-window story viewer private-anchor capture under the
-  frequency protocol.
+  initial-visible-window long-story private-anchor capture route.
