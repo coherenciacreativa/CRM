@@ -3634,9 +3634,10 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft QA Hold Plain Text Render Review Local-only - 2026-06-12
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-12`
-- `updated_at`: `2026-06-12`
+- `updated_at`: `2026-06-13`
+- `completed_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite real draft creation API retry v2 accepted
   as completed in qa_hold - 2026-06-12`
 - `objective`: Review the existing MailerLite draft QA hold evidence locally,
@@ -3644,6 +3645,8 @@ Use deep hydration only for:
   seed-send decision.
 - `evidence`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only_2026-06-13.md`
 - `state_summary`:
   - Draft exists in MailerLite QA hold.
   - Null Audience only.
@@ -3690,5 +3693,81 @@ Use deep hydration only for:
     schedule, assign audience, inspect subscribers, touch Shopify/CRM or mutate
     live objects before a new explicit approval.
 - `completion_definition`: Plain text/render review packet exists and the next
-  CEO decision boundary is explicit.
+  read-only review boundary is explicit.
 - `next_checkpoint_expected`: Control Room checkpoint after local-only review.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft Read-only Content Readback for Plain Text Review - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite draft QA hold plain text/render local-only
+  review completed - 2026-06-13`
+- `objective`: Perform a narrow read-only MailerLite draft content readback for
+  the existing QA-hold draft to review generated plain text and canonicalized
+  HTML before any seed-send decision.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+- `state_summary`:
+  - Real draft exists in MailerLite QA hold.
+  - Draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+  - Draft ID hash:
+    `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+  - Null Audience only.
+  - `active_count=0`.
+  - Not sent, not scheduled and not published.
+  - No workflows/automations.
+  - Hard blockers: none.
+  - Generated plain text still requires review before any seed send.
+- `allowed_scope`:
+  - Fresh read-only MailerLite API readback limited to the existing QA-hold
+    draft and safety group aggregate state.
+  - Verify draft name/hash, Null Audience assignment, `active_count=0`, draft
+    state, sent/scheduled/published flags, workflow/automation absence,
+    generated plain text, and canonicalized HTML semantic content.
+  - Generate a local receipt/report in `/Users/alejandrogomez/Documents/Mantis-Reports`.
+  - Update Launch OS docs after the readback if the hito status changes.
+- `forbidden_scope`:
+  - Do not create, update or delete drafts.
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, campaigns, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not print raw MailerLite IDs, sender values, tokens, secrets or exact
+    private URLs.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Read-only inspection only. No seed send, send, audience,
+  workflow, subscriber mutation, CRM write, Shopify change or live mutation is
+  open.
+- `future_boundaries`:
+  - Seed-only QA send remains closed until readback is green and a separate
+    seed-send boundary is opened under the standing delegation policy.
+  - Public/audience send remains a separate heavy gate.
+- `expected_output`: Local read-only content readback receipt/report that
+  decides whether generated plain text is green, soft-blocked for review or
+  hard-blocked.
+- `human_boundary_id`: `test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any readback would require subscriber-row inspection, mutation, send,
+    seed-send, publish/schedule, draft edit/delete, audience/workflow changes,
+    Shopify/CRM work or secret exposure.
+  - Existing draft is no longer the expected QA-hold draft.
+  - Null Audience group is missing, duplicated or has `active_count` other than
+    `0`.
+- `completion_definition`: Read-only content readback receipt exists, generated
+  plain text/canonicalized HTML status is explicit, and the next seed-send or
+  remediation boundary is explicit.
+- `next_checkpoint_expected`: Control Room checkpoint after read-only content
+  readback.

@@ -10833,3 +10833,98 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad draft QA hold local plain text/render review completed - 2026-06-13
+
+Status: checkpoint completed, documentation-only pointer reconciliation after
+local-only QA hold review. This checkpoint does not call MailerLite API/UI,
+send, seed-send, publish, schedule, activate workflows/automations, assign
+audience, mutate subscribers/groups/tags/segments/fields/workflows/campaigns/
+automations, Shopify, CRM, CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- Local-only draft QA hold plain text/render review packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only_2026-06-13.md`
+- Real draft creation API retry v2 execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+
+Review result:
+
+- Real draft remains the active QA-hold object by evidence.
+- Draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+- Draft ID hash:
+  `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+- Null Audience only.
+- `active_count=0`.
+- Sent/scheduled/published: `false/false/false`.
+- Workflows/automations: none by prior receipt.
+- Semantic HTML content QA: green by prior receipt.
+- Footer/legal QA: green by prior receipt.
+- Local HTML/render artifacts remain green as source evidence.
+- Local plain text fallback remains green as source/reference.
+- Generated MailerLite plain text is not approved yet because the retry v2
+  receipt reports `generated_needs_review`, hash drift from local fallback and
+  failed `plain_result_d_fragments_present`, but does not include the generated
+  plain-text body.
+
+Decision:
+
+- The local review hito is complete.
+- The next useful edge is a narrow read-only MailerLite content readback of the
+  existing QA-hold draft to inspect generated plain text and canonicalized HTML.
+- Seed send remains closed until readback is green or consciously deferred in a
+  receipt.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review`
+
+Operating meaning:
+
+- The next edge is read-only inspection only.
+- This checkpoint does not approve seed send.
+- This checkpoint does not approve any send.
+- This checkpoint does not approve publish or schedule.
+- This checkpoint does not approve audience assignment.
+- This checkpoint does not approve workflow/automation activation.
+- This checkpoint does not approve subscriber/group/tag/segment/field mutation.
+- This checkpoint does not approve CRM writes.
+- This checkpoint does not approve Shopify changes.
+
+Closed gates:
+
+- MailerLite API called by this checkpoint: false.
+- MailerLite UI opened by this checkpoint: false.
+- Draft created/updated/deleted by this checkpoint: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations by this checkpoint: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
