@@ -11609,3 +11609,74 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad consultant bridge attempt blocked-safe - 2026-06-13
+
+Status: consultant bridge request for the active plain-text route unblock edge
+was attempted and blocked-safe. The request was not sent, no GREEN/YELLOW/RED
+verdict was received, and no live system was touched.
+
+Evidence:
+
+- Consultant bridge attempt receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_consultant_bridge_attempt_blocked_safe_2026-06-13.md`
+- CEO decision brief:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_ceo_decision_brief_2026-06-13.md`
+
+What happened:
+
+- Safari was open on the ChatGPT consultant conversation.
+- Computer Use readback succeeded.
+- Computer Use actions failed after readback with a repeated not-active error.
+- A narrow AppleScript/clipboard fallback was attempted once and interrupted
+  after it did not return promptly.
+- Follow-up Safari readback showed no visible posted request and no consultant
+  response.
+
+Decision:
+
+- Do not infer consultant GREEN.
+- Do not retry the consultant bridge blindly in this run.
+- Active next action remains:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
+- Keep the real draft in QA hold.
+- Keep seed-send closed.
+- Keep the three decision options from the CEO brief as the authoritative next
+  choices.
+
+Closed gates:
+
+- Consultant request sent: false.
+- Consultant verdict received: false.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite real draft mutated: false.
+- Browser extension installed/enabled: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
