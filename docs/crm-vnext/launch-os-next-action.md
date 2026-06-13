@@ -4342,7 +4342,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite API Test-send Spike Packet Local-only - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_api_test_send_spike_packet_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
 - `source_checkpoint`: `HTML-first seed QA execution route packet completed -
@@ -4413,3 +4413,84 @@ Use deep hydration only for:
 - `completion_definition`: Spike packet exists and defines the next safe route
   without executing any send or MailerLite mutation.
 - `next_checkpoint_expected`: Control Room checkpoint after spike packet.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite API Test-send Spike Execution Delegated Preflight - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_delegated_preflight`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite API test-send spike packet completed -
+  2026-06-13`
+- `objective`: Run a fresh execution preflight and, only if green, execute at
+  most one seed-only API test-send spike for the Test Claridad MailerLite draft,
+  with a strong receipt and no public/audience send.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_packet_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_readonly_v3_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_boundary_packet_local_only_2026-06-13.md`
+- `state_summary`:
+  - Spike packet completed local-only.
+  - Current official MailerLite docs do not expose a clearly documented modern
+    test-send endpoint.
+  - Candidate endpoints are therefore exploratory and must be treated as a real
+    seed-send attempt if any endpoint succeeds.
+  - Preflight v3 was green, but execution requires fresh preflight immediately
+    before attempting candidate endpoints.
+  - Real draft remains in QA hold.
+  - Generated plain text remains not public/audience-ready.
+  - Public/audience send remains closed.
+- `allowed_scope`:
+  - Fresh read-only MailerLite API preflight/readback for the real QA-hold draft.
+  - If fresh preflight is green, attempt only candidate test-send endpoints
+    listed in the spike packet.
+  - Stop immediately on first successful test-send response.
+  - Send at most one seed test email to the documented approved seed inbox.
+  - Record endpoint template/body shape used, if any, in redacted form.
+  - Generate local execution receipt.
+  - Keep all raw IDs, sender values, tokens, exact private URLs and seed
+    recipient values out of chat/logs except redacted labels and hashes.
+  - Scoped docs-only checkpoint/commit/push after receipt.
+- `forbidden_scope`:
+  - Do not use campaign schedule/send endpoints.
+  - Do not public/audience-send.
+  - Do not send to any non-seed recipient.
+  - Do not send more than one seed test email.
+  - Do not retry MailerLite UI blindly.
+  - Do not mutate the real draft.
+  - Do not create/update/delete drafts.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers beyond aggregate safety preflight.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat seed QA as market signal.
+- `live_gate_status`: Yellow/delegated seed-only test-send spike edge during
+  the pilot. Public/audience send, workflow, subscriber mutation, CRM write and
+  Shopify changes remain closed.
+- `future_boundaries`:
+  - If API route succeeds, proceed later to restricted seed inbox/readback QA.
+  - If API route fails safely, consider one fresh UI/Computer Use stability
+    check or keep QA hold.
+  - Public/audience send remains a red gate for Alejandro.
+- `expected_output`: Execution receipt with completed/blocked/route_not_found
+  status and a post-send or no-send readback.
+- `human_boundary_id`: `test_claridad_mailerlite_api_test_send_spike_execution_delegated_preflight`
+- `human_boundary_notification_status`: `not_needed_under_pilot_delegation`
+- `stop_conditions`:
+  - Any requested step would use schedule/send, public/audience-send, send to a
+    non-seed recipient, send more than one test email, publish/schedule, mutate
+    the real draft, inspect subscribers beyond safety preflight, mutate
+    audiences/workflows/groups/tags/segments/fields, touch Shopify/CRM, patch
+    Brand Hub, touch CRM Core, touch GOG/auth, expose secrets or require a red
+    gate.
+- `completion_definition`: Fresh preflight and execution receipt exist, showing
+  either one seed-only test email sent through a safe candidate endpoint or no
+  send performed because the route was blocked/not found.
+- `next_checkpoint_expected`: Control Room checkpoint after execution receipt.
