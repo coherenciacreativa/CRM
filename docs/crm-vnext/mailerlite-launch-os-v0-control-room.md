@@ -11219,3 +11219,96 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite plain text UI attempt blocked-safe and route stabilization active - 2026-06-13
+
+Status: delegated yellow gate attempted and blocked by tool/browser route, not by
+Alejandro approval. The Safari ChatGPT consultant bridge returned
+`GREEN_with_narrow_scope` for a narrow MailerLite UI/Computer Use plain-text
+inspection/repair attempt, but MailerLite UI did not expose reliable controls.
+No MailerLite mutation occurred.
+
+Evidence:
+
+- UI/Computer Use attempt receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_attempt_receipt_2026-06-13.md`
+- Fresh read-only draft content readback receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+- Plain text UI/Computer Use route packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+
+What happened:
+
+- Consultant bridge: `GREEN_with_narrow_scope`.
+- Fresh read-only preflight: completed.
+- Real draft ID hash:
+  `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+- Null Audience active_count: `0`.
+- Hard blockers: none.
+- Plain text remains blocked for seed send.
+- Safari MailerLite root/dashboard loaded in degraded/minimal state.
+- `/campaigns` returned MailerLite 404.
+- One reload and one safe route retry did not expose Campaigns/Drafts controls.
+- Computer Use could read Safari state but did not expose reliable semantic
+  controls for the MailerLite route.
+- Chrome fallback probe found Chrome running and native host manifest correct,
+  but the Codex Chrome Extension was not installed in the selected profile.
+
+Decision:
+
+- Do not retry MailerLite UI blindly.
+- Keep the real draft in QA hold.
+- Treat the old approval-waiting pointer as superseded by the pilot correction
+  plus this attempted delegated-yellow run.
+- Move the active edge to local-only MailerLite UI route stabilization /
+  decision.
+
+Pointer change:
+
+- Superseded:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_execution_approval_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_local_only`
+
+Operating meaning:
+
+- The next edge is not another approval request for Alejandro.
+- The next edge is to decide locally whether to stabilize the browser route,
+  install/enable a supported Chrome route, defer plain-text repair, explicitly
+  accept HTML-only seed QA later, or pause MailerLite receipt work.
+- Any changed live scope should go back through consultant bridge or Alejandro
+  depending on yellow/red gate status.
+
+Closed gates:
+
+- MailerLite real draft mutated: false.
+- MailerLite API mutation: false.
+- MailerLite UI mutation: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

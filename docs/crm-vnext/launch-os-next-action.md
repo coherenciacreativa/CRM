@@ -3940,7 +3940,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text UI/Computer Use Execution Approval Waiting - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_execution_approval_waiting`
-- `status`: `active`
+- `status`: `superseded`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite plain text UI/Computer Use route packet
@@ -4002,3 +4002,85 @@ Use deep hydration only for:
 - `completion_definition`: Alejandro either approves the exact UI route, pauses
   the MailerLite receipt path, or chooses another route.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO route decision.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text UI Route Stabilization Local-only - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite plain text UI/Computer Use attempt blocked
+  safe by tool route - 2026-06-13`
+- `objective`: Produce a local-only route stabilization / decision update for
+  the MailerLite plain-text fallback path after the delegated yellow gate was
+  greenlit by consultant bridge but the UI route could not expose reliable
+  MailerLite controls.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_attempt_receipt_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+- `state_summary`:
+  - Pilot correction superseded the old human-approval waiting posture for this
+    yellow gate.
+  - Safari ChatGPT consultant bridge returned `GREEN_with_narrow_scope` for
+    MailerLite UI/Computer Use plain-text inspection/repair.
+  - Fresh read-only MailerLite preflight stayed hard-gate green: exact real
+    draft, Null Audience only, `active_count=0`, no sends/schedule/publish/
+    workflows.
+  - Generated plain text remains blocked for seed send.
+  - Safari MailerLite UI loaded in degraded/minimal state after one reload and
+    one safe route retry; Campaigns/Drafts controls were not exposed.
+  - Chrome fallback was not usable because the Codex Chrome Extension is not
+    installed in the selected profile, while the native host manifest is
+    present/correct.
+  - No MailerLite draft mutation occurred.
+- `allowed_scope`:
+  - Local-only route decision / stabilization packet.
+  - Document whether to fix Safari rendering, install/enable Codex Chrome
+    Extension, leave draft in QA hold, or ask for a separate product decision
+    to accept/defer plain-text repair.
+  - Read existing receipts/artifacts.
+  - Scoped docs-only checkpoint/commit if needed under the pilot delegation.
+- `forbidden_scope`:
+  - Do not retry MailerLite UI blindly.
+  - Do not call MailerLite API/UI for mutation.
+  - Do not mutate the real draft.
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: UI route blocked by tool/browser surface, not by
+  Alejandro approval. Real draft remains QA hold. Seed send, public/audience
+  send, workflow, subscriber mutation, CRM write and Shopify changes remain
+  closed.
+- `future_boundaries`:
+  - Any new live UI repair attempt needs either a working MailerLite UI surface
+    or a new consultant bridge greenlight if the scope changes materially.
+  - Seed-only QA send remains separate after plain text is green or explicitly
+    deferred.
+  - Public/audience send remains a separate red gate for Alejandro.
+- `expected_output`: Local-only route stabilization / decision packet or a
+  concise handoff identifying the exact tool-route blocker and next safe
+  unblock.
+- `human_boundary_id`: `test_claridad_mailerlite_plain_text_ui_route_stabilization_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any requested step would retry UI mutation, send, seed-send, publish/
+    schedule, inspect subscribers, mutate audiences/workflows/groups/tags/
+    segments/fields, touch Shopify/CRM, patch Brand Hub, touch CRM Core, touch
+    GOG/auth, or expose secrets.
+- `completion_definition`: Route decision is documented with clear next
+  unblock: stabilize browser route, defer plain text repair, accept HTML-only
+  seed QA by explicit product decision, or pause MailerLite receipt work.
+- `next_checkpoint_expected`: Control Room checkpoint after local-only route
+  stabilization decision.
