@@ -4417,7 +4417,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite API Test-send Spike Execution Delegated Preflight - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_delegated_preflight`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite API test-send spike packet completed -
@@ -4493,4 +4493,100 @@ Use deep hydration only for:
 - `completion_definition`: Fresh preflight and execution receipt exist, showing
   either one seed-only test email sent through a safe candidate endpoint or no
   send performed because the route was blocked/not found.
+- `completion_result`:
+  - Execution status: `route_not_found`.
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.json`
+  - Consultant bridge returned GREEN with conditions for a seed-only API
+    test-send spike.
+  - Fresh preflight passed.
+  - Candidate API test-send endpoints all returned not found.
+  - Test emails sent: 0.
+  - Draft remained draft/regular, Null Audience only, active_count=0, not
+    scheduled/published/sent and not used in automations.
+  - No schedule/send campaign endpoint was used.
+  - No subscriber, group, tag, segment, field, workflow, Shopify or CRM
+    mutation occurred.
+  - Generated plain text remains not public/audience-ready and cannot support
+    public/audience send readiness.
 - `next_checkpoint_expected`: Control Room checkpoint after execution receipt.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite UI Seed Test Route Stability Check Delegated - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_delegated`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `API test-send spike route_not_found - 2026-06-13`
+- `objective`: Do one fresh, narrow MailerLite UI/Computer Use route stability
+  check for seed-only HTML-first QA from the existing Test Claridad QA-hold
+  draft, without blind retries and without opening any public/audience gate.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_packet_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_readonly_v3_2026-06-13.json`
+- `state_summary`:
+  - API remains viable for MailerLite draft create/update/readback/delete.
+  - API test-send route was not found through the candidate endpoint set.
+  - No seed/test email was sent by API.
+  - The real draft remains in safe QA hold.
+  - Plain text remains not public/audience-ready; this is acceptable only for
+    an HTML-first seed QA exception and not for public/audience send.
+  - Prior MailerLite UI/Computer Use was degraded; the pilot correction allows
+    one fresh route check if the UI appears stable, but not blind repetition.
+- `allowed_scope`:
+  - Use Computer Use/Safari for one narrow MailerLite UI route stability check.
+  - Prefer a fresh/disposable MailerLite browser context or refresh if stale.
+  - Locate the existing draft by visible name without printing raw IDs.
+  - Confirm the UI exposes a genuine test/preview-send path for the draft, if
+    visible.
+  - If and only if the route is visibly stable and all safety gates remain
+    green, execute at most one seed-only test send to the documented approved
+    seed inbox under the pilot delegation, with receipt.
+  - Stop immediately after one sent test email or after instability/ambiguity.
+  - Generate a local receipt with route outcome and redacted labels/hashes.
+  - Scoped docs-only checkpoint/commit/push after receipt.
+- `forbidden_scope`:
+  - Do not use campaign schedule/send or public/audience send.
+  - Do not send to any non-seed recipient.
+  - Do not send more than one seed test email.
+  - Do not keep clicking/retrying blindly if MailerLite UI is stale, degraded
+    or ambiguous.
+  - Do not mutate the real draft content.
+  - Do not create/update/delete drafts.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers beyond aggregate safety preflight.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat seed QA as market signal.
+- `live_gate_status`: Yellow/delegated UI route stability check under the
+  pilot. Public/audience send, workflow, subscriber mutation, CRM write and
+  Shopify changes remain closed.
+- `future_boundaries`:
+  - If one seed email is sent successfully, proceed later to restricted seed
+    inbox/readback QA.
+  - If UI is unstable or route is unavailable, leave draft in QA hold and move
+    to another local-only Launch OS edge.
+  - Public/audience send remains a red gate for Alejandro.
+- `expected_output`: UI route stability/test-send receipt with completed,
+  blocked, no_send or seed_sent status.
+- `human_boundary_id`: `test_claridad_mailerlite_ui_seed_test_route_stability_check_delegated`
+- `human_boundary_notification_status`: `not_needed_under_pilot_delegation`
+- `stop_conditions`:
+  - Any requested step would use schedule/send, public/audience-send, send to a
+    non-seed recipient, send more than one test email, publish/schedule, mutate
+    the real draft, inspect subscribers beyond safety preflight, mutate
+    audiences/workflows/groups/tags/segments/fields, touch Shopify/CRM, patch
+    Brand Hub, touch CRM Core, touch GOG/auth, expose secrets or require a red
+    gate.
+- `completion_definition`: Local receipt exists showing either one seed-only
+  UI test email sent under stable conditions, or no send because the UI route
+  was unavailable/ambiguous/degraded.
+- `next_checkpoint_expected`: Control Room checkpoint after UI route check.

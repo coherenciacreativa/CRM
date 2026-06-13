@@ -12012,3 +12012,105 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad API test-send spike route_not_found and UI route stability check active - 2026-06-13
+
+Status: delegated yellow-gate API test-send spike completed safely with
+`route_not_found`. No seed/test email was sent. The real Test Claridad
+MailerLite draft remains in safe QA hold. This is not a fatal blocker for the
+3-hour pilot; it moves the sublane into a product/tool-unblock posture.
+
+Evidence:
+
+- API test-send spike execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.json`
+- API test-send spike execution markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.md`
+- API test-send spike runner:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_runner_2026-06-13.mjs`
+- API test-send spike packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_packet_local_only_2026-06-13.md`
+
+Consultant bridge:
+
+- Safari ChatGPT consultant request sent.
+- Consultant response: GREEN with conditions.
+- Conditions retained: one seed/test email maximum, documented seed inbox only,
+  test/preview-send endpoint only, no schedule, no publish, no public/audience
+  send, no workflow/automation, no audience/group/tag/segment/field mutation,
+  no subscriber mutation, no CRM writes and receipt required.
+
+Execution result:
+
+- Fresh preflight: green.
+- Safety group exact match count: 1.
+- active_count: 0.
+- Draft ID hash:
+  `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+- Draft status/type: draft/regular.
+- Audience: Null Audience only.
+- Segments: 0.
+- Not scheduled, queued, started, finished or currently sending.
+- Used in automations: false.
+- HTML semantic QA: green.
+- Generated plain text: still not public/audience-ready; seed-only exception
+  only, not public/audience readiness.
+- Candidate API test-send endpoints attempted: 10.
+- Successful endpoint: none.
+- Test emails sent: 0.
+- Result: `route_not_found`.
+
+Route decision:
+
+- API remains the primary route for MailerLite campaign draft create/update/
+  readback/delete.
+- API is not currently a proven route for MailerLite seed/test-send in this
+  account because the candidate test-send endpoints were not found.
+- Do not use schedule/send endpoint to simulate seed QA.
+- Do not keep retrying API endpoint guesses.
+- Next edge is one fresh, narrow MailerLite UI/Computer Use route stability
+  check. If UI is stale, degraded or ambiguous, stop that sublane cleanly and
+  move to another local-only edge.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_delegated_preflight`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_delegated`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened: false.
+- MailerLite API test-send route found: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Seed inbox printed in chat or receipt: false.
+- Tokens printed: false.
