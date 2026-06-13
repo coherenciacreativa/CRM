@@ -4102,6 +4102,7 @@ Use deep hydration only for:
   waiting for a concrete route/tool or product decision that can unblock plain
   text review without blind UI retries.
 - `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_handoff_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_decision_packet_local_only_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_attempt_receipt_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
@@ -4118,6 +4119,8 @@ Use deep hydration only for:
     selected profile, despite the native host manifest being present/correct.
   - Consultant bridge returned `GREEN` for leaving the draft in QA hold and not
     retrying MailerLite UI blindly.
+  - A local end-of-run handoff now records the concrete unblock choices so the
+    next operator does not repeat the same UI route failure.
 - `allowed_scope`:
   - Preserve this as a local-only waiting/unblock edge.
   - Prepare a future route/tool unblock packet if Safari route changes or Chrome
