@@ -12114,3 +12114,90 @@ Closed gates in this checkpoint:
 - Raw IDs printed: false.
 - Seed inbox printed in chat or receipt: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite UI route unstable and local-only decision brief active - 2026-06-13
+
+Status: delegated MailerLite UI/Computer Use route stability check completed as
+`ui_unstable_no_send`. No seed email was sent. No MailerLite object was mutated.
+The Test Claridad draft remains in QA hold and the lane should not keep
+retrying UI blindly during this pilot.
+
+Evidence:
+
+- UI route stability check receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_receipt_2026-06-13.json`
+- UI route stability check markdown:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_receipt_2026-06-13.md`
+- Prior API test-send spike execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.json`
+
+UI route result:
+
+- Browser: Safari.
+- Disposable tab opened: true.
+- Initial campaigns route: 404/not found.
+- Dashboard root: authenticated but degraded basic HTML.
+- Refresh attempted once: true.
+- Post-refresh result: still degraded basic HTML.
+- App shell loaded: false.
+- Campaign navigation visible: false.
+- Draft located in UI: false.
+- Test-send route visible: false.
+- Seed recipient entered: false.
+- Send clicked: false.
+- Seed emails sent: 0.
+
+Operating conclusion:
+
+- API remains usable for MailerLite draft create/update/readback/delete.
+- API seed/test-send endpoint route is not available through the candidate
+  endpoints tested today.
+- MailerLite UI is not stable enough right now for safe seed/test-send.
+- Do not use the campaign schedule/send endpoint as a substitute.
+- Do not retry UI blindly.
+- Keep the real Test Claridad draft in QA hold.
+- Generated plain text remains not public/audience-ready.
+- Continue with a local-only decision brief to choose the next useful Launch OS
+  edge without inventing market evidence.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_delegated`
+- New active next action:
+  `launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief`
+
+Closed gates in this checkpoint:
+
+- MailerLite API called by UI step: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Seed inbox printed in chat or receipt: false.
+- Tokens printed: false.
