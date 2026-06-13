@@ -12270,3 +12270,74 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad reusable learning capture completed and pilot handoff active - 2026-06-13
+
+Status: local-only reusable learning capture completed. The pilot should now
+close with a compact handoff instead of opening another live/tooling edge.
+
+Evidence:
+
+- Reusable learning capture:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_reusable_launch_learning_capture_local_only_2026-06-13.md`
+- Seed delivery route blocked decision brief:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief_2026-06-13.md`
+
+Captured learning:
+
+- Product/UX: avoid expandable CTAs when expansion adds little perceived value.
+- Copy/voice: prefer affirmative, concrete, Alejandro-like voice over
+  defensive disclaimer-led public copy.
+- Static review: future Static UX Review Pack and Static Local Prototype can be
+  consolidated as an Interactive Static UX Prototype Pack when both are HTML
+  local experiences.
+- Shopify/Web: isolated worktree and noindex/unlisted preview path worked.
+- MailerLite: API works for draft create/update/readback/delete; candidate API
+  test-send endpoints were not found; UI must hydrate visibly before seed-send
+  attempts.
+- Safety: seed QA is not market signal; CRM writes remain deferred until real
+  observed events exist.
+- Operator autonomy: bridge/tool failures are not fatal for yellow gates; use
+  receipts, avoid blind UI retries, and stop only at red gates.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_reusable_launch_learning_capture_local_only`
+- New active next action:
+  `launch_os_v0_autonomous_operator_pilot_handoff_local_only`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened by this learning step: false.
+- MailerLite API called by this learning step: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
