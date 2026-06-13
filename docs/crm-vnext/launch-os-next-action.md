@@ -4093,7 +4093,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text Route Unblock Waiting - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
-- `status`: `active`
+- `status`: `superseded`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite plain text route stabilization decision
@@ -4133,6 +4133,11 @@ Use deep hydration only for:
   - A Safari ChatGPT consultant bridge attempt for Option C was blocked-safe:
     the request was not sent, no verdict was received, no MailerLite/system
     mutation occurred, and no GREEN was inferred.
+  - Pilot correction on 2026-06-13 clarified that bridge/tool failure is not
+    fatal to the run and that the plain-text issue should move to product/
+    tool-unblock posture rather than block all Launch OS progress.
+  - HTML-first seed QA exception packet and self-review were prepared local-only
+    to separate seed-only inbox/render QA from public/audience readiness.
 - `allowed_scope`:
   - Preserve this as a local-only waiting/unblock edge.
   - Prepare a future route/tool unblock packet if Safari route changes or Chrome
@@ -4182,3 +4187,81 @@ Use deep hydration only for:
   delegated scope.
 - `next_checkpoint_expected`: Control Room checkpoint after a concrete plain
   text unblock decision or end-of-run handoff.
+
+## Active Next Action - Launch OS v0 Test Claridad HTML-first Seed QA Execution Preflight Local-only - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `Pilot correction moved plain-text blocker to
+  product/tool-unblock posture - 2026-06-13`
+- `objective`: Prepare a fresh local/read-only execution preflight for a
+  possible future HTML-first seed inbox/render QA of the Test Claridad receipt,
+  while keeping the real draft in QA hold and not sending anything.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_self_review_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_consultant_bridge_attempt_blocked_safe_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+- `state_summary`:
+  - Bridge/tool failure is recorded as blocked-safe, not fatal to the pilot.
+  - Real draft `[NO SEND][TEST CLARIDAD] Receipt email v1` remains in QA hold.
+  - HTML semantic QA is green by prior readback.
+  - Generated MailerLite plain text remains not green and cannot support
+    public/audience readiness.
+  - Local HTML-first exception packet is green for packet quality only, not for
+    execution.
+  - Seed send remains closed until this execution preflight is green and an
+    operable seed-send route is documented.
+- `allowed_scope`:
+  - Fresh read-only MailerLite API preflight/readback for the real QA-hold draft.
+  - Local receipt generation.
+  - Validate Null Audience only, `active_count=0`, draft/not sent/not scheduled/
+    not published/no workflows.
+  - Validate HTML semantic QA remains green.
+  - Validate the seed-only exception label and seed-recipient boundary for a
+    future run.
+  - Scoped docs-only checkpoint/commit/push under the autonomous pilot.
+- `forbidden_scope`:
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not retry MailerLite UI blindly.
+  - Do not mutate the real draft.
+  - Do not create/update/delete drafts.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers beyond aggregate safety preflight.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat seed QA as market signal.
+- `live_gate_status`: Local/read-only preflight edge. Seed send, public/audience
+  send, workflow, subscriber mutation, CRM write and Shopify changes remain
+  closed.
+- `future_boundaries`:
+  - If preflight is green and a seed-send route is operable, prepare a separate
+    seed-only execution receipt/boundary under the standing delegation and the
+    HTML-first exception label.
+  - Public/audience send remains a red gate for Alejandro.
+  - Plain-text repair remains a separate tool-unblock lane.
+- `expected_output`: Fresh local/read-only preflight receipt and a clear route
+  decision: proceed to seed-only HTML-first execution boundary, keep QA hold, or
+  return to tool unblock.
+- `human_boundary_id`: `test_claridad_html_first_seed_qa_execution_preflight_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any requested step would send, seed-send, publish/schedule, mutate the real
+    draft, inspect subscribers beyond safety preflight, mutate audiences/
+    workflows/groups/tags/segments/fields, touch Shopify/CRM, patch Brand Hub,
+    touch CRM Core, touch GOG/auth, or expose secrets.
+- `completion_definition`: Fresh preflight receipt exists and identifies whether
+  HTML-first seed QA can move to a later execution boundary without treating
+  plain text as public/audience-ready.
+- `next_checkpoint_expected`: Control Room checkpoint after HTML-first seed QA
+  execution preflight.

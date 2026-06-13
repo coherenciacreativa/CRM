@@ -131,9 +131,30 @@ Brand canon changes, CRM Core work or any other hard stop.
 If the consultant does not respond:
 
 - Continue green-zone local/docs/QA work.
-- For yellow external-system work, wait briefly, then switch to another safe
-  local task or stop with handoff.
+- For yellow delegated work, use the pilot contract, strengthen local receipts
+  and continue when the action can stay inside the delegated scope.
+- If the consultant bridge itself is unavailable, do not treat that tool
+  failure as fatal to the pilot. Record the bridge failure as blocked-safe and
+  continue green local/read-only/docs/QA/preflight work.
 - For red-zone work, stop.
+
+### Consultant Bridge Recovery
+
+If the Safari ChatGPT consultant bridge is stale, confusing or does not send:
+
+1. Preserve unsaved text.
+2. Refresh or reload once when safe.
+3. If still broken, open a new Safari window and return to the ChatGPT
+   conversation.
+4. Send a shorter `CONSULTANT REVIEW REQUEST`.
+5. If still unavailable, do not keep clicking blindly.
+
+If the bridge remains unavailable:
+
+- Continue green local/read-only/docs/QA/preflight work.
+- For yellow delegated work, use the pilot contract and produce stronger
+  receipts.
+- Stop only at hard/red gates.
 
 ## Computer Use Recovery
 
@@ -169,8 +190,14 @@ Never use reload, clicks, AppleScript, DOM injection or any fallback to bypass:
 
 For MailerLite seed/test sends covered by standing delegation:
 
-- API is for fresh preflight, draft/group safety QA and receipts.
-- UI/Computer Use is the primary route for actual test sends.
+- API is the primary route for campaign draft creation/update/readback/delete
+  when the MailerLite Campaign API exposes the needed feature.
+- The proven Campaign API pattern is `Content-Type: application/json`, `emails`
+  as an array, `groups` as an array, and no `preheader`, `plain_text` or
+  `preview_text` request fields unless future official docs confirm support.
+- API is also for fresh preflight, draft/group safety QA and receipts.
+- UI/Computer Use is fallback when API cannot expose a needed feature and the
+  UI route is visibly stable.
 - Use Safari by default.
 - If MailerLite state is stale, use a real fresh Safari window and navigate
   from Campaigns/Drafts.
@@ -180,6 +207,16 @@ For MailerLite seed/test sends covered by standing delegation:
 - Timebox to one clean browser reset and at most two canonical routes before
   changing strategy.
 - Record the result through a local receipt.
+
+If MailerLite UI is degraded, missing controls or likely affected by VPN/network
+state, do not spend the run stuck there. A single fresh route check may be
+reasonable later when conditions have changed, but repeated blind UI retries are
+out of scope for the pilot.
+
+Generated plain-text drift should not block all Launch OS progress. Keep the
+draft in QA hold, mark generated plain text as not green for public/audience
+send, and either prepare a narrow seed-only HTML-first exception packet or move
+to another local-only Launch OS edge.
 
 ## Commit and Push Policy
 

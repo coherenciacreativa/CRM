@@ -11680,3 +11680,88 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad pilot correction recovered route and set HTML-first seed QA preflight - 2026-06-13
+
+Status: pilot correction applied. Bridge/UI failure is recorded as
+blocked-safe, not fatal. The MailerLite plain-text blocker is moved to a
+product/tool-unblock posture, and the active edge is now a local/read-only
+HTML-first seed QA execution preflight. No MailerLite UI/API call, draft
+mutation, send, seed send, publish, schedule, workflow, subscriber/group/tag/
+segment/field mutation, Shopify, CRM, CRM Core, Brand Hub or GOG/auth occurred
+in this checkpoint.
+
+Evidence:
+
+- HTML-first seed QA exception packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only_2026-06-13.md`
+- HTML-first seed QA exception self-review:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_self_review_2026-06-13.md`
+- Consultant bridge blocked-safe receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_consultant_bridge_attempt_blocked_safe_2026-06-13.md`
+- Draft readback/plain-text review receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+
+Pilot correction:
+
+- Safari ChatGPT bridge failure should not stop the run.
+- MailerLite UI/Computer Use failure should not stop the run.
+- API remains primary for MailerLite campaign draft create/update/readback/delete
+  when the needed feature is exposed.
+- UI/Computer Use is fallback only when API cannot expose the needed feature and
+  the route is visibly stable.
+- Generated plain text remains not green for public/audience send.
+- The real draft remains in QA hold.
+- Do not retry MailerLite UI blindly.
+- Continue green local/read-only/docs/QA/preflight work and stop only at red
+  gates.
+
+Pointer change:
+
+- Superseded:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_local_only`
+
+Operating meaning:
+
+- The next edge is not a send.
+- The next edge is a fresh local/read-only preflight for whether a later
+  seed-only HTML-first inbox/render QA boundary can be prepared.
+- Plain text remains a known exception and cannot support public/audience
+  readiness.
+- Public/audience send remains a red gate for Alejandro.
+
+Closed gates:
+
+- MailerLite UI opened: false.
+- MailerLite API called by this checkpoint: false.
+- MailerLite real draft mutated: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
