@@ -4606,7 +4606,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad Seed Delivery Route Blocked Local-only Decision Brief - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite API route_not_found and UI unstable no-send
@@ -4673,6 +4673,75 @@ Use deep hydration only for:
     schedule, mutate MailerLite/Shopify/CRM/subscribers/groups/tags/segments/
     fields/workflows, touch CRM Core, patch Brand Hub, touch GOG/auth, expose
     secrets or require a red gate.
-- `completion_definition`: Local decision brief exists and recommends a next
-  edge without inventing observed events or treating QA as market signal.
+- `completion_result`:
+  - Decision brief:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief_2026-06-13.md`
+  - Recommendation: leave Test Claridad draft in QA hold and continue
+    local-only Launch OS learning capture.
+  - No CEO decision needed yet; safe to continue local-only.
+  - Do not retry UI blindly.
+  - Do not keep guessing API test-send endpoints.
+  - Public/audience send remains closed.
 - `next_checkpoint_expected`: Control Room checkpoint after decision brief.
+
+## Active Next Action - Launch OS v0 Test Claridad Reusable Launch Learning Capture Local-only - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_reusable_launch_learning_capture_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `Seed delivery route blocked decision brief completed -
+  2026-06-13`
+- `objective`: Capture reusable Launch OS learnings from Test Claridad as a
+  local-only operational brief, without turning pilots/reports into Brand canon
+  and without touching live systems.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_receipt_2026-06-13.json`
+- `state_summary`:
+  - Test Claridad has produced useful Launch OS learning even without seed
+    delivery.
+  - Static UX Review Pack and Static Local Prototype overlap should be
+    consolidated in future as an Interactive Static UX Prototype Pack, but this
+    hito should only capture the learning.
+  - Expandable CTAs without perceptible added value should be avoided.
+  - MailerLite API is viable for draft create/update/readback/delete, but the
+    tested API routes did not expose seed/test send.
+  - MailerLite UI must be visibly hydrated before any future seed-send attempt.
+  - Generated plain text remains a separate public/audience readiness issue.
+- `allowed_scope`:
+  - Local-only learning capture artifact.
+  - Read existing receipts/artifacts.
+  - Summarize Product/UX, Web/Shopify, MailerLite, Safety and operator lessons.
+  - Keep Brand canon separate; mark learnings as Launch OS operational evidence.
+  - Scoped docs-only checkpoint/commit/push after artifact.
+- `forbidden_scope`:
+  - Do not patch Brand Hub or promote learnings as Brand canon.
+  - Do not call live APIs.
+  - Do not use MailerLite UI.
+  - Do not retry sends.
+  - Do not mutate MailerLite, Shopify, CRM, subscribers, groups, tags, segments,
+    fields, workflows, audiences or campaigns.
+  - Do not write ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not touch GOG/auth dirty files.
+  - Do not invent observed events or market signal.
+- `live_gate_status`: Local-only learning capture. All live, send, audience,
+  CRM and Brand canon gates closed.
+- `future_boundaries`:
+  - Any future seed send requires stable route plus fresh QA.
+  - Any public/audience send remains a red gate for Alejandro.
+  - Any Brand canon change requires Brand Hub route and explicit approval.
+- `expected_output`: Local reusable learning capture artifact and a brief
+  recommendation for the next local-only Launch OS edge.
+- `human_boundary_id`: `test_claridad_reusable_launch_learning_capture_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any requested step would call live APIs, use MailerLite UI, send, publish,
+    schedule, mutate MailerLite/Shopify/CRM/subscribers/groups/tags/segments/
+    fields/workflows, touch CRM Core, patch Brand Hub, touch GOG/auth, expose
+    secrets or require a red gate.
+- `completion_definition`: Local learning capture exists and distinguishes
+  operational evidence from Brand canon and market evidence.
+- `next_checkpoint_expected`: Control Room checkpoint after learning capture.

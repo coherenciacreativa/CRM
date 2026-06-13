@@ -12201,3 +12201,72 @@ Closed gates in this checkpoint:
 - Raw IDs printed: false.
 - Seed inbox printed in chat or receipt: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad seed delivery route decision completed and reusable learning capture active - 2026-06-13
+
+Status: local-only decision brief completed. Test Claridad remains useful as a
+Launch OS rehearsal, but seed delivery should not be retried in this run. The
+next edge captures reusable operational learnings without touching live systems
+or promoting pilot evidence to Brand canon.
+
+Evidence:
+
+- Seed delivery route blocked decision brief:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief_2026-06-13.md`
+- API test-send spike execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_api_test_send_spike_execution_receipt_2026-06-13.json`
+- UI route stability check receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_ui_seed_test_route_stability_check_receipt_2026-06-13.json`
+
+Decision:
+
+- Recommended option: leave Test Claridad in QA hold and continue local-only
+  Launch OS learning capture.
+- No CEO decision needed yet; safe to continue local-only.
+- Do not retry UI blindly.
+- Do not keep guessing API test-send endpoints.
+- Future seed send requires stable UI route or newly confirmed API test-send
+  route plus fresh QA.
+- Public/audience send remains a red gate for Alejandro.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_seed_delivery_route_blocked_local_only_decision_brief`
+- New active next action:
+  `launch_os_v0_test_claridad_reusable_launch_learning_capture_local_only`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened by this decision step: false.
+- MailerLite API called by this decision step: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
