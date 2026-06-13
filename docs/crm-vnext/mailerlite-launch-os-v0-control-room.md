@@ -11539,3 +11539,73 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad plain text route unblock CEO decision brief prepared - 2026-06-13
+
+Status: local-only CEO decision brief prepared for the active plain-text route
+unblock edge. This checkpoint did not call MailerLite UI/API, mutate the real
+draft, send, seed-send, install/enable browser extensions, touch Shopify, CRM,
+CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- CEO decision brief:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_ceo_decision_brief_2026-06-13.md`
+- Chrome route probe receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_chrome_probe_2026-06-13.md`
+- Route unblock handoff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_handoff_2026-06-13.md`
+
+Decision brief options:
+
+- Option A: enable the Chrome controlled route through explicit CEO setup
+  approval.
+- Option B: prepare a local-only HTML-only seed QA exception packet.
+- Option C: pause this MailerLite plain-text sublane and continue another
+  local-only Launch OS edge that does not depend on seed send or MailerLite UI.
+
+Operator recommendation:
+
+- Choose Option A if Alejandro wants this receipt lane unblocked soon.
+- Choose Option C if the pilot should prioritize broader Launch OS progress.
+- Do not choose Option B unless Alejandro explicitly wants to trade off
+  plain-text quality for faster HTML inbox review.
+
+Active next action remains:
+
+- `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
+
+Closed gates:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite real draft mutated: false.
+- Browser extension installed/enabled: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

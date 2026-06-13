@@ -4102,6 +4102,7 @@ Use deep hydration only for:
   waiting for a concrete route/tool or product decision that can unblock plain
   text review without blind UI retries.
 - `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_ceo_decision_brief_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_chrome_probe_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_handoff_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_decision_packet_local_only_2026-06-13.md`
@@ -4125,6 +4126,9 @@ Use deep hydration only for:
   - A read-only Chrome route probe found the native host present but no matching
     Codex/OpenAI/ChatGPT extension installed in the detected Chrome profile, so
     Chrome is still not a usable unblock route.
+  - A CEO decision brief now names the three concrete choices: enable Chrome
+    route, prepare an HTML-only seed QA exception packet, or pause this sublane
+    and continue other local-only Launch OS work.
 - `allowed_scope`:
   - Preserve this as a local-only waiting/unblock edge.
   - Prepare a future route/tool unblock packet if Safari route changes or Chrome
