@@ -11471,3 +11471,71 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad Chrome route unblock probe completed read-only - 2026-06-13
+
+Status: read-only local Chrome route probe completed for the active
+plain-text route unblock edge. The probe did not open Chrome, Safari,
+MailerLite UI or MailerLite API. It did not install or enable any extension and
+did not mutate the real MailerLite draft or any live system.
+
+Evidence:
+
+- Chrome route probe receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_plain_text_route_unblock_chrome_probe_2026-06-13.md`
+
+Result:
+
+- Chrome extension manifest count found in detected profile root: `2`.
+- Codex/OpenAI/ChatGPT extension manifest matches: `0`.
+- User-level native messaging host match: `com.openai.codexextension`.
+- System-level native messaging host match: `0`.
+- Native host exec path was recorded only as a SHA-256 hash in the receipt.
+
+Decision:
+
+- Chrome route remains unavailable for MailerLite plain-text UI repair.
+- Native host presence alone is not enough; the matching Chrome extension is
+  still not installed in the detected Chrome profile.
+- Active next action remains:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
+- Keep the real draft in QA hold.
+- Do not seed-send.
+- Do not retry MailerLite UI blindly.
+
+Closed gates:
+
+- Browser extension installed/enabled: false.
+- Chrome UI opened: false.
+- Safari UI opened: false.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite real draft mutated: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
