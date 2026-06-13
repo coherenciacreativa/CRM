@@ -3780,9 +3780,10 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text Support API Spike Null Audience - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_null_audience`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
+- `completed_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite draft read-only content readback completed
   with plain text blocked for seed send - 2026-06-13`
 - `objective`: Determine whether MailerLite can persist explicit plain-text
@@ -3791,6 +3792,9 @@ Use deep hydration only for:
 - `evidence`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_route_decision_packet_local_only_2026-06-13.md`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.md`
 - `state_summary`:
   - Real draft remains in safe QA hold.
   - Real draft HTML semantic QA is green.
@@ -3798,6 +3802,11 @@ Use deep hydration only for:
     platform-default copy, lacks the receipt/result fragments and contains
     platform placeholders.
   - No hard safety blockers exist for keeping the real draft in QA hold.
+  - Disposable API spike created and deleted one Null Audience draft safely.
+  - Stage A minimal create: completed.
+  - Stage B HTML baseline update/readback: completed.
+  - Stage C explicit `plain_text` request field: validation blocked.
+  - Route decision: API not viable for explicit plain text request field.
   - Seed send remains closed.
 - `allowed_scope`:
   - Fresh preflight: safety group exact match, `active_count=0`, no real
@@ -3853,3 +3862,74 @@ Use deep hydration only for:
   explicit.
 - `next_checkpoint_expected`: Control Room checkpoint after plain-text support
   API spike.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text UI/Computer Use Route Packet Local-only - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite plain text support API spike completed
+  with API request-field validation block - 2026-06-13`
+- `objective`: Prepare a narrow local-only route packet for inspecting and,
+  only if later approved, repairing the real QA-hold draft's plain-text
+  fallback through MailerLite UI/Computer Use. Do not execute UI/API work yet.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_route_decision_packet_local_only_2026-06-13.md`
+- `state_summary`:
+  - Real draft `[NO SEND][TEST CLARIDAD] Receipt email v1` remains in QA hold.
+  - Null Audience only, `active_count=0`, not sent, not scheduled, not
+    published, no workflows/automations by current receipts.
+  - HTML semantic QA remains green.
+  - Generated plain text is not seed-send ready.
+  - Disposable API spike proved that `plain_text` as a request field is blocked
+    by MailerLite validation for the tested campaign API route.
+  - Seed send remains closed.
+- `allowed_scope`:
+  - Local-only packet/plan generation.
+  - Use existing receipts and local artifacts.
+  - Define the exact UI/Computer Use inspection/repair route, preflight, QA,
+    rollback/hold behavior, and approval phrase.
+  - Define whether Safari fresh-window recovery is required.
+  - No live MailerLite UI/API execution.
+- `forbidden_scope`:
+  - Do not open MailerLite UI.
+  - Do not call MailerLite API.
+  - Do not update, delete or create drafts.
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Local-only route packet. Real draft mutation, seed send,
+  public/audience send, workflow, subscriber mutation, CRM write and Shopify
+  changes remain closed.
+- `future_boundaries`:
+  - Plain-text UI/Computer Use inspection/repair requires a separate exact
+    approval after the packet is accepted.
+  - Seed-only QA send remains closed until plain text is green or explicitly
+    deferred in a receipt.
+  - Public/audience send remains a separate heavy gate.
+- `expected_output`: Local-only MailerLite UI/Computer Use plain-text route
+  packet with exact approval phrase and stop conditions.
+- `human_boundary_id`: `test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any requested step would open MailerLite UI/API, mutate the real draft,
+    send, seed-send, publish/schedule, inspect subscribers, mutate audiences/
+    workflows/groups/tags/segments/fields, touch Shopify/CRM or expose secrets.
+- `completion_definition`: Route packet exists, the proposed live UI boundary
+  is explicit, and the exact approval phrase for any future UI execution is
+  ready.
+- `next_checkpoint_expected`: Control Room checkpoint after local-only UI route
+  packet.
