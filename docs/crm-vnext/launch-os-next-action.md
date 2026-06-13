@@ -3699,9 +3699,10 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Draft Read-only Content Readback for Plain Text Review - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
+- `completed_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite draft QA hold plain text/render local-only
   review completed - 2026-06-13`
 - `objective`: Perform a narrow read-only MailerLite draft content readback for
@@ -3710,6 +3711,10 @@ Use deep hydration only for:
 - `evidence`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_qa_hold_plain_text_render_review_local_only_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_real_draft_creation_api_retry_v2_execution_receipt_2026-06-11.json`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_route_decision_packet_local_only_2026-06-13.md`
 - `state_summary`:
   - Real draft exists in MailerLite QA hold.
   - Draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
@@ -3771,3 +3776,80 @@ Use deep hydration only for:
   remediation boundary is explicit.
 - `next_checkpoint_expected`: Control Room checkpoint after read-only content
   readback.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text Support API Spike Null Audience - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_null_audience`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite draft read-only content readback completed
+  with plain text blocked for seed send - 2026-06-13`
+- `objective`: Determine whether MailerLite can persist explicit plain-text
+  content through API for a regular campaign draft, using only a disposable
+  Null Audience draft and safe cleanup. Do not touch the real QA-hold draft.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_route_decision_packet_local_only_2026-06-13.md`
+- `state_summary`:
+  - Real draft remains in safe QA hold.
+  - Real draft HTML semantic QA is green.
+  - Real draft generated plain text is blocked for seed send because it is
+    platform-default copy, lacks the receipt/result fragments and contains
+    platform placeholders.
+  - No hard safety blockers exist for keeping the real draft in QA hold.
+  - Seed send remains closed.
+- `allowed_scope`:
+  - Fresh preflight: safety group exact match, `active_count=0`, no real
+    audience, no subscriber reads, no active/scheduled conflicts.
+  - Create only one disposable regular campaign draft assigned only to
+    `CC · Safety · Null audience · DO NOT SEND`.
+  - Test only API payload shapes needed to determine whether explicit
+    plain-text content can be persisted and read back.
+  - Use JSON requests and do not print raw IDs, sender values, tokens or
+    secrets.
+  - Delete only the disposable draft if safe: exact disposable name, draft
+    status, Null Audience only, `active_count=0`, no sends, no schedule, no
+    workflow/automation.
+  - Generate local receipt/report.
+- `forbidden_scope`:
+  - Do not touch the real draft `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience outside the disposable Null Audience draft.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Disposable Null Audience API spike is the only open
+  live-adjacent action. Seed send, public/audience send, real draft mutation,
+  workflow, subscriber mutation, CRM write and Shopify changes remain closed.
+- `future_boundaries`:
+  - If spike proves API route viable, prepare or execute a separate real-draft
+    plain-text repair boundary in QA hold.
+  - If API route is not viable, use UI/Computer Use as fallback after a narrow
+    execution packet.
+  - Seed-only QA send remains closed until plain text is green or explicitly
+    deferred.
+- `expected_output`: Local spike receipt with route decision: API viable,
+  API not viable, UI/Computer Use recommended or leave draft in QA hold.
+- `human_boundary_id`: `test_claridad_mailerlite_plain_text_support_api_spike_null_audience`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Safety group missing, duplicated or `active_count` not `0`.
+  - Any step would touch the real draft, send, seed-send, publish/schedule,
+    inspect subscribers, mutate audiences/workflows/groups/tags/segments/fields,
+    touch Shopify/CRM or expose secrets.
+  - Disposable draft cannot be safely deleted.
+- `completion_definition`: Spike receipt exists, disposable draft is deleted or
+  quarantined with reason, and the route decision for plain-text repair is
+  explicit.
+- `next_checkpoint_expected`: Control Room checkpoint after plain-text support
+  API spike.

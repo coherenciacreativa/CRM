@@ -10928,3 +10928,108 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite read-only content readback completed and plain text route spike active - 2026-06-13
+
+Status: checkpoint completed, read-only content readback plus local route
+decision. This checkpoint did not create/update/delete drafts, send, seed-send,
+publish, schedule, activate workflows/automations, assign audience, mutate
+subscribers/groups/tags/segments/fields/workflows/campaigns/automations,
+Shopify, CRM, CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- Read-only content readback receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+- Read-only content readback summary:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.md`
+- Redacted generated plain text artifact:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_generated_plain_text_readback_2026-06-13.txt`
+- Plain text route decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_route_decision_packet_local_only_2026-06-13.md`
+
+Readback result:
+
+- Execution status: `completed`.
+- QA status: `plain_text_blocked_for_seed_send`.
+- Draft name: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+- Draft ID hash:
+  `6007ac67b0af8f6165fa09c1b2c73bd2b2d338f5c4e7f10b4171fb9f4ddaa966`.
+- Safety group exact match: true.
+- Safety group exact match count: `1`.
+- `active_count=0`.
+- Exact draft match count: `1`.
+- Draft state: green.
+- Subject matches: true.
+- HTML semantic QA: green.
+- Generated plain text semantic QA: false.
+- Hard blockers: none.
+- Soft/plain-text blockers:
+  - `plain_result_title_present`
+  - `plain_quick_result_present`
+  - `plain_prompt_present`
+  - `plain_receipt_purpose_present`
+  - `plain_not_platform_default_copy`
+  - `plain_no_external_urls_tracking_tokens_internal_labels`
+  - `plain_text_exact_hash_mismatch_with_local_fallback`
+
+Decision:
+
+- Keep the real draft in QA hold.
+- Do not seed-send while generated plain text is platform-default copy with
+  redacted platform placeholders and missing receipt/result fragments.
+- The next useful edge is a disposable Null Audience API spike to determine
+  whether explicit plain text can be persisted through MailerLite API.
+- UI/Computer Use remains fallback if API cannot support explicit plain text.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_null_audience`
+
+Operating meaning:
+
+- The next edge is a disposable Null Audience API spike only.
+- This checkpoint does not approve seed send.
+- This checkpoint does not approve any send.
+- This checkpoint does not approve public/audience send.
+- This checkpoint does not approve publish or schedule.
+- This checkpoint does not approve touching the real QA-hold draft.
+- This checkpoint does not approve workflow/automation activation.
+- This checkpoint does not approve subscriber/group/tag/segment/field mutation.
+- This checkpoint does not approve CRM writes.
+- This checkpoint does not approve Shopify changes.
+
+Closed gates:
+
+- MailerLite draft created/updated/deleted by this checkpoint: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, campaign, automation or workflow
+  mutations by this checkpoint: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
