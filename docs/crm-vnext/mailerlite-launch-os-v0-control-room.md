@@ -11765,3 +11765,176 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad HTML-first seed QA preflight completed and route packet active - 2026-06-13
+
+Status: fresh read-only MailerLite preflight completed green on v3. The run did
+not send, seed-send, publish, schedule, mutate the draft, mutate subscribers/
+groups/tags/segments/fields/workflows, touch Shopify, CRM, CRM Core, Brand Hub
+or GOG/auth. The next active edge is route definition only: a Test
+Claridad-specific seed-send route packet/runner plan, not execution.
+
+Evidence:
+
+- Preflight v1 receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_readonly_2026-06-13.json`
+- Preflight v2 receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_readonly_v2_2026-06-13.json`
+- Preflight v3 receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_readonly_v3_2026-06-13.json`
+- Execution boundary packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_boundary_packet_local_only_2026-06-13.md`
+
+Preflight v3 readback:
+
+- Execution status: completed.
+- Blockers: none.
+- Draft: `[NO SEND][TEST CLARIDAD] Receipt email v1`.
+- Draft id: redacted; hash retained in receipt.
+- Safety group: `CC · Safety · Null audience · DO NOT SEND`.
+- Safety group exact match count: 1.
+- active_count: 0.
+- Audience filter: Null Audience only.
+- Segments: 0.
+- Draft status/type: draft/regular.
+- Not scheduled, queued, started, finished or currently sending.
+- Used in automations: false.
+- HTML semantic QA: green.
+- Hidden preheader: present.
+- Result title, quick result, prompt and receipt purpose: present.
+- Scripts/forms/tracking/external URLs in HTML: none detected.
+- Visible placeholders/tokens/internal labels: none detected.
+- Generated plain text: still not public/audience-ready.
+
+Preflight criteria learning:
+
+- v1 false-positive: the audience parser looked only for `groups`/`group_ids`;
+  MailerLite exposes this draft audience through `filter`.
+- v2 false-positive: placeholder scan treated the normal Spanish word `todo`
+  as if it were an uppercase `TODO` placeholder.
+- v3 corrected both checks and passed without mutation.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_html_first_seed_qa_execution_route_packet_local_only`
+
+Operating meaning:
+
+- The next edge is not a seed send.
+- The next edge defines a Test Claridad-specific API/UI route and receipt shape
+  for a possible later seed-only HTML inbox/render QA.
+- Do not reuse the Inteligencia seed-send runner as-is without adaptation and
+  review.
+- Plain text remains a known exception and cannot support public/audience
+  readiness.
+- Public/audience send remains a red gate for Alejandro.
+
+Closed gates:
+
+- MailerLite UI opened: false.
+- MailerLite API mutation called: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
+
+## Launch OS v0 Test Claridad HTML-first seed QA route packet completed and API test-send spike packet active - 2026-06-13
+
+Status: local-only route packet completed. No seed email was sent. The route
+packet recommends not executing yet because current official MailerLite Campaign
+API docs do not expose a clearly documented modern test-send endpoint, while the
+existing local seed-test runner is for another mini-launch and should not be
+reused as-is.
+
+Evidence:
+
+- Route packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_route_packet_local_only_2026-06-13.md`
+- Fresh preflight v3:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_preflight_readonly_v3_2026-06-13.json`
+- Boundary packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_execution_boundary_packet_local_only_2026-06-13.md`
+
+Route decision:
+
+- API remains primary for MailerLite campaign draft create/update/readback/delete.
+- Current official docs confirm JSON request conventions and campaign list/get/
+  create/update/schedule-send surfaces.
+- A modern seed/test-send API endpoint was not confirmed in official docs during
+  this route packet.
+- Do not use schedule/send endpoint for seed QA.
+- Do not retry MailerLite UI blindly.
+- UI/Computer Use remains fallback only after a fresh stable route check.
+- Next edge is a local-only API test-send spike packet, not execution.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_html_first_seed_qa_execution_route_packet_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_api_test_send_spike_packet_local_only`
+
+Closed gates:
+
+- MailerLite UI opened: false.
+- MailerLite API test-send called: false.
+- MailerLite API mutation called: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
