@@ -4006,7 +4006,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text UI Route Stabilization Local-only - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite plain text UI/Computer Use attempt blocked
@@ -4019,6 +4019,7 @@ Use deep hydration only for:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_attempt_receipt_2026-06-13.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_decision_packet_local_only_2026-06-13.md`
 - `state_summary`:
   - Pilot correction superseded the old human-approval waiting posture for this
     yellow gate.
@@ -4034,6 +4035,10 @@ Use deep hydration only for:
     installed in the selected profile, while the native host manifest is
     present/correct.
   - No MailerLite draft mutation occurred.
+  - Safari ChatGPT consultant bridge returned `GREEN` for the route
+    stabilization recommendation: do not retry MailerLite UI blindly, keep the
+    draft in QA hold, and treat plain text as a seed-send blocker rather than a
+    reason to mutate again now.
 - `allowed_scope`:
   - Local-only route decision / stabilization packet.
   - Document whether to fix Safari rendering, install/enable Codex Chrome
@@ -4084,3 +4089,81 @@ Use deep hydration only for:
   seed QA by explicit product decision, or pause MailerLite receipt work.
 - `next_checkpoint_expected`: Control Room checkpoint after local-only route
   stabilization decision.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text Route Unblock Waiting - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite plain text route stabilization decision
+  packet greenlit by consultant bridge - 2026-06-13`
+- `objective`: Keep the real MailerLite receipt draft in safe QA hold while
+  waiting for a concrete route/tool or product decision that can unblock plain
+  text review without blind UI retries.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_decision_packet_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_attempt_receipt_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+- `state_summary`:
+  - Real draft `[NO SEND][TEST CLARIDAD] Receipt email v1` remains in QA hold.
+  - Null Audience remains the only audience and `active_count=0` by the latest
+    readback.
+  - HTML semantic QA remains green.
+  - Generated MailerLite plain text remains not seed-send ready.
+  - Safari MailerLite UI route was degraded and did not expose Campaigns/Drafts
+    controls after the approved safe reload/retry.
+  - Chrome route is currently blocked by missing Codex Chrome Extension in the
+    selected profile, despite the native host manifest being present/correct.
+  - Consultant bridge returned `GREEN` for leaving the draft in QA hold and not
+    retrying MailerLite UI blindly.
+- `allowed_scope`:
+  - Preserve this as a local-only waiting/unblock edge.
+  - Prepare a future route/tool unblock packet if Safari route changes or Chrome
+    extension becomes available.
+  - Prepare a separate product exception packet only if Alejandro wants to
+    consider HTML-only seed QA despite plain text not being green.
+  - Scoped docs-only checkpoint/commit/push under the autonomous pilot.
+- `forbidden_scope`:
+  - Do not retry MailerLite UI blindly.
+  - Do not call MailerLite API/UI for mutation.
+  - Do not mutate the real draft.
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Real draft remains QA hold. Plain text remains the blocker
+  for seed-send readiness. Seed send, public/audience send, workflow,
+  subscriber mutation, CRM write and Shopify changes remain closed.
+- `future_boundaries`:
+  - A renewed UI repair attempt requires a working browser/tool route and a
+    fresh consultant bridge greenlight if scope changes materially.
+  - Seed-only QA send requires plain text green or an explicit product exception
+    decision plus separate send boundary.
+  - Public/audience send remains a red gate for Alejandro.
+- `expected_output`: Handoff or future packet that identifies a concrete unblock
+  route: restore Safari MailerLite route, enable Chrome extension route, approve
+  an explicit HTML-only seed QA exception, or pause MailerLite receipt work.
+- `human_boundary_id`: `test_claridad_mailerlite_plain_text_route_unblock_waiting`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any requested step would retry UI mutation, send, seed-send, publish/
+    schedule, inspect subscribers, mutate audiences/workflows/groups/tags/
+    segments/fields, touch Shopify/CRM, patch Brand Hub, touch CRM Core, touch
+    GOG/auth, or expose secrets.
+- `completion_definition`: A concrete plain-text route/tool unblock or product
+  decision exists and is documented without mutating live systems outside the
+  delegated scope.
+- `next_checkpoint_expected`: Control Room checkpoint after a concrete plain
+  text unblock decision or end-of-run handoff.

@@ -11312,3 +11312,96 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite plain text route stabilization completed and route unblock waiting - 2026-06-13
+
+Status: route stabilization completed, consultant bridge greenlit the
+recommended posture, and the active edge is now plain-text route unblock
+waiting. No MailerLite UI/API mutation occurred in this checkpoint. No sends,
+seed sends, publish, schedule, audience assignment, workflow activation,
+subscriber/group/tag/segment/field mutation, Shopify, CRM, CRM Core, Brand Hub
+or GOG/auth changes occurred.
+
+Evidence:
+
+- Route stabilization decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_decision_packet_local_only_2026-06-13.md`
+- UI/Computer Use attempt receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_attempt_receipt_2026-06-13.md`
+- Fresh read-only draft content readback receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_draft_readonly_content_readback_for_plain_text_review_2026-06-13.json`
+- Plain text UI/Computer Use route packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+
+Consultant bridge:
+
+- Response: `GREEN`.
+- Greenlit recommendation: do not retry MailerLite UI blindly, keep the real
+  draft in QA hold, and treat plain text as a seed-send readiness blocker
+  rather than a reason to mutate the draft again now.
+
+Decision:
+
+- Safari MailerLite UI route remains degraded/minimal for this task.
+- `/campaigns` returned MailerLite 404 during the safe attempt.
+- One reload and one route retry already happened.
+- Chrome route remains unavailable because the Codex Chrome Extension is not
+  installed in the selected profile, while the native host manifest is
+  present/correct.
+- The API route remains useful for campaign HTML, but the explicit plain-text
+  request field was not supported by the disposable spike.
+- The real draft stays in QA hold.
+- Plain text remains not seed-send ready.
+- Do not retry MailerLite UI/Computer Use blindly.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_ui_route_stabilization_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_route_unblock_waiting`
+
+Operating meaning:
+
+- The next edge is waiting for a concrete route/tool or product decision.
+- Possible unblocks: restore a reliable Safari MailerLite route, enable a
+  usable Chrome extension route, approve an explicit HTML-only seed QA product
+  exception, or pause MailerLite receipt work.
+- This is not a new Alejandro approval wait for the same yellow gate.
+- Seed-only QA send remains closed until plain text is green or an explicit
+  product exception is documented with a separate send boundary.
+- Public/audience send remains a red gate for Alejandro.
+
+Closed gates:
+
+- MailerLite real draft mutated: false.
+- MailerLite API mutation: false.
+- MailerLite UI mutation: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
