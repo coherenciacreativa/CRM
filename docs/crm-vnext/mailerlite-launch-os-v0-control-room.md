@@ -11134,3 +11134,88 @@ Closed gates:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Test Claridad MailerLite plain text UI route packet completed and execution approval waiting - 2026-06-13
+
+Status: checkpoint completed, local-only route packet prepared. This checkpoint
+did not open MailerLite UI, call MailerLite API, mutate the real QA-hold draft,
+send, seed-send, publish, schedule, activate workflows/automations, assign
+audience, mutate subscribers/groups/tags/segments/fields/workflows/campaigns/
+automations, Shopify, CRM, CRM Core, Brand Hub or GOG/auth.
+
+Evidence:
+
+- Plain text UI/Computer Use route packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+- Plain text support API spike execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.json`
+- Plain text support API spike markdown receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.md`
+
+Decision:
+
+- API route is not viable for explicit `plain_text` request field by the
+  disposable spike receipt.
+- The recommended fallback is MailerLite UI/Computer Use inspection/repair only
+  if MailerLite exposes an explicit plain-text fallback editor.
+- No MailerLite UI execution is approved yet.
+- No MailerLite API execution is approved yet.
+- Real draft remains in QA hold.
+- Seed send remains closed.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only`
+- New active next action:
+  `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_execution_approval_waiting`
+
+Operating meaning:
+
+- The next edge is waiting for exact CEO approval.
+- This checkpoint does not approve MailerLite UI execution.
+- This checkpoint does not approve MailerLite API execution.
+- This checkpoint does not approve real draft mutation.
+- This checkpoint does not approve seed send.
+- This checkpoint does not approve any send.
+- This checkpoint does not approve publish or schedule.
+- This checkpoint does not approve audience assignment.
+- This checkpoint does not approve workflow/automation activation.
+- This checkpoint does not approve subscriber/group/tag/segment/field mutation.
+- This checkpoint does not approve CRM writes.
+- This checkpoint does not approve Shopify changes.
+
+Closed gates:
+
+- MailerLite UI opened: false.
+- MailerLite API called by this checkpoint: false.
+- Real MailerLite draft touched: false.
+- Drafts created/updated/deleted by this checkpoint: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations by
+  this checkpoint: false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

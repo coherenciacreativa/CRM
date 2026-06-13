@@ -3866,9 +3866,10 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text UI/Computer Use Route Packet Local-only - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
 - `updated_at`: `2026-06-13`
+- `completed_at`: `2026-06-13`
 - `source_checkpoint`: `MailerLite plain text support API spike completed
   with API request-field validation block - 2026-06-13`
 - `objective`: Prepare a narrow local-only route packet for inspecting and,
@@ -3877,6 +3878,8 @@ Use deep hydration only for:
 - `evidence`:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_route_decision_packet_local_only_2026-06-13.md`
+- `completion_evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
 - `state_summary`:
   - Real draft `[NO SEND][TEST CLARIDAD] Receipt email v1` remains in QA hold.
   - Null Audience only, `active_count=0`, not sent, not scheduled, not
@@ -3933,3 +3936,69 @@ Use deep hydration only for:
   ready.
 - `next_checkpoint_expected`: Control Room checkpoint after local-only UI route
   packet.
+
+## Active Next Action - Launch OS v0 Test Claridad MailerLite Plain Text UI/Computer Use Execution Approval Waiting - 2026-06-13
+
+- `next_action_id`: `launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_execution_approval_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-13`
+- `updated_at`: `2026-06-13`
+- `source_checkpoint`: `MailerLite plain text UI/Computer Use route packet
+  completed local-only - 2026-06-13`
+- `objective`: Wait for Alejandro's exact approval before executing any
+  MailerLite UI/Computer Use plain-text inspection or repair on the real
+  QA-hold draft.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_ui_computer_use_route_packet_local_only_2026-06-13.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_mailerlite_plain_text_support_api_spike_execution_receipt_2026-06-13.json`
+- `state_summary`:
+  - Real draft `[NO SEND][TEST CLARIDAD] Receipt email v1` remains in QA hold.
+  - API route is not viable for explicit `plain_text` request field by the
+    disposable spike receipt.
+  - The recommended route is MailerLite UI/Computer Use inspection/repair only
+    if MailerLite exposes an explicit plain-text fallback editor.
+  - No UI/API execution is approved yet.
+  - Seed send remains closed.
+- `allowed_scope`:
+  - Wait for exact approval.
+  - Provide the exact approval phrase if asked.
+  - No live MailerLite UI/API execution.
+- `forbidden_scope`:
+  - Do not open MailerLite UI.
+  - Do not call MailerLite API.
+  - Do not mutate the real draft.
+  - Do not create/update/delete drafts.
+  - Do not send seed/test emails.
+  - Do not send any email.
+  - Do not publish or schedule.
+  - Do not assign audience.
+  - Do not activate workflows or automations.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat QA as market signal.
+- `live_gate_status`: Waiting for approval. Real draft mutation, seed send,
+  public/audience send, workflow, subscriber mutation, CRM write and Shopify
+  changes remain closed.
+- `future_boundaries`:
+  - Exact UI/Computer Use approval phrase is in the route packet.
+  - Seed-only QA send remains separate after plain text is green or explicitly
+    deferred.
+  - Public/audience send remains a separate heavy gate.
+- `expected_output`: No execution until Alejandro approves. If asked, provide
+  the exact approval phrase from the route packet.
+- `human_boundary_id`: `test_claridad_mailerlite_plain_text_ui_computer_use_execution_approval_waiting`
+- `human_boundary_notification_status`: `not_sent`
+- `stop_conditions`:
+  - Any requested step would open MailerLite UI/API, mutate the real draft,
+    send, seed-send, publish/schedule, inspect subscribers, mutate audiences/
+    workflows/groups/tags/segments/fields, touch Shopify/CRM or expose secrets
+    without exact approval.
+- `completion_definition`: Alejandro either approves the exact UI route, pauses
+  the MailerLite receipt path, or chooses another route.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO route decision.
