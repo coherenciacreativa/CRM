@@ -5143,3 +5143,101 @@ Use deep hydration only for:
 - `completion_definition`: Alejandro chooses the next candidate or asks for a
   revision.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO decision.
+
+## Completed Next Action - Launch OS v0 Microproduct Candidate Slate v1 CEO Decision Waiting - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v1_ceo_decision_waiting`
+- `status`: `completed`
+- `completed_at`: `2026-06-14`
+- `completion_trigger`: Alejandro approved the recommended candidate
+  `Mapa breve de energia y foco` to advance only to the next local-only
+  artifact: CEO Proposal Packet + Interactive Static UX Prototype Pack v0.
+- `completion_result`:
+  - Candidate selected:
+    `Mapa breve de energia y foco`
+  - Approved next artifact:
+    CEO Proposal Packet + Interactive Static UX Prototype Pack v0.
+  - Consultant Bridge v2:
+    not used because Alejandro's in-thread greenlight was sufficient for this
+    local-only edge; no bridge failure occurred.
+- `not_approved`:
+  - Final assets.
+  - Shopify preview/live.
+  - MailerLite draft creation.
+  - Sends or seed sends.
+  - Audience assignment.
+  - Subscriber or audience mutation.
+  - CRM writes, ledgers, cards, scoring or Fact Store.
+  - Brand Hub canon changes.
+  - CRM Core.
+  - GOG/auth.
+
+## Completed Next Action - Launch OS v0 Mapa Energia Foco CEO Proposal + Interactive Static UX Prototype Pack v0 Local Only - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_ceo_proposal_interactive_static_ux_prototype_pack_v0_local_only`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `completed_at`: `2026-06-14`
+- `source_checkpoint`: `Microproduct candidate slate v1 CEO decision completed -
+  2026-06-14`
+- `objective`: Produce one local-only CEO Proposal Packet + Interactive Static
+  UX Prototype Pack v0 for `Mapa breve de energia y foco`.
+- `evidence`:
+  - Folder:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/`
+  - CEO proposal:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/ceo_proposal_packet.md`
+  - Prototype:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/index.html`
+  - QA report:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/qa_report.md`
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/prototype_receipt.json`
+- `qa_summary`:
+  - Local HTML/CSS/JS prototype exists.
+  - Safety scan found 0 forbidden pattern matches in `index.html`.
+  - No network calls, external URLs, form action/method, tracking,
+    MailerLite, Shopify, CRM write path or local persistence detected.
+  - Result state is complete before simulated email capture.
+  - Claims posture remains no diagnosis, no therapy, no cure, no guarantee and
+    no urgency pressure.
+- `live_gate_status`: Local-only artifact. All live gates closed.
+- `completion_definition`: Artifact folder, prototype, QA report and receipt
+  exist; next decision is a CEO review choice, not a live-system boundary.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco CEO Review Waiting - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_ceo_review_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco interactive static prototype pack v0
+  completed - 2026-06-14`
+- `objective`: Wait for CEO review of the local-only `Mapa breve de energia y
+  foco` proposal/prototype pack and choose the next product direction.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/ceo_proposal_packet.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/index.html`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/qa_report.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/prototype_receipt.json`
+- `allowed_scope`:
+  - Report artifact state.
+  - Accept CEO review notes.
+  - If approved later, advance only to Final Public Copy v1 local-only or a
+    local revision pass.
+- `forbidden_scope`:
+  - Do not create final assets.
+  - Do not create Shopify preview/live.
+  - Do not create MailerLite drafts or sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: CEO chooses one of: approve Final Public Copy v1
+  local-only, request voice/concept revision, or pause and return to the slate.
+- `live_gate_status`: CEO review only. All live gates closed.
+- `human_boundary_id`: `launch_os_mapa_energia_foco_ceo_review_waiting`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Ask Alejandro to review the local prototype and choose
+  the next product direction.
+- `completion_definition`: Alejandro accepts, revises or pauses the candidate.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO review.

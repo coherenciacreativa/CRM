@@ -12707,3 +12707,84 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Mapa Energia Foco local prototype pack completed and CEO review waiting - 2026-06-14
+
+Status: Alejandro's in-thread greenlight selected the recommended slate
+candidate `Mapa breve de energia y foco` for the next local-only artifact. The
+CEO Proposal Packet + Interactive Static UX Prototype Pack v0 is complete and
+ready for CEO review.
+
+Consultant Bridge v2:
+
+- Bridge request sent: false.
+- Reason: Alejandro's greenlight in the thread was sufficient for this
+  local-only edge, and the bridge is optional/non-blocking under v2.
+- `consultant_bridge_unavailable`: false.
+
+Evidence:
+
+- Candidate slate refresh v1:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only_2026-06-14.md`
+- Artifact folder:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/`
+- CEO proposal:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/ceo_proposal_packet.md`
+- Local prototype:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/index.html`
+- QA report:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/qa_report.md`
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v0_2026-06-14/prototype_receipt.json`
+
+QA summary:
+
+- Prototype is local HTML/CSS/JS.
+- Safety scan found 0 forbidden pattern matches in `index.html`.
+- No network calls, external URLs, form action/method, tracking, MailerLite,
+  Shopify, CRM write path or local persistence detected.
+- Result state is complete before simulated email capture.
+- Claims posture remains no diagnosis, no therapy, no cure, no guarantee and no
+  urgency pressure.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_microproduct_candidate_slate_v1_ceo_decision_waiting`
+- Completed:
+  `launch_os_v0_mapa_energia_foco_ceo_proposal_interactive_static_ux_prototype_pack_v0_local_only`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_ceo_review_waiting`
+
+Next CEO decision:
+
+- Approve `Mapa breve de energia y foco` to continue to Final Public Copy v1
+  local-only.
+- Or request a voice/concept revision before Final Public Copy.
+- Or pause this candidate and return to the candidate slate.
+
+Closed gates in this checkpoint:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
