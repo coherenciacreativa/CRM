@@ -13271,6 +13271,87 @@ available in the operator environment. It does not authorize publish, public
 navigation, public distribution, MailerLite, sends, audience assignment, CRM
 writes, Brand Hub changes, CRM Core or GOG/auth.
 
+## Launch OS v0 Mapa Energia Foco Shopify credentials hygiene / unblock packet ready - 2026-06-14
+
+Status: A credential-source diagnosis was completed after the first blocked
+Shopify preview execution attempt. The operator environment still lacks
+Shopify runtime variables. A tracked `.env.example` in the isolated Shopify
+worktree contains credential-shaped Shopify values, so it must not be used as
+the execution credential source without a secret-hygiene decision.
+
+Evidence:
+
+- Credential hygiene packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_packet_2026-06-14.md`
+- Credential hygiene receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_receipt_2026-06-14.json`
+- Prior execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_2026-06-14.json`
+
+Credential diagnosis:
+
+- `SHOPIFY_STORE`: absent from process environment.
+- `SHOPIFY_ADMIN_API_TOKEN`: absent from process environment.
+- `SHOPIFY_STORE`: absent from launchctl environment.
+- `SHOPIFY_ADMIN_API_TOKEN`: absent from launchctl environment.
+- Tracked `.env.example` contains credential-shaped Shopify values.
+- Raw credential values must not be printed, copied into chat, copied into
+  receipts or used as a credential source without a hygiene decision.
+
+Recommended next options:
+
+- Provide secure runtime env variables without printing values.
+- Create an untracked ignored `.env` in an approved Shopify worktree.
+- If the tracked credential-shaped value is real or ever worked, rotate it in
+  Shopify and patch `.env.example` to placeholders in a separate approved
+  Shopify hygiene change.
+
+Pointer change:
+
+- Previous active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_credentials_unblock_retry_waiting`
+- Previous status:
+  diagnosed credentials absent and tracked `.env.example` credential-shaped.
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_decision_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+## Current Launch OS active edge after Mapa Energia Foco Shopify credentials hygiene diagnosis - 2026-06-14
+
+Current active next action:
+
+`launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_decision_waiting`
+
+The current edge is no longer a blind retry. The theme files remain unchanged
+and QA-green, but the preview should not be executed until there is a secure
+credential source or a secret-hygiene decision for the tracked Shopify
+`.env.example` values. This does not authorize publish, public navigation,
+public distribution, MailerLite, sends, audience assignment, CRM writes, Brand
+Hub changes, CRM Core or GOG/auth.
+
 ## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14
 
 Status: A local-only visual QA readout was prepared for prototype v1. This does

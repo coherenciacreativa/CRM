@@ -5668,3 +5668,67 @@ Use deep hydration only for:
   audience mutation or CRM writes.
 - `next_checkpoint_expected`: Control Room checkpoint after credentials retry or
   successful preview execution.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials Hygiene Decision Waiting - 2026-06-14
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_credentials_unblock_retry_waiting`
+- `previous_status`: `diagnosed_credentials_absent_and_tracked_env_example_credential_shaped`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_decision_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco Shopify credentials hygiene /
+  unblock packet - 2026-06-14`
+- `objective`: Choose a secure Shopify credential path before retrying the
+  noindex/unlisted preview execution. Do not use tracked `.env.example` as an
+  execution credential source without a secret-hygiene decision.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_packet_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_receipt_2026-06-14.json`
+- `credential_diagnosis`:
+  - `SHOPIFY_STORE`: absent from process environment.
+  - `SHOPIFY_ADMIN_API_TOKEN`: absent from process environment.
+  - `SHOPIFY_STORE`: absent from launchctl environment.
+  - `SHOPIFY_ADMIN_API_TOKEN`: absent from launchctl environment.
+  - Tracked `.env.example` contains credential-shaped Shopify values.
+  - No raw credential values should be printed or copied into chat, receipts or
+    docs.
+- `recommended_options`:
+  - Provide secure runtime env variables without printing values.
+  - Create an untracked ignored `.env` in an approved Shopify worktree.
+  - If the credential-shaped `.env.example` value is real or ever worked, rotate
+    it and patch the tracked example in a separate approved Shopify hygiene
+    change.
+- `allowed_scope`:
+  - Continue local-only credential-source diagnosis by path/name/presence only.
+  - Prepare exact safe handoff for credential restoration.
+  - Rerun the existing execution runner only after a secure credential source is
+    available.
+- `forbidden_scope`:
+  - Do not print secrets, raw token values, raw Shopify IDs or exact preview
+    URLs.
+  - Do not use tracked `.env.example` as the execution credential source without
+    a hygiene decision.
+  - Do not patch Shopify credential files or rotate credentials without explicit
+    approval.
+  - Do not publish theme or touch public navigation.
+  - Do not send traffic to the preview.
+  - Do not use MailerLite or create drafts/sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: Secure credential path restored and runner retried, or CEO
+  decision/handoff for Shopify secret hygiene.
+- `live_gate_status`: Shopify preview remains unexecuted. Public
+  distribution/navigation and all CRM/MailerLite gates remain closed.
+- `human_boundary_id`: `shopify_credentials_hygiene_decision_waiting`
+- `human_boundary_notification_status`: `handoff_needed`
+- `resume_instruction`: Do not change theme files or use `.env.example` as
+  credentials. Secure or rotate credentials first; then rerun the existing
+  execution runner.
+- `completion_definition`: A secure credentials path is available and the
+  preview runner completes/blocks safely, or Alejandro chooses the Shopify
+  credential hygiene path.
+- `next_checkpoint_expected`: Control Room checkpoint after secure credential
+  path or hygiene decision.
