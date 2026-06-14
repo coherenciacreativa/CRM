@@ -13431,6 +13431,63 @@ secure credential path. Public navigation, public distribution, MailerLite,
 sends, audience assignment, CRM writes, Brand Hub changes, CRM Core and
 GOG/auth remain closed.
 
+## Launch OS v0 Mapa Energia Foco Shopify credentials human-boundary notification draft ready - 2026-06-14
+
+Status: A short human-boundary notification draft was prepared under
+`docs/crm-vnext/launch-os-human-boundary-notification-policy.md`. It has not
+been sent through Telegram, email or any external channel. It does not approve
+live action.
+
+Evidence:
+
+- Notification draft:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_human_boundary_notification_2026-06-14.md`
+- Notification receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_human_boundary_notification_receipt_2026-06-14.json`
+
+Notification scope:
+
+- Need:
+  choose Option A, B or C for Shopify credentials.
+- Raw secrets included:
+  false.
+- Raw Shopify IDs included:
+  false.
+- Exact preview URL included:
+  false.
+- Telegram sent:
+  false.
+- Email sent:
+  false.
+
+Active next action remains:
+
+`launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
 ## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14
 
 Status: A local-only visual QA readout was prepared for prototype v1. This does
