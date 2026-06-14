@@ -5276,12 +5276,14 @@ Use deep hydration only for:
 - `completion_definition`: Review brief, microcorrection artifact and receipt
   exist; next edge is a more specific CEO review of the microcorrection.
 
-## Active Next Action - Launch OS v0 Mapa Energia Foco Voice Concept Microcorrection Review Waiting - 2026-06-14
+## Superseded Next Action - Launch OS v0 Mapa Energia Foco Voice Concept Microcorrection Review Waiting - 2026-06-14
 
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_voice_concept_microcorrection_review_waiting`
-- `status`: `active`
+- `status`: `completed/superseded`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
+- `superseded_by`:
+  `launch_os_v0_mapa_energia_foco_final_public_copy_v1_ceo_review_waiting`
 - `source_checkpoint`: `Mapa Energia Foco CEO review brief and microcorrection
   completed - 2026-06-14`
 - `objective`: Wait for Alejandro to review the local-only voice/concept
@@ -5312,4 +5314,79 @@ Use deep hydration only for:
   and choose the next product direction.
 - `completion_definition`: Alejandro accepts, revises or pauses the
   microcorrection direction.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO review.
+
+## Completed Next Action - Launch OS v0 Mapa Energia Foco Final Public Copy v1 Local Only Candidate Draft - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_draft`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `completed_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco voice/concept microcorrection review
+  waiting - 2026-06-14`
+- `objective`: Convert the voice/concept microcorrection into a complete local-only
+  Final Public Copy v1 candidate for CEO review, without claiming CEO approval.
+- `consultant_bridge`:
+  - attempted: true
+  - sent_successfully: false
+  - `consultant_bridge_unavailable`: true
+  - failure_mode: Computer Use could read Safari state but failed click/set_value
+    with not-active errors.
+  - disposition: non-blocking under Consultant Bridge v2 because this was a
+    local-only green/yellow edge, not a red gate.
+- `evidence`:
+  - Final Public Copy v1 local-only candidate:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_2026-06-14.md`
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_receipt_2026-06-14.json`
+- `artifact_sha256`:
+  - final_public_copy_candidate:
+    `ff4386c90fef82c94b6895121461d5a8fccd72f1a02e5e99e2ac2b7e5b3cf605`
+- `not_approved`:
+  - CEO has not approved this copy candidate yet.
+  - Final assets remain closed.
+  - Shopify remains closed.
+  - MailerLite remains closed.
+  - Sends, seed sends and audience assignment remain closed.
+  - CRM writes, ledgers, cards, scoring and Fact Store remain closed.
+  - Brand Hub canon changes, CRM Core and GOG/auth remain closed.
+- `completion_definition`: Copy candidate and receipt exist, with explicit
+  non-approval boundaries and next CEO decision.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Final Public Copy v1 CEO Review Waiting - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_final_public_copy_v1_ceo_review_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco Final Public Copy v1 local-only
+  candidate drafted - 2026-06-14`
+- `objective`: Wait for Alejandro to review the operator-drafted Final Public
+  Copy v1 local-only candidate and choose the next product direction.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_receipt_2026-06-14.json`
+- `allowed_scope`:
+  - Report copy candidate state.
+  - Accept CEO review notes.
+  - If approved later, advance to an updated Interactive Static UX Prototype
+    Pack v1 local-only.
+  - If not approved, revise copy or return to the slate.
+- `forbidden_scope`:
+  - Do not create final assets.
+  - Do not create Shopify preview/live.
+  - Do not create MailerLite drafts or sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: CEO chooses one of: accept this as Final Public Copy v1
+  local-only candidate and approve updated prototype v1 local-only, request a
+  copy/title revision, or pause and return to the slate.
+- `live_gate_status`: CEO review only. All live gates closed.
+- `human_boundary_id`: `launch_os_mapa_energia_foco_final_public_copy_v1_ceo_review_waiting`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Ask Alejandro to review the copy candidate and choose
+  the next product direction.
+- `completion_definition`: Alejandro accepts, revises or pauses the copy
+  candidate.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO review.

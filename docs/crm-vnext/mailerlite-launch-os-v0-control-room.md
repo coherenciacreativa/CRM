@@ -12861,3 +12861,71 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Mapa Energia Foco Final Public Copy v1 candidate drafted - 2026-06-14
+
+Status: The voice/concept microcorrection was converted into a complete
+operator-drafted Final Public Copy v1 local-only candidate for CEO review. This
+does not mean CEO approval and does not approve final assets, Shopify,
+MailerLite, sends, audience assignment, CRM writes or public distribution.
+
+Consultant Bridge v2:
+
+- Bridge attempted: true.
+- Bridge sent successfully: false.
+- `consultant_bridge_unavailable`: true.
+- Failure mode: Computer Use could read Safari state but failed click/set_value
+  with not-active errors.
+- Disposition: non-blocking under Compact Consultant Bridge v2 because this was
+  a local-only green/yellow edge, not a red gate.
+
+Evidence:
+
+- Final Public Copy v1 local-only candidate:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_2026-06-14.md`
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_receipt_2026-06-14.json`
+- Candidate SHA-256:
+  `ff4386c90fef82c94b6895121461d5a8fccd72f1a02e5e99e2ac2b7e5b3cf605`
+
+Pointer change:
+
+- Completed/superseded:
+  `launch_os_v0_mapa_energia_foco_voice_concept_microcorrection_review_waiting`
+- Completed:
+  `launch_os_v0_mapa_energia_foco_final_public_copy_v1_local_only_candidate_draft`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_final_public_copy_v1_ceo_review_waiting`
+
+Next CEO decision:
+
+- Accept the copy as Final Public Copy v1 local-only candidate and approve an
+  updated Interactive Static UX Prototype Pack v1 local-only.
+- Or request a copy/title revision.
+- Or pause this candidate and return to the slate.
+
+Closed gates in this checkpoint:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
