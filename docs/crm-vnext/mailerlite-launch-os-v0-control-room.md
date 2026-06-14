@@ -13068,6 +13068,19 @@ Closed gates remain:
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
 
+## Current Launch OS active edge after Mapa Energia Foco preflight - 2026-06-14
+
+Current active next action:
+
+`launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+
+This final checkpoint resolves the ordering ambiguity between the earlier CEO
+review console checkpoint and the later Shopify preview preflight. The current
+edge is local-only isolated Shopify worktree and theme-file preparation. It does
+not authorize Shopify Admin/API, Shopify UI, preview execution, publish,
+public navigation, MailerLite, sends, audience assignment, CRM writes, Brand Hub
+changes, CRM Core or GOG/auth.
+
 ## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14
 
 Status: A local-only visual QA readout was prepared for prototype v1. This does
@@ -13111,21 +13124,117 @@ Limitations:
   installed, so full interactive browser screenshots were not produced.
 - Mobile-size QuickLook is a visual proxy, not a true mobile interaction test.
 
-Active next action remains:
+Active next action at visual QA creation:
 
 `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
 
-Next CEO decision remains:
+Superseded by later preflight checkpoint:
 
-- Accept prototype v1 and approve Shopify preview preflight local-only.
-- Or request copy/prototype revision.
-- Or pause this candidate and return to the slate.
+`launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+
+Next local-only edge:
+
+- Create isolated Shopify worktree and local theme files only.
+- Stop before Shopify Admin/API, Shopify UI, preview execution, publish,
+  public navigation, MailerLite, sends, audience assignment or CRM writes.
 
 Closed gates remain:
 
 - Final assets created: false.
 - Shopify preview/live created: false.
 - Shopify Admin/API called: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+## Launch OS v0 Mapa Energia Foco Shopify preview preflight local-only ready - 2026-06-14
+
+Status: A local-only Shopify preview preflight was prepared for `Mapa breve de
+energia y foco / Que pide tu energia ahora`. This does not create a Shopify
+preview, does not call Shopify Admin/API, does not publish, does not touch
+public navigation and does not create MailerLite or CRM objects.
+
+Evidence:
+
+- Shopify preview preflight:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_preflight_local_only_2026-06-14.md`
+- Shopify preview preflight receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_preflight_local_only_receipt_2026-06-14.json`
+- Preflight SHA-256:
+  `c9840723b05bdf828d935d78da3644dd751302457349a5aaa393c36e10e9f7a5`
+- Preflight receipt SHA-256:
+  `0f794768d7a99e83b6237d1d71ed8021ff5d3f249a0274e675b9119430e0b291`
+
+Shopify readiness probe:
+
+- Original Shopify root:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite`
+- Original branch:
+  `codex/shopify-inteligencia-descansar-local-build`
+- Original status:
+  dirty and `ahead 1`
+- Conclusion:
+  do not use the original Shopify working tree for this candidate.
+- Existing Test Claridad worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-test-claridad-preview`
+- Conclusion:
+  do not reuse the Test Claridad worktree for this candidate.
+
+Recommended next local-only edge:
+
+- `next_action_id`:
+  `launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+- Branch:
+  `codex/shopify-mapa-energia-foco-preview`
+- Path:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+- Base:
+  `origin/main`, only if a fresh probe confirms the base is clean.
+
+Expected local theme files:
+
+- `sections/mapa-energia-foco.liquid`
+- `snippets/mapa-energia-foco-inert-email-capture.liquid`
+- `templates/page.mapa-energia-foco-preview.liquid`
+
+Safety posture:
+
+- Use `{% layout none %}` for the preview template.
+- Include `noindex,nofollow,noarchive`.
+- Keep capture inert.
+- Do not touch `layout/theme.liquid`.
+- Do not touch public navigation.
+- Do not use MailerLite snippets/forms.
+- Do not call Shopify Admin/API.
+
+Pointer change:
+
+- Previous active next action:
+  `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+- Advanced under autonomous yellow delegation:
+  local preflight planning only, not CEO acceptance of final/public launch.
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+
+Closed gates remain:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- Shopify UI opened: false.
 - Public navigation touched: false.
 - Public distribution performed: false.
 - MailerLite UI/API called: false.
@@ -13191,15 +13300,19 @@ Console safety:
 - Shopify Admin/API/live URLs: 0.
 - CRM write paths: 0.
 
-Active next action remains:
+Active next action at console creation:
 
 `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
 
-Next CEO decision remains:
+Current active next action after later Shopify preflight:
 
-- Accept prototype v1 and approve Shopify preview preflight local-only.
-- Or request copy/prototype revision.
-- Or pause this candidate and return to the slate.
+`launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+
+Next local-only edge:
+
+- Create isolated Shopify worktree and local theme files only.
+- Stop before Shopify Admin/API, Shopify UI, preview execution, publish,
+  public navigation, MailerLite, sends, audience assignment or CRM writes.
 
 Closed gates remain:
 

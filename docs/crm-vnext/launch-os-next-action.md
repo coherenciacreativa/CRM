@@ -5489,3 +5489,57 @@ Use deep hydration only for:
   the CEO review handoff and choose the next product direction.
 - `completion_definition`: Alejandro accepts, revises or pauses prototype v1.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO review.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Isolated Worktree Theme Files Local-only - 2026-06-14
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+- `previous_status`: `advanced_under_autonomous_yellow_delegation_to_preflight_planning`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco Shopify preview preflight local-only
+  ready - 2026-06-14`
+- `objective`: Create a separate Shopify worktree and local theme-file draft
+  for a future noindex/unlisted preview, without calling Shopify Admin/API or
+  creating the actual preview.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_preflight_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_preflight_local_only_receipt_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_console_2026-06-14.html`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/index.html`
+- `allowed_scope`:
+  - Fresh read-only probe of Shopify root/worktrees.
+  - Create isolated Shopify worktree only if a clean base is verified.
+  - Branch: `codex/shopify-mapa-energia-foco-preview`
+  - Path:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+  - Add local candidate theme files only:
+    - `sections/mapa-energia-foco.liquid`
+    - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+    - `templates/page.mapa-energia-foco-preview.liquid`
+  - Run local static safety QA and generate local receipt.
+- `forbidden_scope`:
+  - Do not call Shopify Admin/API.
+  - Do not open Shopify UI.
+  - Do not create or update Shopify Page objects.
+  - Do not upload assets.
+  - Do not publish.
+  - Do not touch public navigation.
+  - Do not edit `layout/theme.liquid`.
+  - Do not use MailerLite snippets/forms or create MailerLite drafts/sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+  - Do not touch the original dirty Shopify worktree.
+- `expected_output`: Isolated worktree and local theme files QA-green, or a
+  blocked-safe report if the clean base/worktree cannot be verified.
+- `live_gate_status`: Local theme-file build only. All live gates closed.
+- `human_boundary_id`: `not_required_for_local_only_yellow_delegated_edge`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Continue with the isolated Shopify worktree and local
+  theme files only; stop before any Shopify Admin/API execution.
+- `completion_definition`: Worktree and expected theme files exist locally,
+  safety QA is green, no live systems touched and a local receipt exists.
+- `next_checkpoint_expected`: Control Room checkpoint after isolated worktree
+  and local theme-file QA.
