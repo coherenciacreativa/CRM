@@ -5012,7 +5012,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Next Microproduct Or Capability Edge Selection Local-only - 2026-06-14
 
 - `next_action_id`: `launch_os_v0_next_microproduct_or_capability_edge_selection_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
 - `source_checkpoint`: `Interactive Static UX Prototype Pack template created
@@ -5049,3 +5049,54 @@ Use deep hydration only for:
 - `completion_definition`: Next edge is selected or a real CEO decision is
   identified.
 - `next_checkpoint_expected`: Control Room checkpoint after next-edge selection.
+- `completion_result`:
+  - Recommendation:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_next_microproduct_or_capability_edge_selection_local_only_2026-06-14.md`
+  - Recommended next edge:
+    `launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only`
+  - Rationale: return to autonomous candidate generation using the new
+    Interactive Static UX Prototype Pack template as a downstream review path.
+
+## Active Next Action - Launch OS v0 Microproduct Candidate Slate Refresh v1 Local-only - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Next microproduct or capability edge selection
+  completed - 2026-06-14`
+- `objective`: Produce a refreshed local-only CEO-facing slate of candidate
+  microproducts for future testing, incorporating the Interactive Static UX
+  Prototype Pack template as the preferred local review path.
+- `why_now`: Test Claridad is safely in QA hold and Launch OS added a reusable
+  prototype-pack template. The next strategic capability is to return to
+  autonomous microproduct candidate generation rather than stay blocked on
+  MailerLite seed delivery.
+- `allowed_scope`:
+  - Local-only candidate slate.
+  - Read existing Brand/Launch OS docs and local reports.
+  - Mark weak evidence as hypothesis, not canon.
+  - No live APIs.
+  - No external-system mutation.
+- `forbidden_scope`:
+  - Do not create assets, Shopify previews, MailerLite drafts or sends.
+  - Do not call MailerLite API or UI.
+  - Do not call Shopify Admin/API.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not invent observed market events.
+- `expected_output`: Local-only Microproduct Candidate Slate refresh v1 with
+  3-5 candidates, each mapped to Brand fit, value promise, learning hypothesis,
+  complexity, risk, smallest responsible test path and whether the new
+  Interactive Static UX Prototype Pack should be used.
+- `live_gate_status`: Local-only slate. All live gates closed.
+- `human_boundary_id`: `launch_os_microproduct_candidate_slate_refresh_v1_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Continue by preparing the local-only candidate slate
+  refresh v1. Do not build assets or touch live systems.
+- `completion_definition`: Slate exists and asks Alejandro for the next product
+  decision without implying approval to build or distribute.
+- `next_checkpoint_expected`: Control Room checkpoint after candidate slate
+  refresh.

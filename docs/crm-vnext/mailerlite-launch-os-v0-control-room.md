@@ -12600,3 +12600,58 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 next-edge selection completed and candidate slate refresh v1 active - 2026-06-14
+
+Status: local-only next-edge selection completed. The next useful Launch OS edge
+is a refreshed autonomous microproduct candidate slate v1, using the new
+Interactive Static UX Prototype Pack template as the preferred downstream local
+review path.
+
+Evidence:
+
+- Next-edge selection:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_next_microproduct_or_capability_edge_selection_local_only_2026-06-14.md`
+- Template:
+  `docs/crm-vnext/launch-os-interactive-static-ux-prototype-pack-template-v0.md`
+
+Decision:
+
+- Do not reopen Test Claridad MailerLite delivery now.
+- Keep Test Claridad in QA hold.
+- Return to autonomous candidate generation local-only.
+- Use the new interactive static prototype pack template to reduce review
+  duplication in future microproducts.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_next_microproduct_or_capability_edge_selection_local_only`
+- New active next action:
+  `launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
