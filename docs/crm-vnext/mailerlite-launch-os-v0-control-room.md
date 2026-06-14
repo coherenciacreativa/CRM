@@ -12655,3 +12655,55 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 microproduct candidate slate refresh v1 completed and CEO decision waiting - 2026-06-14
+
+Status: Microproduct Candidate Slate Refresh v1 completed local-only. It
+recommends `Mapa breve de energia y foco` as the next candidate, but no build,
+assets, preview, MailerLite draft, send, audience assignment or CRM write is
+approved.
+
+Evidence:
+
+- Candidate slate refresh v1:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only_2026-06-14.md`
+
+Recommendation:
+
+- Advance `Mapa breve de energia y foco` only to local-only CEO Proposal Packet
+  + Interactive Static UX Prototype Pack v0.
+- Alternative CEO choices: choose another candidate from the slate or ask for a
+  revised slate.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only`
+- New active next action:
+  `launch_os_v0_microproduct_candidate_slate_v1_ceo_decision_waiting`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

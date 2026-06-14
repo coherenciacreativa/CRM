@@ -5060,7 +5060,7 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Microproduct Candidate Slate Refresh v1 Local-only - 2026-06-14
 
 - `next_action_id`: `launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
 - `source_checkpoint`: `Next microproduct or capability edge selection
@@ -5100,3 +5100,46 @@ Use deep hydration only for:
   decision without implying approval to build or distribute.
 - `next_checkpoint_expected`: Control Room checkpoint after candidate slate
   refresh.
+- `completion_result`:
+  - Slate:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only_2026-06-14.md`
+  - Recommended candidate:
+    `Mapa breve de energia y foco`
+  - Recommended next local-only path: CEO Proposal Packet + Interactive Static
+    UX Prototype Pack v0.
+  - No live systems touched.
+
+## Active Next Action - Launch OS v0 Microproduct Candidate Slate v1 CEO Decision Waiting - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v1_ceo_decision_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Microproduct candidate slate refresh v1 completed -
+  2026-06-14`
+- `objective`: Wait for Alejandro to choose which v1 candidate should advance,
+  or approve the recommended candidate `Mapa breve de energia y foco` for a
+  local-only CEO Proposal Packet + Interactive Static UX Prototype Pack v0.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_microproduct_candidate_slate_refresh_v1_local_only_2026-06-14.md`
+- `allowed_scope`:
+  - Report the slate recommendation.
+  - If Alejandro approves a candidate, continue local-only to proposal/prototype
+    planning.
+- `forbidden_scope`:
+  - Do not build assets yet.
+  - Do not create Shopify preview/live.
+  - Do not create MailerLite drafts.
+  - Do not send emails.
+  - Do not assign audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: Clear CEO choice or revised direction.
+- `live_gate_status`: Product decision only. All live gates closed.
+- `human_boundary_id`: `launch_os_microproduct_candidate_slate_v1_ceo_decision_waiting`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Ask Alejandro to choose one of: approve `Mapa breve de
+  energia y foco`, choose another slate candidate, or request a revised slate.
+- `completion_definition`: Alejandro chooses the next candidate or asks for a
+  revision.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO decision.
