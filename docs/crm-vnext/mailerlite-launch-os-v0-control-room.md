@@ -12929,3 +12929,85 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Mapa Energia Foco Interactive Static UX Prototype Pack v1 drafted - 2026-06-14
+
+Status: The operator-drafted Final Public Copy v1 local-only candidate was
+converted into an updated Interactive Static UX Prototype Pack v1 for CEO
+review. This does not mean CEO approval and does not approve final assets,
+Shopify, MailerLite, sends, audience assignment, CRM writes or public
+distribution.
+
+Consultant Bridge v2:
+
+- Bridge attempted: true.
+- Bridge sent successfully: false.
+- `consultant_bridge_unavailable`: true.
+- Failure mode: Computer Use could read Safari state but failed `set_value`
+  with a not-active error.
+- Disposition: non-blocking under Compact Consultant Bridge v2 because this was
+  a local-only green/yellow edge, not a red gate.
+
+Evidence:
+
+- Prototype v1 folder:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/`
+- Prototype v1 HTML:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/index.html`
+- QA report:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/qa_report.md`
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/prototype_receipt.json`
+- Prototype HTML SHA-256:
+  `826b5e041cc209e3b07427fb3d2cc9ea554371a7fe1c349f1c9cc4ca8114fdbc`
+- QA report SHA-256:
+  `e95a6303bf3cd0f1c460c9c589763b4b1a9b4cd3c55675f4f77294eac2ffb136`
+
+QA summary:
+
+- JSON receipt valid.
+- Safety scan found 0 forbidden pattern matches in `index.html`.
+- Structure check found 5 questions, 5 result keys and required controls.
+- No network calls, external URLs, form action/method, tracking, MailerLite,
+  Shopify, CRM write path or local persistence detected.
+
+Pointer change:
+
+- Completed/superseded:
+  `launch_os_v0_mapa_energia_foco_final_public_copy_v1_ceo_review_waiting`
+- Completed:
+  `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_local_only_draft`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+
+Next CEO decision:
+
+- Accept prototype v1 and approve Shopify preview preflight local-only.
+- Or request copy/prototype revision.
+- Or pause this candidate and return to the slate.
+
+Closed gates in this checkpoint:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

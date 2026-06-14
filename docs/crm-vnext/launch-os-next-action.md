@@ -5353,12 +5353,14 @@ Use deep hydration only for:
 - `completion_definition`: Copy candidate and receipt exist, with explicit
   non-approval boundaries and next CEO decision.
 
-## Active Next Action - Launch OS v0 Mapa Energia Foco Final Public Copy v1 CEO Review Waiting - 2026-06-14
+## Superseded Next Action - Launch OS v0 Mapa Energia Foco Final Public Copy v1 CEO Review Waiting - 2026-06-14
 
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_final_public_copy_v1_ceo_review_waiting`
-- `status`: `active`
+- `status`: `completed/superseded`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
+- `superseded_by`:
+  `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
 - `source_checkpoint`: `Mapa Energia Foco Final Public Copy v1 local-only
   candidate drafted - 2026-06-14`
 - `objective`: Wait for Alejandro to review the operator-drafted Final Public
@@ -5389,4 +5391,91 @@ Use deep hydration only for:
   the next product direction.
 - `completion_definition`: Alejandro accepts, revises or pauses the copy
   candidate.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO review.
+
+## Completed Next Action - Launch OS v0 Mapa Energia Foco Interactive Static UX Prototype Pack v1 Local Only Draft - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_local_only_draft`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `completed_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco Final Public Copy v1 CEO review
+  waiting - 2026-06-14`
+- `objective`: Convert the operator-drafted Final Public Copy v1 candidate into
+  an updated local-only interactive prototype pack v1 for CEO review, without
+  claiming CEO approval or touching live systems.
+- `consultant_bridge`:
+  - attempted: true
+  - sent_successfully: false
+  - `consultant_bridge_unavailable`: true
+  - failure_mode: Computer Use could read Safari state but failed `set_value`
+    with a not-active error.
+  - disposition: non-blocking under Consultant Bridge v2 because this was a
+    local-only green/yellow edge, not a red gate.
+- `evidence`:
+  - Prototype v1 folder:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/`
+  - Prototype v1 HTML:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/index.html`
+  - QA report:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/qa_report.md`
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/prototype_receipt.json`
+- `artifact_sha256`:
+  - prototype_html:
+    `826b5e041cc209e3b07427fb3d2cc9ea554371a7fe1c349f1c9cc4ca8114fdbc`
+  - qa_report:
+    `e95a6303bf3cd0f1c460c9c589763b4b1a9b4cd3c55675f4f77294eac2ffb136`
+- `qa_summary`:
+  - JSON receipt valid.
+  - Safety scan found 0 forbidden pattern matches in `index.html`.
+  - Structure check found 5 questions, 5 result keys and required controls.
+  - No network calls, external URLs, form action/method, tracking,
+    MailerLite, Shopify, CRM write path or local persistence detected.
+- `not_approved`:
+  - CEO has not approved this prototype v1 yet.
+  - Shopify preview/live remains closed.
+  - MailerLite remains closed.
+  - Sends, seed sends, audience assignment and subscriber/audience mutation
+    remain closed.
+  - CRM writes, ledgers, cards, scoring and Fact Store remain closed.
+  - Brand Hub canon changes, CRM Core and GOG/auth remain closed.
+- `completion_definition`: Prototype v1 folder, HTML, QA report and receipt
+  exist; next edge is CEO review, not live-system execution.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Interactive Static UX Prototype Pack v1 CEO Review Waiting - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco interactive static prototype pack v1
+  drafted - 2026-06-14`
+- `objective`: Wait for Alejandro to review the operator-drafted local
+  prototype v1 and choose whether it should advance to the next local-only gate.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/index.html`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/qa_report.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/prototype_receipt.json`
+- `allowed_scope`:
+  - Report prototype v1 state.
+  - Accept CEO review notes.
+  - If approved later, advance to Shopify preview preflight local-only.
+  - If not approved, revise local prototype/copy or return to the slate.
+- `forbidden_scope`:
+  - Do not create final assets.
+  - Do not create Shopify preview/live.
+  - Do not create MailerLite drafts or sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: CEO chooses one of: accept prototype v1 and approve Shopify
+  preview preflight local-only, request copy/prototype revision, or pause and
+  return to the slate.
+- `live_gate_status`: CEO review only. All live gates closed.
+- `human_boundary_id`: `launch_os_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Ask Alejandro to review the local prototype v1 and
+  choose the next product direction.
+- `completion_definition`: Alejandro accepts, revises or pauses prototype v1.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO review.
