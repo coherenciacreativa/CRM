@@ -12406,3 +12406,197 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 post-pilot resume completed and HTML-first seed QA exception packet active - 2026-06-14
+
+Status: autonomous operator run restarted from the current Goal and the new
+consultant bridge protocol. The Safari ChatGPT consultant bridge was attempted,
+but Computer Use fragmented the prompt submission. The bridge failure is
+recorded as blocked-safe, not fatal, and the lane continued with green
+local-only decision work.
+
+Evidence:
+
+- Consultant bridge recovery receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_consultant_bridge_recovery_receipt_2026-06-14.json`
+- Next delivery edge decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_next_delivery_edge_decision_packet_local_only_2026-06-14.md`
+- Consultant bridge protocol:
+  `docs/crm-vnext/launch-os-consultant-bridge-protocol-v0.md`
+
+Decision:
+
+- Do not retry Safari/ChatGPT bridge blindly.
+- Do not retry MailerLite UI blindly.
+- Keep Test Claridad in QA hold.
+- Prepare an HTML-first seed QA exception packet local-only.
+- Generated plain text remains not green for public/audience send.
+- Seed QA remains internal QA only, not market signal.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_post_autonomous_pilot_resume_waiting`
+- New active next action:
+  `launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened for send route: false.
+- MailerLite API called: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
+
+## Launch OS v0 HTML-first seed QA exception packet completed and local-only next edge selection active - 2026-06-14
+
+Status: HTML-first seed QA exception packet completed local-only. It confirms a
+future HTML-first seed QA exception could be conceptually acceptable, but not
+executable now because the seed delivery route is not green. Test Claridad
+remains in QA hold.
+
+Evidence:
+
+- HTML-first seed QA exception packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only_2026-06-14.md`
+- Next delivery edge decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_next_delivery_edge_decision_packet_local_only_2026-06-14.md`
+- Consultant bridge recovery receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_consultant_bridge_recovery_receipt_2026-06-14.json`
+
+Decision:
+
+- Do not send now.
+- Do not retry MailerLite UI blindly.
+- Keep Test Claridad in QA hold.
+- Generated plain text remains not public/audience-ready.
+- HTML-first seed QA is an internal QA concept only, not public readiness.
+- Continue another local-only Launch OS edge unless there is a fresh stable
+  route reason.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only`
+- New active next action:
+  `launch_os_v0_local_only_next_edge_selection_after_test_claridad_delivery_hold`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Published: false.
+- Scheduled: false.
+- Audience assigned: false.
+- Workflow/automation activated: false.
+- Subscriber rows read: false.
+- Subscriber mutations performed: false.
+- Group, tag, segment, field, audience, automation or workflow mutations:
+  false.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Analytics/tracking added: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.
+
+## Launch OS v0 Interactive Static UX Prototype Pack template created and next-edge selection active - 2026-06-14
+
+Status: local-only next-edge selection completed and the recommended reusable
+capability was created as a repo doc. Launch OS now has a template for future
+Interactive Static UX Prototype Packs, consolidating the prior split between
+Static UX Review Pack and Static Local Prototype when both are local HTML review
+experiences.
+
+Evidence:
+
+- Next-edge recommendation:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_local_only_next_edge_selection_after_test_claridad_delivery_hold_2026-06-14.md`
+- New template:
+  `docs/crm-vnext/launch-os-interactive-static-ux-prototype-pack-template-v0.md`
+
+Capability added:
+
+- Future microproducts can use one local-only interactive prototype pack for
+  landing, flow, result states, email capture simulation, desktop/mobile checks,
+  QA checklist and CEO decision brief.
+- The template explicitly keeps no-network/no-send/no-persistence/no-live-system
+  boundaries.
+
+Pointer change:
+
+- Completed:
+  `launch_os_v0_local_only_next_edge_selection_after_test_claridad_delivery_hold`
+- Completed:
+  `launch_os_v0_interactive_static_ux_prototype_pack_template_v0_local_only`
+- New active next action:
+  `launch_os_v0_next_microproduct_or_capability_edge_selection_local_only`
+
+Closed gates in this checkpoint:
+
+- MailerLite UI opened: false.
+- MailerLite API called: false.
+- Emails sent: false.
+- Seed emails sent: false.
+- MailerLite real draft mutated: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Shopify Admin/API called: false.
+- Shopify changes performed: false.
+- Public navigation touched: false.
+- Audience traffic invited: false.
+- CRM live API called: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- `/Users/alejandrogomez/CRM-core` touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+- Exact private values printed: false.
+- Raw IDs printed: false.
+- Tokens printed: false.

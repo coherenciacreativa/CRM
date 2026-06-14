@@ -4804,9 +4804,9 @@ Use deep hydration only for:
 ## Active Next Action - Launch OS v0 Post Autonomous Pilot Resume Waiting - 2026-06-13
 
 - `next_action_id`: `launch_os_v0_post_autonomous_pilot_resume_waiting`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-13`
-- `updated_at`: `2026-06-13`
+- `updated_at`: `2026-06-14`
 - `source_checkpoint`: `Autonomous operator pilot handoff completed -
   2026-06-13`
 - `objective`: Wait for Alejandro's next Launch OS direction after the
@@ -4844,3 +4844,208 @@ Use deep hydration only for:
   edge before functional work unless Alejandro provides a specific next action.
 - `human_boundary_id`: `launch_os_post_autonomous_pilot_resume_waiting`
 - `human_boundary_notification_status`: `not_needed`
+- `completion_result`:
+  - Resume pulse completed under the new consultant bridge protocol.
+  - Consultant bridge attempted through Safari; UI fragmented the request, so
+    it was recorded as blocked-safe rather than fatal.
+  - Bridge recovery receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_consultant_bridge_recovery_receipt_2026-06-14.json`
+  - Local-only next-edge decision packet:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_next_delivery_edge_decision_packet_local_only_2026-06-14.md`
+  - Recommendation: prepare an HTML-first seed QA exception packet local-only.
+  - No live APIs, MailerLite UI, sends, Shopify changes, CRM writes, CRM Core,
+    Brand Hub patch or GOG/auth changes occurred.
+
+## Active Next Action - Launch OS v0 Test Claridad HTML-first Seed QA Exception Packet Local-only - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Post-pilot resume pulse and next delivery edge
+  decision packet - 2026-06-14`
+- `objective`: Prepare a local-only packet that decides whether a future
+  seed-only QA send for Test Claridad can be framed as HTML-first render QA
+  while generated plain text remains not green for public/audience send.
+- `why_now`: The Shopify preview is CEO/Web accepted and the MailerLite draft is
+  safely in QA hold, but seed delivery is blocked by route/tooling and generated
+  plain text. A local-only exception packet is the smallest useful edge before
+  any future seed-send route check.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_next_delivery_edge_decision_packet_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_consultant_bridge_recovery_receipt_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_autonomous_operator_pilot_handoff_2026-06-13.md`
+- `allowed_scope`:
+  - Local-only decision/approval packet.
+  - Read existing receipts and local artifacts.
+  - Define HTML-first seed QA criteria, stop conditions and future approval
+    boundaries.
+  - No live system calls.
+  - Scoped docs-only checkpoint/commit/push after artifact if needed.
+- `forbidden_scope`:
+  - Do not call MailerLite API.
+  - Do not use MailerLite UI.
+  - Do not send seed/test emails.
+  - Do not public/audience-send.
+  - Do not mutate the MailerLite draft.
+  - Do not publish, schedule or activate workflows.
+  - Do not read or mutate subscribers.
+  - Do not create, rename, assign or mutate groups, tags, segments, fields,
+    audiences, workflows or automations.
+  - Do not call Shopify Admin/API or make Shopify changes.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat seed QA, Null Audience behavior or internal previews as market
+    signal.
+- `expected_output`: Local-only HTML-first seed QA exception packet with a clear
+  recommendation, hard/soft blockers, future route requirements and exact
+  future boundary for any seed-only send.
+- `live_gate_status`: Local-only packet. MailerLite UI/API, sends, audience,
+  Shopify, CRM and public gates closed.
+- `human_boundary_id`: `test_claridad_html_first_seed_qa_exception_packet_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any step would call live APIs, use MailerLite UI, send, mutate MailerLite,
+    touch Shopify/CRM/CRM Core/Brand Hub/GOG/auth, expose secrets, or cross a
+    red gate.
+- `resume_instruction`: Continue by creating the local-only HTML-first seed QA
+  exception packet. Do not retry ChatGPT bridge, MailerLite UI or MailerLite API
+  unless a later boundary explicitly opens that route.
+- `completion_definition`: Packet exists, makes a clear local-only
+  recommendation, and no live systems are touched.
+- `next_checkpoint_expected`: Control Room checkpoint after packet completion.
+- `completion_result`:
+  - Packet:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only_2026-06-14.md`
+  - Result: HTML-first seed QA exception is conceptually acceptable only for a
+    future internal seed QA, but not executable now because the seed route is not
+    green.
+  - Test Claridad remains in QA hold.
+  - Generated plain text remains not public/audience-ready.
+  - MailerLite UI should not be retried blindly.
+  - No CEO decision needed yet; safe to continue local-only.
+
+## Active Next Action - Launch OS v0 Local-only Next Edge Selection After Test Claridad Delivery Hold - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_local_only_next_edge_selection_after_test_claridad_delivery_hold`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Test Claridad HTML-first seed QA exception packet
+  completed - 2026-06-14`
+- `objective`: Choose the next useful local-only Launch OS edge after Test
+  Claridad delivery remains in QA hold due to seed-route instability.
+- `why_now`: Test Claridad has produced reusable product, web, MailerLite and
+  operator learning. Further seed-delivery work is route/tooling-bound, so the
+  next productive move should either harden Launch OS locally or choose the next
+  microproduct/capability edge without live mutations.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_html_first_seed_qa_exception_packet_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_test_claridad_next_delivery_edge_decision_packet_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_consultant_bridge_recovery_receipt_2026-06-14.json`
+- `allowed_scope`:
+  - Local-only next-edge selection.
+  - Read existing Launch OS docs and local artifacts.
+  - Compare process hardening, next microproduct/candidate work, local QA
+    template work or deferred Test Claridad route recheck.
+  - No live APIs.
+  - Scoped docs-only checkpoint/commit/push after artifact if needed.
+- `forbidden_scope`:
+  - Do not retry ChatGPT bridge blindly.
+  - Do not call MailerLite API.
+  - Do not use MailerLite UI.
+  - Do not send seed/test emails.
+  - Do not mutate MailerLite, Shopify, CRM, subscribers, groups, tags, segments,
+    fields, workflows, audiences or campaigns.
+  - Do not write ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat internal QA as market signal.
+- `expected_output`: A concise local-only next-edge recommendation with current
+  green/yellow/red status and whether any CEO decision is needed.
+- `live_gate_status`: Local-only. All MailerLite, Shopify, CRM, audience and
+  public gates closed.
+- `human_boundary_id`: `launch_os_local_only_next_edge_selection_after_test_claridad_delivery_hold`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any step would call live systems, retry unstable UI blindly, send, mutate
+    external systems, touch CRM Core/Brand Hub/GOG/auth, expose secrets or cross
+    a red gate.
+- `resume_instruction`: Continue by preparing the local-only next-edge
+  recommendation. Prefer CEO leverage and avoid reopening Test Claridad
+  seed-delivery unless a fresh stable route reason exists.
+- `completion_definition`: Recommendation exists and either identifies a safe
+  local-only next edge or states that Alejandro is needed for a red-gate choice.
+- `next_checkpoint_expected`: Control Room checkpoint after next-edge
+  recommendation.
+- `completion_result`:
+  - Recommendation:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_local_only_next_edge_selection_after_test_claridad_delivery_hold_2026-06-14.md`
+  - Recommended next edge:
+    `launch_os_v0_interactive_static_ux_prototype_pack_template_v0_local_only`
+  - Rationale: convert Test Claridad learning into a reusable Launch OS
+    capability before starting another microproduct.
+
+## Completed Next Action - Launch OS v0 Interactive Static UX Prototype Pack Template v0 Local-only - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_interactive_static_ux_prototype_pack_template_v0_local_only`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `completed_at`: `2026-06-14`
+- `source_checkpoint`: `Local-only next edge selection after Test Claridad
+  delivery hold - 2026-06-14`
+- `objective`: Create a reusable local-only template that consolidates Static
+  UX Review Pack and Static Local Prototype into one Interactive Static UX
+  Prototype Pack for future microproducts.
+- `completion_evidence`:
+  - `docs/crm-vnext/launch-os-interactive-static-ux-prototype-pack-template-v0.md`
+- `completion_result`:
+  - Template created.
+  - Captures no-network/no-send/no-persistence requirements.
+  - Includes UX coverage, QA checklist, CEO decision brief and Test Claridad
+    reusable learnings.
+  - No live systems touched.
+
+## Active Next Action - Launch OS v0 Next Microproduct Or Capability Edge Selection Local-only - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_next_microproduct_or_capability_edge_selection_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Interactive Static UX Prototype Pack template created
+  - 2026-06-14`
+- `objective`: Choose the next local-only Launch OS edge: next microproduct
+  candidate, another reusable capability, or a deferred Test Claridad route
+  recheck only if there is fresh route-stability reason.
+- `why_now`: Test Claridad is safely in QA hold and the prototype-pack template
+  now captures a reusable process improvement. The next move should optimize CEO
+  leverage without reopening live gates.
+- `allowed_scope`:
+  - Local-only recommendation.
+  - Read existing Launch OS docs and local artifacts.
+  - No live APIs.
+  - No external-system mutation.
+  - Scoped docs-only checkpoint/commit/push if pointer changes.
+- `forbidden_scope`:
+  - Do not call MailerLite API or UI.
+  - Do not send seed/test emails.
+  - Do not mutate Shopify, MailerLite, CRM, subscribers, groups, tags, segments,
+    fields, workflows or campaigns.
+  - Do not write ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core or `/Users/alejandrogomez/CRM-core`.
+  - Do not patch Brand Hub.
+  - Do not touch GOG/auth dirty files.
+  - Do not treat internal QA as market signal.
+- `expected_output`: A short next-edge recommendation and exact boundary for
+  execution if needed.
+- `live_gate_status`: Local-only selection. All live gates closed.
+- `human_boundary_id`: `launch_os_next_microproduct_or_capability_edge_selection_local_only`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Continue with local-only next-edge selection unless
+  Alejandro provides a more specific direction.
+- `completion_definition`: Next edge is selected or a real CEO decision is
+  identified.
+- `next_checkpoint_expected`: Control Room checkpoint after next-edge selection.
