@@ -13068,17 +13068,109 @@ Closed gates remain:
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
 
-## Current Launch OS active edge after Mapa Energia Foco preflight - 2026-06-14
+## Launch OS v0 Mapa Energia Foco isolated Shopify theme files and execution packet ready - 2026-06-14
+
+Status: The isolated Shopify worktree was created from `origin/main`, local
+theme files were added, QA passed, the branch was committed/pushed and a
+Shopify Preview Execution Packet was prepared. No Shopify Admin/API call,
+Shopify UI action, preview execution, page object mutation, publish, navigation
+change, MailerLite action, send or CRM write occurred.
+
+Shopify worktree:
+
+- Path:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+- Branch:
+  `codex/shopify-mapa-energia-foco-preview`
+- Commit:
+  `bbeb166 Add Mapa Energia Foco preview theme files`
+
+Theme files:
+
+- `sections/mapa-energia-foco.liquid`
+- `snippets/mapa-energia-foco-inert-email-capture.liquid`
+- `templates/page.mapa-energia-foco-preview.liquid`
+
+Evidence:
+
+- Theme-files receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_isolated_theme_files_local_only_receipt_2026-06-14.json`
+- Theme-files receipt SHA-256:
+  `5f08a6cf7aa51a634ae9a8c13efe1d3bc3c478672b42bb58bd44edbd92bc61f8`
+- Shopify Preview Execution Packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_packet_local_only_2026-06-14.md`
+- Shopify Preview Execution Packet receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_packet_local_only_receipt_2026-06-14.json`
+- Execution packet SHA-256:
+  `9996355e7aaaab27b56915abd65374129fa5c4eda5ee6c5a95de214fd4bd5037`
+- Execution packet receipt SHA-256:
+  `d89886cd088c34c2da4d21f6d193ca0cad53227a3da359e9c9273169be8c519e`
+
+QA summary:
+
+- Expected files only: true.
+- `git diff --check`: green.
+- Template contains `{% layout none %}`.
+- Template contains `noindex,nofollow,noarchive`.
+- Section renders inert capture snippet.
+- External HTTP/HTTPS URLs: 0.
+- `<form>` tags: 0.
+- `action=` / `method=`: 0.
+- MailerLite live paths/snippets/forms: 0.
+- Analytics/tracking terms: 0.
+- Network API calls: 0.
+- Storage API calls: 0.
+- Shopify Admin/live URLs: 0.
+- CRM write paths: 0.
+- False-positive reviewed:
+  `placeholder` appears only as user-facing inert input helper copy.
+
+Pointer change:
+
+- Previous active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+- Previous status:
+  completed.
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_execution_preflight_delegated`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API called: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+## Current Launch OS active edge after Mapa Energia Foco isolated theme files - 2026-06-14
 
 Current active next action:
 
-`launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+`launch_os_v0_mapa_energia_foco_shopify_preview_execution_preflight_delegated`
 
-This final checkpoint resolves the ordering ambiguity between the earlier CEO
-review console checkpoint and the later Shopify preview preflight. The current
-edge is local-only isolated Shopify worktree and theme-file preparation. It does
-not authorize Shopify Admin/API, Shopify UI, preview execution, publish,
-public navigation, MailerLite, sends, audience assignment, CRM writes, Brand Hub
+This checkpoint resolves the ordering ambiguity between the earlier CEO review
+console/preflight checkpoints and the completed isolated Shopify theme-file
+work. The current edge is a fresh execution preflight for an exact-link
+noindex/unlisted Shopify preview, with minimal Shopify Admin/API execution
+allowed only if every safety gate is green under the current autonomous
+delegation. It does not authorize publish, public navigation, public
+distribution, MailerLite, sends, audience assignment, CRM writes, Brand Hub
 changes, CRM Core or GOG/auth.
 
 ## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14

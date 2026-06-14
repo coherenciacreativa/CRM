@@ -5543,3 +5543,60 @@ Use deep hydration only for:
   safety QA is green, no live systems touched and a local receipt exists.
 - `next_checkpoint_expected`: Control Room checkpoint after isolated worktree
   and local theme-file QA.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Preview Execution Preflight Delegated - 2026-06-14
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_isolated_worktree_theme_files_local_only`
+- `previous_status`: `completed`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_execution_preflight_delegated`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco isolated Shopify theme files
+  committed and execution packet ready - 2026-06-14`
+- `objective`: Run a fresh execution preflight and, only if every gate is
+  green, execute the minimal Shopify Admin/API actions needed for an
+  exact-link noindex/unlisted preview.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_isolated_theme_files_local_only_receipt_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_packet_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_packet_local_only_receipt_2026-06-14.json`
+- `shopify_branch`: `codex/shopify-mapa-energia-foco-preview`
+- `shopify_worktree`:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+- `shopify_commit`: `bbeb166 Add Mapa Energia Foco preview theme files`
+- `allowed_scope`:
+  - Fresh preflight of the isolated Shopify worktree.
+  - Verify HEAD is `bbeb166`.
+  - Verify branch is synced with origin and working tree is clean.
+  - Re-run safety checks on exactly:
+    - `sections/mapa-energia-foco.liquid`
+    - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+    - `templates/page.mapa-energia-foco-preview.liquid`
+  - If all gates are green, use minimal Shopify Admin/API calls only to upload
+    those three assets and create/update one exact-link Shopify Page with
+    template suffix `mapa-energia-foco-preview`.
+  - Keep the preview noindex/unlisted.
+  - Generate execution receipt with redacted URL label and URL SHA-256 only.
+- `forbidden_scope`:
+  - Do not publish.
+  - Do not touch public navigation.
+  - Do not send traffic to the preview.
+  - Do not use MailerLite or create drafts/sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+  - Do not touch the original dirty Shopify worktree.
+- `expected_output`: Shopify preview execution receipt completed, blocked,
+  rolled back or quarantined; no raw URL printed.
+- `live_gate_status`: Delegated yellow Shopify exact-link preview only. Public
+  distribution/navigation and all CRM/MailerLite gates remain closed.
+- `human_boundary_id`: `not_required_for_noindex_unlisted_preview_under_current_autonomous_delegation`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Fresh preflight first. Execute only if all safety gates
+  are green; otherwise stop and report.
+- `completion_definition`: Receipt proves preview completed or was safely
+  blocked/rolled back/quarantined without public navigation, publishing,
+  MailerLite, sends, audience mutation or CRM writes.
+- `next_checkpoint_expected`: Control Room checkpoint after Shopify preview
+  execution attempt.
