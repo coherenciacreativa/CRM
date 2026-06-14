@@ -13142,3 +13142,83 @@ Closed gates remain:
 - CRM Core docs touched: false.
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
+
+## Launch OS v0 Mapa Energia Foco CEO review console ready - 2026-06-14
+
+Status: A local-only CEO review console was prepared for prototype v1. It
+collects the prototype, handoff, visual QA readout, decision options and exact
+approval phrase in one local HTML page. This does not change the active next
+action and does not approve Shopify, MailerLite, sends, audience assignment,
+CRM writes or public distribution.
+
+Evidence:
+
+- CEO review console:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_console_2026-06-14.html`
+- CEO review console receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_console_receipt_2026-06-14.json`
+- CEO review console QuickLook thumbnail:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_console_quicklook_2026-06-14.png`
+- Console HTML SHA-256:
+  `741053186c00b3f7d54e51863c07614e42282c4b8d63e61e07e84bda0ead68bd`
+- Console receipt SHA-256:
+  `cac30d1f8ce1a6a2fc77c9d4343565317738cf1bcced5a14440a1732434214bd`
+- Console QuickLook SHA-256:
+  `c0e124f50af80c1947d53c97593440a9370a57e1c5a2fa3e9c1349b0f82e6334`
+
+Consultant Bridge v2:
+
+- Attempted this turn: true.
+- Route: Safari Computer Use read-only state.
+- Sent successfully: false.
+- `consultant_bridge_unavailable`: true.
+- Failure mode: Safari Computer Use returned `cgWindowNotFound`.
+- Data transmitted: false.
+- Disposition: non-blocking under Compact Consultant Bridge v2 because this is
+  a local-only yellow edge, not a red gate.
+
+Console safety:
+
+- External HTTP URLs: 0.
+- Local `file://` URLs: 6.
+- Scripts: 0.
+- Forms: 0.
+- `action=` / `method=`: 0.
+- Network APIs: 0.
+- Storage APIs: 0.
+- Tracking terms: 0.
+- MailerLite live paths: 0.
+- Shopify Admin/API/live URLs: 0.
+- CRM write paths: 0.
+
+Active next action remains:
+
+`launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+
+Next CEO decision remains:
+
+- Accept prototype v1 and approve Shopify preview preflight local-only.
+- Or request copy/prototype revision.
+- Or pause this candidate and return to the slate.
+
+Closed gates remain:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
