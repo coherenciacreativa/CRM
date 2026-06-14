@@ -5600,3 +5600,71 @@ Use deep hydration only for:
   MailerLite, sends, audience mutation or CRM writes.
 - `next_checkpoint_expected`: Control Room checkpoint after Shopify preview
   execution attempt.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Preview Credentials Unblock / Execution Retry Waiting - 2026-06-14
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_execution_preflight_delegated`
+- `previous_status`: `blocked_safe_before_shopify_api`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_credentials_unblock_retry_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco Shopify preview execution
+  blocked-safe before API - 2026-06-14`
+- `objective`: Restore Shopify execution credentials in the operator
+  environment, then rerun the same fresh preflight/execution path for the
+  noindex/unlisted exact-link preview without changing the approved theme files.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_blocked_handoff_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_2026-06-14.mjs`
+- `blocked_reason`: `Missing SHOPIFY_STORE in env`
+- `preflight_status`:
+  - Worktree path correct.
+  - Branch `codex/shopify-mapa-energia-foco-preview`.
+  - HEAD `bbeb166`.
+  - Branch synced with origin.
+  - Working tree clean.
+  - No staged files.
+  - Source-file safety scan green after the Spanish `todo` false-positive was
+    removed from the runner's token scanner.
+  - Original dirty Shopify worktree not modified.
+- `consultant_bridge`:
+  - attempted: true
+  - sent_successfully: false
+  - `consultant_bridge_unavailable`: true
+  - failure_mode: Safari Computer Use `get_app_state` returned
+    `cgWindowNotFound`.
+  - disposition: non-blocking under Consultant Bridge v2.
+- `allowed_scope`:
+  - Restore/provide Shopify credentials to the operator environment without
+    printing secrets.
+  - Rerun fresh preflight against the same approved worktree and commit.
+  - If all gates are green, execute the same minimal Shopify Admin/API exact-link
+    preview path from the existing execution runner.
+  - Generate a fresh execution receipt with URL redacted and URL SHA-256 only.
+- `forbidden_scope`:
+  - Do not print secrets, raw IDs or exact preview URLs.
+  - Do not alter approved theme files unless a new product/QA blocker requires
+    a separate local patch.
+  - Do not publish theme or touch public navigation.
+  - Do not send traffic to the preview.
+  - Do not use MailerLite or create drafts/sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+  - Do not touch the original dirty Shopify worktree.
+- `expected_output`: Preview execution completed/blocked/quarantined receipt
+  after credentials are available, or a handoff if credentials remain absent.
+- `live_gate_status`: Shopify exact-link preview remains unexecuted. Public
+  distribution/navigation and all CRM/MailerLite gates remain closed.
+- `human_boundary_id`: `shopify_credentials_unavailable_for_delegated_preview_execution`
+- `human_boundary_notification_status`: `handoff_only`
+- `resume_instruction`: Do not change theme files. Restore/provide Shopify
+  credentials, then rerun fresh preflight and execute only if every safety gate
+  is green.
+- `completion_definition`: Shopify preview receipt proves completed or safely
+  blocked/quarantined without public navigation, publishing, MailerLite, sends,
+  audience mutation or CRM writes.
+- `next_checkpoint_expected`: Control Room checkpoint after credentials retry or
+  successful preview execution.

@@ -13158,20 +13158,118 @@ Closed gates remain:
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
 
-## Current Launch OS active edge after Mapa Energia Foco isolated theme files - 2026-06-14
+## Launch OS v0 Mapa Energia Foco Shopify preview execution blocked-safe before API - 2026-06-14
+
+Status: A fresh execution preflight/runner was prepared and run for the
+`Mapa breve de energia y foco` Shopify exact-link noindex/unlisted preview.
+The runner stopped before any Shopify Admin/API mutation because Shopify
+credentials were not available in the operator environment.
+
+Evidence:
+
+- Execution runner:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_2026-06-14.mjs`
+- Execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_2026-06-14.json`
+- Blocked-safe handoff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_blocked_handoff_2026-06-14.md`
+
+Execution result:
+
+- `executionStatus`: `blocked`
+- `status`: `shopify_preview_execution_error`
+- `blocker`: `Missing SHOPIFY_STORE in env`
+- Shopify Admin/API mutation performed: false.
+- Theme assets uploaded: 0.
+- Page object created/updated: false.
+- Preview URL created: false.
+- Rollback needed: false.
+
+Fresh preflight status:
+
+- Worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+- Branch:
+  `codex/shopify-mapa-energia-foco-preview`
+- HEAD:
+  `bbeb166 Add Mapa Energia Foco preview theme files`
+- Branch sync:
+  `0/0`
+- Working tree:
+  clean.
+- Staged files:
+  none.
+- `git diff --check`:
+  green.
+- Source-file safety scan:
+  green after removing the Spanish `todo` false-positive from the runner's
+  internal-token scanner.
+- Original dirty Shopify worktree:
+  not modified.
+
+Consultant Bridge v2:
+
+- Attempted: true.
+- Sent successfully: false.
+- `consultant_bridge_unavailable`: true.
+- Failure mode: Safari Computer Use `get_app_state` returned
+  `cgWindowNotFound`.
+- Disposition: non-blocking because this is a yellow delegated preview edge,
+  not a red gate.
+
+Pointer change:
+
+- Previous active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_execution_preflight_delegated`
+- Previous status:
+  blocked-safe before Shopify API.
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_credentials_unblock_retry_waiting`
+
+Next edge:
+
+- Restore/provide Shopify execution credentials to the operator environment.
+- Rerun the same fresh preflight/execution runner.
+- Do not change approved theme files unless a separate local QA/product blocker
+  appears.
+- Do not print secrets, raw IDs or exact preview URLs.
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+## Current Launch OS active edge after Mapa Energia Foco Shopify credential block - 2026-06-14
 
 Current active next action:
 
-`launch_os_v0_mapa_energia_foco_shopify_preview_execution_preflight_delegated`
+`launch_os_v0_mapa_energia_foco_shopify_preview_credentials_unblock_retry_waiting`
 
-This checkpoint resolves the ordering ambiguity between the earlier CEO review
-console/preflight checkpoints and the completed isolated Shopify theme-file
-work. The current edge is a fresh execution preflight for an exact-link
-noindex/unlisted Shopify preview, with minimal Shopify Admin/API execution
-allowed only if every safety gate is green under the current autonomous
-delegation. It does not authorize publish, public navigation, public
-distribution, MailerLite, sends, audience assignment, CRM writes, Brand Hub
-changes, CRM Core or GOG/auth.
+The current edge is a credential-unblock/retry boundary for the same exact-link
+noindex/unlisted Shopify preview. The approved theme files remain unchanged and
+QA-green; the runner stopped before Shopify API because `SHOPIFY_STORE` was not
+available in the operator environment. It does not authorize publish, public
+navigation, public distribution, MailerLite, sends, audience assignment, CRM
+writes, Brand Hub changes, CRM Core or GOG/auth.
 
 ## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14
 
