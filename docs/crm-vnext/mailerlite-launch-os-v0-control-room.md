@@ -13011,3 +13011,59 @@ Closed gates in this checkpoint:
 - Exact private values printed: false.
 - Raw IDs printed: false.
 - Tokens printed: false.
+
+## Launch OS v0 Mapa Energia Foco Prototype v1 CEO review handoff ready - 2026-06-14
+
+Status: A local-only CEO review handoff was prepared for the prototype v1
+checkpoint. This does not change the active next action and does not approve
+Shopify, MailerLite, sends, audience assignment, CRM writes or public
+distribution.
+
+Evidence:
+
+- CEO review handoff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_ceo_review_handoff_local_only_2026-06-14.md`
+- CEO review handoff receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_ceo_review_handoff_receipt_2026-06-14.json`
+- Handoff SHA-256:
+  `12971260b5bef2f65c259353e2428dd44e8ac1692ca41bc05a9cd7224e52ce35`
+- Handoff receipt SHA-256:
+  `4a48b3ab14c55bbc909bedbed742a3e5cb4fe9f0602cbe632d4ca30b4502e6fa`
+
+Consultant Bridge v2:
+
+- Bridge required for this local-only handoff: false.
+- Prior bridge failure remains non-blocking.
+- `consultant_bridge_unavailable` remains recorded for this edge.
+
+Active next action remains:
+
+`launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+
+Next CEO decision:
+
+- Accept prototype v1 and approve Shopify preview preflight local-only.
+- Or request copy/prototype revision.
+- Or pause this candidate and return to the slate.
+
+Closed gates remain:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.

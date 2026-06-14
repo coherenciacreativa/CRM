@@ -5457,6 +5457,8 @@ Use deep hydration only for:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/index.html`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/qa_report.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/prototype_receipt.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_ceo_review_handoff_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_ceo_review_handoff_receipt_2026-06-14.json`
 - `allowed_scope`:
   - Report prototype v1 state.
   - Accept CEO review notes.
@@ -5475,7 +5477,7 @@ Use deep hydration only for:
 - `live_gate_status`: CEO review only. All live gates closed.
 - `human_boundary_id`: `launch_os_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
 - `human_boundary_notification_status`: `not_needed`
-- `resume_instruction`: Ask Alejandro to review the local prototype v1 and
-  choose the next product direction.
+- `resume_instruction`: Ask Alejandro to review the local prototype v1 through
+  the CEO review handoff and choose the next product direction.
 - `completion_definition`: Alejandro accepts, revises or pauses prototype v1.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO review.
