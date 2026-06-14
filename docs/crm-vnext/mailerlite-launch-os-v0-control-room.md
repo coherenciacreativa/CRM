@@ -13067,3 +13067,78 @@ Closed gates remain:
 - CRM Core docs touched: false.
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
+
+## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14
+
+Status: A local-only visual QA readout was prepared for prototype v1. This does
+not change the active next action and does not approve Shopify, MailerLite,
+sends, audience assignment, CRM writes or public distribution.
+
+Evidence:
+
+- Visual QA readout:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_visual_qa_readout_local_only_2026-06-14.md`
+- Visual QA receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_visual_qa_receipt_2026-06-14.json`
+- Desktop QuickLook thumbnail:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_visual_qa_2026-06-14/index_desktop_quicklook.png`
+- Mobile-size QuickLook thumbnail:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_visual_qa_2026-06-14/index_mobile_quicklook.png`
+- Visual QA readout SHA-256:
+  `7cce0a9bc95b58deb5839e37958503d1a3138fd1342fd11d7a91875500fb1e6b`
+- Visual QA receipt SHA-256:
+  `9282a11582a93ffb407faa57f418e13e1ee4fb60563ed43a359f35e8e5843acf`
+- Desktop thumbnail SHA-256:
+  `4d5f1d232d2f24a04cc77c3e9a52db3e91beafaed0a18465e1f447f62ce6cccb`
+- Mobile thumbnail SHA-256:
+  `67b6fe95a1c82705752358bdb6d4de340ed10ea344e927c18976595a0e61b140`
+
+QA summary:
+
+- First viewport rendered through QuickLook thumbnail.
+- Title, subtitle, intro, promise chips, primary CTA and trust line are visible.
+- No layout overlap is visible in the generated desktop/mobile-size thumbnails.
+- Static scan remains green: no external URLs, external scripts, forms,
+  action/method, network APIs, storage APIs, analytics, MailerLite, Shopify or
+  CRM terms.
+- False-positive token scan reviewed: `placeholder` is user-facing input helper
+  copy and `todo` is a normal Spanish word in public copy.
+
+Limitations:
+
+- In-app Browser failed to attach to the local file in this run.
+- Bundled Playwright package was available but no browser executable was
+  installed, so full interactive browser screenshots were not produced.
+- Mobile-size QuickLook is a visual proxy, not a true mobile interaction test.
+
+Active next action remains:
+
+`launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
+
+Next CEO decision remains:
+
+- Accept prototype v1 and approve Shopify preview preflight local-only.
+- Or request copy/prototype revision.
+- Or pause this candidate and return to the slate.
+
+Closed gates remain:
+
+- Final assets created: false.
+- Shopify preview/live created: false.
+- Shopify Admin/API called: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.

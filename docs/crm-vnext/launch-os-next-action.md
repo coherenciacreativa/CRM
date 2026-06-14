@@ -5459,6 +5459,8 @@ Use deep hydration only for:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_2026-06-14/prototype_receipt.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_ceo_review_handoff_local_only_2026-06-14.md`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_ceo_review_handoff_receipt_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_visual_qa_readout_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_prototype_v1_visual_qa_receipt_2026-06-14.json`
 - `allowed_scope`:
   - Report prototype v1 state.
   - Accept CEO review notes.
@@ -5475,6 +5477,8 @@ Use deep hydration only for:
   preview preflight local-only, request copy/prototype revision, or pause and
   return to the slate.
 - `live_gate_status`: CEO review only. All live gates closed.
+- `visual_qa_status`: Light QuickLook visual readout ready; interactive
+  browser QA not available in this run.
 - `human_boundary_id`: `launch_os_mapa_energia_foco_interactive_static_ux_prototype_pack_v1_ceo_review_waiting`
 - `human_boundary_notification_status`: `not_needed`
 - `resume_instruction`: Ask Alejandro to review the local prototype v1 through
