@@ -178,6 +178,48 @@ CONSULTANT REVIEW REQUEST below with a new request_id.
 If the partial request exposed sensitive data, stop and report the exposure
 path without repeating the sensitive value.
 
+## Compact Consultant Bridge v2
+
+Use this compact protocol as the current default for ChatGPT consultant bridge
+requests.
+
+Rules:
+
+1. Do not send long messages to ChatGPT.
+2. A `CONSULTANT REVIEW REQUEST` must be under 900 characters.
+3. It must include only:
+   - `request_id`
+   - active `next_action_id`
+   - proposed action
+   - safety status
+   - artifact/receipt paths
+   - exact `GREEN` / `YELLOW` / `RED` ask
+4. If more detail is needed, create a local artifact:
+   `/Users/alejandrogomez/Documents/Mantis-Reports/consultant_bridge_request_<request_id>.md`
+   and mention only the path in the compact request.
+5. If the compact request fragments or ChatGPT/Safari fails:
+   - send `DISREGARD PARTIAL REQUEST` if possible;
+   - refresh once;
+   - try a new Safari window once;
+   - if still broken, mark `consultant_bridge_unavailable` and continue green
+     local work or delegated yellow work with receipts.
+6. Consultant bridge failure is not a blocker unless the current action is a red
+   gate.
+7. Red gates still require Alejandro:
+   - public/audience sends;
+   - public distribution/navigation launch;
+   - real audience/subscriber mutation outside seed/safety;
+   - CRM production writes;
+   - ledgers/cards/scoring/Fact Store;
+   - CRM Core;
+   - Brand Hub canon changes;
+   - destructive cleanup outside lane objects.
+8. Do not type line by line into ChatGPT. If using the bridge, compose the
+   compact request first, then paste/send once.
+9. If no consultant response appears, continue only if the action is green or
+   yellow delegated and covered by the pilot contract; otherwise produce a
+   handoff.
+
 ## Safari / ChatGPT Bridge Recovery
 
 When the ChatGPT consultant bridge in Safari is stale, confusing or does not
