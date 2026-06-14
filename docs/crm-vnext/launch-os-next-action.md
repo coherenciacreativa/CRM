@@ -5109,12 +5109,14 @@ Use deep hydration only for:
     UX Prototype Pack v0.
   - No live systems touched.
 
-## Active Next Action - Launch OS v0 Microproduct Candidate Slate v1 CEO Decision Waiting - 2026-06-14
+## Superseded Next Action - Launch OS v0 Microproduct Candidate Slate v1 CEO Decision Waiting - 2026-06-14
 
 - `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v1_ceo_decision_waiting`
-- `status`: `active`
+- `status`: `completed/superseded`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
+- `superseded_by`:
+  `launch_os_v0_mapa_energia_foco_ceo_review_waiting`
 - `source_checkpoint`: `Microproduct candidate slate refresh v1 completed -
   2026-06-14`
 - `objective`: Wait for Alejandro to choose which v1 candidate should advance,
@@ -5205,12 +5207,14 @@ Use deep hydration only for:
 - `completion_definition`: Artifact folder, prototype, QA report and receipt
   exist; next decision is a CEO review choice, not a live-system boundary.
 
-## Active Next Action - Launch OS v0 Mapa Energia Foco CEO Review Waiting - 2026-06-14
+## Superseded Next Action - Launch OS v0 Mapa Energia Foco CEO Review Waiting - 2026-06-14
 
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_ceo_review_waiting`
-- `status`: `active`
+- `status`: `completed/superseded`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
+- `superseded_by`:
+  `launch_os_v0_mapa_energia_foco_voice_concept_microcorrection_review_waiting`
 - `source_checkpoint`: `Mapa Energia Foco interactive static prototype pack v0
   completed - 2026-06-14`
 - `objective`: Wait for CEO review of the local-only `Mapa breve de energia y
@@ -5240,4 +5244,72 @@ Use deep hydration only for:
 - `resume_instruction`: Ask Alejandro to review the local prototype and choose
   the next product direction.
 - `completion_definition`: Alejandro accepts, revises or pauses the candidate.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO review.
+
+## Completed Next Action - Launch OS v0 Mapa Energia Foco CEO Review Brief + Voice Concept Microcorrection Local Only - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_ceo_review_brief_voice_concept_microcorrection_local_only`
+- `status`: `completed`
+- `created_at`: `2026-06-14`
+- `completed_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco CEO review waiting - 2026-06-14`
+- `objective`: Convert the broad CEO review waiting edge into a sharper
+  local-only review brief and voice/concept microcorrection recommendation.
+- `consultant_bridge`:
+  - attempted: true
+  - sent_successfully: false
+  - `consultant_bridge_unavailable`: true
+  - failure_mode: Computer Use reported Safari was not active for `set_value`
+    immediately after fresh `get_app_state`.
+  - disposition: non-blocking under Consultant Bridge v2 because this was a
+    local-only green/yellow review edge, not a red gate.
+- `evidence`:
+  - CEO review brief:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_brief_local_only_2026-06-14.md`
+  - Voice/concept microcorrection:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_voice_concept_microcorrection_local_only_2026-06-14.md`
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_receipt_2026-06-14.json`
+- `recommendation`: Keep the candidate alive, but do not jump directly to Final
+  Public Copy v1. Ask Alejandro to review the microcorrection direction first.
+- `live_gate_status`: Local-only review. All live gates closed.
+- `completion_definition`: Review brief, microcorrection artifact and receipt
+  exist; next edge is a more specific CEO review of the microcorrection.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Voice Concept Microcorrection Review Waiting - 2026-06-14
+
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_voice_concept_microcorrection_review_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco CEO review brief and microcorrection
+  completed - 2026-06-14`
+- `objective`: Wait for Alejandro to review the local-only voice/concept
+  microcorrection and choose whether it should feed Final Public Copy v1.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_brief_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_voice_concept_microcorrection_local_only_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_ceo_review_receipt_2026-06-14.json`
+- `allowed_scope`:
+  - Report artifact state.
+  - Accept CEO review notes.
+  - If approved later, advance to Final Public Copy v1 local-only.
+  - If rejected later, return to concept/voice revision or candidate slate.
+- `forbidden_scope`:
+  - Do not create final assets.
+  - Do not create Shopify preview/live.
+  - Do not create MailerLite drafts or sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: CEO chooses one of: accept the microcorrection as input to
+  Final Public Copy v1 local-only, request another local revision, or pause and
+  return to the slate.
+- `live_gate_status`: CEO review only. All live gates closed.
+- `human_boundary_id`: `launch_os_mapa_energia_foco_voice_concept_microcorrection_review_waiting`
+- `human_boundary_notification_status`: `not_needed`
+- `resume_instruction`: Ask Alejandro to review the microcorrection artifact
+  and choose the next product direction.
+- `completion_definition`: Alejandro accepts, revises or pauses the
+  microcorrection direction.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO review.
