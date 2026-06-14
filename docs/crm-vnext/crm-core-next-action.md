@@ -1757,12 +1757,32 @@ routing and completion pointer.
   DMs, welcome audio, Instagram source actions, CRM writes, source mutations,
   Launch OS docs, or `/Users/alejandrogomez/CRM` were exposed or touched.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_story_viewer_frequency_summary_review_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-11`
 - `updated_at`: `2026-06-11`
+- `completed_at`: `2026-06-11`
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-story-anchor-dedupe-protocol-v0.md`
+- `result`: `completed_review`
+- `findings`:
+  - Redacted frequency summary was reviewed.
+  - Four private capture windows were compared.
+  - Latest aggregate viewer count was 13.
+  - Latest private anchor count was 12.
+  - One-window anchors count was 4.
+  - Two-window repeated anchors count was 8.
+  - Three-plus repeated anchors count was 0.
+  - Streak candidates count was 0.
+  - 7d and 30d candidate status had insufficient windows.
+  - No person-level output was produced.
+  - No outreach permission was granted.
+  - No scoring occurred.
+  - No CRM writes occurred.
+  - Next protocol must distinguish same-story reobservation from true
+    cross-story frequency.
 - `objective`: Review the redacted initial-window story viewer frequency
   summary and decide whether to approve another long-story initial-window
   capture, continue accumulating 3-5 windows, or design a future standing
@@ -1801,3 +1821,48 @@ routing and completion pointer.
   initial-window capture, pauses story-viewer capture, asks for a standing
   story-viewer capture boundary design, or redirects CRM Core to another
   Instagram lane.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_anchor_dedupe_protocol_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-11`
+- `updated_at`: `2026-06-11`
+- `objective`: Wait for Alejandro approval before any story viewer capture or
+  frequency summary that uses the new autonomous story-anchor dedupe protocol.
+- `why_now`: CRM Core has a first redacted story viewer frequency summary, but
+  true frequency requires distinguishing multiple captures of the same story
+  from appearances across distinct stories. Alejandro does not want manual story
+  labeling as an operating dependency, so CRM Core needs autonomous private
+  story identity and dedupe before further frequency claims.
+- `allowed_scope`:
+  - Present the story anchor dedupe protocol.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No Computer Use.
+  - No UI.
+  - No viewer list opening.
+  - No viewer handle capture.
+  - No story screenshot or fingerprint capture.
+  - No DMs.
+  - No welcome audio.
+  - No CRM writes.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`,
+  `instagram-story-viewer-initial-window-frequency-protocol-v0.md`,
+  `instagram-story-anchor-dedupe-protocol-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
+  Computer Use, API, DM, story viewer, viewer list, traversal, story
+  screenshot/fingerprint capture, story pausing/holding, welcome audio, source,
+  CRM, coordinate, screenshot fallback, or automation actions unless Alejandro
+  gives fresh explicit approval for an exact route using autonomous story-anchor
+  dedupe.
+- `completion_definition`: Alejandro approves, declines, or modifies the next
+  story viewer capture/frequency route using autonomous story-anchor dedupe.
