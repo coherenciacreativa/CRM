@@ -13352,6 +13352,85 @@ credential source or a secret-hygiene decision for the tracked Shopify
 public distribution, MailerLite, sends, audience assignment, CRM writes, Brand
 Hub changes, CRM Core or GOG/auth.
 
+## Launch OS v0 Mapa Energia Foco Shopify credentials CEO decision packet ready - 2026-06-14
+
+Status: A CEO-facing decision packet was prepared to choose the safe credential
+path before retrying Shopify preview execution. No Shopify Admin/API call,
+Shopify UI action, theme publish, public navigation change, MailerLite action,
+send, audience mutation or CRM write occurred.
+
+Evidence:
+
+- CEO decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
+- CEO decision receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_receipt_2026-06-14.json`
+- Prior credentials hygiene receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_receipt_2026-06-14.json`
+
+Decision options:
+
+- Option A:
+  secure runtime env or untracked ignored `.env`, then rerun the existing
+  preview execution runner.
+- Option B:
+  treat tracked `.env.example` as potentially exposed, rotate or patch hygiene
+  first, then restore credentials and rerun.
+- Option C:
+  pause Shopify preview and continue another Launch OS local-only edge.
+
+Recommendation:
+
+- Option B if the tracked credential-shaped value is real or ever worked.
+- Option A if Alejandro knows the tracked value is fake/non-working and can
+  provide credentials securely.
+
+Pointer change:
+
+- Previous active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_decision_waiting`
+- Previous status:
+  decision packet prepared.
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+## Current Launch OS active edge after Mapa Energia Foco Shopify credentials CEO decision packet - 2026-06-14
+
+Current active next action:
+
+`launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+
+The current edge is a CEO credential/hygiene decision. The preview runner,
+theme files and receipts are ready, but no retry or credential-file patch should
+occur until Alejandro chooses Option A, Option B, Option C or another explicit
+secure credential path. Public navigation, public distribution, MailerLite,
+sends, audience assignment, CRM writes, Brand Hub changes, CRM Core and
+GOG/auth remain closed.
+
 ## Launch OS v0 Mapa Energia Foco Prototype v1 visual QA readout ready - 2026-06-14
 
 Status: A local-only visual QA readout was prepared for prototype v1. This does

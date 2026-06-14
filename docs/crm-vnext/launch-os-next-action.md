@@ -5732,3 +5732,59 @@ Use deep hydration only for:
   credential hygiene path.
 - `next_checkpoint_expected`: Control Room checkpoint after secure credential
   path or hygiene decision.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials CEO Decision Waiting - 2026-06-14
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_decision_waiting`
+- `previous_status`: `decision_packet_prepared`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-14`
+- `updated_at`: `2026-06-14`
+- `source_checkpoint`: `Mapa Energia Foco Shopify credentials CEO decision
+  packet ready - 2026-06-14`
+- `objective`: Wait for Alejandro to choose the Shopify credential path before
+  retrying preview execution or patching credential hygiene.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_receipt_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_receipt_2026-06-14.json`
+- `decision_options`:
+  - Option A: secure runtime env or untracked ignored `.env`, then rerun the
+    existing preview execution runner.
+  - Option B: treat tracked `.env.example` as potentially exposed, rotate or
+    patch hygiene first, then restore credentials and rerun.
+  - Option C: pause Shopify preview and continue another Launch OS local-only
+    edge.
+- `recommended_option`: Option B if the tracked credential-shaped value is real
+  or ever worked; otherwise Option A is the fastest responsible route.
+- `allowed_scope`:
+  - Wait for CEO choice.
+  - Prepare a scoped Shopify hygiene patch only if Alejandro chooses Option B.
+  - Rerun existing preview runner only if Alejandro chooses Option A or provides
+    secure credentials after Option B.
+  - Continue unrelated green local-only Launch OS work only if it does not hide
+    this credential decision.
+- `forbidden_scope`:
+  - Do not use tracked `.env.example` values as credentials.
+  - Do not print secrets, raw token values, raw Shopify IDs or exact preview
+    URLs.
+  - Do not patch Shopify credential files or rotate credentials without explicit
+    approval.
+  - Do not publish theme or touch public navigation.
+  - Do not send traffic to the preview.
+  - Do not use MailerLite or create drafts/sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: Alejandro chooses Option A, B or C using the exact phrase
+  in the decision packet, or provides another explicit credential path.
+- `live_gate_status`: Shopify preview remains unexecuted. Public
+  distribution/navigation and all CRM/MailerLite gates remain closed.
+- `human_boundary_id`: `shopify_credentials_ceo_decision_waiting`
+- `human_boundary_notification_status`: `handoff_needed`
+- `resume_instruction`: Present the decision packet. Do not retry Shopify
+  execution or patch credential files until Alejandro chooses the route.
+- `completion_definition`: Alejandro chooses a credential/hygiene route, or the
+  lane is paused explicitly.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO decision.
