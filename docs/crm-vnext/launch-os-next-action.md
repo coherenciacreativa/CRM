@@ -6024,3 +6024,86 @@ Use deep hydration only for:
   and the lane clearly waits for credential rotation/provision before Shopify
   preview execution.
 - `next_checkpoint_expected`: Shopify hygiene patch commit or revision receipt.
+
+## Completed Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials Hygiene Patch Review Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_review_waiting`
+- `previous_status`: `active`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_review_waiting`
+- `status`: `completed_committed_local_only`
+- `completed_at`: `2026-06-19`
+- `source_checkpoint`: `Shopify credentials hygiene patch committed local-only
+  - 2026-06-19`
+- `completion_result`:
+  - Shopify worktree:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+  - Shopify branch:
+    `codex/shopify-mapa-energia-foco-preview`
+  - Shopify commit:
+    `7200e66 Sanitize Shopify preview env example`
+  - Modified file:
+    `.env.example`
+  - CRM checkpoint commit:
+    `c2079ab Record Shopify credentials hygiene patch`
+- `safety_summary`:
+  - Raw `.env.example` values were not printed.
+  - `.env.example` placeholder readback was green before commit.
+  - Shopify Admin/API was not called.
+  - Shopify UI was not opened.
+  - Preview runner was not rerun.
+  - MailerLite, sends, audience, CRM, Brand Hub, CRM Core and GOG/auth were not
+    touched.
+- `next_checkpoint_expected`: Secure credential rotation/provision decision
+  before preview runner retry.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials Rotation Provision Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_review_waiting`
+- `previous_status`: `completed_committed_local_only`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_rotation_provision_waiting`
+- `status`: `active_waiting_for_alejandro`
+- `created_at`: `2026-06-19`
+- `source_checkpoint`: `Shopify credentials hygiene patch committed; credential
+  rotation/provision still required - 2026-06-19`
+- `objective`: Wait for Alejandro to confirm credential rotation/revocation and
+  secure credential provision before rerunning the existing Shopify preview
+  execution runner for `Mapa breve de energia y foco`.
+- `current_state`:
+  - Shopify theme files remain QA-green from the earlier local-only worktree.
+  - `.env.example` has been sanitized in a local Shopify commit.
+  - Both CRM and Shopify branches are ahead locally and not pushed by this
+    checkpoint.
+  - No safe runtime Shopify credential source has been provided in this lane.
+  - The Shopify exact-link noindex/unlisted preview has not been executed.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_receipt_2026-06-19.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
+  - Shopify commit: `7200e66 Sanitize Shopify preview env example`
+  - CRM checkpoint commit: `c2079ab Record Shopify credentials hygiene patch`
+- `allowed_scope`:
+  - Prepare a concise handoff for Alejandro's credential rotation/provision
+    step.
+  - Push scoped commits only if explicitly approved or delegated by the active
+    run contract.
+  - After safe credential provision is confirmed, run fresh preflight before any
+    preview runner retry.
+- `forbidden_scope`:
+  - Do not print secrets, raw token values, raw Shopify IDs, raw env values or
+    exact private URLs.
+  - Do not read or dump `.env`, keychain values or environment variables.
+  - Do not use tracked `.env.example` as credentials.
+  - Do not rerun the Shopify preview execution runner yet.
+  - Do not call Shopify Admin/API, Shopify UI, publish or touch navigation.
+  - Do not call MailerLite, send emails, assign audience or write CRM.
+  - Do not touch ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `live_gate_status`: Shopify execution remains closed. Public navigation,
+  MailerLite, sends, audience, CRM and all production gates remain closed.
+- `human_boundary_id`: `shopify_credentials_rotation_provision_waiting`
+- `resume_instruction`: Do not rerun Shopify preview execution until Alejandro
+  confirms the credential rotation/provision path and a fresh preflight is
+  green.
+- `completion_definition`: Alejandro confirms credential rotation/provision or
+  explicitly pauses/redirects the Shopify preview lane.
+- `next_checkpoint_expected`: Credential provision handoff or fresh execution
+  preflight receipt.

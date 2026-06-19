@@ -13959,3 +13959,80 @@ Next edge:
 - After the hygiene patch is closed, Alejandro must confirm credential
   rotation/provision before the existing Shopify preview execution runner can
   be retried.
+
+## Launch OS v0 Mapa Energia/Foco credentials hygiene patch committed and rotation/provision waiting - 2026-06-19
+
+Status: The local-only Shopify credentials hygiene patch is committed. The lane
+is now waiting for Alejandro to confirm credential rotation/provision before any
+Shopify preview execution runner retry. No Shopify Admin/API, Shopify UI,
+publish, navigation, MailerLite, sends, audience, CRM, Brand Hub, CRM Core or
+GOG/auth action occurred.
+
+Committed checkpoint:
+
+- Shopify worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+- Shopify branch:
+  `codex/shopify-mapa-energia-foco-preview`
+- Shopify commit:
+  `7200e66 Sanitize Shopify preview env example`
+- Shopify file:
+  `.env.example`
+- CRM branch:
+  `codex/crm-vnext-roadmap-scoring`
+- CRM checkpoint commit:
+  `c2079ab Record Shopify credentials hygiene patch`
+
+Safety readback:
+
+- `.env.example` was committed after redacted key readback showed placeholders
+  only.
+- Raw previous values printed: false.
+- Raw credential values copied into docs/receipts/chat: false.
+- Preview runner rerun: false.
+- Credential source restored/provided: false.
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_review_waiting`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_rotation_provision_waiting`
+
+Local git state at checkpoint:
+
+- Shopify branch is ahead locally by the hygiene commit.
+- CRM branch is ahead locally by the checkpoint commit and this follow-up docs
+  reconciliation until it is committed/pushed.
+- GOG/auth dirty files remain unrelated and unstaged.
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Alejandro confirms the credential rotation/provision path.
+- Then a fresh preflight must run before any existing Shopify preview execution
+  runner retry.
+- Do not print or inspect raw credential values.
