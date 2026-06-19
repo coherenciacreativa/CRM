@@ -5733,12 +5733,12 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Control Room checkpoint after secure credential
   path or hygiene decision.
 
-## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials CEO Decision Waiting - 2026-06-14
+## Paused Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials CEO Decision Waiting - 2026-06-14
 
 - `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_decision_waiting`
 - `previous_status`: `decision_packet_prepared`
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
-- `status`: `active`
+- `status`: `paused_deferred_by_ceo_orientation_pause`
 - `created_at`: `2026-06-14`
 - `updated_at`: `2026-06-14`
 - `source_checkpoint`: `Mapa Energia Foco Shopify credentials CEO decision
@@ -5788,3 +5788,79 @@ Use deep hydration only for:
 - `completion_definition`: Alejandro chooses a credential/hygiene route, or the
   lane is paused explicitly.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO decision.
+
+## Completed Next Action - Launch OS v0 CEO Leverage Protocol v0 Local-only - 2026-06-15
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- `previous_status`: `paused_deferred_by_ceo_orientation_pause`
+- `next_action_id`: `launch_os_v0_ceo_leverage_protocol_v0_local_only`
+- `status`: `completed_ready_for_ceo_review`
+- `created_at`: `2026-06-15`
+- `updated_at`: `2026-06-15`
+- `source_checkpoint`: `CEO roadmap reorientation brief accepted - 2026-06-15`
+- `objective`: Create a short local-only CEO leverage protocol that lets
+  Alejandro supervise Launch OS by phase decisions, gates and concise handoffs
+  without losing the thread or requiring infinite micro-approvals.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_ceo_roadmap_reorientation_brief_current_2026-06-14.md`
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`
+- `context`:
+  - Test Claridad remains a successful rehearsal with MailerLite QA hold.
+  - Mapa Energia/Foco remains paused at Shopify credentials decision, not
+    rejected.
+  - Forward production is paused for this protocol hito.
+- `allowed_scope`:
+  - Create `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`.
+  - Update Launch OS Next Action and Control Room only.
+- `forbidden_scope`:
+  - Do not continue Mapa Energia/Foco toward Shopify credentials.
+  - Do not resolve credentials or touch Shopify.
+  - Do not call MailerLite, Shopify, CRM or other live APIs.
+  - Do not send, assign audience or write CRM.
+  - Do not touch Brand Hub, CRM Core or GOG/auth.
+- `live_gate_status`: All live gates closed.
+- `human_boundary_id`: `ceo_leverage_protocol_local_only`
+- `resume_instruction`: Present the protocol for CEO review before resuming
+  production work.
+- `completion_definition`: Protocol exists, pointer/control-room state is
+  updated, no systems were touched, and Alejandro can review before commit.
+- `next_checkpoint_expected`: CEO review / direction decision.
+
+## Active Next Action - Launch OS v0 CEO Leverage Protocol Review Direction Waiting - 2026-06-15
+
+- `previous_next_action_id`: `launch_os_v0_ceo_leverage_protocol_v0_local_only`
+- `previous_status`: `completed_ready_for_ceo_review`
+- `next_action_id`: `launch_os_v0_ceo_leverage_protocol_review_direction_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-15`
+- `updated_at`: `2026-06-15`
+- `source_checkpoint`: `CEO Leverage Protocol v0 created local-only - 2026-06-15`
+- `objective`: Alejandro reviews the CEO Leverage Protocol and chooses the next
+  Launch OS direction before forward production resumes.
+- `evidence`:
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_ceo_roadmap_reorientation_brief_current_2026-06-14.md`
+- `decision_options`:
+  - Continue `Mapa breve de energia y foco` from the Shopify credentials
+    decision edge.
+  - Keep Test Claridad as successful rehearsal / MailerLite QA hold and move
+    on.
+  - Return to the Test Claridad delivery blocker later.
+  - Ask for revisions to the CEO Leverage Protocol.
+  - Pause Launch OS.
+- `allowed_scope`:
+  - Review the protocol and choose direction.
+  - Make only documentary pointer updates after the decision.
+- `forbidden_scope`:
+  - Do not continue Mapa Energia/Foco toward Shopify credentials yet.
+  - Do not resolve credentials or touch Shopify.
+  - Do not call MailerLite, Shopify, CRM or other live APIs.
+  - Do not send, assign audience or write CRM.
+  - Do not touch Brand Hub, CRM Core or GOG/auth.
+- `live_gate_status`: All live gates closed.
+- `human_boundary_id`: `ceo_leverage_protocol_review_direction_waiting`
+- `resume_instruction`: Wait for Alejandro direction. Do not resume production
+  work from this edge without a selected option.
+- `completion_definition`: Alejandro chooses one direction and the pointer is
+  updated accordingly.
+- `next_checkpoint_expected`: Control Room checkpoint after CEO direction.

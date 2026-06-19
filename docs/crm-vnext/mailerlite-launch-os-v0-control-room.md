@@ -13068,6 +13068,65 @@ Closed gates remain:
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
 
+## Launch OS v0 CEO roadmap reorientation accepted and leverage protocol review waiting - 2026-06-15
+
+Status: CEO Roadmap Reorientation Brief accepted as executive orientation.
+CEO Leverage Protocol v0 was created local-only. Forward production remains
+paused until Alejandro reviews the protocol and chooses direction.
+
+Evidence:
+
+- CEO Roadmap Reorientation Brief:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_ceo_roadmap_reorientation_brief_current_2026-06-14.md`
+- New protocol file:
+  `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`
+
+State:
+
+- Test Claridad: successful rehearsal; Shopify/Web accepted; MailerLite remains
+  in QA hold with delivery/plain-text route unresolved.
+- Mapa Energia/Foco: paused at Shopify credentials decision, not rejected.
+- Candidate Slate v1: useful, but forward candidate production is paused during
+  this protocol hito.
+
+Pointer change:
+
+- Previous active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- Previous status:
+  `paused_deferred_by_ceo_orientation_pause`
+- Completed next action:
+  `launch_os_v0_ceo_leverage_protocol_v0_local_only`
+- New active next action:
+  `launch_os_v0_ceo_leverage_protocol_review_direction_waiting`
+
+Decision options now:
+
+- Continue `Mapa breve de energia y foco` from the Shopify credentials decision
+  edge.
+- Keep Test Claridad as successful rehearsal / MailerLite QA hold and move on.
+- Return to the Test Claridad delivery blocker later.
+- Ask for revisions to the CEO Leverage Protocol.
+- Pause Launch OS.
+
+Closed gates:
+
+- Shopify credentials: not resolved.
+- Shopify Admin/API: not called.
+- MailerLite UI/API: not called.
+- Sends: false.
+- Audience assignment: false.
+- CRM writes: false.
+- Ledgers/cards/scoring/Fact Store: false.
+- CRM Core touched: false.
+- Brand Hub patched: false.
+- GOG/auth touched: false.
+
+Next edge:
+
+CEO review / direction decision. No forward production should resume until
+Alejandro chooses the next direction.
+
 ## Launch OS v0 Mapa Energia Foco isolated Shopify theme files and execution packet ready - 2026-06-14
 
 Status: The isolated Shopify worktree was created from `origin/main`, local
