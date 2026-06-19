@@ -13999,11 +13999,12 @@ Pointer update:
 - New active next action:
   `launch_os_v0_mapa_energia_foco_shopify_credentials_rotation_provision_waiting`
 
-Local git state at checkpoint:
+Remote sync state:
 
-- Shopify branch is ahead locally by the hygiene commit.
-- CRM branch is ahead locally by the checkpoint commit and this follow-up docs
-  reconciliation until it is committed/pushed.
+- Shopify hygiene commit `7200e66` has been pushed to
+  `origin/codex/shopify-mapa-energia-foco-preview`.
+- CRM checkpoint commits `c2079ab` and `68217bc` have been pushed to
+  `origin/codex/crm-vnext-roadmap-scoring`.
 - GOG/auth dirty files remain unrelated and unstaged.
 
 Closed gates remain:

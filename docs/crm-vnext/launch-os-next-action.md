@@ -6070,9 +6070,8 @@ Use deep hydration only for:
   execution runner for `Mapa breve de energia y foco`.
 - `current_state`:
   - Shopify theme files remain QA-green from the earlier local-only worktree.
-  - `.env.example` has been sanitized in a local Shopify commit.
-  - Both CRM and Shopify branches are ahead locally and not pushed by this
-    checkpoint.
+  - `.env.example` has been sanitized and pushed in the isolated Shopify branch.
+  - CRM and Shopify hygiene commits have been pushed to origin.
   - No safe runtime Shopify credential source has been provided in this lane.
   - The Shopify exact-link noindex/unlisted preview has not been executed.
 - `evidence`:
@@ -6080,6 +6079,7 @@ Use deep hydration only for:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
   - Shopify commit: `7200e66 Sanitize Shopify preview env example`
   - CRM checkpoint commit: `c2079ab Record Shopify credentials hygiene patch`
+  - CRM checkpoint commit: `68217bc Record Shopify credential rotation wait`
 - `allowed_scope`:
   - Prepare a concise handoff for Alejandro's credential rotation/provision
     step.
