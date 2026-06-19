@@ -14201,3 +14201,81 @@ Next edge:
 - If proceeding, use only the v2 runner and generate a local receipt.
 - Public navigation, public distribution, MailerLite, sends, audience and CRM
   remain closed.
+
+## Launch OS v0 Mapa Energia/Foco Shopify preview retry v2 blocked-safe on runtime credentials - 2026-06-19
+
+Status: Shopify preview retry v2 was attempted under the autonomous delegated
+noindex/unlisted preview scope after green preflight-only. It stopped safely
+before Shopify Admin/API because the runner could not load `SHOPIFY_STORE` from
+its runtime environment.
+
+Receipts/artifacts:
+
+- Execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_v2_2026-06-19.json`
+- Preflight-only receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_fresh_preflight_readonly_v2_2026-06-19.json`
+- Blocker handoff:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_retry_v2_blocked_runtime_credentials_2026-06-19.md`
+
+Execution result:
+
+- Execution status: `blocked`.
+- Blocker:
+  `Missing SHOPIFY_STORE in env`.
+- Shopify Admin/API called: false.
+- Shopify UI opened: false.
+- Preview created/updated: false.
+- Page object created/updated: false.
+- Credential values printed: false.
+- Credential load result:
+  `loaded=false`.
+
+Credential runtime checks:
+
+- Credential hygiene/rotation remains accepted as resolved by CEO confirmation.
+- Runtime binding is not connected to the runner yet.
+- Presence-only check found no `.env` or `.env.local` in the isolated Shopify
+  worktree.
+- Presence-only check found no `.env` or `.env.local` in the original Shopify
+  worktree.
+- No credential values were read back, printed or committed.
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_execution_retry_v2_approval_waiting`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credential_runtime_binding_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Bind the secure Shopify credential source to the runner runtime without
+  printing values or committing secrets.
+- Rerun `--preflight-only` after binding.
+- Do not retry full Shopify execution until runtime binding and preflight are
+  green.

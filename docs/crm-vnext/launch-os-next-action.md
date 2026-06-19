@@ -6286,3 +6286,85 @@ Use deep hydration only for:
 - `completion_definition`: Either execution retry v2 completes with green receipt
   or stops with blocked/rolled-back/quarantined receipt inside the approved
   scope.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Shopify Preview Execution Retry v2 Approval Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_execution_retry_v2_approval_waiting`
+- `previous_status`: `active_waiting_for_execution_greenlight`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_execution_retry_v2_approval_waiting`
+- `status`: `completed_blocked_safe`
+- `completed_at`: `2026-06-19`
+- `source_checkpoint`: `Autonomous delegated Shopify noindex/unlisted retry v2
+  attempted after green preflight - 2026-06-19`
+- `completion_result`:
+  - Runner v2 preflight-only was green.
+  - Full retry v2 started and stopped before Shopify Admin/API because the
+    runner could not load `SHOPIFY_STORE` from its runtime.
+  - Execution receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_v2_2026-06-19.json`
+  - Blocker handoff:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_retry_v2_blocked_runtime_credentials_2026-06-19.md`
+  - Execution status: `blocked`.
+  - Blocker:
+    `Missing SHOPIFY_STORE in env`.
+  - Shopify Admin/API called: false.
+  - Shopify UI opened: false.
+  - Preview created/updated: false.
+  - Page object created/updated: false.
+  - Credential values printed: false.
+- `interpretation`: Credential hygiene/rotation remains resolved, but the secure
+  credential source is not bound to the runner runtime. Presence-only checks
+  found no `.env` or `.env.local` in the isolated or original Shopify worktree,
+  and no runtime `SHOPIFY_STORE` reached the process.
+- `safety_summary`:
+  - No publish, public navigation, MailerLite, sends, audience, CRM, ledgers,
+    cards, scoring, Fact Store, CRM Core, Brand Hub or GOG/auth action occurred.
+  - The isolated Shopify worktree remains clean and synced.
+  - GOG/auth dirty files remain unrelated and unstaged.
+- `next_checkpoint_expected`: Runtime credential source binding route, without
+  printing values or committing secrets.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Shopify Credential Runtime Binding Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_execution_retry_v2_approval_waiting`
+- `previous_status`: `completed_blocked_safe`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credential_runtime_binding_waiting`
+- `status`: `active_waiting_for_runtime_credential_binding`
+- `created_at`: `2026-06-19`
+- `source_checkpoint`: `Shopify retry v2 blocked before Admin/API because
+  runtime credentials were not available to the runner`
+- `objective`: Establish or verify a secure runtime credential binding for the
+  Shopify preview runner without printing values, committing secrets or using
+  `.env.example`, then rerun preflight before any execution retry.
+- `current_state`:
+  - Credential hygiene/rotation/provision is CEO-confirmed as resolved.
+  - Runner v2 exists and passed preflight-only.
+  - Runner v2 execution blocked before remote calls with:
+    `Missing SHOPIFY_STORE in env`.
+  - No `.env` or `.env.local` was present in the isolated Shopify worktree or
+    original Shopify worktree by presence-only check.
+- `allowed_scope`:
+  - Local-only runtime credential binding plan or route decision.
+  - Presence/status verification only; no value printout.
+  - Prepare a wrapper or documented route only if it keeps credentials outside
+    git and does not expose values in logs, receipts or chat.
+  - After binding is green, run fresh `--preflight-only` before any full retry.
+- `forbidden_scope`:
+  - Do not print secrets, raw token values, raw Shopify IDs, raw env values or
+    exact private URLs.
+  - Do not commit credentials or use tracked `.env.example` as credentials.
+  - Do not call Shopify Admin/API until runtime credential binding and preflight
+    are green.
+  - Do not publish, touch public navigation or send audience traffic.
+  - Do not call MailerLite, send emails, assign audience or write CRM.
+  - Do not touch ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `live_gate_status`: Shopify preview execution remains uncreated. Public
+  navigation, public distribution, MailerLite, sends, audience and CRM remain
+  closed.
+- `human_boundary_id`: `shopify_credential_runtime_binding_waiting`
+- `resume_instruction`: Do not retry full Shopify execution until the credential
+  source is bound to the runner runtime without exposing values and a fresh
+  preflight-only receipt is green.
+- `completion_definition`: Runtime credential binding is green and documented, or
+  the lane stops with the exact external action needed from Alejandro/operator.
