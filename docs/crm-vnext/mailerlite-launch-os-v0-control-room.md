@@ -13801,3 +13801,80 @@ Closed gates remain:
 - CRM Core docs touched: false.
 - Brand Hub patched: false.
 - GOG/auth dirty files touched: false.
+
+## Launch OS v0 CEO direction accepted: resume Mapa Energia/Foco at Shopify credentials gate - 2026-06-19
+
+Status: Alejandro chose to resume `Mapa breve de energia y foco` from the
+Shopify credentials gate. This is a direction/pointer decision only. It does
+not execute Shopify, resolve credentials, patch credential files, call
+MailerLite, touch CRM, send emails, assign audience, change Brand Hub, touch CRM
+Core or touch GOG/auth.
+
+Decision recorded:
+
+- Resume `Mapa breve de energia y foco` from the Shopify credentials gate.
+- Do not execute Shopify yet.
+- Do not touch MailerLite, CRM, sends, audience, Brand Hub, CRM Core or
+  GOG/auth.
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_ceo_leverage_protocol_review_direction_waiting`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+
+Active decision surface:
+
+- Credential decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
+- Credential decision receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_receipt_2026-06-14.json`
+- Hygiene/unblock receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_receipt_2026-06-14.json`
+
+Remaining decision:
+
+- Option A: secure runtime env or untracked ignored `.env`, then rerun the
+  existing preview execution runner.
+- Option B: treat tracked `.env.example` as potentially exposed, rotate or
+  patch hygiene first, then restore credentials and rerun.
+- Option C: pause Shopify preview and continue another Launch OS local-only
+  edge.
+
+Recommended posture:
+
+- Option B if the tracked credential-shaped value is real or ever worked.
+- Otherwise Option A is the fastest responsible route.
+- No operator should use tracked `.env.example` values as execution credentials
+  without the hygiene decision.
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Present/act from the existing credential decision packet.
+- Do not retry Shopify execution or patch credential files until Alejandro
+  chooses Option A, B, C or another explicit secure credential path.

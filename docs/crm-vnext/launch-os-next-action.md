@@ -5864,3 +5864,87 @@ Use deep hydration only for:
 - `completion_definition`: Alejandro chooses one direction and the pointer is
   updated accordingly.
 - `next_checkpoint_expected`: Control Room checkpoint after CEO direction.
+
+## Completed Next Action - Launch OS v0 CEO Leverage Protocol Review Direction Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_ceo_leverage_protocol_review_direction_waiting`
+- `previous_status`: `active`
+- `next_action_id`: `launch_os_v0_ceo_leverage_protocol_review_direction_waiting`
+- `status`: `completed_direction_selected`
+- `created_at`: `2026-06-15`
+- `completed_at`: `2026-06-19`
+- `source_checkpoint`: `CEO chose to resume Mapa Energia/Foco from the Shopify
+  credentials gate - 2026-06-19`
+- `ceo_decision`: Resume `Mapa breve de energia y foco` from the Shopify
+  credentials gate, without executing Shopify yet and without touching
+  MailerLite, CRM, sends, audience, Brand Hub, CRM Core or GOG/auth.
+- `evidence`:
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_ceo_roadmap_reorientation_brief_current_2026-06-14.md`
+- `result`: Forward production is unpaused only to the previously prepared
+  Shopify credential decision edge for `Mapa breve de energia y foco`.
+- `systems_touched`: none.
+- `live_gate_status`: All live gates remain closed.
+- `next_checkpoint_expected`: Active Mapa Energia/Foco Shopify credentials
+  decision edge.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials CEO Decision Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_ceo_leverage_protocol_review_direction_waiting`
+- `previous_status`: `completed_direction_selected`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- `status`: `active_resumed_by_ceo_direction`
+- `created_at`: `2026-06-14`
+- `resumed_at`: `2026-06-19`
+- `source_checkpoint`: `Mapa Energia/Foco resumed after CEO Leverage Protocol
+  review direction - 2026-06-19`
+- `objective`: Wait for Alejandro to choose the Shopify credential/hygiene path
+  before retrying preview execution or patching credential hygiene.
+- `context`:
+  - Mapa Energia/Foco remains the selected next candidate lane.
+  - The Shopify exact-link noindex/unlisted preview has not been executed.
+  - The credential decision packet remains the live decision surface.
+  - This pointer update does not select credential Option A, B or C.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_receipt_2026-06-14.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_unblock_receipt_2026-06-14.json`
+- `decision_options`:
+  - Option A: secure runtime env or untracked ignored `.env`, then rerun the
+    existing preview execution runner.
+  - Option B: treat tracked `.env.example` as potentially exposed, rotate or
+    patch hygiene first, then restore credentials and rerun.
+  - Option C: pause Shopify preview and continue another Launch OS local-only
+    edge.
+- `recommended_option`: Option B if the tracked credential-shaped value is real
+  or ever worked; otherwise Option A is the fastest responsible route.
+- `allowed_scope`:
+  - Present the existing credential decision packet.
+  - Record Alejandro's credential/hygiene route decision when provided.
+  - Do not execute Shopify or resolve credentials until that route is chosen.
+- `forbidden_scope`:
+  - Do not use tracked `.env.example` values as credentials.
+  - Do not print secrets, raw token values, raw Shopify IDs or exact preview
+    URLs.
+  - Do not patch Shopify credential files or rotate credentials without
+    explicit approval.
+  - Do not execute Shopify Admin/API, Shopify UI, preview creation, publish or
+    navigation changes yet.
+  - Do not use MailerLite or create drafts/sends.
+  - Do not assign audience or mutate subscribers/audience.
+  - Do not write CRM records, ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `expected_output`: Alejandro chooses Option A, B or C using the existing
+  credential decision packet or provides another explicit secure credential
+  path.
+- `live_gate_status`: Shopify preview remains unexecuted. Public
+  distribution/navigation and all CRM/MailerLite gates remain closed.
+- `human_boundary_id`: `shopify_credentials_ceo_decision_waiting`
+- `human_boundary_notification_status`: `handoff_needed`
+- `resume_instruction`: Present the credential decision packet. Do not retry
+  Shopify execution or patch credential files until Alejandro chooses the
+  credential/hygiene route.
+- `completion_definition`: Alejandro chooses a credential/hygiene route, or the
+  lane is paused explicitly.
+- `next_checkpoint_expected`: Control Room checkpoint after credential route
+  decision.
