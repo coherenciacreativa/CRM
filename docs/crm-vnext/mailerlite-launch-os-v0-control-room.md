@@ -14432,3 +14432,43 @@ Next edge:
   `.env`.
 - Then run checker + preflight-only before full retry.
 - Do not loop full Shopify retry while runtime binding is absent.
+
+## Launch OS v0 Mapa Energia/Foco Shopify runtime env helper attempted blocked safe - 2026-06-19
+
+Status: Codex attempted the approved ignored `.env` helper in non-interactive
+strict secret mode. The helper exited `1` and the target `.env` remained absent.
+No Shopify Admin/API, Shopify UI, preview runner, MailerLite, CRM or GOG/auth
+action occurred.
+
+Artifact:
+
+- Helper attempt receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_env_helper_attempt_blocked_safe_2026-06-19.md`
+
+Safe evidence:
+
+- Helper syntax check: green.
+- Helper mode: `700`.
+- Helper shape: interactive; uses `read`.
+- Helper does not use Keychain, `security`, or 1Password/op route.
+- Target `.env` present after attempt: false.
+- Target `.env` ignored by git: true.
+- Helper run log exists but was not printed because it may contain sensitive
+  terms.
+
+Interpretation:
+
+- The blocker is still runtime credential binding, not Shopify preview route
+  viability.
+- The helper appears to require secure interactive input and should not be
+  rerun non-interactively by Codex.
+
+Next edge:
+
+- Run the helper from a trusted interactive terminal session, or provision an
+  equivalent ignored `.env` / process-env binding without exposing values in
+  chat.
+- After `.env` exists, run the binding checker + preflight-only command before
+  any full preview retry.
+- Do not execute the Shopify preview runner while runtime binding remains
+  absent.

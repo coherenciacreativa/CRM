@@ -6500,6 +6500,13 @@ Use deep hydration only for:
 - `created_at`: `2026-06-19`
 - `source_checkpoint`: `Runtime source probe found no available binding; helper
   prepared but not executed`
+- `latest_blocked_safe_attempt`:
+  - Codex attempted the helper in non-interactive strict secret mode.
+  - Result: `blocked_safe`; helper exited `1`; target `.env` remained absent.
+  - Artifact:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_env_helper_attempt_blocked_safe_2026-06-19.md`
+  - Interpretation: the helper appears to require secure interactive input and
+    is not a non-interactive credential source.
 - `objective`: Wait for the operator to bind Shopify credentials to the approved
   isolated worktree runtime without exposing values, then run checker +
   preflight-only before any full preview retry.
@@ -6534,8 +6541,10 @@ Use deep hydration only for:
   closed.
 - `human_boundary_id`: `shopify_runtime_env_operator_action_waiting`
 - `resume_instruction`: If the operator confirms the ignored `.env` exists, run
-  the checker/preflight command before any full retry. If it remains absent,
-  report the exact helper path and stop rather than looping.
+  the checker/preflight command before any full retry. If it remains absent, do
+  not rerun the helper non-interactively; report the exact helper path and stop
+  rather than looping. The helper should be run from a trusted interactive
+  terminal session, or replaced by an equivalent secure runtime binding.
 - `completion_definition`: Runtime binding checker + preflight-only green, then
   delegated retry v2 receipt; or explicit operator confirmation that the binding
   cannot be provided now.
