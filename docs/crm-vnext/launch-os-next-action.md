@@ -6192,3 +6192,97 @@ Use deep hydration only for:
 - `completion_definition`: Runner route is either updated/proposed for
   `7200e66` with local-only QA, or the lane stops with a clear blocker and exact
   next approval phrase.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Shopify Preview Runner Revision Preflight Local Only - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_preflight_local_only`
+- `previous_status`: `active`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_preflight_local_only`
+- `status`: `completed_local_only`
+- `completed_at`: `2026-06-19`
+- `source_checkpoint`: `Runner v2 prepared and preflight-only QA green -
+  2026-06-19`
+- `completion_result`:
+  - Prepared runner v2:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_v2_2026-06-19.mjs`
+  - Runner v2 targets safe Shopify hygiene commit:
+    `7200e66 Sanitize Shopify preview env example`
+  - Runner v2 adds `--preflight-only` so local readiness checks can run without
+    credential load or Shopify Admin/API calls.
+  - Green preflight-only receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_v2_2026-06-19.json`
+  - Route decision packet:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_route_decision_2026-06-19.md`
+  - Execution status: `green_readonly_preflight`.
+  - Blockers: none.
+  - Shopify Admin/API called: false.
+  - Shopify UI opened: false.
+  - Credential load: skipped by `preflight_only_mode`.
+  - Raw credentials printed: false.
+- `safety_summary`:
+  - No Shopify preview execution retry, publish, public navigation, MailerLite,
+    sends, audience, CRM, ledgers, cards, scoring, Fact Store, CRM Core, Brand
+    Hub or GOG/auth action occurred.
+  - The isolated Shopify worktree remains clean and synced.
+  - GOG/auth dirty files remain unrelated and unstaged.
+- `next_checkpoint_expected`: Execution retry v2 approval/delegated greenlight,
+  or pause.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Shopify Preview Execution Retry v2 Approval Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_preflight_local_only`
+- `previous_status`: `completed_local_only`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_execution_retry_v2_approval_waiting`
+- `status`: `active_waiting_for_execution_greenlight`
+- `created_at`: `2026-06-19`
+- `source_checkpoint`: `Runner v2 preflight-only QA green`
+- `objective`: Await execution approval/delegated greenlight to run the Shopify
+  preview retry v2 for `Mapa breve de energia y foco`, using the v2 runner and
+  the confirmed secure credential source.
+- `current_state`:
+  - Shopify isolated worktree:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+  - Shopify branch:
+    `codex/shopify-mapa-energia-foco-preview`
+  - Shopify commit:
+    `7200e66 Sanitize Shopify preview env example`
+  - Runner v2:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_v2_2026-06-19.mjs`
+  - Runner v2 preflight receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_v2_2026-06-19.json`
+  - Route decision packet:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_route_decision_2026-06-19.md`
+- `allowed_scope_if_greenlit`:
+  - Execute only the v2 Shopify preview runner for the noindex/unlisted exact-link
+    preview.
+  - Use only the confirmed secure credential source.
+  - Generate a local receipt.
+  - Stop if any noindex/unlisted/no-public/no-secret QA fails.
+- `forbidden_scope`:
+  - No publish.
+  - No public navigation.
+  - No audience traffic.
+  - No MailerLite.
+  - No sends.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core.
+  - No Brand Hub.
+  - No GOG/auth.
+  - Do not print raw credentials, raw IDs, exact private URLs or env values.
+- `live_gate_status`: Shopify preview execution remains unrun. Public navigation,
+  public distribution, MailerLite, sends, audience and CRM remain closed.
+- `human_boundary_id`: `shopify_preview_execution_retry_v2_approval_waiting`
+- `resume_instruction`: If proceeding, use the v2 runner only and verify the
+  branch/head/preflight gate before any Admin/API call. Otherwise pause with the
+  route decision packet.
+- `approval_phrase`: `Apruebo ejecutar únicamente el Shopify preview retry v2
+  para Mapa Energia/Foco usando el runner v2 QA-green y la fuente segura de
+  credenciales ya confirmada, para crear/actualizar solo el preview exact-link
+  noindex/unlisted, sin publish, sin navegación pública, sin MailerLite, sin
+  sends, sin audience, sin CRM, sin ledgers/cards/scoring/Fact Store, sin CRM
+  Core, sin Brand Hub y sin GOG/auth; si cualquier QA falla, detenerse y generar
+  receipt sin imprimir URL exacta ni secretos.`
+- `completion_definition`: Either execution retry v2 completes with green receipt
+  or stops with blocked/rolled-back/quarantined receipt inside the approved
+  scope.

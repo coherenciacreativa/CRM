@@ -14120,3 +14120,84 @@ Next edge:
   targets the safe hygiene commit `7200e66`.
 - Do not execute Shopify retry until the stale expected-head gate is resolved
   and Alejandro approves a separate execution boundary.
+
+## Launch OS v0 Mapa Energia/Foco Shopify preview runner v2 preflight green - 2026-06-19
+
+Status: The stale expected-head gate was resolved locally. A v2 Shopify preview
+execution runner was prepared for `Mapa breve de energia y foco`, targeting the
+safe hygiene commit `7200e66`, and was run only in `--preflight-only` mode.
+No Shopify Admin/API, Shopify UI, credential load, publish, navigation,
+MailerLite, sends, audience, CRM, Brand Hub, CRM Core or GOG/auth action
+occurred.
+
+Artifacts:
+
+- Runner v2:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_v2_2026-06-19.mjs`
+- Runner v2 green preflight-only receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_v2_2026-06-19.json`
+- Route decision packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_route_decision_2026-06-19.md`
+
+Runner v2 changes:
+
+- Expected Shopify head updated from `bbeb166` to `7200e66`.
+- Receipt path updated to v2.
+- Added `--preflight-only`.
+- In `--preflight-only`, the runner exits before credential loading and before
+  Shopify Admin/API calls.
+
+Preflight-only result:
+
+- Execution status: `green_readonly_preflight`.
+- Blockers: none.
+- Shopify branch:
+  `codex/shopify-mapa-energia-foco-preview`.
+- Shopify head:
+  `7200e66`.
+- Branch sync:
+  `0 0`.
+- Git diff check: green.
+- Shopify Admin/API called: false.
+- Shopify UI opened: false.
+- Credential load skipped:
+  `preflight_only_mode`.
+- Raw credentials printed: false.
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_preflight_local_only`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_execution_retry_v2_approval_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Await execution approval/delegated greenlight for Shopify preview retry v2.
+- If proceeding, use only the v2 runner and generate a local receipt.
+- Public navigation, public distribution, MailerLite, sends, audience and CRM
+  remain closed.
