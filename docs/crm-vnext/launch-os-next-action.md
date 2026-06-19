@@ -6107,3 +6107,88 @@ Use deep hydration only for:
   explicitly pauses/redirects the Shopify preview lane.
 - `next_checkpoint_expected`: Credential provision handoff or fresh execution
   preflight receipt.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Shopify Credentials Rotation Provision Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_rotation_provision_waiting`
+- `previous_status`: `active_waiting_for_alejandro`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_rotation_provision_waiting`
+- `status`: `completed_with_fresh_preflight_blocked_safe`
+- `completed_at`: `2026-06-19`
+- `source_checkpoint`: `Alejandro confirmed Shopify credential
+  rotation/provision and approved fresh read-only preflight only - 2026-06-19`
+- `completion_result`:
+  - Credential hygiene is resolved by CEO confirmation: the old credential was
+    rotated or revoked if it could have been real, and a secure credential
+    source is available to the operator without printing values.
+  - Fresh preflight read-only was performed before any preview execution retry.
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_fresh_preflight_readonly_2026-06-19.json`
+  - Execution status: `blocked`.
+  - Blocker:
+    `existing_runner_expected_head_stale:bbeb166:current:7200e66`.
+  - Shopify Admin/API called: false.
+  - Shopify UI opened: false.
+  - Credential values read or printed: false/false.
+  - Preview runner retry executed: false.
+- `interpretation`: The secure credential gate is no longer the active blocker.
+  The active blocker is that the existing preview runner still expects the
+  pre-hygiene Shopify commit `bbeb166`, while the safe worktree now points at
+  hygiene commit `7200e66`.
+- `safety_summary`:
+  - No publish, public navigation, MailerLite, sends, audience, CRM, ledgers,
+    cards, scoring, Fact Store, CRM Core, Brand Hub or GOG/auth action occurred.
+  - The original dirty Shopify worktree was not modified.
+  - GOG/auth dirty files remain unrelated and unstaged.
+- `next_checkpoint_expected`: Local-only runner revision / route decision before
+  any Shopify preview execution retry.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Shopify Preview Runner Revision Preflight Local Only - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_rotation_provision_waiting`
+- `previous_status`: `completed_with_fresh_preflight_blocked_safe`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_runner_revision_preflight_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-19`
+- `source_checkpoint`: `Fresh Shopify preview preflight blocked before
+  credential/API use because the existing runner expected the old pre-hygiene
+  commit`
+- `objective`: Prepare a local-only runner revision / route decision so the
+  Shopify preview execution runner can safely target the hygiene commit
+  `7200e66` before any future execution approval.
+- `current_state`:
+  - Shopify isolated worktree:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+  - Shopify branch:
+    `codex/shopify-mapa-energia-foco-preview`
+  - Safe Shopify commit:
+    `7200e66 Sanitize Shopify preview env example`
+  - Existing runner path:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_2026-06-14.mjs`
+  - Existing runner currently expects:
+    `bbeb166 Add Mapa Energia Foco preview theme files`
+  - Fresh preflight receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_fresh_preflight_readonly_2026-06-19.json`
+- `allowed_scope`:
+  - Local-only runner/readiness review.
+  - Patch or prepare an updated execution runner only if it stays local-only and
+    does not call Shopify Admin/API.
+  - Produce a route decision / approval packet for a future retry if needed.
+- `forbidden_scope`:
+  - Do not execute Shopify preview retry yet.
+  - Do not call Shopify Admin/API or open Shopify UI.
+  - Do not publish, touch public navigation or send audience traffic.
+  - Do not print secrets, raw token values, raw Shopify IDs, raw env values or
+    exact private URLs.
+  - Do not call MailerLite, send emails, assign audience or write CRM.
+  - Do not touch ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `live_gate_status`: Shopify execution remains closed. The next action is local
+  runner readiness only, not preview execution.
+- `human_boundary_id`: `shopify_preview_runner_revision_preflight_local_only`
+- `resume_instruction`: Do not rerun the existing Shopify preview execution
+  runner until the stale expected-head gate is resolved and Alejandro approves a
+  separate execution retry boundary.
+- `completion_definition`: Runner route is either updated/proposed for
+  `7200e66` with local-only QA, or the lane stops with a clear blocker and exact
+  next approval phrase.
