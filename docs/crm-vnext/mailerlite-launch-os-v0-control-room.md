@@ -13878,3 +13878,84 @@ Next edge:
 - Present/act from the existing credential decision packet.
 - Do not retry Shopify execution or patch credential files until Alejandro
   chooses Option A, B, C or another explicit secure credential path.
+
+## Launch OS v0 Mapa Energia/Foco Option B credentials hygiene patch prepared local-only - 2026-06-19
+
+Status: Alejandro selected Option B for the `Mapa breve de energia y foco`
+Shopify credentials gate. The local-only hygiene patch was prepared in the
+isolated Shopify worktree. No Shopify Admin/API, Shopify UI, publish,
+navigation, MailerLite, sends, audience, CRM, Brand Hub, CRM Core or GOG/auth
+action occurred.
+
+Decision consumed:
+
+- Treat the credential-shaped value in `.env.example` as potentially exposed.
+- Prepare a Shopify credentials hygiene patch local-only.
+- Replace example credential values with placeholders without printing secrets.
+- Do not rerun the existing Shopify preview execution runner until Alejandro
+  confirms rotation/provision of safe credentials.
+
+Shopify worktree state:
+
+- Worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+- Branch:
+  `codex/shopify-mapa-energia-foco-preview`
+- Modified file:
+  `.env.example`
+- Patch status:
+  local, uncommitted.
+
+Receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_receipt_2026-06-19.json`
+
+Redacted QA:
+
+- `.env.example` key readback shows only placeholders for:
+  - `SHOPIFY_STORE`
+  - `SHOPIFY_ADMIN_API_TOKEN`
+  - `SHOPIFY_THEME_ID`
+  - `SHOPIFY_API_VERSION`
+- Raw previous values printed: false.
+- Raw credential values copied into docs/receipts/chat: false.
+- `git diff --check -- .env.example`: green.
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_review_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Review and commit/revise the Shopify `.env.example` hygiene patch if
+  Alejandro approves.
+- After the hygiene patch is closed, Alejandro must confirm credential
+  rotation/provision before the existing Shopify preview execution runner can
+  be retried.

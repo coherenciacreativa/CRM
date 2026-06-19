@@ -5948,3 +5948,79 @@ Use deep hydration only for:
   lane is paused explicitly.
 - `next_checkpoint_expected`: Control Room checkpoint after credential route
   decision.
+
+## Completed Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials CEO Decision Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- `previous_status`: `active_resumed_by_ceo_direction`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- `status`: `completed_option_b_selected`
+- `completed_at`: `2026-06-19`
+- `ceo_decision`: Option B selected. Treat the credential-shaped value in
+  `.env.example` as potentially exposed; prepare a local-only Shopify
+  credentials hygiene patch first; rerun the existing Shopify preview execution
+  runner only after Alejandro confirms rotation/provision of safe credentials.
+- `scope_consumed`:
+  - Prepared local-only hygiene patch in the isolated Shopify worktree.
+  - Replaced `.env.example` values with explicit placeholders.
+  - Did not print raw values.
+  - Did not call Shopify Admin/API or Shopify UI.
+  - Did not publish, touch navigation, call MailerLite, send emails, assign
+    audience, write CRM, touch Brand Hub, touch CRM Core or touch GOG/auth.
+- `evidence`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_packet_2026-06-14.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_receipt_2026-06-19.json`
+- `next_checkpoint_expected`: Hygiene patch review/commit decision and secure
+  credential rotation/provision handoff.
+
+## Active Next Action - Launch OS v0 Mapa Energia Foco Shopify Credentials Hygiene Patch Review Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_ceo_decision_waiting`
+- `previous_status`: `completed_option_b_selected`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_review_waiting`
+- `status`: `active`
+- `created_at`: `2026-06-19`
+- `source_checkpoint`: `Option B selected and Shopify credentials hygiene patch
+  prepared local-only - 2026-06-19`
+- `objective`: Review and, if approved, commit the local-only Shopify
+  `.env.example` hygiene patch; then wait for Alejandro to confirm credential
+  rotation/provision before rerunning the existing Shopify preview execution
+  runner.
+- `evidence`:
+  - Shopify worktree:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview`
+  - Shopify branch:
+    `codex/shopify-mapa-energia-foco-preview`
+  - Modified file:
+    `.env.example`
+  - Receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credentials_hygiene_patch_receipt_2026-06-19.json`
+- `current_state`:
+  - `.env.example` now contains placeholders only by redacted key readback.
+  - The Shopify hygiene patch is local and uncommitted.
+  - The Shopify preview runner has not been rerun.
+  - No credentials have been restored/provided in this lane.
+- `allowed_scope`:
+  - Show safe/redacted diff summary and status.
+  - Commit the Shopify `.env.example` hygiene patch only if Alejandro approves.
+  - Update Launch OS docs after that checkpoint if needed.
+  - Wait for Alejandro to confirm rotation/provision of safe credentials before
+    any preview runner retry.
+- `forbidden_scope`:
+  - Do not print raw values from `.env.example`, environment, keychain or any
+    credential source.
+  - Do not use tracked `.env.example` as credentials.
+  - Do not rerun the Shopify preview execution runner yet.
+  - Do not call Shopify Admin/API, Shopify UI, publish or touch navigation.
+  - Do not call MailerLite, send emails, assign audience or write CRM.
+  - Do not touch ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `live_gate_status`: Shopify execution remains closed. Public navigation,
+  MailerLite, sends, audience, CRM and all production gates remain closed.
+- `human_boundary_id`: `shopify_credentials_hygiene_patch_review_waiting`
+- `resume_instruction`: Present the redacted hygiene patch summary. Do not commit
+  or rerun preview until Alejandro approves the next boundary.
+- `completion_definition`: Hygiene patch is either committed or revised/paused,
+  and the lane clearly waits for credential rotation/provision before Shopify
+  preview execution.
+- `next_checkpoint_expected`: Shopify hygiene patch commit or revision receipt.
