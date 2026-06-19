@@ -14279,3 +14279,79 @@ Next edge:
 - Rerun `--preflight-only` after binding.
 - Do not retry full Shopify execution until runtime binding and preflight are
   green.
+
+## Launch OS v0 Mapa Energia/Foco Shopify runtime binding packet ready - 2026-06-19
+
+Status: A local-only runtime binding route was prepared. The lane now has a
+checker that validates only the presence of the required Shopify runtime keys
+and can run runner v2 in `--preflight-only` mode after credentials are bound.
+No values are printed or written to receipts.
+
+Artifacts:
+
+- Runtime binding checker:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_2026-06-19.mjs`
+- Runtime binding checker receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_receipt_2026-06-19.json`
+- Runtime binding packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_credential_runtime_binding_packet_2026-06-19.md`
+
+Checker result:
+
+- Execution status: `blocked`.
+- Blocker:
+  `missing_required_runtime_keys:SHOPIFY_STORE,SHOPIFY_ADMIN_API_TOKEN`.
+- Raw credential values printed: false.
+- Raw credential values written to receipt: false.
+- Full env dumped: false.
+- Shopify Admin/API called: false.
+
+Recommended binding route:
+
+- Create/provision an ignored local `.env` at:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env`
+- Or inject process env variables for the one runner process.
+- Do not use `.env.example`.
+- Do not print or paste values.
+
+Next safe command after binding:
+
+- `node /Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_2026-06-19.mjs --env-file /Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env --run-preflight-only`
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_mapa_energia_foco_shopify_credential_runtime_binding_waiting`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_runtime_env_binding_confirmation_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Wait for operator/Alejandro confirmation that the ignored `.env` or equivalent
+  process-env binding exists.
+- Then run checker + preflight-only first.
+- Execute full retry only if those are green.
