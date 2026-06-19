@@ -1894,12 +1894,28 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, declines, or modifies the next
   story viewer capture/frequency route using autonomous story-anchor dedupe.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_story_viewer_cross_story_frequency_review_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-19`
 - `updated_at`: `2026-06-19`
+- `completed_at`: `2026-06-19`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_cross_story_frequency_review_2026-06-19.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_cross_story_frequency_review_2026-06-19.md`
+  - `docs/crm-vnext/instagram-story-anchor-confidence-hardening-protocol-v0.md`
+- `result`: `completed_redacted_review`
+- `findings`:
+  - First redacted cross-story frequency review completed.
+  - Four distinct story anchors were compared.
+  - One private anchor appeared across three-plus distinct stories.
+  - Nine private anchors were seen in one story.
+  - Same-story reobservations were zero.
+  - Story-anchor confidence was medium.
+  - Result remains review-only.
+  - Confidence hardening was selected as the next route.
+  - No execution or private-data exposure occurred.
 - `objective`: Review the first redacted cross-story frequency result and
   decide whether to approve another distinct-story initial-window capture,
   accumulate additional story anchors before stronger frequency claims, design
@@ -1943,3 +1959,43 @@ routing and completion pointer.
   explicit approval for an exact route.
 - `completion_definition`: Alejandro chooses the next distinct-story capture,
   confidence-hardening, identity-review, pause, or redirect route.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_anchor_confidence_hardening_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-19`
+- `updated_at`: `2026-06-19`
+- `objective`: Wait for Alejandro approval before any stable-identifier
+  discovery, transient private visual fingerprint, or additional viewer capture
+  that uses the story-anchor confidence-hardening protocol.
+- `why_now`: Cross-story frequency is now visible, but story-anchor confidence
+  remains medium. Before accumulating many more frequency claims, CRM Core
+  should strengthen autonomous story identity without requiring manual labels.
+- `allowed_scope`:
+  - Present confidence-hardening routes.
+  - Explain stable-identifier and private-fingerprint options.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram/UI/Computer Use.
+  - No screenshots or fingerprints.
+  - No viewer collection.
+  - No DMs or welcome audio.
+  - No CRM/source writes.
+  - No Launch OS.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-anchor-dedupe-protocol-v0.md`,
+  `instagram-story-anchor-confidence-hardening-protocol-v0.md`, and the latest
+  redacted cross-story frequency review. Do not execute Instagram UI, Computer
+  Use, API, DM, story viewer, viewer list, traversal, story
+  screenshot/fingerprint capture, stable-ID discovery, welcome audio, source,
+  CRM, coordinate, screenshot fallback, or automation actions unless Alejandro
+  gives fresh explicit approval for an exact confidence-hardening route.
+- `completion_definition`: Alejandro approves, declines, or modifies a
+  stable-identifier discovery, transient private-fingerprint, or metadata-only
+  confidence-hardening route.
