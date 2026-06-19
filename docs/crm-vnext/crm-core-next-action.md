@@ -1822,18 +1822,45 @@ routing and completion pointer.
   story-viewer capture boundary design, or redirects CRM Core to another
   Instagram lane.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_story_anchor_dedupe_protocol_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-11`
-- `updated_at`: `2026-06-11`
+- `updated_at`: `2026-06-19`
+- `completed_at`: `2026-06-19`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_anchor_dedupe_capture_retry_2026-06-19.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_anchor_dedupe_capture_retry_2026-06-19.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_anchor_dedupe_capture_closeout_2026-06-19.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_anchor_dedupe_capture_closeout_2026-06-19.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_cross_story_frequency_summary_2026-06-19.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_viewer_cross_story_frequency_summary_2026-06-19.md`
+- `result`: `completed_initial_visible_window_dedupe_capture`
+- `findings`:
+  - Neutral native Computer Use preflight passed.
+  - Autonomous story-anchor dedupe capture completed.
+  - Story anchor confidence was `medium`.
+  - Story anchor method was autonomous private metadata without visual
+    fingerprint.
+  - Four distinct story anchors were compared.
+  - Ten private story-view edges were created.
+  - Same-story reobservations were zero.
+  - One private anchor appeared across three-plus distinct stories.
+  - Nine private anchors appeared in one story only.
+  - Viewer modal close was confirmed.
+  - `qualityGateStatus=green`.
+  - `computerUseMode=native_computer_use`.
+  - No fallback, coordinate-based actions, screenshots, visual fingerprints,
+    DMs, welcome audio, Instagram actions, private identity output, CRM writes,
+    source mutations, Launch OS docs, or `/Users/alejandrogomez/CRM` use
+    occurred.
 - `objective`: Wait for Alejandro approval before any story viewer capture or
   frequency summary that uses the new autonomous story-anchor dedupe protocol.
-- `why_now`: CRM Core has a first redacted story viewer frequency summary, but
-  true frequency requires distinguishing multiple captures of the same story
-  from appearances across distinct stories. Alejandro does not want manual story
-  labeling as an operating dependency, so CRM Core needs autonomous private
+- `why_now`: CRM Core had a first redacted story viewer frequency summary, but
+  true frequency required distinguishing multiple captures of the same story
+  from appearances across distinct stories. Alejandro did not want manual story
+  labeling as an operating dependency, so CRM Core needed autonomous private
   story identity and dedupe before further frequency claims.
 - `allowed_scope`:
   - Present the story anchor dedupe protocol.
@@ -1866,3 +1893,53 @@ routing and completion pointer.
   dedupe.
 - `completion_definition`: Alejandro approves, declines, or modifies the next
   story viewer capture/frequency route using autonomous story-anchor dedupe.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_viewer_cross_story_frequency_review_v0`
+- `status`: `active`
+- `created_at`: `2026-06-19`
+- `updated_at`: `2026-06-19`
+- `objective`: Review the first redacted cross-story frequency result and
+  decide whether to approve another distinct-story initial-window capture,
+  accumulate additional story anchors before stronger frequency claims, design
+  story-anchor confidence hardening, or prepare a future private
+  identity-bridge review surface.
+- `why_now`: CRM Core now has a first autonomous story-anchor dedupe result
+  showing one private anchor across at least three distinct story anchors, but
+  the story-anchor confidence is medium and the result remains review-only.
+  The next step should be a redacted decision review, not another capture by
+  default.
+- `allowed_scope`:
+  - Redacted summaries only.
+  - No private artifact inspection.
+  - No execution.
+  - Recommend one next safe route.
+- `forbidden_scope`:
+  - No Instagram/UI/Computer Use.
+  - No viewer-list access.
+  - No screenshots or fingerprints.
+  - No DMs or welcome audio.
+  - No CRM writes.
+  - No scoring.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No card writes.
+  - No Fact Store writes.
+  - No outreach.
+  - No source mutation.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-story-viewer-private-artifact-repeat-capture-protocol-v0.md`,
+  `instagram-story-viewer-initial-window-frequency-protocol-v0.md`,
+  `instagram-story-anchor-dedupe-protocol-v0.md`, and the latest redacted
+  cross-story frequency summary. Do not execute Instagram UI, Computer Use,
+  API, DM, story viewer, viewer list, traversal, story screenshot/fingerprint
+  capture, story pausing/holding, welcome audio, source, CRM, coordinate,
+  screenshot fallback, or automation actions unless Alejandro gives fresh
+  explicit approval for an exact route.
+- `completion_definition`: Alejandro chooses the next distinct-story capture,
+  confidence-hardening, identity-review, pause, or redirect route.
