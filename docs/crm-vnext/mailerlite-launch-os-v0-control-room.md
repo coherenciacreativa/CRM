@@ -14355,3 +14355,80 @@ Next edge:
   process-env binding exists.
 - Then run checker + preflight-only first.
 - Execute full retry only if those are green.
+
+## Launch OS v0 Mapa Energia/Foco Shopify runtime env helper ready - 2026-06-19
+
+Status: The safe probe still found no runtime credential binding. A local helper
+was prepared for the operator to create the ignored `.env` without pasting
+secrets into chat or committing credential material. The helper was not
+executed.
+
+Artifacts:
+
+- Runtime source probe receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_source_probe_receipt_2026-06-19.json`
+- Ignored `.env` helper:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_write_ignored_env_helper_2026-06-19.sh`
+- Helper receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_helper_receipt_2026-06-19.json`
+
+Probe/helper result:
+
+- Runtime source probe:
+  `runtime_binding_not_found_in_safe_probe`.
+- Helper executed: false.
+- Raw credential values printed: false.
+- Keychain values read: false.
+- Keychain attributes printed: false.
+- Full env dumped: false.
+- Shopify Admin/API called: false.
+
+Operator action:
+
+- Run the helper locally, or otherwise provision the equivalent runtime binding.
+- Intended ignored env file:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env`
+- The file must stay ignored/untracked and mode `600`.
+- Do not paste values into chat.
+
+Next safe command after operator action:
+
+- `node /Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_2026-06-19.mjs --env-file /Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env --run-preflight-only`
+
+Pointer update:
+
+- Completed:
+  `launch_os_v0_mapa_energia_foco_shopify_runtime_env_binding_confirmation_waiting`
+- New active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_runtime_env_operator_action_waiting`
+
+Closed gates remain:
+
+- Shopify preview/live executed: false.
+- Shopify Admin/API mutation performed: false.
+- Shopify UI opened: false.
+- Shopify Page object created/updated: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Public distribution performed: false.
+- MailerLite UI/API called: false.
+- MailerLite drafts created/updated/deleted: 0/0/0.
+- Emails sent: false.
+- Seed emails sent: false.
+- Audience assignment performed: false.
+- Subscriber/audience mutation performed: false.
+- CRM writes performed: false.
+- Signal Ledger append: false.
+- CRM card writes: false.
+- CRM scoring changes: false.
+- Fact Store writes: false.
+- CRM Core docs touched: false.
+- Brand Hub patched: false.
+- GOG/auth dirty files touched: false.
+
+Next edge:
+
+- Wait for operator/Alejandro to run the helper or otherwise create the ignored
+  `.env`.
+- Then run checker + preflight-only before full retry.
+- Do not loop full Shopify retry while runtime binding is absent.

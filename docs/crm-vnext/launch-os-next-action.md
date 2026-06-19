@@ -6456,3 +6456,86 @@ Use deep hydration only for:
 - `completion_definition`: Runtime binding checker and preflight-only are green,
   followed by either delegated Shopify preview retry v2 receipt or a safe
   blocked receipt.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Shopify Runtime Env Binding Confirmation Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_runtime_env_binding_confirmation_waiting`
+- `previous_status`: `active_waiting_for_operator_runtime_binding`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_runtime_env_binding_confirmation_waiting`
+- `status`: `completed_with_safe_operator_helper`
+- `completed_at`: `2026-06-19`
+- `source_checkpoint`: `Runtime source probe and ignored .env helper prepared -
+  2026-06-19`
+- `completion_result`:
+  - Safe runtime source probe receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_source_probe_receipt_2026-06-19.json`
+  - Ignored `.env` helper:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_write_ignored_env_helper_2026-06-19.sh`
+  - Helper receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_helper_receipt_2026-06-19.json`
+  - Runtime source probe status:
+    `runtime_binding_not_found_in_safe_probe`.
+  - Helper executed: false.
+  - Raw credential values printed: false.
+  - Keychain values read: false.
+  - Full env dumped: false.
+  - Shopify Admin/API called: false.
+- `interpretation`: No safe runtime binding is currently visible to Codex. A
+  manual/operator-safe helper now exists to create the ignored local `.env`
+  without pasting secrets into chat or committing them.
+- `safety_summary`:
+  - No Shopify Admin/API, Shopify UI, publish, public navigation, MailerLite,
+    sends, audience, CRM, ledgers, cards, scoring, Fact Store, CRM Core, Brand
+    Hub or GOG/auth action occurred.
+  - GOG/auth dirty files remain unrelated and unstaged.
+- `next_checkpoint_expected`: Operator runs the helper or otherwise creates the
+  ignored local `.env`, then Codex runs checker + preflight-only first.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Shopify Runtime Env Operator Action Waiting - 2026-06-19
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_runtime_env_binding_confirmation_waiting`
+- `previous_status`: `completed_with_safe_operator_helper`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_runtime_env_operator_action_waiting`
+- `status`: `active_waiting_for_operator_action`
+- `created_at`: `2026-06-19`
+- `source_checkpoint`: `Runtime source probe found no available binding; helper
+  prepared but not executed`
+- `objective`: Wait for the operator to bind Shopify credentials to the approved
+  isolated worktree runtime without exposing values, then run checker +
+  preflight-only before any full preview retry.
+- `operator_action`:
+  - Preferred helper:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_write_ignored_env_helper_2026-06-19.sh`
+  - Intended ignored env file:
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env`
+  - Helper writes mode `600` and must not be committed.
+  - Alternative: provision equivalent process env variables for the one runner
+    process.
+- `next_safe_command_after_operator_action`: `node /Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_2026-06-19.mjs --env-file /Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env --run-preflight-only`
+- `allowed_scope_after_operator_confirms_binding`:
+  - Presence/status verification only.
+  - Run checker and preflight-only.
+  - If both are green, execute Shopify preview retry v2 under delegated
+    noindex/unlisted scope.
+- `forbidden_scope`:
+  - Do not ask Alejandro to paste secrets into chat.
+  - Do not print secrets, raw token values, raw Shopify IDs, raw env values or
+    exact private URLs.
+  - Do not commit `.env` or any credential material.
+  - Do not use tracked `.env.example` as credentials.
+  - Do not call Shopify Admin/API until binding checker and preflight-only are
+    green.
+  - Do not publish, touch public navigation or send audience traffic.
+  - Do not call MailerLite, send emails, assign audience or write CRM.
+  - Do not touch ledgers, cards, scoring or Fact Store.
+  - Do not touch CRM Core, Brand Hub or GOG/auth.
+- `live_gate_status`: Shopify preview execution remains uncreated. Public
+  navigation, public distribution, MailerLite, sends, audience and CRM remain
+  closed.
+- `human_boundary_id`: `shopify_runtime_env_operator_action_waiting`
+- `resume_instruction`: If the operator confirms the ignored `.env` exists, run
+  the checker/preflight command before any full retry. If it remains absent,
+  report the exact helper path and stop rather than looping.
+- `completion_definition`: Runtime binding checker + preflight-only green, then
+  delegated retry v2 receipt; or explicit operator confirmation that the binding
+  cannot be provided now.
