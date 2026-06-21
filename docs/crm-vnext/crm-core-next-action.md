@@ -1960,12 +1960,16 @@ routing and completion pointer.
 - `completion_definition`: Alejandro chooses the next distinct-story capture,
   confidence-hardening, identity-review, pause, or redirect route.
 
-## Active Next Action
+## Parked / Blocked Next Action
 
 - `next_action_id`: `crm_core_instagram_story_anchor_confidence_hardening_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `parked_blocked`
 - `created_at`: `2026-06-19`
-- `updated_at`: `2026-06-19`
+- `updated_at`: `2026-06-21`
+- `meaning`: Story-anchor confidence hardening remains the next Instagram data
+  objective, but reliable autonomous browser access is now a prerequisite.
+  Resume it only after the browser orchestrator pilot proves at least one safe
+  autonomous backend route.
 - `objective`: Wait for Alejandro approval before any stable-identifier
   discovery, transient private visual fingerprint, or additional viewer capture
   that uses the story-anchor confidence-hardening protocol.
@@ -1999,3 +2003,58 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, declines, or modifies a
   stable-identifier discovery, transient private-fingerprint, or metadata-only
   confidence-hardening route.
+
+## Completed Next Action
+
+- `next_action_id`: `crm_core_instagram_browser_access_orchestrator_design_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-21`
+- `updated_at`: `2026-06-21`
+- `completed_at`: `2026-06-21`
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-browser-access-orchestrator-v0.md`
+- `completion_definition`: CRM Core has a no-run browser-access orchestrator
+  design that defines Chrome-extension and native Computer Use backends, neutral
+  preflight requirements, autonomous soft recovery, backend switching,
+  dedicated automation profile guidance, recovery budgets, receipt fields,
+  quality states, failure-streak policy, and closed gates. No UI, Computer Use,
+  `@Chrome`, Instagram, private website, CRM/source write, Launch OS doc touch,
+  or `/Users/alejandrogomez/CRM` use occurred.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_browser_access_orchestrator_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-21`
+- `updated_at`: `2026-06-21`
+- `objective`: Wait for Alejandro approval before running a neutral dual-backend
+  browser orchestrator pilot that tests Chrome-extension and native Computer Use
+  selection/recovery without opening Instagram.
+- `why_now`: Both Chrome extension and native Computer Use have completed green
+  preflights, but each has also failed transiently. CRM Core needs one unified
+  autonomous selection/recovery gate before further Instagram work.
+- `allowed_scope`:
+  - Present the neutral orchestrator pilot.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram.
+  - No private websites.
+  - No DMs or viewer lists.
+  - No screenshots/fingerprints.
+  - No CRM/source writes.
+  - No Launch OS.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-browser-access-orchestrator-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`, and the relevant browser
+  preflight receipts. Do not run the dual-backend orchestrator pilot, open
+  Instagram, use UI, Computer Use, `@Chrome`, private websites, APIs,
+  connectors, viewer lists, DMs, screenshots/fingerprints, source writes, CRM
+  writes, Launch OS docs, or `/Users/alejandrogomez/CRM` unless Alejandro gives
+  fresh explicit approval for the neutral browser orchestrator pilot.
+- `completion_definition`: Alejandro approves, declines, or modifies the
+  neutral dual-backend orchestrator pilot.

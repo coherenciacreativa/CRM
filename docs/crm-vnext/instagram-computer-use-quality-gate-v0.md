@@ -56,6 +56,29 @@ content.
 
 Unknown quality must not be reported as green.
 
+## Browser Orchestrator Integration
+
+All future Instagram UI routes should enter through:
+
+```text
+docs/crm-vnext/instagram-browser-access-orchestrator-v0.md
+```
+
+Chrome extension and native Computer Use are approved browser backends only
+after a neutral click and keyboard preflight passes. Chrome extension access is
+not a coordinate or screenshot fallback, and OS URL opening is route
+initialization only; it does not prove browser-control health.
+
+Hard-recovery or human-intervention actions, such as manually reconnecting an
+extension, reinstalling a plugin, repairing macOS permissions, restarting Codex,
+or relaunching a non-dedicated browser with unrelated user work, do not count as
+autonomous success.
+
+The browser orchestrator does not widen any exact Instagram action gate. DMs,
+viewer lists, screenshots/fingerprints, welcome audio, source mutations, CRM
+writes, ledgers, cards, Fact Store, scoring, outreach, Launch OS, and
+`/Users/alejandrogomez/CRM` remain separately approval-gated or closed.
+
 ## Planned Safe Start Navigation
 
 `planned_safe_start_navigation` means a future approved ritual intentionally
