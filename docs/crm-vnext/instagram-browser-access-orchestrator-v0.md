@@ -207,6 +207,97 @@ A dedicated browser profile allows safe relaunch without disrupting Alejandro.
 The orchestrator must still support native Computer Use if the Chrome backend is
 unhealthy.
 
+## Pilot Result And Production Backend Policy
+
+The neutral dual-backend browser orchestrator pilot
+`crm_core_instagram_browser_access_orchestrator_pilot_2026-06-22` completed with
+`qualityGateStatus=yellow`.
+
+Findings:
+
+- Chrome Extension passed as the selected primary backend.
+- Native Computer Use passed the neutral functional click/keyboard test.
+- Native Computer Use failed the operational-isolation test because cleanup
+  surfaced an unrelated Safari tab to Computer Use output.
+- `humanInterventionRequired=false`.
+- `captureExecuted=false`.
+- No Instagram capture, private website access, CRM/source write, or Launch OS
+  work occurred.
+
+### Primary-green Short Circuit
+
+For routine approved Instagram routes:
+
+- if the selected primary backend passes click and keyboard preflight, continue
+  with that backend;
+- do not test the alternate backend during the same private-route run merely for
+  audit completeness;
+- alternate-backend testing belongs in neutral certification/maintenance runs or
+  after primary failure;
+- this reduces private surface area and avoids exposing unrelated browser state.
+
+### Chrome Production Status
+
+- `chrome_extension` is the preferred Instagram backend for the next three
+  approved runs, subject to a green preflight each time;
+- it may use the authenticated approved Chrome profile;
+- browser history remains disabled;
+- no human reconnection counts as autonomous success;
+- if Chrome passes, do not invoke native Computer Use.
+
+### Native Backend Isolation Rule
+
+Native Computer Use may be selected for private Instagram routes only when one
+of these is true:
+
+- a dedicated automation browser/profile/window is being used; or
+- the run can prove that closing or leaving its neutral/private tab will not
+  expose unrelated Alejandro browser state.
+
+Otherwise classify:
+
+```text
+nativeBackendPrivateRouteEligibility=blocked_by_browser_isolation
+```
+
+A native backend blocked by isolation may still be tested on a neutral page, but
+must not be selected for private Instagram work.
+
+### Cleanup Safety
+
+- Never close a neutral test tab when doing so would reveal an unrelated
+  existing browser tab to Computer Use output.
+- Prefer a dedicated automation window/profile.
+- Close only a dedicated automation window when safe.
+- If isolation cannot be proven, leave the neutral page in place, stop browser
+  interaction, and record the blocker.
+- Do not inspect, describe, or record underlying user tab metadata.
+
+### Alternate Audit Policy
+
+Defined modes:
+
+- `alternateBackendTestMode=not_tested_primary_green`
+- `alternateBackendTestMode=neutral_certification`
+- `alternateBackendTestMode=tested_after_primary_failure`
+
+Routine private-route default:
+
+```text
+alternateBackendTestMode=not_tested_primary_green
+```
+
+### Additional Receipt Fields
+
+Future browser-access receipts should also include:
+
+- `alternateBackendTestMode`
+- `dedicatedBrowserContextUsed`
+- `nativeBackendPrivateRouteEligibility`
+- `unrelatedBrowserStateExposureRisk`
+- `cleanupSafetyStatus`
+- `primaryGreenShortCircuitUsed`
+
 ## Recovery Budget
 
 Per run:
@@ -284,6 +375,7 @@ Every future browser-access receipt must include:
 - `primaryBackendRecoveryOutcome`;
 - `alternateBackendTested`;
 - `alternateBackendPreflightStatus`;
+- `alternateBackendTestMode`;
 - `backendSwitchUsed`;
 - `browserBackendSelected`;
 - `chromeExtensionConnected`;
@@ -299,6 +391,11 @@ Every future browser-access receipt must include:
 - `coordinateBasedActions`;
 - `screenshotOnlyNavigation`;
 - `browserHistoryAccessUsed`;
+- `dedicatedBrowserContextUsed`;
+- `nativeBackendPrivateRouteEligibility`;
+- `unrelatedBrowserStateExposureRisk`;
+- `cleanupSafetyStatus`;
+- `primaryGreenShortCircuitUsed`;
 - `humanInterventionRequired`;
 - `captureExecuted`;
 - `qualityGateStatus`;

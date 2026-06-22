@@ -79,6 +79,19 @@ viewer lists, screenshots/fingerprints, welcome audio, source mutations, CRM
 writes, ledgers, cards, Fact Store, scoring, outreach, Launch OS, and
 `/Users/alejandrogomez/CRM` remain separately approval-gated or closed.
 
+## Native Isolation Rule
+
+Native Computer Use may be functionally green but operationally blocked for
+private Instagram work if browser isolation is not proven.
+
+If cleanup exposes an unrelated tab or browser metadata, classify the run as
+`yellow` when private-route execution has not started, or `blocked` when private
+route execution has already started.
+
+Future private routes should prefer the selected healthy backend and avoid
+unnecessary alternate-backend testing. No unrelated browser metadata may be
+repeated in receipts or chat.
+
 ## Planned Safe Start Navigation
 
 `planned_safe_start_navigation` means a future approved ritual intentionally

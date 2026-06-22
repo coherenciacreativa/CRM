@@ -2021,12 +2021,19 @@ routing and completion pointer.
   `@Chrome`, Instagram, private website, CRM/source write, Launch OS doc touch,
   or `/Users/alejandrogomez/CRM` use occurred.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_browser_access_orchestrator_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-21`
-- `updated_at`: `2026-06-21`
+- `updated_at`: `2026-06-22`
+- `completed_at`: `2026-06-22`
+- `result`: `completed_neutral_dual_backend_pilot_with_isolation_caveat`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_browser_access_orchestrator_pilot_2026-06-22.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_browser_access_orchestrator_pilot_2026-06-22.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_browser_access_orchestrator_pilot_closeout_2026-06-22.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_browser_access_orchestrator_pilot_closeout_2026-06-22.md`
 - `objective`: Wait for Alejandro approval before running a neutral dual-backend
   browser orchestrator pilot that tests Chrome-extension and native Computer Use
   selection/recovery without opening Instagram.
@@ -2046,6 +2053,20 @@ routing and completion pointer.
   - No CRM/source writes.
   - No Launch OS.
   - No `/Users/alejandrogomez/CRM`.
+- `findings`:
+  - Chrome Extension primary preflight passed green.
+  - Native alternate neutral preflight passed green.
+  - No recovery or backend switch was needed.
+  - Chrome Extension was selected.
+  - No human intervention was required.
+  - No capture was executed.
+  - Pilot quality was yellow only because native cleanup exposed unrelated
+    Safari tab metadata.
+  - Private details were omitted from receipts and chat.
+  - Native private-route eligibility remains blocked until browser isolation is
+    proven.
+  - Chrome is approved as the preferred backend for the next exact Instagram
+    route, subject to fresh route approval and green preflight.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
@@ -2056,5 +2077,49 @@ routing and completion pointer.
   connectors, viewer lists, DMs, screenshots/fingerprints, source writes, CRM
   writes, Launch OS docs, or `/Users/alejandrogomez/CRM` unless Alejandro gives
   fresh explicit approval for the neutral browser orchestrator pilot.
-- `completion_definition`: Alejandro approves, declines, or modifies the
-  neutral dual-backend orchestrator pilot.
+- `completion_definition`: CRM Core completed a neutral dual-backend browser
+  orchestrator pilot, selected Chrome Extension as the safe preferred backend,
+  recorded native isolation as incomplete for private-route work, and produced
+  redacted closeout receipts without Instagram capture, private website access,
+  CRM/source write, Launch OS doc touch, or `/Users/alejandrogomez/CRM` use.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_stable_story_identifier_discovery_via_orchestrator_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-22`
+- `updated_at`: `2026-06-22`
+- `objective`: Wait for Alejandro approval before retrying stable
+  story-identifier discovery through the browser orchestrator, using Chrome
+  Extension as primary and skipping native alternate testing when Chrome passes
+  green.
+- `why_now`: The neutral orchestrator pilot proved a safe autonomous Chrome
+  backend. Story anchor confidence hardening can resume without relying on
+  manual browser recovery, while native private-route access remains blocked
+  until browser isolation is proven.
+- `allowed_scope`:
+  - Present the exact Chrome-primary stable-ID discovery route.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram/UI/`@Chrome`/Computer Use.
+  - No viewer-list opening or viewer collection.
+  - No screenshots/fingerprints.
+  - No DMs or welcome audio.
+  - No CRM/source writes.
+  - No Launch OS.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-browser-access-orchestrator-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`, and
+  `instagram-story-anchor-confidence-hardening-protocol-v0.md`. Do not execute
+  Instagram UI, `@Chrome`, Computer Use, APIs/connectors, DMs, viewer lists,
+  viewer collection, screenshots/fingerprints, welcome audio, source writes,
+  CRM writes, Launch OS docs, or `/Users/alejandrogomez/CRM` unless Alejandro
+  gives fresh explicit approval for a Chrome-primary stable story-ID discovery
+  route through the orchestrator.
+- `completion_definition`: Alejandro approves, declines, or modifies a
+  Chrome-primary stable story-ID discovery route through the orchestrator.
