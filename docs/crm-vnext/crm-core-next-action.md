@@ -2083,43 +2083,114 @@ routing and completion pointer.
   redacted closeout receipts without Instagram capture, private website access,
   CRM/source write, Launch OS doc touch, or `/Users/alejandrogomez/CRM` use.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_stable_story_identifier_discovery_via_orchestrator_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-22`
 - `updated_at`: `2026-06-22`
+- `completed_at`: `2026-06-22`
+- `result`: `completed_partial_native_metadata_only_discovery`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_native_own_story_stable_id_closeout_2026-06-22.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_native_own_story_stable_id_closeout_2026-06-22.md`
+- `findings`:
+  - Native dedicated-Safari route reached the own-story surface.
+  - Profile story entry was visible and actionable.
+  - `native_accessibility_press` opened the own active-story surface.
+  - One story was checked.
+  - Same-story consistency was confirmed.
+  - Stable identifier availability was partial.
+  - Story anchor method was `timing_stack_duration_composite`.
+  - Story-anchor confidence remained `low`.
+  - Second-story accessibility control was unavailable.
+  - Viewer list was not opened.
+  - No Instagram actions were performed.
+  - No private story content, viewer data, screenshots, visual fingerprints,
+    private identifiers, CRM/source writes, Launch OS docs, or
+    `/Users/alejandrogomez/CRM` were exposed or touched.
+  - Cleanup returned the dedicated browser window to the neutral local page.
 - `objective`: Wait for Alejandro approval before retrying stable
   story-identifier discovery through the browser orchestrator, using Chrome
   Extension as primary and skipping native alternate testing when Chrome passes
   green.
 - `why_now`: The neutral orchestrator pilot proved a safe autonomous Chrome
-  backend. Story anchor confidence hardening can resume without relying on
-  manual browser recovery, while native private-route access remains blocked
-  until browser isolation is proven.
+  backend, but own-story visibility remained degraded in Chrome. A later native
+  dedicated-Safari route reached the own-story surface, while metadata-only
+  identity evidence remained low-confidence.
 - `allowed_scope`:
-  - Present the exact Chrome-primary stable-ID discovery route.
-  - Answer clarifying questions.
-  - Wait for approval.
-  - No execution.
+  - Record redacted closeout only.
+  - Preserve no-run gates for the next confidence-hardening route.
 - `forbidden_scope`:
-  - No Instagram/UI/`@Chrome`/Computer Use.
+  - No additional Instagram/UI/`@Chrome`/Computer Use.
   - No viewer-list opening or viewer collection.
   - No screenshots/fingerprints.
   - No DMs or welcome audio.
   - No CRM/source writes.
   - No Launch OS.
   - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: CRM Core recorded that metadata-only stable
+  story-ID discovery reached the own-story surface through native dedicated
+  Safari but produced only low-confidence composite identity evidence. Story
+  anchor confidence hardening remains parked until Alejandro approves the next
+  exact route.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_private_visual_fingerprint_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-22`
+- `updated_at`: `2026-06-22`
+- `objective`: Wait for Alejandro approval before one transient private
+  visual-fingerprint pilot for autonomous story identity using a reachable own
+  story in a dedicated isolated Safari window.
+- `why_now`: Own-story access is now proven, but normal UI metadata produced
+  only a low-confidence composite anchor. A transient private visual digest is
+  the next promising autonomous identity route and avoids requiring Alejandro to
+  label stories manually.
+- `allowed_scope`:
+  - Present the exact transient fingerprint pilot boundary.
+  - Explain transient-image creation, local digest derivation, deletion, and
+    deletion verification.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No Instagram execution.
+  - No UI, Computer Use, or `@Chrome`.
+  - No screenshot or fingerprint capture yet.
+  - No viewer-list opening or viewer collection.
+  - No next-story traversal.
+  - No story pausing/holding.
+  - No OCR or full story-text extraction.
+  - No DMs or welcome audio.
+  - No Instagram actions.
+  - No CRM/source writes.
+  - No ledgers, cards, Fact Store, scoring, outreach, or source mutation.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`:
+  `I approve one CRM Core Instagram transient private visual fingerprint pilot for one reachable own story using native Computer Use in a dedicated isolated Safari window. Create a transient local image outside the repo only to derive a private digest, delete the raw image immediately and confirm deletion. Do not print or retain story content, open viewer lists or DMs, traverse to another story, perform Instagram actions, or write CRM/source state.`
+- `future_execution_constraints`:
+  - One reachable own story only.
+  - Native Computer Use in a dedicated isolated Safari window.
+  - Transient raw image outside the repo.
+  - Private perceptual/content digest only.
+  - Raw image deleted immediately after digest creation.
+  - Deletion must be verified.
+  - Block if deletion cannot be confirmed.
+  - No raw image, story content, or private digest in chat or Mantis-Reports.
+  - No OCR unless separately approved.
+  - No viewer list, next-story traversal, DMs, source actions, or CRM writes.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `instagram-browser-access-orchestrator-v0.md`,
-  `instagram-computer-use-quality-gate-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`,
+  `instagram-story-anchor-dedupe-protocol-v0.md`, and
   `instagram-story-anchor-confidence-hardening-protocol-v0.md`. Do not execute
-  Instagram UI, `@Chrome`, Computer Use, APIs/connectors, DMs, viewer lists,
-  viewer collection, screenshots/fingerprints, welcome audio, source writes,
-  CRM writes, Launch OS docs, or `/Users/alejandrogomez/CRM` unless Alejandro
-  gives fresh explicit approval for a Chrome-primary stable story-ID discovery
-  route through the orchestrator.
-- `completion_definition`: Alejandro approves, declines, or modifies a
-  Chrome-primary stable story-ID discovery route through the orchestrator.
+  UI, Computer Use, Instagram, screenshot/fingerprint capture, viewer access,
+  next-story traversal, DMs, source actions, or CRM writes until Alejandro gives
+  the exact approval phrase.
+- `completion_definition`: Alejandro approves, declines, or modifies one
+  transient private visual fingerprint pilot for one reachable own story.

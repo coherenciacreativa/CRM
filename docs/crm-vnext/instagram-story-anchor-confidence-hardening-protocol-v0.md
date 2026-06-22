@@ -137,6 +137,38 @@ Rules:
 - Only private identifier/digest storage.
 - Receipt reports availability and confidence only.
 
+## Metadata-Only Discovery Result
+
+The native dedicated-Safari metadata-only discovery run reached Alejandro's
+own-story surface through a safe isolated window. The profile story entry was
+visible and actionable, and `native_accessibility_press` opened the own active
+story surface.
+
+Findings:
+
+- Same-story consistency was confirmed for the first reachable story.
+- The identifier source was `lifecycle_stack_timing_composite` only.
+- No stable source/UI identifier was found.
+- Story-anchor confidence remained `low`.
+- The second active story could not be reached through a safe accessibility
+  control.
+- Viewer lists were not opened.
+- No story content, screenshots, visual fingerprints, Instagram actions,
+  CRM/source writes, Launch OS docs, or `/Users/alejandrogomez/CRM` were
+  touched.
+
+Interpretation:
+
+- Metadata-only discovery should not be repeated as the primary confidence
+  hardening route.
+- Low-confidence anchors must not contribute to cross-story frequency.
+- The next identity-hardening candidate is a separately approved transient
+  private visual fingerprint route.
+- Visual fingerprinting solves story identity, not multi-story traversal.
+- Next-story traversal remains a separate approval/design boundary.
+- Manual story labels should remain optional debugging aids and must not become
+  an operating dependency.
+
 ## Private Visual Fingerprint Route
 
 Design only; do not execute.

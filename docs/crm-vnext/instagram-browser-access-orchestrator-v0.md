@@ -362,6 +362,32 @@ The orchestrator itself does not authorize:
 
 Those require their own active action and approval.
 
+## Route-Specific Backend Evidence
+
+### Own-story route evidence
+
+- `chrome_extension + own_story_surface`:
+  `degraded_ui_visibility_mismatch`.
+- `native_computer_use + dedicated_safari + own_story_surface`:
+  `route_reached_green`.
+- For own-story routes, prefer native Computer Use in a dedicated isolated
+  Safari window until Chrome visibility improves.
+- Do not test Chrome first for this exact route merely for audit completeness.
+- Dedicated-window cleanup must return to the neutral local page.
+- This route preference does not authorize viewer lists, screenshots,
+  fingerprints, DMs, Instagram actions, CRM writes, source writes, Launch OS, or
+  `/Users/alejandrogomez/CRM`.
+
+### Stable-ID route evidence
+
+- Metadata-only UI discovery produced only low-confidence composite identity.
+- The source class was `lifecycle_stack_timing_composite`.
+- Same-story consistency was confirmed for one reachable story.
+- A second active story was not reachable through a safe accessibility control.
+- Do not repeatedly retry metadata-only discovery as the primary confidence
+  hardening route.
+- A fingerprint route requires separate explicit approval.
+
 ## Required Receipt Fields
 
 Every future browser-access receipt must include:
