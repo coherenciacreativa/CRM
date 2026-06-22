@@ -14472,3 +14472,46 @@ Next edge:
   any full preview retry.
 - Do not execute the Shopify preview runner while runtime binding remains
   absent.
+
+## Launch OS v0 Mapa Energia/Foco Shopify client credentials env helper prepared - 2026-06-22
+
+Status: A safer CEO-friendly helper was prepared for the Shopify Dev Dashboard
+credential model. It replaces the earlier interactive helper for this edge. No
+Shopify preview runner was executed and no Shopify Admin/API call was made by
+Codex during preparation.
+
+Artifacts:
+
+- Client credentials helper:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_client_credentials_env_helper_2026-06-22.mjs`
+- Helper prepared receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_client_credentials_env_helper_prepared_2026-06-22.md`
+
+Helper posture:
+
+- Uses `SHOPIFY_STORE`, defaulting to `219559-e3`.
+- Prompts for `SHOPIFY_CLIENT_ID`.
+- Prompts for `SHOPIFY_CLIENT_SECRET` as hidden terminal input.
+- Calls Shopify's client credentials grant only when the operator runs it.
+- Writes only the ignored `.env` in the approved Mapa Energia/Foco Shopify
+  worktree.
+- Writes `SHOPIFY_ADMIN_API_TOKEN`, `SHOPIFY_THEME_ID`,
+  `SHOPIFY_API_VERSION=2026-04` and `SHOPIFY_STORE`.
+- Does not write Client Secret to `.env`.
+- Does not print raw Client Secret or Admin API token.
+
+Safety checks:
+
+- Syntax check: green.
+- Helper mode: `700`.
+- No `printenv`.
+- No full `process.env` dump.
+- No raw secret/token console output.
+- Target `.env` remains ignored by git.
+
+Next edge:
+
+- Operator runs the client-credentials helper from Terminal using the `Web
+  designer` app Client ID and Client Secret.
+- After `.env` exists, Codex runs runtime binding checker + preflight-only.
+- Full Shopify preview retry remains gated on checker/preflight green.

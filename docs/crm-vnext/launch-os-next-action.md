@@ -6511,11 +6511,18 @@ Use deep hydration only for:
   isolated worktree runtime without exposing values, then run checker +
   preflight-only before any full preview retry.
 - `operator_action`:
-  - Preferred helper:
+  - Preferred current helper for the Dev Dashboard app credential model:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_client_credentials_env_helper_2026-06-22.mjs`
+  - Helper prepared receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_client_credentials_env_helper_prepared_2026-06-22.md`
+  - Deprecated earlier helper, kept only as historical context:
     `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_write_ignored_env_helper_2026-06-19.sh`
   - Intended ignored env file:
     `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env`
   - Helper writes mode `600` and must not be committed.
+  - Current helper uses Shopify client credentials grant with the `Web designer`
+    app Client ID + hidden Client Secret, exchanges them for a short-lived Admin
+    API token, resolves the main/live theme, and does not print raw secrets.
   - Alternative: provision equivalent process env variables for the one runner
     process.
 - `next_safe_command_after_operator_action`: `node /Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_2026-06-19.mjs --env-file /Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/.env --run-preflight-only`
@@ -6541,10 +6548,10 @@ Use deep hydration only for:
   closed.
 - `human_boundary_id`: `shopify_runtime_env_operator_action_waiting`
 - `resume_instruction`: If the operator confirms the ignored `.env` exists, run
-  the checker/preflight command before any full retry. If it remains absent, do
-  not rerun the helper non-interactively; report the exact helper path and stop
-  rather than looping. The helper should be run from a trusted interactive
-  terminal session, or replaced by an equivalent secure runtime binding.
+  the checker/preflight command before any full retry. If it remains absent,
+  guide the operator to the current client-credentials helper rather than the
+  deprecated 2026-06-19 helper. Do not rerun credential helpers
+  non-interactively without the operator present.
 - `completion_definition`: Runtime binding checker + preflight-only green, then
   delegated retry v2 receipt; or explicit operator confirmation that the binding
   cannot be provided now.
