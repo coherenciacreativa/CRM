@@ -108,12 +108,15 @@ Required gate values:
 - `orthography_editorial_gate = green`.
 - `brand_voice_gate = green`.
 - `product_value_gate = green`.
+- `visual_design_gate = green`.
+- `perceived_value_gate = green`.
 - `claims_gate = green`.
 - `internal_labels_absent = true`.
 
 This gate is separate from technical Shopify QA. A preview can be noindex,
 unlisted and technically functional while still being blocked at the creative
-gate. Do not advance that state to CEO/Web QA as if it were ready.
+or visual/perceived-value gate. Do not advance that state to CEO/Web QA as if
+it were ready.
 
 ## CEO Decision Packet Format
 Use this shape:

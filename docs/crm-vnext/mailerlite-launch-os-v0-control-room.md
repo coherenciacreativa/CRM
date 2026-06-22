@@ -14764,3 +14764,85 @@ QA result:
 Active next action:
 
 - `launch_os_v0_mapa_energia_foco_brand_editorial_repaired_ceo_web_qa_waiting`
+
+## Launch OS v0 Mapa Energia/Foco Visual Design + Perceived Value Gate - 2026-06-23
+
+Status: CEO/Web review accepted the product direction and Brand/editorial repair
+as substantially improved, but did not yet accept the preview as final
+CEO/Web QA-green. The remaining issue was visual design and perceived value, not
+product concept or broad copy. One constrained visual-design pass was completed
+and the existing noindex/unlisted Shopify preview was updated. No downstream
+MailerLite, sends, audience, CRM, public navigation/distribution or new product
+expansion was opened.
+
+Why the visual gate was still pending:
+
+- The page still felt close to a functional quiz prototype.
+- First impression needed a more deliberate editorial rhythm.
+- The result screen needed a clearer reward before optional email capture.
+- Email capture needed to remain secondary and visibly optional.
+
+Repair:
+
+- Landing composition changed to an editorial hero plus reusable `Recibes`
+  value panel.
+- Typography shifted toward a warmer editorial hierarchy while preserving
+  mobile readability.
+- Result payoff was strengthened with a clearer result header, emphasized
+  `Gesto posible` card and dark `Frase para volver` artifact.
+- Option/progress color and selected state were refined to reduce generic quiz
+  feeling.
+- Email capture visual weight was reduced so it stays secondary.
+
+Shopify/Web:
+
+- Isolated Shopify branch:
+  `codex/shopify-mapa-energia-foco-preview`.
+- Latest visual repair commit:
+  `0afd1f7 Improve Mapa Energia Foco visual value gate`.
+- Existing noindex/unlisted preview updated: true.
+- Changed remote assets:
+  - `sections/mapa-energia-foco.liquid`
+  - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+  - `templates/page.mapa-energia-foco-preview.liquid`
+- Existing Page object touched only for title/body/template-suffix posture.
+- Theme publish: false.
+- Public navigation touched: false.
+- Exact URL printed/stored in receipt: false/false.
+
+Receipt and screenshots:
+
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_execution_receipt_2026-06-23.json`
+- Screenshot folder:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_2026-06-23/`
+
+QA result:
+
+- Execution status: `completed`.
+- `copy_maturity=public_candidate`.
+- Orthography/editorial gate: green.
+- Brand voice gate: green.
+- Product value gate: green.
+- Visual design gate: green.
+- Perceived value gate: green.
+- Claims gate: green.
+- Internal labels absent: true.
+- Noindex confirmed: true.
+- Public navigation detected: false.
+- Email capture present/inert: true.
+- MailerLite detected: false.
+- CRM touched: false.
+- HeadlessChrome direct storefront render returned stale old HTML in this
+  environment, while Shopify asset readback and Safari/Chrome user-agent
+  storefront fetch returned the repaired HTML. Receipt records it as a
+  non-blocking headless/bot-cache false positive.
+
+Process patch:
+
+- `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview Eligibility
+  Gate now includes `visual_design_gate` and `perceived_value_gate`.
+
+Active next action:
+
+- `launch_os_v0_mapa_energia_foco_visual_design_repaired_ceo_web_qa_waiting`

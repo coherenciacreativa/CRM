@@ -6890,13 +6890,14 @@ Use deep hydration only for:
   public navigation, CRM writes, ledgers/cards/scoring/Fact Store, CRM Core,
   Brand Hub canon patch or GOG/auth.
 
-## Active Next Action - Launch OS v0 Mapa Energia/Foco Brand-Editorial Repaired CEO Web QA Waiting - 2026-06-22
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Brand-Editorial Repaired CEO Web QA Waiting - 2026-06-23
 
 - `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_brand_editorial_preview_eligibility_repair`
 - `previous_status`: `completed_green`
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_brand_editorial_repaired_ceo_web_qa_waiting`
-- `status`: `active_waiting_for_ceo_web_qa`
+- `status`: `completed_with_scoped_visual_followup_requested`
 - `created_at`: `2026-06-22`
+- `completed_at`: `2026-06-23`
 - `source_checkpoint`: `Brand/editorial preview eligibility repair completed green`
 - `objective`: Alejandro reviews the repaired noindex/unlisted exact-link
   Shopify preview for creative/editorial fit, UX and product value. This is a
@@ -6919,3 +6920,113 @@ Use deep hydration only for:
 - `resume_instruction`: Present only the repaired preview state, concise
   semaforo and next decision. Do not continue to MailerLite, CRM, distribution
   or new product expansion without a fresh decision.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Visual Design + Perceived Value Gate - 2026-06-23
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_brand_editorial_repaired_ceo_web_qa_waiting`
+- `previous_status`: `CEO/Web QA accepted product direction and Brand/editorial repair as improved, but not final CEO/Web QA-green`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_visual_design_perceived_value_gate`
+- `status`: `completed_green`
+- `completed_at`: `2026-06-23`
+- `objective`: Run one constrained visual design and perceived-value gate for
+  the existing noindex/unlisted Shopify preview, without expanding product
+  scope, reopening the concept, adding features, MailerLite, CRM, sends,
+  audience traffic, public navigation or distribution.
+- `diagnosis`:
+  - The preview was technically functional and copy/Brand improved, but still
+    visually close to a functional quiz prototype.
+  - First impression needed more deliberate editorial rhythm.
+  - Result screen needed a clearer reward before optional email capture.
+  - Email capture needed to stay secondary and visibly optional.
+- `changes_applied`:
+  - Reworked landing composition into an editorial hero plus reusable `Recibes`
+    value panel.
+  - Shifted headings to a warmer editorial serif hierarchy while preserving
+    mobile readability and line length.
+  - Promoted the result payoff with a stronger result header, emphasized
+    `Gesto posible` card and a reusable dark `Frase para volver` artifact.
+  - Refined options/progress color and selected state to feel less generic.
+  - Reduced email-capture visual weight so it remains optional after the result
+    value is delivered.
+- `shopify_branch`: `codex/shopify-mapa-energia-foco-preview`
+- `shopify_commit`: `0afd1f7 Improve Mapa Energia Foco visual value gate`
+- `execution_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_execution_receipt_2026-06-23.json`
+- `screenshot_artifacts`:
+  - Before/after folder:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_2026-06-23/`
+  - After desktop landing:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_2026-06-23/after_remote_desktop_landing.png`
+  - After desktop result:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_2026-06-23/after_remote_desktop_result.png`
+  - After mobile landing:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_2026-06-23/after_remote_mobile_landing.png`
+  - After mobile result:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_2026-06-23/after_remote_mobile_result.png`
+- `preview_update`:
+  - Existing noindex/unlisted preview updated: true.
+  - Changed remote assets:
+    `sections/mapa-energia-foco.liquid`,
+    `snippets/mapa-energia-foco-inert-email-capture.liquid`,
+    `templates/page.mapa-energia-foco-preview.liquid`.
+  - Existing Page object touched only for title/body/template-suffix posture.
+  - Theme publish: false.
+  - Public navigation touched: false.
+  - Exact URL printed/stored: false/false.
+- `qa_green`:
+  - `copy_maturity`: `public_candidate`.
+  - `orthography_editorial_gate`: true.
+  - `brand_voice_gate`: true.
+  - `product_value_gate`: true.
+  - `visual_design_gate`: true.
+  - `perceived_value_gate`: true.
+  - `claims_gate`: true.
+  - `internal_labels_absent`: true.
+  - Noindex: true.
+  - Public navigation detected: false.
+  - Email capture present/inert: true.
+  - MailerLite detected: false.
+  - CRM touched: false.
+- `qa_note`: Direct HeadlessChrome storefront render in the local screenshot
+  runner returned stale old HTML in this environment, while Shopify asset
+  readback and Safari/Chrome user-agent storefront fetch returned the repaired
+  HTML. The receipt records this as a non-blocking headless/bot-cache false
+  positive; CEO-facing screenshots were regenerated from Safari-UA storefront
+  HTML without printing the exact URL.
+- `process_patch`:
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview Eligibility
+    Gate now includes `visual_design_gate` and `perceived_value_gate`.
+- `live_gate_status`: No MailerLite, sends, audience, public distribution,
+  public navigation, CRM writes, ledgers/cards/scoring/Fact Store, CRM Core,
+  Brand Hub canon patch or GOG/auth.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Visual-Design Repaired CEO Web QA Waiting - 2026-06-23
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_visual_design_perceived_value_gate`
+- `previous_status`: `completed_green`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_visual_design_repaired_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `created_at`: `2026-06-23`
+- `source_checkpoint`: `Visual Design + Perceived Value Gate completed green`
+- `objective`: Alejandro reviews the repaired noindex/unlisted Shopify preview
+  for final CEO/Web acceptance or a scoped visual revision. This is a review
+  gate only.
+- `accepted_evidence`:
+  - Visual gate receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_visual_design_gate_execution_receipt_2026-06-23.json`
+  - Shopify branch latest visual repair commit:
+    `0afd1f7 Improve Mapa Energia Foco visual value gate`.
+- `forbidden_scope`:
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `completion_definition`: Alejandro either accepts the visual-design repaired
+  preview for the next gate, asks for a scoped visual revision, pauses the
+  candidate, or returns to another Launch OS edge.
+- `resume_instruction`: Present only the visual-design repaired preview state,
+  concise semaforo and next decision. Do not continue to MailerLite, CRM,
+  distribution or new product expansion without a fresh decision.
