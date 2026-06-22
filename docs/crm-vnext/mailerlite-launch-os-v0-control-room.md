@@ -14846,3 +14846,110 @@ Process patch:
 Active next action:
 
 - `launch_os_v0_mapa_energia_foco_visual_design_repaired_ceo_web_qa_waiting`
+
+## Launch OS v0 Mapa Energia/Foco Spanish Editorial Desk + Preview Eligibility Repair - 2026-06-23
+
+Status: CEO/Web QA found that the visual repair improved the noindex/unlisted
+preview and product direction remained acceptable, but the preview was still not
+CEO/Web QA-green because it failed the Spanish editorial quality gate. Downstream
+work stayed paused: no MailerLite, sends, audience, CRM, public distribution or
+new product expansion.
+
+Root cause:
+
+- The canonical public-copy source was the isolated Shopify Liquid copy:
+  `sections/mapa-energia-foco.liquid` and
+  `snippets/mapa-energia-foco-inert-email-capture.liquid`.
+- Prior self-review over-relied on technical/mechanical checks and did not
+  enforce a complete professional Spanish read of every public-facing line.
+- The pipeline confused Brand Direction Fit and visual progress with final
+  public-copy readiness.
+
+Product naming decision:
+
+- Primary public product noun: `mapa`.
+- Canonical public name: `Mapa breve de energía y foco`.
+- `lectura` is reserved for the result/interpretation, not the product name.
+
+Repair:
+
+- Removed excessive `breve` repetition and old ambiguous phrases.
+- Clarified relational/abstract language around contrast, gesture, settling,
+  clarity, energy and focus.
+- Made each answer option readable on its own.
+- Preserved product direction, quiz logic, result families and visual structure.
+- Kept email capture optional, secondary and inert.
+
+Independent editorial review:
+
+- Before repair: critical 0, major 7, minor 3.
+- After repair: critical 0, major 0, minor 0 blocking.
+- Review artifact:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_desk_review_2026-06-23.md`
+
+Shopify/Web:
+
+- Isolated Shopify branch:
+  `codex/shopify-mapa-energia-foco-preview`.
+- Latest editorial repair commit:
+  `80d6836 Repair Mapa Energia Foco Spanish editorial gate`.
+- Existing noindex/unlisted preview updated: true.
+- Changed remote assets:
+  - `sections/mapa-energia-foco.liquid`
+  - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+- Page object touched: false.
+- Template/layout touched remotely in this execution: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Exact URL printed/stored in receipt: false/false.
+
+Receipt and screenshots:
+
+- Receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_preview_repair_execution_receipt_2026-06-23.json`
+- Screenshot folder:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_preview_repair_2026-06-23/`
+
+QA result:
+
+- Execution status: `completed`.
+- `copy_maturity=public_candidate`.
+- Spanish editorial gate: green.
+- Semantic completeness gate: green.
+- Referential integrity gate: green.
+- Product naming consistency gate: green.
+- Lexical repetition gate: green.
+- Independent editorial review: green.
+- Brand voice gate: green.
+- Claims gate: green.
+- Visual design gate: green from prior visual pass.
+- Perceived value gate: green from prior visual pass.
+- Noindex confirmed: true.
+- Public navigation detected: false.
+- Email capture present/inert: true.
+- MailerLite detected: false.
+- CRM touched: false.
+
+Process patch:
+
+- `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview Eligibility
+  Gate now includes `spanish_editorial_gate`,
+  `semantic_completeness_gate`, `referential_integrity_gate`,
+  `product_naming_consistency_gate`, `lexical_repetition_gate` and
+  `independent_editorial_review`.
+
+Closed gates:
+
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No public navigation/distribution.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub canon changes.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_mapa_energia_foco_spanish_editorial_repaired_ceo_web_qa_waiting`

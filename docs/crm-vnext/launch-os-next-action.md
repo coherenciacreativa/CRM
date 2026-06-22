@@ -7000,12 +7000,12 @@ Use deep hydration only for:
   public navigation, CRM writes, ledgers/cards/scoring/Fact Store, CRM Core,
   Brand Hub canon patch or GOG/auth.
 
-## Active Next Action - Launch OS v0 Mapa Energia/Foco Visual-Design Repaired CEO Web QA Waiting - 2026-06-23
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Visual-Design Repaired CEO Web QA Waiting - 2026-06-23
 
 - `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_visual_design_perceived_value_gate`
 - `previous_status`: `completed_green`
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_visual_design_repaired_ceo_web_qa_waiting`
-- `status`: `active_waiting_for_ceo_web_qa`
+- `status`: `completed_with_spanish_editorial_followup_requested`
 - `created_at`: `2026-06-23`
 - `source_checkpoint`: `Visual Design + Perceived Value Gate completed green`
 - `objective`: Alejandro reviews the repaired noindex/unlisted Shopify preview
@@ -7030,3 +7030,105 @@ Use deep hydration only for:
 - `resume_instruction`: Present only the visual-design repaired preview state,
   concise semaforo and next decision. Do not continue to MailerLite, CRM,
   distribution or new product expansion without a fresh decision.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Spanish Editorial Desk + Preview Eligibility Repair - 2026-06-23
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_visual_design_repaired_ceo_web_qa_waiting`
+- `previous_status`: `CEO/Web QA accepted visual repair direction, but failed Spanish editorial quality gate`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_desk_preview_eligibility_repair`
+- `status`: `completed_green`
+- `completed_at`: `2026-06-23`
+- `objective`: Diagnose why the visual-design repaired noindex/unlisted preview
+  still reached CEO/Web QA with Spanish editorial defects, repair the complete
+  public-facing copy without changing product direction or quiz logic, perform
+  independent editorial review, update only the existing preview and patch the
+  reusable Preview Eligibility Gate.
+- `root_cause`:
+  - Prior self-review over-relied on mechanical pattern checks and technical
+    Shopify QA.
+  - Brand Direction Fit and visual progress were treated too much like final
+    public-copy readiness.
+  - The missing gate was a complete professional Spanish editorial read for
+    semantic completeness, immediate referents, stable product naming and
+    lexical repetition.
+- `product_naming_decision`:
+  - Primary public product noun: `mapa`.
+  - Canonical public name: `Mapa breve de energía y foco`.
+  - `lectura` is reserved for the result/interpretation, not the product name.
+- `editorial_review`:
+  - Before repair findings: critical 0, major 7, minor 3.
+  - After repair findings: critical 0, major 0, minor 0 blocking.
+  - Independent editorial review artifact:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_desk_review_2026-06-23.md`
+- `shopify_branch`: `codex/shopify-mapa-energia-foco-preview`
+- `shopify_commit`: `80d6836 Repair Mapa Energia Foco Spanish editorial gate`
+- `execution_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_preview_repair_execution_receipt_2026-06-23.json`
+- `screenshot_artifacts`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_preview_repair_2026-06-23/`
+- `preview_update`:
+  - Existing noindex/unlisted preview updated: true.
+  - Changed remote assets:
+    `sections/mapa-energia-foco.liquid`,
+    `snippets/mapa-energia-foco-inert-email-capture.liquid`.
+  - Page object touched: false.
+  - Template/layout touched remotely in this execution: false.
+  - Theme publish: false.
+  - Public navigation touched: false.
+  - Exact URL printed/stored: false/false.
+- `qa_green`:
+  - `copy_maturity`: `public_candidate`.
+  - `spanish_editorial_gate`: true.
+  - `semantic_completeness_gate`: true.
+  - `referential_integrity_gate`: true.
+  - `product_naming_consistency_gate`: true.
+  - `lexical_repetition_gate`: true.
+  - `brand_voice_gate`: true.
+  - `claims_gate`: true.
+  - `independent_editorial_review`: true.
+  - Visual design and perceived value: still green from previous gate.
+  - Noindex: true.
+  - Public navigation detected: false.
+  - Email capture present/inert: true.
+  - MailerLite detected: false.
+  - CRM touched: false.
+- `process_patch`:
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview Eligibility
+    Gate now includes Spanish editorial, semantic completeness, referential
+    integrity, product naming consistency, lexical repetition and independent
+    editorial review gates.
+- `live_gate_status`: No MailerLite, sends, audience, public distribution,
+  public navigation, CRM writes, ledgers/cards/scoring/Fact Store, CRM Core,
+  Brand Hub canon patch or GOG/auth.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Spanish-Editorial Repaired CEO Web QA Waiting - 2026-06-23
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_desk_preview_eligibility_repair`
+- `previous_status`: `completed_green`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_repaired_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `created_at`: `2026-06-23`
+- `source_checkpoint`: `Spanish Editorial Desk + Preview Eligibility Repair completed green`
+- `objective`: Alejandro reviews the repaired noindex/unlisted Shopify preview
+  for CEO/Web acceptance or a scoped follow-up. This is a review gate only.
+- `accepted_evidence`:
+  - Spanish editorial repair receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_preview_repair_execution_receipt_2026-06-23.json`
+  - Independent editorial review:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_editorial_desk_review_2026-06-23.md`
+  - Shopify branch latest repair commit:
+    `80d6836 Repair Mapa Energia Foco Spanish editorial gate`.
+- `forbidden_scope`:
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `completion_definition`: Alejandro either accepts the Spanish-editorial
+  repaired preview for the next gate, asks for a scoped follow-up, pauses the
+  candidate or returns to another Launch OS edge.
+- `resume_instruction`: Present only the Spanish-editorial repaired preview
+  state, concise semaforo and next decision. Do not continue to MailerLite,
+  CRM, distribution or new product expansion without a fresh decision.

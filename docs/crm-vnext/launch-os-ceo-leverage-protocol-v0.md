@@ -106,11 +106,17 @@ Required gate values:
 
 - `copy_maturity = public_candidate`.
 - `orthography_editorial_gate = green`.
+- `spanish_editorial_gate = green`.
+- `semantic_completeness_gate = green`.
+- `referential_integrity_gate = green`.
+- `product_naming_consistency_gate = green`.
+- `lexical_repetition_gate = green`.
 - `brand_voice_gate = green`.
 - `product_value_gate = green`.
 - `visual_design_gate = green`.
 - `perceived_value_gate = green`.
 - `claims_gate = green`.
+- `independent_editorial_review = green`.
 - `internal_labels_absent = true`.
 
 This gate is separate from technical Shopify QA. A preview can be noindex,
