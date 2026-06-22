@@ -14687,3 +14687,80 @@ Closed gates:
 Active next action:
 
 - `launch_os_v0_mapa_energia_foco_shopify_preview_ceo_web_qa_waiting`
+
+## Launch OS v0 Mapa Energia/Foco Brand + Editorial Preview Eligibility Repair - 2026-06-22
+
+Status: CEO/Web review found the Shopify preview technically functional and
+QA-green, but not accepted at the creative/editorial gate. Downstream work was
+paused. No MailerLite, sends, audience, CRM, public navigation/distribution or
+new product expansion was opened.
+
+Diagnosis:
+
+- The exact preview source was the isolated Shopify worktree Liquid copy:
+  `sections/mapa-energia-foco.liquid`,
+  `snippets/mapa-energia-foco-inert-email-capture.liquid` and
+  `templates/page.mapa-energia-foco-preview.liquid`.
+- The source had been promoted from an operator candidate/prototype lineage.
+  It was not protected by a final Brand/Public Copy maturity gate.
+- The QA gates that actually ran were functional and technical: noindex,
+  unlisted posture, inert capture, no MailerLite/CRM, no microproduct-added
+  analytics/network and render/source attribution.
+- The missing gate was public-copy eligibility: spelling/accents/punctuation,
+  affirmative voice, internal label removal, Brand voice maturity and
+  claims/value readiness.
+- The pipeline confused Brand Direction Fit with Final/Public Copy readiness.
+
+Repair:
+
+- Repaired Spanish accents, spelling and punctuation across landing, questions,
+  result copy, CTA and inert save-result copy.
+- Removed rough prototype language and internal/public-surface leakage.
+- Restored affirmative/declarative posture, reduced definition by negation and
+  removed dangling pronouns from public copy.
+- Kept the product structure, quiz logic and result families intact.
+- Added `Preview Eligibility Gate` to
+  `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`.
+
+Shopify/Web:
+
+- Isolated Shopify branch:
+  `codex/shopify-mapa-energia-foco-preview`.
+- Latest repair commit:
+  `d3e3a0d Remove dangling pronoun from Mapa Energia Foco prompt`.
+- Existing noindex/unlisted preview updated: true.
+- Changed remote assets:
+  - `sections/mapa-energia-foco.liquid`
+  - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+  - `templates/page.mapa-energia-foco-preview.liquid`
+- Existing Page object touched only for title/body/template-suffix posture.
+- Theme publish: false.
+- Public navigation touched: false.
+- Exact URL printed/stored in receipt: false/false.
+
+Receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_brand_editorial_preview_repair_execution_receipt_2026-06-22.json`
+
+QA result:
+
+- Execution status: `completed`.
+- `copy_maturity=public_candidate`.
+- Orthography/editorial gate: green.
+- Brand voice gate: green.
+- Product value gate: green.
+- Claims gate: green.
+- Internal labels absent: true.
+- `a_veces_count=0`.
+- `ruido_count=0`.
+- Dangling pronoun risk cleared: true.
+- Render blockers: none.
+- Noindex confirmed: true.
+- Public navigation detected: false.
+- Email capture present/inert: true.
+- MailerLite detected: false.
+- CRM touched: false.
+
+Active next action:
+
+- `launch_os_v0_mapa_energia_foco_brand_editorial_repaired_ceo_web_qa_waiting`

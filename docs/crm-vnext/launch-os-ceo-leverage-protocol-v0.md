@@ -98,6 +98,23 @@ Default package: `Interactive Static UX Prototype Pack`. It should include:
 - No-network/no-send safety scan.
 - Decision brief.
 
+## Preview Eligibility Gate
+A microproduct may not enter CEO/Web Shopify Preview QA unless the public copy
+is mature enough for Alejandro to review as a public-facing experience.
+
+Required gate values:
+
+- `copy_maturity = public_candidate`.
+- `orthography_editorial_gate = green`.
+- `brand_voice_gate = green`.
+- `product_value_gate = green`.
+- `claims_gate = green`.
+- `internal_labels_absent = true`.
+
+This gate is separate from technical Shopify QA. A preview can be noindex,
+unlisted and technically functional while still being blocked at the creative
+gate. Do not advance that state to CEO/Web QA as if it were ready.
+
 ## CEO Decision Packet Format
 Use this shape:
 

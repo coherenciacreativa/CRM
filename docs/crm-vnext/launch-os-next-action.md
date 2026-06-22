@@ -6813,5 +6813,109 @@ Use deep hydration only for:
 - `resume_instruction`: Present the preview for CEO/Web QA using the redacted
   URL protocol. Do not make more Shopify changes unless Alejandro approves a
   scoped follow-up.
-- `completion_definition`: Alejandro accepts the preview for the next gate,
-  requests local/web copy or UX changes, or pauses the candidate.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Brand Editorial Preview Eligibility Repair - 2026-06-22
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_shopify_preview_ceo_web_qa_waiting`
+- `previous_status`: `failed_creative_editorial_gate_by_ceo_review`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_brand_editorial_preview_eligibility_repair`
+- `status`: `completed_green`
+- `completed_at`: `2026-06-22`
+- `objective`: Diagnose why the noindex/unlisted Shopify preview advanced to
+  CEO/Web QA with rough Spanish orthography and Brand voice regressions, repair
+  the complete public copy, update the existing preview only after hard
+  creative gates were green, and patch the reusable Launch OS preview
+  eligibility process.
+- `diagnosis`:
+  - Exact source copy used by the Shopify preview was the Liquid source in the
+    isolated Shopify worktree, primarily
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/sections/mapa-energia-foco.liquid`
+    and
+    `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/snippets/mapa-energia-foco-inert-email-capture.liquid`.
+  - The preview source was derived from a local operator candidate, not a
+    final-approved Brand/Public Copy artifact.
+  - The gates that actually ran before CEO/Web QA were technical/source gates:
+    noindex, unlisted posture, inert capture, no MailerLite, no CRM, no
+    analytics/network added by the microproduct, and render/source attribution.
+  - Orthography/editorial and final Brand voice readiness were not enforced as
+    hard gates before CEO/Web QA.
+  - Pipeline confusion: Brand Direction Fit was treated too much like Final
+    Brand/Public Copy readiness.
+- `repair_summary`:
+  - Spanish spelling, accents and punctuation repaired across landing,
+    questions, results, CTA and email-capture copy.
+  - Public copy shifted back toward affirmative/declarative voice.
+  - Over-negation, internal/prototype language, generic `ruido` cliche and
+    dangling pronouns were removed from the public source.
+  - Result and option language now reads more completely on mobile.
+  - Email capture remains inert and explicitly safe for review.
+- `shopify_branch`: `codex/shopify-mapa-energia-foco-preview`
+- `shopify_commits`:
+  - `48197c0 Repair Mapa Energia Foco preview copy eligibility`
+  - `d80a288 Tighten Mapa Energia Foco preview eligibility copy`
+  - `286f13d Clarify Mapa Energia Foco result references`
+  - `d3e3a0d Remove dangling pronoun from Mapa Energia Foco prompt`
+- `execution_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_brand_editorial_preview_repair_execution_receipt_2026-06-22.json`
+- `preview_update`:
+  - Existing noindex/unlisted preview updated: true.
+  - Changed remote assets:
+    `sections/mapa-energia-foco.liquid`,
+    `snippets/mapa-energia-foco-inert-email-capture.liquid`,
+    `templates/page.mapa-energia-foco-preview.liquid`.
+  - Existing Page object touched only for title/body/template-suffix posture.
+  - Theme publish: false.
+  - Public navigation touched: false.
+  - Exact URL printed/stored: false/false.
+- `qa_green`:
+  - `copy_maturity`: `public_candidate`.
+  - `orthography_editorial_gate`: true.
+  - `brand_voice_gate`: true.
+  - `product_value_gate`: true.
+  - `claims_gate`: true.
+  - `internal_labels_absent`: true.
+  - `a_veces_count`: 0.
+  - `ruido_count`: 0.
+  - `dangling_pronoun_risk`: true.
+  - Render QA blockers: none.
+  - Noindex: true.
+  - Public navigation detected: false.
+  - Email capture present/inert: true.
+  - MailerLite detected: false.
+  - CRM touched: false.
+- `process_patch`:
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` now includes
+    `Preview Eligibility Gate`.
+- `live_gate_status`: No MailerLite, sends, audience, public distribution,
+  public navigation, CRM writes, ledgers/cards/scoring/Fact Store, CRM Core,
+  Brand Hub canon patch or GOG/auth.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Brand-Editorial Repaired CEO Web QA Waiting - 2026-06-22
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_brand_editorial_preview_eligibility_repair`
+- `previous_status`: `completed_green`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_brand_editorial_repaired_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `created_at`: `2026-06-22`
+- `source_checkpoint`: `Brand/editorial preview eligibility repair completed green`
+- `objective`: Alejandro reviews the repaired noindex/unlisted exact-link
+  Shopify preview for creative/editorial fit, UX and product value. This is a
+  review gate only.
+- `accepted_evidence`:
+  - Repair execution receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_brand_editorial_preview_repair_execution_receipt_2026-06-22.json`
+  - Shopify branch latest repair commit: `d3e3a0d`.
+- `forbidden_scope`:
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `completion_definition`: Alejandro either accepts the repaired preview for
+  the next gate, asks for a scoped creative revision, pauses the candidate, or
+  returns to another Launch OS edge.
+- `resume_instruction`: Present only the repaired preview state, concise
+  semaforo and next decision. Do not continue to MailerLite, CRM, distribution
+  or new product expansion without a fresh decision.
