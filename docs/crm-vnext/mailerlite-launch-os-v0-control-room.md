@@ -14515,3 +14515,175 @@ Next edge:
   designer` app Client ID and Client Secret.
 - After `.env` exists, Codex runs runtime binding checker + preflight-only.
 - Full Shopify preview retry remains gated on checker/preflight green.
+
+## Launch OS v0 Mapa Energia/Foco Shopify preview retry v2 quarantined - 2026-06-22
+
+Status: Alejandro/operator completed the Shopify client-credentials helper.
+Codex verified the ignored `.env` binding and ran the existing preview execution
+runner v2 after green preflight. The Shopify API route is operational, but the
+preview is not CEO/Web QA green because render QA quarantined the result.
+
+Artifacts:
+
+- Client credentials helper receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_client_credentials_env_helper_receipt_2026-06-22.json`
+- Runtime binding checker receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_runtime_binding_check_receipt_2026-06-19.json`
+- Fresh preflight receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_fresh_preflight_readonly_v2_2026-06-19.json`
+- Shopify preview execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_receipt_noindex_unlisted_v2_2026-06-19.json`
+
+Result:
+
+- Runtime binding: `green_runtime_binding`.
+- Fresh preflight: `green_readonly_preflight`.
+- Execution status: `quarantined`.
+- Preview created/updated: true.
+- Page action: `created`.
+- Theme assets uploaded and verified: true.
+- Noindex confirmed: true.
+- Public navigation touched: false.
+- Theme published: false.
+- Exact URL printed in chat: false.
+- Redacted URL label: `mapa_energia_foco_preview_url_redacted`.
+
+Render QA blockers:
+
+- `desktop_missing_inert_capture`
+- `desktop_forbidden_render_string:analytics`
+- `desktop_forbidden_render_string:networkApis`
+- `mobile_missing_inert_capture`
+- `mobile_forbidden_render_string:analytics`
+
+Interpretation:
+
+- Credentials and the Shopify API route are no longer the blocker.
+- Local source scan was green before upload.
+- The missing inert capture blocker is probably a QA selector mismatch: the
+  snippet uses `data-email-capture`, while runner QA checks for
+  `data-inert-email-capture` or a specific button phrase.
+- Analytics/network render blockers may be Shopify platform/render wrappers, but
+  remain unresolved until diagnosed.
+
+Closed gates:
+
+- No publish.
+- No public navigation.
+- No public distribution/audience traffic.
+- No MailerLite.
+- No sends.
+- No audience assignment.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub.
+- No GOG/auth.
+
+Next edge:
+
+- Active next action:
+  `launch_os_v0_mapa_energia_foco_shopify_preview_quarantine_render_qa_diagnosis_local_only`
+- Diagnose render QA blockers local/read-only before any further Shopify change.
+
+## Launch OS v0 Mapa Energia/Foco Shopify preview quarantine diagnosis completed - 2026-06-22
+
+Status: Local/read-only quarantine diagnosis completed. No Shopify Admin/API
+mutation occurred during diagnosis and the exact preview URL was not printed.
+
+Artifact:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_quarantine_render_qa_diagnosis_2026-06-22.md`
+
+Findings:
+
+- The inert capture blocker is a QA selector mismatch, not an apparent missing
+  product element. Source uses `data-email-capture`; render contains the email
+  capture semantically.
+- Analytics strings are render-injected, not present in local source.
+- Noindex remains green.
+- Public navigation remains untouched/not detected.
+- MailerLite, sends, audience, CRM, ledgers, cards, scoring, Fact Store, CRM
+  Core, Brand Hub and GOG/auth remain untouched.
+
+Route options:
+
+- Accept diagnosis and move to CEO/Web visual QA, with Shopify platform wrapper
+  strings treated as expected storefront rendering rather than local source
+  violations.
+- Patch the QA runner criteria locally so it checks the actual inert capture
+  selector/copy and classifies platform wrapper strings separately.
+- Patch the theme selector locally to add `data-inert-email-capture` as an
+  alias, then use a later scoped Shopify micro-update if desired.
+- Leave preview quarantined and move to another Launch OS edge.
+
+Active next action:
+
+- `launch_os_v0_mapa_energia_foco_shopify_preview_quarantine_route_decision_waiting`
+
+## Launch OS v0 Mapa Energia/Foco Shopify preview QA runner micro-patch green - 2026-06-22
+
+Status: Alejandro accepted the quarantine diagnosis and chose the local-only QA
+runner/criteria micro-patch route. No further Shopify change was executed. The
+new read-only QA runner checked the existing preview and resolved the quarantine
+as a false-positive from selector/source-attribution criteria.
+
+Files/artifacts:
+
+- Versioned QA runner:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/scripts/mapa-energia-foco-preview-render-qa.js`
+- Versioned QA test:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-mapa-energia-foco-preview/scripts/mapa-energia-foco-preview-render-qa.test.js`
+- Existing operational runner patched locally:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_v2_2026-06-19.mjs`
+- QA receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_render_qa_micro_patch_receipt_2026-06-22.json`
+
+QA before:
+
+- Preview execution receipt: `quarantined`.
+- Email capture false negative: runner checked the old/nonexistent marker
+  instead of the actual implementation marker.
+- Render analytics/network strings were treated as generic hard blockers.
+
+QA after:
+
+- Execution status: `completed`.
+- Status: `render_qa_green_after_source_attribution_micro_patch`.
+- Blockers: none.
+- Email capture: present and inert.
+- Noindex: green.
+- Public navigation: not detected/untouched.
+- Local source analytics/network: absent.
+- Render analytics attribution: existing Shopify/Omega app wrapper baseline,
+  not microproduct source.
+- Shopify Admin/API called by QA: false.
+- Shopify theme/Page mutation by QA: false.
+- Exact URL printed/stored: false/false.
+
+Tests:
+
+- `node scripts/mapa-energia-foco-preview-render-qa.test.js`: green.
+- `node --check scripts/mapa-energia-foco-preview-render-qa.js`: green.
+- `node --check scripts/mapa-energia-foco-preview-render-qa.test.js`: green.
+- `node --check /Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_shopify_preview_execution_runner_v2_2026-06-19.mjs`: green.
+
+Closed gates:
+
+- No Shopify Admin/API mutation after the quarantine diagnosis.
+- No asset upload.
+- No Page/theme mutation.
+- No publish.
+- No public navigation.
+- No MailerLite.
+- No sends.
+- No audience traffic.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_mapa_energia_foco_shopify_preview_ceo_web_qa_waiting`
