@@ -2259,106 +2259,133 @@ routing and completion pointer.
   `/Users/alejandrogomez/CRM` use. This proves repeatability, not distinct-story
   uniqueness.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_story_cross_lifecycle_fingerprint_separation_pilot_awaiting_approval_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-24`
+- `updated_at`: `2026-06-24`
+- `completed_at`: `2026-06-24`
+- `result`: `completed_green`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_cross_lifecycle_fingerprint_separation_pilot_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_cross_lifecycle_fingerprint_separation_pilot_2026-06-24.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_cross_lifecycle_fingerprint_separation_closeout_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_cross_lifecycle_fingerprint_separation_closeout_2026-06-24.md`
+- `findings`:
+  - Pilot completed green.
+  - Source health remained `partial`.
+  - Quality gate status was `green`.
+  - Native preflight passed.
+  - Dedicated standard authenticated Safari window was used.
+  - Safari Private Browsing was not used.
+  - Intended Instagram account was confirmed.
+  - Own-story surface was reached.
+  - Distinct story lifecycle was confirmed.
+  - Prior and current stories were both `video`.
+  - Comparison used `same_media_class`.
+  - Comparison used `matched_compatible_strategy`.
+  - One new fingerprint was generated.
+  - Fingerprint algorithm class was `dHash_temporal_digest`.
+  - Fingerprint algorithm version was
+    `dhash64_v1_sips_bmp_luma_temporal_sha256_v1`.
+  - Different-story fingerprint separation was confirmed.
+  - Similarity classification was `clear_difference`.
+  - No fingerprint collision was detected.
+  - No lifecycle conflict was detected.
+  - Three transient images were created and all three were deleted and verified.
+  - Three derived images were created and all three were deleted and verified.
+  - No raw image was retained.
+  - OCR was not used.
+  - Viewer access was not opened.
+  - Viewer anchors captured: `0`.
+  - Next-story traversal was not used.
+  - DMs were not opened.
+  - Instagram actions performed: `0`.
+  - CRM/source writes performed: `0`.
+  - Story-anchor confidence reached `high`.
+  - Visual story identity R&D is complete for v0.
+  - Manual deletion was validation evidence only, not a routine requirement.
+- `completion_definition`: CRM Core confirmed same-media cross-lifecycle private
+  visual fingerprint separation for a distinct own story, raised story-anchor
+  confidence to `high`, and preserved all privacy, deletion, no-viewer,
+  no-action, no-CRM-write, no-Launch-OS, and `/Users/alejandrogomez/CRM`
+  boundaries.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_multi_story_viewer_sweep_pilot_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-24`
 - `updated_at`: `2026-06-24`
-- `objective`: Wait for Alejandro approval before one cross-lifecycle
-  distinct-story private fingerprint separation pilot using a future/new own
-  story and comparison against the prior private same-story consistency
-  artifact.
-- `why_now`: Same-story repeatability is confirmed, but high-confidence
-  autonomous story identity also requires proof that a distinct story lifecycle
-  produces a different fingerprint. Cross-lifecycle comparison avoids fragile
-  next-story navigation and does not require Alejandro to label stories
-  manually.
+- `objective`: Wait for Alejandro approval before one bounded natural-state
+  multi-story viewer sweep pilot covering zero to five active own stories
+  without manual labeling, deletion, ordering, or story-count input.
+- `why_now`: Story identity is now high-confidence and fingerprint privacy
+  controls are proven. The remaining operational gap is handling the naturally
+  changing active story stack and associating bounded viewer windows with each
+  distinct story.
 - `allowed_scope`:
-  - Present the exact cross-lifecycle separation boundary.
-  - Explain lifecycle proof, media-class strategy, private comparison, and
-    deletion controls.
+  - Present the exact natural-state pilot boundary.
+  - Explain zero-story no-op, partial-success, lifecycle, dedupe,
+    transient-image deletion, viewer-window, and traversal controls.
   - Answer clarifying questions.
   - Wait for approval.
   - No execution.
 - `forbidden_scope`:
-  - No UI, Computer Use, or Instagram execution.
-  - No screenshots/fingerprints yet.
-  - No next-story traversal.
-  - No viewer-list opening or viewer collection.
-  - No DMs, welcome audio, or Instagram actions.
-  - No OCR or story interpretation.
+  - No Instagram/UI/Computer Use execution yet.
+  - No screenshots, fingerprints, viewer collection, or next-story traversal
+    yet.
+  - No full-list traversal.
+  - No DMs or welcome audio.
+  - No Instagram actions.
   - No CRM/source writes, scoring, ledgers, cards, Fact Store, or outreach.
   - No Launch OS.
   - No `/Users/alejandrogomez/CRM`.
 - `approval_phrase_required`:
-  `I approve one CRM Core Instagram cross-lifecycle private visual fingerprint separation pilot using one future/new reachable own story and the prior private same-story consistency artifact. Use native Computer Use in a dedicated standard authenticated Safari window, derive the new story fingerprint privately, compare it locally against the prior story fingerprint, delete every raw and derived image immediately and confirm deletion. Do not require manual story labels, print or retain story content or private digests, traverse to another story, open viewer lists or DMs, perform Instagram actions, or write CRM/source state.`
+  `I approve one CRM Core Instagram natural-state multi-story viewer sweep pilot covering zero to five active own stories using native Computer Use in a dedicated standard authenticated Safari window. Discover stories autonomously without manual labels, deletion, ordering, or story-count input; fingerprint each safely reachable story privately; capture only the initial visible viewer window; deduplicate viewer-story edges; delete and verify all transient images; allow partial success; do not use full-list traversal, open DMs, perform Instagram actions, or write CRM/source state.`
 - `future_execution_constraints`:
-  - One future/new reachable own story only.
-  - No manual story label required.
-  - Distinct lifecycle must be established privately from timestamps, prior
-    artifact lifecycle, expiry/disappearance, and current active-story context.
-  - If distinct lifecycle cannot be confirmed, block before claiming separation.
-  - Compare against the prior private same-story consistency artifact locally.
-  - Record `priorStoryMediaClass`.
-  - Record `currentStoryMediaClass`.
-  - Record `comparisonMediaClassRelation`.
-  - Record `comparisonStrategyRelation`.
-  - Record `distinctStoryLifecycleConfirmed`.
-  - Record `differentStoryFingerprintSeparation`.
-  - Record `overallStoryAnchorConfidenceAfter`.
-  - Allowed `comparisonMediaClassRelation` values are `same_media_class`,
-    `cross_media_class`, and `unknown`.
-  - Allowed `comparisonStrategyRelation` values are
-    `matched_compatible_strategy`, `cross_strategy`, `not_comparable`, and
-    `unknown`.
-  - Prefer the same media class and temporal strategy when naturally available,
-    but do not require Alejandro to curate story format.
-  - If media classes differ, report cross-media comparison separately and do not
-    overstate separation strength.
-  - Use native Computer Use in a dedicated standard authenticated Safari window.
+  - Zero to five naturally active own stories.
+  - No manual labels, deletion, ordering, or story-count input.
+  - Native Computer Use in a dedicated standard authenticated Safari window.
   - Safari Private Browsing forbidden.
   - Neutral native click/keyboard preflight required.
-  - No next-story traversal.
-  - All raw and derived images under `/tmp/` only.
-  - Delete all temporary images immediately after digest derivation.
-  - Verify deletion for every temporary file.
-  - Block if deletion cannot be confirmed.
-  - Digests, similarity values, and story content remain private.
-  - No OCR, captioning, story-text extraction, face/person/object recognition,
-    or semantic interpretation.
-  - No viewer access, DMs, Instagram actions, CRM/source writes, ledgers,
-    scoring, cards, Fact Store, or outreach.
-  - High confidence may be granted only if:
-    - distinct lifecycle is confirmed;
-    - same-story consistency remains confirmed;
-    - different-story fingerprint separation is confirmed;
-    - media class is the same and the fingerprint strategy is compatible or
-      matched;
-    - no collision or lifecycle conflict exists;
-    - deletion controls pass;
-  - High confidence may also be granted if an independent strong stable
-    source/UI identifier agrees with fingerprint and lifecycle evidence.
-  - If `comparisonMediaClassRelation=cross_media_class`, the result may be
-    recorded as useful distinct-story separation evidence, but it must not alone
-    promote overall confidence to `high`.
-  - The maximum result for cross-media separation alone is
-    `medium_consistency_confirmed_cross_media_separation`.
-  - If strategies are technically incomparable, report
-    `differentStoryFingerprintSeparation=not_comparable` rather than
-    `confirmed`.
-  - Alejandro must not be required to curate or manually label story media
-    types.
+  - Maximum total UI budget: five minutes.
+  - One bounded story-entry attempt per story.
+  - One bounded next-story transition attempt per transition.
+  - One bounded viewer-list opening per reachable story.
+  - Initial visible viewer window only.
+  - No viewer-list scrolling or full-list exhaustion.
+  - Story identity must be medium/high before contributing to cross-story
+    frequency.
+  - Same viewer plus same story remains one deduplicated edge.
+  - Same viewer across distinct stories may increase private frequency.
+  - Every transient and derived image must remain under `/tmp/`, be deleted
+    immediately, and have deletion verified.
+  - If one story is inaccessible, skip it and preserve prior successful story
+    results.
+  - Partial success is allowed.
+  - Zero-story no-op is a valid result, not an error.
+  - Viewer modal closure must be confirmed before continuing.
+  - No blind keyboard navigation.
+  - No coordinate or screenshot-coordinate fallback.
+  - No OCR, story interpretation, viewer identity output, DMs, welcome audio,
+    Instagram actions, CRM/source writes, scoring, ledgers, cards, Fact Store,
+    or outreach.
+  - This validation phase is limited to two pilots; after that, close or park
+    remaining imperfections and move focus to new-follower detection and
+    welcome-audio automation.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `instagram-browser-access-orchestrator-v0.md`,
   `instagram-computer-use-quality-gate-v0.md`,
   `instagram-story-anchor-dedupe-protocol-v0.md`,
-  `instagram-story-anchor-confidence-hardening-protocol-v0.md`, and
-  `instagram-story-visual-fingerprint-consistency-protocol-v0.md`. Do not
-  execute UI, Computer Use, Instagram, fingerprint capture, viewer access, DMs,
-  source actions, or CRM writes until Alejandro gives the exact approval phrase
-  and a new/distinct story lifecycle is safely available.
+  `instagram-story-anchor-confidence-hardening-protocol-v0.md`,
+  `instagram-story-visual-fingerprint-consistency-protocol-v0.md`, and
+  `instagram-multi-story-viewer-sweep-protocol-v0.md`. Do not execute UI,
+  Computer Use, Instagram, fingerprint capture, viewer access, next-story
+  traversal, DMs, source actions, or CRM writes until Alejandro gives the exact
+  approval phrase.
 - `completion_definition`: Alejandro approves, declines, or modifies one
-  cross-lifecycle distinct-story fingerprint separation pilot.
+  natural-state multi-story viewer sweep pilot.

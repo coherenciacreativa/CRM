@@ -234,6 +234,35 @@ High confidence from visual separation requires same-media compatible strategy,
 or corroboration by an independent strong stable source/UI identifier.
 Cross-media separation alone remains medium-confidence review evidence.
 
+## Cross-Lifecycle Separation Completion
+
+The cross-lifecycle private visual fingerprint separation pilot completed green
+on 2026-06-24.
+
+Redacted findings:
+
+- Same-story consistency was already confirmed.
+- Same-media distinct-story separation was confirmed.
+- Prior and current stories were both `video`.
+- The comparison used a compatible multi-frame temporal digest strategy.
+- Different-story fingerprint separation was `confirmed`.
+- Similarity classification was `clear_difference`.
+- No fingerprint collision or lifecycle conflict was detected.
+- All transient and derived images were deleted and verified.
+- No raw image was retained.
+- No OCR, viewer access, next-story traversal, Instagram action, CRM/source
+  write, Launch OS touch, or `/Users/alejandrogomez/CRM` use occurred.
+- Story-anchor confidence reached `high`.
+
+Interpretation:
+
+- Autonomous story identity confidence hardening is complete for v0.
+- Future runs should use the protocol operationally rather than continue
+  fingerprint algorithm research by default.
+- Manual deletion was acceptable validation evidence, but routine operation must
+  infer lifecycle privately from timestamps, stack context, disappearance,
+  current observation state, and fingerprints.
+
 ## Multiple Active Stories
 
 Autonomous handling when several stories are active:

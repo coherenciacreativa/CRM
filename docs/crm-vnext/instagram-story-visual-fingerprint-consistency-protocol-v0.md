@@ -197,6 +197,51 @@ Rules:
 - cross-media separation alone may produce at most
   `overallStoryAnchorConfidenceAfter=medium_consistency_confirmed_cross_media_separation`.
 
+## Cross-Lifecycle Separation Pilot Result
+
+The cross-lifecycle private visual fingerprint separation pilot completed green
+on 2026-06-24.
+
+Redacted result:
+
+- Distinct lifecycle was confirmed.
+- Prior and current stories were both `video`.
+- `comparisonMediaClassRelation=same_media_class`.
+- `comparisonStrategyRelation=matched_compatible_strategy`.
+- The fingerprint algorithm class was `dHash_temporal_digest`.
+- The fingerprint algorithm version was
+  `dhash64_v1_sips_bmp_luma_temporal_sha256_v1`.
+- Different-story fingerprint separation was confirmed.
+- The similarity class was `clear_difference`.
+- No fingerprint collision was detected.
+- No lifecycle conflict was detected.
+- Three transient images were created and all three were deleted and verified.
+- Three derived images were created and all three were deleted and verified.
+- No raw image was retained.
+- OCR was not used.
+- Viewer access was not opened.
+- Next-story traversal was not used.
+- Instagram actions performed: `0`.
+- CRM/source writes performed: `0`.
+- Story anchor confidence is now `high`.
+
+Interpretation:
+
+- Same-story fingerprint repeatability is proven.
+- Same-media distinct-story separation is proven.
+- Autonomous visual story identity is technically proven for v0.
+- Manual deletion was validation evidence only, not an operating dependency.
+- Routine lifecycle handling must come from private timestamps, first/last seen
+  state, disappearance, current stack context, and fingerprints.
+
+Next route:
+
+- Visual story identity R&D is complete for v0.
+- Do not continue fingerprint algorithm research as the next route.
+- Move to operational multi-story sweeping: discover zero, one, or multiple
+  naturally active stories and associate bounded viewer windows with each
+  distinct story.
+
 ## Confidence Rubric
 
 ### `medium`
