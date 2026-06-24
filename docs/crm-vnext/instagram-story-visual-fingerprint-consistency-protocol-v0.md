@@ -108,6 +108,48 @@ Suggested classifications:
 
 The raw digest and similarity value must remain private.
 
+## Same-Story Consistency Pilot Result
+
+The same-story private visual fingerprint consistency pilot completed green on
+2026-06-24.
+
+Redacted result:
+
+- `storyMediaClass=video`.
+- `captureStrategy=matched_multi_frame_temporal_digest`.
+- Two fingerprints were generated.
+- Each fingerprint used three bounded frames.
+- The same `dHash` algorithm/version was used for both fingerprints.
+- The capture strategy was matched.
+- Same-story fingerprint consistency was confirmed.
+- The similarity classification was `strong_match`.
+- No fingerprint conflict was detected.
+- All transient and derived images were deleted and deletion was verified.
+- No raw image was retained.
+- OCR was not used.
+- Viewer access was not opened.
+- Next-story traversal was not used.
+- Instagram actions performed: `0`.
+- CRM/source writes performed: `0`.
+- Story anchor confidence is now `medium_consistency_confirmed`.
+
+Interpretation:
+
+- Same-story fingerprint repeatability is proven.
+- Video temporal fingerprinting is proven when the capture strategy is matched.
+- Privacy and transient-image deletion controls are proven.
+- Uniqueness is not yet proven.
+- Distinct-story separation remains required for `high` confidence unless an
+  independent strong stable source/UI identifier agrees.
+
+Next route:
+
+- Do not repeat same-story consistency as the next route.
+- Prefer cross-lifecycle distinct-story separation using a future/new own story.
+- Do not make manual story labels an operating dependency.
+- Distinct-story separation should compare privately against the existing
+  same-story consistency artifact.
+
 ## Distinct-Story Separation
 
 Distinct-story separation may be tested in either of two ways.
@@ -128,12 +170,32 @@ Preferred when second-story traversal is unavailable:
 
 Result fields:
 
-- `differentStoryFingerprintSeparation`
+- `priorStoryMediaClass`
+- `currentStoryMediaClass`
+- `comparisonMediaClassRelation`
+- `comparisonStrategyRelation`
 - `distinctStoryLifecycleConfirmed`
-- `fingerprintCollisionDetected`
+- `differentStoryFingerprintSeparation`
 - `differentStorySimilarityClass`
+- `fingerprintCollisionDetected`
+- `overallStoryAnchorConfidenceAfter`
 
 Do not claim separation if distinct lifecycle identity is uncertain.
+
+Same-media, compatible-strategy separation is the preferred visual evidence for
+high confidence. Cross-media separation is useful evidence that two artifacts
+may belong to different story lifecycles, but it is weaker because it does not
+prove robust same-method story discrimination.
+
+Rules:
+
+- lifecycle evidence remains mandatory;
+- visual difference alone cannot override lifecycle ambiguity;
+- cross-media separation alone cannot produce `high` confidence;
+- comparisons between incompatible fingerprint strategies must be classified as
+  `differentStoryFingerprintSeparation=not_comparable`;
+- cross-media separation alone may produce at most
+  `overallStoryAnchorConfidenceAfter=medium_consistency_confirmed_cross_media_separation`.
 
 ## Confidence Rubric
 
@@ -146,14 +208,26 @@ Do not claim separation if distinct lifecycle identity is uncertain.
 
 ### `high`
 
-Require all:
+High confidence may be reached through one of two routes.
+
+Same-media visual separation route requires all:
 
 - same-story fingerprint consistency confirmed;
-- distinct-story separation confirmed, or an independent stable source/UI
-  identifier agrees;
+- distinct-story separation confirmed;
+- same media class and compatible or matched fingerprint strategy;
 - no fingerprint/lifecycle conflict;
 - all transient images deleted and verified;
 - no low-confidence story edges included.
+
+Independent identifier route requires:
+
+- an independent strong stable source/UI identifier agrees with fingerprint and
+  lifecycle evidence;
+- no fingerprint/lifecycle conflict;
+- all transient images deleted and verified.
+
+Cross-media separation alone remains medium-confidence review evidence and must
+not promote overall story-anchor confidence to `high`.
 
 ### Blocked
 

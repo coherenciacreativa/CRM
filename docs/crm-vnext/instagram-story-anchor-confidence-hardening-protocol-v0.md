@@ -216,6 +216,24 @@ Redacted findings:
 - Video media may need a temporal multi-frame fingerprint.
 - The next boundary is same-story consistency, then distinct-story separation.
 
+## Same-Story Temporal Fingerprint Consistency Result
+
+The same-story temporal fingerprint consistency pilot completed green.
+
+Redacted findings:
+
+- Same-story repeatability was confirmed.
+- Video temporal fingerprinting used a matched multi-frame strategy.
+- Confidence is now `medium_consistency_confirmed`.
+- High confidence remains blocked until distinct-story separation is confirmed
+  or an independent strong source/UI identifier agrees.
+
+## Cross-Media Separation Clarification
+
+High confidence from visual separation requires same-media compatible strategy,
+or corroboration by an independent strong stable source/UI identifier.
+Cross-media separation alone remains medium-confidence review evidence.
+
 ## Multiple Active Stories
 
 Autonomous handling when several stories are active:

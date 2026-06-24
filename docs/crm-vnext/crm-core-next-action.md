@@ -2220,68 +2220,135 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, declines, or modifies one
   transient private visual fingerprint pilot for one reachable own story.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_story_same_fingerprint_consistency_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-06-23`
-- `updated_at`: `2026-06-23`
-- `objective`: Wait for Alejandro approval before one same-story private visual
-  fingerprint consistency pilot using the fingerprint consistency protocol.
-- `why_now`: The private visual fingerprint route and deletion controls are
-  proven, but one fingerprint cannot establish stable story identity.
-  Same-story repeatability is the next required confidence gate before
-  distinct-story separation.
+- `updated_at`: `2026-06-24`
+- `completed_at`: `2026-06-24`
+- `result`: `completed_green`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_same_fingerprint_consistency_pilot_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_same_fingerprint_consistency_pilot_2026-06-24.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_same_fingerprint_consistency_closeout_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_same_fingerprint_consistency_closeout_2026-06-24.md`
+- `findings`:
+  - Pilot completed green.
+  - Video temporal digest strategy was used.
+  - Two fingerprints were generated.
+  - Each fingerprint used three bounded frames.
+  - Matched strategy was confirmed.
+  - Same-story fingerprint consistency was confirmed.
+  - Same-story similarity classification was `strong_match`.
+  - No fingerprint collision or conflict was detected.
+  - All 12 transient and derived files were deleted and verified.
+  - No raw image was retained.
+  - OCR was not used.
+  - Viewer list was not opened.
+  - Viewer anchors captured: `0`.
+  - Next-story traversal was not used.
+  - Instagram actions performed: `0`.
+  - CRM/source writes performed: `0`.
+  - Story anchor confidence became `medium_consistency_confirmed`.
+  - Cleanup returned the dedicated standard Safari window to neutral.
+- `completion_definition`: CRM Core confirmed same-story private visual
+  fingerprint repeatability for a video story using a matched multi-frame
+  temporal digest strategy, with deletion verification and no private output,
+  Instagram action, CRM/source write, Launch OS doc touch, or
+  `/Users/alejandrogomez/CRM` use. This proves repeatability, not distinct-story
+  uniqueness.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_cross_lifecycle_fingerprint_separation_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-24`
+- `updated_at`: `2026-06-24`
+- `objective`: Wait for Alejandro approval before one cross-lifecycle
+  distinct-story private fingerprint separation pilot using a future/new own
+  story and comparison against the prior private same-story consistency
+  artifact.
+- `why_now`: Same-story repeatability is confirmed, but high-confidence
+  autonomous story identity also requires proof that a distinct story lifecycle
+  produces a different fingerprint. Cross-lifecycle comparison avoids fragile
+  next-story navigation and does not require Alejandro to label stories
+  manually.
 - `allowed_scope`:
-  - Present exact same-story consistency boundary.
-  - Explain media-class and deletion controls.
+  - Present the exact cross-lifecycle separation boundary.
+  - Explain lifecycle proof, media-class strategy, private comparison, and
+    deletion controls.
   - Answer clarifying questions.
   - Wait for approval.
   - No execution.
 - `forbidden_scope`:
-  - No UI/Computer Use/Instagram execution.
+  - No UI, Computer Use, or Instagram execution.
   - No screenshots/fingerprints yet.
   - No next-story traversal.
-  - No viewer-list opening.
-  - No DMs/actions.
-  - No CRM/source writes.
+  - No viewer-list opening or viewer collection.
+  - No DMs, welcome audio, or Instagram actions.
+  - No OCR or story interpretation.
+  - No CRM/source writes, scoring, ledgers, cards, Fact Store, or outreach.
   - No Launch OS.
   - No `/Users/alejandrogomez/CRM`.
 - `approval_phrase_required`:
-  `I approve one CRM Core Instagram same-story private visual fingerprint consistency pilot for one reachable own story using native Computer Use in a dedicated standard authenticated Safari window. Capture the same story twice using the same approved media-class strategy, derive and compare private digests locally, delete every raw and derived image immediately and confirm deletion. Do not print or retain story content, traverse to another story, open viewer lists or DMs, perform Instagram actions, or write CRM/source state.`
+  `I approve one CRM Core Instagram cross-lifecycle private visual fingerprint separation pilot using one future/new reachable own story and the prior private same-story consistency artifact. Use native Computer Use in a dedicated standard authenticated Safari window, derive the new story fingerprint privately, compare it locally against the prior story fingerprint, delete every raw and derived image immediately and confirm deletion. Do not require manual story labels, print or retain story content or private digests, traverse to another story, open viewer lists or DMs, perform Instagram actions, or write CRM/source state.`
 - `future_execution_constraints`:
-  - One reachable own story only.
-  - Exactly two bounded fingerprint capture windows of that same story.
-  - No next-story traversal.
-  - Native Computer Use in a dedicated standard authenticated Safari window.
+  - One future/new reachable own story only.
+  - No manual story label required.
+  - Distinct lifecycle must be established privately from timestamps, prior
+    artifact lifecycle, expiry/disappearance, and current active-story context.
+  - If distinct lifecycle cannot be confirmed, block before claiming separation.
+  - Compare against the prior private same-story consistency artifact locally.
+  - Record `priorStoryMediaClass`.
+  - Record `currentStoryMediaClass`.
+  - Record `comparisonMediaClassRelation`.
+  - Record `comparisonStrategyRelation`.
+  - Record `distinctStoryLifecycleConfirmed`.
+  - Record `differentStoryFingerprintSeparation`.
+  - Record `overallStoryAnchorConfidenceAfter`.
+  - Allowed `comparisonMediaClassRelation` values are `same_media_class`,
+    `cross_media_class`, and `unknown`.
+  - Allowed `comparisonStrategyRelation` values are
+    `matched_compatible_strategy`, `cross_strategy`, `not_comparable`, and
+    `unknown`.
+  - Prefer the same media class and temporal strategy when naturally available,
+    but do not require Alejandro to curate story format.
+  - If media classes differ, report cross-media comparison separately and do not
+    overstate separation strength.
+  - Use native Computer Use in a dedicated standard authenticated Safari window.
   - Safari Private Browsing forbidden.
   - Neutral native click/keyboard preflight required.
-  - Same fingerprint algorithm and version for both captures.
-  - Same media-class strategy and matched capture strategy required.
-  - Determine media class as `static_image`, `video`, or `unknown` without
-    interpreting story content.
-  - For static media, a matched single-frame strategy may be used.
-  - For video, do not compare arbitrary unmatched frames.
-  - Video consistency requires either a controlled relative capture point or a
-    separately bounded temporal strategy allowed by the protocol.
-  - If media class or matched capture strategy cannot be established safely,
-    block before image creation.
-  - Every raw, crop, normalized image, frame, thumbnail, preview, or duplicate
-    must remain under `/tmp/`.
-  - Delete all raw and derived images immediately after digest derivation.
-  - Verify deletion for every temporary image.
+  - No next-story traversal.
+  - All raw and derived images under `/tmp/` only.
+  - Delete all temporary images immediately after digest derivation.
+  - Verify deletion for every temporary file.
   - Block if deletion cannot be confirmed.
-  - Private digests and similarity values remain private.
-  - No raw image, story content, digest, checksum, or similarity value in chat
-    or Mantis-Reports.
+  - Digests, similarity values, and story content remain private.
   - No OCR, captioning, story-text extraction, face/person/object recognition,
     or semantic interpretation.
-  - No viewer list, viewer collection, DMs, welcome audio, Instagram action,
-    CRM/source write, scoring, ledger, card, Fact Store, or outreach.
-  - This pilot may confirm same-story fingerprint consistency but must not
-    raise overall story-anchor confidence to `high` by itself.
-  - High confidence still requires distinct-story separation or an independent
-    strong source/UI identifier.
+  - No viewer access, DMs, Instagram actions, CRM/source writes, ledgers,
+    scoring, cards, Fact Store, or outreach.
+  - High confidence may be granted only if:
+    - distinct lifecycle is confirmed;
+    - same-story consistency remains confirmed;
+    - different-story fingerprint separation is confirmed;
+    - media class is the same and the fingerprint strategy is compatible or
+      matched;
+    - no collision or lifecycle conflict exists;
+    - deletion controls pass;
+  - High confidence may also be granted if an independent strong stable
+    source/UI identifier agrees with fingerprint and lifecycle evidence.
+  - If `comparisonMediaClassRelation=cross_media_class`, the result may be
+    recorded as useful distinct-story separation evidence, but it must not alone
+    promote overall confidence to `high`.
+  - The maximum result for cross-media separation alone is
+    `medium_consistency_confirmed_cross_media_separation`.
+  - If strategies are technically incomparable, report
+    `differentStoryFingerprintSeparation=not_comparable` rather than
+    `confirmed`.
+  - Alejandro must not be required to curate or manually label story media
+    types.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
@@ -2290,8 +2357,8 @@ routing and completion pointer.
   `instagram-story-anchor-dedupe-protocol-v0.md`,
   `instagram-story-anchor-confidence-hardening-protocol-v0.md`, and
   `instagram-story-visual-fingerprint-consistency-protocol-v0.md`. Do not
-  execute UI, Computer Use, Instagram, screenshot/fingerprint capture,
-  next-story traversal, viewer access, DMs, source actions, or CRM writes until
-  Alejandro gives the exact approval phrase.
+  execute UI, Computer Use, Instagram, fingerprint capture, viewer access, DMs,
+  source actions, or CRM writes until Alejandro gives the exact approval phrase
+  and a new/distinct story lifecycle is safely available.
 - `completion_definition`: Alejandro approves, declines, or modifies one
-  same-story private fingerprint consistency pilot.
+  cross-lifecycle distinct-story fingerprint separation pilot.
