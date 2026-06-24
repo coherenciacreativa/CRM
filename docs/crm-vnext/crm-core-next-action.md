@@ -2135,12 +2135,37 @@ routing and completion pointer.
   anchor confidence hardening remains parked until Alejandro approves the next
   exact route.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_story_private_visual_fingerprint_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-06-22`
-- `updated_at`: `2026-06-22`
+- `updated_at`: `2026-06-23`
+- `completed_at`: `2026-06-23`
+- `result`: `completed_green`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_private_visual_fingerprint_pilot_2026-06-23.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_private_visual_fingerprint_pilot_2026-06-23.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_private_visual_fingerprint_pilot_closeout_2026-06-23.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_story_private_visual_fingerprint_pilot_closeout_2026-06-23.md`
+- `findings`:
+  - Pilot completed green.
+  - One story was fingerprinted.
+  - A bounded transient image was created.
+  - `dHash` was derived locally.
+  - A private digest was stored.
+  - Raw identifier was not stored.
+  - Raw and derived images were deleted and verified.
+  - No raw image was retained.
+  - OCR was not used.
+  - Viewer list was not opened.
+  - Viewer anchors captured: `0`.
+  - Next-story traversal was not used.
+  - Instagram actions performed: `0`.
+  - Story anchor confidence increased from `low` to `medium`.
+  - Dedicated standard Safari cleanup returned to the neutral local page.
+  - No private output, CRM/source write, Launch OS doc touch, or
+    `/Users/alejandrogomez/CRM` use occurred.
 - `objective`: Wait for Alejandro approval before one transient private
   visual-fingerprint pilot for autonomous story identity using a reachable own
   story in a dedicated isolated Safari window.
@@ -2194,3 +2219,79 @@ routing and completion pointer.
   the exact approval phrase.
 - `completion_definition`: Alejandro approves, declines, or modifies one
   transient private visual fingerprint pilot for one reachable own story.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_story_same_fingerprint_consistency_pilot_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-23`
+- `updated_at`: `2026-06-23`
+- `objective`: Wait for Alejandro approval before one same-story private visual
+  fingerprint consistency pilot using the fingerprint consistency protocol.
+- `why_now`: The private visual fingerprint route and deletion controls are
+  proven, but one fingerprint cannot establish stable story identity.
+  Same-story repeatability is the next required confidence gate before
+  distinct-story separation.
+- `allowed_scope`:
+  - Present exact same-story consistency boundary.
+  - Explain media-class and deletion controls.
+  - Answer clarifying questions.
+  - Wait for approval.
+  - No execution.
+- `forbidden_scope`:
+  - No UI/Computer Use/Instagram execution.
+  - No screenshots/fingerprints yet.
+  - No next-story traversal.
+  - No viewer-list opening.
+  - No DMs/actions.
+  - No CRM/source writes.
+  - No Launch OS.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`:
+  `I approve one CRM Core Instagram same-story private visual fingerprint consistency pilot for one reachable own story using native Computer Use in a dedicated standard authenticated Safari window. Capture the same story twice using the same approved media-class strategy, derive and compare private digests locally, delete every raw and derived image immediately and confirm deletion. Do not print or retain story content, traverse to another story, open viewer lists or DMs, perform Instagram actions, or write CRM/source state.`
+- `future_execution_constraints`:
+  - One reachable own story only.
+  - Exactly two bounded fingerprint capture windows of that same story.
+  - No next-story traversal.
+  - Native Computer Use in a dedicated standard authenticated Safari window.
+  - Safari Private Browsing forbidden.
+  - Neutral native click/keyboard preflight required.
+  - Same fingerprint algorithm and version for both captures.
+  - Same media-class strategy and matched capture strategy required.
+  - Determine media class as `static_image`, `video`, or `unknown` without
+    interpreting story content.
+  - For static media, a matched single-frame strategy may be used.
+  - For video, do not compare arbitrary unmatched frames.
+  - Video consistency requires either a controlled relative capture point or a
+    separately bounded temporal strategy allowed by the protocol.
+  - If media class or matched capture strategy cannot be established safely,
+    block before image creation.
+  - Every raw, crop, normalized image, frame, thumbnail, preview, or duplicate
+    must remain under `/tmp/`.
+  - Delete all raw and derived images immediately after digest derivation.
+  - Verify deletion for every temporary image.
+  - Block if deletion cannot be confirmed.
+  - Private digests and similarity values remain private.
+  - No raw image, story content, digest, checksum, or similarity value in chat
+    or Mantis-Reports.
+  - No OCR, captioning, story-text extraction, face/person/object recognition,
+    or semantic interpretation.
+  - No viewer list, viewer collection, DMs, welcome audio, Instagram action,
+    CRM/source write, scoring, ledger, card, Fact Store, or outreach.
+  - This pilot may confirm same-story fingerprint consistency but must not
+    raise overall story-anchor confidence to `high` by itself.
+  - High confidence still requires distinct-story separation or an independent
+    strong source/UI identifier.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
+  `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-browser-access-orchestrator-v0.md`,
+  `instagram-computer-use-quality-gate-v0.md`,
+  `instagram-story-anchor-dedupe-protocol-v0.md`,
+  `instagram-story-anchor-confidence-hardening-protocol-v0.md`, and
+  `instagram-story-visual-fingerprint-consistency-protocol-v0.md`. Do not
+  execute UI, Computer Use, Instagram, screenshot/fingerprint capture,
+  next-story traversal, viewer access, DMs, source actions, or CRM writes until
+  Alejandro gives the exact approval phrase.
+- `completion_definition`: Alejandro approves, declines, or modifies one
+  same-story private fingerprint consistency pilot.

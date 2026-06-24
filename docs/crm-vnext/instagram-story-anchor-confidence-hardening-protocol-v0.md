@@ -198,6 +198,24 @@ Required future receipt fields:
 - `storyAnchorConfidence`
 - `fingerprintConflictDetected`
 
+## Transient Visual Fingerprint Pilot Result
+
+The first transient private visual fingerprint pilot completed green.
+
+Redacted findings:
+
+- One story was fingerprinted.
+- `dHash` was used.
+- A private digest was stored in a private artifact.
+- Raw and derived images were deleted and deletion was confirmed.
+- No raw image was retained.
+- No OCR, viewers, DMs, Instagram actions, CRM/source writes, Launch OS docs,
+  or `/Users/alejandrogomez/CRM` were touched.
+- Story anchor confidence moved from `low` to `medium`.
+- A one-frame fingerprint cannot produce high confidence.
+- Video media may need a temporal multi-frame fingerprint.
+- The next boundary is same-story consistency, then distinct-story separation.
+
 ## Multiple Active Stories
 
 Autonomous handling when several stories are active:

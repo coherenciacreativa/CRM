@@ -388,6 +388,19 @@ Those require their own active action and approval.
   hardening route.
 - A fingerprint route requires separate explicit approval.
 
+### Visual fingerprint route evidence
+
+- `native_computer_use + dedicated_standard_authenticated_safari_window +
+  visual_fingerprint_route`: `route_reached_green`.
+- Safari Private Browsing is explicitly ineligible for this route.
+- Account/session bootstrap for a standard Safari window is proven autonomous.
+- Dedicated-window cleanup returning to the neutral page is proven.
+- Do not test an alternate backend when this route-specific backend passes
+  green.
+- This evidence does not authorize viewer lists, next-story traversal, DMs,
+  Instagram actions, CRM/source writes, Launch OS, or
+  `/Users/alejandrogomez/CRM`.
+
 ## Required Receipt Fields
 
 Every future browser-access receipt must include:
