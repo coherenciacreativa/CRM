@@ -105,11 +105,14 @@ is mature enough for Alejandro to review as a public-facing experience.
 Required gate values:
 
 - `copy_maturity = public_candidate`.
+- `semantic_contract = green`.
+- `blind_reader_comprehension = green`.
 - `orthography_editorial_gate = green`.
 - `spanish_editorial_gate = green`.
 - `semantic_completeness_gate = green`.
 - `referential_integrity_gate = green`.
 - `product_naming_consistency_gate = green`.
+- `cross_screen_coherence = green`.
 - `lexical_repetition_gate = green`.
 - `brand_voice_gate = green`.
 - `product_value_gate = green`.
@@ -117,7 +120,16 @@ Required gate values:
 - `perceived_value_gate = green`.
 - `claims_gate = green`.
 - `independent_editorial_review = green`.
+- `critical_findings = 0`.
+- `major_findings = 0`.
 - `internal_labels_absent = true`.
+
+For Spanish public-copy experiences, apply
+`docs/crm-vnext/launch-os-spanish-editorial-semantic-coherence-gate-v0.md`
+before CEO/Web QA. This is a semantic/editorial gate, not a mechanical
+spellcheck. It must verify that the product has a stable public noun, every
+question and option can be understood on its own, abstract language has explicit
+referents, and independent review finds zero critical and zero major findings.
 
 This gate is separate from technical Shopify QA. A preview can be noindex,
 unlisted and technically functional while still being blocked at the creative
