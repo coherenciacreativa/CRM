@@ -7132,3 +7132,129 @@ Use deep hydration only for:
 - `resume_instruction`: Present only the Spanish-editorial repaired preview
   state, concise semaforo and next decision. Do not continue to MailerLite,
   CRM, distribution or new product expansion without a fresh decision.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Spanish-Editorial Repaired CEO Web QA Waiting - 2026-06-24
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_repaired_ceo_web_qa_waiting`
+- `previous_status`: `active_waiting_for_ceo_web_qa`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_repaired_ceo_web_qa_waiting`
+- `status`: `completed_with_semantic_coherence_followup_requested`
+- `completed_at`: `2026-06-24`
+- `source_checkpoint`: `CEO/Web QA found that the preview direction and
+  navigation remained promising, but the Spanish editorial gate produced a false
+  green because public copy still contained semantic/referential defects.`
+- `completion_result`:
+  - The CEO/Web preview was not accepted as QA-green.
+  - The issue was not another broad product/design direction change.
+  - The required follow-up was a reusable Spanish Editorial + Semantic
+    Coherence Gate v0, plus one complete copy repair and preview update only if
+    the gate passed.
+- `closed_scope`:
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers/cards/scoring/Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+
+## Completed Next Action - Launch OS v0 Mapa Energia/Foco Spanish Editorial + Semantic Coherence Gate v0 - 2026-06-24
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_repaired_ceo_web_qa_waiting`
+- `previous_status`: `completed_with_semantic_coherence_followup_requested`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_semantic_coherence_gate_v0`
+- `status`: `completed_green_preview_updated`
+- `completed_at`: `2026-06-24`
+- `objective`: Create and execute a reusable Spanish Editorial + Semantic
+  Coherence Gate v0 for `Mapa breve de energía y foco`; repair the public copy
+  only after defining the product semantic contract and passing blind-reader and
+  independent senior Spanish editorial review; update only the existing
+  noindex/unlisted Shopify preview if all gates were green.
+- `root_cause`:
+  - The prior editorial gate was too mechanical and allowed false green.
+  - The preview had a promising product/visual direction, but public copy still
+    required the reader to infer omitted subjects, objects and relations.
+  - The pipeline needed a semantic contract and fresh independent review before
+    CEO/Web QA.
+- `stable_product_definition`:
+  - Product noun: `mapa`.
+  - Stable public name: `Mapa breve de energía y foco`.
+  - Stable formulation: a map implemented through five questions.
+  - Central user situation: the person brings a concrete matter that is taking
+    energy, scattering focus or asking for a decision.
+  - Output: one result, one small gesture, one phrase to return to the matter
+    and an optional way to conserve the result.
+- `findings_before_after`:
+  - Before semantic repair: blind-reader review found major referential issues
+    around unsupported metaphors and missing objects; senior editorial review
+    found public-prototype language and voice/semantic risks.
+  - After semantic repair: independent final review returned `critical=0` and
+    `major=0`; remaining minors were non-blocking.
+- `process_artifact`:
+  - `docs/crm-vnext/launch-os-spanish-editorial-semantic-coherence-gate-v0.md`
+- `shopify_branch`: `codex/shopify-mapa-energia-foco-preview`
+- `shopify_commit`: `5050aa1 Add semantic editorial gate for Mapa Energia Foco`
+- `preview_update`:
+  - Existing noindex/unlisted preview updated: true.
+  - New page created: false.
+  - Changed remote assets:
+    - `sections/mapa-energia-foco.liquid`
+    - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+  - Page object touched: false.
+  - Template touched remotely: false.
+  - Layout touched: false.
+  - Theme publish: false.
+  - Public navigation touched: false.
+  - Exact URL printed/stored in receipt: false/false.
+- `execution_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_semantic_gate_preview_update_receipt_2026-06-24.json`
+- `qa_result`:
+  - Execution status: `completed`.
+  - Preview eligibility blockers: none.
+  - Desktop render blockers: none.
+  - Mobile render blockers: none.
+  - Noindex confirmed: true.
+  - Email capture present/inert: true.
+  - MailerLite detected/touched: false/false.
+  - CRM touched: false.
+  - Sends/audience traffic: false.
+  - Analytics added: false.
+  - Screenshot generation: blocked nonfatal because the local Playwright
+    Chromium executable was not installed; no external system was changed for
+    screenshots.
+- `live_gate_status`: No MailerLite, sends, seed sends, audience assignment,
+  public navigation/distribution, CRM writes, ledgers/cards/scoring/Fact Store,
+  CRM Core, Brand Hub canon patch or GOG/auth.
+
+## Active Next Action - Launch OS v0 Mapa Energia/Foco Semantic Gate Repaired CEO Web QA Waiting - 2026-06-24
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_semantic_coherence_gate_v0`
+- `previous_status`: `completed_green_preview_updated`
+- `next_action_id`: `launch_os_v0_mapa_energia_foco_semantic_gate_repaired_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `created_at`: `2026-06-24`
+- `source_checkpoint`: `Spanish Editorial + Semantic Coherence Gate v0 passed
+  and the existing Shopify noindex/unlisted preview was updated.`
+- `objective`: Alejandro reviews the semantic-gate repaired preview for
+  CEO/Web acceptance or a scoped follow-up. This is a review gate only.
+- `accepted_evidence`:
+  - Semantic gate protocol:
+    `docs/crm-vnext/launch-os-spanish-editorial-semantic-coherence-gate-v0.md`
+  - Shopify branch latest commit:
+    `5050aa1 Add semantic editorial gate for Mapa Energia Foco`
+  - Preview update receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_semantic_gate_preview_update_receipt_2026-06-24.json`
+- `forbidden_scope`:
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `completion_definition`: Alejandro either accepts the semantic-gate repaired
+  preview for the next gate, asks for a scoped follow-up, pauses the candidate
+  or returns to another Launch OS edge.
+- `resume_instruction`: Present only the semantic-gate repaired preview state,
+  concise semaforo and next decision. Do not continue to MailerLite, CRM,
+  distribution or new product expansion without a fresh decision.

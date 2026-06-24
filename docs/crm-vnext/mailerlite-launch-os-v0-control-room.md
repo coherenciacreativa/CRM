@@ -14953,3 +14953,110 @@ Closed gates:
 Active next action:
 
 - `launch_os_v0_mapa_energia_foco_spanish_editorial_repaired_ceo_web_qa_waiting`
+
+## Launch OS v0 Mapa Energia/Foco Spanish Editorial + Semantic Coherence Gate v0 - 2026-06-24
+
+Status: CEO/Web QA found that `Mapa breve de energía y foco` remained promising
+in product direction, navigation and visual implementation, but the previous
+Spanish editorial gate produced a false green. The issue was semantic/editorial:
+public copy still required the reader to infer omitted subjects, objects and
+relations. Downstream work stayed paused: no MailerLite, sends, audience, CRM,
+public navigation/distribution or new product expansion.
+
+Root cause:
+
+- The prior editorial gate was too mechanical and over-trusted pattern checks.
+- It did not force a product semantic contract before rewriting.
+- It did not require blind-reader comprehension and independent senior Spanish
+  editorial re-review with zero critical and zero major findings before
+  Shopify CEO/Web QA.
+
+Stable product definition:
+
+- Product noun: `mapa`.
+- Public name: `Mapa breve de energía y foco`.
+- Stable formulation: a map implemented through five questions.
+- Central situation: the person brings a concrete matter that is taking energy,
+  scattering focus or asking for a decision.
+- Output: one result, one small gesture, one phrase to return to the matter and
+  an optional way to conserve the result.
+
+Repair:
+
+- Re-anchored the landing around `un asunto concreto`.
+- Replaced unsupported metaphors such as `piezas abiertas` with concrete
+  pending matter / attention / decision language.
+- Removed public prototype language from email capture.
+- Renamed/clarified the D family as `Conversar la idea`.
+- Made every option readable on its own.
+- Preserved product direction, quiz logic and the visual design.
+
+Independent review:
+
+- Before semantic repair: blind-reader review found major referential issues;
+  senior editorial review found public-prototype language and semantic/voice
+  risks.
+- After semantic repair: final independent review returned `critical=0`,
+  `major=0` and only non-blocking minor notes.
+
+Reusable process patch:
+
+- Added:
+  `docs/crm-vnext/launch-os-spanish-editorial-semantic-coherence-gate-v0.md`
+- Updated:
+  `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`
+- Preview Eligibility Gate now requires semantic contract, blind-reader
+  comprehension, cross-screen coherence and zero critical/major findings.
+
+Shopify/Web:
+
+- Isolated Shopify branch:
+  `codex/shopify-mapa-energia-foco-preview`.
+- Latest Shopify commit:
+  `5050aa1 Add semantic editorial gate for Mapa Energia Foco`.
+- Existing noindex/unlisted preview updated: true.
+- New page created: false.
+- Changed remote assets:
+  - `sections/mapa-energia-foco.liquid`
+  - `snippets/mapa-energia-foco-inert-email-capture.liquid`
+- Page object touched: false.
+- Template touched remotely: false.
+- Layout touched: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Exact URL printed/stored in receipt: false/false.
+
+Receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_semantic_gate_preview_update_receipt_2026-06-24.json`
+
+QA result:
+
+- Execution status: `completed`.
+- Preview eligibility blockers: none.
+- Desktop render blockers: none.
+- Mobile render blockers: none.
+- Noindex confirmed: true.
+- Email capture present/inert: true.
+- MailerLite detected/touched: false/false.
+- CRM touched: false.
+- Sends/audience traffic: false.
+- Analytics added: false.
+- Screenshot generation: blocked nonfatal because the local Playwright Chromium
+  executable was not installed; no external system was changed for screenshots.
+
+Closed gates:
+
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No public navigation/distribution.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub canon changes.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_mapa_energia_foco_semantic_gate_repaired_ceo_web_qa_waiting`
