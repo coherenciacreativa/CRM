@@ -502,6 +502,79 @@ Remain closed:
 - no Launch OS touch;
 - no `/Users/alejandrogomez/CRM`.
 
+## Validation Pilot 1 Result
+
+Pilot 1 of 2 completed as `completed_partial` with `qualityGateStatus=green`.
+The single-story operational path was proven:
+
+- one story was safely observed and processed;
+- one initial visible viewer window was captured;
+- eight private viewer anchors were observed;
+- eight deduplicated story-view edges were created;
+- the viewer modal was opened and close-confirmed;
+- one fingerprint image and one derived image were created, deleted, and
+  deletion-verified;
+- no raw image was retained;
+- no Instagram action, DM, CRM/source write, Launch OS touch, private identity
+  output, or `/Users/alejandrogomez/CRM` use occurred.
+
+Pilot 1 did not prove complete multi-story traversal. No next-story transition
+was attempted because no safe native accessibility next-story control was
+available. The observed story count is therefore a lower bound, not a complete
+active-story count.
+
+Required story-count result fields:
+
+- `activeStoryCountObserved`
+- `activeStoryCountCompleteness`
+- `storyStackExhaustionStatus`
+- `nextStoryControlAvailability`
+- `storyStackTraversalStopReason`
+
+Allowed `activeStoryCountCompleteness` values:
+
+- `complete`
+- `lower_bound_only`
+- `unknown`
+
+Allowed `storyStackExhaustionStatus` values:
+
+- `proven`
+- `not_proven`
+- `not_applicable_zero_story`
+
+Allowed `nextStoryControlAvailability` values:
+
+- `available`
+- `unavailable`
+- `not_needed`
+- `unknown`
+
+Story-count completeness rules:
+
+- An observed count must not be presented as the complete active-story count
+  unless stack exhaustion or another reliable complete-count signal is proven.
+- If one story is observed and no transition is attempted or possible:
+  - `activeStoryCountObserved=1`
+  - `activeStoryCountCompleteness=lower_bound_only`
+  - `storyStackExhaustionStatus=not_proven`
+- A zero-story result may be complete only when the own-profile and home-tray
+  routes both safely confirm no active story.
+- If the next-story control is unavailable, preserve completed story results,
+  classify the run partial, and do not infer that the stack contains only one
+  story.
+- Redacted receipts may report an observed lower bound, never an unsupported
+  exact total.
+
+Final-pilot rule:
+
+- Validation pilot 2 of 2 is the final UI validation run for this protocol.
+- Pilot 2 may test one bounded accessibility-only next-story transition route.
+- If pilot 2 cannot traverse multiple stories safely, record the limitation,
+  park multi-story completeness, retain the proven single-story workflow, and
+  move CRM Core focus to new-follower detection and welcome-audio automation.
+- Do not start a third open-ended UI validation pilot.
+
 ## Graduation Criteria
 
 The story-viewer lane is ready for standing ritual design after:

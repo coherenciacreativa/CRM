@@ -2312,69 +2312,147 @@ routing and completion pointer.
   no-action, no-CRM-write, no-Launch-OS, and `/Users/alejandrogomez/CRM`
   boundaries.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_multi_story_viewer_sweep_pilot_awaiting_approval_v0`
+- `status`: `completed_partial`
+- `created_at`: `2026-06-24`
+- `updated_at`: `2026-06-24`
+- `completed_at`: `2026-06-24`
+- `result`: validation pilot 1 of 2 completed partial.
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_2026-06-24.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_1_closeout_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_1_closeout_2026-06-24.md`
+- `findings`:
+  - Quality gate was green.
+  - Native preflight click and keyboard passed.
+  - Dedicated standard authenticated Safari window was used.
+  - Safari Private Browsing was not used.
+  - Intended Instagram account was confirmed.
+  - One story was observed and processed.
+  - Observed story count is a lower bound, not a complete stack count.
+  - `activeStoryCountObserved=1`.
+  - `activeStoryCountCompleteness=lower_bound_only`.
+  - `storyStackExhaustionStatus=not_proven`.
+  - `nextStoryControlAvailability=unavailable`.
+  - `storyStackTraversalStopReason=no_safe_accessible_next_story_control_available`.
+  - One initial visible viewer window was captured.
+  - Eight private viewer anchors were observed.
+  - Eight story-view edges were created.
+  - No story-view edges were updated.
+  - No same-story reobservations were detected.
+  - No cross-story repeated anchors were detected.
+  - No story-view streak candidates were detected.
+  - One fingerprint raw image and one derived image were created, deleted, and
+    deletion-verified.
+  - No raw image was retained.
+  - Viewer modal opened once and close-confirmed once.
+  - No next-story transition was attempted because no safe accessible next-story
+    control was available.
+  - UI budget was not exhausted.
+  - Single-story path is proven.
+  - Multi-story traversal and complete active-story counting remain unproven.
+  - No viewer identities, story content, fingerprints, digests, checksums,
+    profile routes, handles, private browser content, tokens, headers,
+    credentials, env values, or secrets were written to chat, tracked docs, or
+    redacted receipts.
+  - No DMs, Instagram actions, CRM/source writes, Launch OS docs, or
+    `/Users/alejandrogomez/CRM` were touched.
+- `completion_definition`: CRM Core completed validation pilot 1 of 2 for the
+  natural-state Multi-Story Viewer Sweep. The single-story path worked with
+  redacted aggregate receipts, private artifact handling, transient-image
+  deletion verification, viewer-modal closure, and no private output or
+  mutations. Multi-story continuation remains the final validation gap because
+  story-stack exhaustion was not proven.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_multi_story_viewer_sweep_pilot_2_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-24`
 - `updated_at`: `2026-06-24`
-- `objective`: Wait for Alejandro approval before one bounded natural-state
-  multi-story viewer sweep pilot covering zero to five active own stories
-  without manual labeling, deletion, ordering, or story-count input.
-- `why_now`: Story identity is now high-confidence and fingerprint privacy
-  controls are proven. The remaining operational gap is handling the naturally
-  changing active story stack and associating bounded viewer windows with each
-  distinct story.
+- `objective`: Wait for Alejandro approval before the second and final
+  natural-state Multi-Story Viewer Sweep validation pilot, including one
+  bounded attempt to resolve and use a safe native accessibility next-story
+  control.
+- `why_now`: Pilot 1 proved the full single-story path but could not determine
+  whether more stories existed because no safe next-story transition was
+  available. Pilot 2 is the final validation run before closing or parking
+  remaining traversal imperfections and moving CRM Core focus to new followers
+  and welcome audio.
 - `allowed_scope`:
-  - Present the exact natural-state pilot boundary.
-  - Explain zero-story no-op, partial-success, lifecycle, dedupe,
-    transient-image deletion, viewer-window, and traversal controls.
+  - Present the exact final-pilot boundary.
+  - Explain observed-count versus complete-count semantics.
+  - Explain bounded next-story accessibility methods.
+  - Explain zero-story and partial-success behavior.
   - Answer clarifying questions.
   - Wait for approval.
   - No execution.
 - `forbidden_scope`:
   - No Instagram/UI/Computer Use execution yet.
-  - No screenshots, fingerprints, viewer collection, or next-story traversal
-    yet.
-  - No full-list traversal.
+  - No screenshot/fingerprint/viewer capture yet.
+  - No full viewer-list traversal or viewer-list scrolling.
+  - No blind keyboard navigation.
+  - No coordinates or screenshot-coordinate fallback.
   - No DMs or welcome audio.
   - No Instagram actions.
-  - No CRM/source writes, scoring, ledgers, cards, Fact Store, or outreach.
+  - No CRM/source writes, ledgers, cards, Fact Store, scoring, or outreach.
   - No Launch OS.
   - No `/Users/alejandrogomez/CRM`.
 - `approval_phrase_required`:
-  `I approve one CRM Core Instagram natural-state multi-story viewer sweep pilot covering zero to five active own stories using native Computer Use in a dedicated standard authenticated Safari window. Discover stories autonomously without manual labels, deletion, ordering, or story-count input; fingerprint each safely reachable story privately; capture only the initial visible viewer window; deduplicate viewer-story edges; delete and verify all transient images; allow partial success; do not use full-list traversal, open DMs, perform Instagram actions, or write CRM/source state.`
+  `I approve CRM Core Instagram natural-state Multi-Story Viewer Sweep validation pilot 2 of 2 using native Computer Use in a dedicated standard authenticated Safari window. Discover zero to five active stories autonomously; treat observed story count as a lower bound unless stack completion is proven; process safely reachable stories; attempt each next-story transition only once through an explicitly identified native accessibility control; capture only the initial visible viewer window; deduplicate viewer-story edges; delete and verify all transient images; allow partial success; do not use full-list traversal, blind keyboard navigation, coordinates, DMs, Instagram actions, or CRM/source writes. After this pilot, close or park remaining traversal imperfections and move focus to new-follower detection and welcome-audio automation.`
 - `future_execution_constraints`:
-  - Zero to five naturally active own stories.
-  - No manual labels, deletion, ordering, or story-count input.
+  - This is validation pilot 2 of 2.
+  - Use the natural Instagram state exactly as found.
+  - Do not ask Alejandro to publish, delete, label, order, or count stories.
+  - Zero to five active own stories.
+  - Zero-story no-op is valid.
+  - Observed story count is not a complete total unless stack completion is
+    proven.
+  - Required fields:
+    - `activeStoryCountObserved`
+    - `activeStoryCountCompleteness`
+    - `storyStackExhaustionStatus`
+    - `nextStoryControlAvailability`
+    - `storyStackTraversalStopReason`
   - Native Computer Use in a dedicated standard authenticated Safari window.
   - Safari Private Browsing forbidden.
-  - Neutral native click/keyboard preflight required.
-  - Maximum total UI budget: five minutes.
+  - Neutral click/keyboard preflight required.
+  - Maximum UI budget: five minutes.
+  - Maximum stories processed: five.
   - One bounded story-entry attempt per story.
+  - One bounded viewer-list open attempt per story.
   - One bounded next-story transition attempt per transition.
-  - One bounded viewer-list opening per reachable story.
+  - Allowed next-story interaction methods:
+    - freshly resolved native accessibility press;
+    - identified keyboard activation only when the next-story control is the
+      explicit current focus target;
+    - safe accessibility/browser open action when exposed.
+  - No blind tabbing or unidentified keyboard activation.
+  - No repeated click loops.
+  - No coordinates.
+  - No screenshot-coordinate navigation.
+  - If next-story control remains unavailable, preserve prior results, mark
+    partial, and stop traversal.
   - Initial visible viewer window only.
   - No viewer-list scrolling or full-list exhaustion.
-  - Story identity must be medium/high before contributing to cross-story
-    frequency.
-  - Same viewer plus same story remains one deduplicated edge.
-  - Same viewer across distinct stories may increase private frequency.
-  - Every transient and derived image must remain under `/tmp/`, be deleted
-    immediately, and have deletion verified.
-  - If one story is inaccessible, skip it and preserve prior successful story
-    results.
-  - Partial success is allowed.
-  - Zero-story no-op is a valid result, not an error.
   - Viewer modal closure must be confirmed before continuing.
-  - No blind keyboard navigation.
-  - No coordinate or screenshot-coordinate fallback.
+  - Story identity must be medium/high before creating cross-story frequency
+    evidence.
+  - Same viewer plus same story remains one deduplicated story-view edge.
+  - All transient and derived images stay under `/tmp/`, are deleted
+    immediately, and have deletion verified.
   - No OCR, story interpretation, viewer identity output, DMs, welcome audio,
     Instagram actions, CRM/source writes, scoring, ledgers, cards, Fact Store,
     or outreach.
-  - This validation phase is limited to two pilots; after that, close or park
-    remaining imperfections and move focus to new-follower detection and
-    welcome-audio automation.
+  - After this pilot:
+    - no third open-ended multi-story UI validation run;
+    - close or park remaining traversal limitations;
+    - preserve the proven single-story workflow;
+    - move CRM Core focus to new-follower detection and welcome-audio
+      automation.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
@@ -2387,5 +2465,5 @@ routing and completion pointer.
   Computer Use, Instagram, fingerprint capture, viewer access, next-story
   traversal, DMs, source actions, or CRM writes until Alejandro gives the exact
   approval phrase.
-- `completion_definition`: Alejandro approves, declines, or modifies one
-  natural-state multi-story viewer sweep pilot.
+- `completion_definition`: Alejandro approves, declines, or modifies the second
+  and final natural-state Multi-Story Viewer Sweep validation pilot.
