@@ -7226,13 +7226,14 @@ Use deep hydration only for:
   public navigation/distribution, CRM writes, ledgers/cards/scoring/Fact Store,
   CRM Core, Brand Hub canon patch or GOG/auth.
 
-## Active Next Action - Launch OS v0 Mapa Energia/Foco Semantic Gate Repaired CEO Web QA Waiting - 2026-06-24
+## Paused Next Action - Launch OS v0 Mapa Energia/Foco Semantic Gate Repaired CEO Web QA Waiting - 2026-06-26
 
 - `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_spanish_editorial_semantic_coherence_gate_v0`
 - `previous_status`: `completed_green_preview_updated`
 - `next_action_id`: `launch_os_v0_mapa_energia_foco_semantic_gate_repaired_ceo_web_qa_waiting`
-- `status`: `active_waiting_for_ceo_web_qa`
+- `status`: `paused_yellow_by_ceo_decision`
 - `created_at`: `2026-06-24`
+- `paused_at`: `2026-06-26`
 - `source_checkpoint`: `Spanish Editorial + Semantic Coherence Gate v0 passed
   and the existing Shopify noindex/unlisted preview was updated.`
 - `objective`: Alejandro reviews the semantic-gate repaired preview for
@@ -7244,7 +7245,30 @@ Use deep hydration only for:
     `5050aa1 Add semantic editorial gate for Mapa Energia Foco`
   - Preview update receipt:
     `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_spanish_semantic_gate_preview_update_receipt_2026-06-24.json`
+- `ceo_decision_2026_06_26`:
+  - `Mapa breve de energía y foco` is paused at `YELLOW`.
+  - No local prototype is approved.
+  - No Shopify update is approved.
+  - No MailerLite, sends, audience, CRM or downstream production is approved.
+  - The candidate preserves conceptual value, but it is consuming too much
+    editorial energy for the intended Launch OS cadence.
+  - It may be reused later as a learning fixture or rebuilt from the contract,
+    but not continued through more micro-passes now.
+- `yellow_evidence`:
+  - CEO copy packet:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_rebuild_v1_2026-06-25/ceo_copy_packet_blocking_correction_v2_yellow_2026-06-25.md`
+  - Version-bound manifest:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_rebuild_v1_2026-06-25/version_bound_gate_manifest_blocking_correction_v2_yellow_2026-06-25.json`
+- `key_blockers`:
+  - `Conversar` still has one major Spanish editorial issue.
+  - `Enfocar` does not satisfy the under-ten-minute value requirement.
+- `learning`:
+  - The version-bound manifest worked: reviewers were bound to one copy hash.
+  - Reviewers returning RED is expected and healthy.
+  - Do not continue micro-passes after a final bounded correction fails.
 - `forbidden_scope`:
+  - No local prototype.
+  - No Shopify update.
   - No MailerLite.
   - No sends or seed sends.
   - No audience assignment or audience traffic.
@@ -7252,9 +7276,70 @@ Use deep hydration only for:
   - No CRM writes.
   - No ledgers, cards, scoring or Fact Store.
   - No CRM Core, Brand Hub canon changes or GOG/auth.
-- `completion_definition`: Alejandro either accepts the semantic-gate repaired
-  preview for the next gate, asks for a scoped follow-up, pauses the candidate
-  or returns to another Launch OS edge.
-- `resume_instruction`: Present only the semantic-gate repaired preview state,
-  concise semaforo and next decision. Do not continue to MailerLite, CRM,
-  distribution or new product expansion without a fresh decision.
+- `completion_definition`: The candidate is paused as a Launch OS production
+  lane and preserved as a learning fixture.
+- `resume_instruction`: Do not resume `Mapa breve de energía y foco` with
+  another micro-correction. Resume it only if Alejandro explicitly asks for a
+  complete rebuild from Product Contract v1 / Question Logic Matrix v0.
+
+## Active Next Action - Launch OS v0 Microproduct Candidate Slate v2 Semantic Risk Weighted Local Only - 2026-06-26
+
+- `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_semantic_gate_repaired_ceo_web_qa_waiting`
+- `previous_status`: `paused_yellow_by_ceo_decision`
+- `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only`
+- `status`: `active`
+- `created_at`: `2026-06-26`
+- `source_checkpoint`: `Mapa breve de energía y foco paused at YELLOW by CEO
+  after final bounded correction failed required gates.`
+- `objective`: Prepare a local-only Candidate Slate v2 with 3-5 microproduct
+  candidates optimized for high standalone value, low semantic/editorial risk,
+  clear output, fast production, ethical CRM learning potential and reusable
+  Launch OS pattern.
+- `why_now`: The prior candidate preserved conceptual value but consumed too
+  much editorial energy for Launch OS cadence. The next slate should weight
+  semantic/editorial risk explicitly before selecting a build candidate.
+- `allowed_scope`:
+  - Local-only documentation and Mantis-Reports artifacts.
+  - Read existing Launch OS, Brand-derived rubric, Product Value and prior
+    candidate evidence.
+  - Propose 3-5 candidates with explicit semantic/editorial risk assessment.
+  - Prefer candidates with clear output, simple promise and fast review path.
+- `forbidden_scope`:
+  - Do not create assets.
+  - Do not build.
+  - Do not touch Shopify.
+  - Do not touch MailerLite.
+  - Do not send.
+  - Do not touch CRM.
+  - Do not touch Brand Hub, CRM Core or GOG/auth.
+- `expected_files`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only_YYYY-MM-DD.md`
+  - Optional local JSON manifest if useful for gate comparison.
+- `allowed_commands`:
+  - Read-only local file inspection.
+  - Local artifact creation in `/Users/alejandrogomez/Documents/Mantis-Reports`.
+  - No live API or external-system commands.
+- `validation_commands`:
+  - Local file existence/readback checks.
+  - Optional JSON parse if a structured manifest is created.
+- `live_gate_status`: All live gates closed: no Shopify, MailerLite, sends,
+  audience, CRM writes, CRM Core, Brand Hub canon changes, GOG/auth,
+  ledgers/cards/scoring/Fact Store.
+- `human_boundary_id`: `microproduct_candidate_slate_v2_ceo_selection`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any candidate requires live-system access to evaluate.
+  - Candidate rationale depends on invented observed events.
+  - Candidate repeats the same high semantic/editorial-risk pattern that paused
+    `Mapa breve de energía y foco`.
+  - The work would require Brand Hub canon changes or CRM writes.
+- `resume_instruction`: Continue with Candidate Slate v2 local-only. Optimize
+  for standalone value, low semantic/editorial risk, clear output, fast
+  production, ethical CRM learning and reusable Launch OS pattern. Do not
+  create assets, build, or touch live systems.
+- `completion_definition`: A CEO-facing Candidate Slate v2 exists with 3-5
+  candidates, explicit semantic/editorial risk weighting, Product Value
+  rationale, ethical CRM learning posture, smallest responsible test path and
+  exact CEO decision options.
+- `next_checkpoint_expected`: CEO chooses one v2 candidate, asks for slate
+  revision, pauses Launch OS or returns to a prior paused lane.

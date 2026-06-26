@@ -15060,3 +15060,67 @@ Closed gates:
 Active next action:
 
 - `launch_os_v0_mapa_energia_foco_semantic_gate_repaired_ceo_web_qa_waiting`
+
+## Launch OS v0 Mapa Energia/Foco paused at YELLOW after final bounded correction - 2026-06-26
+
+Status: Alejandro accepted the YELLOW result for `Mapa breve de energía y foco`
+and paused the candidate. This is not a rejection of the concept; it is a
+cadence decision. The candidate preserved conceptual value, but the final
+bounded correction did not clear the required editorial and Product Value gates,
+and more micro-passes would consume too much Launch OS energy.
+
+Decision:
+
+- `Mapa breve de energía y foco` is paused at `YELLOW`.
+- No local prototype is approved.
+- No Shopify update is approved.
+- No MailerLite, sends, audience, CRM or downstream production is approved.
+- The candidate remains available as a learning fixture.
+- Any future return should be a complete rebuild from the stable product
+  contract, not another micro-correction pass.
+
+Artifacts:
+
+- CEO copy packet:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_rebuild_v1_2026-06-25/ceo_copy_packet_blocking_correction_v2_yellow_2026-06-25.md`
+- Version-bound manifest:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_mapa_energia_foco_rebuild_v1_2026-06-25/version_bound_gate_manifest_blocking_correction_v2_yellow_2026-06-25.json`
+
+Key blockers:
+
+- `Conversar` still had one major Spanish editorial issue.
+- `Enfocar` did not satisfy the under-ten-minute value requirement.
+
+Learning:
+
+- The version-bound manifest worked: reviewers were bound to one copy hash.
+- Reviewers returning RED is expected and healthy.
+- Do not continue micro-passes after a final bounded correction fails.
+- Future Candidate Slates should weight semantic/editorial risk before
+  selecting a build candidate, not only after preview friction appears.
+
+Closed gates:
+
+- No local prototype.
+- No Shopify update.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No public navigation/distribution.
+- No CRM writes.
+- No ledgers, cards, scoring or Fact Store.
+- No CRM Core.
+- No Brand Hub canon changes.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only`
+
+Next edge:
+
+- Prepare a local-only Candidate Slate v2 with 3-5 candidates optimized for
+  high standalone value, low semantic/editorial risk, clear output, fast
+  production, ethical CRM learning potential and reusable Launch OS pattern.
+  Do not create assets, build, touch Shopify, MailerLite, sends, audience, CRM,
+  Brand Hub, CRM Core or GOG/auth.
