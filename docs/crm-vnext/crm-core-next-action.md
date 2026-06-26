@@ -2367,103 +2367,87 @@ routing and completion pointer.
   mutations. Multi-story continuation remains the final validation gap because
   story-stack exhaustion was not proven.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_multi_story_viewer_sweep_pilot_2_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-24`
 - `updated_at`: `2026-06-24`
-- `objective`: Wait for Alejandro approval before the second and final
-  natural-state Multi-Story Viewer Sweep validation pilot, including one
-  bounded attempt to resolve and use a safe native accessibility next-story
-  control.
-- `why_now`: Pilot 1 proved the full single-story path but could not determine
-  whether more stories existed because no safe next-story transition was
-  available. Pilot 2 is the final validation run before closing or parking
-  remaining traversal imperfections and moving CRM Core focus to new followers
-  and welcome audio.
+- `completed_at`: `2026-06-24`
+- `result`: validation pilot 2 of 2 blocked before Instagram.
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_2_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_2_2026-06-24.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_2_closeout_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_multi_story_viewer_sweep_pilot_2_closeout_2026-06-24.md`
+- `findings`:
+  - Pilot 2 of 2 blocked before Instagram.
+  - Native dedicated Safari isolation was not confirmed.
+  - Computer Use resolved unrelated Safari/ChatGPT browser state.
+  - Native preflight did not complete.
+  - Instagram was not opened.
+  - Zero-story validation was not started.
+  - No story, viewer, screenshot, fingerprint, DM, Instagram action,
+    CRM/source write, Launch OS doc, or `/Users/alejandrogomez/CRM` was
+    touched.
+  - Pilot 1 remains the proven single-story workflow.
+  - Multi-story traversal/completeness is parked.
+  - No third open-ended multi-story UI validation pilot will be started.
+  - CRM Core focus should move to new-follower detection and welcome-audio
+    automation planning.
+- `completion_definition`: CRM Core completed the second and final
+  natural-state Multi-Story Viewer Sweep validation boundary. Pilot 2 blocked
+  before Instagram due native Safari isolation failure, while Pilot 1 remains
+  the retained single-story/partial-success workflow. Exhaustive multi-story
+  traversal is parked for v0.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_new_follower_welcome_audio_lane_design_v0`
+- `status`: `active`
+- `created_at`: `2026-06-24`
+- `updated_at`: `2026-06-24`
+- `objective`: Design, but do not execute, the Instagram new-follower detection
+  and welcome-audio lane for CRM Core, including private dedupe,
+  already-welcomed safeguards, source-action approval boundaries, and redacted
+  receipts.
+- `why_now`: Story identity and single-story viewer capture are proven enough
+  for v0, while exhaustive multi-story traversal is parked. The next
+  higher-leverage Instagram lane is detecting new followers and preparing a
+  tightly gated welcome-audio workflow without executing any outbound action.
 - `allowed_scope`:
-  - Present the exact final-pilot boundary.
-  - Explain observed-count versus complete-count semantics.
-  - Explain bounded next-story accessibility methods.
-  - Explain zero-story and partial-success behavior.
-  - Answer clarifying questions.
-  - Wait for approval.
+  - Design only.
+  - Use existing Instagram notifications/new-follower receipt history and
+    story-lane learnings.
+  - Define new follower detection route.
+  - Define private already-welcomed dedupe.
+  - Define welcome-audio candidate queue.
+  - Define exact future approval boundary before any DM/audio send.
+  - Define redacted receipts.
   - No execution.
 - `forbidden_scope`:
-  - No Instagram/UI/Computer Use execution yet.
-  - No screenshot/fingerprint/viewer capture yet.
-  - No full viewer-list traversal or viewer-list scrolling.
-  - No blind keyboard navigation.
-  - No coordinates or screenshot-coordinate fallback.
-  - No DMs or welcome audio.
+  - No Instagram execution.
+  - No UI, Computer Use, or `@Chrome`.
+  - No DMs opened.
+  - No welcome audio sent.
   - No Instagram actions.
-  - No CRM/source writes, ledgers, cards, Fact Store, scoring, or outreach.
-  - No Launch OS.
+  - No viewer-list opening or story traversal.
+  - No screenshots/fingerprints.
+  - No CRM/source writes.
+  - No scoring, ledgers, cards, Fact Store, or outreach.
+  - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `approval_phrase_required`:
-  `I approve CRM Core Instagram natural-state Multi-Story Viewer Sweep validation pilot 2 of 2 using native Computer Use in a dedicated standard authenticated Safari window. Discover zero to five active stories autonomously; treat observed story count as a lower bound unless stack completion is proven; process safely reachable stories; attempt each next-story transition only once through an explicitly identified native accessibility control; capture only the initial visible viewer window; deduplicate viewer-story edges; delete and verify all transient images; allow partial success; do not use full-list traversal, blind keyboard navigation, coordinates, DMs, Instagram actions, or CRM/source writes. After this pilot, close or park remaining traversal imperfections and move focus to new-follower detection and welcome-audio automation.`
-- `future_execution_constraints`:
-  - This is validation pilot 2 of 2.
-  - Use the natural Instagram state exactly as found.
-  - Do not ask Alejandro to publish, delete, label, order, or count stories.
-  - Zero to five active own stories.
-  - Zero-story no-op is valid.
-  - Observed story count is not a complete total unless stack completion is
-    proven.
-  - Required fields:
-    - `activeStoryCountObserved`
-    - `activeStoryCountCompleteness`
-    - `storyStackExhaustionStatus`
-    - `nextStoryControlAvailability`
-    - `storyStackTraversalStopReason`
-  - Native Computer Use in a dedicated standard authenticated Safari window.
-  - Safari Private Browsing forbidden.
-  - Neutral click/keyboard preflight required.
-  - Maximum UI budget: five minutes.
-  - Maximum stories processed: five.
-  - One bounded story-entry attempt per story.
-  - One bounded viewer-list open attempt per story.
-  - One bounded next-story transition attempt per transition.
-  - Allowed next-story interaction methods:
-    - freshly resolved native accessibility press;
-    - identified keyboard activation only when the next-story control is the
-      explicit current focus target;
-    - safe accessibility/browser open action when exposed.
-  - No blind tabbing or unidentified keyboard activation.
-  - No repeated click loops.
-  - No coordinates.
-  - No screenshot-coordinate navigation.
-  - If next-story control remains unavailable, preserve prior results, mark
-    partial, and stop traversal.
-  - Initial visible viewer window only.
-  - No viewer-list scrolling or full-list exhaustion.
-  - Viewer modal closure must be confirmed before continuing.
-  - Story identity must be medium/high before creating cross-story frequency
-    evidence.
-  - Same viewer plus same story remains one deduplicated story-view edge.
-  - All transient and derived images stay under `/tmp/`, are deleted
-    immediately, and have deletion verified.
-  - No OCR, story interpretation, viewer identity output, DMs, welcome audio,
-    Instagram actions, CRM/source writes, scoring, ledgers, cards, Fact Store,
-    or outreach.
-  - After this pilot:
-    - no third open-ended multi-story UI validation run;
-    - close or park remaining traversal limitations;
-    - preserve the proven single-story workflow;
-    - move CRM Core focus to new-follower detection and welcome-audio
-      automation.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `instagram-browser-access-orchestrator-v0.md`,
+  `instagram-daily-notifications-standing-ritual-v0.md`,
   `instagram-computer-use-quality-gate-v0.md`,
-  `instagram-story-anchor-dedupe-protocol-v0.md`,
-  `instagram-story-anchor-confidence-hardening-protocol-v0.md`,
-  `instagram-story-visual-fingerprint-consistency-protocol-v0.md`, and
-  `instagram-multi-story-viewer-sweep-protocol-v0.md`. Do not execute UI,
-  Computer Use, Instagram, fingerprint capture, viewer access, next-story
-  traversal, DMs, source actions, or CRM writes until Alejandro gives the exact
-  approval phrase.
-- `completion_definition`: Alejandro approves, declines, or modifies the second
-  and final natural-state Multi-Story Viewer Sweep validation pilot.
+  `instagram-browser-access-orchestrator-v0.md`,
+  `instagram-multi-story-viewer-sweep-protocol-v0.md`, and relevant prior
+  Instagram notification/new-follower redacted receipts. Design only; do not
+  execute Instagram UI, Computer Use, `@Chrome`, DM, welcome audio, source
+  action, CRM write, or outbound work.
+- `completion_definition`: CRM Core has a no-run design for detecting new
+  followers and preparing a welcome-audio candidate lane with private dedupe,
+  already-welcomed safeguards, explicit send approval boundaries, redacted
+  receipts, and all CRM/source/write gates closed.

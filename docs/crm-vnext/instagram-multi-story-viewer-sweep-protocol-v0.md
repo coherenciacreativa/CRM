@@ -575,6 +575,60 @@ Final-pilot rule:
   move CRM Core focus to new-follower detection and welcome-audio automation.
 - Do not start a third open-ended UI validation pilot.
 
+## Validation Pilot 2 Result And v0 Closure
+
+Pilot 2 of 2 blocked before Instagram because native dedicated-window
+isolation failed. Computer Use initially resolved unrelated Safari state, and
+the bounded fresh-window recovery could not confirm an isolated neutral
+dedicated Safari window.
+
+No Instagram work occurred:
+
+- zero-story validation was not started;
+- no Instagram surface was opened;
+- no story was opened;
+- no viewer list was opened;
+- no screenshot or fingerprint was captured;
+- no DM was opened;
+- no Instagram action occurred;
+- no CRM/source write occurred;
+- no Launch OS action occurred;
+- `/Users/alejandrogomez/CRM` was not used.
+
+This confirms that shared Safari during concurrent human browser use is not
+reliable enough for exhaustive multi-story operation. Do not start a third
+open-ended multi-story UI validation pilot.
+
+Preserve the proven single-story workflow from pilot 1. Park
+multi-story traversal/completeness as a known limitation. Future story work may
+use the proven single-story or partial-success workflow only when a dedicated
+browser context is clearly isolated.
+
+CRM Core focus now moves to new-follower detection and welcome-audio automation
+planning.
+
+### v0 Capability Summary
+
+Proven:
+
+- high-confidence private story identity;
+- same-story consistency;
+- distinct-story separation;
+- single-story fingerprint route;
+- single-story initial viewer window capture;
+- private story-view edge creation;
+- transient image deletion verification;
+- viewer modal close confirmation;
+- partial-success semantics.
+
+Parked:
+
+- exhaustive multi-story stack traversal;
+- complete active-story count when stack exhaustion is not proven;
+- safe use of shared Safari while Alejandro is actively using Safari;
+- full viewer-list traversal;
+- standing story-viewer automation.
+
 ## Graduation Criteria
 
 The story-viewer lane is ready for standing ritual design after:
