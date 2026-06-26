@@ -245,6 +245,33 @@ Stop any future execution on:
 - coordinate or screenshot fallback requirement;
 - source or CRM mutation requirement.
 
+## Detection Pilot 1 Result
+
+The first detection-only run completed green. The Chrome Extension backend
+worked, the Instagram notifications surface was reached, and the route produced
+source-health evidence only.
+
+Findings:
+
+- visible new-follower notification groups: `0`;
+- private follower anchors captured: `0`;
+- signal class: `source_health_only`;
+- candidate queue generated: `false`;
+- welcome audio sent: `false`;
+- DMs opened: `false`;
+- Instagram actions performed: `0`;
+- CRM/source writes performed: `0`.
+
+Interpretation:
+
+- notifications route is healthy;
+- no candidate-producing new follower signal was available in this bounded run;
+- candidate queue generation remains unapproved and is not useful until private
+  anchors or candidate evidence exist;
+- welcome audio send remains unapproved;
+- next decision is whether to repeat detection later or design a broader
+  follower-source route.
+
 ## What Remains Separate
 
 The following remain separately approval-gated:

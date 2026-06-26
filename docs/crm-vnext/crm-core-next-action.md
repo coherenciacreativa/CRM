@@ -2426,22 +2426,58 @@ routing and completion pointer.
   already-welcomed safeguards, explicit send approval boundaries, redacted
   receipts, stop conditions, and all CRM/source/write gates closed.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_new_follower_detection_pilot_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-06-24`
 - `updated_at`: `2026-06-24`
-- `objective`: Wait for Alejandro approval before one read-only Instagram
-  new-follower detection pilot.
-- `why_now`: The no-run welcome-audio lane design exists, but any Instagram
-  source access for detecting new followers crosses a fresh approval boundary.
-  The first execution should be detection-only, not candidate queue generation
-  and not welcome audio send.
+- `completed_at`: `2026-06-24`
+- `result`: detection-only Instagram new-follower pilot completed green.
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_new_follower_detection_pilot_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_new_follower_detection_pilot_2026-06-24.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_new_follower_detection_pilot_closeout_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_new_follower_detection_pilot_closeout_2026-06-24.md`
+- `private_artifact_path_label`: `crm_core_instagram_new_follower_detection_pilot_2026-06-24.json`
+- `findings`:
+  - Detection-only pilot completed green.
+  - Chrome Extension backend selected.
+  - Notifications source surface reached.
+  - Visible new-follower notification groups: `0`.
+  - Private follower anchors captured: `0`.
+  - Signal class count: `source_health_only=1`.
+  - Duplicate current run count: `0`.
+  - Ambiguous identity count: `0`.
+  - Candidate queue not generated.
+  - Welcome audio not sent.
+  - DMs not opened.
+  - Instagram actions performed: `0`.
+  - CRM writes performed: `0`.
+  - No handles/private anchors/private content were printed.
+  - No Launch OS docs or `/Users/alejandrogomez/CRM` were touched.
+- `completion_definition`: CRM Core completed one read-only Instagram
+  new-follower detection pilot. The notifications route is healthy, but this run
+  produced no candidate-producing new-follower evidence.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_new_follower_source_coverage_review_v0`
+- `status`: `active`
+- `created_at`: `2026-06-24`
+- `updated_at`: `2026-06-24`
+- `objective`: Review the first detection-only pilot result and decide whether
+  to repeat the notifications-surface detection later, design a broader bounded
+  follower-source route, pause the welcome-audio lane until new-follower signals
+  appear, or move to another approved CRM Core lane.
+- `why_now`: The detection-only pilot proved the notifications source route is
+  healthy but produced no new-follower candidate evidence. CRM Core should not
+  generate a candidate queue or welcome-audio action without private anchors or
+  approved candidate evidence.
 - `allowed_scope`:
-  - Present exact detection-only pilot boundary.
-  - Answer clarifying questions.
-  - Wait for approval.
+  - Use redacted receipts only.
+  - Summarize source-health and zero-signal outcome.
+  - Recommend one next safe route.
   - No execution.
 - `forbidden_scope`:
   - No Instagram/UI/Computer Use/`@Chrome` execution.
@@ -2449,20 +2485,22 @@ routing and completion pointer.
   - No welcome audio sent.
   - No Instagram actions.
   - No candidate queue generation.
+  - No private artifact inspection.
+  - No follower profile opening.
   - No CRM/source writes.
   - No scoring, ledgers, cards, Fact Store, or outreach.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `approval_phrase_required`: `I approve one CRM Core Instagram new-follower detection run only. Use the approved browser/source route, write private anchors only to the private Instagram artifact folder, write redacted aggregate receipts, do not open DMs, do not send welcome audio, do not perform Instagram actions, and do not write CRM state.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `instagram-new-follower-welcome-audio-lane-design-v0.md`,
   `instagram-daily-notifications-standing-ritual-v0.md`,
   `instagram-browser-access-orchestrator-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
-  Computer Use, `@Chrome`, DM, welcome audio, source action, candidate queue
-  generation, CRM write, or outbound work until Alejandro gives the exact
-  approval phrase.
-- `completion_definition`: Alejandro approves, declines, or modifies one
-  read-only new-follower detection pilot.
+  `instagram-computer-use-quality-gate-v0.md`. Use redacted receipts only. Do
+  not execute Instagram UI, Computer Use, `@Chrome`, DM, welcome audio, source
+  action, candidate queue generation, CRM write, or outbound work unless
+  Alejandro gives a fresh exact approval phrase for that route.
+- `completion_definition`: Alejandro chooses whether to repeat detection later,
+  design a broader follower-source route, pause the welcome-audio lane, or
+  redirect CRM Core to another lane.
