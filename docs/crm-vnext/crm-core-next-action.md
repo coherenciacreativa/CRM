@@ -2460,47 +2460,89 @@ routing and completion pointer.
   new-follower detection pilot. The notifications route is healthy, but this run
   produced no candidate-producing new-follower evidence.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_new_follower_source_coverage_review_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-24`
 - `updated_at`: `2026-06-24`
-- `objective`: Review the first detection-only pilot result and decide whether
-  to repeat the notifications-surface detection later, design a broader bounded
-  follower-source route, pause the welcome-audio lane until new-follower signals
-  appear, or move to another approved CRM Core lane.
-- `why_now`: The detection-only pilot proved the notifications source route is
-  healthy but produced no new-follower candidate evidence. CRM Core should not
-  generate a candidate queue or welcome-audio action without private anchors or
-  approved candidate evidence.
+- `completed_at`: `2026-06-24`
+- `result`: source-coverage review and Instagram-to-MailerLite welcome
+  architecture completed.
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_new_follower_source_coverage_review_2026-06-24.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_new_follower_source_coverage_review_2026-06-24.md`
+  - `docs/crm-vnext/instagram-new-follower-source-coverage-options-v0.md`
+  - `docs/crm-vnext/instagram-to-mailerlite-welcome-system-architecture-v0.md`
+- `findings`:
+  - Detection-only pilot reviewed.
+  - Notifications route healthy.
+  - Zero visible new-follower groups.
+  - Zero private follower anchors.
+  - Source-health-only result.
+  - No candidate queue generated.
+  - No welcome audio sent.
+  - No DMs opened.
+  - No Instagram actions or CRM writes.
+  - Candidate queue remains unapproved.
+  - Welcome audio send remains unapproved.
+  - Broader source coverage options designed.
+  - Instagram-to-MailerLite welcome architecture designed.
+  - Next recommended path is source-health spikes/API-vs-UI validation, not
+    immediate UI repetition.
+- `completion_definition`: CRM Core reviewed the zero-signal detection pilot and
+  created a no-run operating architecture for source coverage, private anchors,
+  welcome history, candidate queues, send approval, reply monitoring,
+  MailerLite onboarding, CRM write packets, receipts, idempotency, stop
+  conditions, and closed gates.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_to_mailerlite_source_health_spikes_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-24`
+- `updated_at`: `2026-06-24`
+- `objective`: Wait for Alejandro approval before any source-health spike for
+  the Instagram-to-MailerLite welcome system, beginning with Meta/Instagram
+  API/webhook capability verification and MailerLite onboarding API no-write
+  design.
+- `why_now`: The operating architecture exists, but any API/webhook or
+  MailerLite onboarding source-health spike crosses a new boundary. CRM Core
+  should verify official source capabilities before relying on fragile UI paths
+  in future paid-ad weeks.
 - `allowed_scope`:
-  - Use redacted receipts only.
-  - Summarize source-health and zero-signal outcome.
-  - Recommend one next safe route.
+  - Present source-health spike options.
+  - Explain API-vs-UI tradeoffs.
+  - Answer clarifying questions.
+  - Wait for approval.
   - No execution.
 - `forbidden_scope`:
-  - No Instagram/UI/Computer Use/`@Chrome` execution.
-  - No DMs opened.
-  - No welcome audio sent.
-  - No Instagram actions.
+  - No API calls.
+  - No UI, Computer Use, or `@Chrome`.
+  - No Instagram execution.
+  - No MailerLite mutation.
+  - No DMs or welcome audio.
   - No candidate queue generation.
-  - No private artifact inspection.
-  - No follower profile opening.
   - No CRM/source writes.
   - No scoring, ledgers, cards, Fact Store, or outreach.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  - Meta/Instagram API/webhook source-health spike.
+  - MailerLite onboarding API no-write design.
+  - Bounded follower-source UI route design if API path is not viable.
+  - Repeat notifications detection later as low-cost monitoring.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `instagram-new-follower-welcome-audio-lane-design-v0.md`,
-  `instagram-daily-notifications-standing-ritual-v0.md`,
+  `instagram-new-follower-source-coverage-options-v0.md`,
+  `instagram-to-mailerlite-welcome-system-architecture-v0.md`,
   `instagram-browser-access-orchestrator-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Use redacted receipts only. Do
-  not execute Instagram UI, Computer Use, `@Chrome`, DM, welcome audio, source
-  action, candidate queue generation, CRM write, or outbound work unless
-  Alejandro gives a fresh exact approval phrase for that route.
-- `completion_definition`: Alejandro chooses whether to repeat detection later,
-  design a broader follower-source route, pause the welcome-audio lane, or
-  redirect CRM Core to another lane.
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute APIs, UI,
+  Computer Use, `@Chrome`, Instagram, MailerLite mutation, DMs, welcome audio,
+  candidate queue generation, source actions, CRM writes, or outbound work until
+  Alejandro gives a fresh exact approval phrase for a specific spike.
+- `completion_definition`: Alejandro approves, declines, or modifies one
+  source-health spike or design route for the Instagram-to-MailerLite welcome
+  system.
