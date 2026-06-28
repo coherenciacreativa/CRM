@@ -2496,28 +2496,75 @@ routing and completion pointer.
   MailerLite onboarding, CRM write packets, receipts, idempotency, stop
   conditions, and closed gates.
 
-## Active Next Action
+## Completed / Partial Next Action
 
 - `next_action_id`: `crm_core_instagram_to_mailerlite_source_health_spikes_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-24`
-- `updated_at`: `2026-06-24`
-- `objective`: Wait for Alejandro approval before any source-health spike for
-  the Instagram-to-MailerLite welcome system, beginning with Meta/Instagram
-  API/webhook capability verification and MailerLite onboarding API no-write
-  design.
-- `why_now`: The operating architecture exists, but any API/webhook or
-  MailerLite onboarding source-health spike crosses a new boundary. CRM Core
-  should verify official source capabilities before relying on fragile UI paths
-  in future paid-ad weeks.
+- `updated_at`: `2026-06-28`
+- `completed_at`: `2026-06-28`
+- `result`: Meta/Instagram API/webhook source-health spike completed as no-run
+  official-docs research; MailerLite onboarding no-write design remains pending.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-meta-api-source-health-spike-v0.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_meta_api_source_health_spike_2026-06-28.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_meta_api_source_health_spike_2026-06-28.md`
+- `findings`:
+  - Meta/Instagram API/webhook source-health spike completed as no-run research.
+  - Official Meta developer docs were consulted only.
+  - No API calls, UI, secrets, tokens, Instagram actions, MailerLite, Gmail, CRM
+    writes, Launch OS, or `/Users/alejandrogomez/CRM` were touched.
+  - New follower detection: not supported by official docs consulted.
+  - Follower list / follower deltas: not supported by official docs consulted.
+  - DMs/replies/messages: supported by official docs for eligible Instagram
+    professional accounts with required setup and permissions.
+  - Message send: supported by official docs, subject to setup, permissions,
+    review, conversation-window, dedupe, and CRM Core send approval.
+  - Audio/attachment send: official docs describe audio/video/file message
+    sending, but the welcome-audio asset workflow still needs setup
+    verification.
+  - Webhook delivery: supported for messages/comments/mentions and related
+    topics; follower webhook support was not found.
+  - Required account/setup likely includes Instagram Business or Creator account,
+    Meta app setup, and possibly connected Facebook Page depending login path.
+  - Required permissions likely include basic Instagram business access,
+    message-management permissions, and comment/mention permissions depending
+    route.
+  - App Review/Advanced Access is likely required for production capabilities.
+  - Business verification may be required depending app, business, permissions,
+    and production access.
+  - Recommended next safe step is a redacted no-secret Meta/Instagram setup
+    readiness inventory before API calls, webhook setup, token handling, or app
+    configuration changes.
+- `completion_definition`: CRM Core completed the Meta/Instagram no-run
+  official-docs research portion of the source-health spike boundary and parked
+  live setup/API proof behind a fresh approval boundary.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_meta_api_setup_readiness_inventory_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-28`
+- `updated_at`: `2026-06-28`
+- `objective`: Wait for Alejandro approval before collecting a redacted
+  no-secret setup-readiness inventory for Meta/Instagram API/webhook use.
+- `why_now`: Official docs show plausible messaging, webhook, and send routes
+  but do not show direct new-follower event/list/delta support. CRM Core needs
+  non-secret account/app setup facts before deciding whether to pursue API
+  healthchecks, a bounded follower-source UI route, or both.
 - `allowed_scope`:
-  - Present source-health spike options.
-  - Explain API-vs-UI tradeoffs.
+  - Ask for/record only non-secret account-type and setup facts.
+  - Present the no-secret setup-readiness inventory boundary.
+  - Keep bounded follower-source route as fallback if API path is insufficient.
   - Answer clarifying questions.
   - Wait for approval.
   - No execution.
 - `forbidden_scope`:
+  - No tokens, app secrets, webhook secrets, cookies, headers, env values, or
+    credentials.
   - No API calls.
+  - No app configuration changes.
+  - No webhook setup.
   - No UI, Computer Use, or `@Chrome`.
   - No Instagram execution.
   - No MailerLite mutation.
@@ -2525,24 +2572,23 @@ routing and completion pointer.
   - No candidate queue generation.
   - No CRM/source writes.
   - No scoring, ledgers, cards, Fact Store, or outreach.
+  - No private artifact inspection.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `options_to_present`:
-  - Meta/Instagram API/webhook source-health spike.
-  - MailerLite onboarding API no-write design.
-  - Bounded follower-source UI route design if API path is not viable.
-  - Repeat notifications detection later as low-cost monitoring.
+- `fallback_route_parked`: `crm_core_instagram_bounded_follower_source_route_design_v0`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
+  `instagram-meta-api-source-health-spike-v0.md`,
   `instagram-new-follower-welcome-audio-lane-design-v0.md`,
   `instagram-new-follower-source-coverage-options-v0.md`,
   `instagram-to-mailerlite-welcome-system-architecture-v0.md`,
   `instagram-browser-access-orchestrator-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Do not execute APIs, UI,
-  Computer Use, `@Chrome`, Instagram, MailerLite mutation, DMs, welcome audio,
-  candidate queue generation, source actions, CRM writes, or outbound work until
-  Alejandro gives a fresh exact approval phrase for a specific spike.
+  `instagram-computer-use-quality-gate-v0.md`. Do not ask for or print secrets.
+  Do not execute APIs, UI, Computer Use, `@Chrome`, Instagram, MailerLite
+  mutation, DMs, welcome audio, candidate queue generation, app configuration,
+  webhook setup, source actions, CRM writes, or outbound work until Alejandro
+  gives a fresh exact approval phrase for a specific setup-readiness route.
 - `completion_definition`: Alejandro approves, declines, or modifies one
-  source-health spike or design route for the Instagram-to-MailerLite welcome
-  system.
+  no-secret Meta/Instagram setup-readiness inventory, or redirects CRM Core to
+  the bounded follower-source route design fallback.
