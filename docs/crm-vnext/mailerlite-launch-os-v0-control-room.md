@@ -15124,3 +15124,70 @@ Next edge:
   production, ethical CRM learning potential and reusable Launch OS pattern.
   Do not create assets, build, touch Shopify, MailerLite, sends, audience, CRM,
   Brand Hub, CRM Core or GOG/auth.
+
+## Launch OS v0 Tres Lineas Shopify preview retry split execution completed - 2026-06-29
+
+Status: Alejandro accepted the Shopify preview retry split execution for `Tres
+líneas para decirlo claro` as completed / QA-green. The preview remains active
+as noindex/unlisted and is ready for CEO/Web QA only.
+
+Execution receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_shopify_preview_retry_split_execution_receipt_noindex_unlisted_2026-06-29.json`
+
+Shopify/Web:
+
+- Worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-tres-lineas-preview`
+- Branch:
+  `codex/shopify-tres-lineas-preview`
+- Head:
+  `c6dfe83`
+- Page created/updated: `created`.
+- Changed remote assets:
+  - `sections/tres-lineas-para-decirlo-claro.liquid`
+  - `snippets/tres-lineas-inert-safety-marker.liquid`
+  - `templates/page.tres-lineas-preview.liquid`
+- Noindex confirmed: `noindex,nofollow,noarchive`.
+- Public navigation touched: false.
+- Exact URL printed: false.
+- Receipt uses redacted URL label + SHA only.
+
+QA:
+
+- Metadata/tildes confirmed: `Tres líneas para decirlo claro`.
+- User-input safety: green; text rendered with `textContent/value`, with no
+  `innerHTML` user injection.
+- Runner attribution:
+  - Source-owned blockers: 0.
+  - Platform-baseline signals: 6.
+  - Unknown-origin signals: 0.
+- Desktop/mobile screenshots generated.
+- Preview final state: active noindex/unlisted QA-green.
+
+Closed gates:
+
+- No further Shopify changes.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No public navigation/distribution.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub canon changes.
+- No GOG/auth.
+
+Previous active next action:
+
+- `launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only`
+
+New active next action:
+
+- `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+
+Next edge:
+
+- CEO/Web QA of the exact-link Shopify preview only. Do not move to MailerLite,
+  sends, audience, CRM, public navigation or distribution without a fresh CEO
+  decision.

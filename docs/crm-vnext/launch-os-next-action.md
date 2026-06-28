@@ -7282,12 +7282,12 @@ Use deep hydration only for:
   another micro-correction. Resume it only if Alejandro explicitly asks for a
   complete rebuild from Product Contract v1 / Question Logic Matrix v0.
 
-## Active Next Action - Launch OS v0 Microproduct Candidate Slate v2 Semantic Risk Weighted Local Only - 2026-06-26
+## Completed Next Action - Launch OS v0 Microproduct Candidate Slate v2 Semantic Risk Weighted Local Only - 2026-06-26
 
 - `previous_next_action_id`: `launch_os_v0_mapa_energia_foco_semantic_gate_repaired_ceo_web_qa_waiting`
 - `previous_status`: `paused_yellow_by_ceo_decision`
 - `next_action_id`: `launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only`
-- `status`: `active`
+- `status`: `completed_superseded_by_tres_lineas_shopify_preview_ceo_web_qa_waiting`
 - `created_at`: `2026-06-26`
 - `source_checkpoint`: `Mapa breve de energía y foco paused at YELLOW by CEO
   after final bounded correction failed required gates.`
@@ -7343,3 +7343,68 @@ Use deep hydration only for:
   exact CEO decision options.
 - `next_checkpoint_expected`: CEO chooses one v2 candidate, asks for slate
   revision, pauses Launch OS or returns to a prior paused lane.
+
+## Active Next Action - Launch OS v0 Tres Lineas Shopify Preview CEO Web QA Waiting - 2026-06-29
+
+- `previous_next_action_id`: `launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only`
+- `previous_status`: `completed_superseded_by_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+- `next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `created_at`: `2026-06-29`
+- `source_checkpoint`: `Tres líneas para decirlo claro Shopify preview retry split execution completed / QA-green.`
+- `execution_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_shopify_preview_retry_split_execution_receipt_noindex_unlisted_2026-06-29.json`
+- `shopify_execution`:
+  - `execution_status`: `completed`
+  - `worktree`: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-tres-lineas-preview`
+  - `branch`: `codex/shopify-tres-lineas-preview`
+  - `head`: `c6dfe83`
+  - `page_operation`: `created`
+  - `assets_uploaded`:
+    - `sections/tres-lineas-para-decirlo-claro.liquid`
+    - `snippets/tres-lineas-inert-safety-marker.liquid`
+    - `templates/page.tres-lineas-preview.liquid`
+  - `noindex_confirmed`: `noindex,nofollow,noarchive`
+  - `public_navigation_touched`: false
+  - `metadata_tildes_confirmed`: `Tres líneas para decirlo claro`
+  - `user_input_safety`: green; user text rendered through `textContent/value`,
+    with no `innerHTML` user injection.
+  - `runner_attribution`:
+    - `source_owned_blockers`: 0
+    - `platform_baseline_signals`: 6
+    - `unknown_origin_signals`: 0
+  - Desktop/mobile screenshots generated.
+  - Preview remains active as noindex/unlisted QA-green.
+  - Exact URL was not printed; receipt contains only a redacted URL label and
+    SHA-256.
+- `objective`: Wait for CEO/Web QA of the noindex/unlisted Shopify preview.
+  This is a review gate only.
+- `allowed_scope`:
+  - Present or summarize the preview state and receipt for Alejandro.
+  - If asked, reveal local receipt/screenshots or provide the exact-link only
+    under the established no-public-distribution posture.
+- `forbidden_scope`:
+  - No additional Shopify changes.
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `live_gate_status`: Shopify preview is active as noindex/unlisted QA-green;
+  all downstream gates remain closed.
+- `human_boundary_id`: `tres_lineas_shopify_preview_ceo_web_qa`
+- `human_boundary_notification_status`: `not_needed`
+- `stop_conditions`:
+  - Any request to publish, add public navigation, distribute the URL to an
+    audience, create MailerLite objects, send email, write CRM, or mutate
+    subscribers/audiences must become a separate approval gate.
+- `resume_instruction`: Present the Shopify preview QA-green state for CEO/Web
+  review only. Do not move to MailerLite, sends, audience, CRM, public
+  navigation or distribution without a fresh CEO decision.
+- `completion_definition`: Alejandro accepts the preview for the next gate,
+  requests a scoped fix, pauses the candidate, or returns to another Launch OS
+  edge.
+- `next_checkpoint_expected`: CEO/Web QA decision for `Tres líneas para
+  decirlo claro`.
