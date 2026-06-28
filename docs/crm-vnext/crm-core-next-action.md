@@ -2540,55 +2540,79 @@ routing and completion pointer.
   official-docs research portion of the source-health spike boundary and parked
   live setup/API proof behind a fresh approval boundary.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_meta_api_setup_readiness_inventory_awaiting_approval_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-28`
+- `updated_at`: `2026-06-28`
+- `completed_at`: `2026-06-28`
+- `result`: no-secret Meta/Instagram API setup-readiness inventory designed.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-meta-api-setup-readiness-inventory-v0.md`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_meta_api_setup_readiness_inventory_template_2026-06-28.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_meta_api_setup_readiness_inventory_template_2026-06-28.md`
+- `findings`:
+  - No-secret setup-readiness inventory designed.
+  - No account/app facts collected yet.
+  - No secrets requested or printed.
+  - No API calls, app configuration, webhook setup, UI, Instagram, Meta Business
+    Suite, MailerLite, Gmail, private artifact inspection, DMs, welcome audio,
+    candidate queue generation, CRM/source writes, Launch OS, or
+    `/Users/alejandrogomez/CRM` use occurred.
+  - Bounded follower-source route remains fallback because official docs did not
+    show new-follower or follower-delta support.
+  - MailerLite onboarding no-write design remains pending.
+- `completion_definition`: CRM Core has a no-run, no-secret setup-readiness
+  inventory design and redacted receipt templates. Actual setup fact collection
+  remains blocked behind a fresh approval phrase.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_meta_api_setup_readiness_inventory_collection_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-28`
 - `updated_at`: `2026-06-28`
-- `objective`: Wait for Alejandro approval before collecting a redacted
-  no-secret setup-readiness inventory for Meta/Instagram API/webhook use.
-- `why_now`: Official docs show plausible messaging, webhook, and send routes
-  but do not show direct new-follower event/list/delta support. CRM Core needs
-  non-secret account/app setup facts before deciding whether to pursue API
-  healthchecks, a bounded follower-source UI route, or both.
+- `objective`: Wait for Alejandro approval before collecting non-secret
+  Meta/Instagram setup-readiness answers for API/webhook planning.
+- `why_now`: The no-secret inventory template exists, but collecting even
+  non-secret setup facts should be a fresh operator boundary so Alejandro can
+  choose what to disclose and confirm no secrets are included.
 - `allowed_scope`:
-  - Ask for/record only non-secret account-type and setup facts.
-  - Present the no-secret setup-readiness inventory boundary.
-  - Keep bounded follower-source route as fallback if API path is insufficient.
-  - Answer clarifying questions.
-  - Wait for approval.
+  - Present the checklist.
+  - Collect only non-secret yes/no/unknown setup facts supplied by Alejandro.
+  - Record redacted inventory receipt.
+  - Recommend next safe route.
   - No execution.
 - `forbidden_scope`:
-  - No tokens, app secrets, webhook secrets, cookies, headers, env values, or
-    credentials.
   - No API calls.
+  - No tokens, app secrets, webhook secrets, cookies, headers, env values,
+    credentials, authorization codes, or access tokens.
+  - No app IDs if Alejandro considers them sensitive.
+  - No screenshots.
   - No app configuration changes.
   - No webhook setup.
   - No UI, Computer Use, or `@Chrome`.
   - No Instagram execution.
-  - No MailerLite mutation.
+  - No Meta Business Suite access.
+  - No MailerLite or Gmail.
   - No DMs or welcome audio.
   - No candidate queue generation.
   - No CRM/source writes.
-  - No scoring, ledgers, cards, Fact Store, or outreach.
   - No private artifact inspection.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `fallback_route_parked`: `crm_core_instagram_bounded_follower_source_route_design_v0`
+- `approval_phrase_required`: `I approve CRM Core to collect a no-secret Meta/Instagram setup-readiness inventory. I will provide only non-secret yes/no/unknown setup facts and redacted labels; do not ask for or record tokens, app secrets, webhook secrets, credentials, cookies, headers, env values, authorization codes, private dashboard screenshots, app IDs I consider sensitive, or private account content.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
   `instagram-meta-api-source-health-spike-v0.md`,
-  `instagram-new-follower-welcome-audio-lane-design-v0.md`,
-  `instagram-new-follower-source-coverage-options-v0.md`,
+  `instagram-meta-api-setup-readiness-inventory-v0.md`,
   `instagram-to-mailerlite-welcome-system-architecture-v0.md`,
-  `instagram-browser-access-orchestrator-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Do not ask for or print secrets.
-  Do not execute APIs, UI, Computer Use, `@Chrome`, Instagram, MailerLite
-  mutation, DMs, welcome audio, candidate queue generation, app configuration,
-  webhook setup, source actions, CRM writes, or outbound work until Alejandro
-  gives a fresh exact approval phrase for a specific setup-readiness route.
+  and `instagram-new-follower-source-coverage-options-v0.md`. Do not execute
+  APIs, UI, Computer Use, `@Chrome`, Instagram, Meta Business Suite,
+  MailerLite, Gmail, private artifact inspection, DMs, welcome audio, candidate
+  queue generation, app configuration, webhook setup, CRM/source writes, or
+  outbound work.
 - `completion_definition`: Alejandro approves, declines, or modifies one
-  no-secret Meta/Instagram setup-readiness inventory, or redirects CRM Core to
-  the bounded follower-source route design fallback.
+  no-secret setup-readiness inventory collection.
