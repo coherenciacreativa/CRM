@@ -7409,21 +7409,25 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: CEO/Web QA decision for `Tres líneas para
   decirlo claro`.
 
-## Active Next Action - Launch OS v0 Tres Lineas Shopify Preview CEO Web QA Waiting - 2026-06-29 Microfix
+## Completed Next Action - Launch OS v0 Tres Lineas Shopify Preview CEO Web QA Waiting - 2026-06-29 Microfix Accepted
 
 - `previous_next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
 - `previous_status`: `completed_with_ceo_web_microfix_requested`
 - `next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
-- `status`: `active_waiting_for_ceo_web_qa_after_microfix`
+- `status`: `completed_ceo_web_qa_green`
 - `created_at`: `2026-06-29`
 - `source_checkpoint`: `CEO/Web QA found the preview promising and technically
   QA-green, but requested a constrained microfix before acceptance.`
+- `accepted_checkpoint`: Alejandro accepted the microfixed Shopify preview
+  noindex/unlisted for `Tres líneas para decirlo claro` as CEO/Web QA-green.
 - `microfix_receipt`:
   `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_execution_receipt_2026-06-29.json`
 - `shopify_execution`:
   - `execution_status`: `completed`
   - `worktree`: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-tres-lineas-preview`
   - `branch`: `codex/shopify-tres-lineas-preview`
+  - `latest_shopify_commit`: `6c30eea Apply Tres Lineas CEO Web QA microfix`
+  - `latest_crm_docs_commit`: `d6a23c4 Record Tres Lineas CEO Web QA microfix`
   - `changed_remote_asset`: `sections/tres-lineas-para-decirlo-claro.liquid`
   - `page_touched`: false
   - `template_touched`: false
@@ -7455,8 +7459,20 @@ Use deep hydration only for:
   - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview
     Eligibility Gate now includes `preview_microcopy_context_gate` and
     `visual_polish_gate`.
-- `objective`: Wait for CEO/Web QA of the microfixed noindex/unlisted Shopify
-  preview. This is a review gate only.
+- `accepted_state`:
+  - Preview remains noindex/unlisted.
+  - Public navigation untouched.
+  - No MailerLite.
+  - No sends.
+  - No audience.
+  - No CRM writes.
+  - Input safety remains green.
+  - Source-owned blockers: 0.
+  - Unknown-origin signals: 0.
+  - Platform-baseline signals classified.
+  - Exact URL was not printed in chat.
+- `objective`: CEO/Web QA of the microfixed noindex/unlisted Shopify preview
+  is complete and green.
 - `forbidden_scope`:
   - No additional Shopify changes.
   - No MailerLite.
@@ -7472,3 +7488,54 @@ Use deep hydration only for:
 - `completion_definition`: Alejandro accepts the preview for the next gate,
   requests a scoped fix, pauses the candidate, or returns to another Launch OS
   edge.
+
+## Active Next Action - Launch OS v0 Tres Lineas Public Distribution Readiness Packet Local Only - 2026-06-29
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+- `previous_status`: `completed_ceo_web_qa_green`
+- `next_action_id`: `launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only`
+- `status`: `active_local_only`
+- `created_at`: `2026-06-29`
+- `source_checkpoint`: CEO/Web QA accepted the microfixed noindex/unlisted
+  Shopify preview for `Tres líneas para decirlo claro`.
+- `objective`: Prepare a local-only Public / Distribution Readiness Packet for
+  CEO review. This packet evaluates what would be required before any public
+  distribution, navigation, audience traffic, email, or CRM step.
+- `accepted_evidence`:
+  - `latest_shopify_commit`: `6c30eea Apply Tres Lineas CEO Web QA microfix`
+  - `latest_crm_docs_commit`: `d6a23c4 Record Tres Lineas CEO Web QA microfix`
+  - Preview remains noindex/unlisted.
+  - Public navigation untouched.
+  - No MailerLite.
+  - No sends.
+  - No audience.
+  - No CRM writes.
+  - Input safety remains green.
+  - Source-owned blockers: 0.
+  - Unknown-origin signals: 0.
+  - Platform-baseline signals classified.
+  - Exact URL was not printed in chat.
+- `readiness_packet_note`:
+  - Review the public trust badge before distribution. Current preview wording
+    `No guarda · no envía · no usa red` is acceptable for preview, but public
+    wording should avoid possible confusion around `no usa red`.
+- `allowed_scope`:
+  - Local-only readiness packet and decision framing.
+  - Review public distribution prerequisites, trust-badge wording, gates,
+    receipts, risks and exact CEO approval boundaries.
+- `forbidden_scope`:
+  - No distribution or audience traffic.
+  - No public navigation.
+  - No Shopify changes.
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment.
+  - No CRM writes.
+  - No subscriber, group, tag, segment, workflow or campaign mutations.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `completion_definition`: A concise CEO-facing readiness packet exists with
+  green/yellow/red gates, required future approvals and the exact next decision.
+- `next_checkpoint_expected`: Alejandro decides whether to approve a future
+  public/distribution preflight, request a readiness revision, pause the
+  candidate or return to another Launch OS lane.

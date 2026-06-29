@@ -15270,3 +15270,59 @@ Next edge:
 - CEO/Web QA of the microfixed exact-link Shopify preview only. Do not move to
   MailerLite, sends, audience, CRM, public navigation or distribution without a
   fresh CEO decision.
+
+## Launch OS v0 Tres Lineas CEO/Web QA accepted - 2026-06-29
+
+Status: Alejandro accepted the microfixed noindex/unlisted Shopify preview for
+`Tres líneas para decirlo claro` as CEO/Web QA-green.
+
+Evidence:
+
+- Latest Shopify commit:
+  `6c30eea Apply Tres Lineas CEO Web QA microfix`
+- Latest CRM docs commit:
+  `d6a23c4 Record Tres Lineas CEO Web QA microfix`
+- Microfix execution receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_execution_receipt_2026-06-29.json`
+
+Accepted preview state:
+
+- Preview remains noindex/unlisted.
+- Public navigation untouched.
+- No MailerLite.
+- No sends.
+- No audience.
+- No CRM writes.
+- Input safety remains green.
+- Source-owned blockers: 0.
+- Unknown-origin signals: 0.
+- Platform-baseline signals classified.
+- Exact URL was not printed in chat.
+
+Readiness-packet note:
+
+- Review the public trust badge before distribution. Current preview wording
+  `No guarda · no envía · no usa red` is acceptable for preview, but public
+  wording should avoid possible confusion around `no usa red`.
+
+Closed gates:
+
+- No further Shopify changes.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No public navigation/distribution.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub canon changes.
+- No GOG/auth.
+
+New active next action:
+
+- `launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only`
+
+Next edge:
+
+- Prepare a local-only Public / Distribution Readiness Packet. Do not
+  distribute, publish navigation, send email, touch audience, MailerLite or CRM.
