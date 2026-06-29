@@ -7489,15 +7489,20 @@ Use deep hydration only for:
   requests a scoped fix, pauses the candidate, or returns to another Launch OS
   edge.
 
-## Active Next Action - Launch OS v0 Tres Lineas Public Distribution Readiness Packet Local Only - 2026-06-29
+## Completed Next Action - Launch OS v0 Tres Lineas Public Distribution Readiness Packet Local Only - 2026-06-29
 
 - `previous_next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
 - `previous_status`: `completed_ceo_web_qa_green`
 - `next_action_id`: `launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only`
-- `status`: `active_local_only`
+- `status`: `completed_minimal_manual_exposure_approved`
 - `created_at`: `2026-06-29`
 - `source_checkpoint`: CEO/Web QA accepted the microfixed noindex/unlisted
   Shopify preview for `Tres líneas para decirlo claro`.
+- `artifact`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only_2026-06-29.md`
+- `decision_checkpoint`: Alejandro approved the smallest responsible exposure:
+  manual sharing of the noindex/unlisted exact-link preview with 1-3 trusted
+  people. Codex must not send messages or distribute the URL.
 - `objective`: Prepare a local-only Public / Distribution Readiness Packet for
   CEO review. This packet evaluates what would be required before any public
   distribution, navigation, audience traffic, email, or CRM step.
@@ -7539,3 +7544,76 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: Alejandro decides whether to approve a future
   public/distribution preflight, request a readiness revision, pause the
   candidate or return to another Launch OS lane.
+
+## Active Next Action - Launch OS v0 Tres Lineas Manual Seed Feedback Waiting - 2026-06-29
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only`
+- `previous_status`: `completed_minimal_manual_exposure_approved`
+- `next_action_id`: `launch_os_v0_tres_lineas_manual_seed_feedback_waiting`
+- `status`: `active_waiting_for_manual_feedback`
+- `created_at`: `2026-06-29`
+- `milestone_name`: `Tres líneas para decirlo claro - manual seed feedback receipt`
+- `source_checkpoint`: Alejandro approved a minimal responsible manual
+  exposure of the noindex/unlisted exact-link preview to 1-3 trusted people.
+- `what_is_shared`:
+  - Preview exact-link, shared manually by Alejandro only.
+  - Do not print exact URL in chat or docs.
+  - `redacted_url_label`: `tres_lineas_preview_url_redacted`
+  - `url_sha256`: `2c85533074766df69d3375fafb2cb19ce847b826f1f6d19f4c16726d71f32e32`
+- `scope`:
+  - 1-3 trusted people.
+  - Manual sharing by Alejandro.
+  - No audience/public distribution.
+  - Keep noindex active.
+  - Keep public navigation closed.
+  - No MailerLite.
+  - No system sends.
+  - No audience send.
+  - No CRM writes.
+  - No added tracking.
+  - No public publication.
+- `feedback_questions`:
+  - `¿Entendiste qué era en pocos segundos?`
+  - `¿Lo pudiste usar sin explicación?`
+  - `¿El borrador final te resultó útil?`
+  - `¿Qué parte te generó fricción?`
+  - `¿Qué cambiarías antes de mostrarlo a más personas?`
+  - `¿Te dio confianza que no guardara ni enviara nada?`
+- `feedback_recording_rules`:
+  - Record qualitative summaries.
+  - Avoid full names unless genuinely needed.
+  - Do not record sensitive data.
+  - Do not paste complete private conversations.
+  - Summarize patterns, not identities.
+- `do_not_infer`:
+  - Personality.
+  - Diagnosis.
+  - Purchase intent.
+  - Stable preference.
+  - CRM readiness.
+  - Market proof.
+- `next_decision_options_after_feedback`:
+  - Accept for a small public link test.
+  - Request a microfix.
+  - Pause.
+  - Prepare public distribution with a separate packet.
+- `codex_boundary`:
+  - Codex must not send messages.
+  - Codex must not distribute the URL.
+  - Codex may only prepare local receipt structure, summarize manually provided
+    feedback, and update local docs after approval.
+- `forbidden_scope`:
+  - No Shopify changes.
+  - No noindex removal.
+  - No public navigation.
+  - No MailerLite.
+  - No sends.
+  - No audience send.
+  - No CRM writes.
+  - No added tracking.
+  - No Brand Hub, CRM Core or GOG/auth.
+- `completion_definition`: Alejandro provides manual feedback summaries from
+  1-3 trusted people, or chooses to pause. Codex then prepares a local-only
+  feedback receipt and next-decision brief without adding live systems.
+- `next_checkpoint_expected`: CEO reviews manual feedback patterns and chooses
+  small public link test, microfix, pause or public distribution packet.

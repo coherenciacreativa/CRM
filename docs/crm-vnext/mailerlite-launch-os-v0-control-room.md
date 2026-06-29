@@ -15326,3 +15326,93 @@ Next edge:
 
 - Prepare a local-only Public / Distribution Readiness Packet. Do not
   distribute, publish navigation, send email, touch audience, MailerLite or CRM.
+
+## Launch OS v0 Tres Lineas manual seed feedback approved - 2026-06-29
+
+Status: Alejandro approved the smallest responsible exposure for
+`Tres líneas para decirlo claro`: manual sharing of the noindex/unlisted
+exact-link preview with 1-3 trusted people. Codex must not send messages or
+distribute the URL.
+
+Readiness packet:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only_2026-06-29.md`
+
+Manual seed feedback framework:
+
+- Milestone name:
+  `Tres líneas para decirlo claro - manual seed feedback receipt`
+- What is shared:
+  - Preview exact-link.
+  - Exact URL must not be printed in chat or docs.
+  - `redacted_url_label`: `tres_lineas_preview_url_redacted`
+  - `url_sha256`: `2c85533074766df69d3375fafb2cb19ce847b826f1f6d19f4c16726d71f32e32`
+- Scope:
+  - 1-3 trusted people.
+  - Manual sharing by Alejandro.
+  - No audience/public distribution.
+  - Keep noindex active.
+  - Keep public navigation closed.
+  - No MailerLite.
+  - No system sends.
+  - No audience send.
+  - No CRM writes.
+  - No added tracking.
+  - No public publication.
+
+Suggested feedback questions:
+
+- `¿Entendiste qué era en pocos segundos?`
+- `¿Lo pudiste usar sin explicación?`
+- `¿El borrador final te resultó útil?`
+- `¿Qué parte te generó fricción?`
+- `¿Qué cambiarías antes de mostrarlo a más personas?`
+- `¿Te dio confianza que no guardara ni enviara nada?`
+
+How to record responses:
+
+- Qualitative summaries only.
+- Avoid full names unless genuinely needed.
+- Do not record sensitive data.
+- Do not paste complete private conversations.
+- Summarize patterns, not identities.
+
+Do not infer:
+
+- Personality.
+- Diagnosis.
+- Purchase intent.
+- Stable preference.
+- CRM readiness.
+- Market proof.
+
+Next decision after feedback:
+
+- Accept for a small public link test.
+- Request a microfix.
+- Pause.
+- Prepare public distribution with a separate packet.
+
+Closed gates:
+
+- No Shopify changes.
+- No noindex removal.
+- No public navigation.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No Brand Hub.
+- No CRM Core.
+- No GOG/auth.
+
+New active next action:
+
+- `launch_os_v0_tres_lineas_manual_seed_feedback_waiting`
+
+Next edge:
+
+- Wait for Alejandro's manual feedback summaries from 1-3 trusted people.
+  Codex may later prepare a local-only feedback receipt and next-decision brief
+  from those summaries, without sending messages or touching live systems.
