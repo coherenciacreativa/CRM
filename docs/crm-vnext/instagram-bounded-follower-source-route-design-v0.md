@@ -348,6 +348,36 @@ After design:
 - candidate queue comes only after a detection artifact with private anchors
   exists.
 
+## Baseline Attempt 1 Result
+
+The first bounded follower-source baseline run was approved and attempted on
+2026-06-29. It completed as a route-resolution blocker, not a data-bearing
+baseline.
+
+Findings:
+
+- Chrome Extension preflight and interaction were green.
+- Account/profile confirmation failed with
+  `own_profile_signal_not_confirmed`.
+- Follower source surface was not reached.
+- No follower window was captured.
+- No private follower anchors were captured.
+- No follower profiles, DMs, welcome audio, Instagram actions, or CRM/source
+  writes occurred.
+- Generic Chrome health is not sufficient proof of follower-source route
+  health.
+- The next step should be route resolution before another baseline capture.
+- Candidate queue generation remains unapproved.
+- Welcome audio send remains unapproved.
+
+Route-health rule:
+
+- `chrome_extension + notifications_surface = healthy`
+- `chrome_extension + follower_source_surface = unproven_route_blocked`
+- Do not treat a green Chrome preflight as proof that the follower-source route
+  is usable.
+- A future baseline run requires account/profile route confirmation first.
+
 ## What Remains Separate
 
 - baseline execution;
