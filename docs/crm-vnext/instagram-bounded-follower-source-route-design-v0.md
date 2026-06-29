@@ -378,6 +378,45 @@ Route-health rule:
   is usable.
 - A future baseline run requires account/profile route confirmation first.
 
+## Route Resolution Result
+
+The bounded follower-source route-resolution run completed on 2026-06-29.
+
+Findings:
+
+- Chrome Extension preflight and interaction were green.
+- Intended Instagram account was confirmed.
+- Own profile route was reached.
+- Own profile signal was confirmed.
+- Follower-source entry was visible.
+- Follower-source entry was actionable.
+- Resolution method was `browser_accessible_link_or_control`.
+- Follower-source surface was not opened.
+- No follower anchors were captured.
+- No private artifact was written.
+- No baseline was established.
+- No candidate queue was generated.
+- No welcome audio was sent.
+- No DMs were opened.
+- No follower profiles were opened.
+- No Instagram actions or CRM/source writes occurred.
+- Cleanup returned to neutral local page.
+
+Route-health rule:
+
+- `chrome_extension + notifications_surface = healthy`
+- `chrome_extension + follower_source_surface_entry = route_resolved_pre_surface`
+- `chrome_extension + follower_source_surface_capture = pending_baseline_run`
+
+Clarifications:
+
+- Generic Chrome health alone is not enough.
+- Route-resolution is now green at the entry level.
+- A future baseline run may open the follower-source surface once and capture
+  only the initial visible follower window if separately approved.
+- Route-resolution does not authorize baseline capture, candidate queue
+  generation, welcome audio, DMs, follower profile opening, or CRM writes.
+
 ## What Remains Separate
 
 - baseline execution;

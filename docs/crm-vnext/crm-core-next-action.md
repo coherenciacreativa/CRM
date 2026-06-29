@@ -2688,30 +2688,68 @@ routing and completion pointer.
 - `completion_definition`: CRM Core recorded the blocked baseline run as a
   route-resolution blocker rather than a data-bearing follower baseline.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_follower_source_route_resolution_awaiting_approval_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `completed_at`: `2026-06-29`
+- `result`: route-resolution completed.
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_follower_source_route_resolution_closeout_2026-06-29.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_follower_source_route_resolution_closeout_2026-06-29.md`
+- `findings`:
+  - Route-resolution completed.
+  - Chrome Extension backend was green.
+  - Intended Instagram account was confirmed.
+  - Own profile route was reached.
+  - Own profile signal was confirmed.
+  - Follower-source entry was visible and actionable.
+  - Follower-source entry resolution method:
+    `browser_accessible_link_or_control`.
+  - Follower-source surface was not opened.
+  - Follower anchors captured: `0`.
+  - Private artifact written: `false`.
+  - Baseline established: `false`.
+  - Candidate queue generated: `false`.
+  - Welcome audio sent: `false`.
+  - DMs opened: `false`.
+  - Follower profiles opened: `0`.
+  - Instagram actions performed: `0`.
+  - CRM writes performed: `0`.
+  - Cleanup returned to neutral local page.
+  - No handles/private anchors/follower rows/private content were exposed.
+- `completion_definition`: CRM Core confirmed the intended account, own profile,
+  and follower-source entry are visible/actionable without opening the
+  follower-source surface or capturing follower anchors.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_bounded_follower_source_baseline_retry_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-29`
 - `updated_at`: `2026-06-29`
 - `objective`: Wait for Alejandro approval before one bounded follower-source
-  route-resolution run that confirms the intended account/profile and
-  follower-source entry are reachable before any follower-anchor capture.
-- `why_now`: The Chrome Extension backend was healthy, but the first baseline
-  run blocked because the intended account/own-profile signal was not confirmed.
-  CRM Core needs one route-resolution step before retrying follower baseline
-  capture.
+  baseline retry now that Chrome route-resolution confirmed the intended
+  account, own profile, and follower-source entry are visible/actionable.
+- `why_now`: The first baseline attempt blocked before route confirmation, but
+  the route-resolution run confirmed the follower-source entry is visible and
+  actionable without opening the follower list. A baseline retry is now the next
+  possible execution step, still limited to the initial visible follower window
+  and still not a candidate queue or welcome-audio action.
 - `allowed_scope`:
-  - Present exact route-resolution approval boundary.
-  - Explain that this is not anchor capture.
-  - Explain that baseline/candidate queue/send remain closed.
+  - Present exact baseline retry approval boundary.
+  - Explain that route-resolution succeeded.
+  - Explain that the retry would capture only the initial visible follower
+    window.
   - Answer clarifying questions.
   - Wait for approval.
   - No execution.
 - `forbidden_scope`:
   - No Instagram/UI/Computer Use/`@Chrome` execution yet.
   - No API calls.
-  - No follower anchor capture.
+  - No follower anchor capture yet.
   - No follower profile opening.
   - No scrolling or full-list traversal.
   - No DMs.
@@ -2724,7 +2762,30 @@ routing and completion pointer.
   - No screenshots.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `approval_phrase_required`: `I approve one CRM Core Instagram follower-source route-resolution run only. Use the approved Chrome Extension route to confirm the intended account, own profile, and follower-source entry are reachable. Do not capture follower anchors, do not open follower profiles or DMs, do not scroll, do not generate a candidate queue, do not send welcome audio, do not perform Instagram actions, and do not write CRM state.`
+- `approval_phrase_required`: `I approve one CRM Core Instagram bounded follower-source baseline retry only. Use the already resolved Chrome Extension follower-source route, open the follower-source surface at most once, capture only the initial visible follower window into a private artifact, write redacted aggregate receipts, do not scroll, do not open follower profiles or DMs, do not generate a candidate queue, do not send welcome audio, do not perform Instagram actions, and do not write CRM state.`
+- `future_execution_constraints`:
+  - Use Chrome Extension primary.
+  - Require green Chrome preflight.
+  - Use the route-resolution result as context, but re-confirm intended account
+    and own profile before opening the follower-source surface.
+  - Open follower-source surface at most once.
+  - Capture only initial visible follower window.
+  - No scrolling.
+  - No full-list traversal.
+  - No follower profile opening.
+  - No DMs.
+  - No welcome audio.
+  - No candidate queue generation.
+  - No Instagram actions.
+  - No CRM/source writes.
+  - Close follower-source surface if opened and confirm closure.
+  - Stop if surface opening risks profile opening, action, private output
+    exposure, or unsafe modal state.
+  - Store private follower anchors only in the private Instagram artifact
+    folder.
+  - Redacted receipts must include aggregate counts only.
+  - The baseline run establishes baseline evidence only; it must not classify
+    visible followers as new followers unless the source proves newness.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
@@ -2736,4 +2797,4 @@ routing and completion pointer.
   welcome audio, candidate queue generation, source actions, CRM writes, or
   outbound work until Alejandro gives the exact approval phrase.
 - `completion_definition`: Alejandro approves, declines, or modifies one bounded
-  follower-source route-resolution run.
+  follower-source baseline retry.
