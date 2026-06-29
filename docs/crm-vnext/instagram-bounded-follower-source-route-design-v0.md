@@ -417,6 +417,53 @@ Clarifications:
 - Route-resolution does not authorize baseline capture, candidate queue
   generation, welcome audio, DMs, follower profile opening, or CRM writes.
 
+## Baseline Retry Result And v0 Parking
+
+The bounded follower-source baseline retry completed on 2026-06-29 as blocked
+before follower-source capture.
+
+Findings:
+
+- Chrome Extension backend was green.
+- Baseline retry blocked before follower-source capture.
+- Intended account / own profile signal was not confirmed.
+- Follower-source entry was not visible/actionable in the retry.
+- Follower-source surface was not reached.
+- Follower window was not captured.
+- Private follower anchors captured: `0`.
+- Baseline established: `false`.
+- Candidate queue generated: `false`.
+- Welcome audio sent: `false`.
+- DMs opened: `false`.
+- Follower profiles opened: `0`.
+- Instagram actions performed: `0`.
+- CRM writes performed: `0`.
+- Cleanup returned to neutral local page.
+- Route-level blocker was `own_profile_signal_not_confirmed`.
+- Prior route-resolution succeeded, but baseline retry failed; therefore
+  route-resolution success alone is not enough to treat Chrome follower-source
+  capture as stable.
+- Do not rerun the same Chrome follower-source baseline blindly.
+- Park Chrome follower-source baseline for v0 unless Alejandro later approves a
+  separate route-repair path.
+- Candidate queue generation remains unapproved.
+- Welcome audio send remains unapproved.
+
+Route-health status:
+
+- `chrome_extension + notifications_surface = healthy`
+- `chrome_extension + follower_source_surface_entry = route_resolved_pre_surface_but_not_stable_for_capture`
+- `chrome_extension + follower_source_surface_capture = parked_unstable_for_v0`
+
+Fallback note:
+
+- Manual evidence packet remains acceptable for specific follower evidence.
+- Notifications repeat later remains acceptable as low-risk monitoring.
+- API/webhook path remains useful for DMs/replies/send if setup becomes ready,
+  but official docs did not show follower-delta support.
+- MailerLite onboarding API no-write design should move next because it can
+  improve downstream reliability once email evidence exists.
+
 ## What Remains Separate
 
 - baseline execution;

@@ -2724,77 +2724,98 @@ routing and completion pointer.
   and follower-source entry are visible/actionable without opening the
   follower-source surface or capturing follower anchors.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_bounded_follower_source_baseline_retry_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed_partial`
 - `created_at`: `2026-06-29`
 - `updated_at`: `2026-06-29`
-- `objective`: Wait for Alejandro approval before one bounded follower-source
-  baseline retry now that Chrome route-resolution confirmed the intended
-  account, own profile, and follower-source entry are visible/actionable.
-- `why_now`: The first baseline attempt blocked before route confirmation, but
-  the route-resolution run confirmed the follower-source entry is visible and
-  actionable without opening the follower list. A baseline retry is now the next
-  possible execution step, still limited to the initial visible follower window
-  and still not a candidate queue or welcome-audio action.
+- `completed_at`: `2026-06-29`
+- `result`: `completed_partial`
+- `completion_artifacts`:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_bounded_follower_source_baseline_retry_closeout_2026-06-29.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/crm_core_instagram_bounded_follower_source_baseline_retry_closeout_2026-06-29.md`
+- `findings`:
+  - Baseline retry blocked before follower-source capture.
+  - Chrome Extension backend was green.
+  - Intended account / own profile signal was not confirmed.
+  - Follower-source entry was not visible/actionable.
+  - Follower-source surface was not reached.
+  - Follower window was not captured.
+  - Private follower anchors captured: `0`.
+  - Baseline established: `false`.
+  - Candidate queue generated: `false`.
+  - Welcome audio sent: `false`.
+  - DMs opened: `false`.
+  - Follower profiles opened: `0`.
+  - Instagram actions performed: `0`.
+  - CRM writes performed: `0`.
+  - Cleanup returned to neutral local page.
+  - Route-level blocker: `own_profile_signal_not_confirmed`.
+  - The prior route-resolution success did not make the Chrome follower-source
+    baseline route stable enough for v0 execution.
+  - Chrome follower-source baseline is parked for v0 unless Alejandro approves
+    a separate route-repair path.
+  - Candidate queue generation remains unapproved.
+  - Welcome audio send remains unapproved.
+  - No handles, private anchors, follower rows, or private content were exposed.
+  - No UI, Computer Use, `@Chrome`, Instagram actions, follower profile
+    opening, DMs, welcome audio, candidate queue generation, CRM/source writes,
+    Launch OS docs, or `/Users/alejandrogomez/CRM` use occurred in this
+    no-run closeout.
+- `completion_definition`: CRM Core recorded the bounded follower-source
+  baseline retry as blocked and parked the unstable Chrome follower-source
+  capture path for v0 unless Alejandro approves a separate route-repair path.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_onboarding_api_no_write_design_v0`
+- `status`: `active`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `objective`: Design, but do not execute, a MailerLite onboarding API no-write
+  route for future approved email-handoff onboarding.
+- `why_now`: The Instagram follower-source UI baseline remains unstable and is
+  parked for v0. The Instagram-to-MailerLite architecture already identified
+  MailerLite onboarding as a high-leverage downstream lane. Designing the
+  no-write MailerLite onboarding route now improves readiness for future IG
+  reply/email handoff without requiring Instagram UI, candidate queue
+  generation, welcome audio send, or CRM writes.
 - `allowed_scope`:
-  - Present exact baseline retry approval boundary.
-  - Explain that route-resolution succeeded.
-  - Explain that the retry would capture only the initial visible follower
-    window.
-  - Answer clarifying questions.
-  - Wait for approval.
+  - Design only.
+  - Use existing CRM Core docs and public/local MailerLite API knowledge already
+    present in repo/docs.
+  - Define subscriber upsert/add-to-group planning without executing.
+  - Define fields, groups, automation trigger assumptions, idempotency,
+    receipts, and stop conditions.
+  - Define exact future approval phrase before any MailerLite API mutation.
   - No execution.
 - `forbidden_scope`:
-  - No Instagram/UI/Computer Use/`@Chrome` execution yet.
-  - No API calls.
-  - No follower anchor capture yet.
-  - No follower profile opening.
-  - No scrolling or full-list traversal.
-  - No DMs.
-  - No welcome audio.
-  - No candidate queue generation.
-  - No Instagram actions.
-  - No CRM/source writes.
+  - No MailerLite API calls.
+  - No MailerLite UI.
+  - No Gmail.
+  - No Instagram.
+  - No Meta Business Suite.
+  - No UI, Computer Use, or `@Chrome`.
   - No private artifact inspection.
-  - No private identity printing.
-  - No screenshots.
+  - No DMs or welcome audio.
+  - No candidate queue generation.
+  - No source mutations.
+  - No CRM writes.
+  - No scoring, ledgers, cards, Fact Store, or outreach.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `approval_phrase_required`: `I approve one CRM Core Instagram bounded follower-source baseline retry only. Use the already resolved Chrome Extension follower-source route, open the follower-source surface at most once, capture only the initial visible follower window into a private artifact, write redacted aggregate receipts, do not scroll, do not open follower profiles or DMs, do not generate a candidate queue, do not send welcome audio, do not perform Instagram actions, and do not write CRM state.`
-- `future_execution_constraints`:
-  - Use Chrome Extension primary.
-  - Require green Chrome preflight.
-  - Use the route-resolution result as context, but re-confirm intended account
-    and own profile before opening the follower-source surface.
-  - Open follower-source surface at most once.
-  - Capture only initial visible follower window.
-  - No scrolling.
-  - No full-list traversal.
-  - No follower profile opening.
-  - No DMs.
-  - No welcome audio.
-  - No candidate queue generation.
-  - No Instagram actions.
-  - No CRM/source writes.
-  - Close follower-source surface if opened and confirm closure.
-  - Stop if surface opening risks profile opening, action, private output
-    exposure, or unsafe modal state.
-  - Store private follower anchors only in the private Instagram artifact
-    folder.
-  - Redacted receipts must include aggregate counts only.
-  - The baseline run establishes baseline evidence only; it must not classify
-    visible followers as new followers unless the source proves newness.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `instagram-bounded-follower-source-route-design-v0.md`,
+  `instagram-to-mailerlite-welcome-system-architecture-v0.md`,
   `instagram-new-follower-welcome-audio-lane-design-v0.md`,
-  `instagram-browser-access-orchestrator-v0.md`, and
-  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
-  Computer Use, `@Chrome`, follower source access, follower anchor capture, DMs,
-  welcome audio, candidate queue generation, source actions, CRM writes, or
-  outbound work until Alejandro gives the exact approval phrase.
-- `completion_definition`: Alejandro approves, declines, or modifies one bounded
-  follower-source baseline retry.
+  `instagram-bounded-follower-source-route-design-v0.md`, and relevant existing
+  MailerLite read-only docs such as
+  `crm-core-readonly-source-command-inventory-v0.md` if present. Design only.
+  Do not execute MailerLite API, UI, Instagram, Gmail, candidate queue
+  generation, welcome audio, source mutation, CRM writes, or outbound work.
+- `completion_definition`: CRM Core has a no-run MailerLite onboarding API
+  design that defines future subscriber upsert/group onboarding fields,
+  idempotency, redacted receipts, exact approval phrase, stop conditions, and
+  closed gates before any MailerLite mutation or CRM write.
