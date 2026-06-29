@@ -7344,12 +7344,12 @@ Use deep hydration only for:
 - `next_checkpoint_expected`: CEO chooses one v2 candidate, asks for slate
   revision, pauses Launch OS or returns to a prior paused lane.
 
-## Active Next Action - Launch OS v0 Tres Lineas Shopify Preview CEO Web QA Waiting - 2026-06-29
+## Completed Next Action - Launch OS v0 Tres Lineas Shopify Preview CEO Web QA Waiting - 2026-06-29
 
 - `previous_next_action_id`: `launch_os_v0_microproduct_candidate_slate_v2_semantic_risk_weighted_local_only`
 - `previous_status`: `completed_superseded_by_tres_lineas_shopify_preview_ceo_web_qa_waiting`
 - `next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
-- `status`: `active_waiting_for_ceo_web_qa`
+- `status`: `completed_with_ceo_web_microfix_requested`
 - `created_at`: `2026-06-29`
 - `source_checkpoint`: `Tres líneas para decirlo claro Shopify preview retry split execution completed / QA-green.`
 - `execution_receipt`:
@@ -7408,3 +7408,67 @@ Use deep hydration only for:
   edge.
 - `next_checkpoint_expected`: CEO/Web QA decision for `Tres líneas para
   decirlo claro`.
+
+## Active Next Action - Launch OS v0 Tres Lineas Shopify Preview CEO Web QA Waiting - 2026-06-29 Microfix
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+- `previous_status`: `completed_with_ceo_web_microfix_requested`
+- `next_action_id`: `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa_after_microfix`
+- `created_at`: `2026-06-29`
+- `source_checkpoint`: `CEO/Web QA found the preview promising and technically
+  QA-green, but requested a constrained microfix before acceptance.`
+- `microfix_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_execution_receipt_2026-06-29.json`
+- `shopify_execution`:
+  - `execution_status`: `completed`
+  - `worktree`: `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-tres-lineas-preview`
+  - `branch`: `codex/shopify-tres-lineas-preview`
+  - `changed_remote_asset`: `sections/tres-lineas-para-decirlo-claro.liquid`
+  - `page_touched`: false
+  - `template_touched`: false
+  - `layout_touched`: false
+  - `theme_publish`: false
+  - `public_navigation_touched`: false
+  - `exact_url_printed`: false
+- `microfixes_completed`:
+  - Hero promise now specifies `primer borrador de tu mensaje`.
+  - Trust/safety line now has explicit subject: `Esta guía`.
+  - Product framing now emphasizes preparing a message for a concrete
+    conversation.
+  - Hero promise-list numbered circles align cleanly on desktop and mobile.
+  - Removed nearby `solo` repetition from the affected public copy.
+- `qa_result`:
+  - `preview_microcopy_context_gate`: green
+  - `visual_polish_gate`: green
+  - `copy_microcopy`: green
+  - `visual_polish`: green
+  - `ux`: green
+  - `technical_qa`: green
+  - `source_owned_blockers`: 0
+  - `platform_baseline_signals`: 6
+  - `unknown_origin_signals`: 0
+  - Desktop/mobile screenshots generated:
+    - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_2026-06-29/desktop.png`
+    - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_2026-06-29/mobile.png`
+- `process_patch`:
+  - `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview
+    Eligibility Gate now includes `preview_microcopy_context_gate` and
+    `visual_polish_gate`.
+- `objective`: Wait for CEO/Web QA of the microfixed noindex/unlisted Shopify
+  preview. This is a review gate only.
+- `forbidden_scope`:
+  - No additional Shopify changes.
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No public navigation/distribution.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No CRM Core, Brand Hub canon changes or GOG/auth.
+- `resume_instruction`: Present the microfixed Shopify preview QA-green state
+  for CEO/Web review only. Do not move to MailerLite, sends, audience, CRM,
+  public navigation or distribution without a fresh CEO decision.
+- `completion_definition`: Alejandro accepts the preview for the next gate,
+  requests a scoped fix, pauses the candidate, or returns to another Launch OS
+  edge.

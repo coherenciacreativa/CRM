@@ -15191,3 +15191,82 @@ Next edge:
 - CEO/Web QA of the exact-link Shopify preview only. Do not move to MailerLite,
   sends, audience, CRM, public navigation or distribution without a fresh CEO
   decision.
+
+## Launch OS v0 Tres Lineas CEO/Web QA microfix completed - 2026-06-29
+
+Status: CEO/Web QA found the Shopify preview promising and technically
+QA-green, but not yet accepted. A constrained microfix pass was completed and
+the existing noindex/unlisted preview was updated.
+
+Execution receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_execution_receipt_2026-06-29.json`
+
+Microfixes:
+
+- Hero promise clarifies that the person prepares a first draft of the message:
+  `primer borrador de tu mensaje`.
+- Trust/safety line now has explicit subject: `Esta guía`.
+- Nearby `solo` repetition was removed from the affected public copy.
+- Product framing now emphasizes preparing a message for a concrete
+  conversation.
+- Hero promise-list numbered circles align cleanly with text on desktop and
+  mobile.
+
+Shopify/Web:
+
+- Worktree:
+  `/Users/alejandrogomez/Projects/coherenciacreativa-shopifywebsite-tres-lineas-preview`
+- Branch:
+  `codex/shopify-tres-lineas-preview`
+- Changed remote asset:
+  - `sections/tres-lineas-para-decirlo-claro.liquid`
+- Page object touched: false.
+- Template/layout touched: false.
+- Theme publish: false.
+- Public navigation touched: false.
+- Exact URL printed: false.
+- Preview remains noindex/unlisted.
+
+QA:
+
+- `preview_microcopy_context_gate`: green.
+- `visual_polish_gate`: green.
+- Copy/microcopy: green.
+- Visual polish: green.
+- UX: green.
+- Technical QA: green.
+- Source-owned blockers: 0.
+- Platform-baseline signals: 6.
+- Unknown-origin signals: 0.
+- Desktop/mobile screenshots generated:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_2026-06-29/desktop.png`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_ceo_web_qa_microfix_2026-06-29/mobile.png`
+
+Reusable process patch:
+
+- `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md` Preview Eligibility
+  Gate now includes `preview_microcopy_context_gate` and `visual_polish_gate`.
+
+Closed gates:
+
+- No further Shopify changes.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No public navigation/distribution.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No CRM Core.
+- No Brand Hub canon changes.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_tres_lineas_shopify_preview_ceo_web_qa_waiting`
+
+Next edge:
+
+- CEO/Web QA of the microfixed exact-link Shopify preview only. Do not move to
+  MailerLite, sends, audience, CRM, public navigation or distribution without a
+  fresh CEO decision.

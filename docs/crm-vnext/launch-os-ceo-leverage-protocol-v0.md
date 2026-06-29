@@ -115,8 +115,10 @@ Required gate values:
 - `cross_screen_coherence = green`.
 - `lexical_repetition_gate = green`.
 - `brand_voice_gate = green`.
+- `preview_microcopy_context_gate = green`.
 - `product_value_gate = green`.
 - `visual_design_gate = green`.
+- `visual_polish_gate = green`.
 - `perceived_value_gate = green`.
 - `claims_gate = green`.
 - `independent_editorial_review = green`.
@@ -135,6 +137,17 @@ This gate is separate from technical Shopify QA. A preview can be noindex,
 unlisted and technically functional while still being blocked at the creative
 or visual/perceived-value gate. Do not advance that state to CEO/Web QA as if
 it were ready.
+
+`preview_microcopy_context_gate` requires that public-facing microcopy has
+explicit subjects and objects: no dangling nouns such as `primera versión`
+without saying what the version is, no unclear subject in safety/trust lines,
+no nearby repetition that weakens voice, and a coherent relationship between
+product framing, main question and concrete output.
+
+`visual_polish_gate` requires the key hero modules to look deliberate on
+desktop and mobile: numbered or icon modules align cleanly with their text,
+primary hierarchy is readable at first glance, and small visual defects do not
+make the preview feel like a rough prototype.
 
 ## CEO Decision Packet Format
 Use this shape:
