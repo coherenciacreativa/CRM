@@ -2767,28 +2767,53 @@ routing and completion pointer.
   baseline retry as blocked and parked the unstable Chrome follower-source
   capture path for v0 unless Alejandro approves a separate route-repair path.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_mailerlite_onboarding_api_no_write_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-29`
 - `updated_at`: `2026-06-29`
-- `objective`: Design, but do not execute, a MailerLite onboarding API no-write
-  route for future approved email-handoff onboarding.
-- `why_now`: The Instagram follower-source UI baseline remains unstable and is
-  parked for v0. The Instagram-to-MailerLite architecture already identified
-  MailerLite onboarding as a high-leverage downstream lane. Designing the
-  no-write MailerLite onboarding route now improves readiness for future IG
-  reply/email handoff without requiring Instagram UI, candidate queue
-  generation, welcome audio send, or CRM writes.
+- `completed_at`: `2026-06-29`
+- `completion_artifacts`:
+  - `docs/crm-vnext/mailerlite-onboarding-api-no-write-design-v0.md`
+- `findings`:
+  - MailerLite onboarding API no-write design completed.
+  - Evidence preconditions defined.
+  - Subscriber upsert/add-to-group planning defined without execution.
+  - Field mapping designed.
+  - Group/automation mapping questions defined.
+  - Idempotency keys and stop conditions defined.
+  - Future approvals defined for setup inventory, no-write payload
+    preparation, and mutation.
+  - Redacted receipt rules defined.
+  - No MailerLite API calls, MailerLite UI, Gmail, Instagram, private artifact
+    inspection, DMs, welcome audio, candidate queue generation, source
+    mutation, CRM writes, Launch OS docs, or `/Users/alejandrogomez/CRM` use
+    occurred.
+- `completion_definition`: CRM Core has a no-run MailerLite onboarding API
+  design that defines evidence preconditions, field mapping, group/automation
+  mapping, idempotency, future approval boundaries, redacted receipts,
+  source-health/no-write verification steps, stop conditions, and all
+  mutation/write gates closed.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `objective`: Wait for Alejandro approval before collecting a no-secret
+  MailerLite onboarding setup inventory.
+- `why_now`: The no-write MailerLite onboarding design exists, but future
+  onboarding requires non-secret setup facts such as approved field labels,
+  group labels, automation labels, and trigger assumptions before any payload
+  preparation or API mutation.
 - `allowed_scope`:
-  - Design only.
-  - Use existing CRM Core docs and public/local MailerLite API knowledge already
-    present in repo/docs.
-  - Define subscriber upsert/add-to-group planning without executing.
-  - Define fields, groups, automation trigger assumptions, idempotency,
-    receipts, and stop conditions.
-  - Define exact future approval phrase before any MailerLite API mutation.
+  - Present setup inventory checklist.
+  - Collect only non-secret yes/no/unknown setup facts and redacted labels
+    supplied by Alejandro.
+  - Record redacted inventory receipt.
+  - Recommend next safe route.
   - No execution.
 - `forbidden_scope`:
   - No MailerLite API calls.
@@ -2797,6 +2822,10 @@ routing and completion pointer.
   - No Instagram.
   - No Meta Business Suite.
   - No UI, Computer Use, or `@Chrome`.
+  - No API keys, tokens, headers, cookies, env values, credentials,
+    authorization codes, secrets, or private dashboard screenshots.
+  - No subscriber IDs or group IDs if Alejandro considers them sensitive.
+  - No private subscriber content.
   - No private artifact inspection.
   - No DMs or welcome audio.
   - No candidate queue generation.
@@ -2805,17 +2834,14 @@ routing and completion pointer.
   - No scoring, ledgers, cards, Fact Store, or outreach.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: `I approve CRM Core to collect a no-secret MailerLite onboarding setup inventory. I will provide only non-secret group labels, field labels, automation labels, and yes/no/unknown setup facts; do not ask for or record API keys, tokens, subscriber IDs, group IDs I consider sensitive, private dashboard screenshots, credentials, headers, cookies, env values, authorization codes, secrets, or private subscriber content.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `instagram-to-mailerlite-welcome-system-architecture-v0.md`,
-  `instagram-new-follower-welcome-audio-lane-design-v0.md`,
-  `instagram-bounded-follower-source-route-design-v0.md`, and relevant existing
-  MailerLite read-only docs such as
-  `crm-core-readonly-source-command-inventory-v0.md` if present. Design only.
-  Do not execute MailerLite API, UI, Instagram, Gmail, candidate queue
-  generation, welcome audio, source mutation, CRM writes, or outbound work.
-- `completion_definition`: CRM Core has a no-run MailerLite onboarding API
-  design that defines future subscriber upsert/group onboarding fields,
-  idempotency, redacted receipts, exact approval phrase, stop conditions, and
-  closed gates before any MailerLite mutation or CRM write.
+  `instagram-to-mailerlite-welcome-system-architecture-v0.md`, and
+  `mailerlite-onboarding-api-no-write-design-v0.md`. Do not execute
+  MailerLite API, MailerLite UI, Gmail, Instagram, Meta Business Suite, UI,
+  Computer Use, `@Chrome`, private artifact inspection, DMs, welcome audio,
+  candidate queue generation, source mutations, CRM writes, or outbound work.
+- `completion_definition`: Alejandro approves, declines, or modifies a
+  no-secret MailerLite onboarding setup inventory collection.
