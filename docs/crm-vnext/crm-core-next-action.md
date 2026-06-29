@@ -2624,59 +2624,79 @@ routing and completion pointer.
   inventory, readiness blockers, and a recommended design-only route for
   candidate-producing new-follower evidence.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_instagram_bounded_follower_source_route_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-06-29`
 - `updated_at`: `2026-06-29`
-- `objective`: Design, but do not execute, a bounded follower-source route for
-  candidate-producing new-follower evidence while preserving private identities
-  and all CRM/source write gates.
-- `why_now`: New follower detection is the top capability priority, and the
-  official-docs spike did not find API support for new-follower events, follower
-  lists, or follower deltas. The no-secret setup-readiness inventory confirms
-  that API/app readiness is still incomplete or unknown, so CRM Core should
-  design a bounded fallback route before any further execution.
+- `completed_at`: `2026-06-29`
+- `result`: bounded follower-source route design completed.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-bounded-follower-source-route-design-v0.md`
+- `findings`:
+  - Bounded follower-source route design completed.
+  - Default route is `bounded_follower_surface_initial_window`.
+  - First run establishes a private baseline, not a candidate queue.
+  - Future delta run compares private anchors locally.
+  - Route avoids scrolling, full-list traversal, follower profile opening, DMs,
+    welcome audio, Instagram actions, and CRM writes.
+  - Private artifacts and redacted receipts are defined.
+  - Candidate queue generation remains unapproved.
+  - Welcome audio send remains unapproved.
+  - No Instagram execution, UI, Computer Use, `@Chrome`, API calls, private
+    artifact inspection, follower profile opening, DM, welcome audio, candidate
+    queue generation, CRM/source writes, Launch OS docs, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core has a no-run bounded follower-source route
+  design that can later capture private follower anchors into private artifacts,
+  produce redacted receipts, establish or compare a private baseline, and
+  preserve all candidate/send/write gates.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_instagram_bounded_follower_source_baseline_run_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `objective`: Wait for Alejandro approval before one bounded Instagram
+  follower-source baseline run.
+- `why_now`: The bounded follower-source route design exists. Because
+  notifications and official docs did not produce new-follower candidate
+  evidence, the next possible execution step is a baseline-only run that captures
+  the initial visible follower window into a private artifact without generating
+  a candidate queue or sending welcome audio.
 - `allowed_scope`:
-  - Design a no-run bounded follower-source route.
-  - Define candidate-producing source surfaces without opening them.
-  - Define private artifact behavior for follower anchors.
-  - Define redacted receipt fields and blocker classes.
-  - Define stop conditions and exact future approval boundaries.
-  - Keep API/webhook routes and MailerLite onboarding as separate parked lanes.
+  - Present exact baseline-only approval boundary.
+  - Answer clarifying questions.
+  - Wait for approval.
   - No execution.
 - `forbidden_scope`:
+  - No Instagram/UI/Computer Use/`@Chrome` execution.
   - No API calls.
-  - No tokens, app secrets, webhook secrets, cookies, headers, env values,
-    credentials, authorization codes, or access tokens.
-  - No UI, Computer Use, or `@Chrome`.
-  - No Instagram execution or profile opening.
-  - No Meta Business Suite access.
-  - No MailerLite or Gmail.
+  - No follower profile opening.
+  - No scrolling or full-list traversal.
   - No DMs or welcome audio.
   - No candidate queue generation.
-  - No follower collection.
-  - No private identity printing.
-  - No screenshots.
-  - No app configuration changes.
-  - No webhook setup.
+  - No Instagram actions.
+  - No Meta Business Suite access.
+  - No MailerLite or Gmail.
   - No CRM/source writes.
   - No private artifact inspection.
+  - No private identity printing.
+  - No screenshots.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: `I approve one CRM Core Instagram bounded follower-source baseline run only. Use the approved browser/source route, capture only the initial visible follower window into a private artifact, write redacted aggregate receipts, do not scroll, do not open follower profiles or DMs, do not generate a candidate queue, do not send welcome audio, do not perform Instagram actions, and do not write CRM state.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-standing-readonly-source-policy-v0.md`,
-  `instagram-meta-api-source-health-spike-v0.md`,
-  `instagram-meta-api-setup-readiness-inventory-v0.md`,
-  `instagram-to-mailerlite-welcome-system-architecture-v0.md`,
-  `instagram-new-follower-source-coverage-options-v0.md`, and the redacted
-  setup-readiness inventory receipt. Do not execute APIs, UI, Computer Use,
-  `@Chrome`, Instagram, Meta Business Suite, MailerLite, Gmail, private
-  artifact inspection, DMs, welcome audio, follower collection, candidate queue
-  generation, app configuration, webhook setup, CRM/source writes, or outbound
-  work.
-- `completion_definition`: CRM Core has a no-run bounded follower-source route
-  design that explains candidate-producing surfaces, private artifact rules,
-  redacted receipt rules, stop conditions, and exact future approval boundaries.
+  `instagram-bounded-follower-source-route-design-v0.md`,
+  `instagram-new-follower-welcome-audio-lane-design-v0.md`,
+  `instagram-browser-access-orchestrator-v0.md`, and
+  `instagram-computer-use-quality-gate-v0.md`. Do not execute Instagram UI,
+  Computer Use, `@Chrome`, follower source access, DMs, welcome audio, candidate
+  queue generation, source actions, CRM writes, or outbound work until Alejandro
+  gives the exact approval phrase.
+- `completion_definition`: Alejandro approves, declines, or modifies one bounded
+  follower-source baseline run.
