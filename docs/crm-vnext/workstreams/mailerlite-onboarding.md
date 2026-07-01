@@ -47,6 +47,8 @@
     `docs/crm-vnext/mailerlite-onboarding-setup-inventory-packet-v0.md`
   - no-secret setup inventory packet, setup decision path, receipt model,
     idempotency expectations, and future approval language drafted.
+  - CEO-friendly no-secret setup inventory questionnaire drafted:
+    `docs/crm-vnext/mailerlite-onboarding-setup-inventory-questionnaire-v0.md`
   - next suggested task: collect no-secret MailerLite onboarding setup
     inventory only after Alejandro approval
   - no execution gates: no MailerLite API, no MailerLite UI, no Gmail, no
@@ -60,8 +62,10 @@
 - `proposed_integration_note`: no central file change required for this lane
   doc update. After review, Integration may record that the MailerLite lane has
   a dedicated no-secret setup inventory packet design at
-  `docs/crm-vnext/mailerlite-onboarding-setup-inventory-packet-v0.md`, while
-  setup inventory collection remains unexecuted and requires exact Alejandro
-  approval.
+  `docs/crm-vnext/mailerlite-onboarding-setup-inventory-packet-v0.md` and a
+  CEO-friendly questionnaire at
+  `docs/crm-vnext/mailerlite-onboarding-setup-inventory-questionnaire-v0.md`,
+  while setup inventory collection remains unexecuted and requires exact
+  Alejandro approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
