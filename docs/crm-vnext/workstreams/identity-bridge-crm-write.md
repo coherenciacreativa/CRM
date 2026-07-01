@@ -1,0 +1,41 @@
+# CRM Core Workstream: Identity Bridge / CRM Write
+
+- `workstream_id`: `identity-bridge-crm-write`
+- `branch`: `codex/crm-core-identity-bridge`
+- `consultant_chat`: Identity bridge consultant
+- `codex_worker`: Identity bridge lane worker
+- `status`: `parked`
+- `objective`: Email handoff to CRM write packet.
+- `why_now`: Identity bridge depends on MailerLite setup and private evidence
+  model decisions that are not settled yet.
+- `allowed_files`:
+  - `docs/crm-vnext/identity-bridge-*.md`
+  - `docs/crm-vnext/crm-write-packet-*.md`
+  - `docs/crm-vnext/workstreams/identity-bridge-crm-write.md`
+- `forbidden_files`:
+  - central files unless integration approves
+  - private artifacts
+  - Mantis-Reports receipts
+  - Launch OS docs
+- `allowed_scope`:
+  - parked planning only
+  - dependency mapping
+- `forbidden_scope`:
+  - CRM writes
+  - card writes
+  - ledgers
+  - Fact Store
+  - scoring
+  - private artifact inspection
+  - source actions
+- `private_artifact_policy`: No private artifact inspection.
+- `redacted_receipt_policy`: No receipts needed while parked.
+- `current_tasks`:
+  - wait for MailerLite setup and private evidence model
+- `latest_commit`: pending
+- `latest_receipt`: none
+- `blockers`: MailerLite setup; private evidence model
+- `next_approval_needed`: none until dependencies mature
+- `proposed_integration_note`: keep parked.
+- `closeout_format`: use template in
+  `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

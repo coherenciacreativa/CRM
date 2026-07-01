@@ -1,0 +1,41 @@
+# CRM Core Workstream: Scoring / Heat / Next Best Action
+
+- `workstream_id`: `scoring-heat-next-best-action`
+- `branch`: `codex/crm-core-scoring-heat`
+- `consultant_chat`: Scoring / heat consultant
+- `codex_worker`: Scoring lane worker
+- `status`: `parked`
+- `objective`: Heat/scoring policy after evidence lanes stabilize.
+- `why_now`: Scoring should follow stable evidence and write policy rather than
+  invent heat before reliable source lanes exist.
+- `allowed_files`:
+  - `docs/crm-vnext/scoring-*.md`
+  - `docs/crm-vnext/heat-*.md`
+  - `docs/crm-vnext/next-best-action-*.md`
+  - `docs/crm-vnext/workstreams/scoring-heat-next-best-action.md`
+- `forbidden_files`:
+  - central files unless integration approves
+  - private artifacts
+  - Mantis-Reports receipts
+  - Launch OS docs
+- `allowed_scope`:
+  - parked planning only
+  - dependency mapping
+- `forbidden_scope`:
+  - scoring writes
+  - CRM writes
+  - card writes
+  - ledgers
+  - Fact Store
+  - source actions
+- `private_artifact_policy`: No private artifact inspection.
+- `redacted_receipt_policy`: No receipts needed while parked.
+- `current_tasks`:
+  - wait for evidence lanes and write policy
+- `latest_commit`: pending
+- `latest_receipt`: none
+- `blockers`: evidence and write policy
+- `next_approval_needed`: none until dependencies mature
+- `proposed_integration_note`: keep parked.
+- `closeout_format`: use template in
+  `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

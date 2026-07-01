@@ -2796,52 +2796,108 @@ routing and completion pointer.
   source-health/no-write verification steps, stop conditions, and all
   mutation/write gates closed.
 
-## Active Next Action
+## Parked Next Action
 
 - `next_action_id`: `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
+- `status`: `parked_for_parallel_lane_bootstrap`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `result`: parked for parallel lane bootstrap.
+- `findings`:
+  - MailerLite setup inventory remains valid and unexecuted.
+  - No setup inventory facts were collected in this transition.
+  - No secrets were requested or printed.
+  - It will be delegated to the MailerLite onboarding workstream after the
+    parallel protocol lands.
+  - Candidate queue generation remains unapproved.
+  - Welcome audio send remains unapproved.
+- `completion_definition`: The no-secret MailerLite onboarding setup inventory
+  approval boundary remains available as a seed for the MailerLite onboarding
+  workstream and is not consumed by this parallel-development protocol.
+
+## Completed Next Action
+
+- `next_action_id`: `crm_core_parallel_development_protocol_design_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `completed_at`: `2026-06-29`
+- `completion_artifacts`:
+  - `docs/crm-vnext/crm-core-parallel-development-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+  - `docs/crm-vnext/workstreams/mailerlite-onboarding.md`
+  - `docs/crm-vnext/workstreams/instagram-api-readiness.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/workstreams/identity-bridge-crm-write.md`
+  - `docs/crm-vnext/workstreams/scoring-heat-next-best-action.md`
+  - `docs/crm-vnext/workstreams/follower-source-ui-repair.md`
+- `findings`:
+  - Parallel development protocol created.
+  - Workstream board created.
+  - Integration queue created.
+  - Workstream status template created.
+  - Initial workstream status files created for integration,
+    MailerLite onboarding, Instagram API readiness, welcome audio send
+    boundary, identity bridge / CRM write, scoring / heat / next-best-action,
+    and follower-source UI repair.
+  - First recommended lanes are `mailerlite-onboarding`,
+    `instagram-api-readiness`, and `welcome-audio-send-boundary`.
+  - Identity bridge, scoring/heat, and follower-source UI repair remain parked.
+  - No lane work was started.
+  - No API, UI, Computer Use, `@Chrome`, Instagram, MailerLite, Gmail, private
+    artifact inspection, source action, candidate queue generation, welcome
+    audio, CRM/source write, Launch OS doc, or `/Users/alejandrogomez/CRM` use
+    occurred.
+- `completion_definition`: CRM Core has a protocol for parallel
+  consultants/Codex workers, branch/worktree rules, lane ownership,
+  central-file protection, integration queue, lane closeout format, source
+  privacy rules, conflict handling, and initial lane recommendation.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_parallel_development_lane_bootstrap_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-29`
 - `updated_at`: `2026-06-29`
-- `objective`: Wait for Alejandro approval before collecting a no-secret
-  MailerLite onboarding setup inventory.
-- `why_now`: The no-write MailerLite onboarding design exists, but future
-  onboarding requires non-secret setup facts such as approved field labels,
-  group labels, automation labels, and trigger assumptions before any payload
-  preparation or API mutation.
+- `objective`: Wait for Alejandro approval before bootstrapping the first
+  parallel CRM Core workstream branches/chats.
+- `why_now`: The parallel development protocol, workstream board, integration
+  queue, and lane status files exist. The next step is to choose the first three
+  lanes and create or instruct their branches/chats without starting execution.
 - `allowed_scope`:
-  - Present setup inventory checklist.
-  - Collect only non-secret yes/no/unknown setup facts and redacted labels
-    supplied by Alejandro.
-  - Record redacted inventory receipt.
-  - Recommend next safe route.
+  - Present recommended first three lanes.
+  - Present branch/worktree plan.
+  - Present consultant chat setup instructions.
+  - Answer clarifying questions.
+  - Wait for approval.
   - No execution.
 - `forbidden_scope`:
-  - No MailerLite API calls.
-  - No MailerLite UI.
-  - No Gmail.
-  - No Instagram.
-  - No Meta Business Suite.
+  - No branch creation yet.
+  - No worktree creation yet.
+  - No Codex lane execution.
+  - No APIs.
   - No UI, Computer Use, or `@Chrome`.
-  - No API keys, tokens, headers, cookies, env values, credentials,
-    authorization codes, secrets, or private dashboard screenshots.
-  - No subscriber IDs or group IDs if Alejandro considers them sensitive.
-  - No private subscriber content.
+  - No Instagram.
+  - No MailerLite.
+  - No Gmail.
   - No private artifact inspection.
-  - No DMs or welcome audio.
+  - No source actions.
+  - No CRM/source writes.
   - No candidate queue generation.
-  - No source mutations.
-  - No CRM writes.
-  - No scoring, ledgers, cards, Fact Store, or outreach.
+  - No welcome audio.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `approval_phrase_required`: `I approve CRM Core to collect a no-secret MailerLite onboarding setup inventory. I will provide only non-secret group labels, field labels, automation labels, and yes/no/unknown setup facts; do not ask for or record API keys, tokens, subscriber IDs, group IDs I consider sensitive, private dashboard screenshots, credentials, headers, cookies, env values, authorization codes, secrets, or private subscriber content.`
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
-  `crm-core-standing-readonly-source-policy-v0.md`,
-  `instagram-to-mailerlite-welcome-system-architecture-v0.md`, and
-  `mailerlite-onboarding-api-no-write-design-v0.md`. Do not execute
-  MailerLite API, MailerLite UI, Gmail, Instagram, Meta Business Suite, UI,
-  Computer Use, `@Chrome`, private artifact inspection, DMs, welcome audio,
-  candidate queue generation, source mutations, CRM writes, or outbound work.
-- `completion_definition`: Alejandro approves, declines, or modifies a
-  no-secret MailerLite onboarding setup inventory collection.
+  `crm-core-parallel-development-protocol-v0.md`,
+  `crm-core-workstream-board-v0.md`, and
+  `crm-core-integration-queue-v0.md`. Do not create branches/worktrees, start
+  lane execution, run APIs, use UI/Computer Use/`@Chrome`, inspect private
+  artifacts, perform source actions, generate candidate queues, send welcome
+  audio, write CRM/source state, touch Launch OS docs, or use
+  `/Users/alejandrogomez/CRM` until Alejandro approves the bootstrap.
+- `completion_definition`: Alejandro approves, declines, or modifies the first
+  parallel workstream bootstrap.

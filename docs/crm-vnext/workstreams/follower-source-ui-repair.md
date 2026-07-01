@@ -1,0 +1,41 @@
+# CRM Core Workstream: Follower Source UI Repair
+
+- `workstream_id`: `follower-source-ui-repair`
+- `branch`: `codex/crm-core-follower-source-ui`
+- `consultant_chat`: Follower-source UI consultant
+- `codex_worker`: Follower-source lane worker
+- `status`: `parked_v0`
+- `objective`: Repair Chrome follower-source UI route only if CEO approves
+  later.
+- `why_now`: Chrome follower-source baseline is unstable and parked for v0.
+- `allowed_files`:
+  - lane-specific follower-source design docs after explicit approval
+  - `docs/crm-vnext/workstreams/follower-source-ui-repair.md`
+- `forbidden_files`:
+  - central files unless integration approves
+  - private artifacts
+  - Mantis-Reports receipts
+  - Launch OS docs
+- `allowed_scope`:
+  - parked status only
+  - no repair execution
+- `forbidden_scope`:
+  - Instagram UI
+  - Computer Use or `@Chrome`
+  - follower profile opening
+  - DMs
+  - private artifact inspection
+  - candidate queue generation
+  - welcome audio
+  - CRM/source writes
+- `private_artifact_policy`: No private artifact inspection.
+- `redacted_receipt_policy`: No receipts needed while parked.
+- `current_tasks`:
+  - wait for CEO approval if route repair becomes urgent
+- `latest_commit`: pending
+- `latest_receipt`: none
+- `blockers`: route instability; v0 parking decision
+- `next_approval_needed`: exact CEO approval before any repair work
+- `proposed_integration_note`: keep parked for v0.
+- `closeout_format`: use template in
+  `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
