@@ -2,9 +2,10 @@
 
 - `workstream_id`: `instagram-api-readiness`
 - `branch`: `codex/crm-core-instagram-api`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core-instagram-api`
 - `consultant_chat`: Meta/Instagram API consultant
 - `codex_worker`: Instagram API readiness lane worker
-- `status`: `ready_to_start`
+- `status`: `bootstrapped_ready`
 - `objective`: Meta setup facts, app readiness, API/webhook path, no secrets.
 - `why_now`: Official docs did not show follower deltas, while DM/reply and
   messaging/webhook routes remain plausible but setup-dependent.
@@ -23,8 +24,11 @@
   - no-call healthcheck planning
 - `forbidden_scope`:
   - API calls
+  - Meta Business Suite
   - app configuration
   - webhook setup
+  - tokens
+  - secrets
   - token handling
   - Instagram UI
   - DMs
@@ -33,12 +37,17 @@
 - `private_artifact_policy`: No private artifact inspection.
 - `redacted_receipt_policy`: Redacted setup/readiness receipts stay outside repo.
 - `current_tasks`:
-  - prepare no-secret API readiness plan after bootstrap approval
+  - current task seed: Meta/Instagram setup readiness, API/webhook
+    source-health planning, no secrets
+  - next suggested task: setup decision packet or no-secret API healthcheck
+    plan only after Alejandro approval
+  - no execution gates: no API calls, no Meta Business Suite, no tokens, no
+    secrets, no webhook setup, no UI
   - keep follower-source UI repair parked
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: parallel lane bootstrap approval; setup remains partial/unknown
-- `next_approval_needed`: approve lane bootstrap
+- `blockers`: first lane task prompt approval; setup remains partial/unknown
+- `next_approval_needed`: approve lane-specific prompt
 - `proposed_integration_note`: API lane should report whether capabilities move
   to healthcheck, setup decision, or parked status.
 - `closeout_format`: use template in

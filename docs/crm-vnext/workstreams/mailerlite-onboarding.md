@@ -2,9 +2,10 @@
 
 - `workstream_id`: `mailerlite-onboarding`
 - `branch`: `codex/crm-core-mailerlite-onboarding`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `ready_to_start`
+- `status`: `bootstrapped_ready`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -28,6 +29,9 @@
 - `forbidden_scope`:
   - MailerLite API calls
   - MailerLite UI
+  - Gmail
+  - Instagram
+  - secrets
   - subscriber/group/field/automation mutation
   - candidate queue generation
   - CRM writes
@@ -37,13 +41,18 @@
 - `redacted_receipt_policy`: Receipt paths may be referenced by label/path only;
   do not commit receipts.
 - `current_tasks`:
-  - start from setup inventory seed after bootstrap approval
-  - clarify non-secret group, field, automation, suppression, and operation
-    decisions
+  - current task seed:
+    `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
+  - next suggested task: collect no-secret MailerLite onboarding setup
+    inventory only after Alejandro approval
+  - no execution gates: no MailerLite API, no MailerLite UI, no Gmail, no
+    Instagram, no secrets, no CRM writes
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: parallel lane bootstrap approval
-- `next_approval_needed`: approve lane bootstrap and setup inventory collection
+- `blockers`: first lane task prompt approval; setup inventory collection still
+  requires exact Alejandro approval
+- `next_approval_needed`: approve lane-specific prompt and setup inventory
+  collection
 - `proposed_integration_note`: lane should propose, not edit, central
   next-action updates.
 - `closeout_format`: use template in

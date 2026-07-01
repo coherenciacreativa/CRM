@@ -17,7 +17,22 @@ No lane outputs in review at creation.
 
 ## Merged / Closed
 
-No parallel-lane outputs merged at creation.
+### parallel_lane_bootstrap_2026-06-29
+
+- `source_workstream`: `integration`
+- `source_branch`: `codex/crm-core-reentry`
+- `commits`: pending
+- `files_changed`: board, integration queue, first three workstream files,
+  next-action
+- `summary`: bootstrapped first three parallel workstream branches/worktrees
+- `tests_or_checks`: `git diff --check`, `git worktree list`
+- `private_artifacts_touched`: false
+- `source_actions_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: first lane task prompts / consultant chat setup
+- `integration_recommendation`: commit bootstrap docs, then create first three
+  consultant chats and issue lane-specific prompts
 
 ## Rejected / Needs Rework
 
@@ -25,8 +40,8 @@ No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-Initial decision required: approve, decline, or modify the first parallel
-workstream bootstrap for:
+Decision required: approve, decline, or modify the first lane-specific prompts
+and consultant chat setup for:
 
 - `mailerlite-onboarding`
 - `instagram-api-readiness`

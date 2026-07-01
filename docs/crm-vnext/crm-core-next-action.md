@@ -2856,48 +2856,93 @@ routing and completion pointer.
   central-file protection, integration queue, lane closeout format, source
   privacy rules, conflict handling, and initial lane recommendation.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_parallel_development_lane_bootstrap_awaiting_approval_v0`
+- `status`: `completed`
+- `created_at`: `2026-06-29`
+- `updated_at`: `2026-06-29`
+- `completed_at`: `2026-06-29`
+- `result`: first parallel CRM Core workstream branches and worktrees
+  bootstrapped without lane execution.
+- `first_workstreams_bootstrapped`:
+  - `mailerlite-onboarding`
+  - `instagram-api-readiness`
+  - `welcome-audio-send-boundary`
+- `branches_created_or_verified`:
+  - `codex/crm-core-mailerlite-onboarding`
+  - `codex/crm-core-instagram-api`
+  - `codex/crm-core-welcome-audio`
+- `worktrees_created_or_verified`:
+  - `/Users/alejandrogomez/CRM-core-mailerlite`
+  - `/Users/alejandrogomez/CRM-core-instagram-api`
+  - `/Users/alejandrogomez/CRM-core-welcome-audio`
+- `findings`:
+  - The first three lane branches were created from
+    `codex/crm-core-reentry` at the current central HEAD.
+  - The first three lane worktrees were created at the approved local paths.
+  - The first three lane branches were pushed to `origin` with upstream
+    tracking.
+  - No lane execution started.
+  - No lane tasks were run.
+  - No APIs, UI, Computer Use, `@Chrome`, Instagram, MailerLite, Gmail,
+    Meta Business Suite, private artifact inspection, source actions,
+    candidate queue generation, welcome audio, CRM/source writes, Launch OS
+    docs, or `/Users/alejandrogomez/CRM` use occurred.
+  - Parked lanes remain parked:
+    `identity-bridge-crm-write`, `scoring-heat-next-best-action`, and
+    `follower-source-ui-repair`.
+  - MailerLite setup inventory remains unexecuted and delegated to the
+    MailerLite onboarding workstream seed.
+  - Candidate queue generation remains unapproved.
+  - Welcome audio send remains unapproved.
+- `completion_definition`: The first three parallel CRM Core workstream
+  branches/worktrees exist, are clean, are registered on origin, and are ready
+  for lane-specific task prompts after separate Alejandro approval.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_parallel_first_lane_task_prompts_awaiting_approval_v0`
 - `status`: `blocked`
 - `created_at`: `2026-06-29`
 - `updated_at`: `2026-06-29`
-- `objective`: Wait for Alejandro approval before bootstrapping the first
-  parallel CRM Core workstream branches/chats.
-- `why_now`: The parallel development protocol, workstream board, integration
-  queue, and lane status files exist. The next step is to choose the first three
-  lanes and create or instruct their branches/chats without starting execution.
+- `objective`: Wait for Alejandro approval before issuing the first
+  lane-specific prompts to the three bootstrapped CRM Core workstreams.
+- `why_now`: The first three workstream branches/worktrees are bootstrapped.
+  The next step is to seed the MailerLite onboarding, Instagram API readiness,
+  and welcome audio send boundary consultant/Codex lanes with scoped prompts,
+  without allowing cross-lane edits or source execution.
 - `allowed_scope`:
-  - Present recommended first three lanes.
-  - Present branch/worktree plan.
+  - Present first three lane prompts.
   - Present consultant chat setup instructions.
+  - Present Codex worker instructions.
   - Answer clarifying questions.
   - Wait for approval.
-  - No execution.
+  - No lane execution yet.
 - `forbidden_scope`:
-  - No branch creation yet.
-  - No worktree creation yet.
-  - No Codex lane execution.
   - No APIs.
   - No UI, Computer Use, or `@Chrome`.
   - No Instagram.
   - No MailerLite.
   - No Gmail.
+  - No Meta Business Suite.
   - No private artifact inspection.
   - No source actions.
   - No CRM/source writes.
   - No candidate queue generation.
   - No welcome audio.
+  - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
   `crm-core-parallel-development-protocol-v0.md`,
-  `crm-core-workstream-board-v0.md`, and
-  `crm-core-integration-queue-v0.md`. Do not create branches/worktrees, start
-  lane execution, run APIs, use UI/Computer Use/`@Chrome`, inspect private
-  artifacts, perform source actions, generate candidate queues, send welcome
-  audio, write CRM/source state, touch Launch OS docs, or use
-  `/Users/alejandrogomez/CRM` until Alejandro approves the bootstrap.
+  `crm-core-workstream-board-v0.md`,
+  `crm-core-integration-queue-v0.md`, and the first three lane status files.
+  Do not start lane execution, run APIs, use UI/Computer Use/`@Chrome`, inspect
+  private artifacts, perform source actions, generate candidate queues, send
+  welcome audio, write CRM/source state, create additional branches/worktrees,
+  touch Launch OS docs, or use `/Users/alejandrogomez/CRM` until Alejandro
+  approves the first lane-specific prompts.
 - `completion_definition`: Alejandro approves, declines, or modifies the first
-  parallel workstream bootstrap.
+  three lane-specific task prompts.

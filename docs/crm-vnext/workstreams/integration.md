@@ -38,10 +38,20 @@
   - maintain board
   - maintain integration queue
   - review lane outputs
+  - first three lanes bootstrapped:
+    - `mailerlite-onboarding` on `codex/crm-core-mailerlite-onboarding` at
+      `/Users/alejandrogomez/CRM-core-mailerlite`
+    - `instagram-api-readiness` on `codex/crm-core-instagram-api` at
+      `/Users/alejandrogomez/CRM-core-instagram-api`
+    - `welcome-audio-send-boundary` on `codex/crm-core-welcome-audio` at
+      `/Users/alejandrogomez/CRM-core-welcome-audio`
+  - no lane execution started
+  - central branch remains the integration source
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: first lane bootstrap approval
-- `next_approval_needed`: approve first parallel workstream bootstrap
+- `blockers`: first lane task prompt approval
+- `next_approval_needed`: approve first lane-specific prompts and consultant
+  chat setup
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

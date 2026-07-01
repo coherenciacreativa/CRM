@@ -2,9 +2,10 @@
 
 - `workstream_id`: `welcome-audio-send-boundary`
 - `branch`: `codex/crm-core-welcome-audio`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `ready_to_design`
+- `status`: `bootstrapped_ready`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -36,12 +37,16 @@
 - `redacted_receipt_policy`: Receipts may include counts and status only; no
   identities or message content.
 - `current_tasks`:
-  - design send boundary after bootstrap approval
+  - current task seed: welcome audio send boundary design
+  - next suggested task: design audio asset registry, already-welcomed history,
+    send approval packet, duplicate prevention
+  - no execution gates: no DM opening, no welcome audio send, no candidate
+    queue generation, no Instagram actions
   - keep send gate closed
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: parallel lane bootstrap approval; no audio send approval
-- `next_approval_needed`: approve lane bootstrap
+- `blockers`: first lane task prompt approval; no audio send approval
+- `next_approval_needed`: approve lane-specific prompt
 - `proposed_integration_note`: lane should define send prerequisites before any
   future source action.
 - `closeout_format`: use template in
