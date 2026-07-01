@@ -7656,15 +7656,46 @@ Use deep hydration only for:
 
 ## Active Next Action - Launch OS v0 Tres Lineas Pedir Shopify Preview CEO Web QA Waiting - 2026-07-01
 
-- `previous_next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_retry_manifest_v1`
-- `previous_status`: `completed_after_delayed_render_qa`
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_microcopy_visual_polish_pass`
+- `previous_status`: `completed_microcopy_visual_polish_green`
 - `next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
 - `status`: `active_waiting_for_ceo_web_qa`
 - `created_at`: `2026-07-01`
-- `source_checkpoint`: Delayed render QA for the noindex/unlisted Shopify
-  preview of `Tres líneas para pedir algo concreto` completed after the
-  previous `qa_pending_render_connectivity` state.
-- `objective`: CEO/Web manual review of the noindex/unlisted preview.
+- `updated_at`: `2026-07-01`
+- `source_checkpoint`: The noindex/unlisted Shopify preview of `Tres líneas
+  para pedir algo concreto` completed delayed render QA and then received a
+  constrained CEO/Web QA Microcopy + Visual Polish Pass.
+- `microfix_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_ceo_web_qa_microcopy_visual_polish_execution_receipt_2026-07-01.json`
+- `microfix_summary`:
+  - Public label changed from `GUÍA LOCAL DE ESCRITURA` to `GUÍA BREVE DE
+    ESCRITURA`.
+  - Hero 1/2/3 list rewritten for public-facing clarity.
+  - Trust/no-email note rewritten without `captura de correo`.
+  - Category changed from `Pedir un cambio de forma` to `Pedir que algo
+    cambie`.
+  - Numbered circles alignment/rhythm polished for desktop and mobile.
+- `qa_result`:
+  - Public microcopy: green.
+  - Visual polish: green.
+  - UX: green.
+  - Technical QA: green.
+  - HTTP/DOM readback: green, `200`.
+  - Source-owned blockers: 0.
+  - Unknown-origin signals: 0.
+  - Platform-baseline signals classified.
+  - Desktop/mobile render evidence generated.
+  - Exact URL was not printed; receipt uses redacted label + SHA.
+- `remote_update_scope`:
+  - Changed remote asset:
+    `sections/tres-lineas-pedir-algo-concreto.liquid`.
+  - Page object not updated.
+  - Template not updated.
+  - Layout not touched.
+  - Theme publish not called.
+  - Public navigation untouched.
+- `objective`: CEO/Web manual review of the microfixed noindex/unlisted
+  preview.
 - `allowed_scope`:
   - CEO/Web review only.
   - Local-only receipt or decision update after Alejandro reviews.

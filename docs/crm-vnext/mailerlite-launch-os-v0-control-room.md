@@ -15470,3 +15470,75 @@ Next edge:
 - CEO/Web manual QA of the noindex/unlisted preview only. Keep public
   navigation, URL distribution, MailerLite, sends, audience, CRM writes, Brand
   Hub, CRM Core and GOG/auth closed.
+
+## Launch OS v0 Tres Lineas Pedir CEO/Web QA microcopy visual polish completed - 2026-07-01
+
+Status: A constrained CEO/Web QA Microcopy + Visual Polish Pass was applied to
+the existing noindex/unlisted Shopify preview for `Tres líneas para pedir algo
+concreto`. The preview remains ready for CEO/Web manual review.
+
+Execution receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_ceo_web_qa_microcopy_visual_polish_execution_receipt_2026-07-01.json`
+
+What changed:
+
+- Public label changed from `GUÍA LOCAL DE ESCRITURA` to `GUÍA BREVE DE
+  ESCRITURA`.
+- Hero promise list rewritten:
+  - `Qué necesitas pedir.`
+  - `Cómo convertirlo en una petición concreta.`
+  - `Qué paso facilita una respuesta concreta.`
+- Trust/no-email note changed from funnel/internal language to:
+  `Tus líneas no se guardan ni se envían. Puedes copiar el borrador si te
+  sirve.`
+- Category changed from `Pedir un cambio de forma` to `Pedir que algo cambie`.
+- Numbered circle alignment/rhythm polished for desktop and mobile.
+
+Remote update scope:
+
+- Changed remote asset:
+  - `sections/tres-lineas-pedir-algo-concreto.liquid`
+- Page object updated: false.
+- Page object created: false.
+- Template touched: false.
+- Layout touched: false.
+- Theme publish called: false.
+- Public navigation touched: false.
+- Exact URL printed: false.
+
+QA:
+
+- Public microcopy: green.
+- Visual polish: green.
+- UX: green.
+- Technical QA: green.
+- HTTP/DOM readback: green, `200`.
+- `noindex,nofollow,noarchive` confirmed.
+- Source-owned blockers: 0.
+- Unknown-origin signals: 0.
+- Platform-baseline signals classified.
+- Desktop/mobile render evidence generated.
+- User-input safety preserved: `textContent/value`, no `innerHTML` with user
+  text, no storage, no network, no analytics, copy button by explicit click.
+
+Closed gates:
+
+- No public navigation.
+- No URL distribution by Codex.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No Brand Hub.
+- No CRM Core.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+
+Next edge:
+
+- CEO/Web manual QA of the microfixed noindex/unlisted preview only.
