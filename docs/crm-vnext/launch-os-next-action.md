@@ -7545,13 +7545,16 @@ Use deep hydration only for:
   public/distribution preflight, request a readiness revision, pause the
   candidate or return to another Launch OS lane.
 
-## Active Next Action - Launch OS v0 Tres Lineas Manual Seed Feedback Waiting - 2026-06-29
+## Waiting Side Lane - Launch OS v0 Tres Lineas Manual Seed Feedback Waiting - 2026-06-29
 
 - `previous_next_action_id`: `launch_os_v0_tres_lineas_public_distribution_readiness_packet_local_only`
 - `previous_status`: `completed_minimal_manual_exposure_approved`
 - `next_action_id`: `launch_os_v0_tres_lineas_manual_seed_feedback_waiting`
-- `status`: `active_waiting_for_manual_feedback`
+- `status`: `waiting_side_lane_manual_feedback`
 - `created_at`: `2026-06-29`
+- `active_pointer_note`: This manual-feedback lane remains open, but the
+  active Launch OS pointer moved to `Tres líneas para pedir algo concreto`
+  after its delayed render QA completed.
 - `milestone_name`: `Tres líneas para decirlo claro - manual seed feedback receipt`
 - `source_checkpoint`: Alejandro approved a minimal responsible manual
   exposure of the noindex/unlisted exact-link preview to 1-3 trusted people.
@@ -7617,3 +7620,82 @@ Use deep hydration only for:
   feedback receipt and next-decision brief without adding live systems.
 - `next_checkpoint_expected`: CEO reviews manual feedback patterns and chooses
   small public link test, microfix, pause or public distribution packet.
+
+## Completed Next Action - Launch OS v0 Tres Lineas Pedir Shopify Preview Delayed Render QA - 2026-07-01
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_retry_manifest_v1`
+- `previous_preview_state`: `qa_pending_render_connectivity`
+- `status`: `completed`
+- `completed_at`: `2026-07-01`
+- `microproduct`: `Tres líneas para pedir algo concreto`
+- `receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_shopify_preview_delayed_render_qa_receipt_2026-07-01.json`
+- `delayed_render_qa_result`:
+  - HTTP/DOM readback: green, `200`.
+  - `noindex,nofollow,noarchive` confirmed.
+  - Desktop render: green.
+  - Mobile-width render: green.
+  - Exact URL was not printed; receipt uses redacted label + SHA.
+  - SafariDriver still fails before session, but render was validated through
+    direct Safari window capture.
+  - Interaction was not fully re-executed by browser automation in the delayed
+    retry, but remains backed by source/DOM/local QA.
+- `closed_gates`:
+  - No Shopify Admin/API during delayed QA.
+  - No assets uploaded.
+  - No Page update/create.
+  - No theme publish.
+  - Public navigation untouched.
+  - No MailerLite.
+  - No sends.
+  - No audience traffic.
+  - No CRM writes.
+  - No Brand Hub.
+  - No CRM Core.
+  - No GOG/auth.
+
+## Active Next Action - Launch OS v0 Tres Lineas Pedir Shopify Preview CEO Web QA Waiting - 2026-07-01
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_retry_manifest_v1`
+- `previous_status`: `completed_after_delayed_render_qa`
+- `next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `created_at`: `2026-07-01`
+- `source_checkpoint`: Delayed render QA for the noindex/unlisted Shopify
+  preview of `Tres líneas para pedir algo concreto` completed after the
+  previous `qa_pending_render_connectivity` state.
+- `objective`: CEO/Web manual review of the noindex/unlisted preview.
+- `allowed_scope`:
+  - CEO/Web review only.
+  - Local-only receipt or decision update after Alejandro reviews.
+- `forbidden_scope`:
+  - No public navigation.
+  - No URL distribution by Codex.
+  - No Shopify Admin/API or further Shopify changes.
+  - No asset upload.
+  - No Page update/create.
+  - No theme publish.
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience assignment or audience traffic.
+  - No CRM writes.
+  - No ledgers, cards, scoring or Fact Store.
+  - No Brand Hub.
+  - No CRM Core.
+  - No GOG/auth.
+- `live_gate_status`:
+  - Public navigation: closed.
+  - URL distribution: closed.
+  - MailerLite: closed.
+  - Sends/audience: closed.
+  - CRM writes: closed.
+  - Brand Hub / CRM Core: closed.
+- `resume_instruction`: Wait for Alejandro's CEO/Web QA result for this
+  exact-link noindex/unlisted preview. Do not advance to public distribution,
+  MailerLite, sends, audience, CRM or further Shopify changes without a fresh
+  explicit approval.
+- `completion_definition`: Alejandro accepts the preview as CEO/Web QA-green,
+  requests a scoped fix, pauses the candidate, or returns to another Launch OS
+  edge.
+- `next_checkpoint_expected`: CEO/Web QA decision for `Tres líneas para pedir
+  algo concreto`.

@@ -15416,3 +15416,57 @@ Next edge:
 - Wait for Alejandro's manual feedback summaries from 1-3 trusted people.
   Codex may later prepare a local-only feedback receipt and next-decision brief
   from those summaries, without sending messages or touching live systems.
+
+## Launch OS v0 Tres Lineas Pedir delayed render QA completed - 2026-07-01
+
+Status: The Shopify preview for `Tres líneas para pedir algo concreto` moved
+from `qa_pending_render_connectivity` to completed delayed render QA. The
+preview remains noindex/unlisted and is ready for CEO/Web manual review.
+
+Evidence:
+
+- Delayed render QA receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_shopify_preview_delayed_render_qa_receipt_2026-07-01.json`
+
+Previous preview state:
+
+- `qa_pending_render_connectivity`
+
+Delayed QA result:
+
+- HTTP/DOM readback: green, `200`.
+- `noindex,nofollow,noarchive` confirmed.
+- Desktop render: green.
+- Mobile-width render: green.
+- Exact URL was not printed; receipt uses redacted label + SHA.
+- SafariDriver still fails before session, but render was validated through
+  direct Safari window capture.
+- Interaction was not fully re-executed by browser automation in the delayed
+  retry, but remains backed by source/DOM/local QA.
+
+Closed gates and non-actions:
+
+- No Shopify Admin/API during delayed QA.
+- No assets uploaded.
+- No Page update/create.
+- No theme publish.
+- Public navigation untouched.
+- No URL distribution by Codex.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No Brand Hub.
+- No CRM Core.
+- No GOG/auth.
+
+New active next action:
+
+- `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+
+Next edge:
+
+- CEO/Web manual QA of the noindex/unlisted preview only. Keep public
+  navigation, URL distribution, MailerLite, sends, audience, CRM writes, Brand
+  Hub, CRM Core and GOG/auth closed.
