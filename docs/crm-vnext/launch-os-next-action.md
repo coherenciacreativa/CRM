@@ -7730,3 +7730,68 @@ Use deep hydration only for:
   edge.
 - `next_checkpoint_expected`: CEO/Web QA decision for `Tres líneas para pedir
   algo concreto`.
+
+## Active Next Action Update - Tres Lineas Pedir Post-Output Guidance Microfix Completed - 2026-07-01
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+- `next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+- `status`: `active_waiting_for_ceo_web_qa`
+- `updated_at`: `2026-07-01`
+- `source_checkpoint`: Post-output guidance microfix completed for the existing
+  noindex/unlisted Shopify preview of `Tres líneas para pedir algo concreto`.
+- `microfix_receipt`:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_post_output_guidance_microfix_execution_receipt_2026-07-01.json`
+- `microfix_scope`:
+  - Applied only to `sections/tres-lineas-pedir-algo-concreto.liquid`.
+  - Replaced the previous `Guía de revisión` / checklist / trust note with the
+    public `Antes de usar tu petición` post-output guidance module.
+  - Kept the guidance after the draft/output.
+  - Removed the weak dynamic guidance copy that included `observable`.
+  - Preserved user-input safety: `textContent/value`, no `innerHTML` with user
+    text, no storage, no network, no analytics, copy by explicit click.
+- `qa_result`:
+  - Post-output guidance: green.
+  - Copy/microcopy: green.
+  - UX: green.
+  - Technical QA: green.
+  - HTTP/DOM readback: green, `200`.
+  - `noindex,nofollow,noarchive` remains confirmed.
+  - Source-owned blockers: 0.
+  - Unknown-origin signals: 0.
+  - Platform-baseline signals classified.
+  - Exact URL was not printed; receipt uses redacted label + SHA.
+- `decirlo_claro_versioning_note`:
+  - The same guidance direction for `Tres líneas para decirlo claro` is
+    registered as `registered_not_applied`.
+  - Manual seed feedback gathered before that future module belongs to the
+    previous preview version unless Alejandro explicitly updates the preview.
+  - Version registry:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_post_output_guidance_version_registry_2026-07-01.md`
+- `reusable_gate_patch`:
+  - `post_output_use_guidance_gate` added to
+    `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`.
+- `closed_gates`:
+  - Preview remains noindex/unlisted.
+  - Public navigation remains closed.
+  - No URL distribution by Codex.
+  - No further Shopify Admin/API after the microfix execution.
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience traffic.
+  - No CRM writes.
+  - No ledgers/cards/scoring/Fact Store.
+  - No Brand Hub.
+  - No CRM Core.
+  - No GOG/auth.
+- `important_status_note`: This checkpoint does not mark `Tres líneas para
+  pedir algo concreto` as CEO/Web QA accepted. The next edge remains manual
+  CEO/Web review of the microfixed preview.
+- `resume_instruction`: Wait for Alejandro's CEO/Web QA result for the
+  microfixed noindex/unlisted preview. Do not advance to public distribution,
+  MailerLite, sends, audience, CRM or further Shopify changes without a fresh
+  explicit approval.
+- `completion_definition`: Alejandro accepts the microfixed preview as
+  CEO/Web QA-green, requests another scoped fix, pauses the candidate, or
+  chooses another Launch OS edge.
+- `next_checkpoint_expected`: CEO/Web QA decision for the post-output-guidance
+  version of `Tres líneas para pedir algo concreto`.

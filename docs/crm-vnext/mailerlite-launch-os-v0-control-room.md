@@ -15542,3 +15542,92 @@ Active next action:
 Next edge:
 
 - CEO/Web manual QA of the microfixed noindex/unlisted preview only.
+
+## Launch OS v0 Tres Lineas Pedir post-output guidance microfix completed - 2026-07-01
+
+Status: The existing noindex/unlisted Shopify preview for `Tres líneas para
+pedir algo concreto` received the approved post-output guidance microfix. This
+does not mark CEO/Web QA accepted; the preview remains in CEO/Web manual review.
+
+Execution receipt:
+
+- `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_post_output_guidance_microfix_execution_receipt_2026-07-01.json`
+
+What changed:
+
+- Replaced the previous `Guía de revisión` module with `Antes de usar tu
+  petición`.
+- Replaced the unclear `observable` guidance with:
+  `Asegúrate de que la otra persona pueda responder sin adivinar.`
+- Consolidated the checklist and note into one post-output guidance area after
+  the draft/output.
+- Rewrote the trust note as:
+  `Tu petición queda en esta pantalla. Esta página no la guarda ni la envía; tú
+  decides si la ajustas, la copias o la dejas reposar.`
+- Removed the weak dynamic guidance copy; the category selection remains part of
+  the framing, not a source of variable guidance text.
+
+Remote update scope:
+
+- Changed remote asset:
+  - `sections/tres-lineas-pedir-algo-concreto.liquid`
+- Page object updated: false.
+- Page object created: false.
+- Template touched: false.
+- Layout touched: false.
+- Theme publish called: false.
+- Public navigation touched: false.
+- Exact URL printed: false.
+
+QA:
+
+- Post-output guidance: green.
+- Copy/microcopy: green.
+- UX: green.
+- Technical QA: green.
+- HTTP/DOM readback: green, `200`.
+- `noindex,nofollow,noarchive` confirmed.
+- Source-owned blockers: 0.
+- Unknown-origin signals: 0.
+- Platform-baseline signals classified.
+- User-input safety preserved: `textContent/value`, no `innerHTML` with user
+  text, no storage, no network, no analytics, copy button by explicit click.
+
+Versioning:
+
+- `Tres líneas para decirlo claro` post-output guidance was registered as
+  `registered_not_applied`, because its preview is already in manual seed
+  feedback.
+- Feedback gathered before that future update belongs to the previous preview
+  version unless Alejandro explicitly updates that preview.
+- Registry:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_post_output_guidance_version_registry_2026-07-01.md`
+
+Reusable gate:
+
+- Added `post_output_use_guidance_gate` to
+  `docs/crm-vnext/launch-os-ceo-leverage-protocol-v0.md`.
+
+Closed gates:
+
+- Preview remains noindex/unlisted.
+- Public navigation remains closed.
+- No URL distribution by Codex.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No Brand Hub.
+- No CRM Core.
+- No GOG/auth.
+
+Active next action:
+
+- `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+
+Next edge:
+
+- CEO/Web manual QA of the post-output-guidance preview version only. Do not
+  advance to public distribution, MailerLite, sends, audience, CRM or further
+  Shopify changes without fresh explicit approval.

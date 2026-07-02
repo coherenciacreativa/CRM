@@ -149,6 +149,15 @@ desktop and mobile: numbered or icon modules align cleanly with their text,
 primary hierarchy is readable at first glance, and small visual defects do not
 make the preview feel like a rough prototype.
 
+`post_output_use_guidance_gate` applies when a microproduct gives the person a
+usable text: message, draft, question, request, note or similar output. The
+guidance must appear after the output, be specific to that output, include a
+title, one orienting sentence and 3-5 concrete checks, and avoid sounding like a
+generic article. It must not promise a conversation outcome, displace the main
+value, create email/send/audience/CRM scope, or appear before the draft exists.
+If the product does not deliver a usable text, record this gate as
+`not_applicable`.
+
 ## CEO Decision Packet Format
 Use this shape:
 
