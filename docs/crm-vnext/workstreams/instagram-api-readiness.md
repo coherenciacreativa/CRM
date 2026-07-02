@@ -40,33 +40,35 @@
 - `redacted_receipt_policy`: Redacted setup/readiness receipts stay outside repo.
 - `current_tasks`:
   - completed no-run setup decision packet design
-  - new artifact:
-    `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`
+  - completed no-run repo-local prior-art inventory
+  - new artifacts:
+    - `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`
+    - `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`
   - no API calls, UI, Computer Use, `@Chrome`, Instagram, Meta Business Suite,
     MailerLite, Gmail, private artifact inspection, DMs, welcome audio,
     candidate queue generation, CRM/source writes, Launch OS docs, or
     `/Users/alejandrogomez/CRM` use occurred
-  - next suggested task: setup decision packet review or no-secret API
-    healthcheck plan only after Alejandro approval
+  - next suggested task: prior-art inventory review, then setup decision packet
+    review or no-secret API healthcheck plan only after Alejandro approval
   - no execution gates: no API calls, no Meta Business Suite, no tokens, no
     secrets, no webhook setup, no UI
   - keep follower-source UI repair parked
 - `latest_commit`: pending
 - `latest_receipt`: none
 - `blockers`: setup remains partial/unknown; live API calls remain unapproved
-- `next_approval_needed`: approve integration of the setup decision packet,
-  then approve setup decision review, no-secret API healthcheck plan, manual
-  follower evidence packet design, or MailerLite parallel continuation
+- `next_approval_needed`: approve integration of the prior-art inventory and
+  setup decision packet, then approve prior-art inventory review, setup decision
+  review, no-secret API healthcheck plan, manual follower evidence packet
+  design, or MailerLite parallel continuation
 - `proposed_integration_note`: Integrate
-  `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md` as a
-  lane-owned, no-run Instagram API readiness artifact after tightening
-  follower-delta language to distinguish aggregate analytics/insights from
-  new-follower webhook, follower identity, or CRM-usable candidate-source
-  support. The artifact recommends
-  `crm_core_instagram_meta_app_setup_decision_packet_review_awaiting_approval_v0`
-  by default, with MailerLite allowed to continue in parallel as the faster CEO
-  path if desired. No API calls, UI access, Meta Business Suite access, secrets,
-  webhooks, DMs, welcome audio, candidate queue generation, CRM/source writes,
-  or central CRM edits are authorized.
+  `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md` and
+  `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md` as
+  lane-owned, no-run Instagram API readiness artifacts. The prior-art inventory
+  reuses local CRM Core knowledge, flags stale/unclear follower-delta shorthand,
+  and recommends
+  `crm_core_instagram_prior_art_inventory_review_awaiting_approval_v0` before
+  selecting the next API readiness action. No API calls, UI access, Meta
+  Business Suite access, secrets, webhooks, DMs, welcome audio, candidate queue
+  generation, CRM/source writes, or central CRM edits are authorized.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
