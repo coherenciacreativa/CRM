@@ -7795,3 +7795,80 @@ Use deep hydration only for:
   chooses another Launch OS edge.
 - `next_checkpoint_expected`: CEO/Web QA decision for the post-output-guidance
   version of `Tres líneas para pedir algo concreto`.
+
+## Active Next Action - Tres Lineas Family Feedback Sequencing Packet Local Only - 2026-07-02
+
+- `previous_next_action_id`: `launch_os_v0_tres_lineas_pedir_shopify_preview_ceo_web_qa_waiting`
+- `previous_status`: `completed_ceo_web_qa_green`
+- `next_action_id`: `launch_os_v0_tres_lineas_family_feedback_sequencing_packet_local_only`
+- `status`: `active`
+- `created_at`: `2026-07-02`
+- `updated_at`: `2026-07-02`
+- `source_checkpoint`: Alejandro accepted the Shopify noindex/unlisted preview
+  of `Tres líneas para pedir algo concreto` as CEO/Web QA-green after the
+  post-output guidance microfix.
+- `acceptance_evidence`:
+  - Latest Shopify commit:
+    `c63049e Apply post-output guidance to Tres Lineas Pedir`
+  - Latest CRM commit:
+    `26684be Record post-output guidance gate for Tres Lineas`
+  - Post-output guidance microfix receipt:
+    `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_post_output_guidance_microfix_execution_receipt_2026-07-01.json`
+- `accepted_state`:
+  - CEO/Web QA accepted for `Tres líneas para pedir algo concreto`.
+  - Post-output guidance microfix accepted.
+  - Preview remains noindex/unlisted.
+  - Public navigation remains closed.
+  - User-input safety remains green.
+  - Source-owned blockers: 0.
+  - Unknown-origin signals: 0.
+  - Platform-baseline signals classified.
+  - Exact URL was not printed in chat.
+- `sibling_product_note`:
+  - `Tres líneas para decirlo claro` is already in
+    `launch_os_v0_tres_lineas_manual_seed_feedback_waiting`.
+  - To avoid mixing feedback signals, `Tres líneas para pedir algo concreto`
+    should not be shared externally until a separate sequencing/readiness
+    decision is made.
+- `objective`: Prepare a local-only sequencing packet for the `Tres líneas`
+  family.
+- `packet_questions`:
+  - What to do with feedback from `Tres líneas para decirlo claro`.
+  - Whether and when to share `Tres líneas para pedir algo concreto`.
+  - How to avoid mixing feedback between sibling products.
+  - Whether the family pattern is ready for a small public link test later.
+- `allowed_scope`:
+  - Local-only analysis and decision packet.
+  - Use existing receipts, accepted preview evidence and manual feedback
+    summaries if Alejandro provides them.
+  - Preserve separate versioning between sibling products.
+- `forbidden_scope`:
+  - No Shopify changes.
+  - No Shopify Admin/API.
+  - No theme publish.
+  - No public navigation.
+  - No URL distribution by Codex.
+  - No MailerLite.
+  - No sends or seed sends.
+  - No audience traffic.
+  - No CRM writes.
+  - No ledgers/cards/scoring/Fact Store.
+  - No Brand Hub.
+  - No CRM Core.
+  - No GOG/auth.
+- `live_gate_status`:
+  - Public navigation: closed.
+  - URL distribution: closed.
+  - MailerLite: closed.
+  - Sends/audience: closed.
+  - CRM writes: closed.
+  - Brand Hub / CRM Core: closed.
+- `resume_instruction`: Prepare the local-only `Tres líneas` family feedback
+  sequencing packet. Do not distribute either URL, do not touch Shopify, and do
+  not move into MailerLite, CRM or public distribution without fresh explicit
+  approval.
+- `completion_definition`: A local-only sequencing packet exists with a clear
+  recommendation and exact CEO decision phrases for manual feedback handling,
+  sibling product exposure timing and possible future small public link test.
+- `next_checkpoint_expected`: CEO chooses the sequencing path for the `Tres
+  líneas` family.

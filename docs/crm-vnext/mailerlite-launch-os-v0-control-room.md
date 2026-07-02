@@ -15631,3 +15631,64 @@ Next edge:
 - CEO/Web manual QA of the post-output-guidance preview version only. Do not
   advance to public distribution, MailerLite, sends, audience, CRM or further
   Shopify changes without fresh explicit approval.
+
+## Launch OS v0 Tres Lineas Pedir CEO/Web QA accepted - 2026-07-02
+
+Status: Alejandro accepted `Tres líneas para pedir algo concreto` as
+Shopify preview CEO/Web QA-green. The preview remains noindex/unlisted and no
+distribution or public navigation is approved.
+
+Evidence:
+
+- Latest Shopify commit:
+  `c63049e Apply post-output guidance to Tres Lineas Pedir`
+- Latest CRM commit:
+  `26684be Record post-output guidance gate for Tres Lineas`
+- Post-output guidance microfix receipt:
+  `/Users/alejandrogomez/Documents/Mantis-Reports/launch_os_v0_tres_lineas_pedir_post_output_guidance_microfix_execution_receipt_2026-07-01.json`
+
+Accepted state:
+
+- CEO/Web QA accepted for `Tres líneas para pedir algo concreto`.
+- Post-output guidance microfix accepted.
+- Preview remains noindex/unlisted.
+- Public navigation remains closed.
+- Exact URL was not printed in chat.
+- User-input safety remains green.
+- Source-owned blockers: 0.
+- Unknown-origin signals: 0.
+- Platform-baseline signals classified.
+
+Closed gates:
+
+- No Shopify changes.
+- No Shopify Admin/API.
+- No theme publish.
+- No public navigation.
+- No URL distribution by Codex.
+- No MailerLite.
+- No sends or seed sends.
+- No audience assignment or audience traffic.
+- No CRM writes.
+- No ledgers/cards/scoring/Fact Store.
+- No Brand Hub.
+- No CRM Core.
+- No GOG/auth.
+
+Family sequencing note:
+
+- `Tres líneas para decirlo claro` is already in manual seed feedback waiting.
+- To avoid mixing feedback signals, `Tres líneas para pedir algo concreto`
+  should not be shared externally until a separate sequencing/readiness
+  decision is made.
+
+New active next action:
+
+- `launch_os_v0_tres_lineas_family_feedback_sequencing_packet_local_only`
+
+Next edge:
+
+- Prepare a local-only sequencing packet for the `Tres líneas` family: what to
+  do with feedback from `Decirlo claro`, whether/when to share `Pedir algo
+  concreto`, how to avoid mixing sibling-product feedback, and whether the
+  family pattern is ready for a small public link test later.
