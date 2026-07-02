@@ -47,11 +47,22 @@
       `/Users/alejandrogomez/CRM-core-welcome-audio`
   - no lane execution started
   - central branch remains the integration source
+  - first parallel lane artifact batch integrated:
+    - `codex/crm-core-mailerlite-onboarding`
+    - `codex/crm-core-instagram-api`
+    - `codex/crm-core-welcome-audio`
+  - central coordination files updated:
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no lane execution occurred during integration
+  - next central task: review next lane approvals
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: first lane task prompt approval
-- `next_approval_needed`: approve first lane-specific prompts and consultant
-  chat setup
+- `blockers`: next lane approval sequence not chosen
+- `next_approval_needed`: choose next lane approvals after first integrated
+  artifacts
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

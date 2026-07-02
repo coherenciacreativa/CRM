@@ -2900,25 +2900,64 @@ routing and completion pointer.
   branches/worktrees exist, are clean, are registered on origin, and are ready
   for lane-specific task prompts after separate Alejandro approval.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_parallel_first_lane_task_prompts_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-06-29`
-- `updated_at`: `2026-06-29`
-- `objective`: Wait for Alejandro approval before issuing the first
-  lane-specific prompts to the three bootstrapped CRM Core workstreams.
-- `why_now`: The first three workstream branches/worktrees are bootstrapped.
-  The next step is to seed the MailerLite onboarding, Instagram API readiness,
-  and welcome audio send boundary consultant/Codex lanes with scoped prompts,
-  without allowing cross-lane edits or source execution.
+- `updated_at`: `2026-07-01`
+- `completed_at`: `2026-07-01`
+- `result`: first three parallel lane-specific prompt outputs were integrated
+  centrally.
+- `findings`:
+  - First three lane-specific prompts were issued.
+  - MailerLite onboarding lane produced and committed setup inventory
+    packet/questionnaire artifacts.
+  - Instagram API readiness lane produced and committed setup decision packet
+    and prior-art inventory.
+  - Welcome audio lane produced and committed welcome audio send boundary
+    artifact.
+  - All three lane outputs were reviewed by consultants and marked
+    `green_to_integrate`.
+  - No APIs, UI, Computer Use, `@Chrome`, Instagram, MailerLite, Gmail,
+    Meta Business Suite, private artifact inspection, source action, candidate
+    queue generation, welcome audio, CRM/source write, Launch OS doc, or
+    `/Users/alejandrogomez/CRM` use occurred.
+  - Candidate queue generation remains unapproved.
+  - Welcome audio send remains unapproved.
+  - MailerLite setup inventory remains unexecuted.
+  - Instagram API live healthcheck/setup work remains unexecuted.
+  - Welcome audio send remains unexecuted.
+- `completion_artifacts`:
+  - `docs/crm-vnext/mailerlite-onboarding-setup-inventory-packet-v0.md`
+  - `docs/crm-vnext/mailerlite-onboarding-setup-inventory-questionnaire-v0.md`
+  - `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`
+  - `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`
+  - `docs/crm-vnext/instagram-welcome-audio-send-boundary-v0.md`
+  - first three updated workstream status files
+  - central workstream board and integration queue updates
+- `completion_definition`: CRM Core has integrated the first three parallel
+  lane artifacts and is ready for a central review of next safe approvals.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_parallel_first_lane_artifact_review_v0`
+- `status`: `active`
+- `created_at`: `2026-07-01`
+- `updated_at`: `2026-07-01`
+- `objective`: Review the integrated first parallel lane artifacts and choose
+  the next lane approvals without executing source/API/UI work.
+- `why_now`: The first three parallel workstreams produced their initial no-run
+  artifacts and were integrated centrally. CRM Core should now choose the next
+  safe lane approvals: MailerLite setup inventory collection or read-only
+  verification, Instagram prior-art/setup decision review, and Welcome Audio
+  next design step, while preserving all execution gates.
 - `allowed_scope`:
-  - Present first three lane prompts.
-  - Present consultant chat setup instructions.
-  - Present Codex worker instructions.
+  - Summarize integrated lane artifacts.
+  - Present next approval options by lane.
+  - Recommend a CEO-practical sequence.
   - Answer clarifying questions.
-  - Wait for approval.
-  - No lane execution yet.
+  - No execution.
 - `forbidden_scope`:
   - No APIs.
   - No UI, Computer Use, or `@Chrome`.
@@ -2934,15 +2973,22 @@ routing and completion pointer.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. MailerLite: answer reduced no-secret setup inventory questions.
+  2. MailerLite: approve read-only no-secret setup verification.
+  3. Instagram API: review prior-art inventory before choosing next API
+     readiness action.
+  4. Instagram API: prepare no-secret healthcheck plan after setup review.
+  5. Welcome Audio: design audio asset registry and already-welcomed history
+     packet.
+  6. Keep all execution lanes parked and end the day.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
-  `crm-core-parallel-development-protocol-v0.md`,
-  `crm-core-workstream-board-v0.md`,
-  `crm-core-integration-queue-v0.md`, and the first three lane status files.
-  Do not start lane execution, run APIs, use UI/Computer Use/`@Chrome`, inspect
-  private artifacts, perform source actions, generate candidate queues, send
-  welcome audio, write CRM/source state, create additional branches/worktrees,
-  touch Launch OS docs, or use `/Users/alejandrogomez/CRM` until Alejandro
-  approves the first lane-specific prompts.
-- `completion_definition`: Alejandro approves, declines, or modifies the first
-  three lane-specific task prompts.
+  `crm-core-workstream-board-v0.md`, `crm-core-integration-queue-v0.md`, and
+  the integrated first-lane artifacts. Do not run APIs, use UI/Computer
+  Use/`@Chrome`, inspect private artifacts, perform source actions, generate
+  candidate queues, send welcome audio, write CRM/source state, change
+  branches/worktrees, touch Launch OS docs, or use `/Users/alejandrogomez/CRM`
+  until Alejandro chooses the next lane approval sequence.
+- `completion_definition`: Alejandro chooses the next lane approval sequence or
+  asks to pause.
