@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `ready_for_lane_local_commit_review`
+- `status`: `asset_registry_history_packet_design_complete_pending_review`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -40,6 +40,14 @@
   - completed no-run send-boundary design
   - artifact:
     `docs/crm-vnext/instagram-welcome-audio-send-boundary-v0.md`
+  - completed no-run asset registry and already-welcomed/send-history packet
+    design
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-asset-registry-and-history-packet-v0.md`
+  - task source:
+    `crm_core_ui_relay_pilot_2b_welcome_audio_task_packet_review_2026-07-02`
+  - consultant verdict source:
+    `green_to_execute_task_packet_later`
   - no execution gates: no DM opening, no welcome audio send, no candidate
     queue generation, no Instagram actions
   - keep send gate closed
@@ -48,18 +56,17 @@
 - `blockers`: no audio send approval; no candidate queue approval; no approved
   send packet; no private artifact inspection; no approved audio asset registry
   implementation; no already-welcomed/send-history implementation
-- `next_approval_needed`: lane-local review/commit after full document
-  integrity repair; separate future approval before any candidate queue, private
+- `latest_execution_note`: no execution occurred; no send authority was
+  granted.
+- `next_approval_needed`: consultant relay review of the produced artifact
+  before commit; separate future approval before any candidate queue, private
   artifact inspection, DM opening, welcome audio send, Instagram action,
   MailerLite/Gmail access, CRM/source write, or source action
-- `proposed_integration_note`: Welcome audio send remains a separate closed
-  no-run boundary. This lane-local design defines universal business
-  eligibility for confirmed new Instagram followers while preserving the send
-  boundary: future approved audio asset registry, already-welcomed/send-history
-  safeguards, candidate set requirements, bounded send approval packet, exact
-  future approval phrase, final fail-closed dedupe, redacted receipts, stop
-  conditions, and separation from detection, reply monitoring,
-  MailerLite/Gmail onboarding, CRM writes, private artifact inspection, source
-  mutation, and source actions. No central file update is needed now.
+- `proposed_integration_note`: Welcome Audio lane now has a no-run asset
+  registry and already-welcomed/send-history packet design. It defines asset
+  registry fields, asset approval rules, private send-history behavior,
+  duplicate prevention, fail-closed idempotency, redacted receipts, future
+  approval phrases, and closed gates. No send, candidate queue, DM, source
+  action, private artifact inspection, or CRM write is authorized.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
