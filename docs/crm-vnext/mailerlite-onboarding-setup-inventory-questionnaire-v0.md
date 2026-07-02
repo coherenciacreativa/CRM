@@ -1,7 +1,7 @@
 # MailerLite Onboarding Setup Inventory Questionnaire v0
 
 Date: 2026-06-29
-Status: lane-local no-run questionnaire
+Status: lane-local no-run questionnaire, reconciled with local MailerLite history
 
 ## Purpose
 
@@ -42,6 +42,100 @@ Do not provide:
 
 If an answer would require a private value, answer with `unknown` or a redacted
 label.
+
+## History Reconciliation - 2026-07-01
+
+Alejandro does not need to answer this questionnaire from zero. CRM Core local
+history already resolves several setup facts from prior MailerLite onboarding
+work. Treat the facts below as prefilled unless a later read-only verification
+shows drift.
+
+### Prefilled From CRM Local History
+
+- MailerLite is the intended email/onboarding system for Instagram/email
+  handoff contacts: `yes`.
+- The current MailerLite onboarding setup is production-sensitive: `yes`.
+- A known production onboarding path exists: `Onboarding flow`.
+- Active onboarding v1 should remain live and untouched while v2 is designed,
+  drafted, seed-tested, and separately approved.
+- The live v1 trigger group is `leads_instagram.csv`; do not rename, repurpose,
+  or route new architecture assumptions through it.
+- `Onboarding complete` is both the historical journey completion marker and
+  the practical general newsletter audience marker.
+- Historical labels such as `will get first email`,
+  `Se le envió el primer boletín`, and `Received second email` are legacy
+  journey/position markers, not clean reusable content receipts.
+- Preferred migration posture is Option B-light: clone/build onboarding v2 and
+  switch entry later, instead of casually patching active v1.
+- The v2 trigger candidate is
+  `CC · Journey · Editorial onboarding · Eligible`.
+- The Instagram source assignment candidate is
+  `CC · Source · IG onboarding`.
+- Existing canonical supporting groups include
+  `CC · Journey · Editorial onboarding · Eligible`,
+  `CC · Audience · General newsletter · Eligible`, and
+  `CC · Sent · Article · Sobre el amor`.
+- Five canonical empty `CC · ...` groups were previously created after explicit
+  approval. Their IDs must stay out of chat and redacted receipts; the groups
+  must remain unused until a separate use/migration gate approves exact routing.
+- The previous read-only onboarding v1 audit observed groups, automations,
+  fields, segments, and forms in aggregate only; it did not print or read
+  subscriber rows.
+- The first onboarding email should be treated as welcome/orientation unless
+  Brand later promotes it into a reusable content item through a separate
+  content-id decision.
+- CRM Core already has a no-write API design: no onboarding from story views
+  alone, Instagram follows alone, or email engagement alone; email evidence,
+  consent/context, identity confidence, and suppression safety are required.
+
+### Still Unknown Or Drift-Prone
+
+These are the only areas worth asking Alejandro or verifying later:
+
+- whether current MailerLite setup still matches the May/June local history;
+- whether current groups/automations/fields have drifted since the last scans;
+- whether the v2 draft exists now;
+- whether any of the remaining candidate v2 groups now exist;
+- whether group membership triggers the intended onboarding automation today;
+- whether re-adding an existing subscriber retriggers automation today;
+- whether required custom fields already exist by the current labels;
+- whether current subscriber suppression/status behavior blocks future
+  onboarding as expected;
+- whether Alejandro still wants group IDs, automation IDs, and private
+  MailerLite references excluded from chat and redacted receipts.
+
+### Reduced CEO Questions
+
+If answering manually, Alejandro only needs to answer these reduced questions:
+
+1. `[required]` Confirm that active v1 should stay live and untouched while v2
+   is prepared.
+   - Recommended answer: `yes`.
+2. `[required]` Confirm that group IDs, automation IDs, subscriber IDs, and
+   private MailerLite references should stay out of chat and redacted receipts.
+   - Recommended answer: `yes`.
+3. `[required]` Confirm whether CRM Core may later run a read-only no-secret
+   API verification to refresh groups, automations, fields, segments, forms, and
+   blockers.
+   - Answer: `yes`, `no`, or `later`.
+   - This does not authorize API execution by itself.
+4. `[optional]` If there is a newer business decision that replaces Option
+   B-light, provide a safe non-secret label for that decision.
+   - Otherwise answer: `no_change`.
+
+### Read-Only API Verification Boundary
+
+The local program does have MailerLite credential plumbing, but API use should
+still be a separate exact approval because it touches a live source. A future
+safe approval phrase should be:
+
+```text
+I approve CRM Core MailerLite onboarding lane to run one read-only no-secret MailerLite setup verification using existing internal credentials only. Do not print, inspect, rotate, or expose credentials; do not mutate subscribers, groups, fields, automations, campaigns, segments, forms, webhooks, or account settings; do not print subscriber rows, emails, names, subscriber IDs, group IDs, automation IDs, headers, tokens, cookies, env values, private subscriber content, or raw payloads. Return only aggregate/redacted setup facts for onboarding groups, automations, fields, segments, forms, blockers, and next safe step.
+```
+
+Until Alejandro gives that exact future approval, the sections below remain a
+complete fallback questionnaire but should not be treated as all-new manual
+work.
 
 ## 1. MailerLite Account / Setup Assumptions
 
