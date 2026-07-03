@@ -2939,56 +2939,92 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has integrated the first three parallel
   lane artifacts and is ready for a central review of next safe approvals.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_parallel_first_lane_artifact_review_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-01`
-- `updated_at`: `2026-07-01`
-- `objective`: Review the integrated first parallel lane artifacts and choose
-  the next lane approvals without executing source/API/UI work.
-- `why_now`: The first three parallel workstreams produced their initial no-run
-  artifacts and were integrated centrally. CRM Core should now choose the next
-  safe lane approvals: MailerLite setup inventory collection or read-only
-  verification, Instagram prior-art/setup decision review, and Welcome Audio
-  next design step, while preserving all execution gates.
+- `updated_at`: `2026-07-02`
+- `completed_at`: `2026-07-02`
+- `result`: first parallel lane artifacts were reviewed and Welcome Audio was
+  selected for the autonomous consultant relay sprint.
+- `findings`:
+  - First parallel lane artifacts were reviewed.
+  - Welcome Audio was chosen for autonomous consultant relay sprint.
+  - Pilot 6 completed successfully.
+  - Codex and the Welcome Audio consultant completed multiple autonomous
+    iterations.
+  - Initial asset/history packet committed as
+    `8224373068ee50e260d62e775f38a44938f39ea6`.
+  - Send approval packet template committed as
+    `d3d03ce48db6080459fcb7fd51dfd7d73a88adc4`.
+  - Consultant verdicts included `select_task`, `needs_mechanical_fix`, and
+    `green_to_commit_later`.
+  - One mechanical fix cycle was used.
+  - No central files were modified in the lane.
+  - No API, UI source action, Instagram, DM, welcome audio, MailerLite, Gmail,
+    Meta Business Suite, private artifact inspection, candidate queue
+    generation, CRM/source write, Launch OS doc, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-welcome-audio-asset-registry-and-history-packet-v0.md`
+  - `docs/crm-vnext/instagram-welcome-audio-send-approval-packet-template-v0.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+- `completion_definition`: CRM Core has integrated the Welcome Audio
+  autonomous sprint result and can now formalize the reusable relay protocol.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_consultant_ui_relay_autonomous_sprint_protocol_design_v0`
+- `status`: `active`
+- `created_at`: `2026-07-02`
+- `updated_at`: `2026-07-02`
+- `objective`: Design, but do not execute, the standard Consultant UI Relay /
+  Autonomous Lane Sprint protocol based on the successful Welcome Audio pilot.
+- `why_now`: The Welcome Audio lane proved that Codex can relay packets to a
+  ChatGPT consultant via Chrome, capture structured verdicts with sentinel
+  validation, execute lane-local no-run docs tasks, apply one
+  consultant-approved mechanical fix, and commit/push lane-local artifacts
+  without Alejandro acting as the operational relay. CRM Core should now
+  formalize this into a reusable protocol before applying it broadly to other
+  lanes.
 - `allowed_scope`:
-  - Summarize integrated lane artifacts.
-  - Present next approval options by lane.
-  - Recommend a CEO-practical sequence.
-  - Answer clarifying questions.
+  - Summarize the proven UI relay/autonomous sprint pattern.
+  - Define target chat verification, clipboard transport, copy-button capture,
+    sentinel validation, bounded recovery, consultant verdict schema, allowed
+    autonomous actions, forbidden scopes, receipts, stop conditions, and CEO
+    escalation.
+  - Compare when to use consultant UI relay versus subagent reviewer versus
+    manual relay.
   - No execution.
 - `forbidden_scope`:
-  - No APIs.
   - No UI, Computer Use, or `@Chrome`.
+  - No ChatGPT relay execution.
+  - No APIs.
   - No Instagram.
+  - No DMs.
+  - No welcome audio.
   - No MailerLite.
   - No Gmail.
   - No Meta Business Suite.
   - No private artifact inspection.
+  - No candidate queue generation.
   - No source actions.
   - No CRM/source writes.
-  - No candidate queue generation.
-  - No welcome audio.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `options_to_present`:
-  1. MailerLite: answer reduced no-secret setup inventory questions.
-  2. MailerLite: approve read-only no-secret setup verification.
-  3. Instagram API: review prior-art inventory before choosing next API
-     readiness action.
-  4. Instagram API: prepare no-secret healthcheck plan after setup review.
-  5. Welcome Audio: design audio asset registry and already-welcomed history
-     packet.
-  6. Keep all execution lanes parked and end the day.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
-  `crm-core-workstream-board-v0.md`, `crm-core-integration-queue-v0.md`, and
-  the integrated first-lane artifacts. Do not run APIs, use UI/Computer
-  Use/`@Chrome`, inspect private artifacts, perform source actions, generate
-  candidate queues, send welcome audio, write CRM/source state, change
+  `crm-core-workstream-board-v0.md`, `crm-core-integration-queue-v0.md`,
+  `docs/crm-vnext/workstreams/integration.md`, and the integrated Welcome Audio
+  autonomous sprint artifacts. Do not use UI/Computer Use/`@Chrome`, run
+  ChatGPT relay, run APIs, inspect private artifacts, perform source actions,
+  generate candidate queues, send welcome audio, write CRM/source state, change
   branches/worktrees, touch Launch OS docs, or use `/Users/alejandrogomez/CRM`
-  until Alejandro chooses the next lane approval sequence.
-- `completion_definition`: Alejandro chooses the next lane approval sequence or
-  asks to pause.
+  until Alejandro approves the next step.
+- `completion_definition`: CRM Core has a reusable no-run protocol for
+  Consultant UI Relay / Autonomous Lane Sprints that defines when Codex may
+  interact with lane consultants, when a consultant may authorize lane-local
+  docs-only commits, when Codex must stop, and when Alejandro/Chief Architect
+  approval is required.

@@ -58,11 +58,22 @@
     - `docs/crm-vnext/workstreams/integration.md`
   - no lane execution occurred during integration
   - next central task: review next lane approvals
+  - Welcome Audio autonomous sprint pilot 6 integrated
+  - source branch merged: `codex/crm-core-welcome-audio`
+  - central coordination files updated for Pilot 6:
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no lane source execution occurred during Pilot 6 integration
+  - next central task: review autonomous sprint result and decide next protocol
+    step
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: next lane approval sequence not chosen
-- `next_approval_needed`: choose next lane approvals after first integrated
-  artifacts
+- `blockers`: Consultant UI Relay / Autonomous Lane Sprint protocol not
+  formalized
+- `next_approval_needed`: decide whether to formalize Consultant UI Relay /
+  Autonomous Lane Sprint protocol, continue Welcome Audio design, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in
