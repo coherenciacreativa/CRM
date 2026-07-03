@@ -99,6 +99,35 @@ No lane outputs in review at creation.
 - `integration_recommendation`: keep source/action gates closed; review pilot
   and decide next protocol/design step.
 
+### instagram_api_autonomous_sprint_pilot_1_2026-07-03
+
+- `source_workstream`: `instagram-api-readiness`
+- `source_branch`: `codex/crm-core-instagram-api`
+- `commits`:
+  - `5ec16f72d87394c6acdfc03fac9bc16cb652bb83`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-meta-api-prior-art-review-packet-v0.md`
+  - `docs/crm-vnext/workstreams/instagram-api-readiness.md`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Integrated the successful Instagram API readiness Consultant UI
+  Relay autonomous sprint and updated the relay protocol with the private
+  target URL registry route.
+- `tests_or_checks`: `git diff --check`
+- `private_artifacts_touched`: consultant_target_registry_written_by_lane_only
+- `private_artifacts_integrated`: false
+- `raw_target_url_printed`: false
+- `source_actions_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next autonomy or source-readiness direction
+- `integration_recommendation`: keep source/action gates closed; consider
+  MailerLite UI relay pilot, continue Instagram API setup review, or design
+  Codex subagent reviewer protocol.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

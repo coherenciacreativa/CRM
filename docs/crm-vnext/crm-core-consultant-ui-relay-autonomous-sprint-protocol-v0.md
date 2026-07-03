@@ -43,14 +43,53 @@ Commit references:
 - central integration commit:
   `35b85df906d2c5628a685d248a9ed95ee75767e9`
 
+## Private Target URL Registry Route
+
+The Instagram API readiness pilot proved a more robust target route than
+bookmark-menu or active-tab detection.
+
+- The target URL may be captured only after Alejandro opens the correct
+  consultant chat and copies the URL intentionally.
+- The raw URL must be stored only under:
+
+```text
+/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/consultant-relay/consultant-target-registry-v0.json
+```
+
+- Raw target URLs must never be printed in chat, Mantis-Reports, tracked docs,
+  receipts, or returned output.
+- The registry stores `target_url_secret=true`.
+- Central integration must not inspect or copy raw target URLs.
+- Future relay runs may open Chrome directly to the private registry URL only
+  for consultant UI relay.
+- Every direct-open run must still perform a harmless handshake before sending
+  lane packets.
+- No action may proceed unless the handshake returns:
+  - expected `packet_id`;
+  - expected `consultant_id`;
+  - `target_verdict=target_confirmed`;
+  - expected target sentinel.
+- If direct-open handshake fails, stop.
+- If the registry is missing, stale, ambiguous, or exposes unrelated ChatGPT
+  content, stop and escalate.
+- The registry route does not authorize ChatGPT history browsing, browser
+  history, bookmarks, new chat creation, project browsing, or unrelated chat
+  inspection.
+
 ## Canonical Transport
 
-The canonical v0 transport is:
+Canonical v0 accepts target routes in this priority order:
+
+1. Private target URL registry + direct Chrome open + handshake.
+2. User-opened active tab + handshake.
+3. Direct bookmark or saved target + visible confirmation or handshake.
+4. Manual relay fallback.
+
+For any accepted target route, the transport remains:
 
 - Chrome only.
 - Dedicated consultant chat.
-- Direct bookmark or saved target.
-- Visible target confirmation required.
+- Visible target confirmation or handshake required.
 - No ChatGPT history browsing.
 - No unrelated chats.
 - No project browsing.
@@ -139,6 +178,10 @@ Standard sentinels:
 No action may be taken if the expected sentinel is absent.
 
 ## Transport Recovery
+
+Target recovery must not use browser history or ChatGPT history search.
+Bookmark manager/menu access is not required and may be avoided. The private
+registry direct-open route is preferred when available.
 
 Bounded recovery sequence:
 
@@ -274,6 +317,10 @@ Escalate to Alejandro / Chief Architect when:
 - task crosses source/action boundary.
 - source/API/UI/private artifact access is requested.
 - target chat mismatch.
+- raw target URL exposure risk.
+- target registry mismatch.
+- target registry missing or stale.
+- direct-open target handshake failure.
 - sentinel missing after reformat.
 - transport fails after recovery.
 - private content exposure risk.

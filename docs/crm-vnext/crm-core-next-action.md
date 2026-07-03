@@ -2997,22 +2997,68 @@ routing and completion pointer.
   docs-only commits, when Codex must stop, and when Alejandro/Chief Architect
   approval is required.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_consultant_ui_relay_next_lane_pilot_selection_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-02`
-- `updated_at`: `2026-07-02`
-- `objective`: Choose the next lane to run under the Consultant UI Relay /
-  Autonomous Lane Sprint protocol, or pause relay automation.
-- `why_now`: The Welcome Audio pilot proved the autonomous consultant-Codex
-  loop and the protocol is now documented. CRM Core should choose whether to
-  apply the protocol to another docs-only lane, continue Welcome Audio, compare
-  against a Codex subagent reviewer pilot, or pause.
+- `updated_at`: `2026-07-03`
+- `completed_at`: `2026-07-03`
+- `result`: Instagram API readiness was selected and completed as the next
+  Consultant UI Relay / Autonomous Lane Sprint pilot.
+- `findings`:
+  - The next lane chosen was Instagram API readiness.
+  - The Consultant UI Relay / Autonomous Lane Sprint protocol transferred from
+    Welcome Audio to Instagram API readiness.
+  - The bookmark/active-tab target routes were insufficient for this lane.
+  - A private target URL registry route was tested and succeeded.
+  - Target registry was written outside the repo at a private path label only:
+    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/consultant-relay/consultant-target-registry-v0.json`.
+  - Raw target URL was not printed.
+  - Target handshake confirmed `consultant_id=instagram-api-readiness`.
+  - Consultant selected
+    `crm_core_instagram_prior_art_inventory_review_packet_v0`.
+  - Codex created and committed
+    `docs/crm-vnext/instagram-meta-api-prior-art-review-packet-v0.md`.
+  - Commit:
+    `5ec16f72d87394c6acdfc03fac9bc16cb652bb83`.
+  - Consultant returned `green_to_commit_later`.
+  - No mechanical fix cycle was required.
+  - No API, UI source action, Instagram, Meta Business Suite, app
+    configuration, webhook setup, DM, welcome audio, MailerLite/Gmail,
+    candidate queue, CRM/source write, Launch OS doc, or
+    `/Users/alejandrogomez/CRM` use occurred.
+  - No private artifact inspection occurred beyond the explicit consultant
+    target registry write.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-meta-api-prior-art-review-packet-v0.md`
+  - `docs/crm-vnext/workstreams/instagram-api-readiness.md`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `completion_definition`: CRM Core has integrated the Instagram API readiness
+  autonomous relay sprint and documented the private target URL registry route.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_consultant_ui_relay_next_autonomy_step_selection_v0`
+- `status`: `active`
+- `created_at`: `2026-07-03`
+- `updated_at`: `2026-07-03`
+- `objective`: Review the proven Welcome Audio and Instagram API autonomous
+  relay sprints and choose the next autonomy/source-readiness step.
+- `why_now`: CRM Core has now proven Consultant UI Relay / Autonomous Lane
+  Sprint across two lanes. Welcome Audio proved bookmark/active consultant
+  relay, mechanical fix, and lane-local commit. Instagram API readiness proved
+  private target URL registry, direct-open handshake, no-run task selection,
+  artifact review, and lane-local commit. CRM Core should choose whether to
+  continue UI relay with MailerLite, continue Instagram API setup review,
+  design a Codex subagent reviewer pilot, or pause automation.
 - `allowed_scope`:
-  - Summarize protocol.
-  - Present next pilot options.
-  - Recommend one next low-risk lane.
+  - Summarize the two proven autonomous relay sprints.
+  - Present next options.
+  - Recommend one next low-risk path.
   - Answer clarifying questions.
   - No execution.
 - `forbidden_scope`:
@@ -3020,11 +3066,13 @@ routing and completion pointer.
   - No UI, Computer Use, or `@Chrome`.
   - No APIs.
   - No Instagram.
+  - No Meta Business Suite.
+  - No app configuration.
+  - No webhook setup.
   - No DMs.
   - No welcome audio.
   - No MailerLite.
   - No Gmail.
-  - No Meta Business Suite.
   - No private artifact inspection.
   - No candidate queue generation.
   - No source actions.
@@ -3033,20 +3081,11 @@ routing and completion pointer.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. Continue Welcome Audio with another docs-only sprint.
-  2. Try UI relay on MailerLite setup inventory/no-write lane.
-  3. Try UI relay on Instagram API readiness prior-art/setup decision lane.
+  1. Try UI relay on MailerLite setup inventory/no-write lane.
+  2. Continue Instagram API readiness with setup decision review or no-secret
+     healthcheck planning.
+  3. Continue Welcome Audio with another docs-only sprint.
   4. Design Codex subagent reviewer pilot protocol.
   5. Pause automation and return to manual/consultant-assisted lanes.
-- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
-  `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
-  `crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`,
-  `crm-core-workstream-board-v0.md`, `crm-core-integration-queue-v0.md`, and
-  `docs/crm-vnext/workstreams/integration.md`. Do not execute UI relay, use
-  UI/Computer Use/`@Chrome`, run APIs, inspect private artifacts, perform
-  source actions, generate candidate queues, send welcome audio, write
-  CRM/source state, change branches/worktrees, touch Launch OS docs, or use
-  `/Users/alejandrogomez/CRM` until Alejandro chooses the next
-  relay/autonomy pilot direction.
-- `completion_definition`: Alejandro chooses the next relay/autonomy pilot
+- `completion_definition`: Alejandro chooses the next autonomy/source-readiness
   direction or pauses.
