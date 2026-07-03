@@ -90,7 +90,8 @@ for the exact action:
 
 ## Output Rules
 
-Allowed receipts should be written as local reports, preferably under:
+Allowed source/operator receipts should be written as local reports, preferably
+under:
 
 ```text
 /Users/alejandrogomez/Documents/Mantis-Reports
@@ -114,6 +115,25 @@ Receipts should include:
 
 Receipts must not imply permission to contact, score, write CRM state, mutate
 source systems, or advance Launch OS.
+
+Mantis-Reports remains appropriate for redacted source-health receipts and
+operator/source receipts intended for future Mantis or CRM operation. It should
+not be used for consultant-relay development telemetry going forward.
+
+Consultant-relay development telemetry should use:
+
+```text
+/Users/alejandrogomez/Documents/CRM-Core-Reports/consultant-relay/
+```
+
+Mantis general memory must not store CRM development logs, source private
+artifacts, queue entries, raw identities, or consultant-relay receipts.
+
+For the full storage taxonomy and Mantis operator boundary, see:
+
+```text
+docs/crm-vnext/crm-core-storage-and-mantis-operator-boundary-policy-v0.md
+```
 
 ## Relationship To CRM Core Lanes
 

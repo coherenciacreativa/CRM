@@ -3083,27 +3083,63 @@ routing and completion pointer.
   autonomous relay sprint and recorded that the protocol is proven across three
   CRM Core lanes.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_three_lane_autonomous_relay_proof_review_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-03`
+- `updated_at`: `2026-07-03`
+- `completed_at`: `2026-07-03`
+- `result`: Three-lane autonomous relay proof and operating hygiene audit were
+  reviewed, then storage/operator boundaries were clarified in a no-run policy.
+- `findings`:
+  - Three-lane Consultant UI Relay / Autonomous Lane Sprint proof reviewed.
+  - Operating hygiene audit completed.
+  - Current CRM Core developer roots are CRM-core paths.
+  - `/Users/alejandrogomez/CRM` remains visible only as a
+    legacy/non-CRM-core worktree label and was not entered.
+  - No evidence found that repo files write CRM development milestones to
+    Mantis general memory.
+  - No raw target URLs found in tracked docs.
+  - Mantis-Reports currently does double duty as source/operator receipt
+    location and consultant-relay development telemetry location.
+  - Future consultant-relay telemetry should move to CRM-Core-Reports.
+  - Future consultant target registry should move to CRM-Core-Private-Artifacts.
+  - Mantis remains a future CRM operator, not current CRM development memory.
+  - No active Codex Goals exist per Alejandro.
+  - Future Goals remain compatible if they obey `crm-core-next-action.md` and
+    CRM-core roots.
+- `completion_artifacts`:
+  - `docs/crm-vnext/crm-core-storage-and-mantis-operator-boundary-policy-v0.md`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `completion_definition`: CRM Core has reviewed the three-lane autonomy proof
+  and clarified storage/operator boundaries without execution.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_proof_plan_v0`
 - `status`: `active`
 - `created_at`: `2026-07-03`
 - `updated_at`: `2026-07-03`
-- `objective`: Review the three-lane Consultant UI Relay / Autonomous Lane
-  Sprint proof and choose the next operating direction.
-- `why_now`: CRM Core has now proven autonomous consultant-Codex relay across
-  Welcome Audio, Instagram API readiness, and MailerLite onboarding. The system
-  can autonomously ask lane consultants to select no-run docs-only tasks,
-  execute lane-local artifacts, relay for review, apply bounded mechanical
-  fixes, and commit/push lane-local docs under guardrails. CRM Core should now
-  decide whether to continue using this protocol, design a Codex subagent
-  reviewer pilot, move to a selected source-readiness path, or pause
-  automation.
+- `objective`: Design, but do not execute, the Controlled Welcome Flow Proof
+  plan that coordinates Welcome Audio, Instagram API/readiness, MailerLite
+  onboarding, identity/CRM enrichment, and operator/receipt boundaries into the
+  next product-oriented vertical slice.
+- `why_now`: CRM Core has proven three-lane autonomous consultant relay and has
+  clarified storage/operator boundaries. The next useful step is to turn
+  autonomy toward a product proof: a controlled end-to-end welcome flow that
+  can later test new-follower evidence, approved audio asset, already-welcomed
+  checks, sandbox send, reply/email handoff, MailerLite onboarding preview, and
+  CRM card enrichment boundaries without executing live actions yet.
 - `allowed_scope`:
-  - Summarize the three-lane autonomy proof.
-  - Present next options.
-  - Recommend one next low-risk direction.
-  - Answer clarifying questions.
+  - Design only.
+  - Coordinate existing docs and lane artifacts.
+  - Define proof milestones, lane responsibilities, required
+    Alejandro-provided facts, approval boundaries, receipts, stop conditions,
+    and closed gates.
+  - Keep all source actions closed.
   - No execution.
 - `forbidden_scope`:
   - No UI relay execution.
@@ -3124,13 +3160,7 @@ routing and completion pointer.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
-- `options_to_present`:
-  1. Continue UI relay on MailerLite by asking Alejandro to answer the
-     no-secret setup inventory answer-intake packet.
-  2. Continue Instagram API readiness with setup decision review or no-secret
-     healthcheck planning.
-  3. Continue Welcome Audio with another docs-only sprint.
-  4. Design Codex subagent reviewer pilot protocol.
-  5. Pause automation and return to manual/consultant-assisted lanes.
-- `completion_definition`: Alejandro chooses the next autonomy/source-readiness
-  direction or pauses.
+- `completion_definition`: CRM Core has a no-run Controlled Welcome Flow Proof
+  plan that defines the smallest safe product-oriented vertical slice and the
+  exact future approvals required before any source/action/private-artifact/
+  CRM-write step.

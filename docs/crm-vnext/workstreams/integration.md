@@ -32,8 +32,9 @@
   - welcome audio
 - `private_artifact_policy`: Never inspect, copy, commit, or paste private
   artifact contents.
-- `redacted_receipt_policy`: Receipts stay outside repo under
-  `/Users/alejandrogomez/Documents/Mantis-Reports/`.
+- `redacted_receipt_policy`: Source/operator receipts stay outside repo under
+  `/Users/alejandrogomez/Documents/Mantis-Reports/`; future CRM Core
+  development telemetry should use `/Users/alejandrogomez/Documents/CRM-Core-Reports/`.
 - `current_tasks`:
   - maintain board
   - maintain integration queue
@@ -98,14 +99,17 @@
   - next central task: choose next autonomy/source-readiness direction after
     reviewing the three-lane proof
   - active next step: choose next autonomy/source-readiness direction or pause
+  - Storage/operator boundary policy created
+  - Consultant relay telemetry path policy changed for future runs
+  - Mantis remains future operator, not current development memory
+  - Active next action is Controlled Welcome Flow Proof plan
+  - No execution occurred during storage/operator boundary policy patch
   - no execution occurred during protocol design
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: next three-lane autonomy/source-readiness direction not chosen
-- `next_approval_needed`: choose whether Alejandro answers the MailerLite
-  setup inventory answer-intake packet, continue Instagram API setup review,
-  run another Welcome Audio docs-only sprint, design Codex subagent reviewer
-  pilot protocol, or pause relay automation
+- `blockers`: Controlled Welcome Flow Proof plan not yet designed
+- `next_approval_needed`: design the no-run Controlled Welcome Flow Proof plan
+  before any source/action/private-artifact/CRM-write step
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

@@ -16,6 +16,9 @@ Meta Business Suite, private artifact inspection, candidate queue generation,
 source actions, CRM/source writes, Launch OS docs, or
 `/Users/alejandrogomez/CRM`.
 
+Storage and Mantis-operator boundaries are governed by
+`docs/crm-vnext/crm-core-storage-and-mantis-operator-boundary-policy-v0.md`.
+
 ## Proven Pilot Evidence
 
 The Welcome Audio lane proved the following pattern during Pilot 6:
@@ -89,10 +92,10 @@ preferred v0 target route when available.
 
 - The target URL may be captured only after Alejandro opens the correct
   consultant chat and copies the URL intentionally.
-- The raw URL must be stored only under:
+- The preferred future target registry path is:
 
 ```text
-/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/consultant-relay/consultant-target-registry-v0.json
+/Users/alejandrogomez/Documents/CRM-Core-Private-Artifacts/consultant-relay/consultant-target-registry-v0.json
 ```
 
 - Raw target URLs must never be printed in chat, Mantis-Reports, tracked docs,
@@ -114,6 +117,9 @@ preferred v0 target route when available.
 - The registry route does not authorize ChatGPT history browsing, browser
   history, bookmarks, new chat creation, project browsing, or unrelated chat
   inspection.
+- Existing target registry under Mantis-Private-Source-Artifacts may remain as
+  a legacy continuity path until re-registered. Future registry writes should
+  prefer CRM-Core-Private-Artifacts.
 
 ## Canonical Transport
 
@@ -138,8 +144,12 @@ For any accepted target route, the transport remains:
 - Store copied reply under:
 
 ```text
-/Users/alejandrogomez/Documents/Mantis-Reports/consultant-relay/
+/Users/alejandrogomez/Documents/CRM-Core-Reports/consultant-relay/
 ```
+
+Existing historical relay receipts under Mantis-Reports/consultant-relay may
+remain. Future consultant-relay telemetry should use
+CRM-Core-Reports/consultant-relay.
 
 After capture, validate:
 
@@ -314,8 +324,12 @@ source/action boundary, the lane must stop and escalate.
 Relay receipts live under:
 
 ```text
-/Users/alejandrogomez/Documents/Mantis-Reports/consultant-relay/
+/Users/alejandrogomez/Documents/CRM-Core-Reports/consultant-relay/
 ```
+
+Existing historical relay receipts under Mantis-Reports/consultant-relay may
+remain. Future consultant-relay telemetry should use
+CRM-Core-Reports/consultant-relay.
 
 Receipts may include:
 
