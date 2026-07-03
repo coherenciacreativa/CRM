@@ -3040,25 +3040,69 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has integrated the Instagram API readiness
   autonomous relay sprint and documented the private target URL registry route.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_consultant_ui_relay_next_autonomy_step_selection_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-03`
+- `updated_at`: `2026-07-03`
+- `completed_at`: `2026-07-03`
+- `result`: MailerLite onboarding was selected and completed as the next
+  Consultant UI Relay / Autonomous Lane Sprint step.
+- `findings`:
+  - The next autonomy step selected was MailerLite onboarding.
+  - The Consultant UI Relay / Autonomous Lane Sprint protocol transferred
+    successfully to MailerLite onboarding.
+  - The private target URL registry route succeeded again.
+  - Target registry was written outside the repo at a private path label only:
+    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/consultant-relay/consultant-target-registry-v0.json`.
+  - Raw target URL was not printed.
+  - Target handshake confirmed `consultant_id=mailerlite-onboarding`.
+  - Consultant selected
+    `crm_core_mailerlite_setup_inventory_answer_intake_packet_v0`.
+  - Codex created and committed
+    `docs/crm-vnext/mailerlite-onboarding-setup-inventory-answer-intake-packet-v0.md`.
+  - Commit:
+    `0c5a8840069d0f4acdaabcffbec4539c46b4e77a`.
+  - Consultant returned `green_to_commit_later`.
+  - No mechanical fix cycle was required.
+  - No MailerLite API, MailerLite UI, Gmail, Instagram, Meta Business Suite,
+    private subscriber content, private artifact inspection beyond the explicit
+    consultant target registry, subscriber mutation, group assignment, field
+    creation, automation mutation, campaign send, candidate queue, welcome
+    audio, CRM/source write, Launch OS doc, or `/Users/alejandrogomez/CRM` use
+    occurred.
+- `completion_artifacts`:
+  - `docs/crm-vnext/mailerlite-onboarding-setup-inventory-answer-intake-packet-v0.md`
+  - `docs/crm-vnext/workstreams/mailerlite-onboarding.md`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `completion_definition`: CRM Core has integrated the MailerLite onboarding
+  autonomous relay sprint and recorded that the protocol is proven across three
+  CRM Core lanes.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_three_lane_autonomous_relay_proof_review_v0`
 - `status`: `active`
 - `created_at`: `2026-07-03`
 - `updated_at`: `2026-07-03`
-- `objective`: Review the proven Welcome Audio and Instagram API autonomous
-  relay sprints and choose the next autonomy/source-readiness step.
-- `why_now`: CRM Core has now proven Consultant UI Relay / Autonomous Lane
-  Sprint across two lanes. Welcome Audio proved bookmark/active consultant
-  relay, mechanical fix, and lane-local commit. Instagram API readiness proved
-  private target URL registry, direct-open handshake, no-run task selection,
-  artifact review, and lane-local commit. CRM Core should choose whether to
-  continue UI relay with MailerLite, continue Instagram API setup review,
-  design a Codex subagent reviewer pilot, or pause automation.
+- `objective`: Review the three-lane Consultant UI Relay / Autonomous Lane
+  Sprint proof and choose the next operating direction.
+- `why_now`: CRM Core has now proven autonomous consultant-Codex relay across
+  Welcome Audio, Instagram API readiness, and MailerLite onboarding. The system
+  can autonomously ask lane consultants to select no-run docs-only tasks,
+  execute lane-local artifacts, relay for review, apply bounded mechanical
+  fixes, and commit/push lane-local docs under guardrails. CRM Core should now
+  decide whether to continue using this protocol, design a Codex subagent
+  reviewer pilot, move to a selected source-readiness path, or pause
+  automation.
 - `allowed_scope`:
-  - Summarize the two proven autonomous relay sprints.
+  - Summarize the three-lane autonomy proof.
   - Present next options.
-  - Recommend one next low-risk path.
+  - Recommend one next low-risk direction.
   - Answer clarifying questions.
   - No execution.
 - `forbidden_scope`:
@@ -3066,13 +3110,13 @@ routing and completion pointer.
   - No UI, Computer Use, or `@Chrome`.
   - No APIs.
   - No Instagram.
+  - No MailerLite.
+  - No Gmail.
   - No Meta Business Suite.
   - No app configuration.
   - No webhook setup.
   - No DMs.
   - No welcome audio.
-  - No MailerLite.
-  - No Gmail.
   - No private artifact inspection.
   - No candidate queue generation.
   - No source actions.
@@ -3081,7 +3125,8 @@ routing and completion pointer.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. Try UI relay on MailerLite setup inventory/no-write lane.
+  1. Continue UI relay on MailerLite by asking Alejandro to answer the
+     no-secret setup inventory answer-intake packet.
   2. Continue Instagram API readiness with setup decision review or no-secret
      healthcheck planning.
   3. Continue Welcome Audio with another docs-only sprint.

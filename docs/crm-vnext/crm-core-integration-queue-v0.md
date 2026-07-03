@@ -128,6 +128,36 @@ No lane outputs in review at creation.
   MailerLite UI relay pilot, continue Instagram API setup review, or design
   Codex subagent reviewer protocol.
 
+### mailerlite_autonomous_sprint_pilot_1_2026-07-03
+
+- `source_workstream`: `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `commits`:
+  - `0c5a8840069d0f4acdaabcffbec4539c46b4e77a`
+- `files_changed`:
+  - `docs/crm-vnext/mailerlite-onboarding-setup-inventory-answer-intake-packet-v0.md`
+  - `docs/crm-vnext/workstreams/mailerlite-onboarding.md`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Integrated the successful MailerLite onboarding Consultant UI
+  Relay autonomous sprint and recorded that the relay protocol is now proven
+  across the first three CRM Core lanes.
+- `tests_or_checks`: `git diff --check`
+- `private_artifacts_touched`: consultant_target_registry_written_by_lane_only
+- `private_artifacts_integrated`: false
+- `raw_target_url_printed`: false
+- `source_actions_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose whether to continue autonomy work, design Codex
+  subagent reviewer pilot, continue MailerLite setup path, continue Instagram
+  API readiness, or pause automation
+- `integration_recommendation`: keep source/action gates closed; review
+  three-lane proof and choose next autonomy/source-readiness direction.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

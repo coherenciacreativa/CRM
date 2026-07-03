@@ -43,10 +43,49 @@ Commit references:
 - central integration commit:
   `35b85df906d2c5628a685d248a9ed95ee75767e9`
 
+## Three-Lane Proof Status
+
+Consultant UI Relay / Autonomous Lane Sprint is now proven across the first
+three CRM Core lanes:
+
+- Welcome Audio proved the first bounded autonomous consultant-Codex sprint
+  with task selection, artifact execution, mechanical fix,
+  `green_to_commit_later`, commit/push, and central integration.
+- Instagram API readiness proved the private target URL registry route,
+  direct-open handshake, task selection, artifact review,
+  `green_to_commit_later`, commit/push, and central integration.
+- MailerLite onboarding proved the private target URL registry route in a
+  third lane, with setup inventory answer-intake packet design,
+  `green_to_commit_later`, and commit/push.
+- The three-lane proof does not authorize live source actions, APIs,
+  Instagram, MailerLite UI, Gmail, DMs, welcome audio, candidate queue
+  generation, private artifact inspection beyond explicit target registries,
+  or CRM/source writes.
+- The proven v0 use case is docs-only, no-run, lane-owned artifact development
+  with consultant review.
+
+Commit references:
+
+Welcome Audio:
+
+- `8224373068ee50e260d62e775f38a44938f39ea6`
+- `d3d03ce48db6080459fcb7fd51dfd7d73a88adc4`
+- `35b85df906d2c5628a685d248a9ed95ee75767e9`
+
+Instagram API:
+
+- `5ec16f72d87394c6acdfc03fac9bc16cb652bb83`
+- `ad0777c9fad2acd6dbac22310043d74850678445`
+
+MailerLite:
+
+- `0c5a8840069d0f4acdaabcffbec4539c46b4e77a`
+
 ## Private Target URL Registry Route
 
 The Instagram API readiness pilot proved a more robust target route than
-bookmark-menu or active-tab detection.
+bookmark-menu or active-tab detection. The target URL registry route is the
+preferred v0 target route when available.
 
 - The target URL may be captured only after Alejandro opens the correct
   consultant chat and copies the URL intentionally.
@@ -353,15 +392,20 @@ Recommended initial v0 use:
 - lane-owned files;
 - low-risk consultant review loops;
 - no source actions.
+- docs-only, no-run, lane-owned design artifacts across Welcome Audio,
+  Instagram API readiness, and MailerLite onboarding.
 
 Do not use initially for:
 
 - APIs;
 - Instagram;
-- MailerLite;
+- MailerLite UI/source actions;
 - Gmail;
 - DMs;
 - welcome audio send;
+- UI source browsing;
+- MailerLite mutations;
+- Gmail access;
 - candidate queue generation;
 - CRM writes;
 - central integration automation.

@@ -82,13 +82,29 @@
     - `docs/crm-vnext/workstreams/integration.md`
   - no lane source execution occurred during Instagram API pilot 1 integration
   - next central task: choose next autonomy/source-readiness direction
+  - MailerLite autonomous sprint pilot 1 integrated
+  - Consultant UI Relay / Autonomous Lane Sprint is now proven across Welcome
+    Audio, Instagram API readiness, and MailerLite onboarding
+  - private target URL registry route was reused successfully
+  - raw target URLs were not printed or integrated
+  - source branch merged: `codex/crm-core-mailerlite-onboarding`
+  - central coordination files updated for MailerLite pilot 1:
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no lane source execution occurred during MailerLite pilot 1 integration
+  - next central task: choose next autonomy/source-readiness direction after
+    reviewing the three-lane proof
   - active next step: choose next autonomy/source-readiness direction or pause
   - no execution occurred during protocol design
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: next autonomy/source-readiness direction not chosen
-- `next_approval_needed`: choose MailerLite UI relay, Instagram API setup
-  review, another Welcome Audio docs-only sprint, Codex subagent reviewer
+- `blockers`: next three-lane autonomy/source-readiness direction not chosen
+- `next_approval_needed`: choose whether Alejandro answers the MailerLite
+  setup inventory answer-intake packet, continue Instagram API setup review,
+  run another Welcome Audio docs-only sprint, design Codex subagent reviewer
   pilot protocol, or pause relay automation
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
