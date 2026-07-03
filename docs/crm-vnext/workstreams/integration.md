@@ -68,12 +68,14 @@
   - no lane source execution occurred during Pilot 6 integration
   - next central task: review autonomous sprint result and decide next protocol
     step
+  - Consultant UI Relay / Autonomous Lane Sprint protocol documented
+  - active next step: choose next relay/autonomy pilot lane or pause
+  - no execution occurred during protocol design
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: Consultant UI Relay / Autonomous Lane Sprint protocol not
-  formalized
-- `next_approval_needed`: decide whether to formalize Consultant UI Relay /
-  Autonomous Lane Sprint protocol, continue Welcome Audio design, or pause
+- `blockers`: next relay/autonomy pilot direction not chosen
+- `next_approval_needed`: choose next lane pilot direction, compare against a
+  Codex subagent reviewer pilot, or pause relay automation
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

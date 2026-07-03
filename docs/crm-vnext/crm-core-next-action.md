@@ -2973,33 +2973,51 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has integrated the Welcome Audio
   autonomous sprint result and can now formalize the reusable relay protocol.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_consultant_ui_relay_autonomous_sprint_protocol_design_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-02`
+- `updated_at`: `2026-07-02`
+- `completed_at`: `2026-07-02`
+- `result`: Consultant UI Relay / Autonomous Lane Sprint protocol design
+  created without execution.
+- `completion_artifacts`:
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+- `findings`:
+  - Protocol design created.
+  - Welcome Audio sprint evidence captured.
+  - No execution of UI relay occurred in this task.
+  - No APIs, Instagram, DMs, welcome audio, MailerLite, Gmail, Meta Business
+    Suite, private artifact inspection, candidate queue, CRM/source writes,
+    Launch OS docs, or `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core has a reusable no-run protocol for
+  Consultant UI Relay / Autonomous Lane Sprints that defines when Codex may
+  interact with lane consultants, when a consultant may authorize lane-local
+  docs-only commits, when Codex must stop, and when Alejandro/Chief Architect
+  approval is required.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_consultant_ui_relay_next_lane_pilot_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-02`
 - `updated_at`: `2026-07-02`
-- `objective`: Design, but do not execute, the standard Consultant UI Relay /
-  Autonomous Lane Sprint protocol based on the successful Welcome Audio pilot.
-- `why_now`: The Welcome Audio lane proved that Codex can relay packets to a
-  ChatGPT consultant via Chrome, capture structured verdicts with sentinel
-  validation, execute lane-local no-run docs tasks, apply one
-  consultant-approved mechanical fix, and commit/push lane-local artifacts
-  without Alejandro acting as the operational relay. CRM Core should now
-  formalize this into a reusable protocol before applying it broadly to other
-  lanes.
+- `objective`: Choose the next lane to run under the Consultant UI Relay /
+  Autonomous Lane Sprint protocol, or pause relay automation.
+- `why_now`: The Welcome Audio pilot proved the autonomous consultant-Codex
+  loop and the protocol is now documented. CRM Core should choose whether to
+  apply the protocol to another docs-only lane, continue Welcome Audio, compare
+  against a Codex subagent reviewer pilot, or pause.
 - `allowed_scope`:
-  - Summarize the proven UI relay/autonomous sprint pattern.
-  - Define target chat verification, clipboard transport, copy-button capture,
-    sentinel validation, bounded recovery, consultant verdict schema, allowed
-    autonomous actions, forbidden scopes, receipts, stop conditions, and CEO
-    escalation.
-  - Compare when to use consultant UI relay versus subagent reviewer versus
-    manual relay.
+  - Summarize protocol.
+  - Present next pilot options.
+  - Recommend one next low-risk lane.
+  - Answer clarifying questions.
   - No execution.
 - `forbidden_scope`:
+  - No UI relay execution.
   - No UI, Computer Use, or `@Chrome`.
-  - No ChatGPT relay execution.
   - No APIs.
   - No Instagram.
   - No DMs.
@@ -3014,17 +3032,21 @@ routing and completion pointer.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. Continue Welcome Audio with another docs-only sprint.
+  2. Try UI relay on MailerLite setup inventory/no-write lane.
+  3. Try UI relay on Instagram API readiness prior-art/setup decision lane.
+  4. Design Codex subagent reviewer pilot protocol.
+  5. Pause automation and return to manual/consultant-assisted lanes.
 - `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
   `codex/crm-core-reentry`. Read `crm-core-codex-profile.md`, this file,
-  `crm-core-workstream-board-v0.md`, `crm-core-integration-queue-v0.md`,
-  `docs/crm-vnext/workstreams/integration.md`, and the integrated Welcome Audio
-  autonomous sprint artifacts. Do not use UI/Computer Use/`@Chrome`, run
-  ChatGPT relay, run APIs, inspect private artifacts, perform source actions,
-  generate candidate queues, send welcome audio, write CRM/source state, change
-  branches/worktrees, touch Launch OS docs, or use `/Users/alejandrogomez/CRM`
-  until Alejandro approves the next step.
-- `completion_definition`: CRM Core has a reusable no-run protocol for
-  Consultant UI Relay / Autonomous Lane Sprints that defines when Codex may
-  interact with lane consultants, when a consultant may authorize lane-local
-  docs-only commits, when Codex must stop, and when Alejandro/Chief Architect
-  approval is required.
+  `crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`,
+  `crm-core-workstream-board-v0.md`, `crm-core-integration-queue-v0.md`, and
+  `docs/crm-vnext/workstreams/integration.md`. Do not execute UI relay, use
+  UI/Computer Use/`@Chrome`, run APIs, inspect private artifacts, perform
+  source actions, generate candidate queues, send welcome audio, write
+  CRM/source state, change branches/worktrees, touch Launch OS docs, or use
+  `/Users/alejandrogomez/CRM` until Alejandro chooses the next
+  relay/autonomy pilot direction.
+- `completion_definition`: Alejandro chooses the next relay/autonomy pilot
+  direction or pauses.
