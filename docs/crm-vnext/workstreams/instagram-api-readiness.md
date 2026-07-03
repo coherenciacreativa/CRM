@@ -41,33 +41,38 @@
 - `current_tasks`:
   - completed no-run setup decision packet design
   - completed no-run repo-local prior-art inventory
+  - completed no-run prior-art review packet design
   - new artifacts:
     - `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`
     - `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`
+    - `docs/crm-vnext/instagram-meta-api-prior-art-review-packet-v0.md`
   - no API calls, UI, Computer Use, `@Chrome`, Instagram, Meta Business Suite,
     MailerLite, Gmail, private artifact inspection, DMs, welcome audio,
     candidate queue generation, CRM/source writes, Launch OS docs, or
     `/Users/alejandrogomez/CRM` use occurred
-  - next suggested task: prior-art inventory review, then setup decision packet
-    review or no-secret API healthcheck plan only after Alejandro approval
+  - next suggested task: setup decision packet review by default, or
+    no-secret API healthcheck plan only after Alejandro approval
   - no execution gates: no API calls, no Meta Business Suite, no tokens, no
     secrets, no webhook setup, no UI
   - keep follower-source UI repair parked
-- `latest_commit`: pending
+- `latest_commit`: pending prior-art review packet lane-local commit
 - `latest_receipt`: none
 - `blockers`: setup remains partial/unknown; live API calls remain unapproved
-- `next_approval_needed`: approve integration of the prior-art inventory and
-  setup decision packet, then approve prior-art inventory review, setup decision
-  review, no-secret API healthcheck plan, manual follower evidence packet
-  design, or MailerLite parallel continuation
+- `next_approval_needed`: approve integration of the prior-art inventory,
+  setup decision packet, and prior-art review packet, then approve setup
+  decision review, no-secret API healthcheck plan, manual follower evidence
+  packet design, or MailerLite parallel continuation
 - `proposed_integration_note`: Integrate
-  `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md` and
-  `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md` as
-  lane-owned, no-run Instagram API readiness artifacts. The prior-art inventory
-  reuses local CRM Core knowledge, flags stale/unclear follower-delta shorthand,
-  and recommends
-  `crm_core_instagram_prior_art_inventory_review_awaiting_approval_v0` before
-  selecting the next API readiness action. No API calls, UI access, Meta
+  `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`,
+  `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`, and
+  `docs/crm-vnext/instagram-meta-api-prior-art-review-packet-v0.md` as
+  lane-owned, no-run Instagram API readiness artifacts. The prior-art review
+  packet converts local CRM Core knowledge into a CEO/architect decision
+  surface, flags stale/unclear follower-delta shorthand, preserves the
+  distinction between aggregate analytics/insights and CRM-usable candidate
+  sources, and recommends
+  `crm_core_instagram_meta_app_setup_decision_packet_review_awaiting_approval_v0`
+  as the default next API readiness action. No API calls, UI access, Meta
   Business Suite access, secrets, webhooks, DMs, welcome audio, candidate queue
   generation, CRM/source writes, or central CRM edits are authorized.
 - `closeout_format`: use template in
