@@ -104,12 +104,16 @@
   - Mantis remains future operator, not current development memory
   - Active next action is Controlled Welcome Flow Proof plan
   - No execution occurred during storage/operator boundary policy patch
+  - Controlled Welcome Flow Proof plan created
+  - Active next step is first lane sprint selection
+  - No execution occurred during Controlled Welcome Flow Proof plan creation
+  - Storage/operator boundary policy remains active
   - no execution occurred during protocol design
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: Controlled Welcome Flow Proof plan not yet designed
-- `next_approval_needed`: design the no-run Controlled Welcome Flow Proof plan
-  before any source/action/private-artifact/CRM-write step
+- `blockers`: first plan-aligned lane sprint not yet selected
+- `next_approval_needed`: choose the first lane sprint to advance the
+  Controlled Welcome Flow Proof, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

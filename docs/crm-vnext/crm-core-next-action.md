@@ -3117,12 +3117,13 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has reviewed the three-lane autonomy proof
   and clarified storage/operator boundaries without execution.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_proof_plan_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-03`
 - `updated_at`: `2026-07-03`
+- `completed_at`: `2026-07-03`
 - `objective`: Design, but do not execute, the Controlled Welcome Flow Proof
   plan that coordinates Welcome Audio, Instagram API/readiness, MailerLite
   onboarding, identity/CRM enrichment, and operator/receipt boundaries into the
@@ -3160,7 +3161,65 @@ routing and completion pointer.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No `/Users/alejandrogomez/CRM`.
+- `result`: Controlled Welcome Flow Proof plan created.
+- `findings`:
+  - Controlled Welcome Flow Proof plan created.
+  - No execution occurred.
+  - No source actions occurred.
+  - No facts were collected from Alejandro.
+  - No private artifacts were inspected.
+  - No CRM/source writes occurred.
+  - No folders outside repo were created.
+  - Storage/operator boundary policy remains in force.
+- `completion_artifacts`:
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
 - `completion_definition`: CRM Core has a no-run Controlled Welcome Flow Proof
   plan that defines the smallest safe product-oriented vertical slice and the
   exact future approvals required before any source/action/private-artifact/
   CRM-write step.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_first_lane_sprint_selection_v0`
+- `status`: `active`
+- `created_at`: `2026-07-03`
+- `updated_at`: `2026-07-03`
+- `objective`: Choose the first lane sprint to advance the Controlled Welcome
+  Flow Proof, or pause.
+- `why_now`: The no-run proof plan exists. CRM Core should now choose which
+  lane should run the first plan-aligned docs-only sprint: Welcome Audio
+  sandbox send strategy, Instagram API/setup route review, MailerLite
+  setup/payload readiness, or a future identity/CRM enrichment boundary.
+- `allowed_scope`:
+  - Present first lane sprint options.
+  - Recommend one next docs-only sprint.
+  - Answer clarifying questions.
+  - No execution.
+- `forbidden_scope`:
+  - No UI relay execution.
+  - No UI, Computer Use, or `@Chrome`.
+  - No APIs.
+  - No Instagram.
+  - No MailerLite.
+  - No Gmail.
+  - No Meta Business Suite.
+  - No app configuration.
+  - No webhook setup.
+  - No DMs.
+  - No welcome audio.
+  - No private artifact inspection.
+  - No candidate queue generation.
+  - No source actions.
+  - No CRM/source writes.
+  - No branch/worktree changes unless separately approved.
+  - No Launch OS docs.
+  - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. Welcome Audio: sandbox send strategy design.
+  2. Instagram API readiness: setup decision review / no-secret healthcheck
+     planning.
+  3. MailerLite: answer-intake followup / no-write payload preview.
+  4. Future Identity/CRM: CRM enrichment packet boundary.
+  5. Pause.
+- `completion_definition`: Alejandro chooses the first plan-aligned lane sprint
+  or pauses.
