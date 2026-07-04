@@ -3178,12 +3178,13 @@ routing and completion pointer.
   exact future approvals required before any source/action/private-artifact/
   CRM-write step.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_first_lane_sprint_selection_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-03`
 - `updated_at`: `2026-07-03`
+- `completed_at`: `2026-07-03`
 - `objective`: Choose the first lane sprint to advance the Controlled Welcome
   Flow Proof, or pause.
 - `why_now`: The no-run proof plan exists. CRM Core should now choose which
@@ -3223,3 +3224,80 @@ routing and completion pointer.
   5. Pause.
 - `completion_definition`: Alejandro chooses the first plan-aligned lane sprint
   or pauses.
+- `result`: Welcome Audio sandbox send strategy design selected and integrated
+  as the first plan-aligned lane sprint.
+- `findings`:
+  - The first plan-aligned lane sprint selected was Welcome Audio sandbox send
+    strategy design.
+  - Task: `crm_core_welcome_audio_sandbox_send_strategy_design_v0`.
+  - Artifact:
+    `docs/crm-vnext/instagram-welcome-audio-sandbox-send-strategy-design-v0.md`.
+  - Commit: `debb861cd64616b61cef6378c7dde41afaeb9551`.
+  - Prior task packet review returned `needs_task_packet_fix`.
+  - Corrected task packet returned `green_to_execute_task_packet_later`.
+  - Artifact review returned `green_to_commit_later`.
+  - Mechanical fix cycles used: `0`.
+  - No execution occurred.
+  - No source actions occurred.
+  - No facts were collected from Alejandro.
+  - No private artifacts were inspected beyond the explicit target registry.
+  - No candidate queue was generated.
+  - No DM opened.
+  - No welcome audio sent.
+  - No Instagram action occurred.
+  - No MailerLite/Gmail access occurred.
+  - No CRM/source writes occurred.
+  - No folders outside repo were created by central integration.
+  - Storage/operator boundary policy remains in force.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-welcome-audio-sandbox-send-strategy-design-v0.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_next_proof_step_selection_v0`
+- `status`: `active`
+- `created_at`: `2026-07-03`
+- `updated_at`: `2026-07-03`
+- `objective`: Choose the next Controlled Welcome Flow Proof step after the
+  Welcome Audio sandbox send strategy design, or pause.
+- `why_now`: The Controlled Welcome Flow Proof plan exists and the first
+  plan-aligned Welcome Audio sandbox send strategy sprint is integrated. CRM
+  Core should now choose the next docs-only step that moves toward a safe
+  controlled proof without executing source actions.
+- `allowed_scope`:
+  - Present next proof-step options.
+  - Recommend one next docs-only step.
+  - Answer clarifying questions.
+  - No execution.
+- `forbidden_scope`:
+  - No UI relay execution.
+  - No UI, Computer Use, or `@Chrome`.
+  - No APIs.
+  - No Instagram.
+  - No MailerLite.
+  - No Gmail.
+  - No Meta Business Suite.
+  - No app configuration.
+  - No webhook setup.
+  - No DMs.
+  - No welcome audio.
+  - No private artifact inspection.
+  - No candidate queue generation.
+  - No source actions.
+  - No CRM/source writes.
+  - No branch/worktree changes unless separately approved.
+  - No Launch OS docs.
+  - No Mantis memory.
+  - No OpenClaw/Mantis workspace.
+  - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. Controlled New-Follower Evidence Packet Design.
+  2. Welcome Audio Sandbox Send Approval Packet refinement.
+  3. Reply Monitoring / Email Handoff Boundary design.
+  4. MailerLite no-write payload preview alignment.
+  5. Future Identity / CRM enrichment packet boundary.
+  6. Pause.
+- `recommended_default`: Controlled New-Follower Evidence Packet Design.
+- `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
+  Proof step or pauses.

@@ -108,12 +108,27 @@
   - Active next step is first lane sprint selection
   - No execution occurred during Controlled Welcome Flow Proof plan creation
   - Storage/operator boundary policy remains active
+  - Welcome Audio sandbox send strategy design integrated
+  - This was the first plan-aligned lane sprint for the Controlled Welcome Flow
+    Proof
+  - CRM-Core-Reports was used by the lane for development telemetry
+  - Mantis-Reports and Mantis memory were not used
+  - source branch merged: `codex/crm-core-welcome-audio`
+  - central coordination files updated for Welcome Audio sandbox strategy:
+    - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no lane source execution occurred during Welcome Audio sandbox strategy
+    integration
+  - next central task: choose next Controlled Welcome Flow Proof step
   - no execution occurred during protocol design
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: first plan-aligned lane sprint not yet selected
-- `next_approval_needed`: choose the first lane sprint to advance the
-  Controlled Welcome Flow Proof, or pause
+- `blockers`: next Controlled Welcome Flow Proof step not yet selected
+- `next_approval_needed`: choose the next Controlled Welcome Flow Proof step,
+  or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

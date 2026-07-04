@@ -246,7 +246,10 @@ CRM development memory.
 
 ## Minimal Milestone Ladder
 
-M0 - Plan only.
+M0 - Plan only: complete.
+
+First plan-aligned Track B sprint - Welcome Audio sandbox send strategy: complete
+as no-run design.
 
 M1 - Alejandro supplies non-secret setup/test facts.
 
@@ -527,6 +530,42 @@ crm_core_mailerlite_setup_inventory_answer_intake_followup_v0
 ```
 
 Use if Alejandro wants to advance downstream onboarding readiness first.
+
+## First Lane Sprint Result — Welcome Audio Sandbox Send Strategy
+
+- The first plan-aligned lane sprint selected was Welcome Audio sandbox send
+  strategy design.
+- The task id was:
+
+```text
+crm_core_welcome_audio_sandbox_send_strategy_design_v0
+```
+
+- Source commit:
+
+```text
+debb861cd64616b61cef6378c7dde41afaeb9551
+```
+
+- Artifact:
+
+```text
+docs/crm-vnext/instagram-welcome-audio-sandbox-send-strategy-design-v0.md
+```
+
+- The first task packet review returned `needs_task_packet_fix`.
+- Codex extracted the requested correction, prepared a corrected task packet,
+  and received `green_to_execute_task_packet_later`.
+- The produced artifact received `green_to_commit_later`.
+- No mechanical artifact fix cycle was required.
+- No source execution occurred.
+- No facts were collected from Alejandro.
+- No Instagram, DM opening, welcome audio send, candidate queue generation,
+  private artifact inspection, MailerLite/Gmail access, CRM/source write,
+  Mantis memory, OpenClaw/Mantis workspace, Launch OS doc, or
+  `/Users/alejandrogomez/CRM` use occurred.
+- CRM-Core-Reports was used for development telemetry.
+- Mantis-Reports and Mantis memory were not used.
 
 ## Stop Conditions
 
