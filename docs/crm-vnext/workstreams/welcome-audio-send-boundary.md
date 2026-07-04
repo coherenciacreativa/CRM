@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `send_approval_packet_template_design_complete_pending_review`
+- `status`: `sandbox_send_strategy_design_complete_pending_review`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -47,10 +47,14 @@
   - completed no-run future send approval packet template design
   - artifact:
     `docs/crm-vnext/instagram-welcome-audio-send-approval-packet-template-v0.md`
+  - completed no-run sandbox send strategy design for the Controlled Welcome
+    Flow Proof
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-sandbox-send-strategy-design-v0.md`
   - task source:
-    `crm_core_ui_relay_pilot_6_welcome_audio_next_task_selection_2026-07-02`
+    `crm_core_ui_relay_welcome_audio_sandbox_pilot_1b_corrected_task_packet_review_2026-07-03`
   - consultant verdict source:
-    `select_task: crm_core_welcome_audio_send_approval_packet_template_v0`
+    `green_to_execute_task_packet_later: crm_core_welcome_audio_sandbox_send_strategy_design_v0`
   - no execution gates: no DM opening, no welcome audio send, no candidate
     queue generation, no Instagram actions
   - keep send gate closed
@@ -61,17 +65,18 @@
   implementation; no already-welcomed/send-history implementation
 - `latest_execution_note`: no execution occurred; no send authority was
   granted.
-- `next_approval_needed`: consultant relay review of the send approval packet
-  template artifact
+- `next_approval_needed`: consultant relay review of the sandbox send strategy
+  artifact
   before commit; separate future approval before any candidate queue, private
   artifact inspection, DM opening, welcome audio send, Instagram action,
   MailerLite/Gmail access, CRM/source write, or source action
-- `proposed_integration_note`: Welcome Audio lane now has a no-run future send
-  approval packet template. It defines the exact candidate-set,
-  approved-audio, final dedupe, expected-count, blocker, receipt, and
-  approval-phrase requirements that must exist before any future Instagram
-  welcome audio send can be considered. No send, DM opening, candidate queue
-  generation, source action, private artifact inspection, or CRM write is
-  authorized.
+- `proposed_integration_note`: Welcome Audio lane now has a no-run sandbox
+  send strategy design for the Controlled Welcome Flow Proof. It defines the
+  future test-account, candidate-set, approved-audio,
+  already-welcomed/send-history, duplicate-prevention, reply/email handoff,
+  MailerLite, CRM enrichment, storage, approval phrase, stop condition, and
+  closed-gate boundaries needed before any future controlled sandbox send can
+  be considered. No send, DM opening, candidate queue, source action, private
+  artifact inspection, Mantis memory write, or CRM/source write is authorized.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
