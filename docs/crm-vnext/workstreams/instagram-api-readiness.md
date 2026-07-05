@@ -48,6 +48,7 @@
   - completed no-run controlled candidate queue and sandbox send approval packet
     design
   - completed no-run reply monitoring and email handoff boundary design
+  - completed no-run CRM identity/enrichment packet boundary design
   - new artifacts:
     - `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`
     - `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`
@@ -55,13 +56,13 @@
     - `docs/crm-vnext/instagram-controlled-new-follower-evidence-packet-design-v0.md`
     - `docs/crm-vnext/instagram-welcome-audio-controlled-candidate-queue-and-sandbox-send-approval-packet-design-v0.md`
     - `docs/crm-vnext/instagram-reply-monitoring-email-handoff-boundary-design-v0.md`
+    - `docs/crm-vnext/instagram-crm-identity-enrichment-packet-boundary-v0.md`
   - no API calls, UI, Computer Use, `@Chrome`, Instagram, Meta Business Suite,
     MailerLite, Gmail, private artifact inspection, DMs, welcome audio,
     candidate queue generation, CRM/source writes, Launch OS docs, or
     `/Users/alejandrogomez/CRM` use occurred
-  - next suggested task: selected-task artifact consultant review for the reply
-    monitoring and email handoff boundary design, then lane-local commit if
-    green
+  - next suggested task: selected-task artifact consultant review for the CRM
+    identity/enrichment packet boundary design, then lane-local commit if green
   - no execution gates: no API calls, no Meta Business Suite, no tokens, no
     secrets, no webhook setup, no UI
   - keep follower-source UI repair parked
@@ -96,6 +97,16 @@
   preview, and CRM enrichment preview while keeping DM opening, reply
   monitoring, MailerLite/Gmail access, CRM/source writes, outreach, source
   actions, Launch OS, Mantis memory, OpenClaw/Mantis workspace, and
-  `/Users/alejandrogomez/CRM` closed.
+  `/Users/alejandrogomez/CRM` closed. Also integrate
+  `docs/crm-vnext/instagram-crm-identity-enrichment-packet-boundary-v0.md` as a
+  lane-owned, no-run Controlled Welcome Flow Proof artifact after consultant
+  green. It defines the future no-write CRM identity/enrichment packet boundary
+  connecting controlled Instagram evidence, approved reply/email handoff
+  evidence, MailerLite no-write payload preview status, private anchors,
+  provenance, identity confidence, suppression/safety, and existing CRM Core
+  card/evidence/ledger/scoring layers without creating a duplicate CRM
+  architecture or authorizing card writes, ledgers, Fact Store, source-result
+  writes, scoring, outreach, source actions, Launch OS, Mantis memory,
+  OpenClaw/Mantis workspace, or `/Users/alejandrogomez/CRM`.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
