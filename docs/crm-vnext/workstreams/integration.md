@@ -198,12 +198,24 @@
   - No source actions occurred
   - No private artifacts integrated
   - Next central task: choose next Controlled Welcome Flow Proof step
+  - MailerLite No-Write Payload Preview Alignment integrated
+  - Chief Architect Integration Consultant returned `green_to_self_integrate`
+  - Central Integration Lock v0 was used
+  - Central integration remained single-threaded
+  - Source/live actions remained separately approval-gated
+  - No MailerLite API call occurred
+  - No MailerLite UI was used
+  - No MailerLite mutation occurred
+  - No real private payload was prepared
+  - No source actions occurred
+  - No private artifacts integrated
+  - Next central task: choose next Controlled Welcome Flow Proof step
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: next Controlled Welcome Flow Proof step after reply handoff design
-  not yet selected
+- `blockers`: next Controlled Welcome Flow Proof step after MailerLite
+  no-write payload preview alignment not yet selected
 - `next_approval_needed`: choose the next Controlled Welcome Flow Proof step
-  after reply handoff design, or pause
+  after MailerLite no-write payload preview alignment, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in
