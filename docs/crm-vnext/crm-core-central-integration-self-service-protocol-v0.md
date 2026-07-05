@@ -369,6 +369,26 @@ Alejandro is required for source/private/action/write boundaries.
 13. Release Central Integration Lock.
 14. Report.
 
+## Parallel Full-Power Integration Coordination
+
+In multi-lane parallel mode, Central Integration Self-Service must also follow:
+
+```text
+docs/crm-vnext/crm-core-parallel-full-power-lane-coordination-protocol-v0.md
+```
+
+Chief Architect integration packets must include central freshness tokens.
+
+If central changed after Chief Architect green and before Central Integration
+Lock acquisition, the lane must request fresh Chief Architect review or stop.
+
+After acquiring Central Integration Lock, the lane must revalidate central HEAD
+and active next action before merging.
+
+Central integration remains single-threaded.
+
+Source/live actions remain separately approval-gated.
+
 ## First Self-Integration Pilot Gate
 
 Even after this lock exists, do not run autonomous self-integration until

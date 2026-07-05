@@ -231,6 +231,25 @@ Consultant UI relay parallelism does not authorize source actions, APIs, DMs,
 welcome audio sends, MailerLite/Gmail access, private artifact inspection,
 candidate queue generation, or CRM/source writes.
 
+## Parallel Full-Power Lane Coordination
+
+Consultant Relay Lock v0 allows multiple lanes to prepare local work in
+parallel while serializing Chrome/clipboard/Copy-button/target-registry
+critical sections.
+
+Parallel full-power mode must also follow:
+
+```text
+docs/crm-vnext/crm-core-parallel-full-power-lane-coordination-protocol-v0.md
+```
+
+Parallel task packets must include freshness tokens and parallel conflict
+guardrails.
+
+Consultant UI relay parallelism still does not authorize source actions, APIs,
+DMs, welcome audio, MailerLite/Gmail access, private artifact inspection,
+candidate queue generation, or CRM/source writes.
+
 ## Canonical Transport
 
 Canonical v0 accepts target routes in this priority order:
