@@ -107,7 +107,7 @@ May be temporarily assumed by a lane Codex only after:
 - lane work is committed and pushed;
 - lane consultant verdict is green;
 - Chief Architect Integration Consultant returns `green_to_self_integrate`;
-- central integration lock exists and is acquired, once implemented;
+- Central Integration Lock v0 is acquired;
 - central worktree is clean;
 - branch/file-scope checks pass.
 
@@ -281,8 +281,31 @@ No self-integration may proceed unless:
 
 Central integration is single-threaded.
 
-Future self-integration requires a Central Integration Lock v0 before any lane
-Codex may:
+Central Integration Lock v0 utility exists.
+
+Utility:
+
+```text
+scripts/crm-vnext-central-integration-lock.mjs
+```
+
+Package script:
+
+```text
+npm run crm:vnext:central-integration-lock -- <command>
+```
+
+Default lock path:
+
+```text
+/Users/alejandrogomez/Documents/CRM-Core-Reports/central-integration/.central-integration-lock
+```
+
+Self-integration remains disabled for live/source/private/action work, but
+docs-only central self-integration can be enabled after explicit Alejandro
+approval of a first self-integration pilot.
+
+Self-integration requires Central Integration Lock v0 before any lane Codex may:
 
 - enter `/Users/alejandrogomez/CRM-core` for central integration role;
 - fetch/merge lane branch into `codex/crm-core-reentry`;
@@ -290,24 +313,6 @@ Codex may:
 - commit central integration;
 - push central branch;
 - fast-forward lane branches.
-
-Preferred future lock path:
-
-```text
-/Users/alejandrogomez/Documents/CRM-Core-Reports/central-integration/.central-integration-lock
-```
-
-This protocol does not create the lock utility.
-
-Until Central Integration Lock v0 exists, self-integration remains
-protocol-designed but not fully enabled.
-
-Interim rule:
-
-- A lane may ask Chief Architect for a self-integration verdict.
-- A lane must not perform autonomous central self-integration until the central
-  integration lock utility/protocol is committed or Alejandro explicitly
-  approves a one-off central integration without lock.
 
 Central lock metadata must never include:
 
@@ -319,9 +324,66 @@ Central lock metadata must never include:
 - source data;
 - Mantis memory content.
 
+## Central Integration Lock v0
+
+Central integration is single-threaded.
+
+Central Integration Lock v0 is required before central self-integration.
+
+The utility uses atomic `mkdir` for lock acquisition.
+
+The central lock is held for the full central integration run, unlike
+Consultant Relay Lock v0, which is held only for short Chrome/clipboard
+critical sections.
+
+Lock metadata is redacted.
+
+Owner token is returned only to the process that acquired the lock.
+
+Owner token must not be recorded in receipts.
+
+Stale locks are reported but not automatically broken in v0.
+
+Central lock does not authorize self-integration by itself.
+
+Chief Architect Integration Consultant green is still required.
+
+Source/live actions remain separately approval-gated.
+
+Alejandro is required for source/private/action/write boundaries.
+
+## Central Lock Run Pattern
+
+1. Receive lane consultant green.
+2. Ask Chief Architect Integration Consultant.
+3. Validate `green_to_self_integrate`.
+4. Acquire Central Integration Lock v0.
+5. Verify central branch/worktree clean.
+6. Fetch only approved source branch.
+7. Verify file scope.
+8. Merge source branch.
+9. Update central files allowed by Chief Architect verdict.
+10. Run checks.
+11. Commit/push central.
+12. Fast-forward lanes.
+13. Release Central Integration Lock.
+14. Report.
+
+## First Self-Integration Pilot Gate
+
+Even after this lock exists, do not run autonomous self-integration until
+Alejandro approves the first self-integration pilot.
+
+The first pilot must be docs-only, lane-owned, no-run, no source action, no
+private artifacts integrated, and no scripts/tests/package changes from lane
+work.
+
+Recommended first pilot should be a low-risk lane docs artifact only.
+
 ## Self-Integration Runbook
 
-These steps are future/conditional until Central Integration Lock v0 exists.
+These steps remain future/conditional until Alejandro approves the first
+docs-only self-integration pilot.
 
 1. Lane Codex verifies lane branch/worktree clean.
 2. Lane Codex verifies lane commit pushed.
@@ -329,7 +391,8 @@ These steps are future/conditional until Central Integration Lock v0 exists.
 4. Lane Codex uses Consultant Relay Lock v0 to ask Chief Architect Integration
    Consultant.
 5. Lane Codex validates Chief Architect response.
-6. If `green_to_self_integrate` and central lock exists:
+6. If `green_to_self_integrate` and the first self-integration pilot is
+   explicitly approved:
    - acquire Central Integration Lock v0;
    - switch/operate in `/Users/alejandrogomez/CRM-core` only;
    - verify branch `codex/crm-core-reentry`;

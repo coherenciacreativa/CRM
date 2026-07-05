@@ -3396,6 +3396,46 @@ routing and completion pointer.
   Architect green, central lock acquisition, central file-scope checks, and
   strict stop conditions.
 
+## Completed Next Action
+
+- `next_action_id`: `crm_core_central_integration_lock_utility_design_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `result`: Central Integration Lock v0 utility and protocol update created.
+- `completion_artifacts`:
+  - `scripts/crm-vnext-central-integration-lock.mjs`
+  - `__tests__/crm-vnext-central-integration-lock.spec.ts`
+  - `package.json`
+  - `docs/crm-vnext/crm-core-central-integration-self-service-protocol-v0.md`
+- `findings`:
+  - Central Integration Lock utility created.
+  - Utility serializes central integration runs.
+  - Utility uses atomic lock directory creation.
+  - Utility stores redacted lock metadata only.
+  - Utility rejects raw ChatGPT conversation URLs in arguments/metadata.
+  - Utility uses owner token hash in lock metadata.
+  - Utility refuses wrong-token release.
+  - Utility reports stale locks but does not break them automatically in v0.
+  - Utility restricts production lock path to
+    CRM-Core-Reports/central-integration.
+  - Tests use `/tmp` only and do not touch real CRM-Core-Reports.
+  - Central Integration Self-Service Protocol updated.
+  - Self-integration remains blocked until Alejandro approves a first
+    docs-only self-integration pilot.
+  - No central self-integration run occurred.
+  - No UI relay execution occurred.
+  - No Chrome, Safari, Firefox, UI, Computer Use, `@Chrome`, APIs, Instagram,
+    DM, welcome audio, MailerLite, Gmail, Meta Business Suite, private artifact
+    inspection, candidate queue, CRM/source write, Launch OS doc, Mantis
+    memory, OpenClaw/Mantis workspace, or `/Users/alejandrogomez/CRM` use
+    occurred.
+- `completion_definition`: CRM Core has a local Central Integration Lock
+  utility and protocol update that can serialize future self-service central
+  integration runs without authorizing source actions, private artifacts, live
+  execution, or uncontrolled central writes.
+
 ## Active Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_evidence_design_next_step_selection_v0`
@@ -3446,8 +3486,8 @@ routing and completion pointer.
   6. Pause.
 - `recommended_default`: Controlled Candidate Queue And Sandbox Send Approval
   Packet Design.
-- `infrastructure_note`: Central Integration Self-Service Protocol now exists,
-  but autonomous self-integration remains blocked until Central Integration
-  Lock v0 is created or Alejandro approves a one-off central integration.
+- `infrastructure_note`: Central Integration Lock v0 now exists, but autonomous
+  self-integration remains blocked until Alejandro approves a first docs-only
+  self-integration pilot.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   Proof step or pauses.

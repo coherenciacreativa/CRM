@@ -16,6 +16,7 @@
     "start": "next start",
     "test": "vitest run",
     "crm:vnext:consultant-relay-lock": "node scripts/crm-vnext-consultant-relay-lock.mjs",
+    "crm:vnext:central-integration-lock": "node scripts/crm-vnext-central-integration-lock.mjs",
     "crm:vnext:readiness": "node scripts/crm-vnext-readiness.mjs",
     "crm:vnext:queue-monitor": "node scripts/crm-vnext-queue-monitor.mjs",
     "crm:vnext:daily-brief": "node scripts/crm-vnext-daily-brief.mjs",

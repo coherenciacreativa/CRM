@@ -159,12 +159,22 @@
   - Central Integration Self-Service Protocol v0 created
   - Lane Codex workers may later ask Chief Architect Integration Consultant for
     `green_to_self_integrate`
-  - Self-integration is not fully enabled until Central Integration Lock v0
-    exists or Alejandro approves one-off central integration
+  - Self-integration remained protocol-designed only until Central Integration
+    Lock v0 existed; it now remains gated on Alejandro approval of a first
+    docs-only self-integration pilot
   - Central integration remains single-threaded
   - Source/live actions remain separately approval-gated
   - No execution occurred during Central Integration Self-Service Protocol
     design
+  - Central Integration Lock v0 utility created
+  - Central Integration Self-Service Protocol updated
+  - Future central self-integration can be serialized by central lock
+  - Self-integration is still not enabled until Alejandro approves a first
+    docs-only self-integration pilot
+  - Central integration remains single-threaded
+  - Source/live actions remain separately approval-gated
+  - No central self-integration run occurred
+  - No source actions occurred during Central Integration Lock utility creation
 - `latest_commit`: pending
 - `latest_receipt`: none
 - `blockers`: next Controlled Welcome Flow Proof step not yet selected
