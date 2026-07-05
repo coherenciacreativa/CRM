@@ -3436,12 +3436,35 @@ routing and completion pointer.
   integration runs without authorizing source actions, private artifacts, live
   execution, or uncontrolled central writes.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_evidence_design_next_step_selection_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `findings`:
+  - Next proof step selected: Controlled Candidate Queue And Sandbox Send
+    Approval Packet Design.
+  - Artifact:
+    `docs/crm-vnext/instagram-welcome-audio-controlled-candidate-queue-and-sandbox-send-approval-packet-design-v0.md`.
+  - Lane commit:
+    `90b39ce19571c49847b0102d9c942682905613f5`.
+  - Lane consultant verdict:
+    `green_to_commit_later`.
+  - Chief Architect Integration Consultant verdict:
+    `green_to_self_integrate`.
+  - First docs-only self-integration pilot completed.
+  - Central Integration Lock v0 used.
+  - No candidate queue generated.
+  - No welcome audio sent.
+  - No source execution occurred.
+  - No source actions occurred.
+  - No facts collected from Alejandro.
+  - No private artifacts integrated.
+  - No CRM/source writes.
+  - No Mantis memory.
+  - No `/Users/alejandrogomez/CRM`.
 - `objective`: Choose the next Controlled Welcome Flow Proof step after
   integrating the Controlled New-Follower Evidence Packet Design, or pause.
 - `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, the
@@ -3489,5 +3512,59 @@ routing and completion pointer.
 - `infrastructure_note`: Central Integration Lock v0 now exists, but autonomous
   self-integration remains blocked until Alejandro approves a first docs-only
   self-integration pilot.
+- `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
+  Proof step or pauses.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_candidate_send_design_next_step_selection_v0`
+- `status`: `active`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `objective`: Choose the next Controlled Welcome Flow Proof step after
+  integrating the Controlled Candidate Queue And Sandbox Send Approval Packet
+  Design and proving the first docs-only self-integration pilot, or pause.
+- `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, Welcome
+  Audio sandbox send strategy design, Controlled New-Follower Evidence Packet
+  Design, Controlled Candidate Queue And Sandbox Send Approval Packet Design,
+  Consultant Relay Lock v0, Chief Architect Integration Consultant relay, and
+  Central Integration Lock v0. The first docs-only self-integration pilot is
+  complete if all checks passed. The next useful step is to choose between
+  reply monitoring/email handoff boundary, MailerLite no-write payload preview
+  alignment, future identity/CRM enrichment packet boundary, first
+  self-integration pilot review, or pause.
+- `allowed_scope`:
+  - Present next proof-step options.
+  - Recommend one next docs-only step.
+  - Answer clarifying questions.
+  - No execution.
+- `forbidden_scope`:
+  - No UI relay execution.
+  - No UI, Computer Use, or `@Chrome`.
+  - No APIs.
+  - No Instagram.
+  - No MailerLite.
+  - No Gmail.
+  - No Meta Business Suite.
+  - No app configuration.
+  - No webhook setup.
+  - No DMs.
+  - No welcome audio.
+  - No private artifact inspection.
+  - No candidate queue generation.
+  - No source actions.
+  - No CRM/source writes.
+  - No branch/worktree changes unless separately approved.
+  - No Launch OS docs.
+  - No Mantis memory.
+  - No OpenClaw/Mantis workspace.
+  - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. Reply Monitoring / Email Handoff Boundary Design.
+  2. MailerLite No-Write Payload Preview Alignment.
+  3. Future Identity / CRM Enrichment Packet Boundary.
+  4. First Self-Integration Pilot Review.
+  5. Pause.
+- `recommended_default`: Reply Monitoring / Email Handoff Boundary Design.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   Proof step or pauses.

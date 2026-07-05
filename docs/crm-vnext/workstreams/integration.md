@@ -175,6 +175,18 @@
   - Source/live actions remain separately approval-gated
   - No central self-integration run occurred
   - No source actions occurred during Central Integration Lock utility creation
+  - Controlled Candidate Queue And Sandbox Send Approval Packet Design
+    integrated
+  - This was the first docs-only self-integration pilot
+  - Chief Architect Integration Consultant returned `green_to_self_integrate`
+  - Central Integration Lock v0 was used
+  - Central integration remained single-threaded
+  - Source/live actions remained separately approval-gated
+  - No candidate queue generated
+  - No welcome audio sent
+  - No source actions occurred
+  - No private artifacts integrated
+  - Next central task: choose next Controlled Welcome Flow Proof step
 - `latest_commit`: pending
 - `latest_receipt`: none
 - `blockers`: next Controlled Welcome Flow Proof step not yet selected
