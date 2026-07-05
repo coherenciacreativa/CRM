@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `sandbox_send_strategy_design_complete_pending_review`
+- `status`: `controlled_candidate_queue_send_approval_design_complete_pending_artifact_review`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -57,26 +57,39 @@
     `green_to_execute_task_packet_later: crm_core_welcome_audio_sandbox_send_strategy_design_v0`
   - no execution gates: no DM opening, no welcome audio send, no candidate
     queue generation, no Instagram actions
+  - completed no-run controlled candidate queue and sandbox send approval
+    packet design for the Controlled Welcome Flow Proof
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-controlled-candidate-queue-and-sandbox-send-approval-packet-design-v0.md`
+  - task source:
+    `crm_core_welcome_audio_candidate_send_pilot_1_task_packet_review_2026-07-05`
+  - consultant verdict source:
+    `green_to_execute_task_packet_later: crm_core_welcome_audio_controlled_candidate_queue_and_sandbox_send_approval_packet_design_v0`
+  - no real state created: no candidate queue, candidate set, candidate,
+    approval packet, asset approval, receipt, private artifact,
+    already-welcomed/send-history result, send state, or CRM/source state
   - keep send gate closed
-- `latest_commit`: `8224373` (`Add Welcome Audio asset registry and history packet`)
+- `latest_commit`: pending lane-local commit for controlled candidate queue and
+  sandbox send approval packet design
 - `latest_receipt`: none
 - `blockers`: no audio send approval; no candidate queue approval; no approved
   send packet; no private artifact inspection; no approved audio asset registry
   implementation; no already-welcomed/send-history implementation
 - `latest_execution_note`: no execution occurred; no send authority was
   granted.
-- `next_approval_needed`: consultant relay review of the sandbox send strategy
-  artifact
-  before commit; separate future approval before any candidate queue, private
-  artifact inspection, DM opening, welcome audio send, Instagram action,
-  MailerLite/Gmail access, CRM/source write, or source action
-- `proposed_integration_note`: Welcome Audio lane now has a no-run sandbox
-  send strategy design for the Controlled Welcome Flow Proof. It defines the
-  future test-account, candidate-set, approved-audio,
-  already-welcomed/send-history, duplicate-prevention, reply/email handoff,
-  MailerLite, CRM enrichment, storage, approval phrase, stop condition, and
-  closed-gate boundaries needed before any future controlled sandbox send can
-  be considered. No send, DM opening, candidate queue, source action, private
-  artifact inspection, Mantis memory write, or CRM/source write is authorized.
+- `next_approval_needed`: consultant relay artifact review before commit;
+  separate future approval before any candidate queue, private artifact
+  inspection, DM opening, welcome audio send, Instagram action, MailerLite/Gmail
+  access, CRM/source write, or source action
+- `proposed_integration_note`: Welcome Audio lane now has a no-run Controlled
+  Candidate Queue And Sandbox Send Approval Packet Design for the Controlled
+  Welcome Flow Proof. It connects approved private new-follower evidence to a
+  private candidate queue boundary, final already-welcomed/send-history check,
+  approved audio asset boundary, sandbox send approval packet, reply/email
+  handoff separation, MailerLite separation, CRM enrichment separation, storage
+  policy, approval phrases, stop conditions, and closed-gate boundaries. No
+  candidate queue, candidate set, approval packet, send, DM opening, source
+  action, private artifact inspection, Mantis memory write, or CRM/source write
+  is authorized.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
