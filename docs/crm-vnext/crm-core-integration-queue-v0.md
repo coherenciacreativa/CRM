@@ -365,6 +365,56 @@ No lane outputs in review at creation.
 - `integration_recommendation`: P2 temporary-parallel self-integration
   succeeded if all checks pass; keep source/action/CRM write gates closed.
 
+### welcome_audio_first_controlled_execution_packet_p2_v3_2026-07-05
+
+- `source_workstream`: `welcome-audio-send-boundary`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-first-execution-packet-parallel`
+- `branch_mode`: `temporary_parallel`
+- `commits`:
+  - `1dcae13a6f7ce8185498ab18f6e7763a8fedfec7`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-welcome-audio-first-controlled-execution-approval-packet-v0.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Integrated the First Controlled Execution Approval Packet Design
+  as a P2 v3 temporary-parallel docs-only self-integration pilot with the final
+  storage path corrected to the exact future Instagram private source artifact
+  root.
+- `tests_or_checks`: `git diff --check`; `git diff --cached --check`; raw
+  target URL check; owner token check
+- `lane_consultant_verdicts`:
+  - target handshake: valid
+  - task packet: `green_to_execute_task_packet_later`
+  - artifact review: `green_to_commit_later`
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `central_integration_lock_used`: true
+- `private_artifacts_touched`: consultant_target_registry_only_by_lane
+- `private_artifacts_integrated`: false
+- `used_crm_core_reports`: lane_and_central
+- `used_mantis_reports`: false
+- `used_mantis_memory`: false
+- `source_actions_executed`: false
+- `candidate_queue_generated`: false
+- `welcome_audio_sent`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `signal_event_ledger_writes`: false
+- `engagement_snapshot_ledger_writes`: false
+- `source_result_ledger_writes`: false
+- `scoring_writes`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow Proof step after the
+  first controlled execution approval packet design
+- `integration_recommendation`: P2 v3 temporary-parallel self-integration
+  succeeded if all checks pass; keep source/action/CRM write gates closed.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
@@ -372,7 +422,7 @@ No lane outputs rejected at creation.
 ## CEO Decision Required
 
 Decision required: choose the next Controlled Welcome Flow Proof step after the
-MailerLite No-Write Payload Preview Alignment, or pause.
+First Controlled Execution Approval Packet Design, or pause.
 Prior lane approval options remain available for:
 
 - `mailerlite-onboarding`

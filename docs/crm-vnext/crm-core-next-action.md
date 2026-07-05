@@ -3739,21 +3739,75 @@ routing and completion pointer.
   packet boundary as the next Controlled Welcome Flow Proof step and CRM Core
   integrated the no-run boundary artifact.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_identity_enrichment_boundary_next_step_selection_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `selected_step`: First Controlled Execution Approval Packet.
+- `result`: First Controlled Execution Approval Packet Design integrated as a
+  no-run P2 v3 temporary-parallel docs-only self-integration pilot.
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-execution-approval-packet-v0.md`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-first-execution-packet-parallel`
+- `source_commit`:
+  `1dcae13a6f7ce8185498ab18f6e7763a8fedfec7`
+- `findings`:
+  - Lane consultant target handshake was valid.
+  - Lane task packet review returned `green_to_execute_task_packet_later`.
+  - Lane artifact review returned `green_to_commit_later`.
+  - Chief Architect verdict was `green_to_self_integrate`.
+  - Central Integration Lock v0 was acquired and released.
+  - The final v3 artifact corrected the future storage path to the exact
+    Instagram private source artifact root:
+    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/`.
+  - The artifact defines the future approval surface for one controlled
+    sandbox welcome-audio send to an Alejandro-owned or controlled test
+    account.
+  - Controlled follower evidence review, candidate queue generation, approved
+    audio asset confirmation, final already-welcomed/send-history check, final
+    dedupe/suppression check, reply monitoring, email handoff, MailerLite
+    no-write preview, and CRM enrichment/write boundaries remain separate.
+  - No execution approval packet was generated from real data.
+  - No candidate queue was generated.
+  - No candidate set or candidate was created.
+  - No welcome audio was sent.
+  - No DM was opened.
+  - No Instagram action occurred.
+  - No MailerLite or Gmail access occurred.
+  - No private artifacts were integrated.
+  - No source execution occurred.
+  - No facts were collected from Alejandro.
+  - No CRM/source writes, card writes, Fact Store writes, Signal Event Ledger
+    writes, Engagement Snapshot Ledger writes, source-result ledger writes, or
+    scoring writes occurred.
+  - CRM-Core-Reports was used for development telemetry.
+  - Mantis-Reports and Mantis memory were not used.
+  - No Launch OS doc, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: Alejandro selected First Controlled Execution
+  Approval Packet as the next Controlled Welcome Flow Proof step and CRM Core
+  integrated the no-run approval packet artifact.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_first_execution_packet_next_step_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
 - `objective`: Choose the next Controlled Welcome Flow Proof step after
-  integrating the Identity / CRM Enrichment Packet Boundary, or pause.
+  integrating the First Controlled Execution Approval Packet Design, or pause.
 - `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, Welcome
   Audio sandbox send strategy, Controlled New-Follower Evidence Packet Design,
   Controlled Candidate Queue And Sandbox Send Approval Packet Design, Reply
   Monitoring / Email Handoff Boundary Design, MailerLite No-Write Payload
-  Preview Alignment, and Identity / CRM Enrichment Packet Boundary. The next
-  useful step is to design assistant reply policy, prepare the first controlled
-  execution approval packet, advance MailerLite setup inventory collection, or
+  Preview Alignment, Identity / CRM Enrichment Packet Boundary, and First
+  Controlled Execution Approval Packet Design. The next useful step is to
+  choose whether to prepare a first controlled execution decision, design the
+  assistant reply policy, advance MailerLite setup inventory collection, or
   pause.
 - `allowed_scope`:
   - Present next proof-step options.
@@ -3773,7 +3827,11 @@ routing and completion pointer.
   - No DMs.
   - No welcome audio.
   - No private artifact inspection.
+  - No first controlled execution packet run.
+  - No controlled evidence review.
   - No candidate queue generation.
+  - No candidate set creation.
+  - No audio asset confirmation from private state.
   - No CRM enrichment packet generation from real data.
   - No source actions.
   - No CRM/source writes.
@@ -3790,14 +3848,16 @@ routing and completion pointer.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. Assistant Reply Policy Design.
-  2. First Controlled Execution Approval Packet.
+  1. First Controlled Execution Decision.
+  2. Assistant Reply Policy Design.
   3. MailerLite setup inventory collection approval.
   4. Pause.
 - `recommended_default`: Assistant Reply Policy Design.
 - `infrastructure_note`: Parallel Full-Power Lane Coordination Protocol now
-  exists, but full-power multi-lane self-integration should be piloted only
-  with docs-only, no-run, lane-owned artifacts and must follow freshness-token
-  and central-lock revalidation rules.
+  exists, and this P2 v3 docs-only temporary-branch self-integration used both
+  Consultant Relay Lock and Central Integration Lock with Chief Architect
+  approval. Future full-power multi-lane self-integration remains bounded by
+  freshness-token and central-lock revalidation rules.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
-  Proof step after identity/CRM enrichment boundary integration or pauses.
+  Proof step after First Controlled Execution Approval Packet Design
+  integration or pauses.

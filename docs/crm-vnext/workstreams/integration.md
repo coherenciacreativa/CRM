@@ -243,12 +243,37 @@
     source-result ledger, or scoring write occurred
   - next central task: choose next Controlled Welcome Flow Proof step after
     identity enrichment boundary integration
-- `latest_commit`: pending identity/CRM enrichment boundary central commit
+  - First Controlled Execution Approval Packet Design integrated from a P2 v3
+    temporary parallel branch
+  - source branch merged:
+    `codex/crm-core-welcome-audio-first-execution-packet-parallel`
+  - source commit:
+    `1dcae13a6f7ce8185498ab18f6e7763a8fedfec7`
+  - Chief Architect Integration Consultant returned `green_to_self_integrate`
+  - Central Integration Lock v0 was used
+  - central coordination/proof files updated:
+    - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no source execution occurred during First Controlled Execution Approval
+    Packet Design integration
+  - no execution approval packet was generated from real data
+  - no candidate queue was generated
+  - no welcome audio was sent
+  - no DM was opened
+  - no private artifacts were integrated
+  - no CRM/source write occurred
+  - next central task: choose next Controlled Welcome Flow Proof step after
+    first controlled execution approval packet integration
+- `latest_commit`: pending first controlled execution approval packet central
+  commit
 - `latest_receipt`: pending central-integration receipt
-- `blockers`: next Controlled Welcome Flow Proof step after identity/CRM
-  enrichment packet boundary not yet selected
+- `blockers`: next Controlled Welcome Flow Proof step after first controlled
+  execution approval packet not yet selected
 - `next_approval_needed`: choose the next Controlled Welcome Flow Proof step
-  after identity/CRM enrichment boundary integration, or pause
+  after first controlled execution approval packet integration, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

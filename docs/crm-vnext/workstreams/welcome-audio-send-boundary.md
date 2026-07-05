@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `controlled_candidate_queue_send_approval_design_complete_pending_artifact_review`
+- `status`: `first_controlled_execution_approval_packet_design_complete_pending_artifact_review`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -69,8 +69,23 @@
     approval packet, asset approval, receipt, private artifact,
     already-welcomed/send-history result, send state, or CRM/source state
   - keep send gate closed
-- `latest_commit`: pending lane-local commit for controlled candidate queue and
-  sandbox send approval packet design
+  - completed no-run first controlled execution approval packet design for the
+    Controlled Welcome Flow Proof
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-first-controlled-execution-approval-packet-v0.md`
+  - task source:
+    `crm_core_welcome_audio_first_execution_packet_p2_v3_task_review_2026-07-05`
+  - consultant verdict source:
+    `green_to_execute_task_packet_later: crm_core_controlled_welcome_flow_first_execution_approval_packet_v0`
+  - exact future Instagram private source artifact root:
+    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/`
+  - no real state created: no execution approval packet, send approval,
+    candidate queue, candidate set, candidate, audio asset approval, receipt,
+    private artifact, already-welcomed/send-history result, send state, or
+    CRM/source state
+  - keep send gate closed
+- `latest_commit`: pending lane-local commit for first controlled execution
+  approval packet design
 - `latest_receipt`: none
 - `blockers`: no audio send approval; no candidate queue approval; no approved
   send packet; no private artifact inspection; no approved audio asset registry
@@ -81,15 +96,18 @@
   separate future approval before any candidate queue, private artifact
   inspection, DM opening, welcome audio send, Instagram action, MailerLite/Gmail
   access, CRM/source write, or source action
-- `proposed_integration_note`: Welcome Audio lane now has a no-run Controlled
-  Candidate Queue And Sandbox Send Approval Packet Design for the Controlled
-  Welcome Flow Proof. It connects approved private new-follower evidence to a
-  private candidate queue boundary, final already-welcomed/send-history check,
-  approved audio asset boundary, sandbox send approval packet, reply/email
-  handoff separation, MailerLite separation, CRM enrichment separation, storage
-  policy, approval phrases, stop conditions, and closed-gate boundaries. No
-  candidate queue, candidate set, approval packet, send, DM opening, source
-  action, private artifact inspection, Mantis memory write, or CRM/source write
-  is authorized.
+- `proposed_integration_note`: Welcome Audio lane now has a no-run First
+  Controlled Execution Approval Packet Design for the Controlled Welcome Flow
+  Proof. It defines the future approval surface for one controlled sandbox
+  welcome-audio send to an Alejandro-owned or controlled test account, while
+  keeping controlled evidence, candidate queue generation, approved audio asset
+  confirmation, final already-welcomed/send-history check, final
+  dedupe/suppression check, reply monitoring, email handoff, MailerLite preview,
+  and CRM enrichment/write boundaries separate. It uses the exact future
+  Instagram private source artifact root
+  `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/`
+  and creates no real state or source/action authority. No candidate queue,
+  candidate set, approval packet, send, DM opening, source action, private
+  artifact inspection, Mantis memory write, or CRM/source write is authorized.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
