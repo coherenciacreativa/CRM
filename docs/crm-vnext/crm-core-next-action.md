@@ -3338,6 +3338,64 @@ routing and completion pointer.
   - `docs/crm-vnext/crm-core-integration-queue-v0.md`
   - `docs/crm-vnext/workstreams/integration.md`
 
+## Completed Next Action
+
+- `next_action_id`: `crm_core_chief_architect_integration_target_bootstrap_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `result`: Chief Architect Integration Consultant target registered and
+  handshake-confirmed.
+- `findings`:
+  - `target_id` `chief-architect-integration` registered in private target
+    registry.
+  - Target handshake confirmed.
+  - `lock_acquired_count`: `5`
+  - `lock_released_count`: `5`
+  - `stale_lock_detected`: `false`
+  - `owner_token_recorded_in_receipt`: `false`
+  - Raw target URL printed: `false`
+  - `used_crm_core_reports`: `true`
+  - `used_mantis_reports`: `false`
+  - `used_mantis_memory`: `false`
+  - Repo files edited: `false`
+  - No source actions occurred.
+  - No `/Users/alejandrogomez/CRM` use occurred.
+
+## Completed Next Action
+
+- `next_action_id`: `crm_core_central_integration_self_service_protocol_design_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `result`: Central Integration Self-Service Protocol v0 created.
+- `completion_artifacts`:
+  - `docs/crm-vnext/crm-core-central-integration-self-service-protocol-v0.md`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+- `findings`:
+  - Protocol defines lane Codex self-service central integration eligibility.
+  - Protocol defines Chief Architect Integration Consultant relay requirement.
+  - Protocol defines integration packet schema and Chief Architect response
+    schema.
+  - Protocol defines Central Integration Lock requirement.
+  - Protocol does not enable autonomous self-integration until Central
+    Integration Lock v0 exists or Alejandro explicitly approves one-off central
+    integration.
+  - Central integration remains single-threaded.
+  - Source/live actions remain separately approval-gated.
+  - No UI relay execution occurred in this task.
+  - No APIs, Instagram, DM, welcome audio, MailerLite, Gmail, Meta Business
+    Suite, private artifact inspection, candidate queue, CRM/source write,
+    Launch OS doc, Mantis memory, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core has a no-run central self-service
+  integration protocol that can later allow lane Codex workers to assume a
+  guarded Central Integration Worker role after lane consultant green, Chief
+  Architect green, central lock acquisition, central file-scope checks, and
+  strict stop conditions.
+
 ## Active Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_evidence_design_next_step_selection_v0`
@@ -3388,5 +3446,8 @@ routing and completion pointer.
   6. Pause.
 - `recommended_default`: Controlled Candidate Queue And Sandbox Send Approval
   Packet Design.
+- `infrastructure_note`: Central Integration Self-Service Protocol now exists,
+  but autonomous self-integration remains blocked until Central Integration
+  Lock v0 is created or Alejandro approves a one-off central integration.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   Proof step or pauses.

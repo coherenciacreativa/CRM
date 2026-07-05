@@ -154,6 +154,17 @@
     Packet Design integration
   - next central task: choose next Controlled Welcome Flow Proof step
   - no execution occurred during protocol design
+  - Chief Architect Integration Consultant target registered and
+    handshake-confirmed
+  - Central Integration Self-Service Protocol v0 created
+  - Lane Codex workers may later ask Chief Architect Integration Consultant for
+    `green_to_self_integrate`
+  - Self-integration is not fully enabled until Central Integration Lock v0
+    exists or Alejandro approves one-off central integration
+  - Central integration remains single-threaded
+  - Source/live actions remain separately approval-gated
+  - No execution occurred during Central Integration Self-Service Protocol
+    design
 - `latest_commit`: pending
 - `latest_receipt`: none
 - `blockers`: next Controlled Welcome Flow Proof step not yet selected

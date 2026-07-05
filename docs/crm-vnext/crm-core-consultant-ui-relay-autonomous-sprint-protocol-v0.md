@@ -121,6 +121,29 @@ preferred v0 target route when available.
   a legacy continuity path until re-registered. Future registry writes should
   prefer CRM-Core-Private-Artifacts.
 
+## Chief Architect Integration Relay
+
+Lane Codex workers may use the confirmed `chief-architect-integration`
+consultant target for central integration review packets.
+
+This target is for central integration review only, not lane artifact review.
+
+Chief Architect Integration Consultant may return `green_to_self_integrate`
+only under the Central Integration Self-Service Protocol.
+
+Consultant UI Relay Lock v0 is required for the relay critical sections.
+
+Central integration remains single-threaded.
+
+Actual self-integration is not fully enabled until Central Integration Lock v0
+exists or Alejandro explicitly approves a one-off central integration.
+
+Reference:
+
+```text
+docs/crm-vnext/crm-core-central-integration-self-service-protocol-v0.md
+```
+
 ## Consultant Relay Lock v0
 
 CRM Core may allow multiple lane workers to prepare work in parallel, but
