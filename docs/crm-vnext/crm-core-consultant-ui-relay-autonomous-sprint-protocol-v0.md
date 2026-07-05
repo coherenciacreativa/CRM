@@ -121,6 +121,93 @@ preferred v0 target route when available.
   a legacy continuity path until re-registered. Future registry writes should
   prefer CRM-Core-Private-Artifacts.
 
+## Consultant Relay Lock v0
+
+CRM Core may allow multiple lane workers to prepare work in parallel, but
+Chrome/clipboard/Copy-button/target-registry critical sections must be
+serialized.
+
+The lock is required before any operation that uses:
+
+- macOS clipboard;
+- Chrome consultant UI;
+- ChatGPT composer paste;
+- ChatGPT Copy button;
+- private target registry write/update;
+- consultant response capture.
+
+Default lock path:
+
+```text
+/Users/alejandrogomez/Documents/CRM-Core-Reports/consultant-relay/.relay-lock
+```
+
+Utility:
+
+```text
+scripts/crm-vnext-consultant-relay-lock.mjs
+```
+
+Package script:
+
+```text
+npm run crm:vnext:consultant-relay-lock -- <command>
+```
+
+The utility uses atomic `mkdir` for acquisition. Lock metadata must be
+redacted. Raw target URLs must never be stored in lock metadata, receipts,
+tracked docs, or returned output.
+
+Owner token may be returned only to the process that acquired the lock; lock
+metadata stores only token hash. Release requires a matching owner token.
+
+Stale locks are reported but not automatically broken in v0. A stale lock
+requires Alejandro / Chief Architect decision or a future explicit stale-lock
+cleanup boundary.
+
+Hold the lock only for short critical sections. Release the lock before waiting
+for consultant response. Do not hold the lock for the full 45-minute sprint.
+Waiting for consultant thinking/generation does not require the lock.
+
+Preparing docs, writing lane artifacts, running `git diff --check`, applying
+mechanical fixes, and committing lane-local docs do not require the lock.
+
+If lock cannot be acquired within bounded wait, stop and report. If a lane
+crashes while holding a lock, the next lane must report stale/held lock and stop
+unless a separate stale-lock cleanup is approved.
+
+The lock coordinates Codex workers, not Alejandro's manual browser use; if
+Alejandro is using Chrome during a critical section, stop or wait.
+
+### Critical Section Pattern
+
+1. Acquire lock.
+2. Open/direct target or focus confirmed consultant route.
+3. Paste/send packet or use Copy button/capture reply.
+4. Validate immediate UI result if applicable.
+5. Release lock.
+6. Wait for consultant response without lock.
+7. Re-acquire lock for capture.
+8. Copy response.
+9. Release lock.
+10. Validate packet_id, consultant_id, verdict, and sentinel outside or after
+    critical section.
+
+### Parallelism Rule
+
+Multiple lanes may work concurrently on local docs, task packet preparation,
+artifact drafting, and waiting for consultant responses.
+
+Only one lane may perform consultant UI relay critical sections at a time.
+
+Central integration remains single-threaded.
+
+Source/live actions remain single-threaded and separately approval-gated.
+
+Consultant UI relay parallelism does not authorize source actions, APIs, DMs,
+welcome audio sends, MailerLite/Gmail access, private artifact inspection,
+candidate queue generation, or CRM/source writes.
+
 ## Canonical Transport
 
 Canonical v0 accepts target routes in this priority order:
@@ -132,6 +219,7 @@ Canonical v0 accepts target routes in this priority order:
 
 For any accepted target route, the transport remains:
 
+- Before using Chrome/clipboard/Copy button, acquire Consultant Relay Lock v0.
 - Chrome only.
 - Dedicated consultant chat.
 - Visible target confirmation or handshake required.
@@ -341,12 +429,15 @@ Receipts may include:
 - recovery steps.
 - verdicts.
 - commits.
+- `lock_acquired`: boolean.
+- `lock_released`: boolean.
 - blockers.
 - next step.
 
 Receipts must not include:
 
 - unrelated ChatGPT content.
+- lock owner token.
 - private chats.
 - private artifacts.
 - source data.

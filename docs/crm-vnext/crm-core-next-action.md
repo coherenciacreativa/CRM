@@ -3253,6 +3253,42 @@ routing and completion pointer.
   - `docs/crm-vnext/instagram-welcome-audio-sandbox-send-strategy-design-v0.md`
   - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
 
+## Completed Next Action
+
+- `next_action_id`: `crm_core_consultant_relay_lock_utility_design_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-03`
+- `updated_at`: `2026-07-03`
+- `completed_at`: `2026-07-03`
+- `result`: Consultant Relay Lock v0 utility and protocol update created.
+- `completion_artifacts`:
+  - `scripts/crm-vnext-consultant-relay-lock.mjs`
+  - `__tests__/crm-vnext-consultant-relay-lock.spec.ts`
+  - `package.json`
+  - `docs/crm-vnext/crm-core-consultant-ui-relay-autonomous-sprint-protocol-v0.md`
+- `findings`:
+  - Relay lock utility created.
+  - Utility serializes Chrome/clipboard/Copy-button/target-registry critical
+    sections.
+  - Utility uses atomic lock directory creation.
+  - Utility stores redacted lock metadata only.
+  - Utility rejects raw ChatGPT conversation URLs in arguments/metadata.
+  - Utility uses owner token hash in lock metadata.
+  - Utility refuses wrong-token release.
+  - Utility reports stale locks but does not break them automatically in v0.
+  - Tests use `/tmp` only and do not touch real CRM-Core-Reports.
+  - Protocol updated to allow local lane work in parallel while serializing UI
+    relay critical sections.
+  - No UI relay execution occurred.
+  - No Chrome, Safari, Firefox, UI, Computer Use, `@Chrome`, APIs, Instagram,
+    DM, welcome audio, MailerLite, Gmail, Meta Business Suite, private artifact
+    inspection, candidate queue, CRM/source write, Launch OS doc, Mantis memory,
+    OpenClaw/Mantis workspace, or `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core has a local Consultant Relay Lock utility
+  and protocol that can coordinate multiple Codex lane workers by serializing
+  shared Chrome/clipboard consultant relay critical sections without
+  authorizing source actions or live execution.
+
 ## Active Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_next_proof_step_selection_v0`
