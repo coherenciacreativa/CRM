@@ -45,28 +45,33 @@
   - completed no-run prior-art review packet design
   - completed no-run welcome-audio sandbox send strategy design
   - completed no-run controlled new-follower evidence packet design
+  - completed no-run controlled candidate queue and sandbox send approval packet
+    design
+  - completed no-run reply monitoring and email handoff boundary design
   - new artifacts:
     - `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`
     - `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`
     - `docs/crm-vnext/instagram-meta-api-prior-art-review-packet-v0.md`
     - `docs/crm-vnext/instagram-controlled-new-follower-evidence-packet-design-v0.md`
+    - `docs/crm-vnext/instagram-welcome-audio-controlled-candidate-queue-and-sandbox-send-approval-packet-design-v0.md`
+    - `docs/crm-vnext/instagram-reply-monitoring-email-handoff-boundary-design-v0.md`
   - no API calls, UI, Computer Use, `@Chrome`, Instagram, Meta Business Suite,
     MailerLite, Gmail, private artifact inspection, DMs, welcome audio,
     candidate queue generation, CRM/source writes, Launch OS docs, or
     `/Users/alejandrogomez/CRM` use occurred
-  - next suggested task: selected-task artifact consultant review for the
-    controlled new-follower evidence packet design, then lane-local commit if
+  - next suggested task: selected-task artifact consultant review for the reply
+    monitoring and email handoff boundary design, then lane-local commit if
     green
   - no execution gates: no API calls, no Meta Business Suite, no tokens, no
     secrets, no webhook setup, no UI
   - keep follower-source UI repair parked
-- `latest_commit`: pending controlled new-follower evidence packet design
+- `latest_commit`: pending reply monitoring and email handoff boundary design
   lane-local commit
 - `latest_receipt`: none
 - `blockers`: setup remains partial/unknown; live API calls remain unapproved
-- `next_approval_needed`: approve selected-task artifact review for the
-  controlled new-follower evidence packet design, then approve central
-  integration separately if desired
+- `next_approval_needed`: approve selected-task artifact review for the reply
+  monitoring and email handoff boundary design, then Chief Architect
+  self-integration review if green
 - `proposed_integration_note`: Integrate
   `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`,
   `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`, and
@@ -81,6 +86,16 @@
   Fact Store, scoring, source actions, Launch OS, Mantis memory, and
   `/Users/alejandrogomez/CRM` closed. No API calls, UI access, Meta Business
   Suite access, secrets, webhooks, DMs, welcome audio, candidate queue
-  generation, CRM/source writes, or central CRM edits are authorized.
+  generation, CRM/source writes, or central CRM edits are authorized. Also
+  integrate
+  `docs/crm-vnext/instagram-reply-monitoring-email-handoff-boundary-design-v0.md`
+  as a lane-owned, no-run Controlled Welcome Flow Proof artifact after
+  consultant green. It connects a future approved welcome audio send receipt to
+  private reply evidence, email/name/city/country/phone handoff candidate
+  classification, assistant reply policy design, MailerLite no-write payload
+  preview, and CRM enrichment preview while keeping DM opening, reply
+  monitoring, MailerLite/Gmail access, CRM/source writes, outreach, source
+  actions, Launch OS, Mantis memory, OpenClaw/Mantis workspace, and
+  `/Users/alejandrogomez/CRM` closed.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
