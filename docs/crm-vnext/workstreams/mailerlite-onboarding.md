@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `setup_inventory_answer_intake_packet_drafted`
+- `status`: `no_write_payload_preview_alignment_drafted`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -63,15 +63,27 @@
   - answer-intake packet defines safe answer types, forbidden content,
     validation rules, blocker handling, redacted receipt behavior, future
     approval phrases, stop conditions, and closed gates.
+  - consultant UI relay pilot selected and drafted no-run no-write payload
+    preview alignment:
+    `docs/crm-vnext/mailerlite-onboarding-no-write-payload-preview-alignment-v0.md`
+  - payload preview alignment connects approved private email handoff evidence
+    to MailerLite preview schema, field/group/automation mapping, idempotency,
+    suppression/status checks, redacted receipt behavior, future approval
+    phrases, stop conditions, and closed gates.
+  - no real private payload was prepared and no MailerLite API/UI/source action
+    occurred.
   - no execution gates: no MailerLite API, no MailerLite UI, no Gmail, no
     Instagram, no secrets, no CRM writes
 - `latest_commit`: pending
 - `latest_receipt`: none
 - `blockers`: setup inventory collection still requires exact Alejandro
   approval; read-only setup verification remains unexecuted and requires exact
-  separate approval
-- `next_approval_needed`: approve no-secret setup inventory collection or
-  approve one read-only no-secret MailerLite setup verification
+  separate approval; no-write payload preview execution requires an explicitly
+  approved private email handoff evidence packet
+- `next_approval_needed`: central integration review for the no-write payload
+  preview alignment, then choose setup inventory collection, read-only
+  no-secret setup verification, or a later no-write payload preview from an
+  approved private evidence packet
 - `proposed_integration_note`: no central file change required for this lane
   doc update. After review, Integration may record that the MailerLite lane has
   a dedicated no-secret setup inventory packet design at
@@ -83,6 +95,12 @@
   read-only API verification remain unexecuted and require exact Alejandro
   approval. The lane now also has a no-run answer-intake packet at
   `docs/crm-vnext/mailerlite-onboarding-setup-inventory-answer-intake-packet-v0.md`
-  for safe future collection of no-secret setup answers.
+  for safe future collection of no-secret setup answers. The lane also has a
+  no-run no-write payload preview alignment at
+  `docs/crm-vnext/mailerlite-onboarding-no-write-payload-preview-alignment-v0.md`
+  connecting approved private email handoff evidence to MailerLite preview
+  schema, mapping, idempotency, suppression/status checks, redacted receipts,
+  and future approval boundaries without preparing a real private payload or
+  calling MailerLite.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
