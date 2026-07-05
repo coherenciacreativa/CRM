@@ -324,6 +324,47 @@ No lane outputs in review at creation.
 - `integration_recommendation`: self-integration pilot succeeded if all checks
   pass; keep MailerLite mutation/source/action gates closed.
 
+### instagram_crm_identity_enrichment_packet_boundary_p2_parallel_pilot_2026-07-05
+
+- `source_workstream`: `instagram-api-readiness`
+- `source_branch`: `codex/crm-core-instagram-crm-enrichment-boundary-parallel`
+- `branch_mode`: `temporary_parallel`
+- `commits`:
+  - `22a86feb150b9db03c2d2c4f9e2691ef5099d706`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-crm-identity-enrichment-packet-boundary-v0.md`
+  - `docs/crm-vnext/workstreams/instagram-api-readiness.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Integrated the Identity / CRM Enrichment Packet Boundary as a P2
+  temporary-parallel docs-only self-integration pilot.
+- `tests_or_checks`: `git diff --check`; raw target URL check; owner token
+  check
+- `lane_consultant_verdict`: `green_to_commit_later`
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `central_integration_lock_used`: true
+- `private_artifacts_touched`: consultant_target_registry_only_by_lane
+- `private_artifacts_integrated`: false
+- `used_crm_core_reports`: lane_only
+- `used_mantis_reports`: false
+- `used_mantis_memory`: false
+- `source_actions_executed`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `signal_event_ledger_writes`: false
+- `engagement_snapshot_ledger_writes`: false
+- `source_result_ledger_writes`: false
+- `scoring_writes`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow Proof step
+- `integration_recommendation`: P2 temporary-parallel self-integration
+  succeeded if all checks pass; keep source/action/CRM write gates closed.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

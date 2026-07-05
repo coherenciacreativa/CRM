@@ -222,12 +222,33 @@
   - Source/live actions remain separately approval-gated
   - No execution occurred during Parallel Full-Power Lane Coordination Protocol
     creation
-- `latest_commit`: pending
-- `latest_receipt`: none
-- `blockers`: next Controlled Welcome Flow Proof step after MailerLite
-  no-write payload preview alignment not yet selected
+  - Identity / CRM Enrichment Packet Boundary integrated from a P2 temporary
+    parallel branch
+  - source branch merged:
+    `codex/crm-core-instagram-crm-enrichment-boundary-parallel`
+  - source commit:
+    `22a86feb150b9db03c2d2c4f9e2691ef5099d706`
+  - Chief Architect Integration Consultant returned `green_to_self_integrate`
+  - Central Integration Lock v0 was used
+  - central coordination/proof files updated:
+    - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no source execution occurred during Identity / CRM Enrichment Packet
+    Boundary integration
+  - no CRM enrichment packet was generated from real data
+  - no card, Fact Store, Signal Event Ledger, Engagement Snapshot Ledger,
+    source-result ledger, or scoring write occurred
+  - next central task: choose next Controlled Welcome Flow Proof step after
+    identity enrichment boundary integration
+- `latest_commit`: pending identity/CRM enrichment boundary central commit
+- `latest_receipt`: pending central-integration receipt
+- `blockers`: next Controlled Welcome Flow Proof step after identity/CRM
+  enrichment packet boundary not yet selected
 - `next_approval_needed`: choose the next Controlled Welcome Flow Proof step
-  after MailerLite no-write payload preview alignment, or pause
+  after identity/CRM enrichment boundary integration, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

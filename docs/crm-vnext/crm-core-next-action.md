@@ -3702,21 +3702,59 @@ routing and completion pointer.
   central-lock revalidation, integration queue fan-in, temporary branch
   integration, closeout schema, and stop conditions.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_mailerlite_payload_preview_next_step_selection_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `selected_step`: Future Identity / CRM Enrichment Packet Boundary.
+- `result`: Identity / CRM Enrichment Packet Boundary integrated as a no-run
+  P2 temporary-parallel docs-only self-integration pilot.
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-crm-identity-enrichment-packet-boundary-v0.md`
+- `source_branch`:
+  `codex/crm-core-instagram-crm-enrichment-boundary-parallel`
+- `source_commit`:
+  `22a86feb150b9db03c2d2c4f9e2691ef5099d706`
+- `findings`:
+  - Lane consultant verdict was `green_to_commit_later`.
+  - Chief Architect verdict was `green_to_self_integrate`.
+  - Central Integration Lock v0 was acquired and released.
+  - Artifact defines a future no-write CRM identity/enrichment packet boundary.
+  - Existing CRM Core person-card, source-result, Fact Store, Signal Event
+    Ledger, Engagement Snapshot Ledger, scoring, and next-best-action layers
+    remain the canonical architecture.
+  - No duplicate CRM architecture was created.
+  - No CRM enrichment packet was generated from real data.
+  - No private artifacts were integrated.
+  - No source execution occurred.
+  - No CRM/source writes, card writes, Fact Store writes, Signal Event Ledger
+    writes, Engagement Snapshot Ledger writes, source-result ledger writes, or
+    scoring writes occurred.
+  - No Mantis memory, Launch OS doc, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: Alejandro chose the future identity/CRM enrichment
+  packet boundary as the next Controlled Welcome Flow Proof step and CRM Core
+  integrated the no-run boundary artifact.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_identity_enrichment_boundary_next_step_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
 - `objective`: Choose the next Controlled Welcome Flow Proof step after
-  integrating the MailerLite No-Write Payload Preview Alignment, or pause.
+  integrating the Identity / CRM Enrichment Packet Boundary, or pause.
 - `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, Welcome
   Audio sandbox send strategy, Controlled New-Follower Evidence Packet Design,
   Controlled Candidate Queue And Sandbox Send Approval Packet Design, Reply
-  Monitoring / Email Handoff Boundary Design, and MailerLite No-Write Payload
-  Preview Alignment. The next useful step is to define the future identity/CRM
-  enrichment packet boundary, assistant reply policy, first controlled
-  execution approval packet, or pause.
+  Monitoring / Email Handoff Boundary Design, MailerLite No-Write Payload
+  Preview Alignment, and Identity / CRM Enrichment Packet Boundary. The next
+  useful step is to design assistant reply policy, prepare the first controlled
+  execution approval packet, advance MailerLite setup inventory collection, or
+  pause.
 - `allowed_scope`:
   - Present next proof-step options.
   - Recommend one next docs-only step.
@@ -3736,23 +3774,30 @@ routing and completion pointer.
   - No welcome audio.
   - No private artifact inspection.
   - No candidate queue generation.
+  - No CRM enrichment packet generation from real data.
   - No source actions.
   - No CRM/source writes.
+  - No card writes.
+  - No Fact Store writes.
+  - No Signal Event Ledger writes.
+  - No Engagement Snapshot Ledger writes.
+  - No source-result ledger writes.
+  - No scoring writes.
+  - No next-best-action execution.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No Mantis memory.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. Future Identity / CRM Enrichment Packet Boundary.
-  2. Assistant Reply Policy Design.
-  3. First Controlled Execution Approval Packet.
-  4. MailerLite setup inventory collection approval.
-  5. Pause.
-- `recommended_default`: Future Identity / CRM Enrichment Packet Boundary.
+  1. Assistant Reply Policy Design.
+  2. First Controlled Execution Approval Packet.
+  3. MailerLite setup inventory collection approval.
+  4. Pause.
+- `recommended_default`: Assistant Reply Policy Design.
 - `infrastructure_note`: Parallel Full-Power Lane Coordination Protocol now
   exists, but full-power multi-lane self-integration should be piloted only
   with docs-only, no-run, lane-owned artifacts and must follow freshness-token
   and central-lock revalidation rules.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
-  Proof step or pauses.
+  Proof step after identity/CRM enrichment boundary integration or pauses.
