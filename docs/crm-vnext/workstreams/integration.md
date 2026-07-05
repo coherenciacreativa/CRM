@@ -187,11 +187,23 @@
   - No source actions occurred
   - No private artifacts integrated
   - Next central task: choose next Controlled Welcome Flow Proof step
+  - Reply Monitoring And Email Handoff Boundary Design integrated
+  - Chief Architect Integration Consultant returned `green_to_self_integrate`
+  - Central Integration Lock v0 was used
+  - Central integration remained single-threaded
+  - Source/live actions remained separately approval-gated
+  - No reply monitoring occurred
+  - No DM opened
+  - No email handoff extraction occurred
+  - No source actions occurred
+  - No private artifacts integrated
+  - Next central task: choose next Controlled Welcome Flow Proof step
 - `latest_commit`: pending
 - `latest_receipt`: none
-- `blockers`: next Controlled Welcome Flow Proof step not yet selected
-- `next_approval_needed`: choose the next Controlled Welcome Flow Proof step,
-  or pause
+- `blockers`: next Controlled Welcome Flow Proof step after reply handoff design
+  not yet selected
+- `next_approval_needed`: choose the next Controlled Welcome Flow Proof step
+  after reply handoff design, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

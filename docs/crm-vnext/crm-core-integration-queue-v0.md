@@ -257,6 +257,38 @@ No lane outputs in review at creation.
 - `integration_recommendation`: self-integration pilot succeeded if all checks
   pass; keep source/action gates closed.
 
+### instagram_reply_monitoring_email_handoff_boundary_self_integration_pilot_2026-07-05
+
+- `source_workstream`: `instagram-api-readiness`
+- `source_branch`: `codex/crm-core-instagram-api`
+- `commits`:
+  - `ac37371fab852d5a2a45bdb8e3f8f70357ed612c`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-reply-monitoring-email-handoff-boundary-design-v0.md`
+  - `docs/crm-vnext/workstreams/instagram-api-readiness.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Integrated the Reply Monitoring And Email Handoff Boundary Design
+  as a docs-only self-integration pilot.
+- `tests_or_checks`: `git diff --check`
+- `lane_consultant_verdict`: `green_to_commit_later`
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `central_integration_lock_used`: true
+- `private_artifacts_touched`: consultant_target_registry_only_by_lane
+- `private_artifacts_integrated`: false
+- `used_crm_core_reports`: lane_only
+- `used_mantis_reports`: false
+- `used_mantis_memory`: false
+- `source_actions_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow Proof step
+- `integration_recommendation`: self-integration pilot succeeded if all checks
+  pass; keep source/action gates closed.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
@@ -264,7 +296,7 @@ No lane outputs rejected at creation.
 ## CEO Decision Required
 
 Decision required: choose the next Controlled Welcome Flow Proof step after the
-Controlled Candidate Queue And Sandbox Send Approval Packet Design, or pause.
+Reply Monitoring And Email Handoff Boundary Design, or pause.
 Prior lane approval options remain available for:
 
 - `mailerlite-onboarding`

@@ -3515,12 +3515,32 @@ routing and completion pointer.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   Proof step or pauses.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_candidate_send_design_next_step_selection_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `findings`:
+  - Next proof step selected: Reply Monitoring And Email Handoff Boundary
+    Design.
+  - Artifact:
+    `docs/crm-vnext/instagram-reply-monitoring-email-handoff-boundary-design-v0.md`.
+  - Lane commit: `ac37371fab852d5a2a45bdb8e3f8f70357ed612c`.
+  - Lane consultant verdict: `green_to_commit_later`.
+  - Chief Architect Integration Consultant verdict: `green_to_self_integrate`.
+  - Central Integration Lock v0 used.
+  - No reply monitoring occurred.
+  - No DM opened.
+  - No email handoff extraction occurred.
+  - No source execution occurred.
+  - No source actions occurred.
+  - No facts collected from Alejandro.
+  - No private artifacts integrated.
+  - No CRM/source writes.
+  - No Mantis memory.
+  - No `/Users/alejandrogomez/CRM`.
 - `objective`: Choose the next Controlled Welcome Flow Proof step after
   integrating the Controlled Candidate Queue And Sandbox Send Approval Packet
   Design and proving the first docs-only self-integration pilot, or pause.
@@ -3566,5 +3586,56 @@ routing and completion pointer.
   4. First Self-Integration Pilot Review.
   5. Pause.
 - `recommended_default`: Reply Monitoring / Email Handoff Boundary Design.
+- `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
+  Proof step or pauses.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_reply_handoff_design_next_step_selection_v0`
+- `status`: `active`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `objective`: Choose the next Controlled Welcome Flow Proof step after
+  integrating the Reply Monitoring And Email Handoff Boundary Design, or pause.
+- `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, Welcome
+  Audio sandbox send strategy, Controlled New-Follower Evidence Packet Design,
+  Controlled Candidate Queue And Sandbox Send Approval Packet Design, and Reply
+  Monitoring / Email Handoff Boundary Design. The next useful step is to connect
+  email handoff to MailerLite no-write payload preview, define future
+  identity/CRM enrichment, design assistant reply policy, prepare first
+  controlled execution approval packet, or pause.
+- `allowed_scope`:
+  - Present next proof-step options.
+  - Recommend one next docs-only step.
+  - Answer clarifying questions.
+  - No execution.
+- `forbidden_scope`:
+  - No UI relay execution.
+  - No UI, Computer Use, or `@Chrome`.
+  - No APIs.
+  - No Instagram.
+  - No MailerLite.
+  - No Gmail.
+  - No Meta Business Suite.
+  - No app configuration.
+  - No webhook setup.
+  - No DMs.
+  - No welcome audio.
+  - No private artifact inspection.
+  - No candidate queue generation.
+  - No source actions.
+  - No CRM/source writes.
+  - No branch/worktree changes unless separately approved.
+  - No Launch OS docs.
+  - No Mantis memory.
+  - No OpenClaw/Mantis workspace.
+  - No `/Users/alejandrogomez/CRM`.
+- `options_to_present`:
+  1. MailerLite No-Write Payload Preview Alignment.
+  2. Future Identity / CRM Enrichment Packet Boundary.
+  3. Assistant Reply Policy Design.
+  4. First Controlled Execution Approval Packet.
+  5. Pause.
+- `recommended_default`: MailerLite No-Write Payload Preview Alignment.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   Proof step or pauses.
