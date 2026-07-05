@@ -188,6 +188,43 @@ No lane outputs in review at creation.
   recommended proof step is controlled new-follower evidence packet design,
   unless Alejandro prefers MailerLite or Instagram API readiness.
 
+### controlled_new_follower_evidence_packet_design_pilot_1_2026-07-05
+
+- `source_workstream`: `instagram-api-readiness`
+- `source_branch`: `codex/crm-core-instagram-api`
+- `commits`:
+  - `735c329ec62e141ffb38d269e8dea47c52ba194b`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-controlled-new-follower-evidence-packet-design-v0.md`
+  - `docs/crm-vnext/workstreams/instagram-api-readiness.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Integrated the Controlled New-Follower Evidence Packet Design as
+  the second plan-aligned Controlled Welcome Flow Proof lane sprint and first
+  product sprint to use Consultant Relay Lock v0 successfully.
+- `tests_or_checks`: `git diff --check`
+- `consultant_relay_lock_used`: true
+- `lock_acquired_count`: `13`
+- `lock_released_count`: `13`
+- `stale_lock_detected`: false
+- `owner_token_recorded_in_receipt`: false
+- `private_artifacts_touched`: consultant_target_registry_written_or_updated_by_lane_only
+- `private_artifacts_integrated`: false
+- `used_crm_core_reports`: lane_only
+- `used_mantis_reports`: false
+- `used_mantis_memory`: false
+- `source_actions_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow Proof step
+- `integration_recommendation`: keep source/action gates closed; next
+  recommended proof step is controlled candidate queue and sandbox send
+  approval packet refinement, unless Alejandro prefers MailerLite no-write
+  payload preview or reply/email handoff boundary design.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

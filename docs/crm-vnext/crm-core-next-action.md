@@ -3289,18 +3289,70 @@ routing and completion pointer.
   shared Chrome/clipboard consultant relay critical sections without
   authorizing source actions or live execution.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_next_proof_step_selection_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-03`
-- `updated_at`: `2026-07-03`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
 - `objective`: Choose the next Controlled Welcome Flow Proof step after the
   Welcome Audio sandbox send strategy design, or pause.
-- `why_now`: The Controlled Welcome Flow Proof plan exists and the first
-  plan-aligned Welcome Audio sandbox send strategy sprint is integrated. CRM
-  Core should now choose the next docs-only step that moves toward a safe
-  controlled proof without executing source actions.
+- `result`: Controlled New-Follower Evidence Packet Design selected and
+  integrated as the second plan-aligned lane sprint.
+- `findings`:
+  - The next Controlled Welcome Flow Proof step selected was Controlled
+    New-Follower Evidence Packet Design.
+  - Task:
+    `crm_core_controlled_new_follower_evidence_packet_design_v0`.
+  - Artifact:
+    `docs/crm-vnext/instagram-controlled-new-follower-evidence-packet-design-v0.md`.
+  - Commit:
+    `735c329ec62e141ffb38d269e8dea47c52ba194b`.
+  - Consultant Relay Lock v0 was used:
+    - `lock_acquired_count`: `13`
+    - `lock_released_count`: `13`
+    - `stale_lock_detected`: `false`
+    - `owner_token_recorded_in_receipt`: `false`
+  - Task packet review returned `green_to_execute_task_packet_later`.
+  - Artifact review returned `green_to_commit_later`.
+  - Mechanical fix cycles used: `0`.
+  - No execution occurred.
+  - No source actions occurred.
+  - No facts were collected from Alejandro.
+  - No private artifacts were inspected beyond the explicit target registry.
+  - No candidate queue was generated.
+  - No DM opened.
+  - No welcome audio sent.
+  - No Instagram action occurred.
+  - No Meta Business Suite/app/webhook access occurred.
+  - No MailerLite/Gmail access occurred.
+  - No CRM/source writes occurred.
+  - No folders outside repo were created by central integration.
+  - Storage/operator boundary policy remains in force.
+  - Consultant Relay Lock v0 is now proven in one product sprint.
+- `completion_artifacts`:
+  - `docs/crm-vnext/instagram-controlled-new-follower-evidence-packet-design-v0.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_evidence_design_next_step_selection_v0`
+- `status`: `active`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `objective`: Choose the next Controlled Welcome Flow Proof step after
+  integrating the Controlled New-Follower Evidence Packet Design, or pause.
+- `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, the
+  Welcome Audio sandbox send strategy design, and the Controlled New-Follower
+  Evidence Packet Design. Consultant Relay Lock v0 has also been proven in a
+  product sprint. The next useful step is to choose whether to refine the
+  controlled candidate queue/send approval packet, design reply/email handoff,
+  align MailerLite no-write payload preview, define future identity/CRM
+  enrichment, or pause before execution boundaries.
 - `allowed_scope`:
   - Present next proof-step options.
   - Recommend one next docs-only step.
@@ -3328,12 +3380,13 @@ routing and completion pointer.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. Controlled New-Follower Evidence Packet Design.
-  2. Welcome Audio Sandbox Send Approval Packet refinement.
-  3. Reply Monitoring / Email Handoff Boundary design.
-  4. MailerLite no-write payload preview alignment.
-  5. Future Identity / CRM enrichment packet boundary.
+  1. Controlled Candidate Queue And Sandbox Send Approval Packet Design.
+  2. Reply Monitoring / Email Handoff Boundary Design.
+  3. MailerLite No-Write Payload Preview Alignment.
+  4. Future Identity / CRM Enrichment Packet Boundary.
+  5. Parallel two-lane relay pilot using Consultant Relay Lock v0.
   6. Pause.
-- `recommended_default`: Controlled New-Follower Evidence Packet Design.
+- `recommended_default`: Controlled Candidate Queue And Sandbox Send Approval
+  Packet Design.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   Proof step or pauses.

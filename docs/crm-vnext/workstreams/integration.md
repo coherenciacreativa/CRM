@@ -132,6 +132,27 @@
   - Source/live actions remain separately approval-gated
   - No UI relay execution occurred during relay lock utility creation
   - No source actions occurred during relay lock utility creation
+  - Controlled New-Follower Evidence Packet Design integrated
+  - This was the second plan-aligned lane sprint for the Controlled Welcome Flow
+    Proof
+  - This was the first product sprint using Consultant Relay Lock v0
+  - Consultant Relay Lock v0 succeeded:
+    - `lock_acquired_count`: `13`
+    - `lock_released_count`: `13`
+    - `stale_lock_detected`: `false`
+    - `owner_token_recorded_in_receipt`: `false`
+  - CRM-Core-Reports was used by the lane for development telemetry
+  - Mantis-Reports and Mantis memory were not used
+  - source branch merged: `codex/crm-core-instagram-api`
+  - central coordination/proof files updated:
+    - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+    - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+    - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+    - `docs/crm-vnext/crm-core-next-action.md`
+    - `docs/crm-vnext/workstreams/integration.md`
+  - no lane source execution occurred during Controlled New-Follower Evidence
+    Packet Design integration
+  - next central task: choose next Controlled Welcome Flow Proof step
   - no execution occurred during protocol design
 - `latest_commit`: pending
 - `latest_receipt`: none

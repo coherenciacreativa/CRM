@@ -251,13 +251,44 @@ M0 - Plan only: complete.
 First plan-aligned Track B sprint - Welcome Audio sandbox send strategy: complete
 as no-run design.
 
+Track A controlled evidence packet design: complete as no-run design.
+
 M1 - Alejandro supplies non-secret setup/test facts.
 
-M2 - Controlled evidence packet design.
+M2 - Controlled evidence packet design: complete as no-run design.
 
 M3 - Sandbox send packet design.
 
 M4 - Future exact approval for controlled send proof.
+
+## Second Lane Sprint Result — Controlled New-Follower Evidence Packet Design
+
+- The second plan-aligned lane sprint selected was Controlled New-Follower
+  Evidence Packet Design.
+- The task id was:
+  `crm_core_controlled_new_follower_evidence_packet_design_v0`.
+- Source commit:
+  `735c329ec62e141ffb38d269e8dea47c52ba194b`.
+- Artifact:
+  `docs/crm-vnext/instagram-controlled-new-follower-evidence-packet-design-v0.md`.
+- The task packet review returned `green_to_execute_task_packet_later`.
+- The produced artifact received `green_to_commit_later`.
+- No mechanical artifact fix cycle was required.
+- Consultant Relay Lock v0 was used successfully:
+  - `lock_acquired_count`: `13`
+  - `lock_released_count`: `13`
+  - `stale_lock_detected`: `false`
+  - `owner_token_recorded_in_receipt`: `false`
+- CRM-Core-Reports was used by the lane for development telemetry.
+- Mantis-Reports and Mantis memory were not used.
+- No source execution occurred.
+- No facts were collected from Alejandro.
+- No API, source UI, Instagram, Meta Business Suite, app configuration, webhook
+  setup, DM opening, welcome audio send, candidate queue generation,
+  MailerLite/Gmail access, private artifact inspection beyond the explicit
+  consultant target registry, CRM/source write, Mantis memory,
+  OpenClaw/Mantis workspace, Launch OS doc, or `/Users/alejandrogomez/CRM` use
+  occurred.
 
 M5 - Future controlled send execution.
 
