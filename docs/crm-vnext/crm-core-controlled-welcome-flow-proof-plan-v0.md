@@ -271,7 +271,8 @@ M2 - Controlled evidence packet design: complete as no-run design.
 
 M3 - Sandbox send packet design: complete as no-run design.
 
-M4 - Future exact approval for controlled send proof.
+M4 - Exact approval for controlled send proof: complete for the first
+controlled send only.
 
 ## Second Lane Sprint Result — Controlled New-Follower Evidence Packet Design
 
@@ -462,7 +463,49 @@ M4 - Future exact approval for controlled send proof.
 - Mantis-Reports and Mantis memory were not used.
 - Do not mark execution milestones complete.
 
-M5 - Future controlled send execution.
+## First Live Controlled Send Result — Confirmed Safari Upload
+
+- First controlled welcome audio send result: confirmed.
+- Result artifact:
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`.
+- Run id:
+  `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`.
+- Final state:
+  `completed_confirmed_single_controlled_send`.
+- Target Instagram profile URL:
+  `https://www.instagram.com/alejandro_gomez_bernal/`.
+- Approved audio asset label:
+  `saludo_welcome_audio_v1`.
+- Browser used: Safari.
+- Safari isolated standard window was confirmed.
+- Safari neutral preflight passed.
+- Safari filechooser preflight passed with the original audio path.
+- Chrome upload route remains blocked/unproven for this path.
+- Prior controlled candidate packet was read and validated in the source lane.
+- Controlled handle disambiguation was performed without printing the raw
+  controlled candidate identity in central docs.
+- Messaging route was opened for the single controlled candidate only.
+- Audio upload was attempted and the audio was attached/ready.
+- Welcome audio send was attempted and confirmed.
+- `welcome_audio_sent`: true.
+- Private artifact root path label:
+  `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/controlled-welcome-flow/first-controlled-handle-send-v5-safari-upload-2026-07-05/`.
+- Redacted receipt path labels:
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/instagram/controlled-welcome-flow/crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05.json`
+  - `/Users/alejandrogomez/Documents/Mantis-Reports/instagram/controlled-welcome-flow/crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05.md`
+- No unrelated DMs were opened.
+- No candidate queue was generated during the live send.
+- No MailerLite, Gmail, or Meta Business Suite access occurred.
+- No CRM/source writes, card writes, Fact Store writes, Signal Event Ledger
+  writes, Engagement Snapshot Ledger writes, source-result ledger writes, or
+  scoring writes occurred.
+- No Launch OS docs, Mantis memory, OpenClaw/Mantis workspace, or
+  `/Users/alejandrogomez/CRM` were touched.
+- This proves one controlled send path only. It does not prove production
+  automation, standing sends, reply monitoring, email handoff, MailerLite
+  onboarding, CRM enrichment/write, or next-best-action execution.
+
+M5 - Controlled send execution: complete for one controlled test only.
 
 M6 - Future reply/email handoff evidence.
 
@@ -472,7 +515,11 @@ M8 - CRM enrichment packet preview.
 
 M9 - Operator brief / heat preview, still no writes unless approved.
 
-This task completes only M0.
+The original plan task completed only M0. This record now also marks M5
+complete for one controlled test only. Production automation, reply monitoring,
+MailerLite onboarding, CRM enrichment/write, standing sends, and
+next-best-action execution remain incomplete and closed unless separately
+approved.
 
 ## Required Alejandro-Provided Facts Later
 

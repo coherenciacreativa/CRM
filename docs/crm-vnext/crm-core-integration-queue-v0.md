@@ -415,6 +415,64 @@ No lane outputs in review at creation.
 - `integration_recommendation`: P2 v3 temporary-parallel self-integration
   succeeded if all checks pass; keep source/action/CRM write gates closed.
 
+### controlled_welcome_flow_first_confirmed_send_closeout_2026-07-05
+
+- `source_workstream`: `welcome-audio-send-boundary`
+- `source_branch`: `codex/crm-core-welcome-audio`
+- `source_worktree`: `/Users/alejandrogomez/CRM-core-welcome-audio`
+- `source_run_id`:
+  `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+- `source_lane_status`:
+  `## codex/crm-core-welcome-audio...origin/codex/crm-core-welcome-audio [ahead 2]`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Recorded the first confirmed controlled welcome-audio send for
+  the Controlled Welcome Flow Proof using only the redacted source-action
+  closeout. The Safari isolated-window upload/send route was proven for one
+  controlled candidate with the approved audio asset label.
+- `tests_or_checks`: `git diff --check`; raw target URL check; private content
+  and raw controlled-handle check; owner token check
+- `final_state`: `completed_confirmed_single_controlled_send`
+- `approved_audio_asset_label`: `saludo_welcome_audio_v1`
+- `browser_used`: Safari
+- `safari_route_recorded`: true
+- `chrome_upload_blocker_recorded`: true
+- `welcome_audio_sent_recorded`: true
+- `send_confirmation_recorded`: `confirmed`
+- `private_artifacts_touched`: source lane only
+- `private_artifacts_integrated`: false
+- `used_mantis_reports`: false for central closeout
+- `used_mantis_private_source_artifacts`: false for central closeout
+- `used_crm_core_reports`: false for central closeout
+- `used_mantis_memory`: false
+- `source_actions_executed_during_closeout`: false
+- `candidate_queue_generated`: false
+- `mailerlite_used`: false
+- `gmail_used`: false
+- `meta_business_suite_used`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `signal_event_ledger_writes`: false
+- `engagement_snapshot_ledger_writes`: false
+- `source_result_ledger_writes`: false
+- `scoring_writes`: false
+- `launch_os_touched`: false
+- `/Users/alejandrogomez/CRM_used`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow Proof step after the
+  first confirmed controlled send
+- `integration_recommendation`: commit central closeout if checks pass; then
+  choose repeatability run, reply monitoring readiness/test, assistant reply
+  policy, Safari upload route hardening, or pause.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

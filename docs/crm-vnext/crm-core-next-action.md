@@ -3792,28 +3792,76 @@ routing and completion pointer.
   Approval Packet as the next Controlled Welcome Flow Proof step and CRM Core
   integrated the no-run approval packet artifact.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_first_execution_packet_next_step_selection_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `selected_step`: First controlled welcome audio send execution under the
+  separately approved source-lane boundary.
+- `result`: First confirmed controlled welcome audio send closeout recorded.
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+- `findings`:
+  - Redacted source-action result recorded without inspecting private artifacts
+    or receipt contents during central closeout.
+  - Source run id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`.
+  - Final state:
+    `completed_confirmed_single_controlled_send`.
+  - Target profile URL recorded as the approved public target profile URL.
+  - Approved audio asset label recorded:
+    `saludo_welcome_audio_v1`.
+  - Safari isolated standard window route was proven for the controlled
+    upload/send path.
+  - Safari neutral preflight and original-audio filechooser preflight passed.
+  - Chrome upload route remains blocked/unproven for this path.
+  - Prior controlled candidate packet was read and validated in the source
+    lane.
+  - Messaging route was opened for the single controlled candidate only.
+  - Audio upload was attempted and audio was attached/ready.
+  - Welcome audio send was attempted and confirmed.
+  - `welcome_audio_sent`: true.
+  - Private artifact root label and redacted receipt path labels were recorded
+    as labels only.
+  - No unrelated DMs were opened.
+  - No candidate queue was generated during the live send.
+  - No private identities, raw controlled handles, DM content, private artifact
+    contents, receipt contents, screenshots, audio contents, secrets, tokens,
+    cookies, headers, credentials, or env values were printed or integrated.
+  - No MailerLite, Gmail, or Meta Business Suite access occurred.
+  - No CRM/source writes, card writes, Fact Store writes, Signal Event Ledger
+    writes, Engagement Snapshot Ledger writes, source-result ledger writes, or
+    scoring writes occurred.
+  - No Launch OS docs, Mantis memory, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` were touched.
+  - Production automation, standing sends, reply monitoring, email handoff,
+    MailerLite onboarding, CRM enrichment/write, and next-best-action execution
+    remain unapproved and closed.
+- `completion_definition`: CRM Core recorded the first confirmed controlled
+  welcome audio send result and preserved all downstream gates.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_first_confirmed_send_next_step_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
-- `objective`: Choose the next Controlled Welcome Flow Proof step after
-  integrating the First Controlled Execution Approval Packet Design, or pause.
-- `why_now`: CRM Core now has the Controlled Welcome Flow Proof plan, Welcome
-  Audio sandbox send strategy, Controlled New-Follower Evidence Packet Design,
-  Controlled Candidate Queue And Sandbox Send Approval Packet Design, Reply
-  Monitoring / Email Handoff Boundary Design, MailerLite No-Write Payload
-  Preview Alignment, Identity / CRM Enrichment Packet Boundary, and First
-  Controlled Execution Approval Packet Design. The next useful step is to
-  choose whether to prepare a first controlled execution decision, design the
-  assistant reply policy, advance MailerLite setup inventory collection, or
-  pause.
+- `objective`: Choose the next Controlled Welcome Flow Proof step after the
+  first confirmed controlled welcome audio send, or pause.
+- `why_now`: CRM Core now has a confirmed single controlled welcome audio send
+  result using the Safari upload/send route. The next useful step is to decide
+  whether to prove repeatability, prepare reply monitoring readiness, design the
+  assistant reply policy, harden the Safari upload route, or pause before any
+  broader automation.
 - `allowed_scope`:
   - Present next proof-step options.
-  - Recommend one next docs-only step.
+  - Recommend one next step.
   - Answer clarifying questions.
-  - No execution.
+  - Update docs only if separately approved.
+  - No source execution.
 - `forbidden_scope`:
   - No UI relay execution.
   - No UI, Computer Use, or `@Chrome`.
@@ -3826,12 +3874,14 @@ routing and completion pointer.
   - No webhook setup.
   - No DMs.
   - No welcome audio.
+  - No reply monitoring.
+  - No email handoff extraction.
   - No private artifact inspection.
-  - No first controlled execution packet run.
-  - No controlled evidence review.
   - No candidate queue generation.
   - No candidate set creation.
   - No audio asset confirmation from private state.
+  - No repeatability run without separate approval.
+  - No Safari upload route hardening execution.
   - No CRM enrichment packet generation from real data.
   - No source actions.
   - No CRM/source writes.
@@ -3842,22 +3892,21 @@ routing and completion pointer.
   - No source-result ledger writes.
   - No scoring writes.
   - No next-best-action execution.
+  - No production automation.
+  - No standing sends.
   - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No Mantis memory.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. First Controlled Execution Decision.
-  2. Assistant Reply Policy Design.
-  3. MailerLite setup inventory collection approval.
-  4. Pause.
-- `recommended_default`: Assistant Reply Policy Design.
-- `infrastructure_note`: Parallel Full-Power Lane Coordination Protocol now
-  exists, and this P2 v3 docs-only temporary-branch self-integration used both
-  Consultant Relay Lock and Central Integration Lock with Chief Architect
-  approval. Future full-power multi-lane self-integration remains bounded by
-  freshness-token and central-lock revalidation rules.
+  1. First Controlled Flow Repeatability Run.
+  2. Controlled Reply Monitoring Readiness / Test.
+  3. Assistant Reply Policy Design.
+  4. Safari Upload Route Hardening Protocol.
+  5. Pause.
+- `recommended_default`: First Controlled Flow Repeatability Run unless
+  Alejandro wants to move directly to reply monitoring.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
-  Proof step after First Controlled Execution Approval Packet Design
-  integration or pauses.
+  Proof step after the first confirmed controlled welcome audio send, modifies
+  the route, or pauses.

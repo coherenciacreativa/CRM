@@ -267,13 +267,38 @@
   - no CRM/source write occurred
   - next central task: choose next Controlled Welcome Flow Proof step after
     first controlled execution approval packet integration
-- `latest_commit`: pending first controlled execution approval packet central
+  - First confirmed controlled welcome-audio send result recorded from redacted
+    source-action closeout
+  - source run id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+  - source branch:
+    `codex/crm-core-welcome-audio`
+  - source lane status:
+    `## codex/crm-core-welcome-audio...origin/codex/crm-core-welcome-audio [ahead 2]`
+  - result artifact added:
+    `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+  - Safari isolated-window upload/send route proven for one controlled
+    candidate
+  - Chrome upload route remains blocked/unproven
+  - welcome audio send confirmation recorded as `confirmed`
+  - no private artifacts or receipt contents were inspected during central
+    closeout
+  - no source execution occurred during central closeout
+  - no candidate queue, reply monitoring, MailerLite onboarding, CRM
+    enrichment/write, production automation, or standing send authority was
+    created
+  - next central task: choose next Controlled Welcome Flow Proof step after the
+    first confirmed controlled send
+- `latest_commit`: pending first confirmed controlled send central closeout
   commit
-- `latest_receipt`: pending central-integration receipt
-- `blockers`: next Controlled Welcome Flow Proof step after first controlled
-  execution approval packet not yet selected
-- `next_approval_needed`: choose the next Controlled Welcome Flow Proof step
-  after first controlled execution approval packet integration, or pause
+- `latest_receipt`: redacted source receipt path labels recorded in
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+- `blockers`: next Controlled Welcome Flow Proof step after first confirmed
+  controlled send not yet selected; production automation, reply monitoring,
+  MailerLite onboarding, CRM enrichment/write, and standing sends remain closed
+- `next_approval_needed`: choose repeatability run, reply monitoring
+  readiness/test, assistant reply policy, Safari upload route hardening, or
+  pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

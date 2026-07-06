@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `first_controlled_execution_approval_packet_design_complete_pending_artifact_review`
+- `status`: `first_controlled_send_confirmed_safari_route_proven`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -83,31 +83,46 @@
     candidate queue, candidate set, candidate, audio asset approval, receipt,
     private artifact, already-welcomed/send-history result, send state, or
     CRM/source state
-  - keep send gate closed
-- `latest_commit`: pending lane-local commit for first controlled execution
-  approval packet design
-- `latest_receipt`: none
-- `blockers`: no audio send approval; no candidate queue approval; no approved
-  send packet; no private artifact inspection; no approved audio asset registry
-  implementation; no already-welcomed/send-history implementation
-- `latest_execution_note`: no execution occurred; no send authority was
-  granted.
-- `next_approval_needed`: consultant relay artifact review before commit;
-  separate future approval before any candidate queue, private artifact
-  inspection, DM opening, welcome audio send, Instagram action, MailerLite/Gmail
-  access, CRM/source write, or source action
-- `proposed_integration_note`: Welcome Audio lane now has a no-run First
-  Controlled Execution Approval Packet Design for the Controlled Welcome Flow
-  Proof. It defines the future approval surface for one controlled sandbox
-  welcome-audio send to an Alejandro-owned or controlled test account, while
-  keeping controlled evidence, candidate queue generation, approved audio asset
-  confirmation, final already-welcomed/send-history check, final
-  dedupe/suppression check, reply monitoring, email handoff, MailerLite preview,
-  and CRM enrichment/write boundaries separate. It uses the exact future
-  Instagram private source artifact root
-  `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/`
-  and creates no real state or source/action authority. No candidate queue,
-  candidate set, approval packet, send, DM opening, source action, private
-  artifact inspection, Mantis memory write, or CRM/source write is authorized.
+  - first controlled welcome audio send completed and confirmed under separate
+    source-lane approval
+  - result artifact:
+    `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+  - run id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+  - final state:
+    `completed_confirmed_single_controlled_send`
+  - approved audio asset label:
+    `saludo_welcome_audio_v1`
+  - Safari route proven for this controlled upload/send path
+  - Chrome upload route remains blocked/unproven for this path
+  - messaging route opened for the single controlled candidate only
+  - welcome audio sent and confirmation recorded
+  - no unrelated DMs, candidate queue generation, MailerLite, Gmail, Meta
+    Business Suite, CRM/source writes, cards, Fact Store, ledgers, scoring,
+    Launch OS docs, Mantis memory, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred
+  - production automation, reply monitoring, MailerLite onboarding, CRM
+    enrichment/write, and standing sends remain closed
+- `latest_commit`: pending central closeout commit for first confirmed
+  controlled send result
+- `latest_receipt`: redacted receipt path labels recorded in
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+- `blockers`: no production send approval; no repeatability run selected; no
+  reply monitoring approval; no MailerLite onboarding approval; no CRM
+  enrichment/write approval; Chrome upload route not proven
+- `latest_execution_note`: first controlled welcome audio send was confirmed by
+  the source lane before this central closeout. This central closeout did not
+  execute source actions.
+- `next_approval_needed`: choose the next Controlled Welcome Flow Proof step:
+  repeatability run, reply monitoring readiness/test, assistant reply policy,
+  Safari upload route hardening, or pause
+- `proposed_integration_note`: Welcome Audio lane now has the first confirmed
+  controlled welcome-audio send result for the Controlled Welcome Flow Proof.
+  It proves one Safari-based controlled upload/send path to one controlled
+  candidate using the approved audio asset label, while keeping candidate queue
+  generation, reply monitoring, MailerLite onboarding, CRM enrichment/write,
+  standing sends, and production automation closed. No private identities,
+  private artifact contents, DM content, raw controlled handle, or source-private
+  content are integrated into central docs.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
