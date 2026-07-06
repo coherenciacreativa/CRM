@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `assistant_reply_policy_boundary_integrated_no_run`
+- `status`: `safari_upload_route_hardening_protocol_lane_local_ready_for_integration_review`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -144,6 +144,33 @@
     stop/close conversation, human escalation, email handoff, MailerLite
     no-write preview, CRM enrichment preview, and CRM/source write remain
     separate approval boundaries
+- completed no-run Safari upload route hardening protocol design for the
+  Controlled Welcome Flow Proof
+- artifact:
+  `docs/crm-vnext/instagram-welcome-audio-safari-upload-route-hardening-protocol-v0.md`
+- task source:
+  `crm_core_welcome_audio_safari_upload_hardening_v1_task_review_2026-07-06`
+- consultant verdict source:
+  `green_to_execute_task_packet_later: crm_core_welcome_audio_safari_upload_route_hardening_protocol_v0`
+- first controlled send route lesson codified:
+  - Safari standard isolated window is the proven upload/send backend for the
+    controlled result;
+  - Chrome remains blocked at the local filechooser selection layer for this
+    `.m4a` route and must not be retried by default;
+  - Safari Private Browsing is forbidden;
+  - neutral Safari and filechooser gates are required before any future
+    separately approved source run;
+  - original approved audio path is preferred when preflight passes;
+  - coordinates, screenshot-coordinate navigation, hidden input, DOM injection,
+    JavaScript injection, unapproved drag/drop, and human-assisted attachment as
+    the primary strategy remain forbidden.
+- no real state created: no Safari preflight, filechooser preflight, browser
+  state mutation, Instagram auth/account validation, asset validation, upload,
+  send confirmation, temporary file, private artifact, candidate queue, welcome
+  history, send history, CRM/source state, or source/operator artifact
+- future send, upload, repeatability, Chrome repair, reply monitoring,
+  MailerLite onboarding, CRM enrichment/write, and production automation remain
+  separate approval boundaries
 - `latest_commit`: pending lane-local commit for assistant reply policy
   boundary design source commit
   `1f01154e357e5842ffeaf81a068cd34def5d58f3`; pending central integration
@@ -155,11 +182,12 @@
   inventory and no-write preview blockers; CRM enrichment/write remains
   unapproved; no repeatability run selected; no production reply monitoring
   approval; no CRM/source write approval
-- `latest_execution_note`: assistant reply policy boundary was designed as a
-  no-run lane-local artifact after the confirmed controlled welcome send,
-  reply/email-handoff result, and MailerLite no-write payload preview. This
-  lane work did not execute source actions. The boundary design is integrated
-  centrally as docs-only policy.
+- `latest_execution_note`: Safari upload route hardening protocol was designed
+  as a no-run lane-local artifact after the confirmed controlled welcome send,
+  reply/email-handoff result, MailerLite no-write payload preview, and
+  assistant reply policy boundary. This lane work did not execute source
+  actions, run Safari, open Instagram, open DMs, perform uploads, send welcome
+  audio, inspect private artifacts, or write CRM/source state.
 - `assistant_reply_policy_boundary_status`: `integrated_design_complete`
 - `assistant_reply_execution_status`: `not_enabled`
 - `assistant_reply_draft_preview_status`: `not_started`
@@ -167,8 +195,9 @@
 - `identity_disclosure_required`: true
 - `assistant_must_not_pretend_to_be_alejandro`: true
 - `next_recommended_step`: MailerLite no-secret setup inventory remains the
-  current default, unless Alejandro redirects to assistant draft preview or CRM
-  enrichment preview.
+  current default, unless Alejandro redirects to assistant draft preview, CRM
+  enrichment preview, or central integration review of this Safari route
+  hardening protocol.
 - `next_approval_needed`: choose MailerLite setup inventory, controlled
   assistant reply draft preview, controlled one-reply send, CRM enrichment
   preview, or pause.
@@ -184,5 +213,13 @@
   source state, or CRM write. MailerLite mutation, CRM enrichment/write,
   assistant draft preview, assistant reply send, repeatability, standing
   monitoring, and production automation remain separately gated.
+- `proposed_safari_upload_hardening_integration_note`: Welcome Audio lane now
+  has a no-run Safari upload route hardening protocol for the Controlled
+  Welcome Flow Proof. It codifies the first confirmed controlled send route,
+  keeps Chrome upload blocked by default until separately repaired, names Safari
+  standard isolated window as the proven backend, forbids Safari Private
+  Browsing and unsafe fallback mechanisms, requires neutral/filechooser gates
+  before future approved source runs, and preserves all send, reply monitoring,
+  MailerLite, CRM write, and production automation gates.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
