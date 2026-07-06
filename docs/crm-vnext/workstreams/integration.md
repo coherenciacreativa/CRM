@@ -396,19 +396,35 @@
     suppression, and idempotency
   - Safari upload hardening temporary branch remains ready but was not
     integrated in this run
-- `latest_commit`: pending live read-only MailerLite setup verification
-  closeout commit
+  - MailerLite setup drift / missing field mapping resolution packet integrated
+  - Source branch was canonical MailerLite lane
+  - Integration used source lane closeout summary and source branch diff only
+  - No private artifacts or Mantis report contents were inspected during
+    central integration
+  - No new source action occurred during central integration
+  - No MailerLite API/UI occurred during central integration
+  - No mutation occurred
+  - Email is treated as native/top-level subscriber email by default, not a
+    custom field
+  - Confirmed fields are name, country, and city
+  - Missing field families remain source_channel, source_context,
+    onboarding_started_at, consent_or_context, and
+    crm_core_private_anchor_label, with email handled separately as
+    native/top-level
+  - Mutation remains blocked by field mapping, trigger/retrigger behavior,
+    suppression, and idempotency
+  - Safari upload hardening temporary branch remains ready but was not
+    integrated in this run
+- `latest_commit`: pending setup drift resolution packet central integration
+  commit
 - `latest_receipt`: redacted source receipt path labels recorded in
-  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
-- `blockers`: MailerLite setup drift / missing mapping resolution needed;
-  six expected fields are missing or not found; trigger behavior, retrigger
-  behavior, suppression, and idempotency remain unresolved; MailerLite mutation,
-  CRM enrichment/write, assistant reply, and production automation remain
-  closed
-- `next_approval_needed`: choose MailerLite setup drift / missing mapping
-  resolution, field creation proposal, minimal-payload no-write mutation review
-  only if missing fields are optional, idempotency/suppression strategy, or
-  pause
+  `docs/crm-vnext/mailerlite-onboarding-setup-drift-missing-field-mapping-resolution-packet-v0.md`
+- `blockers`: manual no-secret answers are needed for field requiredness and
+  trigger/retrigger behavior; suppression and idempotency remain unresolved;
+  MailerLite mutation, CRM enrichment/write, assistant reply, and production
+  automation remain closed
+- `next_approval_needed`: collect manual no-secret field requiredness and
+  trigger/retrigger answers, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

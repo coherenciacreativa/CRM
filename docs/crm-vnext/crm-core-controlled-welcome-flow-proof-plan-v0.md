@@ -725,6 +725,56 @@ email-handoff test only.
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Setup Drift / Missing Field Mapping Resolution Packet - Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-setup-drift-missing-field-mapping-resolution-packet-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `a5ec2042cbc7469ea10784d543720839ed8e6001`
+- Status:
+  no-run resolution packet integrated
+- Live read-only setup verification run:
+  `crm_core_mailerlite_readonly_setup_verification_live_v1_2026-07-06`
+- Redacted field-detail extraction run:
+  `crm_core_mailerlite_setup_field_detail_redacted_extraction_2026-07-06`
+- Confirmed field families:
+  `name; country; city`
+- Missing field families:
+  `email; source_channel; source_context; onboarding_started_at; consent_or_context; crm_core_private_anchor_label`
+- Email interpretation:
+  native/top-level MailerLite subscriber email by default, not a custom field
+  to create
+- Private anchor policy:
+  `crm_core_private_anchor_label` should remain outside MailerLite by default
+  for v1
+- Minimal payload v1 status:
+  `not_ready`
+- Group mapping:
+  `confirmed_current_existing_label`
+- Automation mapping:
+  `confirmed_current_existing_label`
+- Trigger behavior:
+  `unknown_requires_behavior_check`
+- Retrigger behavior:
+  `unknown_blocks_mutation`
+- Suppression:
+  `not_verified_no_subscriber_read`
+- Idempotency:
+  `not_verified_no_subscriber_read`
+- Mutation readiness:
+  `blocked_field_mapping`
+- Setup drift / missing field mapping resolution packet is integrated.
+- Manual no-secret answers are not complete.
+- Top-level email payload semantics are not confirmed.
+- Trigger/retrigger behavior is not verified.
+- Suppression/idempotency is not verified.
+- Mutation review is not ready.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.

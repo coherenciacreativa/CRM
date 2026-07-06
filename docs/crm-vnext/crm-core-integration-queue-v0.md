@@ -767,6 +767,49 @@ No lane outputs in review at creation.
 - `recommended_default`: Prepare MailerLite setup drift / missing field
   mapping resolution packet.
 
+### controlled_welcome_flow_mailerlite_setup_drift_resolution_packet_integration_2026-07-06
+
+- `result_type`: `no_run_setup_drift_resolution_packet_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `a5ec2042cbc7469ea10784d543720839ed8e6001`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-setup-drift-missing-field-mapping-resolution-packet-v0.md`
+- `confirmed_field_families`: `name; country; city`
+- `missing_field_families`: `email; source_channel; source_context; onboarding_started_at; consent_or_context; crm_core_private_anchor_label`
+- `email_interpreted_as_native_top_level_subscriber_field_default`: true
+- `private_anchor_kept_outside_mailerlite_by_default`: true
+- `recommended_minimal_payload_v1_status`: `not_ready`
+- `group_mapping_status`: `confirmed_current_existing_label`
+- `automation_mapping_status`: `confirmed_current_existing_label`
+- `trigger_behavior_status`: `unknown_requires_behavior_check`
+- `retrigger_behavior_status`: `unknown_blocks_mutation`
+- `suppression_status`: `not_verified_no_subscriber_read`
+- `idempotency_status`: `not_verified_no_subscriber_read`
+- `mutation_readiness`: `blocked_field_mapping`
+- `recommended_resolution_route`: `manual_no_secret_field_requiredness_and_trigger_retrigger_answer_packet`
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `subscriber_rows_read_or_printed`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_lane`: true
+- `used_mantis_private_source_artifacts_by_source_lane`: false
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: collect manual no-secret answers
+- `recommended_default`: Collect manual no-secret field requiredness and
+  trigger/retrigger answers.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
