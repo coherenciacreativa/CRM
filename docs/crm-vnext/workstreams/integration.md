@@ -383,17 +383,32 @@
     contents, or private identity values were integrated into central docs
   - next central task: choose next Controlled Welcome Flow Proof step after the
     first MailerLite no-write payload preview result
-- `latest_commit`: pending first MailerLite no-write payload preview central
+  - First live read-only MailerLite setup/config verification result closeout
+    added
+  - Central closeout used the redacted run report embedded in the prompt only
+  - No private artifacts or Mantis report contents were inspected during
+    closeout
+  - No new source action occurred during closeout
+  - No MailerLite API/UI occurred during closeout
+  - No mutation occurred
+  - Current group and automation mapping are confirmed
+  - Mutation remains blocked by field mapping, trigger/retrigger behavior,
+    suppression, and idempotency
+  - Safari upload hardening temporary branch remains ready but was not
+    integrated in this run
+- `latest_commit`: pending live read-only MailerLite setup verification
   closeout commit
 - `latest_receipt`: redacted source receipt path labels recorded in
-  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
-- `blockers`: next Controlled Welcome Flow Proof step after first MailerLite
-  no-write payload preview not yet selected; setup inventory collection,
-  MailerLite read/API verification, MailerLite mutation, CRM enrichment/write,
-  assistant reply, and production automation remain closed
-- `next_approval_needed`: choose MailerLite no-secret setup inventory,
-  MailerLite no-write setup verification, CRM enrichment preview, assistant
-  reply policy, or pause
+  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+- `blockers`: MailerLite setup drift / missing mapping resolution needed;
+  six expected fields are missing or not found; trigger behavior, retrigger
+  behavior, suppression, and idempotency remain unresolved; MailerLite mutation,
+  CRM enrichment/write, assistant reply, and production automation remain
+  closed
+- `next_approval_needed`: choose MailerLite setup drift / missing mapping
+  resolution, field creation proposal, minimal-payload no-write mutation review
+  only if missing fields are optional, idempotency/suppression strategy, or
+  pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

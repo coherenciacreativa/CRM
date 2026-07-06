@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `setup_verification_live_mode_implemented_and_mock_tested`
+- `status`: `live_readonly_setup_verification_completed_mutation_blocked_field_mapping`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -120,35 +120,51 @@
     `__tests__/crm-vnext-mailerlite-setup-readonly-verification.spec.ts`
   - setup verification fixture mode writes only redacted receipts and rejects
     repo output paths.
-  - live setup verification remains unrun after v2 and blocked until exact
-    Alejandro approval.
-- `latest_commit`: pending central closeout commit for first controlled
-  email-handoff no-write payload preview result; setup verification live guard
-  v2 source commit `b2f9f1e16169a86f2327ac9c98106b5971a9e72a` pending central
-  integration commit
+  - live setup verification completed under separate exact approval using only
+    read-only setup/config metadata.
+  - live_readonly_setup_verification_status:
+    `completed_live_readonly_setup_config_metadata`
+  - live_readonly_setup_verification_run_id:
+    `crm_core_mailerlite_readonly_setup_verification_live_v1_2026-07-06`
+  - live_readonly_setup_verification_result_doc:
+    `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+  - group_mapping_status: `confirmed_current_existing_label`
+  - automation_mapping_status: `confirmed_current_existing_label`
+  - field_mapping_status_counts:
+    `confirmed_existing_field=3; missing_or_not_found=6`
+  - trigger_behavior_status: `unknown_requires_behavior_check`
+  - retrigger_behavior_status: `unknown_blocks_mutation`
+  - suppression_status: `not_verified_no_subscriber_read`
+  - idempotency_status: `not_verified_no_subscriber_read`
+  - mutation_readiness: `blocked_field_mapping`
+  - next recommended step: Prepare MailerLite setup drift / missing field
+    mapping resolution packet.
+- `latest_commit`: pending central closeout commit for live read-only
+  MailerLite setup verification result.
 - `latest_receipt`: redacted receipt path labels recorded in
-  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
-- `blockers`: setup inventory collection still requires exact Alejandro
-  approval; group mapping requires setup inventory; automation mapping requires
-  setup inventory; custom field mapping requires setup inventory; suppression
-  status is not verified because no MailerLite read occurred; idempotency for
-  mutation is not verified because no MailerLite read occurred
+  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+- `blockers`: field mapping has six missing/not found expected fields;
+  trigger behavior remains unknown; retrigger behavior blocks mutation;
+  suppression is not verified because subscriber rows were not read;
+  idempotency for mutation is not verified because subscriber rows were not
+  read
 - `setup_verification_live_mode_status`: `implemented_and_mock_tested`
-- `live_setup_verification_status`: `not_run_after_v2`
+- `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
-- `mutation_readiness`: `blocked_pending_live_readonly_setup_verification`
-- `next_recommended_step`: central integration closeout, then separate
-  approval for one live read-only MailerLite setup verification run using the
-  redaction-safe command.
-- `next_approval_needed`: one separately approved live read-only MailerLite
-  setup verification run.
+- `mutation_readiness`: `blocked_field_mapping`
+- `next_recommended_step`: Prepare MailerLite setup drift / missing field
+  mapping resolution packet.
+- `next_approval_needed`: choose setup drift / missing mapping resolution,
+  field creation proposal, minimal-payload no-write mutation review only if
+  missing fields are optional, idempotency/suppression strategy, or pause.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
   without calling MailerLite or mutating subscribers, groups, fields,
   automations, campaigns, CRM state, or source state. The lane now also has a
   implemented and mocked-live-tested redaction-safe setup verification guard.
-  Mutation readiness remains blocked pending one separately approved live
-  read-only setup verification run.
+  The first live read-only setup/config verification now confirms current group
+  and automation mapping, but mutation readiness remains blocked by missing
+  field mapping, trigger/retrigger behavior, suppression, and idempotency.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

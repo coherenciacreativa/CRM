@@ -726,6 +726,47 @@ No lane outputs in review at creation.
 - `recommended_default`: approve one live read-only MailerLite setup
   verification run using the implemented redaction-safe command
 
+### controlled_welcome_flow_mailerlite_live_readonly_setup_verification_closeout_2026-07-06
+
+- `result_type`: `live_readonly_setup_config_metadata_result_closeout`
+- `source_run_id`:
+  `crm_core_mailerlite_readonly_setup_verification_live_v1_2026-07-06`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+- `setup_verification_status`: `completed_live_readonly_setup_config_metadata`
+- `mailerlite_api_called`: true
+- `mailerlite_api_call_scope`: `readonly_setup_config_metadata_only`
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `subscriber_rows_read_or_printed`: false
+- `group_mapping_status`: `confirmed_current_existing_label`
+- `automation_mapping_status`: `confirmed_current_existing_label`
+- `field_mapping_status_counts`: `confirmed_existing_field=3; missing_or_not_found=6`
+- `trigger_behavior_status`: `unknown_requires_behavior_check`
+- `retrigger_behavior_status`: `unknown_blocks_mutation`
+- `suppression_status`: `not_verified_no_subscriber_read`
+- `idempotency_status`: `not_verified_no_subscriber_read`
+- `mutation_readiness`: `blocked_field_mapping`
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: resolve setup drift or missing mapping
+- `recommended_default`: Prepare MailerLite setup drift / missing field
+  mapping resolution packet.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

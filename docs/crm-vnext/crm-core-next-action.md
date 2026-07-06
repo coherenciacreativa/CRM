@@ -4014,40 +4014,78 @@ routing and completion pointer.
   boundary and replaced it with a v1 approval boundary for the implemented v2
   redaction-safe command.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_readonly_setup_verification_live_run_awaiting_approval_v1`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
-- `objective`: Wait for Alejandro approval before one live read-only MailerLite
-  setup verification run using the v2 implemented redaction-safe setup
-  verification command.
-- `why_now`: CRM Core now has an implemented and mocked-live-tested
-  redaction-safe MailerLite setup verification command. The prior live attempt
-  blocked before touching MailerLite because live mode was not implemented. The
-  no-write payload preview remains mutation-blocked because group mapping,
-  automation mapping, field mapping, trigger behavior, retrigger behavior,
-  suppression, and idempotency are not live-verified. A single read-only setup
-  verification run can reduce those blockers without mutation.
+- `completed_at`: `2026-07-06`
+- `result`: `live_readonly_setup_verification_receipt_created`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+- `findings`:
+  - Live read-only MailerLite setup verification ran successfully.
+  - Run id:
+    `crm_core_mailerlite_readonly_setup_verification_live_v1_2026-07-06`
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+  - MailerLite API called only for
+    `readonly_setup_config_metadata_only`.
+  - MailerLite UI not used.
+  - Credentials used internally only; not inspected or printed.
+  - Subscriber rows not read or printed.
+  - Group mapping confirmed.
+  - Automation mapping confirmed.
+  - Field mapping status: `confirmed_existing_field=3; missing_or_not_found=6`.
+  - Trigger behavior unknown.
+  - Retrigger behavior blocks mutation.
+  - Suppression not verified.
+  - Idempotency not verified.
+  - Mutation readiness `blocked_field_mapping`.
+  - No MailerLite mutation.
+  - No CRM/source write.
+  - No private artifact integration.
+  - No Mantis memory.
+  - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: CRM Core recorded the live read-only setup/config
+  result without exposing raw IDs, emails, subscriber rows, raw payloads,
+  credentials, private subscriber content, or private artifact contents.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_setup_drift_or_missing_mapping_resolution_v0`
+- `status`: `active`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Resolve or plan resolution of MailerLite setup drift and
+  missing field mapping after live read-only setup/config verification, without
+  mutation.
+- `why_now`: Live read-only setup verification confirmed the onboarding group
+  and automation labels but found six expected fields missing or not found, and
+  left trigger behavior, retrigger behavior, suppression, and idempotency
+  unresolved. Mutation readiness is `blocked_field_mapping`. CRM Core needs a
+  safe mapping/drift resolution decision before any mutation review packet.
 - `allowed_scope`:
-  - Present exact approval phrase.
-  - Explain what the read-only verification would check.
-  - Wait for approval, modification, decline, or pause.
-  - No execution in this next-action selection step.
+  - Present exact blockers.
+  - Prepare a no-run setup drift / missing mapping resolution packet.
+  - Decide whether missing fields are required, optional, can be omitted, need
+    a field-creation proposal, or need a separate read-only/verification path.
+  - No execution.
 - `forbidden_scope`:
-  - No MailerLite API until exact approval.
+  - No MailerLite API.
   - No MailerLite UI.
   - No subscriber mutation.
   - No group assignment.
   - No field creation.
   - No automation mutation.
   - No campaign send.
+  - No subscriber-row reads.
+  - No private artifact inspection.
   - No Gmail.
   - No Instagram.
   - No DMs.
   - No welcome audio.
-  - No private artifact inspection.
   - No CRM/source writes.
   - No card writes.
   - No Fact Store writes.
@@ -4057,16 +4095,15 @@ routing and completion pointer.
   - No Mantis memory.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
-- `approval_phrase_required`: I approve one CRM Core MailerLite read-only setup
-  verification run using the v2 redaction-safe setup verification command only.
-  Use existing internal credentials without printing or inspecting them. Query
-  only setup/config metadata needed for onboarding readiness. Do not read
-  subscriber rows, do not mutate subscribers, groups, fields, automations,
-  campaigns, segments, forms, webhooks, or account settings, do not print raw
-  emails, IDs, tokens, headers, env values, credentials, raw payloads, or
-  private subscriber content, write private setup refs only to the approved
-  private artifact path, and write only redacted aggregate receipts.
-- `recommended_default`: Approve one live read-only MailerLite setup
-  verification run, then review redacted result before any mutation packet.
-- `completion_definition`: Alejandro approves, modifies, declines, or pauses
-  one live read-only MailerLite setup verification run.
+- `options_to_present`:
+  1. Prepare MailerLite setup drift / missing field mapping resolution packet.
+  2. Prepare field creation proposal packet, no execution.
+  3. Prepare minimal-payload no-write mutation review only if missing fields
+     are proven optional.
+  4. Prepare idempotency/suppression verification strategy, no subscriber rows
+     unless separately approved.
+  5. Pause.
+- `recommended_default`: Prepare MailerLite setup drift / missing field mapping
+  resolution packet.
+- `completion_definition`: Alejandro chooses the next setup/mapping resolution
+  step or pauses.

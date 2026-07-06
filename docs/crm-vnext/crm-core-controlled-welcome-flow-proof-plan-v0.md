@@ -671,6 +671,60 @@ email-handoff test only.
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## First MailerLite Live Read-Only Setup Verification Result - Mutation Blocked
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
+- Source run id:
+  `crm_core_mailerlite_readonly_setup_verification_live_v1_2026-07-06`
+- Setup verification status:
+  `completed_live_readonly_setup_config_metadata`
+- MailerLite API called:
+  true
+- MailerLite API call scope:
+  `readonly_setup_config_metadata_only`
+- MailerLite UI used:
+  false
+- Credentials inspected or printed:
+  false
+- Subscriber rows read or printed:
+  false
+- Group mapping status:
+  `confirmed_current_existing_label`
+- Automation mapping status:
+  `confirmed_current_existing_label`
+- Field mapping:
+  `confirmed_existing_field=3; missing_or_not_found=6`
+- Trigger behavior:
+  `unknown_requires_behavior_check`
+- Retrigger behavior:
+  `unknown_blocks_mutation`
+- Suppression:
+  `not_verified_no_subscriber_read`
+- Idempotency:
+  `not_verified_no_subscriber_read`
+- Mutation readiness:
+  `blocked_field_mapping`
+- No subscriber mutation occurred.
+- No group assignment occurred.
+- No field creation occurred.
+- No automation mutation occurred.
+- No campaign send occurred.
+- No CRM/source writes occurred.
+- No raw email/ID/payload/header/token/env/credential/private subscriber
+  content/private artifact contents printed.
+- No private artifacts integrated.
+- No Mantis memory used.
+- No `/Users/alejandrogomez/CRM` used.
+- Live read-only MailerLite setup verification is complete.
+- MailerLite setup mapping is not complete.
+- Trigger/retrigger behavior is not verified.
+- Suppression/idempotency is not verified.
+- Mutation review is not ready.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.
