@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `setup_drift_resolution_packet_integrated_manual_answers_needed`
+- `status`: `manual_no_secret_answers_completed_no_write_packet_needed`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -161,34 +161,50 @@
   - mutation_readiness: `blocked_field_mapping`
   - recommended_next_step: collect manual no-secret field requiredness and
     trigger/retrigger answers.
-- `latest_commit`: pending central integration commit for setup drift
-  resolution packet; lane source commit
-  `a5ec2042cbc7469ea10784d543720839ed8e6001`
+  - manual_no_secret_answers_status: `completed`
+  - manual_no_secret_answers_doc:
+    `docs/crm-vnext/mailerlite-onboarding-manual-no-secret-field-requiredness-trigger-answers-v0.md`
+  - email_native_top_level_subscriber_field: `yes`
+  - source_channel_for_v1: `omit_for_v1`
+  - source_context_for_v1: `omit_for_v1`
+  - onboarding_started_at_for_v1: `omit_for_v1`
+  - consent_or_context_policy_gate: `required`
+  - consent_or_context_storage_for_v1: `keep_outside_mailerlite`
+  - crm_core_private_anchor_label_for_v1: `keep_private_only`
+  - group_trigger_behavior: `confirmed_yes_by_Alejandro`
+  - retrigger_behavior: `unknown_blocks_duplicate_readd`
+  - suppression_idempotency_policy: `final_packet_specific_check_required`
+  - minimal_payload_v1_review_status:
+    `ready_for_no_write_mutation_review_packet_design_with_final_gates`
+  - mutation_readiness:
+    `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`
+  - recommended_next_step: prepare MailerLite minimal no-write mutation review
+    packet.
+- `latest_commit`: pending lane-local manual no-secret answers commit.
 - `latest_receipt`: redacted receipt path labels recorded in
   `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
-- `blockers`: field mapping has six missing/not found expected fields;
-  trigger behavior remains unknown; retrigger behavior blocks mutation;
-  suppression is not verified because subscriber rows were not read;
-  idempotency for mutation is not verified because subscriber rows were not
-  read
+- `blockers`: final top-level email payload semantics must be reviewed in
+  the no-write packet; retrigger behavior remains unknown for duplicate/re-add
+  paths; suppression and idempotency require final packet-specific checks before
+  mutation.
 - `setup_verification_live_mode_status`: `implemented_and_mock_tested`
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
-- `mutation_readiness`: `blocked_field_mapping`
-- `next_recommended_step`: collect manual no-secret field requiredness and
-  trigger/retrigger answers.
-- `next_approval_needed`: collect manual no-secret field requiredness and
-  trigger/retrigger answers.
+- `mutation_readiness`: `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`
+- `next_recommended_step`: prepare MailerLite minimal no-write mutation
+  review packet.
+- `next_approval_needed`: central integration of manual no-secret answers,
+  then separate approval for a no-write minimal mutation review packet design.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
   without calling MailerLite or mutating subscribers, groups, fields,
   automations, campaigns, CRM state, or source state. The lane now also has a
   implemented and mocked-live-tested redaction-safe setup verification guard.
-  The first live read-only setup/config verification now confirms current group
-  and automation mapping, but mutation readiness remains blocked by missing
-  field mapping, trigger/retrigger behavior, suppression, and idempotency. The
-  setup drift resolution packet is integrated and recommends compact manual
-  no-secret answers before any mutation review.
+  The first live read-only setup/config verification confirmed current group
+  and automation mapping. The setup drift resolution packet is integrated, and
+  Alejandro has now supplied no-secret field requiredness and trigger answers.
+  Mutation remains blocked pending a no-write mutation review packet and final
+  packet-specific suppression/idempotency checks.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
