@@ -211,6 +211,20 @@
   - duplicate_readd_status: `blocked_retrigger_unknown`
   - recommended_next_step: prepare final packet-specific
     idempotency/suppression check approval boundary.
+
+- `final_idempotency_suppression_check_route_status`:
+  `implemented_and_mock_tested`
+- `final_idempotency_suppression_check_route_design_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `final_idempotency_suppression_check_command`:
+  `npm run crm:vnext:mailerlite-final-idempotency-suppression-check`
+- `previous_blocker`: `route_not_implemented_or_not_redaction_safe`
+- `live_final_check_status`: `not_run`
+- `mutation_readiness`:
+  `blocked_pending_central_integration_and_final_packet_specific_check`
+- `recommended_next_step`: central integration of final check guard
+  implementation, then one final packet-specific idempotency/suppression check
+  approval.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
