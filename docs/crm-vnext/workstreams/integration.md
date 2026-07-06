@@ -415,16 +415,35 @@
     suppression, and idempotency
   - Safari upload hardening temporary branch remains ready but was not
     integrated in this run
-- `latest_commit`: pending setup drift resolution packet central integration
-  commit
+  - MailerLite manual no-secret answer intake integrated
+  - Source branch was canonical MailerLite lane
+  - Integration used source lane closeout summary and source branch diff only
+  - No private artifacts or Mantis report contents were inspected during
+    central integration
+  - No new source action occurred during central integration
+  - No MailerLite API/UI occurred during central integration
+  - No mutation occurred
+  - Email is approved as native/top-level subscriber email, not a custom field
+  - source_channel, source_context, and onboarding_started_at are omit_for_v1
+  - consent_or_context is required as a policy gate and remains outside
+    MailerLite for v1
+  - crm_core_private_anchor_label remains private-only
+  - group trigger behavior is confirmed yes by Alejandro
+  - retrigger behavior is unknown and blocks duplicate/re-add
+  - suppression/idempotency remain final packet-specific gates
+  - Minimal payload v1 may proceed to no-write mutation review packet design,
+    not mutation
+  - Safari upload hardening temporary branch remains ready but was not
+    integrated in this run
+- `latest_commit`: pending manual no-secret answers central integration commit
 - `latest_receipt`: redacted source receipt path labels recorded in
-  `docs/crm-vnext/mailerlite-onboarding-setup-drift-missing-field-mapping-resolution-packet-v0.md`
-- `blockers`: manual no-secret answers are needed for field requiredness and
-  trigger/retrigger behavior; suppression and idempotency remain unresolved;
-  MailerLite mutation, CRM enrichment/write, assistant reply, and production
-  automation remain closed
-- `next_approval_needed`: collect manual no-secret field requiredness and
-  trigger/retrigger answers, or pause
+  `docs/crm-vnext/mailerlite-onboarding-manual-no-secret-field-requiredness-trigger-answers-v0.md`
+- `blockers`: no-write mutation review packet is not designed; final
+  idempotency/suppression checks remain unresolved; duplicate/re-add remains
+  blocked while retrigger behavior is unknown; MailerLite mutation, CRM
+  enrichment/write, assistant reply, and production automation remain closed
+- `next_approval_needed`: prepare MailerLite minimal no-write mutation review
+  packet, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

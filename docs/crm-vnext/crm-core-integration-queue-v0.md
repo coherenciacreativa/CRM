@@ -810,6 +810,48 @@ No lane outputs in review at creation.
 - `recommended_default`: Collect manual no-secret field requiredness and
   trigger/retrigger answers.
 
+### controlled_welcome_flow_mailerlite_manual_no_secret_answers_integration_2026-07-06
+
+- `result_type`: `manual_no_secret_answer_intake_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `89581c508a16d112a52bd4b1e1f357f18affc159`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-manual-no-secret-field-requiredness-trigger-answers-v0.md`
+- `email_native_top_level_subscriber_field`: `yes`
+- `source_channel_for_v1`: `omit_for_v1`
+- `source_context_for_v1`: `omit_for_v1`
+- `onboarding_started_at_for_v1`: `omit_for_v1`
+- `consent_or_context_policy_gate`: `required`
+- `consent_or_context_storage_for_v1`: `keep_outside_mailerlite`
+- `crm_core_private_anchor_label_for_v1`: `keep_private_only`
+- `group_trigger_behavior`: `confirmed_yes_by_Alejandro`
+- `retrigger_behavior`: `unknown_blocks_duplicate_readd`
+- `suppression_idempotency_policy`: `final_packet_specific_check_required`
+- `minimal_payload_v1_review_status`: `ready_for_no_write_mutation_review_packet_design_with_final_gates`
+- `mutation_readiness`: `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `subscriber_rows_read_or_printed`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_lane`: false
+- `used_mantis_private_source_artifacts_by_source_lane`: false
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: prepare no-write mutation review packet
+- `recommended_default`: Prepare MailerLite minimal no-write mutation review
+  packet.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

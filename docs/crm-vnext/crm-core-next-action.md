@@ -4087,33 +4087,72 @@ routing and completion pointer.
   identifying the next manual no-secret answers needed before any mutation
   review.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_manual_no_secret_field_requiredness_and_trigger_answers_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
-- `objective`: Collect Alejandro's manual no-secret decisions for MailerLite v1
-  field requiredness and trigger/retrigger behavior before any mutation review
-  packet.
-- `why_now`: The live read-only setup verification and redacted field-detail
-  extraction confirmed current group and automation mapping, and identified
-  field drift. The setup drift resolution packet recommends manual no-secret
-  decisions before any mutation review. CRM Core needs to know which missing
-  field families are required, optional, omit-for-v1, field-creation-later, or
-  private-only, and whether adding to the onboarding group triggers/retriggers
-  automation.
+- `completed_at`: `2026-07-06`
+- `result`: `manual_no_secret_answers_integrated`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-manual-no-secret-field-requiredness-trigger-answers-v0.md`
+- `findings`:
+  - Manual no-secret field requiredness and trigger/retrigger answers
+    integrated.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-manual-no-secret-field-requiredness-trigger-answers-v0.md`
+  - Email native/top-level subscriber field: yes.
+  - `source_channel_for_v1`: `omit_for_v1`.
+  - `source_context_for_v1`: `omit_for_v1`.
+  - `onboarding_started_at_for_v1`: `omit_for_v1`.
+  - `consent_or_context_policy_gate`: `required`.
+  - `consent_or_context_storage_for_v1`: `keep_outside_mailerlite`.
+  - `crm_core_private_anchor_label_for_v1`: `keep_private_only`.
+  - `group_trigger_behavior`: `confirmed_yes_by_Alejandro`.
+  - `retrigger_behavior`: `unknown_blocks_duplicate_readd`.
+  - `suppression/idempotency policy`: `final_packet_specific_check_required`.
+  - `minimal_payload_v1_review_status`:
+    `ready_for_no_write_mutation_review_packet_design_with_final_gates`.
+  - `mutation_readiness`:
+    `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`.
+  - No MailerLite API, MailerLite UI, subscriber rows, mutation, CRM writes,
+    private artifact integration, Mantis memory, Launch OS, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core integrated the manual no-secret answer set
+  and can proceed to a no-write mutation review packet design without
+  authorizing mutation.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_minimal_no_write_mutation_review_packet_design_v0`
+- `status`: `active`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Prepare a no-write MailerLite minimal v1 mutation review packet
+  design from the controlled email handoff and approved manual no-secret
+  answers, without executing any MailerLite mutation.
+- `why_now`: Manual field requiredness and trigger/retrigger answers now
+  resolve v1 field policy enough to design a no-write mutation review packet.
+  Real mutation remains blocked by final packet-specific idempotency/suppression
+  checks, duplicate/re-add safety, top-level email semantics confirmation,
+  consent/context private evidence, and exact future mutation approval.
 - `allowed_scope`:
-  - Ask Alejandro only compact no-secret questions.
-  - Accept only yes/no/unknown, required/optional/omit_for_v1,
-    prepare_field_creation_proposal_later, keep_private_only, or equivalent
-    non-secret classifications.
-  - No API.
-  - No UI.
-  - No MailerLite mutation.
-  - No subscriber-row read.
-  - No private artifact inspection.
-  - No CRM/source writes.
+  - Design the no-write mutation review packet only.
+  - Use repo docs and prior redacted central results.
+  - Define the minimal v1 payload semantics.
+  - Define top-level native email handling.
+  - Define use of confirmed fields name/country/city if present in approved
+    private evidence.
+  - Define omission of source_channel, source_context, onboarding_started_at
+    from MailerLite fields for v1.
+  - Define consent/context as private policy gate.
+  - Define crm_core_private_anchor_label as private-only outside MailerLite.
+  - Define planned group assignment as future mutation, not executed.
+  - Define final idempotency/suppression check requirements.
+  - Define duplicate/re-add block while retrigger behavior is unknown.
+  - Define exact future mutation approval boundary.
+  - No execution.
 - `forbidden_scope`:
   - No MailerLite API.
   - No MailerLite UI.
@@ -4123,6 +4162,7 @@ routing and completion pointer.
   - No automation mutation.
   - No campaign send.
   - No subscriber-row reads.
+  - No private artifact inspection.
   - No raw emails.
   - No raw IDs.
   - No screenshots.
@@ -4132,7 +4172,6 @@ routing and completion pointer.
   - No Instagram.
   - No DMs.
   - No welcome audio.
-  - No private artifact inspection.
   - No CRM/source writes.
   - No card writes.
   - No Fact Store writes.
@@ -4142,26 +4181,7 @@ routing and completion pointer.
   - No Mantis memory.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
-- `question_set`:
-  1. Confirm email is native/top-level subscriber email, not a custom field to
-     create.
-  2. `source_channel`: required, optional, omit_for_v1, or
-     prepare_field_creation_proposal_later?
-  3. `source_context`: required, optional, omit_for_v1, or
-     prepare_field_creation_proposal_later?
-  4. `onboarding_started_at`: required, optional, omit_for_v1, or
-     prepare_field_creation_proposal_later?
-  5. `consent_or_context`: required as policy gate? keep outside MailerLite for
-     v1? prepare_field_creation_proposal_later?
-  6. `crm_core_private_anchor_label`: keep_private_only for v1? avoid
-     MailerLite field by default?
-  7. Does adding a subscriber to the confirmed onboarding group trigger the
-     confirmed automation?
-  8. If an existing subscriber is re-added to the same group, does the
-     automation retrigger?
-  9. Should unresolved suppression/idempotency continue to block mutation until
-     a final packet-specific check?
-- `recommended_default`: Collect the compact manual no-secret answer set from
-  Alejandro.
-- `completion_definition`: Alejandro supplies, modifies, declines, or pauses
-  the manual no-secret field requiredness and trigger/retrigger answer set.
+- `recommended_default`: Prepare the MailerLite minimal no-write mutation
+  review packet design.
+- `completion_definition`: CRM Core has a no-write mutation review packet
+  design that can be reviewed before any future exact mutation approval.

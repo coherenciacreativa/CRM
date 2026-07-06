@@ -775,6 +775,57 @@ email-handoff test only.
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Manual No-Secret Field Requiredness And Trigger Answers - Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-manual-no-secret-field-requiredness-trigger-answers-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `89581c508a16d112a52bd4b1e1f357f18affc159`
+- Status:
+  manual no-secret answers integrated
+- Email native/top-level subscriber field:
+  yes
+- `source_channel_for_v1`:
+  `omit_for_v1`
+- `source_context_for_v1`:
+  `omit_for_v1`
+- `onboarding_started_at_for_v1`:
+  `omit_for_v1`
+- `consent_or_context_policy_gate`:
+  `required`
+- `consent_or_context_storage_for_v1`:
+  `keep_outside_mailerlite`
+- `crm_core_private_anchor_label_for_v1`:
+  `keep_private_only`
+- `group_trigger_behavior`:
+  `confirmed_yes_by_Alejandro`
+- `retrigger_behavior`:
+  `unknown_blocks_duplicate_readd`
+- `suppression/idempotency policy`:
+  `final_packet_specific_check_required`
+- `minimal_payload_v1_review_status`:
+  `ready_for_no_write_mutation_review_packet_design_with_final_gates`
+- `mutation_readiness`:
+  `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`
+- Field requiredness is resolved enough to design a no-write minimal mutation
+  review packet.
+- Real mutation remains blocked.
+- Duplicate/re-add remains blocked while retrigger behavior is unknown.
+- Suppression and idempotency must be checked in the final packet-specific
+  gate.
+- Top-level email payload semantics must be represented correctly in the
+  no-write packet.
+- Consent/context evidence must remain available privately before any mutation.
+- Manual no-secret MailerLite answers are completed.
+- Field requiredness for v1 is resolved for no-write packet design.
+- No-write mutation review packet is not complete.
+- Final idempotency/suppression check is not complete.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.
