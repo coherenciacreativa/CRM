@@ -494,6 +494,105 @@ Receipts must not include:
 - credentials.
 - screenshots.
 
+## Capture Reliability Telemetry
+
+Every consultant relay capture receipt must include, when applicable:
+
+- `capture_method`
+- `copy_button_used`
+- `copied_latest_assistant_message`
+- `generation_complete_before_copy`
+- `response_char_count`
+- `response_line_count`
+- `field_presence_map`
+- `sentinel_presence_map`
+- `parser_error_code`
+- `reformat_request_used`
+- `copied_message_role`
+- `copied_message_relative_position`
+- `manual_selection_used`
+- `clipboard_capture_used`
+- `screenshot_or_ocr_used`
+- `raw_target_url_printed`
+- `owner_token_recorded_in_receipt`
+
+Rules:
+
+- Copy-button capture is preferred.
+- The lane must not act on a response unless generation is complete or the
+  response was explicitly recovered with a complete compact verdict.
+- The copied message must be the latest relevant assistant message for the
+  packet being validated.
+- If `copied_message_relative_position` is `non_latest_assistant` or
+  `unknown`, the lane must request a verdict-only recovery or stop.
+- The receipt must include `field_presence_map` and `sentinel_presence_map` for
+  every actionable task, artifact, or integration verdict.
+- If required fields or sentinels are absent, the response is non-actionable.
+- If `parser_error_code` suggests wrong packet, wrong message, partial copy, or
+  incomplete generation, the lane must recover once with a verdict-only request
+  or stop.
+- Receipt telemetry must not include raw target URLs, owner tokens, private
+  chats, private artifacts, handles, emails, names, DMs, message text, tokens,
+  cookies, headers, env values, credentials, or screenshots.
+
+## Consultant Evidence Request Rights
+
+A consultant may return a non-final evidence request instead of green when the
+provided packet is insufficient.
+
+Allowed consultant evidence requests:
+
+- diffstat
+- changed file list
+- focused diff for named files or sections
+- full diff, only when scope is small and docs-only
+- specific artifact section excerpts
+- validation command output
+- field_presence_map
+- sentinel_presence_map
+- closed gate checklist
+- storage policy checklist
+- raw target URL grep result
+- owner token grep result
+- private-content grep result
+
+Suggested verdict/status for this case:
+
+`needs_evidence_packet`
+
+Rules:
+
+- A consultant may request additional evidence before green.
+- Codex may provide requested evidence only if it stays inside allowed
+  repo/docs scope and does not expose private artifacts, raw handles, emails,
+  DMs, source data, target URLs, tokens, cookies, headers, env values,
+  credentials, or screenshots.
+- Full diffs are not mandatory by default; the preferred review ladder is:
+  1. file list + diffstat + summary + closed gates;
+  2. focused diff or section excerpts;
+  3. full diff only for small docs-only changes;
+  4. stop if evidence would expose private/source content.
+- If requested evidence would cross source/private/action boundaries, Codex
+  must stop and report.
+- If the consultant cannot decide without forbidden evidence, the verdict must
+  be `hold` or `ceo_decision_needed`.
+
+## Verdict-Only Recovery
+
+When a consultant response is incomplete, too long, still generating, missing
+required fields, or appears to be the wrong message:
+
+- Codex may send one compact verdict-only recovery request.
+- The recovery request must name the prior `packet_id`.
+- The recovery request must ask for only the required response schema and
+  sentinels.
+- If the recovered response is still incomplete after one reformat request,
+  stop.
+- If the recovered response references the wrong `packet_id`, stop.
+- If the recovered response is a task verdict when an artifact verdict was
+  requested, request one reformat/recovery or stop.
+- Do not infer green from partial natural-language approval.
+
 ## CEO Escalation
 
 Escalate to Alejandro / Chief Architect when:

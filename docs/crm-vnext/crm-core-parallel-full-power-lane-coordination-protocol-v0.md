@@ -306,6 +306,15 @@ Every parallel lane closeout must report:
 - `git_diff_check_result`
 - `pushed_branch`
 - `used_consultant_relay_lock`
+- `capture_method`
+- `copy_button_used`
+- `copied_latest_assistant_message`
+- `generation_complete_before_copy`
+- `field_presence_map`
+- `sentinel_presence_map`
+- `parser_error_code`
+- `reformat_request_used`
+- `copied_message_relative_position`
 - `lock_acquired_count`
 - `lock_released_count`
 - `stale_lock_detected`
@@ -324,6 +333,18 @@ Every parallel lane closeout must report:
 - `receipt_paths`
 - confirmation canonical lane worktrees were or were not edited;
 - confirmation no forbidden scope occurred.
+
+Parallel lanes that use consultant relay must include capture reliability
+telemetry in receipts before any future central integration review. If
+telemetry is missing for an already-completed lane, central integration may
+still proceed only when a separate capture audit or redacted closeout
+establishes that the final actionable verdict had valid `packet_id`, valid
+`consultant_id`, green verdict, safe flags, `ceo_decision_needed=false`, and
+required sentinels.
+
+Consultants may return `needs_evidence_packet`. A lane must treat that verdict
+as non-actionable until the requested evidence is provided and a green verdict
+is returned. Evidence packets must remain docs-only and redacted.
 
 ## Stop Conditions
 

@@ -3928,12 +3928,48 @@ routing and completion pointer.
   payload preview result from controlled email-handoff evidence and preserved
   all mutation and CRM/source write gates.
 
+## Completed Next Action
+
+- `next_action_id`: `crm_core_welcome_audio_assistant_reply_policy_boundary_central_integration_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-assistant-reply-policy-v2-parallel`
+- `source_commit`:
+  `1f01154e357e5842ffeaf81a068cd34def5d58f3`
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-welcome-audio-assistant-reply-policy-boundary-design-v0.md`
+- `findings`:
+  - Assistant Reply Policy Boundary has been integrated.
+  - Assistant reply policy design is complete.
+  - Assistant reply draft preview remains not started.
+  - Assistant reply send remains not authorized.
+  - Consultant relay capture hardening has been added.
+  - Consultant evidence request rights have been added.
+  - Recommended default remains Collect MailerLite No-Secret Setup Inventory.
+  - Other options remain:
+    - MailerLite No-Write Setup Verification, separately approved.
+    - CRM Enrichment Preview From Controlled Welcome Evidence.
+    - Assistant Reply Draft Preview, separately approved.
+    - Pause.
+  - No assistant reply was drafted from private content.
+  - No assistant reply was sent.
+  - No reply monitoring, MailerLite API/UI, MailerLite mutation, Gmail, source
+    action, private artifact integration, CRM/source write, Launch OS doc,
+    Mantis memory, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred.
+- `completion_definition`: CRM Core integrated the no-run assistant reply
+  policy boundary and hardened consultant relay capture protocol while
+  preserving the existing MailerLite setup inventory decision path.
+
 ## Active Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_mailerlite_no_write_payload_preview_next_step_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-05`
-- `updated_at`: `2026-07-05`
+- `updated_at`: `2026-07-06`
 - `objective`: Choose the next Controlled Welcome Flow step after the first
   MailerLite no-write payload preview from controlled email-handoff evidence,
   or pause.
@@ -3944,7 +3980,7 @@ routing and completion pointer.
   verification, and mutation idempotency are not complete. The next decision is
   whether to collect no-secret MailerLite setup inventory, perform separate
   no-write setup verification, prepare CRM enrichment preview, continue
-  assistant reply policy, or pause.
+  assistant reply draft preview, or pause.
 - `allowed_scope`:
   - Present options.
   - Recommend one next step.
@@ -3981,8 +4017,19 @@ routing and completion pointer.
   1. Collect MailerLite No-Secret Setup Inventory.
   2. MailerLite No-Write Setup Verification, separately approved.
   3. CRM Enrichment Preview From Controlled Welcome Evidence.
-  4. Assistant Reply Policy Design.
+  4. Assistant Reply Draft Preview, separately approved.
   5. Pause.
 - `recommended_default`: Collect MailerLite No-Secret Setup Inventory.
+- `recent_findings`:
+  - Assistant Reply Policy Boundary has been integrated.
+  - Assistant reply policy design is complete.
+  - Assistant reply draft preview remains not started.
+  - Assistant reply send remains not authorized.
+  - Consultant relay capture hardening has been added.
+  - Consultant evidence request rights have been added.
+  - Recommended default remains Collect MailerLite No-Secret Setup Inventory.
+  - Other options remain MailerLite No-Write Setup Verification, CRM Enrichment
+    Preview From Controlled Welcome Evidence, Assistant Reply Draft Preview, or
+    Pause.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   step or pauses.

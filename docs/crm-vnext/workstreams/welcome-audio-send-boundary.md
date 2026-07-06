@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `first_controlled_reply_email_handoff_confirmed`
+- `status`: `assistant_reply_policy_boundary_integrated_no_run`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -121,29 +121,68 @@
   - crm_write_status: `not_started`
   - no raw handle, raw email, message text, private candidate details, or
     private artifact contents are recorded in central docs
-- `latest_commit`: pending central closeout commit for first controlled
-  reply/email-handoff result
+  - completed no-run assistant reply policy boundary design for the Controlled
+    Welcome Flow Proof
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-assistant-reply-policy-boundary-design-v0.md`
+  - task source:
+    `crm_core_welcome_audio_assistant_reply_policy_v4_task_review_2026-07-06`
+  - consultant verdict source:
+    `green_to_execute_task_packet_later: crm_core_welcome_audio_assistant_reply_policy_boundary_design_v0`
+  - assistant identity disclosure defined for Alejandro's assistant,
+    Mantis/Mati, or another separately approved assistant identity
+  - no-Alejandro-impersonation rule defined
+  - allowed reply classes, forbidden reply classes, human escalation classes,
+    conversation state, cadence, closure, private content handling, draft
+    preview boundary, and one-reply send boundary defined
+  - no real state created: no assistant identity registration, assistant
+    persona deployment, conversation state, cadence schedule, closure state,
+    reply draft, send approval, escalation ticket, MailerLite preview artifact,
+    CRM enrichment preview artifact, candidate queue, private artifact, or
+    CRM/source state
+  - future assistant reply policy design, draft preview, assistant reply send,
+    stop/close conversation, human escalation, email handoff, MailerLite
+    no-write preview, CRM enrichment preview, and CRM/source write remain
+    separate approval boundaries
+- `latest_commit`: pending lane-local commit for assistant reply policy
+  boundary design source commit
+  `1f01154e357e5842ffeaf81a068cd34def5d58f3`; pending central integration
+  commit
 - `latest_receipt`: redacted receipt path labels recorded in
   `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
-- `blockers`: no MailerLite no-write payload preview approval; no CRM
-  enrichment preview approval; no assistant reply approval; no repeatability run
-  selected; no production reply monitoring approval; no CRM/source write
-  approval
-- `latest_execution_note`: first controlled reply monitoring/email-handoff was
-  confirmed by the source lane before this central closeout. This central
-  closeout did not execute source actions.
-- `next_approval_needed`: choose MailerLite No-Write Payload Preview From
-  Controlled Email Handoff, CRM enrichment preview, assistant reply policy,
-  repeatability, or pause
-- `proposed_integration_note`: Welcome Audio lane now has the first confirmed
-  controlled reply monitoring/email-handoff result for the Controlled Welcome
-  Flow Proof. It proves one Safari-based controlled reply observation route for
-  the single controlled candidate after the confirmed controlled welcome audio
-  send, and it records that a private reply evidence packet and private
-  email-handoff candidate packet now exist. MailerLite no-write payload preview,
-  CRM enrichment preview/write, assistant reply, repeatability, standing
-  monitoring, and production automation remain separately gated. No private
-  identities, private artifact contents, DM content, raw handle, raw email, or
-  source-private content are integrated into central docs.
+- `blockers`: assistant reply draft preview remains unapproved; assistant reply
+  send remains unapproved; MailerLite mutation remains blocked by setup
+  inventory and no-write preview blockers; CRM enrichment/write remains
+  unapproved; no repeatability run selected; no production reply monitoring
+  approval; no CRM/source write approval
+- `latest_execution_note`: assistant reply policy boundary was designed as a
+  no-run lane-local artifact after the confirmed controlled welcome send,
+  reply/email-handoff result, and MailerLite no-write payload preview. This
+  lane work did not execute source actions. The boundary design is integrated
+  centrally as docs-only policy.
+- `assistant_reply_policy_boundary_status`: `integrated_design_complete`
+- `assistant_reply_execution_status`: `not_enabled`
+- `assistant_reply_draft_preview_status`: `not_started`
+- `assistant_reply_send_status`: `not_started`
+- `identity_disclosure_required`: true
+- `assistant_must_not_pretend_to_be_alejandro`: true
+- `next_recommended_step`: MailerLite no-secret setup inventory remains the
+  current default, unless Alejandro redirects to assistant draft preview or CRM
+  enrichment preview.
+- `next_approval_needed`: choose MailerLite setup inventory, controlled
+  assistant reply draft preview, controlled one-reply send, CRM enrichment
+  preview, or pause.
+- `proposed_integration_note`: Welcome Audio lane now has a no-run assistant
+  reply policy boundary for the Controlled Welcome Flow Proof. The artifact
+  defines assistant identity disclosure, Mantis/Mati signature rules,
+  no-Alejandro-impersonation rules, allowed and forbidden reply classes, human
+  escalation classes, conversation state, cadence and closure, private content
+  handling, future draft-preview and one-reply send approval boundaries,
+  storage/reference policy, stop conditions, and closed gates. It creates no
+  real reply draft, assistant reply send, MailerLite preview artifact, CRM
+  enrichment preview artifact, candidate queue, assistant persona deployment,
+  source state, or CRM write. MailerLite mutation, CRM enrichment/write,
+  assistant draft preview, assistant reply send, repeatability, standing
+  monitoring, and production automation remain separately gated.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

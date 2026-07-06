@@ -605,6 +605,40 @@ No lane outputs in review at creation.
   mutation, CRM enrichment/write, assistant reply, and source action gates
   closed until separately approved.
 
+### controlled_welcome_flow_assistant_reply_policy_boundary_integration_2026-07-06
+
+- `result_type`: `docs_only_policy_boundary_integration`
+- `source_workstream`: `welcome-audio-send-boundary`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-assistant-reply-policy-v2-parallel`
+- `source_commit`:
+  `1f01154e357e5842ffeaf81a068cd34def5d58f3`
+- `result_doc`:
+  `docs/crm-vnext/instagram-welcome-audio-assistant-reply-policy-boundary-design-v0.md`
+- `source_actions_executed`: false
+- `instagram_used`: false
+- `dm_opened`: false
+- `assistant_reply_drafted_from_private_content`: false
+- `assistant_reply_sent`: false
+- `welcome_audio_sent`: false
+- `mailerlite_used`: false
+- `gmail_used`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports`: false
+- `used_mantis_memory`: false
+- `legacy_crm_used`: false
+- `recommended_default_next_step`: Collect MailerLite No-Secret Setup
+  Inventory
+- `integration_note`: Assistant reply policy boundary integrated as no-run
+  design. Assistant reply draft preview, assistant reply send, reply
+  monitoring, MailerLite actions, CRM enrichment/write, and production
+  automation remain separately gated.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

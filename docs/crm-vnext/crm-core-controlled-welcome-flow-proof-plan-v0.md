@@ -265,6 +265,8 @@ Track E identity/CRM enrichment packet boundary: complete as no-run design.
 
 Track B first controlled execution approval packet: complete as no-run design.
 
+Assistant reply policy boundary design: complete as no-run policy boundary.
+
 M1 - Alejandro supplies non-secret setup/test facts.
 
 M2 - Controlled evidence packet design: complete as no-run design.
@@ -576,6 +578,34 @@ only.
 
 M7 - MailerLite no-write payload preview: complete for one controlled
 email-handoff test only.
+
+## Assistant Reply Policy Boundary Result — Integrated
+
+- Assistant Reply Policy Boundary design integrated.
+- Result doc:
+  `docs/crm-vnext/instagram-welcome-audio-assistant-reply-policy-boundary-design-v0.md`
+- Source branch:
+  `codex/crm-core-welcome-audio-assistant-reply-policy-v2-parallel`
+- Source commit:
+  `1f01154e357e5842ffeaf81a068cd34def5d58f3`
+- Status:
+  docs-only, no-run, policy boundary.
+- This defines future assistant/Mantis/Mati reply policy.
+- It does not authorize assistant reply drafting from private content.
+- It does not authorize assistant reply send.
+- It does not authorize reply monitoring.
+- It does not authorize MailerLite.
+- It does not authorize CRM writes.
+- It does not authorize source/live parallelism.
+- It preserves the rule that assistant replies must not pretend to be
+  Alejandro.
+- Assistant reply policy boundary design is completed.
+- Assistant reply draft preview is not complete.
+- Assistant reply send is not complete.
+- MailerLite setup inventory is not complete.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
 
 M8 - CRM enrichment packet preview.
 
