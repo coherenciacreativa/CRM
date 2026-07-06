@@ -279,3 +279,113 @@ Stop before any live run if:
 Central integration of this script/design, then a separate Alejandro approval
 for one live read-only MailerLite setup verification run using the redaction-safe
 command.
+
+## Live Read-Only Mode Implementation v2
+
+The first approved live read-only setup verification attempt blocked before live
+verification because the integrated command still had fixture-only behavior:
+`live_readonly_setup_verification_not_implemented_in_fixture_task`.
+
+v2 implements the live-readonly safety scaffold needed for a future separately
+approved setup/config verification run. The implementation remains no-live-run
+in this task and is validated with mocks only.
+
+What v2 implements:
+
+- explicit `--allow-live-readonly-setup-verification` gate for live mode;
+- path validation before any credential lookup or fetch;
+- live redacted receipts restricted to
+  `/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite/controlled-welcome-flow/`;
+- private setup refs restricted to
+  `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`;
+- existing internal credential use only inside the command after approval/path
+  prechecks;
+- no credential source, length, fingerprint, token, header, cookie, or env value
+  in stdout, stderr, redacted receipts, or tracked docs;
+- GET-only setup/config collection guarded by a request allowlist;
+- subscriber-row/profile endpoints explicitly blocked;
+- private setup refs artifact for raw setup IDs if a future live run needs them;
+- redacted JSON/Markdown receipts with labels/counts/statuses only;
+- conservative mutation readiness including idempotency status.
+
+Credential handling:
+
+- The credential provider is invoked only after the approval flag and output
+  paths pass validation.
+- Credentials are not summarized, fingerprinted, measured, logged, or printed.
+- Tests mock the credential provider and verify it is not called when approval or
+  path prechecks fail.
+
+GET/read-only allowlist:
+
+- `/groups`
+- `/automations`
+- `/fields`
+
+Any non-GET method, any subscriber route, or any endpoint outside the setup
+allowlist blocks with `blocked_live_contract_not_redaction_safe`.
+
+Subscriber-row prohibition:
+
+- No subscriber rows, profiles, emails, names, phone numbers, statuses, or
+  subscriber IDs are queried or written by this setup verification route.
+- Suppression and idempotency therefore remain conservative unless future
+  aggregate-only setup metadata can prove a safe condition without row reads.
+
+Redacted receipt model:
+
+- Redacted receipts may include aggregate counts, non-secret labels, mapping
+  statuses, blocker classes, idempotency status, mutation readiness, closed
+  gates, and next safe step.
+- Redacted receipts must never include group IDs, automation IDs, field IDs,
+  subscriber IDs, raw emails, tokens, headers, env values, credentials, raw API
+  payloads, private subscriber content, or private artifact contents.
+
+Private setup refs artifact model:
+
+- A future approved live run may write raw setup refs only to the approved
+  private MailerLite artifact path.
+- The private setup refs artifact is not a receipt and must not be printed,
+  committed, pasted into chat, or stored in tracked docs.
+- This implementation task writes no real private artifacts; tests use `/tmp`.
+
+Mocked test coverage:
+
+- fixture mode still succeeds;
+- live mode without approval blocks before credential lookup or fetch;
+- mocked live mode succeeds without real network;
+- private setup refs write only under an approved private artifact root;
+- redacted JSON/Markdown receipts omit fake IDs, fake emails, credential markers,
+  headers, tokens, env markers, and raw payload markers;
+- mutation methods are blocked;
+- subscriber endpoints are blocked;
+- output paths inside the repo are blocked;
+- live redacted receipt paths outside the approved root are blocked;
+- live private artifact paths outside the approved root are blocked;
+- field/group/automation mapping, trigger behavior, retrigger behavior,
+  suppression status, idempotency status, and mutation readiness are classified.
+
+Remaining live-run approval gate:
+
+This task does not run live verification. A future live run still requires the
+exact live-read approval phrase, approved output paths, clean worktree, and a
+separate no-mutation boundary.
+
+Stop conditions:
+
+- missing exact approval flag;
+- invalid output path;
+- credential unavailable;
+- non-GET method attempted;
+- subscriber endpoint attempted;
+- endpoint outside setup/config allowlist attempted;
+- redaction failure in stdout, stderr, or redacted receipts;
+- any attempt to mutate MailerLite or CRM/source state.
+
+Mutation remains blocked until a future live read-only setup verification result
+is reviewed. Even a green setup/config verification does not authorize
+subscriber mutation, group assignment, field creation, automation mutation,
+campaign send, CRM enrichment, CRM writes, scoring, ledgers, cards, Fact Store,
+or outreach.
+
+This task did not run live verification.
