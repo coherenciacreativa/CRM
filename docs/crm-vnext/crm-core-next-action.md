@@ -4216,12 +4216,16 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has a no-write mutation review packet
   design that can be reviewed before any future exact mutation approval.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_no_write_packet_from_private_evidence_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `minimal_no_write_packet_prepared_from_private_evidence`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
 - `objective`: Wait for Alejandro approval before preparing one MailerLite
   minimal no-write mutation review packet from the explicitly approved private
   controlled email-handoff evidence only.
@@ -4273,6 +4277,85 @@ routing and completion pointer.
 - `recommended_default`: Approve one no-write packet preparation from the
   approved private controlled email-handoff evidence, then review the redacted
   packet before any final idempotency/suppression check or mutation approval.
+- `findings`:
+  - MailerLite minimal no-write packet prepared from approved private
+    controlled email-handoff evidence.
+  - Source run id:
+    `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
+  - Packet prepared: true.
+  - Operation class:
+    `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`.
+  - Evidence status:
+    `validated_private_controlled_email_handoff_evidence`.
+  - Top-level email present: true.
+  - Private email anchor label present: true.
+  - Consent/context gate status: `present_private_evidence`.
+  - Mapped field families present: name; country; city.
+  - Omitted field families: source_channel; source_context;
+    onboarding_started_at; consent_or_context; crm_core_private_anchor_label.
+  - Final idempotency status: `required_not_run`.
+  - Final suppression status: `required_not_run`.
+  - Duplicate/readd status: `blocked_retrigger_unknown`.
+  - Mutation readiness: `no_write_packet_prepared_final_checks_required`.
+  - Blockers: final_idempotency_check_required;
+    final_suppression_check_required;
+    retrigger_behavior_unknown_blocks_duplicate_readd.
+  - No MailerLite API, MailerLite UI, subscriber rows, mutation, CRM writes,
+    private artifact contents, Mantis memory, Launch OS, or
+    `/Users/alejandrogomez/CRM` use occurred during central closeout.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one no-write packet preparation from approved private controlled
   email-handoff evidence.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before one final packet-specific
+  MailerLite idempotency and suppression check for the prepared no-write
+  packet.
+- `why_now`: A no-write packet was prepared from approved private controlled
+  email-handoff evidence. It is not safe for mutation until final idempotency
+  and suppression checks confirm the packet is not duplicate, not already in
+  the onboarding group, not suppressed, and not unsafe. Retrigger behavior
+  remains unknown, so duplicate/re-add must remain blocked.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain what the read-only final check would verify.
+  - Wait for approval, modification, pause, or decline.
+  - No execution.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No raw email in chat.
+  - No raw IDs.
+  - No raw subscriber rows.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to perform one final
+  packet-specific MailerLite idempotency and suppression check for the
+  explicitly approved private onboarding packet only. Use existing internal
+  credentials without printing or inspecting them. Read only the minimum
+  subscriber/group/status metadata needed to decide whether the approved packet
+  is safe to execute. Do not mutate anything, do not print raw emails, IDs,
+  subscriber rows, tokens, headers, env values, credentials, raw payloads, or
+  private subscriber content, and write only redacted aggregate receipts.
+- `recommended_default`: Approve one final packet-specific
+  idempotency/suppression check, then review the redacted result before any
+  mutation approval.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one final packet-specific idempotency/suppression check.

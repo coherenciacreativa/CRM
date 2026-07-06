@@ -453,18 +453,25 @@
     future mutation approval
   - Safari upload hardening temporary branch remains ready but was not
     integrated in this run
-- `latest_commit`: pending minimal no-write mutation review design central
-  integration commit; source lane commit
-  `bc5f581d4d62f3269588fb1142200980d99442b6`
-- `latest_receipt`: source result doc integrated at
-  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-design-v0.md`
-- `blockers`: no-write packet has not been prepared from approved private
-  evidence; final idempotency/suppression checks remain unresolved;
+  - MailerLite minimal no-write packet from private evidence closeout recorded
+  - Central closeout used redacted receipts only
+  - No private artifacts were read
+  - No source actions occurred during central closeout
+  - No MailerLite API/UI occurred during central closeout
+  - No mutation occurred
+  - Final idempotency/suppression check is the next approval gate
+  - Safari upload hardening temporary branch remains ready but untouched
+- `latest_commit`: pending no-write packet from private evidence closeout
+  central commit; source run id
+  `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
+- `latest_receipt`: central result doc at
+  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
+- `blockers`: final idempotency/suppression checks remain unresolved;
   duplicate/re-add remains blocked while retrigger behavior is unknown;
   MailerLite mutation, CRM enrichment/write, assistant reply, and production
   automation remain closed
-- `next_approval_needed`: approve or pause no-write packet preparation from
-  approved private controlled email-handoff evidence
+- `next_approval_needed`: approve or pause one final packet-specific
+  idempotency/suppression check
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

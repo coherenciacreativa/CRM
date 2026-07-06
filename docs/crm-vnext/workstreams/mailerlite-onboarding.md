@@ -200,23 +200,34 @@
     `blocked_pending_no_write_packet_preparation_final_idempotency_suppression_check_and_exact_mutation_approval`
   - recommended_next_step: approve or pause no-write packet preparation from
     approved private controlled email-handoff evidence.
-- `latest_commit`: pending central integration commit for minimal no-write
-  mutation review packet design; lane source commit
-  `bc5f581d4d62f3269588fb1142200980d99442b6`
+  - minimal_no_write_packet_from_private_evidence_status:
+    `prepared_no_write`
+  - minimal_no_write_packet_from_private_evidence_result_doc:
+    `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
+  - mutation_readiness:
+    `no_write_packet_prepared_final_checks_required`
+  - final_idempotency_status: `required_not_run`
+  - final_suppression_status: `required_not_run`
+  - duplicate_readd_status: `blocked_retrigger_unknown`
+  - recommended_next_step: prepare final packet-specific
+    idempotency/suppression check approval boundary.
+- `latest_commit`: pending central closeout commit for minimal no-write packet
+  from private evidence; source run id
+  `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
 - `latest_receipt`: redacted receipt path labels recorded in
-  `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
-- `blockers`: final top-level email payload semantics must be reviewed in
-  the no-write packet; retrigger behavior remains unknown for duplicate/re-add
-  paths; suppression and idempotency require final packet-specific checks before
-  mutation.
+  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
+- `blockers`: final idempotency/suppression checks remain unresolved;
+  duplicate/re-add remains blocked while retrigger behavior is unknown;
+  MailerLite mutation, CRM enrichment/write, assistant reply, and production
+  automation remain closed
 - `setup_verification_live_mode_status`: `implemented_and_mock_tested`
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
-- `mutation_readiness`: `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`
-- `next_recommended_step`: approve or pause no-write packet preparation from
-  approved private controlled email-handoff evidence.
-- `next_approval_needed`: separate approval for no-write packet preparation
-  from approved private controlled email-handoff evidence.
+- `mutation_readiness`: `no_write_packet_prepared_final_checks_required`
+- `next_recommended_step`: prepare final packet-specific
+  idempotency/suppression check approval boundary.
+- `next_approval_needed`: separate approval for one final packet-specific
+  idempotency/suppression check.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
@@ -226,7 +237,7 @@
   The first live read-only setup/config verification confirmed current group
   and automation mapping. The setup drift resolution packet is integrated, and
   Alejandro has now supplied no-secret field requiredness and trigger answers.
-  Mutation remains blocked pending a no-write mutation review packet and final
-  packet-specific suppression/idempotency checks.
+  Mutation remains blocked pending final packet-specific
+  suppression/idempotency checks and exact future mutation approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

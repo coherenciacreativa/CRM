@@ -264,6 +264,9 @@ design.
 Track D MailerLite minimal no-write mutation review packet design:
 complete/integrated as no-run design.
 
+Track D MailerLite minimal no-write packet from private evidence:
+prepared/no-write; final checks required.
+
 Track E identity/CRM enrichment packet boundary: complete as no-run design.
 
 Track B first controlled execution approval packet: complete as no-run design.
@@ -879,6 +882,45 @@ Interpretation:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Minimal No-Write Packet From Private Evidence — Prepared
+
+- Source run id:
+  `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
+- Packet prepared:
+  true
+- Operation class:
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+- Top-level email present:
+  true
+- Consent/context present:
+  `present_private_evidence`
+- Mapped fields:
+  name; country; city
+- Omitted field families:
+  source_channel; source_context; onboarding_started_at; consent_or_context;
+  crm_core_private_anchor_label
+- Final idempotency check:
+  `required_not_run`
+- Final suppression check:
+  `required_not_run`
+- Duplicate/readd:
+  blocked because retrigger behavior is unknown
+- Mutation readiness:
+  `no_write_packet_prepared_final_checks_required`
+- No MailerLite API occurred.
+- No MailerLite UI occurred.
+- No MailerLite mutation occurred.
+- No subscriber mutation occurred.
+- No group assignment occurred.
+- No field creation occurred.
+- No automation mutation occurred.
+- No campaign send occurred.
+- No CRM/source writes occurred.
+- Mutation remains blocked pending final idempotency/suppression checks,
+  duplicate/readd safety, and exact future mutation approval.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.
@@ -913,11 +955,11 @@ M9 - Operator brief / heat preview, still no writes unless approved.
 
 The original plan task completed only M0. This record now also marks M5, M6,
 and M7 complete for one controlled test only, plus MailerLite minimal no-write
-mutation review packet design as completed/integrated. MailerLite no-write
-packet preparation from private evidence, final idempotency/suppression check,
-MailerLite mutation, CRM enrichment/write, assistant reply, production
-automation, standing sends, and next-best-action execution remain incomplete
-and closed unless separately approved.
+mutation review packet design as completed/integrated and one MailerLite
+minimal no-write packet from private evidence as prepared. Final
+idempotency/suppression check, MailerLite mutation, CRM enrichment/write,
+assistant reply, production automation, standing sends, and next-best-action
+execution remain incomplete and closed unless separately approved.
 
 ## Required Alejandro-Provided Facts Later
 

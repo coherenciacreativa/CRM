@@ -900,6 +900,50 @@ No lane outputs in review at creation.
 - `recommended_default`: Approve one no-write packet preparation from the
   approved private controlled email-handoff evidence only.
 
+### controlled_welcome_flow_mailerlite_no_write_packet_from_private_evidence_closeout_2026-07-06
+
+- `result_type`: `no_write_packet_from_private_evidence_closeout`
+- `source_run_id`:
+  `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
+- `packet_prepared`: true
+- `packet_id`:
+  `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
+- `operation_class`:
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+- `evidence_status`:
+  `validated_private_controlled_email_handoff_evidence`
+- `top_level_email_present`: true
+- `private_email_anchor_label_present`: true
+- `consent_context_gate_status`: `present_private_evidence`
+- `mapped_field_families_present`: `name; country; city`
+- `omitted_field_families`:
+  `source_channel; source_context; onboarding_started_at; consent_or_context; crm_core_private_anchor_label`
+- `final_idempotency_status`: `required_not_run`
+- `final_suppression_status`: `required_not_run`
+- `duplicate_readd_status`: `blocked_retrigger_unknown`
+- `mutation_readiness`: `no_write_packet_prepared_final_checks_required`
+- `blockers`:
+  `final_idempotency_check_required; final_suppression_check_required; retrigger_behavior_unknown_blocks_duplicate_readd`
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `subscriber_rows_read_or_printed`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `repo_files_edited_by_source_run`: false
+- `commit_created_by_source_run`: false
+- `push_performed_by_source_run`: false
+- `decision_needed`: approve or pause one final packet-specific MailerLite
+  idempotency and suppression check.
+- `recommended_default`: Approve one final packet-specific
+  idempotency/suppression check, then review the redacted result before any
+  mutation approval.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
