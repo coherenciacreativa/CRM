@@ -538,17 +538,54 @@ M5 - Controlled send execution: complete for one controlled test only.
 M6 - Controlled reply/email handoff evidence: complete for one controlled test
 only.
 
-M7 - MailerLite no-write payload preview.
+## First MailerLite No-Write Payload Preview Result — Mutation Blocked
+
+- First MailerLite no-write payload preview from controlled email-handoff
+  evidence completed.
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`.
+- Source run id:
+  `crm_core_mailerlite_no_write_payload_preview_from_controlled_email_handoff_2026-07-05`.
+- Prior email handoff run id:
+  `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`.
+- Prior send run id:
+  `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`.
+- No-write payload preview created: true.
+- Payload field family count: 9.
+- Field mapping status:
+  `confirmed_existing_field=1`; `requires_setup_inventory=8`.
+- Group mapping status: `requires_setup_inventory`.
+- Automation mapping status: `requires_setup_inventory`.
+- Idempotency status: `no_write_preview_only`.
+- Suppression status: `not_verified_no_mailerlite_read`.
+- Mutation readiness: `blocked_missing_setup_inventory`.
+- No MailerLite API occurred.
+- No MailerLite UI occurred.
+- No MailerLite mutation occurred.
+- No subscriber mutation occurred.
+- No group assignment occurred.
+- No field creation occurred.
+- No automation mutation occurred.
+- No campaign send occurred.
+- No CRM/source writes occurred.
+- No raw email, raw handle, message text, or private artifact contents were
+  printed.
+- No private artifacts were integrated.
+- No Mantis memory was used.
+- No `/Users/alejandrogomez/CRM` was used.
+
+M7 - MailerLite no-write payload preview: complete for one controlled
+email-handoff test only.
 
 M8 - CRM enrichment packet preview.
 
 M9 - Operator brief / heat preview, still no writes unless approved.
 
-The original plan task completed only M0. This record now also marks M5 and M6
-complete for one controlled test only. MailerLite onboarding, MailerLite
-mutation, CRM enrichment/write, assistant reply, production automation,
-standing sends, and next-best-action execution remain incomplete and closed
-unless separately approved.
+The original plan task completed only M0. This record now also marks M5, M6,
+and M7 complete for one controlled test only. MailerLite setup inventory,
+MailerLite mutation, CRM enrichment/write, assistant reply, production
+automation, standing sends, and next-best-action execution remain incomplete
+and closed unless separately approved.
 
 ## Required Alejandro-Provided Facts Later
 

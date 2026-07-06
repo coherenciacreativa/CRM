@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `no_write_payload_preview_alignment_drafted`
+- `status`: `first_controlled_email_handoff_no_write_payload_preview_created_mutation_blocked`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -72,35 +72,47 @@
     phrases, stop conditions, and closed gates.
   - no real private payload was prepared and no MailerLite API/UI/source action
     occurred.
+  - first controlled email-handoff no-write payload preview completed under
+    separate private no-write preview approval
+  - result artifact:
+    `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
+  - first_controlled_email_handoff_no_write_payload_preview_status:
+    `completed_no_write_payload_preview_created_mutation_blocked`
+  - prior_email_handoff_run_id:
+    `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`
+  - no_write_payload_preview_created: true
+  - payload_field_family_count: 9
+  - field_mapping_status_counts: `confirmed_existing_field=1`;
+    `requires_setup_inventory=8`
+  - group_mapping_status: `requires_setup_inventory`
+  - automation_mapping_status: `requires_setup_inventory`
+  - idempotency_status: `no_write_preview_only`
+  - suppression_status: `not_verified_no_mailerlite_read`
+  - mutation_readiness: `blocked_missing_setup_inventory`
+  - mailerlite_api_called: false
+  - mailerlite_ui_used: false
+  - mailerlite_mutation: false
+  - production_onboarding_status: `not_enabled`
+  - no raw email, raw handle, message text, private payload values, private
+    candidate details, or private artifact contents are recorded in central docs
   - no execution gates: no MailerLite API, no MailerLite UI, no Gmail, no
     Instagram, no secrets, no CRM writes
-- `latest_commit`: pending
-- `latest_receipt`: none
+- `latest_commit`: pending central closeout commit for first controlled
+  email-handoff no-write payload preview result
+- `latest_receipt`: redacted receipt path labels recorded in
+  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
 - `blockers`: setup inventory collection still requires exact Alejandro
-  approval; read-only setup verification remains unexecuted and requires exact
-  separate approval; no-write payload preview execution requires an explicitly
-  approved private email handoff evidence packet
-- `next_approval_needed`: central integration review for the no-write payload
-  preview alignment, then choose setup inventory collection, read-only
-  no-secret setup verification, or a later no-write payload preview from an
-  approved private evidence packet
-- `proposed_integration_note`: no central file change required for this lane
-  doc update. After review, Integration may record that the MailerLite lane has
-  a dedicated no-secret setup inventory packet design at
-  `docs/crm-vnext/mailerlite-onboarding-setup-inventory-packet-v0.md` and a
-  CEO-friendly questionnaire at
-  `docs/crm-vnext/mailerlite-onboarding-setup-inventory-questionnaire-v0.md`.
-  The questionnaire now includes a local-history reconciliation that reduces
-  Alejandro's manual answer burden; setup inventory collection and any
-  read-only API verification remain unexecuted and require exact Alejandro
-  approval. The lane now also has a no-run answer-intake packet at
-  `docs/crm-vnext/mailerlite-onboarding-setup-inventory-answer-intake-packet-v0.md`
-  for safe future collection of no-secret setup answers. The lane also has a
-  no-run no-write payload preview alignment at
-  `docs/crm-vnext/mailerlite-onboarding-no-write-payload-preview-alignment-v0.md`
-  connecting approved private email handoff evidence to MailerLite preview
-  schema, mapping, idempotency, suppression/status checks, redacted receipts,
-  and future approval boundaries without preparing a real private payload or
-  calling MailerLite.
+  approval; group mapping requires setup inventory; automation mapping requires
+  setup inventory; custom field mapping requires setup inventory; suppression
+  status is not verified because no MailerLite read occurred; idempotency for
+  mutation is not verified because no MailerLite read occurred
+- `next_approval_needed`: Collect MailerLite No-Secret Setup Inventory.
+- `proposed_integration_note`: MailerLite lane now has the first private
+  no-write payload preview from controlled Instagram email-handoff evidence.
+  The preview proves CRM Core can prepare a private onboarding payload preview
+  without calling MailerLite or mutating subscribers, groups, fields,
+  automations, campaigns, CRM state, or source state. Mutation readiness remains
+  blocked by setup inventory, mapping, suppression, and idempotency checks. The
+  next recommended step is Collect MailerLite No-Secret Setup Inventory.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

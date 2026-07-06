@@ -3883,20 +3883,68 @@ routing and completion pointer.
 - `completion_definition`: CRM Core recorded the first confirmed controlled
   reply monitoring/email-handoff result and preserved all downstream gates.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_first_reply_email_handoff_next_step_selection_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `selected_step`: MailerLite No-Write Payload Preview From Controlled Email
+  Handoff.
+- `result`: First MailerLite no-write payload preview from controlled
+  email-handoff evidence completed.
+- `completion_artifact`:
+  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
+- `findings`:
+  - Source run id:
+    `crm_core_mailerlite_no_write_payload_preview_from_controlled_email_handoff_2026-07-05`.
+  - Prior email handoff run id:
+    `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`.
+  - Prior send run id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`.
+  - No-write payload preview created.
+  - Payload field family count: 9.
+  - Field mapping status counts: `confirmed_existing_field=1`;
+    `requires_setup_inventory=8`.
+  - Group mapping status: `requires_setup_inventory`.
+  - Automation mapping status: `requires_setup_inventory`.
+  - Idempotency status: `no_write_preview_only`.
+  - Suppression status: `not_verified_no_mailerlite_read`.
+  - Mutation readiness: `blocked_missing_setup_inventory`.
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No MailerLite mutation.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No CRM/source writes.
+  - No private artifact integration.
+  - No Mantis memory.
+  - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: CRM Core recorded the first MailerLite no-write
+  payload preview result from controlled email-handoff evidence and preserved
+  all mutation and CRM/source write gates.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_mailerlite_no_write_payload_preview_next_step_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
 - `objective`: Choose the next Controlled Welcome Flow step after the first
-  confirmed controlled reply monitoring and email-handoff candidate, or pause.
+  MailerLite no-write payload preview from controlled email-handoff evidence,
+  or pause.
 - `why_now`: CRM Core has now completed a confirmed controlled welcome audio
-  send and a confirmed controlled reply monitoring/email-handoff result. A
-  private email-handoff candidate now exists, so the next decision is whether
-  to prepare a MailerLite no-write payload preview from the approved private
-  evidence, prepare a CRM enrichment preview, design assistant reply policy, run
-  repeatability, or pause.
+  send, a controlled reply/email-handoff result, and a MailerLite private
+  no-write payload preview. The preview is blocked for mutation because setup
+  inventory, group mapping, automation mapping, field mapping, suppression
+  verification, and mutation idempotency are not complete. The next decision is
+  whether to collect no-secret MailerLite setup inventory, perform separate
+  no-write setup verification, prepare CRM enrichment preview, continue
+  assistant reply policy, or pause.
 - `allowed_scope`:
   - Present options.
   - Recommend one next step.
@@ -3908,7 +3956,14 @@ routing and completion pointer.
   - No DMs.
   - No welcome audio.
   - No reply monitoring.
-  - No MailerLite.
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No MailerLite mutation.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
   - No Gmail.
   - No Meta Business Suite.
   - No private artifact inspection.
@@ -3923,12 +3978,11 @@ routing and completion pointer.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. MailerLite No-Write Payload Preview From Controlled Email Handoff.
-  2. CRM Enrichment Preview From Controlled Welcome Evidence.
-  3. Assistant Reply Policy Design.
-  4. First Controlled Flow Repeatability Run.
+  1. Collect MailerLite No-Secret Setup Inventory.
+  2. MailerLite No-Write Setup Verification, separately approved.
+  3. CRM Enrichment Preview From Controlled Welcome Evidence.
+  4. Assistant Reply Policy Design.
   5. Pause.
-- `recommended_default`: MailerLite No-Write Payload Preview From Controlled
-  Email Handoff.
+- `recommended_default`: Collect MailerLite No-Secret Setup Inventory.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
   step or pauses.

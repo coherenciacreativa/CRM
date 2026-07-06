@@ -536,6 +536,75 @@ No lane outputs in review at creation.
   MailerLite, CRM enrichment/write, assistant reply, repeatability, and source
   action gates closed until separately approved.
 
+### controlled_welcome_flow_mailerlite_no_write_payload_preview_closeout_2026-07-05
+
+- `result_type`: `private_no_write_payload_preview_closeout`
+- `source_workstream`: `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_worktree`: `/Users/alejandrogomez/CRM-core-mailerlite`
+- `source_run_id`:
+  `crm_core_mailerlite_no_write_payload_preview_from_controlled_email_handoff_2026-07-05`
+- `prior_email_handoff_run_id`:
+  `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`
+- `prior_send_run_id`:
+  `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
+- `files_changed`:
+  - `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/workstreams/mailerlite-onboarding.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Recorded the first private MailerLite no-write payload preview
+  created from controlled Instagram email-handoff evidence using only the
+  redacted closeout. Mutation remains blocked by setup inventory, mapping,
+  suppression, and idempotency checks.
+- `tests_or_checks`: `git diff --check`; raw target URL check; private content,
+  raw handle, and raw email check; owner token check
+- `no_write_payload_preview_created`: true
+- `payload_field_family_count`: 9
+- `field_mapping_status_counts`: `confirmed_existing_field=1`;
+  `requires_setup_inventory=8`
+- `group_mapping_status`: `requires_setup_inventory`
+- `automation_mapping_status`: `requires_setup_inventory`
+- `idempotency_status`: `no_write_preview_only`
+- `suppression_status`: `not_verified_no_mailerlite_read`
+- `mutation_readiness`: `blocked_missing_setup_inventory`
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `raw_email_printed`: false
+- `raw_handle_printed`: false
+- `raw_message_text_printed`: false
+- `private_artifact_contents_printed`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow step
+- `recommended_default`: Collect MailerLite No-Secret Setup Inventory
+- `integration_recommendation`: commit central closeout if checks pass; keep
+  setup inventory collection, MailerLite reads/API verification, MailerLite
+  mutation, CRM enrichment/write, assistant reply, and source action gates
+  closed until separately approved.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
@@ -543,7 +612,7 @@ No lane outputs rejected at creation.
 ## CEO Decision Required
 
 Decision required: choose the next Controlled Welcome Flow Proof step after the
-first confirmed controlled reply/email-handoff result, or pause.
+first MailerLite no-write payload preview result, or pause.
 Prior lane approval options remain available for:
 
 - `mailerlite-onboarding`

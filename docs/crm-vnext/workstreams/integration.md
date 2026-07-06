@@ -309,17 +309,38 @@
     private identity values were integrated into central docs
   - next central task: choose next Controlled Welcome Flow Proof step after the
     first confirmed controlled reply/email-handoff result
-- `latest_commit`: pending first controlled reply/email-handoff central
+  - First MailerLite no-write payload preview from controlled email-handoff
+    evidence closeout added
+  - This was a private no-write payload preview result, not a MailerLite
+    mutation
+  - source run id:
+    `crm_core_mailerlite_no_write_payload_preview_from_controlled_email_handoff_2026-07-05`
+  - result artifact added:
+    `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
+  - Central closeout used redacted report only
+  - No private artifacts or receipt contents were inspected
+  - No new source action occurred during closeout
+  - No MailerLite API or UI occurred during closeout
+  - The preview confirms a private onboarding payload can be prepared from
+    controlled evidence
+  - Mutation remains blocked by setup inventory, idempotency, and suppression
+    verification
+  - MailerLite mutation and CRM writes remain separately gated
+  - no raw email, raw handle, message text, payload contents, private artifact
+    contents, or private identity values were integrated into central docs
+  - next central task: choose next Controlled Welcome Flow Proof step after the
+    first MailerLite no-write payload preview result
+- `latest_commit`: pending first MailerLite no-write payload preview central
   closeout commit
 - `latest_receipt`: redacted source receipt path labels recorded in
-  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
-- `blockers`: next Controlled Welcome Flow Proof step after first confirmed
-  controlled reply/email-handoff not yet selected; MailerLite no-write payload
-  preview, CRM enrichment/write, assistant reply, production monitoring, and
-  standing sends remain closed
-- `next_approval_needed`: choose MailerLite No-Write Payload Preview From
-  Controlled Email Handoff, CRM enrichment preview, assistant reply policy,
-  repeatability, or pause
+  `docs/crm-vnext/mailerlite-onboarding-first-controlled-email-handoff-no-write-payload-preview-result-v0.md`
+- `blockers`: next Controlled Welcome Flow Proof step after first MailerLite
+  no-write payload preview not yet selected; setup inventory collection,
+  MailerLite read/API verification, MailerLite mutation, CRM enrichment/write,
+  assistant reply, and production automation remain closed
+- `next_approval_needed`: choose MailerLite no-secret setup inventory,
+  MailerLite no-write setup verification, CRM enrichment preview, assistant
+  reply policy, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in
