@@ -852,6 +852,54 @@ No lane outputs in review at creation.
 - `recommended_default`: Prepare MailerLite minimal no-write mutation review
   packet.
 
+### controlled_welcome_flow_mailerlite_minimal_no_write_mutation_review_design_integration_2026-07-06
+
+- `result_type`: `no_write_mutation_review_packet_design_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `bc5f581d4d62f3269588fb1142200980d99442b6`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-design-v0.md`
+- `top_level_email_semantics`: `native_top_level_subscriber_email_required`
+- `mapped_field_families_for_v1`:
+  `name; country; city when present in approved private evidence`
+- `omitted_mailerlite_field_families_for_v1`:
+  `source_channel; source_context; onboarding_started_at; consent_or_context; crm_core_private_anchor_label`
+- `consent_context_gate`: `required_keep_outside_mailerlite`
+- `private_anchor_policy`: `keep_outside_mailerlite`
+- `group_trigger_behavior`: `confirmed_yes_by_Alejandro`
+- `retrigger_behavior`: `unknown_blocks_duplicate_readd`
+- `final_idempotency_suppression_check_required`: true
+- `preferred_future_operation_class`:
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+- `no_write_packet_preparation_readiness`:
+  `ready_after_central_integration_and_separate_private_evidence_approval`
+- `actual_mutation_readiness`:
+  `blocked_pending_no_write_packet_preparation_final_idempotency_suppression_check_and_exact_mutation_approval`
+- `future_approval_templates_included`: true
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `subscriber_rows_read_or_printed`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_lane`: false
+- `used_mantis_private_source_artifacts_by_source_lane`: false
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: approve or pause no-write packet preparation from
+  approved private controlled email-handoff evidence
+- `recommended_default`: Approve one no-write packet preparation from the
+  approved private controlled email-handoff evidence only.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
