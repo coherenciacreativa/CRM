@@ -3991,24 +3991,49 @@ routing and completion pointer.
   verification guard and moved the active boundary to one separately approved
   live read-only setup verification run.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_readonly_setup_verification_live_run_awaiting_approval_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `blocked_before_live_verification`
+- `findings`:
+  - The prior live verification approval attempt blocked before live
+    verification because integrated live mode was not implemented.
+  - MailerLite setup read-only verification live guard v2 is now integrated.
+  - Live setup verification remains not run.
+  - Mutation readiness remains blocked pending live read-only setup
+    verification and final mutation gates.
+  - No live MailerLite API, MailerLite UI, credential inspection, subscriber
+    row read, MailerLite mutation, CRM/source write, private artifact
+    integration, Launch OS doc, Mantis memory, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred during integration.
+- `completion_definition`: CRM Core recorded the blocked v0 live verification
+  boundary and replaced it with a v1 approval boundary for the implemented v2
+  redaction-safe command.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_readonly_setup_verification_live_run_awaiting_approval_v1`
 - `status`: `blocked`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
 - `objective`: Wait for Alejandro approval before one live read-only MailerLite
-  setup verification run using the redaction-safe setup verification command.
-- `why_now`: CRM Core now has a fixture-tested redaction-safe MailerLite setup
-  verification command. The prior no-write payload preview remains
-  mutation-blocked because group mapping, automation mapping, field mapping,
-  trigger behavior, retrigger behavior, suppression, and idempotency are not
-  live-verified. A single read-only setup verification run can reduce those
-  blockers without mutation.
+  setup verification run using the v2 implemented redaction-safe setup
+  verification command.
+- `why_now`: CRM Core now has an implemented and mocked-live-tested
+  redaction-safe MailerLite setup verification command. The prior live attempt
+  blocked before touching MailerLite because live mode was not implemented. The
+  no-write payload preview remains mutation-blocked because group mapping,
+  automation mapping, field mapping, trigger behavior, retrigger behavior,
+  suppression, and idempotency are not live-verified. A single read-only setup
+  verification run can reduce those blockers without mutation.
 - `allowed_scope`:
   - Present exact approval phrase.
   - Explain what the read-only verification would check.
-  - Wait for approval, modification, or pause.
+  - Wait for approval, modification, decline, or pause.
   - No execution in this next-action selection step.
 - `forbidden_scope`:
   - No MailerLite API until exact approval.
@@ -4033,7 +4058,7 @@ routing and completion pointer.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `approval_phrase_required`: I approve one CRM Core MailerLite read-only setup
-  verification run using the redaction-safe setup verification command only.
+  verification run using the v2 redaction-safe setup verification command only.
   Use existing internal credentials without printing or inspecting them. Query
   only setup/config metadata needed for onboarding readiness. Do not read
   subscriber rows, do not mutate subscribers, groups, fields, automations,

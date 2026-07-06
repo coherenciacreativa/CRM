@@ -619,6 +619,58 @@ email-handoff test only.
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Read-Only Setup Verification Live Guard v2 — Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-readonly-setup-verification-script-design-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `b2f9f1e16169a86f2327ac9c98106b5971a9e72a`
+- Previous live blocker:
+  `live_readonly_setup_verification_not_implemented_in_fixture_task`
+- Status:
+  `live_mode_implemented_and_mock_tested`
+- Live setup verification:
+  `not_run_after_v2`
+- Mocked live mode tested:
+  true
+- Setup/config-only scope enforced:
+  true
+- Subscriber rows forbidden by tests:
+  true
+- Mutation methods forbidden by tests:
+  true
+- Credential provider precheck order tested:
+  true
+- Fixture mode tested:
+  true
+- Live mode blocked without explicit approval:
+  true
+- Redacted receipts tested:
+  true
+- Output paths inside repo rejected:
+  true
+- MailerLite API called:
+  false
+- MailerLite UI used:
+  false
+- Credentials inspected or printed:
+  false
+- Subscriber rows read or printed:
+  false
+- Mutation readiness:
+  `blocked_pending_live_readonly_setup_verification`
+- This guard exists to support a future separately approved read-only
+  MailerLite setup verification run.
+- It does not authorize live verification or mutation.
+- Live-readonly setup verification guard v2 is integrated.
+- Live setup verification is not complete.
+- MailerLite setup inventory is not complete.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.

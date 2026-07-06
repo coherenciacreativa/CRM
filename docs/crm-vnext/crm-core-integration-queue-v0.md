@@ -678,6 +678,54 @@ No lane outputs in review at creation.
 - `recommended_default`: approve one live read-only MailerLite setup
   verification run using the redaction-safe command
 
+### controlled_welcome_flow_mailerlite_setup_readonly_live_guard_v2_integration_2026-07-06
+
+- `result_type`: `live_readonly_guard_implementation_integration`
+- `source_workstream`: `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `b2f9f1e16169a86f2327ac9c98106b5971a9e72a`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-readonly-setup-verification-script-design-v0.md`
+- `command`: `npm run crm:vnext:mailerlite-setup-readonly-verification`
+- `previous_live_blocker_recorded`:
+  `live_readonly_setup_verification_not_implemented_in_fixture_task`
+- `live_mode_implemented`: true
+- `live_mode_real_run_performed`: false
+- `mocked_live_mode_tested`: true
+- `setup_config_only_scope_enforced`: true
+- `subscriber_rows_forbidden_by_tests`: true
+- `mutation_methods_forbidden_by_tests`: true
+- `credential_provider_precheck_order_tested`: true
+- `fixture_mode_tested`: true
+- `live_mode_blocked_without_explicit_approval`: true
+- `redacted_receipts_tested`: true
+- `output_paths_inside_repo_rejected`: true
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `subscriber_rows_read_or_printed`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports`: false
+- `used_mantis_private_source_artifacts`: false
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: approve or pause one live read-only MailerLite setup
+  verification run
+- `recommended_default`: approve one live read-only MailerLite setup
+  verification run using the implemented redaction-safe command
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
