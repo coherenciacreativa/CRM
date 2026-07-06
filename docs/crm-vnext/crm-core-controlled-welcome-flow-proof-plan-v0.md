@@ -507,7 +507,36 @@ controlled send only.
 
 M5 - Controlled send execution: complete for one controlled test only.
 
-M6 - Future reply/email handoff evidence.
+## First Live Controlled Reply / Email Handoff Result — Confirmed
+
+- First controlled reply monitoring / email handoff result completed.
+- Result doc:
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`.
+- Source run id:
+  `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`.
+- Prior send run id:
+  `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`.
+- Browser used: Safari.
+- Prior candidate validated: true.
+- Thread baseline completed: true.
+- Reply seen after READY: true.
+- Reply detection status: `detected`.
+- Private reply evidence packet created: true.
+- Email detected: true.
+- Contact fields detected count: 2.
+- Email handoff candidate packet created: true.
+- No MailerLite occurred.
+- No Gmail occurred.
+- No CRM/source writes occurred.
+- No card, Fact Store, ledger, or scoring writes occurred.
+- No unrelated DMs opened.
+- No raw message text, raw email, or raw handle was printed.
+- No private artifacts were integrated.
+- No Mantis memory was used.
+- No `/Users/alejandrogomez/CRM` was used.
+
+M6 - Controlled reply/email handoff evidence: complete for one controlled test
+only.
 
 M7 - MailerLite no-write payload preview.
 
@@ -515,11 +544,11 @@ M8 - CRM enrichment packet preview.
 
 M9 - Operator brief / heat preview, still no writes unless approved.
 
-The original plan task completed only M0. This record now also marks M5
-complete for one controlled test only. Production automation, reply monitoring,
-MailerLite onboarding, CRM enrichment/write, standing sends, and
-next-best-action execution remain incomplete and closed unless separately
-approved.
+The original plan task completed only M0. This record now also marks M5 and M6
+complete for one controlled test only. MailerLite onboarding, MailerLite
+mutation, CRM enrichment/write, assistant reply, production automation,
+standing sends, and next-best-action execution remain incomplete and closed
+unless separately approved.
 
 ## Required Alejandro-Provided Facts Later
 

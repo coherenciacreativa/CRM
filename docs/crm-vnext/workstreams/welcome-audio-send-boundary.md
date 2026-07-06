@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `first_controlled_send_confirmed_safari_route_proven`
+- `status`: `first_controlled_reply_email_handoff_confirmed`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -103,26 +103,47 @@
     `/Users/alejandrogomez/CRM` use occurred
   - production automation, reply monitoring, MailerLite onboarding, CRM
     enrichment/write, and standing sends remain closed
-- `latest_commit`: pending central closeout commit for first confirmed
-  controlled send result
+  - first controlled reply monitoring/email-handoff result completed and
+    confirmed under separate source-observation approval
+  - result artifact:
+    `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
+  - first_controlled_reply_monitoring_status:
+    `completed_detected_email_handoff_candidate_created`
+  - prior_send_run_id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+  - reply_detection_status: `detected`
+  - email_detected: true
+  - contact_fields_detected_count: 2
+  - email_handoff_candidate_packet_created: true
+  - browser_route_proven: Safari
+  - production_reply_monitoring_status: `not_enabled`
+  - mailerlite_status: `not_started`
+  - crm_write_status: `not_started`
+  - no raw handle, raw email, message text, private candidate details, or
+    private artifact contents are recorded in central docs
+- `latest_commit`: pending central closeout commit for first controlled
+  reply/email-handoff result
 - `latest_receipt`: redacted receipt path labels recorded in
-  `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
-- `blockers`: no production send approval; no repeatability run selected; no
-  reply monitoring approval; no MailerLite onboarding approval; no CRM
-  enrichment/write approval; Chrome upload route not proven
-- `latest_execution_note`: first controlled welcome audio send was confirmed by
-  the source lane before this central closeout. This central closeout did not
-  execute source actions.
-- `next_approval_needed`: choose the next Controlled Welcome Flow Proof step:
-  repeatability run, reply monitoring readiness/test, assistant reply policy,
-  Safari upload route hardening, or pause
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
+- `blockers`: no MailerLite no-write payload preview approval; no CRM
+  enrichment preview approval; no assistant reply approval; no repeatability run
+  selected; no production reply monitoring approval; no CRM/source write
+  approval
+- `latest_execution_note`: first controlled reply monitoring/email-handoff was
+  confirmed by the source lane before this central closeout. This central
+  closeout did not execute source actions.
+- `next_approval_needed`: choose MailerLite No-Write Payload Preview From
+  Controlled Email Handoff, CRM enrichment preview, assistant reply policy,
+  repeatability, or pause
 - `proposed_integration_note`: Welcome Audio lane now has the first confirmed
-  controlled welcome-audio send result for the Controlled Welcome Flow Proof.
-  It proves one Safari-based controlled upload/send path to one controlled
-  candidate using the approved audio asset label, while keeping candidate queue
-  generation, reply monitoring, MailerLite onboarding, CRM enrichment/write,
-  standing sends, and production automation closed. No private identities,
-  private artifact contents, DM content, raw controlled handle, or source-private
-  content are integrated into central docs.
+  controlled reply monitoring/email-handoff result for the Controlled Welcome
+  Flow Proof. It proves one Safari-based controlled reply observation route for
+  the single controlled candidate after the confirmed controlled welcome audio
+  send, and it records that a private reply evidence packet and private
+  email-handoff candidate packet now exist. MailerLite no-write payload preview,
+  CRM enrichment preview/write, assistant reply, repeatability, standing
+  monitoring, and production automation remain separately gated. No private
+  identities, private artifact contents, DM content, raw handle, raw email, or
+  source-private content are integrated into central docs.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

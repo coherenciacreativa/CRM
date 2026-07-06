@@ -289,16 +289,37 @@
     created
   - next central task: choose next Controlled Welcome Flow Proof step after the
     first confirmed controlled send
-- `latest_commit`: pending first confirmed controlled send central closeout
-  commit
+  - First controlled reply monitoring / email handoff result closeout added
+  - This was a live controlled source-observation result, not a docs-only
+    self-integration
+  - source run id:
+    `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`
+  - prior send run id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+  - result artifact added:
+    `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
+  - Central closeout used redacted report only
+  - No private artifacts or receipt contents were inspected
+  - No new source action occurred during closeout
+  - Safari route remains the proven browser route for controlled Instagram
+    DM/send/reply operations
+  - Email handoff candidate now exists privately
+  - MailerLite and CRM remain separately gated
+  - no raw message text, raw email, raw handle, private artifact contents, or
+    private identity values were integrated into central docs
+  - next central task: choose next Controlled Welcome Flow Proof step after the
+    first confirmed controlled reply/email-handoff result
+- `latest_commit`: pending first controlled reply/email-handoff central
+  closeout commit
 - `latest_receipt`: redacted source receipt path labels recorded in
-  `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
 - `blockers`: next Controlled Welcome Flow Proof step after first confirmed
-  controlled send not yet selected; production automation, reply monitoring,
-  MailerLite onboarding, CRM enrichment/write, and standing sends remain closed
-- `next_approval_needed`: choose repeatability run, reply monitoring
-  readiness/test, assistant reply policy, Safari upload route hardening, or
-  pause
+  controlled reply/email-handoff not yet selected; MailerLite no-write payload
+  preview, CRM enrichment/write, assistant reply, production monitoring, and
+  standing sends remain closed
+- `next_approval_needed`: choose MailerLite No-Write Payload Preview From
+  Controlled Email Handoff, CRM enrichment preview, assistant reply policy,
+  repeatability, or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

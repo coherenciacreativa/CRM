@@ -473,6 +473,69 @@ No lane outputs in review at creation.
   choose repeatability run, reply monitoring readiness/test, assistant reply
   policy, Safari upload route hardening, or pause.
 
+### controlled_welcome_flow_first_reply_email_handoff_closeout_2026-07-05
+
+- `result_type`: `live_controlled_source_observation_closeout`
+- `source_workstream`: `welcome-audio-send-boundary`
+- `source_branch`: `codex/crm-core-welcome-audio`
+- `source_worktree`: `/Users/alejandrogomez/CRM-core-welcome-audio`
+- `source_run_id`:
+  `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`
+- `prior_send_run_id`:
+  `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
+- `result_doc`:
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
+- `files_changed`:
+  - `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-proof-plan-v0.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Recorded the first confirmed controlled reply monitoring and
+  email-handoff candidate result for the Controlled Welcome Flow Proof using
+  only the redacted source-observation closeout. A private reply evidence packet
+  and private email-handoff candidate packet now exist; their contents were not
+  inspected or integrated.
+- `tests_or_checks`: `git diff --check`; raw target URL check; private content,
+  raw handle, and raw email check; owner token check
+- `instagram_ui_used`: true
+- `browser_used`: Safari
+- `messaging_route_opened_for_single_candidate_only`: true
+- `reply_seen_after_ready`: true
+- `reply_detection_status`: `detected`
+- `private_reply_evidence_packet_created`: true
+- `email_detected`: true
+- `contact_fields_detected_count`: 2
+- `email_handoff_candidate_packet_created`: true
+- `welcome_audio_sent_in_this_run`: false
+- `unrelated_dms_opened`: false
+- `mailerlite_used`: false
+- `gmail_used`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `raw_message_text_printed`: false
+- `raw_email_printed`: false
+- `raw_handle_printed`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: choose next Controlled Welcome Flow step
+- `recommended_default`: MailerLite No-Write Payload Preview From Controlled
+  Email Handoff
+- `integration_recommendation`: commit central closeout if checks pass; keep
+  MailerLite, CRM enrichment/write, assistant reply, repeatability, and source
+  action gates closed until separately approved.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
@@ -480,7 +543,7 @@ No lane outputs rejected at creation.
 ## CEO Decision Required
 
 Decision required: choose the next Controlled Welcome Flow Proof step after the
-First Controlled Execution Approval Packet Design, or pause.
+first confirmed controlled reply/email-handoff result, or pause.
 Prior lane approval options remain available for:
 
 - `mailerlite-onboarding`

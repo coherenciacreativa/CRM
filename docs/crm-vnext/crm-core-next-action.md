@@ -3843,70 +3843,92 @@ routing and completion pointer.
 - `completion_definition`: CRM Core recorded the first confirmed controlled
   welcome audio send result and preserved all downstream gates.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_first_confirmed_send_next_step_selection_v0`
+- `status`: `completed`
+- `created_at`: `2026-07-05`
+- `updated_at`: `2026-07-05`
+- `completed_at`: `2026-07-05`
+- `selected_step`: First controlled reply monitoring / email handoff under the
+  separately approved source-observation boundary.
+- `result`: First controlled reply monitoring / email handoff result completed
+  and confirmed.
+- `completion_artifact`:
+  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
+- `findings`:
+  - Source run id:
+    `crm_core_controlled_welcome_flow_first_controlled_reply_monitoring_email_handoff_2026-07-05`.
+  - Prior send run id:
+    `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`.
+  - Safari used.
+  - Prior controlled candidate validated.
+  - Message route opened only for the single controlled candidate.
+  - Thread baseline completed.
+  - Reply seen after READY.
+  - Reply detection status: `detected`.
+  - Private reply evidence packet created.
+  - Email detected.
+  - Contact fields detected count: 2.
+  - Email handoff candidate packet created.
+  - No unrelated DMs opened.
+  - No raw message text, raw email, raw handle, private identity, or private
+    artifact content was printed or integrated.
+  - No MailerLite.
+  - No Gmail.
+  - No CRM/source writes.
+  - No private artifact integration.
+  - No Mantis memory.
+  - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: CRM Core recorded the first confirmed controlled
+  reply monitoring/email-handoff result and preserved all downstream gates.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_after_first_reply_email_handoff_next_step_selection_v0`
 - `status`: `active`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-05`
-- `objective`: Choose the next Controlled Welcome Flow Proof step after the
-  first confirmed controlled welcome audio send, or pause.
-- `why_now`: CRM Core now has a confirmed single controlled welcome audio send
-  result using the Safari upload/send route. The next useful step is to decide
-  whether to prove repeatability, prepare reply monitoring readiness, design the
-  assistant reply policy, harden the Safari upload route, or pause before any
-  broader automation.
+- `objective`: Choose the next Controlled Welcome Flow step after the first
+  confirmed controlled reply monitoring and email-handoff candidate, or pause.
+- `why_now`: CRM Core has now completed a confirmed controlled welcome audio
+  send and a confirmed controlled reply monitoring/email-handoff result. A
+  private email-handoff candidate now exists, so the next decision is whether
+  to prepare a MailerLite no-write payload preview from the approved private
+  evidence, prepare a CRM enrichment preview, design assistant reply policy, run
+  repeatability, or pause.
 - `allowed_scope`:
-  - Present next proof-step options.
+  - Present options.
   - Recommend one next step.
   - Answer clarifying questions.
-  - Update docs only if separately approved.
-  - No source execution.
+  - No execution.
 - `forbidden_scope`:
-  - No UI relay execution.
-  - No UI, Computer Use, or `@Chrome`.
-  - No APIs.
+  - No UI/source execution.
   - No Instagram.
-  - No MailerLite.
-  - No Gmail.
-  - No Meta Business Suite.
-  - No app configuration.
-  - No webhook setup.
   - No DMs.
   - No welcome audio.
   - No reply monitoring.
-  - No email handoff extraction.
+  - No MailerLite.
+  - No Gmail.
+  - No Meta Business Suite.
   - No private artifact inspection.
   - No candidate queue generation.
-  - No candidate set creation.
-  - No audio asset confirmation from private state.
-  - No repeatability run without separate approval.
-  - No Safari upload route hardening execution.
-  - No CRM enrichment packet generation from real data.
-  - No source actions.
   - No CRM/source writes.
   - No card writes.
   - No Fact Store writes.
-  - No Signal Event Ledger writes.
-  - No Engagement Snapshot Ledger writes.
-  - No source-result ledger writes.
+  - No ledger writes.
   - No scoring writes.
-  - No next-best-action execution.
-  - No production automation.
-  - No standing sends.
-  - No branch/worktree changes unless separately approved.
   - No Launch OS docs.
   - No Mantis memory.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
 - `options_to_present`:
-  1. First Controlled Flow Repeatability Run.
-  2. Controlled Reply Monitoring Readiness / Test.
+  1. MailerLite No-Write Payload Preview From Controlled Email Handoff.
+  2. CRM Enrichment Preview From Controlled Welcome Evidence.
   3. Assistant Reply Policy Design.
-  4. Safari Upload Route Hardening Protocol.
+  4. First Controlled Flow Repeatability Run.
   5. Pause.
-- `recommended_default`: First Controlled Flow Repeatability Run unless
-  Alejandro wants to move directly to reply monitoring.
+- `recommended_default`: MailerLite No-Write Payload Preview From Controlled
+  Email Handoff.
 - `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
-  Proof step after the first confirmed controlled welcome audio send, modifies
-  the route, or pauses.
+  step or pauses.
