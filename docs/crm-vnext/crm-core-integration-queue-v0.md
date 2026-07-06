@@ -944,6 +944,40 @@ No lane outputs in review at creation.
   idempotency/suppression check, then review the redacted result before any
   mutation approval.
 
+### controlled_welcome_flow_mailerlite_final_check_guard_integration_2026-07-06
+
+- `result_type`: `readonly_final_check_guard_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `2b2f1837797f66bc57c7109ae69220d9ba085ec4`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `previous_blocker`: `route_not_implemented_or_not_redaction_safe`
+- `final_check_route_status`:
+  `final_check_route_guard_implemented_mocked_live_tested`
+- `live_final_check_real_run_performed`: false
+- `mocked_live_mode_tested`: true
+- `fixture_mode_tested`: true
+- `read_only_method_allowlist_tested`: true
+- `mutation_endpoints_forbidden_by_tests`: true
+- `credential_provider_precheck_order_tested`: true
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `subscriber_rows_read_or_printed`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `decision_needed`: approve or pause one final packet-specific
+  idempotency/suppression check
+- `recommended_default`: approve one final packet-specific read-only check
+  using the implemented guard
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

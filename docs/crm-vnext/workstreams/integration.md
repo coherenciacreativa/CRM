@@ -461,17 +461,28 @@
   - No mutation occurred
   - Final idempotency/suppression check is the next approval gate
   - Safari upload hardening temporary branch remains ready but untouched
-- `latest_commit`: pending no-write packet from private evidence closeout
-  central commit; source run id
-  `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
-- `latest_receipt`: central result doc at
-  `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
-- `blockers`: final idempotency/suppression checks remain unresolved;
-  duplicate/re-add remains blocked while retrigger behavior is unknown;
+  - MailerLite final idempotency/suppression check route guard integrated
+  - Source branch was canonical MailerLite lane
+  - Integration used source lane summary and source branch diff only
+  - No private artifacts or Mantis report contents were inspected during
+    central integration
+  - No new source action occurred during central integration
+  - No MailerLite API/UI occurred during central integration
+  - No mutation occurred
+  - Final live check remains separately approval-gated
+  - Safari upload hardening temporary branch remains ready but was not
+    integrated in this run
+- `latest_commit`: pending final idempotency/suppression guard integration
+  commit; source lane commit
+  `2b2f1837797f66bc57c7109ae69220d9ba085ec4`
+- `latest_receipt`: source result doc integrated at
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `blockers`: final live idempotency/suppression check remains unresolved;
+  duplicate/re-add remains blocked until the packet-specific result allows it;
   MailerLite mutation, CRM enrichment/write, assistant reply, and production
   automation remain closed
 - `next_approval_needed`: approve or pause one final packet-specific
-  idempotency/suppression check
+  idempotency/suppression check using the implemented guard
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

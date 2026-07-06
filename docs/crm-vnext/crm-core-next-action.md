@@ -4309,12 +4309,16 @@ routing and completion pointer.
   one no-write packet preparation from approved private controlled
   email-handoff evidence.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `final_check_route_guard_integrated`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
 - `objective`: Wait for Alejandro approval before one final packet-specific
   MailerLite idempotency and suppression check for the prepared no-write
   packet.
@@ -4354,6 +4358,69 @@ routing and completion pointer.
   is safe to execute. Do not mutate anything, do not print raw emails, IDs,
   subscriber rows, tokens, headers, env values, credentials, raw payloads, or
   private subscriber content, and write only redacted aggregate receipts.
+- `recommended_default`: Approve one final packet-specific
+  idempotency/suppression check, then review the redacted result before any
+  mutation approval.
+- `findings`:
+  - Prior final check attempt blocked because route was not implemented or not
+    redaction-safe.
+  - Final check route guard is now integrated.
+  - Route status:
+    `final_check_route_guard_implemented_mocked_live_tested`
+  - Live final check remains not run after guard integration.
+  - Real mutation remains blocked.
+  - No MailerLite API/UI, subscriber row read, mutation, CRM/source write,
+    private artifact integration, Launch OS, Mantis memory, or
+    `/Users/alejandrogomez/CRM` occurred during integration.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one final packet-specific idempotency/suppression check.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v1`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before one final packet-specific
+  MailerLite idempotency and suppression read-only check using the implemented
+  guard.
+- `why_now`: The final check route guard is now implemented and
+  mocked-live-tested. The prepared no-write onboarding packet still cannot
+  proceed to mutation until a packet-specific final idempotency/suppression
+  check verifies subscriber status, group membership, duplicate/re-add safety,
+  and suppression safety without mutation.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain what the final read-only check will verify.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No raw email in chat.
+  - No raw IDs.
+  - No subscriber row print.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to perform one final
+  packet-specific MailerLite idempotency and suppression check for the
+  explicitly approved private onboarding packet only, using the implemented
+  read-only final-check guard. Use existing internal credentials without
+  printing or inspecting them. Read only the minimum subscriber/group/status
+  metadata needed to decide whether the approved packet is safe to execute. Do
+  not mutate anything, do not print raw emails, IDs, subscriber rows, tokens,
+  headers, env values, credentials, raw payloads, or private subscriber
+  content, and write only redacted aggregate receipts.
 - `recommended_default`: Approve one final packet-specific
   idempotency/suppression check, then review the redacted result before any
   mutation approval.

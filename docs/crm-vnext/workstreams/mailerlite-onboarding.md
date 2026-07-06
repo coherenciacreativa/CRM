@@ -211,6 +211,19 @@
   - duplicate_readd_status: `blocked_retrigger_unknown`
   - recommended_next_step: prepare final packet-specific
     idempotency/suppression check approval boundary.
+
+- `final_idempotency_suppression_check_route_status`:
+  `integrated_implemented_and_mock_tested`
+- `final_idempotency_suppression_check_route_design_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `final_idempotency_suppression_check_command`:
+  `npm run crm:vnext:mailerlite-final-idempotency-suppression-check`
+- `previous_blocker`: `route_not_implemented_or_not_redaction_safe`
+- `live_final_check_status`: `not_run_after_guard_integration`
+- `mutation_readiness`:
+  `blocked_pending_final_packet_specific_check`
+- `recommended_next_step`: approve or pause one final packet-specific
+  idempotency/suppression check using the implemented guard.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
@@ -224,10 +237,10 @@
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
 - `mutation_readiness`: `no_write_packet_prepared_final_checks_required`
-- `next_recommended_step`: prepare final packet-specific
-  idempotency/suppression check approval boundary.
+- `next_recommended_step`: approve or pause one final packet-specific
+  idempotency/suppression check using the implemented guard.
 - `next_approval_needed`: separate approval for one final packet-specific
-  idempotency/suppression check.
+  idempotency/suppression check using the implemented guard.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
@@ -237,7 +250,8 @@
   The first live read-only setup/config verification confirmed current group
   and automation mapping. The setup drift resolution packet is integrated, and
   Alejandro has now supplied no-secret field requiredness and trigger answers.
-  Mutation remains blocked pending final packet-specific
-  suppression/idempotency checks and exact future mutation approval.
+  Mutation remains blocked pending one final packet-specific
+  suppression/idempotency check using the implemented guard and exact future
+  mutation approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

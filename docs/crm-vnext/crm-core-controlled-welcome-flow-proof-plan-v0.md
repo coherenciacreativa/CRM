@@ -921,6 +921,43 @@ Interpretation:
 - Mutation remains blocked pending final idempotency/suppression checks,
   duplicate/readd safety, and exact future mutation approval.
 
+## MailerLite Final Idempotency / Suppression Check Route Guard — Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `2b2f1837797f66bc57c7109ae69220d9ba085ec4`
+- Previous blocker:
+  `route_not_implemented_or_not_redaction_safe`
+- Route status:
+  `final_check_route_guard_implemented_mocked_live_tested`
+- Live final check real run:
+  false
+- Mocked live mode tested:
+  true
+- Fixture mode tested:
+  true
+- Read-only method allowlist tested:
+  true
+- Mutation endpoints forbidden by tests:
+  true
+- Credential provider precheck order tested:
+  true
+- MailerLite API called:
+  false
+- MailerLite UI used:
+  false
+- Subscriber rows read or printed:
+  false
+- Mutation readiness:
+  `blocked_pending_final_packet_specific_check`
+
+CRM Core may now proceed only to a separately approved final
+packet-specific read-only check. This integration does not authorize that
+check or any mutation.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.
