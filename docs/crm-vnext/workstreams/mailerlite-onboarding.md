@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `live_readonly_setup_verification_completed_mutation_blocked_field_mapping`
+- `status`: `setup_drift_resolution_packet_completed_no_run`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -139,8 +139,26 @@
   - mutation_readiness: `blocked_field_mapping`
   - next recommended step: Prepare MailerLite setup drift / missing field
     mapping resolution packet.
-- `latest_commit`: pending central closeout commit for live read-only
-  MailerLite setup verification result.
+  - setup_drift_resolution_packet_status: `completed_no_run`
+  - setup_drift_resolution_packet:
+    `docs/crm-vnext/mailerlite-onboarding-setup-drift-missing-field-mapping-resolution-packet-v0.md`
+  - latest_live_readonly_setup_verification_run_id:
+    `crm_core_mailerlite_readonly_setup_verification_live_v1_2026-07-06`
+  - latest_redacted_field_detail_extraction_run_id:
+    `crm_core_mailerlite_setup_field_detail_redacted_extraction_2026-07-06`
+  - confirmed_field_families: `name; country; city`
+  - missing_field_families:
+    `email; source_channel; source_context; onboarding_started_at; consent_or_context; crm_core_private_anchor_label`
+  - group_mapping_status: `confirmed_current_existing_label`
+  - automation_mapping_status: `confirmed_current_existing_label`
+  - trigger_behavior_status: `unknown_requires_behavior_check`
+  - retrigger_behavior_status: `unknown_blocks_mutation`
+  - suppression_status: `not_verified_no_subscriber_read`
+  - idempotency_status: `not_verified_no_subscriber_read`
+  - mutation_readiness: `blocked_field_mapping`
+  - recommended_next_step: collect manual no-secret field requiredness and
+    trigger/retrigger answers.
+- `latest_commit`: pending lane-local setup drift resolution packet commit.
 - `latest_receipt`: redacted receipt path labels recorded in
   `docs/crm-vnext/mailerlite-onboarding-live-readonly-setup-verification-result-v0.md`
 - `blockers`: field mapping has six missing/not found expected fields;
@@ -152,8 +170,8 @@
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
 - `mutation_readiness`: `blocked_field_mapping`
-- `next_recommended_step`: Prepare MailerLite setup drift / missing field
-  mapping resolution packet.
+- `next_recommended_step`: collect manual no-secret field requiredness and
+  trigger/retrigger answers.
 - `next_approval_needed`: choose setup drift / missing mapping resolution,
   field creation proposal, minimal-payload no-write mutation review only if
   missing fields are optional, idempotency/suppression strategy, or pause.
