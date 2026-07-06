@@ -579,6 +579,46 @@ only.
 M7 - MailerLite no-write payload preview: complete for one controlled
 email-handoff test only.
 
+## MailerLite Read-Only Setup Verification Guard — Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-readonly-setup-verification-script-design-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `0402d668a62465641f21a70a5ea31de0ce5d7ba5`
+- Status:
+  `designed_and_tested_fixture_only`
+- Live setup verification:
+  `not_run`
+- MailerLite API called:
+  false
+- MailerLite UI used:
+  false
+- Credentials inspected or printed:
+  false
+- Subscriber rows read or printed:
+  false
+- Fixture mode tested:
+  true
+- Live mode blocked without explicit approval:
+  true
+- Redacted receipts tested:
+  true
+- Output paths inside repo rejected:
+  true
+- Mutation readiness:
+  `blocked_pending_redaction_safe_live_setup_verification`
+- This guard exists to support a future separately approved read-only
+  MailerLite setup verification run.
+- It does not authorize live verification or mutation.
+- Redaction-safe setup verification guard is integrated.
+- Live setup verification is not complete.
+- MailerLite setup inventory is not complete.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.

@@ -3964,72 +3964,84 @@ routing and completion pointer.
   policy boundary and hardened consultant relay capture protocol while
   preserving the existing MailerLite setup inventory decision path.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_after_mailerlite_no_write_payload_preview_next_step_selection_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-05`
 - `updated_at`: `2026-07-06`
-- `objective`: Choose the next Controlled Welcome Flow step after the first
-  MailerLite no-write payload preview from controlled email-handoff evidence,
-  or pause.
-- `why_now`: CRM Core has now completed a confirmed controlled welcome audio
-  send, a controlled reply/email-handoff result, and a MailerLite private
-  no-write payload preview. The preview is blocked for mutation because setup
-  inventory, group mapping, automation mapping, field mapping, suppression
-  verification, and mutation idempotency are not complete. The next decision is
-  whether to collect no-secret MailerLite setup inventory, perform separate
-  no-write setup verification, prepare CRM enrichment preview, continue
-  assistant reply draft preview, or pause.
+- `completed_at`: `2026-07-06`
+- `selected_step`: MailerLite read-only setup verification guard integration,
+  followed by one separately approved live read-only verification boundary.
+- `findings`:
+  - MailerLite no-write payload preview was already completed.
+  - MailerLite setup read-only verification guard is now integrated.
+  - Live setup verification remains not run.
+  - Mutation readiness remains blocked pending live read-only setup
+    verification and final mutation gates.
+  - Fixture mode was tested.
+  - Live mode remains blocked without explicit approval.
+  - Redacted receipts were tested.
+  - Output paths inside repo are rejected.
+  - No MailerLite API, MailerLite UI, credentials inspection, subscriber row
+    read, MailerLite mutation, CRM/source write, private artifact integration,
+    Launch OS doc, Mantis memory, OpenClaw/Mantis workspace, or
+    `/Users/alejandrogomez/CRM` use occurred during integration.
+- `completion_definition`: CRM Core integrated the MailerLite setup read-only
+  verification guard and moved the active boundary to one separately approved
+  live read-only setup verification run.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_readonly_setup_verification_live_run_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before one live read-only MailerLite
+  setup verification run using the redaction-safe setup verification command.
+- `why_now`: CRM Core now has a fixture-tested redaction-safe MailerLite setup
+  verification command. The prior no-write payload preview remains
+  mutation-blocked because group mapping, automation mapping, field mapping,
+  trigger behavior, retrigger behavior, suppression, and idempotency are not
+  live-verified. A single read-only setup verification run can reduce those
+  blockers without mutation.
 - `allowed_scope`:
-  - Present options.
-  - Recommend one next step.
-  - Answer clarifying questions.
-  - No execution.
+  - Present exact approval phrase.
+  - Explain what the read-only verification would check.
+  - Wait for approval, modification, or pause.
+  - No execution in this next-action selection step.
 - `forbidden_scope`:
-  - No UI/source execution.
-  - No Instagram.
-  - No DMs.
-  - No welcome audio.
-  - No reply monitoring.
-  - No MailerLite API.
+  - No MailerLite API until exact approval.
   - No MailerLite UI.
-  - No MailerLite mutation.
   - No subscriber mutation.
   - No group assignment.
   - No field creation.
   - No automation mutation.
   - No campaign send.
   - No Gmail.
-  - No Meta Business Suite.
+  - No Instagram.
+  - No DMs.
+  - No welcome audio.
   - No private artifact inspection.
-  - No candidate queue generation.
   - No CRM/source writes.
   - No card writes.
   - No Fact Store writes.
-  - No ledger writes.
-  - No scoring writes.
-  - No Launch OS docs.
+  - No ledgers.
+  - No scoring.
+  - No Launch OS.
   - No Mantis memory.
   - No OpenClaw/Mantis workspace.
   - No `/Users/alejandrogomez/CRM`.
-- `options_to_present`:
-  1. Collect MailerLite No-Secret Setup Inventory.
-  2. MailerLite No-Write Setup Verification, separately approved.
-  3. CRM Enrichment Preview From Controlled Welcome Evidence.
-  4. Assistant Reply Draft Preview, separately approved.
-  5. Pause.
-- `recommended_default`: Collect MailerLite No-Secret Setup Inventory.
-- `recent_findings`:
-  - Assistant Reply Policy Boundary has been integrated.
-  - Assistant reply policy design is complete.
-  - Assistant reply draft preview remains not started.
-  - Assistant reply send remains not authorized.
-  - Consultant relay capture hardening has been added.
-  - Consultant evidence request rights have been added.
-  - Recommended default remains Collect MailerLite No-Secret Setup Inventory.
-  - Other options remain MailerLite No-Write Setup Verification, CRM Enrichment
-    Preview From Controlled Welcome Evidence, Assistant Reply Draft Preview, or
-    Pause.
-- `completion_definition`: Alejandro chooses the next Controlled Welcome Flow
-  step or pauses.
+- `approval_phrase_required`: I approve one CRM Core MailerLite read-only setup
+  verification run using the redaction-safe setup verification command only.
+  Use existing internal credentials without printing or inspecting them. Query
+  only setup/config metadata needed for onboarding readiness. Do not read
+  subscriber rows, do not mutate subscribers, groups, fields, automations,
+  campaigns, segments, forms, webhooks, or account settings, do not print raw
+  emails, IDs, tokens, headers, env values, credentials, raw payloads, or
+  private subscriber content, write private setup refs only to the approved
+  private artifact path, and write only redacted aggregate receipts.
+- `recommended_default`: Approve one live read-only MailerLite setup
+  verification run, then review redacted result before any mutation packet.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one live read-only MailerLite setup verification run.

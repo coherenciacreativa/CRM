@@ -639,6 +639,45 @@ No lane outputs in review at creation.
   monitoring, MailerLite actions, CRM enrichment/write, and production
   automation remain separately gated.
 
+### controlled_welcome_flow_mailerlite_setup_readonly_verification_guard_integration_2026-07-06
+
+- `result_type`: `script_design_and_fixture_guard_integration`
+- `source_workstream`: `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `0402d668a62465641f21a70a5ea31de0ce5d7ba5`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-readonly-setup-verification-script-design-v0.md`
+- `command`: `npm run crm:vnext:mailerlite-setup-readonly-verification`
+- `fixture_mode_tested`: true
+- `live_mode_blocked_without_explicit_approval`: true
+- `redacted_receipts_tested`: true
+- `output_paths_inside_repo_rejected`: true
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `subscriber_rows_read_or_printed`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports`: false
+- `used_mantis_private_source_artifacts`: false
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: approve or pause one live read-only MailerLite setup
+  verification run
+- `recommended_default`: approve one live read-only MailerLite setup
+  verification run using the redaction-safe command
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

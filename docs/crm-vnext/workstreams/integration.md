@@ -231,6 +231,20 @@
     Boundary integration
   - Next central task: keep MailerLite setup inventory as recommended default
     unless Alejandro redirects
+  - MailerLite setup read-only verification guard integrated
+  - Source branch was canonical MailerLite lane:
+    `codex/crm-core-mailerlite-onboarding`
+  - source commit:
+    `0402d668a62465641f21a70a5ea31de0ce5d7ba5`
+  - This integration added a fixture-tested command and design doc
+  - No live MailerLite API was called
+  - No MailerLite UI was used
+  - No credentials were inspected or printed
+  - No subscriber rows were read or printed
+  - No private artifacts or Mantis reports were inspected
+  - No mutation occurred
+  - The next step is separately approved live read-only MailerLite setup
+    verification
   - Parallel Full-Power Lane Coordination Protocol v0 created
   - It incorporates the two-worker result: MailerLite full self-integration
     succeeded; Welcome Audio parallel lane blocked safely on task-packet fix
