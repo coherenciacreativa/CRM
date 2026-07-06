@@ -33,6 +33,7 @@
     "crm:vnext:gmail-evidence": "node scripts/crm-vnext-gmail-evidence.mjs",
     "crm:vnext:gog-healthcheck": "node scripts/crm-vnext-gog-healthcheck.mjs",
     "crm:vnext:mailerlite-healthcheck": "node scripts/crm-vnext-mailerlite-healthcheck.mjs",
+    "crm:vnext:mailerlite-setup-readonly-verification": "node scripts/crm-vnext-mailerlite-setup-readonly-verification.mjs",
     "crm:vnext:official-flow-cohort-map": "node scripts/crm-vnext-official-flow-cohort-map.mjs",
     "crm:vnext:mailerlite-receipt-taxonomy-plan": "node scripts/crm-vnext-mailerlite-receipt-taxonomy-plan.mjs",
     "crm:vnext:mailerlite-empty-group-create": "node scripts/crm-vnext-mailerlite-empty-group-create.mjs",
