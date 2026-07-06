@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `manual_no_secret_answers_integrated_no_write_packet_needed`
+- `status`: `minimal_no_write_mutation_review_packet_design_complete`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -180,6 +180,26 @@
     `blocked_pending_no_write_mutation_review_and_final_packet_specific_checks`
   - recommended_next_step: prepare MailerLite minimal no-write mutation review
     packet.
+  - minimal_no_write_mutation_review_packet_design_status: `completed_no_run`
+  - minimal_no_write_mutation_review_packet_design_doc:
+    `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-design-v0.md`
+  - preferred_future_operation_class:
+    `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+  - top_level_email_semantics: `native_top_level_subscriber_email_required`
+  - mapped_field_families_for_v1: `name; country; city when present in approved private evidence`
+  - omitted_mailerlite_field_families_for_v1:
+    `source_channel; source_context; onboarding_started_at; consent_or_context; crm_core_private_anchor_label`
+  - consent_context_gate: `required_keep_outside_mailerlite`
+  - private_anchor_policy: `keep_outside_mailerlite`
+  - group_trigger_behavior: `confirmed_yes_by_Alejandro`
+  - retrigger_behavior: `unknown_blocks_duplicate_readd`
+  - final_idempotency_suppression_check_required: true
+  - no_write_packet_preparation_readiness:
+    `ready_after_central_integration_and_separate_private_evidence_approval`
+  - actual_mutation_readiness:
+    `blocked_pending_no_write_packet_preparation_final_idempotency_suppression_check_and_exact_mutation_approval`
+  - recommended_next_step: central integration of no-write mutation review
+    packet design.
 - `latest_commit`: pending central integration commit for manual no-secret
   answers; lane source commit
   `89581c508a16d112a52bd4b1e1f357f18affc159`
