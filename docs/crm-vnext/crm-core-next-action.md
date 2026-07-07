@@ -4446,12 +4446,14 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one final packet-specific idempotency/suppression check.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_private_packet_email_anchor_repair_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `private_packet_email_anchor_repaired_final_check_ready_to_retry`
 - `objective`: Wait for Alejandro approval before repairing or regenerating
   the MailerLite no-write private packet so it includes a resolvable internal
   email lookup input or approved private resolver reference for the final
@@ -4506,5 +4508,70 @@ routing and completion pointer.
 - `recommended_default`: Approve one private packet email anchor
   repair/regeneration, then rerun the final packet-specific
   idempotency/suppression check only after reviewing the redacted repair result.
+- `findings`:
+  - Private packet email anchor repair completed.
+  - Repaired packet created.
+  - Internal lookup input is resolvable for final check.
+  - Internal lookup input is stored only in the private packet.
+  - Mutation readiness is
+    `private_packet_email_anchor_repaired_final_check_ready_to_retry`.
+  - Final idempotency/suppression check remains not run after repair.
+  - No MailerLite API/UI, subscriber row read, mutation, CRM/source write,
+    Launch OS touch, Mantis memory touch, or `/Users/alejandrogomez/CRM` use
+    occurred.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one no-write private packet email anchor repair/regeneration boundary.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v2`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before one final packet-specific
+  MailerLite idempotency and suppression read-only check using the repaired
+  private no-write packet.
+- `why_now`: The private packet email anchor has been repaired and now contains
+  a final-check-route-resolvable internal lookup input stored only in the
+  private packet. The final check guard is integrated and contract-fixed. CRM
+  Core can retry one final packet-specific read-only idempotency/suppression
+  check, but only after separate exact approval. No mutation is authorized.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain what the read-only final check would verify.
+  - Wait for approval, modification, pause, or decline.
+  - No execution.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No raw email in chat.
+  - No raw IDs.
+  - No raw subscriber rows.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to perform one final
+  packet-specific MailerLite idempotency and suppression check for the
+  explicitly approved repaired private onboarding packet only, using the
+  implemented and contract-fixed read-only final-check guard. Use existing
+  internal credentials without printing or inspecting them. Read only the
+  minimum subscriber/group/status metadata needed to decide whether the
+  approved packet is safe to execute. Do not mutate anything, do not print raw
+  emails, IDs, subscriber rows, tokens, headers, env values, credentials, raw
+  payloads, or private subscriber content, and write only redacted aggregate
+  receipts.
+- `recommended_default`: Approve one final packet-specific
+  idempotency/suppression check, then review the redacted result before any
+  mutation approval.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one final packet-specific idempotency/suppression check using the repaired
+  private packet.

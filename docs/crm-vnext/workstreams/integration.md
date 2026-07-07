@@ -489,18 +489,27 @@
     email anchor, not to run mutation
   - Safari upload hardening temporary branch remains ready but was not
     integrated in this run
-- `latest_commit`: pending final check readiness contract fix integration
-  commit; source lane commit
-  `8a00c9bd0990de7ba4589b57bb6de8d8a0dadbf0`
+  - MailerLite private packet email anchor repair closeout recorded
+  - Central closeout used redacted receipts only
+  - No private packet was read
+  - No private evidence was read
+  - No source actions occurred during central closeout
+  - No MailerLite API/UI occurred during central closeout
+  - No mutation occurred
+  - Repaired private packet now has internal lookup input resolvable for final
+    check
+  - Final packet-specific idempotency/suppression check is the next approval
+    gate
+  - Safari upload hardening temporary branch remains ready but untouched
+- `latest_commit`: pending private packet email anchor repair closeout commit
 - `latest_receipt`: source result doc integrated at
-  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
-- `blockers`: private packet email anchor remains missing/not resolvable for
-  the final check route; final live idempotency/suppression check remains
-  unresolved; duplicate/re-add remains blocked until the packet-specific result
-  allows it; MailerLite mutation, CRM enrichment/write, assistant reply, and
-  production automation remain closed
-- `next_approval_needed`: approve or pause private packet email anchor
-  repair/regeneration
+  `docs/crm-vnext/mailerlite-onboarding-private-packet-email-anchor-repair-result-v0.md`
+- `blockers`: final live idempotency/suppression check remains unresolved;
+  duplicate/re-add remains blocked until the packet-specific result allows it;
+  MailerLite mutation, CRM enrichment/write, assistant reply, and production
+  automation remain closed
+- `next_approval_needed`: approve or pause one final packet-specific
+  idempotency/suppression check using the repaired private packet
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

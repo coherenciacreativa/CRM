@@ -1015,6 +1015,38 @@ No lane outputs in review at creation.
 - `recommended_default`: prepare a no-write private packet email anchor
   repair/regeneration boundary.
 
+### controlled_welcome_flow_mailerlite_private_packet_email_anchor_repair_closeout_2026-07-06
+
+- `result_type`: `private_packet_email_anchor_repair_closeout`
+- `run_id`: `crm_core_mailerlite_minimal_no_write_packet_email_anchor_repair_2026-07-06`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-private-packet-email-anchor-repair-result-v0.md`
+- `repair_status`: `completed_private_packet_email_anchor_repaired`
+- `repaired_packet_created`: true
+- `internal_lookup_input_resolvable_for_final_check`: true
+- `internal_lookup_input_storage`: `private_packet_only`
+- `mutation_readiness`: `private_packet_email_anchor_repaired_final_check_ready_to_retry`
+- `blockers`: none
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `subscriber_rows_read_or_printed`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: approve or pause final packet-specific
+  idempotency/suppression check live run
+- `recommended_default`: approve one final packet-specific read-only check
+  using the repaired private packet
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
