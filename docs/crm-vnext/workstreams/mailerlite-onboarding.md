@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `minimal_no_write_mutation_review_packet_design_complete`
+- `status`: `exact_mutation_approval_packet_design_complete_no_run`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -251,6 +251,15 @@
   `ready_for_exact_mutation_approval_packet`
 - `actual_mutation_status`: `not_executed`
 - `recommended_next_step`: prepare exact MailerLite mutation approval packet.
+- `exact_mutation_approval_packet_design_status`: `completed_no_run`
+- `exact_mutation_approval_packet_design_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
+- `final_check_status`: `completed_live_readonly_ready_for_exact_mutation_approval`
+- `mutation_readiness`: `ready_for_exact_mutation_approval_packet`
+- `mutation_execution_route_status`: `not_implemented`
+- `actual_mutation_status`: `not_executed`
+- `recommended_next_step`: implement or validate MailerLite exact mutation
+  execution guard before asking for packet-specific mutation approval.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
@@ -285,7 +294,10 @@
   packet-specific idempotency/suppression check with subscriber lookup not
   found, suppression pass, idempotency pass, safe duplicate/re-add status, and
   receipt consistency passed. CRM Core may prepare an exact mutation approval
-  packet for review, but actual mutation remains blocked until exact future
-  mutation approval.
+  packet for review. The exact mutation approval packet design is now complete
+  as no-run docs, but repo-only discovery did not find a redaction-safe
+  execution guard for the exact subscriber upsert plus onboarding-group
+  assignment operation class, so actual mutation remains blocked pending guard
+  implementation or validation and later exact future mutation approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
