@@ -958,6 +958,57 @@ CRM Core may now proceed only to a separately approved final
 packet-specific read-only check. This integration does not authorize that
 check or any mutation.
 
+## MailerLite Final Check Readiness Contract Fix v1 — Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `8a00c9bd0990de7ba4589b57bb6de8d8a0dadbf0`
+- Previous attempted final check run:
+  `crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06`
+- Previous attempted final check state:
+  `blocked_route_result_contract_inconsistent`
+- Previous route status:
+  `live_readonly_precheck_blocked_missing_private_packet_email_anchor`
+- Previous MailerLite API called:
+  false
+- Previous invalid readiness emitted:
+  `ready_for_exact_mutation_approval`
+- Contract fix status:
+  `completed_mock_tested`
+- Missing private packet email anchor blocks consistently:
+  true
+- Ready requires live lookup:
+  true
+- Mocked live mode tested:
+  true
+- Fixture mode tested:
+  true
+- Live final check real run after fix:
+  false
+- Mutation readiness:
+  `blocked_pending_private_packet_email_anchor_resolution_and_final_packet_specific_check`
+
+Interpretation:
+
+- A blocked precheck may not report subscriber not found, suppression pass,
+  idempotency pass, or `ready_for_exact_mutation_approval`.
+- A `ready_for_exact_mutation_approval` result requires a completed live
+  read-only lookup and all final statuses passing.
+- The existing private no-write packet must be repaired/regenerated or
+  otherwise confirmed to contain a resolvable internal lookup input before the
+  live final check is attempted again.
+- Real MailerLite mutation remains blocked.
+- Final check contract fix is integrated.
+- Final live idempotency/suppression check is not complete.
+- Private packet email anchor is not resolved.
+- MailerLite mutation is not ready.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.

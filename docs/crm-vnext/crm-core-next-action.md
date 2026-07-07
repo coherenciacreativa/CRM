@@ -4375,12 +4375,14 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one final packet-specific idempotency/suppression check.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v1`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `final_check_contract_fix_integrated`
 - `objective`: Wait for Alejandro approval before one final packet-specific
   MailerLite idempotency and suppression read-only check using the implemented
   guard.
@@ -4424,5 +4426,85 @@ routing and completion pointer.
 - `recommended_default`: Approve one final packet-specific
   idempotency/suppression check, then review the redacted result before any
   mutation approval.
+- `findings`:
+  - Final check live run attempt blocked with inconsistent route result.
+  - Route status was
+    `live_readonly_precheck_blocked_missing_private_packet_email_anchor`.
+  - MailerLite API was not called.
+  - Receipt readiness `ready_for_exact_mutation_approval` was rejected as
+    invalid because live lookup did not run.
+  - Contract fix v1 is now integrated and mocked-tested.
+  - Missing private packet email anchor blocks consistently.
+  - `ready_for_exact_mutation_approval` requires live lookup and passing
+    statuses.
+  - Real live final check remains not run after fix.
+  - Mutation readiness remains blocked pending private packet email anchor
+    resolution and final packet-specific check.
+  - No MailerLite API/UI, subscriber rows, mutation, CRM writes, private
+    artifact integration, Mantis memory, Launch OS, or
+    `/Users/alejandrogomez/CRM` use occurred during integration.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one final packet-specific idempotency/suppression check.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_private_packet_email_anchor_repair_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before repairing or regenerating
+  the MailerLite no-write private packet so it includes a resolvable internal
+  email lookup input or approved private resolver reference for the final
+  idempotency/suppression check.
+- `why_now`: The final packet-specific idempotency/suppression check guard now
+  blocks consistently when the private packet lacks a resolvable email lookup
+  input. The previous no-write packet reported a private email anchor label but
+  did not provide the final-check route a resolvable internal lookup input. CRM
+  Core must repair/regenerate the no-write packet or define an approved
+  resolver reference before retrying the live final check.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain that this is private packet repair/regeneration only.
+  - Read only the approved private no-write packet and approved private
+    controlled email-handoff evidence if explicitly approved.
+  - Write a repaired private no-write packet and redacted aggregate receipt.
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No mutation.
+  - No final idempotency/suppression check yet.
+- `forbidden_scope`:
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No subscriber row reads.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No raw email in chat.
+  - No raw IDs.
+  - No subscriber rows.
+  - No raw payloads.
+  - No credentials.
+  - No private subscriber content in chat.
+  - No private message text in chat.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to repair or regenerate one
+  MailerLite minimal no-write private onboarding packet from the explicitly
+  approved private controlled email-handoff evidence only, solely to include a
+  resolvable internal email lookup input or approved private resolver reference
+  needed for the final idempotency/suppression check. Do not call MailerLite
+  APIs, do not use MailerLite UI, do not read subscriber rows, do not mutate
+  subscribers, groups, fields, automations, campaigns, segments, forms,
+  webhooks, or account settings, do not print raw emails, IDs, payloads,
+  credentials, private message text, or private subscriber content, and write
+  only redacted aggregate receipts.
+- `recommended_default`: Approve one private packet email anchor
+  repair/regeneration, then rerun the final packet-specific
+  idempotency/suppression check only after reviewing the redacted repair result.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one no-write private packet email anchor repair/regeneration boundary.

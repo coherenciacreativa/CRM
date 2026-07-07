@@ -304,3 +304,18 @@ This design does not authorize:
 ## Completion Boundary
 
 Complete when CRM Core has a no-write mutation review packet design defining minimal v1 payload semantics, final gates, redacted receipts, future approval templates, and current readiness without executing MailerLite or reading private evidence.
+
+
+## Final Check Private Lookup Input Clarification v1
+
+A future no-write private packet must contain enough private/internal lookup
+material for the final packet-specific MailerLite idempotency and suppression
+check. Redacted receipts may say `private_email_anchor_label_present=true`, but
+the private packet must also contain a resolvable internal lookup input or an
+approved private resolver reference the final-check command can use safely.
+
+If the final-check route cannot resolve a lookup input from the approved private
+packet contract, the final check must block with
+`blocked_missing_private_packet_email_anchor`. CRM Core must not invent or infer
+an email, read unrelated private evidence, or print or expose the lookup input in
+chat, terminal output, redacted receipts, tracked docs, or source state.

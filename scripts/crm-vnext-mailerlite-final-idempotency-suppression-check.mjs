@@ -17,6 +17,11 @@ const DEFAULT_ACCOUNT = 'default';
 const DEFAULT_TARGET_GROUP_LABEL = 'CC · Journey · Editorial onboarding · Eligible';
 const COMMAND = 'npm run crm:vnext:mailerlite-final-idempotency-suppression-check';
 
+const COMPLETED_LIVE_ROUTE_STATUS = 'completed_live_readonly_packet_final_check';
+const PRECHECK_MISSING_EMAIL_ROUTE_STATUS = 'precheck_blocked_missing_private_packet_email_anchor';
+const PACKET_SPECIFIC_READONLY_SCOPE = 'packet_specific_subscriber_status_group_membership_readonly';
+const MISSING_EMAIL_SCOPE = 'not_called_missing_private_packet_email_anchor';
+
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs [options]
 
@@ -253,12 +258,30 @@ const isSuppressed = (subscriber) => {
 
 const ensureAllowed = (value, allowed, fallback) => allowed.has(value) ? value : fallback;
 
+const missingEmailAnchorDecision = ({ packetId, routeStatus = PRECHECK_MISSING_EMAIL_ROUTE_STATUS }) => normalizedDecision({
+  packetId,
+  checkRan: false,
+  liveLookupRan: false,
+  routeStatus,
+  mailerLiteApiCalled: false,
+  mailerLiteApiCallScope: MISSING_EMAIL_SCOPE,
+  subscriberLookupStatus: 'blocked',
+  subscriberStatusClass: 'unknown',
+  onboardingGroupMembershipStatus: 'unknown',
+  duplicateReaddStatus: 'unknown',
+  suppressionStatus: 'unknown',
+  idempotencyStatus: 'unknown',
+  mutationReadinessAfterFinalCheck: 'blocked_missing_private_packet_email_anchor',
+  blockers: ['missing_private_packet_email_anchor'],
+});
+
 const buildDecision = ({ packet, lookupResult, routeStatus = 'fixture_mock_redaction_safe' }) => {
   const packetId = packetIdOf(packet);
-  const hasEmailAnchor = packetEmailAnchorPresent(packet);
+  const hasResolvableEmailAnchor = Boolean(privateEmailForLookup(packet));
   const targetGroupLabel = targetGroupLabelOf(packet);
   const blockers = [];
-  let subscriberLookupStatus = ensureAllowed(cleanString(lookupResult?.subscriber_lookup_status ?? lookupResult?.lookupStatus), LOOKUP_STATUS, null);
+  const explicitLookupStatus = ensureAllowed(cleanString(lookupResult?.subscriber_lookup_status ?? lookupResult?.lookupStatus), LOOKUP_STATUS, null);
+  let subscriberLookupStatus = explicitLookupStatus;
   let records = Array.isArray(lookupResult?.records) ? lookupResult.records : Array.isArray(lookupResult?.subscribers) ? lookupResult.subscribers : [];
   if (!subscriberLookupStatus) {
     if (records.length > 1) subscriberLookupStatus = 'ambiguous';
@@ -266,21 +289,26 @@ const buildDecision = ({ packet, lookupResult, routeStatus = 'fixture_mock_redac
     else subscriberLookupStatus = 'not_found';
   }
 
-  if (!hasEmailAnchor) {
-    blockers.push('missing_private_packet_email_anchor');
+  if (!hasResolvableEmailAnchor) {
+    return missingEmailAnchorDecision({ packetId, routeStatus: PRECHECK_MISSING_EMAIL_ROUTE_STATUS });
+  }
+
+  if (subscriberLookupStatus === 'blocked') {
+    blockers.push('lookup_blocked');
     return normalizedDecision({
       packetId,
-      checkRan: true,
+      checkRan: false,
+      liveLookupRan: false,
       routeStatus,
       mailerLiteApiCalled: Boolean(lookupResult?.mailerlite_api_called),
-      mailerLiteApiCallScope: lookupResult?.mailerlite_api_call_scope ?? 'fixture_mock_no_network',
+      mailerLiteApiCallScope: lookupResult?.mailerlite_api_call_scope ?? 'not_called_lookup_blocked',
       subscriberLookupStatus: 'blocked',
       subscriberStatusClass: 'unknown',
       onboardingGroupMembershipStatus: 'unknown',
       duplicateReaddStatus: 'unknown',
       suppressionStatus: 'unknown',
       idempotencyStatus: 'unknown',
-      mutationReadinessAfterFinalCheck: 'blocked_missing_private_packet_email_anchor',
+      mutationReadinessAfterFinalCheck: 'blocked_route_not_redaction_safe',
       blockers,
     });
   }
@@ -304,22 +332,25 @@ const buildDecision = ({ packet, lookupResult, routeStatus = 'fixture_mock_redac
     });
   }
 
-  if (subscriberLookupStatus === 'not_found' || records.length === 0) {
+  if (subscriberLookupStatus === 'not_found' || (!explicitLookupStatus && records.length === 0)) {
     const idempotencyOk = packetDuplicateEvidenceClear(packet);
+    const liveLookupRan = Boolean(lookupResult?.mailerlite_api_called);
     if (!idempotencyOk) blockers.push('idempotency_unknown_or_duplicate_evidence_present');
+    if (!liveLookupRan) blockers.push('live_lookup_not_completed');
     return normalizedDecision({
       packetId,
-      checkRan: true,
+      checkRan: liveLookupRan,
+      liveLookupRan,
       routeStatus,
       mailerLiteApiCalled: Boolean(lookupResult?.mailerlite_api_called),
       mailerLiteApiCallScope: lookupResult?.mailerlite_api_call_scope ?? 'fixture_mock_no_network',
       subscriberLookupStatus: 'not_found',
-      subscriberStatusClass: 'not_found',
-      onboardingGroupMembershipStatus: 'not_found',
-      duplicateReaddStatus: 'safe_new_or_not_in_group',
-      suppressionStatus: 'pass',
-      idempotencyStatus: idempotencyOk ? 'pass' : 'unknown',
-      mutationReadinessAfterFinalCheck: idempotencyOk ? 'ready_for_exact_mutation_approval' : 'blocked_idempotency_unknown',
+      subscriberStatusClass: liveLookupRan ? 'not_found' : 'unknown',
+      onboardingGroupMembershipStatus: liveLookupRan ? 'not_found' : 'unknown',
+      duplicateReaddStatus: liveLookupRan ? 'safe_new_or_not_in_group' : 'unknown',
+      suppressionStatus: liveLookupRan ? 'pass' : 'unknown',
+      idempotencyStatus: liveLookupRan && idempotencyOk ? 'pass' : 'unknown',
+      mutationReadinessAfterFinalCheck: liveLookupRan && idempotencyOk ? 'ready_for_exact_mutation_approval' : 'blocked_idempotency_unknown',
       blockers,
     });
   }
@@ -461,24 +492,59 @@ const buildDecision = ({ packet, lookupResult, routeStatus = 'fixture_mock_redac
   });
 };
 
-const normalizedDecision = (input) => ({
-  packet_id: input.packetId,
-  check_ran: Boolean(input.checkRan),
-  route_status: input.routeStatus,
-  mailerlite_api_called: Boolean(input.mailerLiteApiCalled),
-  mailerlite_api_call_scope: input.mailerLiteApiCallScope ?? 'fixture_mock_no_network',
-  subscriber_lookup_status: ensureAllowed(input.subscriberLookupStatus, LOOKUP_STATUS, 'unknown'),
-  subscriber_status_class: ensureAllowed(input.subscriberStatusClass, SUBSCRIBER_STATUS_CLASS, 'unknown'),
-  onboarding_group_membership_status: ensureAllowed(input.onboardingGroupMembershipStatus, GROUP_MEMBERSHIP_STATUS, 'unknown'),
-  duplicate_readd_status: ensureAllowed(input.duplicateReaddStatus, DUPLICATE_STATUS, 'unknown'),
-  suppression_status: ensureAllowed(input.suppressionStatus, SAFETY_STATUS, 'unknown'),
-  idempotency_status: ensureAllowed(input.idempotencyStatus, SAFETY_STATUS, 'unknown'),
-  mutation_readiness_after_final_check: ensureAllowed(input.mutationReadinessAfterFinalCheck, READINESS, 'blocked_route_not_redaction_safe'),
-  blockers: [...new Set(input.blockers ?? [])].sort(),
-  recommended_next_step: input.mutationReadinessAfterFinalCheck === 'ready_for_exact_mutation_approval'
-    ? 'prepare_exact_mailerlite_mutation_approval_packet'
-    : 'pause',
-});
+const normalizedDecision = (input) => {
+  const routeStatus = input.routeStatus;
+  const mailerLiteApiCalled = Boolean(input.mailerLiteApiCalled);
+  const mailerLiteApiCallScope = input.mailerLiteApiCallScope ?? 'fixture_mock_no_network';
+  const liveLookupRan = Boolean(input.liveLookupRan ?? (mailerLiteApiCalled && routeStatus === COMPLETED_LIVE_ROUTE_STATUS));
+  const blockers = new Set(input.blockers ?? []);
+  let mutationReadiness = ensureAllowed(input.mutationReadinessAfterFinalCheck, READINESS, 'blocked_route_not_redaction_safe');
+  const subscriberLookupStatus = ensureAllowed(input.subscriberLookupStatus, LOOKUP_STATUS, 'unknown');
+  const subscriberStatusClass = ensureAllowed(input.subscriberStatusClass, SUBSCRIBER_STATUS_CLASS, 'unknown');
+  const onboardingGroupMembershipStatus = ensureAllowed(input.onboardingGroupMembershipStatus, GROUP_MEMBERSHIP_STATUS, 'unknown');
+  const duplicateReaddStatus = ensureAllowed(input.duplicateReaddStatus, DUPLICATE_STATUS, 'unknown');
+  const suppressionStatus = ensureAllowed(input.suppressionStatus, SAFETY_STATUS, 'unknown');
+  const idempotencyStatus = ensureAllowed(input.idempotencyStatus, SAFETY_STATUS, 'unknown');
+  if (mutationReadiness === 'ready_for_exact_mutation_approval') {
+    const readyAllowed = routeStatus === COMPLETED_LIVE_ROUTE_STATUS
+      && mailerLiteApiCalled
+      && liveLookupRan
+      && mailerLiteApiCallScope === PACKET_SPECIFIC_READONLY_SCOPE
+      && ['found', 'not_found'].includes(subscriberLookupStatus)
+      && ['active', 'not_found'].includes(subscriberStatusClass)
+      && ['absent', 'not_found'].includes(onboardingGroupMembershipStatus)
+      && duplicateReaddStatus === 'safe_new_or_not_in_group'
+      && suppressionStatus === 'pass'
+      && idempotencyStatus === 'pass'
+      && blockers.size === 0;
+    if (!readyAllowed) {
+      blockers.add('ready_state_without_completed_live_lookup');
+      mutationReadiness = 'blocked_route_not_redaction_safe';
+    }
+  }
+  const blockerList = [...blockers].sort();
+  return {
+    packet_id: input.packetId,
+    check_ran: Boolean(input.checkRan),
+    live_lookup_ran: liveLookupRan,
+    route_status: routeStatus,
+    mailerlite_api_called: mailerLiteApiCalled,
+    mailerlite_api_call_scope: mailerLiteApiCallScope,
+    subscriber_lookup_status: subscriberLookupStatus,
+    subscriber_status_class: subscriberStatusClass,
+    onboarding_group_membership_status: onboardingGroupMembershipStatus,
+    duplicate_readd_status: duplicateReaddStatus,
+    suppression_status: suppressionStatus,
+    idempotency_status: idempotencyStatus,
+    mutation_readiness_after_final_check: mutationReadiness,
+    blockers: blockerList,
+    recommended_next_step: mutationReadiness === 'ready_for_exact_mutation_approval'
+      ? 'prepare_exact_mailerlite_mutation_approval_packet'
+      : mutationReadiness === 'blocked_missing_private_packet_email_anchor'
+        ? 'repair_private_packet_email_anchor_or_regenerate_no_write_packet'
+        : 'pause',
+  };
+};
 
 const closedGates = () => ({
   mailerlite_ui_used: false,
@@ -500,6 +566,7 @@ const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [] }) =
   run_id: runId,
   packet_id: decision.packet_id,
   check_ran: decision.check_ran,
+  live_lookup_ran: decision.live_lookup_ran,
   route_status: decision.route_status,
   mode,
   command: COMMAND,
@@ -525,6 +592,7 @@ const buildPrivateResult = ({ runId, decision, mode }) => ({
   mode,
   route_status: decision.route_status,
   check_ran: decision.check_ran,
+  live_lookup_ran: decision.live_lookup_ran,
   private_lookup_material_included: false,
   raw_email_included: false,
   raw_ids_included: false,
@@ -547,6 +615,7 @@ const renderMarkdown = (receipt) => `# MailerLite Final Idempotency / Suppressio
   `- run_id: \`${receipt.run_id}\`\n` +
   `- packet_id: \`${receipt.packet_id}\`\n` +
   `- check_ran: \`${receipt.check_ran}\`\n` +
+  `- live_lookup_ran: \`${receipt.live_lookup_ran}\`\n` +
   `- route_status: \`${receipt.route_status}\`\n` +
   `- mode: \`${receipt.mode}\`\n` +
   `- mailerlite_api_called: \`${receipt.mailerlite_api_called}\`\n` +
@@ -569,6 +638,7 @@ const renderPrivateMarkdown = (privateResult) => `# MailerLite Final Idempotency
   `- packet_id: \`${privateResult.packet_id}\`\n` +
   `- route_status: \`${privateResult.route_status}\`\n` +
   `- check_ran: \`${privateResult.check_ran}\`\n` +
+  `- live_lookup_ran: \`${privateResult.live_lookup_ran}\`\n` +
   `- private_lookup_material_included: \`false\`\n` +
   `- raw_email_included: \`false\`\n` +
   `- raw_ids_included: \`false\`\n` +
@@ -593,6 +663,7 @@ const compactStdout = (receipt) => ({
   ok: true,
   run_id: receipt.run_id,
   check_ran: receipt.check_ran,
+  live_lookup_ran: receipt.live_lookup_ran,
   route_status: receipt.route_status,
   mailerlite_api_called: receipt.mailerlite_api_called,
   subscriber_lookup_status: receipt.subscriber_lookup_status,
@@ -733,16 +804,16 @@ const extractSubscriberRecords = (payload) => {
 const createMailerLiteFinalCheckClient = ({ options, key, fetchImpl = fetch, calls = [] }) => ({
   calls,
   lookupSubscriberByEmail: async (email) => {
-    if (!email) return { subscriber_lookup_status: 'blocked', records: [], mailerlite_api_called: false, mailerlite_api_call_scope: 'missing_private_packet_email_anchor' };
+    if (!email) return { subscriber_lookup_status: 'blocked', records: [], mailerlite_api_called: false, mailerlite_api_call_scope: MISSING_EMAIL_SCOPE };
     const path = `/subscribers/${encodeURIComponent(email)}`;
     assertSafeFinalCheckRequest({ method: 'GET', path });
     calls.push({ method: 'GET', path: '/subscribers/<private-email-anchor>' });
     try {
       const payload = await fetchJson({ options, key, path, params: { include: 'groups' }, fetchImpl });
-      return { subscriber_lookup_status: 'found', records: extractSubscriberRecords(payload), mailerlite_api_called: true, mailerlite_api_call_scope: 'packet_specific_subscriber_status_group_membership_metadata' };
+      return { subscriber_lookup_status: 'found', records: extractSubscriberRecords(payload), mailerlite_api_called: true, mailerlite_api_call_scope: PACKET_SPECIFIC_READONLY_SCOPE };
     } catch (error) {
       if (error?.reason === 'mailerlite_not_found' || error?.status === 404) {
-        return { subscriber_lookup_status: 'not_found', records: [], mailerlite_api_called: true, mailerlite_api_call_scope: 'packet_specific_subscriber_status_group_membership_metadata' };
+        return { subscriber_lookup_status: 'not_found', records: [], mailerlite_api_called: true, mailerlite_api_call_scope: PACKET_SPECIFIC_READONLY_SCOPE };
       }
       throw error;
     }
@@ -754,7 +825,7 @@ const runLiveMode = async (options, deps = {}) => {
   const packet = await readJson(paths.privatePacketJson);
   const email = privateEmailForLookup(packet);
   if (!email) {
-    const decision = buildDecision({ packet, lookupResult: { subscriber_lookup_status: 'blocked', records: [], mailerlite_api_called: false, mailerlite_api_call_scope: 'missing_private_packet_email_anchor' }, routeStatus: 'live_readonly_precheck_blocked_missing_private_packet_email_anchor' });
+    const decision = buildDecision({ packet, lookupResult: { subscriber_lookup_status: 'blocked', records: [], mailerlite_api_called: false, mailerlite_api_call_scope: MISSING_EMAIL_SCOPE }, routeStatus: PRECHECK_MISSING_EMAIL_ROUTE_STATUS });
     const runId = deps.runId ?? 'crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06';
     const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_precheck' });
     const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_precheck', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd] });
@@ -776,7 +847,7 @@ const runLiveMode = async (options, deps = {}) => {
     calls: deps.calls ?? [],
   });
   const lookupResult = await client.lookupSubscriberByEmail(email);
-  const decision = buildDecision({ packet, lookupResult, routeStatus: 'live_readonly_route_redaction_safe' });
+  const decision = buildDecision({ packet, lookupResult, routeStatus: COMPLETED_LIVE_ROUTE_STATUS });
   const runId = deps.runId ?? 'crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06';
   const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_packet_specific' });
   const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_packet_specific', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd] });
@@ -803,7 +874,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 
 export {
+  COMPLETED_LIVE_ROUTE_STATUS,
   DEFAULT_TARGET_GROUP_LABEL,
+  MISSING_EMAIL_SCOPE,
+  PACKET_SPECIFIC_READONLY_SCOPE,
+  PRECHECK_MISSING_EMAIL_ROUTE_STATUS,
   PRIVATE_MAILERLITE_ROOT,
   REDACTED_RECEIPT_ROOT,
   REPO_ROOT,

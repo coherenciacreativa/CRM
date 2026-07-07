@@ -224,6 +224,18 @@
   `blocked_pending_final_packet_specific_check`
 - `recommended_next_step`: approve or pause one final packet-specific
   idempotency/suppression check using the implemented guard.
+
+- `final_check_route_contract_fix_status`: `integrated_completed_mock_tested`
+- `previous_live_final_check_status`:
+  `blocked_route_result_contract_inconsistent`
+- `previous_live_final_check_api_called`: false
+- `current_live_final_check_status`: `not_run_after_contract_fix`
+- `private_packet_email_anchor_status`:
+  `missing_or_not_resolvable_in_prior_attempt`
+- `mutation_readiness`:
+  `blocked_pending_private_packet_email_anchor_resolution_and_final_packet_specific_check`
+- `recommended_next_step`: repair or regenerate no-write packet email anchor,
+  then one final packet-specific idempotency/suppression check approval.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
@@ -236,11 +248,12 @@
 - `setup_verification_live_mode_status`: `implemented_and_mock_tested`
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
-- `mutation_readiness`: `no_write_packet_prepared_final_checks_required`
-- `next_recommended_step`: approve or pause one final packet-specific
-  idempotency/suppression check using the implemented guard.
-- `next_approval_needed`: separate approval for one final packet-specific
-  idempotency/suppression check using the implemented guard.
+- `mutation_readiness`:
+  `blocked_pending_private_packet_email_anchor_resolution_and_final_packet_specific_check`
+- `next_recommended_step`: repair or regenerate no-write packet email anchor,
+  then one final packet-specific idempotency/suppression check approval.
+- `next_approval_needed`: separate approval for private packet email anchor
+  repair/regeneration.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
@@ -250,8 +263,10 @@
   The first live read-only setup/config verification confirmed current group
   and automation mapping. The setup drift resolution packet is integrated, and
   Alejandro has now supplied no-secret field requiredness and trigger answers.
-  Mutation remains blocked pending one final packet-specific
-  suppression/idempotency check using the implemented guard and exact future
-  mutation approval.
+  The contract fix now blocks missing packet email anchors consistently and
+  prevents false ready/pass/not_found statuses when precheck blocks. Mutation
+  remains blocked pending private packet email anchor repair/regeneration, one
+  final packet-specific suppression/idempotency check using the implemented
+  guard, and exact future mutation approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

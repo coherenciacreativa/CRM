@@ -978,6 +978,43 @@ No lane outputs in review at creation.
 - `recommended_default`: approve one final packet-specific read-only check
   using the implemented guard
 
+### controlled_welcome_flow_mailerlite_final_check_contract_fix_integration_2026-07-06
+
+- `result_type`: `readonly_final_check_contract_fix_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `8a00c9bd0990de7ba4589b57bb6de8d8a0dadbf0`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `previous_attempt_state`: `blocked_route_result_contract_inconsistent`
+- `previous_attempt_mailerlite_api_called`: false
+- `previous_invalid_readiness`: `ready_for_exact_mutation_approval`
+- `final_check_contract_fix_status`: `completed_mock_tested`
+- `missing_email_anchor_blocks_consistently_tested`: true
+- `ready_requires_live_lookup_tested`: true
+- `mocked_live_mode_still_tested`: true
+- `fixture_mode_tested`: true
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `real_subscriber_rows_read_or_printed`: false
+- `real_private_artifacts_read`: false
+- `real_mantis_reports_read`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `decision_needed`: repair or regenerate no-write packet email anchor before
+  rerunning final check
+- `recommended_default`: prepare a no-write private packet email anchor
+  repair/regeneration boundary.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
