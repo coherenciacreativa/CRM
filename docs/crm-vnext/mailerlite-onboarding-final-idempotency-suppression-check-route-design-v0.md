@@ -186,6 +186,41 @@ result output under `/tmp`, package script presence, and valid `package.json`.
 
 `I approve CRM Core to perform one final packet-specific MailerLite idempotency and suppression check for the explicitly approved private onboarding packet only. Use existing internal credentials without printing or inspecting them. Read only the minimum subscriber/group/status metadata needed to decide whether the approved packet is safe to execute. Do not mutate anything, do not print raw emails, IDs, subscriber rows, tokens, headers, env values, credentials, raw payloads, or private subscriber content, and write only redacted aggregate receipts.`
 
+
+## Contract Fix v1 - Missing Private Email Anchor And Readiness Consistency
+
+A previous live attempt blocked before MailerLite API access because the approved
+private packet did not expose a resolvable internal email lookup input to the
+final-check guard. The redacted receipt incorrectly combined the precheck block
+with `not_found`, `pass`, and `ready_for_exact_mutation_approval` statuses.
+Those statuses are not valid when no MailerLite read-only lookup ran.
+
+v1 fixes the readiness contract:
+
+- missing private packet email anchor blocks consistently;
+- `check_ran=false` and `live_lookup_ran=false` when the route stops before
+  source lookup;
+- `mailerlite_api_called=false` and
+  `mailerlite_api_call_scope=not_called_missing_private_packet_email_anchor` for
+  missing-anchor precheck blocks;
+- missing-anchor receipts return `subscriber_lookup_status=blocked`, unknown
+  subscriber/group/duplicate/suppression/idempotency statuses, and
+  `blocked_missing_private_packet_email_anchor`;
+- no `ready_for_exact_mutation_approval` can be emitted unless the completed
+  live read-only route ran, `mailerlite_api_called=true`, the packet-specific
+  subscriber/status/group-membership scope is recorded, all final statuses pass,
+  and blockers are empty.
+
+Future private packets must include a resolvable internal email lookup input or
+an explicitly approved private resolver reference. A redacted label such as
+`private_email_anchor_label_present=true` is not enough by itself. The command
+must not invent or infer an email, must not read unrelated private evidence, and
+must not print or expose the lookup input.
+
+This contract-fix task did not run a live final check, did not read real private
+artifacts, and did not call MailerLite. The real final check remains not run
+after this fix.
+
 ## Current Readiness
 
 `final_check_route_guard_implemented_mocked_live_tested`

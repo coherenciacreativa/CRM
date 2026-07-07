@@ -224,6 +224,17 @@
   `blocked_pending_final_packet_specific_check`
 - `recommended_next_step`: approve or pause one final packet-specific
   idempotency/suppression check using the implemented guard.
+
+- `final_check_route_contract_fix_status`: `completed_mock_tested`
+- `previous_live_final_check_status`:
+  `blocked_route_result_contract_inconsistent`
+- `previous_live_final_check_api_called`: false
+- `current_live_final_check_status`: `not_run_after_contract_fix`
+- `mutation_readiness`:
+  `blocked_pending_private_packet_email_anchor_resolution_and_final_packet_specific_check`
+- `recommended_next_step`: central integration of contract fix, then
+  regenerate/repair no-write packet email anchor or rerun final check only if
+  the private packet contains a resolvable lookup input.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`

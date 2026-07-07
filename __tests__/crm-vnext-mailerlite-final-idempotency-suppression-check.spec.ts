@@ -6,7 +6,11 @@ import { promisify } from "node:util";
 import { describe, expect, test } from "vitest";
 
 import {
+  COMPLETED_LIVE_ROUTE_STATUS,
   DEFAULT_TARGET_GROUP_LABEL,
+  MISSING_EMAIL_SCOPE,
+  PACKET_SPECIFIC_READONLY_SCOPE,
+  PRECHECK_MISSING_EMAIL_ROUTE_STATUS,
   assertSafeFinalCheckRequest,
   buildDecision,
   createMailerLiteFinalCheckClient,
@@ -110,8 +114,15 @@ const makeLivePaths = async () => {
 
 const runMockLive = async (lookupResult: Record<string, unknown>, packetOverrides: Record<string, unknown> = {}) => {
   const { dir, roots, paths } = await makeLivePaths();
-  await writeFile(paths.privatePacket, `${JSON.stringify(packet(packetOverrides), null, 2)}\n`, "utf8");
+  await writeFile(paths.privatePacket, `${JSON.stringify(packet(packetOverrides), null, 2)}
+`, "utf8");
   let credentialCalls = 0;
+  let clientCalls = 0;
+  const effectiveLookupResult = {
+    mailerlite_api_called: true,
+    mailerlite_api_call_scope: PACKET_SPECIFIC_READONLY_SCOPE,
+    ...lookupResult,
+  };
   try {
     const receipt = await run(liveArgs(paths), {
       roots,
@@ -120,7 +131,10 @@ const runMockLive = async (lookupResult: Record<string, unknown>, packetOverride
         return { key: "mock-secret-value" };
       },
       finalCheckClient: {
-        lookupSubscriberByEmail: async () => lookupResult,
+        lookupSubscriberByEmail: async () => {
+          clientCalls += 1;
+          return effectiveLookupResult;
+        },
       },
       runId: "crm_core_mailerlite_final_idempotency_suppression_check_test",
     });
@@ -131,7 +145,7 @@ const runMockLive = async (lookupResult: Record<string, unknown>, packetOverride
     expectNoSensitiveStrings(receiptMdText);
     expectNoSensitiveStrings(privateResultText);
     expect(paths.privateResultJson).toContain(tmpdir());
-    return { receipt, credentialCalls };
+    return { receipt, credentialCalls, clientCalls };
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -178,7 +192,9 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
       expect(compact.ok).toBe(true);
       expect(compact.mailerlite_api_called).toBe(false);
       expect(receipt.route_status).toBe("fixture_mock_redaction_safe");
-      expect(receipt.mutation_readiness_after_final_check).toBe("ready_for_exact_mutation_approval");
+      expect(receipt.mutation_readiness_after_final_check).toBe("blocked_route_not_redaction_safe");
+      expect(receipt.live_lookup_ran).toBe(false);
+      expect(receipt.blockers).toContain("ready_state_without_completed_live_lookup");
       expectNoSensitiveStrings(`${stdout}\n${stderr}`);
       expectNoSensitiveStrings(receiptJsonText);
       expectNoSensitiveStrings(receiptMdText);
@@ -272,16 +288,65 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
   });
 
   test("mocked live route with subscriber not found can classify safe under conservative rules", async () => {
-    const { receipt, credentialCalls } = await runMockLive({ subscriber_lookup_status: "not_found", records: [] });
+    const { receipt, credentialCalls, clientCalls } = await runMockLive({ subscriber_lookup_status: "not_found", records: [] });
     expect(credentialCalls).toBe(1);
+    expect(clientCalls).toBe(1);
+    expect(receipt.route_status).toBe(COMPLETED_LIVE_ROUTE_STATUS);
+    expect(receipt.mailerlite_api_called).toBe(true);
+    expect(receipt.mailerlite_api_call_scope).toBe(PACKET_SPECIFIC_READONLY_SCOPE);
+    expect(receipt.live_lookup_ran).toBe(true);
     expect(receipt.subscriber_lookup_status).toBe("not_found");
     expect(receipt.suppression_status).toBe("pass");
     expect(receipt.idempotency_status).toBe("pass");
     expect(receipt.mutation_readiness_after_final_check).toBe("ready_for_exact_mutation_approval");
   });
 
+  test("ready state requires completed live route status", () => {
+    const decision = buildDecision({
+      packet: packet(),
+      lookupResult: {
+        subscriber_lookup_status: "found",
+        records: [activeSubscriber([])],
+        mailerlite_api_called: true,
+        mailerlite_api_call_scope: PACKET_SPECIFIC_READONLY_SCOPE,
+      },
+      routeStatus: "fixture_mock_redaction_safe",
+    });
+    expect(decision.mutation_readiness_after_final_check).toBe("blocked_route_not_redaction_safe");
+    expect(decision.blockers).toContain("ready_state_without_completed_live_lookup");
+  });
+
+  test("ready state requires the live lookup to report a MailerLite API call", async () => {
+    const { dir, roots, paths } = await makeLivePaths();
+    try {
+      const receipt = await run(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock-secret-value" }),
+        finalCheckClient: {
+          lookupSubscriberByEmail: async () => ({
+            subscriber_lookup_status: "found",
+            records: [activeSubscriber([])],
+            mailerlite_api_called: false,
+            mailerlite_api_call_scope: "not_called_mock_contract_violation",
+          }),
+        },
+      });
+      expect(receipt.route_status).toBe(COMPLETED_LIVE_ROUTE_STATUS);
+      expect(receipt.mailerlite_api_called).toBe(false);
+      expect(receipt.live_lookup_ran).toBe(false);
+      expect(receipt.mutation_readiness_after_final_check).toBe("blocked_route_not_redaction_safe");
+      expect(receipt.blockers).toContain("ready_state_without_completed_live_lookup");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("mocked live route with active subscriber not in onboarding group is ready", async () => {
     const { receipt } = await runMockLive({ subscriber_lookup_status: "found", records: [activeSubscriber([])] });
+    expect(receipt.route_status).toBe(COMPLETED_LIVE_ROUTE_STATUS);
+    expect(receipt.mailerlite_api_called).toBe(true);
+    expect(receipt.mailerlite_api_call_scope).toBe(PACKET_SPECIFIC_READONLY_SCOPE);
+    expect(receipt.live_lookup_ran).toBe(true);
     expect(receipt.subscriber_lookup_status).toBe("found");
     expect(receipt.subscriber_status_class).toBe("active");
     expect(receipt.onboarding_group_membership_status).toBe("absent");
@@ -336,20 +401,49 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
     expect(receipt.mutation_readiness_after_final_check).toBe("blocked_subscriber_status_unknown");
   });
 
-  test("missing private packet email anchor blocks before credential lookup", async () => {
+  test("missing private packet email anchor blocks consistently before credential or client lookup", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
+    let clientCalls = 0;
     try {
-      await writeFile(paths.privatePacket, `${JSON.stringify(packet({ private_lookup: {}, private_email_anchor_label_present: false }))}\n`, "utf8");
+      await writeFile(paths.privatePacket, `${JSON.stringify(packet({ private_lookup: {}, private_email_anchor_label_present: true }))}
+`, "utf8");
       const receipt = await run(liveArgs(paths), {
         roots,
         credentialProvider: async () => {
           credentialCalls += 1;
           return { key: "mock" };
         },
+        finalCheckClient: {
+          lookupSubscriberByEmail: async () => {
+            clientCalls += 1;
+            return { subscriber_lookup_status: "found", records: [activeSubscriber([])] };
+          },
+        },
       });
+      const receiptJsonText = await readFile(paths.receiptJson, "utf8");
+      const receiptMdText = await readFile(paths.receiptMd, "utf8");
+      const receiptJson = JSON.parse(receiptJsonText);
       expect(credentialCalls).toBe(0);
+      expect(clientCalls).toBe(0);
+      expect(receipt.check_ran).toBe(false);
+      expect(receipt.live_lookup_ran).toBe(false);
+      expect(receipt.route_status).toBe(PRECHECK_MISSING_EMAIL_ROUTE_STATUS);
+      expect(receipt.mailerlite_api_called).toBe(false);
+      expect(receipt.mailerlite_api_call_scope).toBe(MISSING_EMAIL_SCOPE);
+      expect(receipt.subscriber_lookup_status).toBe("blocked");
+      expect(receipt.subscriber_status_class).toBe("unknown");
+      expect(receipt.onboarding_group_membership_status).toBe("unknown");
+      expect(receipt.duplicate_readd_status).toBe("unknown");
+      expect(receipt.suppression_status).toBe("unknown");
+      expect(receipt.idempotency_status).toBe("unknown");
       expect(receipt.mutation_readiness_after_final_check).toBe("blocked_missing_private_packet_email_anchor");
+      expect(receipt.recommended_next_step).toBe("repair_private_packet_email_anchor_or_regenerate_no_write_packet");
+      expect(receipt.blockers).toContain("missing_private_packet_email_anchor");
+      expect(receiptJson.blockers).toContain("missing_private_packet_email_anchor");
+      expect(receiptMdText).not.toContain("blockers: `none`");
+      expectNoSensitiveStrings(receiptJsonText);
+      expectNoSensitiveStrings(receiptMdText);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
