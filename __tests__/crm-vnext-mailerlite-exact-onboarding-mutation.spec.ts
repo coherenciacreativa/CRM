@@ -6,10 +6,12 @@ import { promisify } from "node:util";
 import { describe, expect, test } from "vitest";
 
 import {
-  BLOCKED_CLIENT_CONTRACT_MISSING,
   COMPLETED_FINAL_CHECK_ROUTE_STATUS,
+  EXACT_MUTATION_GUARD_STATUS,
   FUTURE_EXACT_APPROVAL_PHRASE,
+  SAFE_MUTATION_CLIENT_CONTRACT,
   assertAllowedExactMutationRequest,
+  buildExactMutationPayload,
   run,
   validateFinalCheckReceipt,
 } from "../scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs";
@@ -17,6 +19,9 @@ import {
 const execFileAsync = promisify(execFile);
 const SCRIPT = "scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs";
 const EXPECTED_SCRIPT = "crm:vnext:mailerlite-exact-onboarding-mutation";
+const NOW_MS = Date.parse("2026-07-07T12:00:00.000Z");
+const FRESH_CHECKED_AT = "2026-07-07T11:59:00.000Z";
+const OLD_CHECKED_AT = "2026-07-07T10:00:00.000Z";
 const FAKE_EMAIL = "person@example.test";
 const FAKE_SUBSCRIBER_ID = "sub_fake_secret_000";
 const FAKE_GROUP_ID = "grp_fake_secret_123";
@@ -42,9 +47,7 @@ const sensitiveStrings = [
 ];
 
 const expectNoSensitiveStrings = (content: string) => {
-  for (const value of sensitiveStrings) {
-    expect(content).not.toContain(value);
-  }
+  for (const value of sensitiveStrings) expect(content).not.toContain(value);
 };
 
 const makeTempRoots = async () => {
@@ -61,8 +64,21 @@ const makeTempRoots = async () => {
 
 const packet = (overrides: Record<string, unknown> = {}) => ({
   packet_id: "crm_core_mailerlite_exact_mutation_packet_fixture",
+  operation_class: "subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass",
+  top_level_email_semantics: "native_top_level_subscriber_email_required",
+  consent_context_gate_status: "present_private_evidence",
+  mutation_execution_status: "not_executed",
+  final_idempotency_check_required: true,
+  final_suppression_check_required: true,
   private_lookup: { email: FAKE_EMAIL },
+  confirmed_onboarding_group_reference: FAKE_GROUP_ID,
   mapped_field_families: ["name", "country", "city"],
+  fields: {
+    name: "Synthetic Person",
+    country: "Synthetic Country",
+    city: "Synthetic City",
+    source_channel: "must-not-map",
+  },
   rawApiPayload: RAW_PAYLOAD,
   privateSubscriberFixture: {
     id: FAKE_SUBSCRIBER_ID,
@@ -76,16 +92,19 @@ const packet = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const safeFinalCheck = (overrides: Record<string, unknown> = {}) => ({
+  checked_at: FRESH_CHECKED_AT,
   route_status: COMPLETED_FINAL_CHECK_ROUTE_STATUS,
   live_lookup_ran: true,
   mailerlite_api_called: true,
-  freshness_status: "fresh_within_approved_window",
+  mailerlite_api_call_scope: "packet_specific_subscriber_status_group_membership_readonly",
   subscriber_lookup_status: "not_found",
   subscriber_status_class: "not_found",
   onboarding_group_membership_status: "not_found",
   duplicate_readd_status: "safe_new_or_not_in_group",
   suppression_status: "pass",
   idempotency_status: "pass",
+  mutation_readiness_after_final_check: "ready_for_exact_mutation_approval",
+  receipt_consistency_check: "passed",
   blockers: [],
   ...overrides,
 });
@@ -93,6 +112,7 @@ const safeFinalCheck = (overrides: Record<string, unknown> = {}) => ({
 const makeLivePaths = async (packetOverrides: Record<string, unknown> = {}, finalOverrides: Record<string, unknown> = {}) => {
   const { dir, roots } = await makeTempRoots();
   const paths = {
+    approvalPhraseFile: join(dir, "approval.txt"),
     privatePacket: join(roots.privateMailerLiteRoot, "packet.json"),
     finalCheck: join(roots.redactedReceiptRoot, "final-check.json"),
     privateResultJson: join(roots.privateMailerLiteRoot, "mutation-result.json"),
@@ -100,15 +120,16 @@ const makeLivePaths = async (packetOverrides: Record<string, unknown> = {}, fina
     receiptJson: join(roots.redactedReceiptRoot, "mutation-receipt.json"),
     receiptMd: join(roots.redactedReceiptRoot, "mutation-receipt.md"),
   };
+  await writeFile(paths.approvalPhraseFile, `${FUTURE_EXACT_APPROVAL_PHRASE}\n`, "utf8");
   await writeFile(paths.privatePacket, `${JSON.stringify(packet(packetOverrides), null, 2)}\n`, "utf8");
   await writeFile(paths.finalCheck, `${JSON.stringify(safeFinalCheck(finalOverrides), null, 2)}\n`, "utf8");
   return { dir, roots, paths };
 };
 
-const liveArgs = (paths: Record<string, string>, approvalPhrase = FUTURE_EXACT_APPROVAL_PHRASE) => [
+const liveArgs = (paths: Record<string, string>, approvalFile = paths.approvalPhraseFile) => [
   "--allow-live-exact-onboarding-mutation",
-  "--approval-phrase",
-  approvalPhrase,
+  "--approval-phrase-file",
+  approvalFile,
   "--private-packet-json",
   paths.privatePacket,
   "--final-check-redacted-json",
@@ -121,18 +142,27 @@ const liveArgs = (paths: Record<string, string>, approvalPhrase = FUTURE_EXACT_A
   paths.receiptJson,
   "--redacted-receipt-md",
   paths.receiptMd,
+  "--max-final-check-age-ms",
+  "900000",
 ];
 
 const runMockedLive = async (packetOverrides: Record<string, unknown> = {}, finalOverrides: Record<string, unknown> = {}) => {
   const { dir, roots, paths } = await makeLivePaths(packetOverrides, finalOverrides);
-  const calls: Array<string> = [];
+  const requests: Array<Record<string, unknown>> = [];
+  let credentialCalls = 0;
   try {
     const receipt = await run(liveArgs(paths), {
       roots,
-      allowMockedMutationExecution: true,
+      nowMs: NOW_MS,
+      credentialProvider: async () => {
+        credentialCalls += 1;
+        return { key: "mock-secret-value" };
+      },
       exactMutationClient: {
-        upsertSubscriber: async () => calls.push("upsertSubscriber"),
-        assignOnboardingGroup: async () => calls.push("assignOnboardingGroup"),
+        request: async (request: Record<string, unknown>) => {
+          requests.push(request);
+          return { ok: true, status: 200, response_status_class: "mock_success_no_raw_body_recorded" };
+        },
       },
       runId: "crm_core_mailerlite_exact_mutation_guard_test",
     });
@@ -143,7 +173,7 @@ const runMockedLive = async (packetOverrides: Record<string, unknown> = {}, fina
     expectNoSensitiveStrings(receiptMdText);
     expectNoSensitiveStrings(privateResultText);
     expect(paths.privateResultJson).toContain(tmpdir());
-    return { receipt, calls, paths, dir };
+    return { receipt, requests, credentialCalls, paths, dir };
   } catch (error) {
     await rm(dir, { recursive: true, force: true });
     throw error;
@@ -159,7 +189,7 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
       const privateResultMd = join(dir, "private-result.md");
       const receiptJson = join(dir, "receipt.json");
       const receiptMd = join(dir, "receipt.md");
-      await writeFile(fixtureFile, `${JSON.stringify({ packet: packet(), finalCheckReceipt: safeFinalCheck() }, null, 2)}\n`, "utf8");
+      await writeFile(fixtureFile, `${JSON.stringify({ packet: packet(), finalCheckReceipt: safeFinalCheck({ checked_at: new Date().toISOString() }) }, null, 2)}\n`, "utf8");
 
       const { stdout, stderr } = await execFileAsync("node", [
         SCRIPT,
@@ -192,346 +222,326 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     }
   });
 
-  test("future live mode without explicit approval flag blocks before credential lookup", async () => {
+  test("scaffold blocker is removed when safe client contract is available", async () => {
+    const { receipt, credentialCalls, requests, dir } = await runMockedLive();
+    try {
+      expect(EXACT_MUTATION_GUARD_STATUS).toBe("exact_mutation_execution_guard_implemented_mocked_live_tested");
+      expect(SAFE_MUTATION_CLIENT_CONTRACT).toBe("post_subscribers_only_current_not_found_path");
+      expect(receipt.blockers).toEqual([]);
+      expect(receipt.recommended_next_step).toBe("central_integration_of_exact_mutation_execution_guard");
+      expect(credentialCalls).toBe(1);
+      expect(requests).toHaveLength(1);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("live mode without explicit approval blocks before credential provider", async () => {
     let credentialCalls = 0;
-    await expect(run([], {
-      credentialProvider: async () => {
-        credentialCalls += 1;
-        return { key: "mock" };
-      },
-    })).rejects.toThrow("not_run_missing_approval");
+    await expect(run([], { credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_missing_approval");
     expect(credentialCalls).toBe(0);
   });
 
-  test("exact approval phrase absent blocks before credential lookup", async () => {
+  test("exact approval phrase absent blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths, ""), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("not_run_missing_approval");
+      await rm(paths.approvalPhraseFile, { force: true });
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow();
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("exact approval phrase mismatch blocks before credential lookup", async () => {
+  test("exact approval phrase mismatch blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths, "I approve a different unsafe thing"), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("not_run_missing_approval");
+      await writeFile(paths.approvalPhraseFile, "I approve a different unsafe thing\n", "utf8");
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_missing_approval");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("invalid private packet path outside approved MailerLite private root is rejected", async () => {
+  test("invalid private packet path blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
       const outsidePacket = join(dir, "packet.json");
       await writeFile(outsidePacket, `${JSON.stringify(packet())}\n`, "utf8");
-      await expect(run(liveArgs({ ...paths, privatePacket: outsidePacket }), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("private_packet_json_outside_approved_root_rejected");
+      await expect(run(liveArgs({ ...paths, privatePacket: outsidePacket }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("private_packet_json_outside_approved_root_rejected");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("invalid final-check receipt path outside approved Mantis-Reports root is rejected", async () => {
+  test("invalid final-check receipt path blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs({ ...paths, finalCheck: join(dir, "final-check.json") }), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("final_check_redacted_json_outside_approved_root_rejected");
+      await expect(run(liveArgs({ ...paths, finalCheck: join(dir, "final-check.json") }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("final_check_redacted_json_outside_approved_root_rejected");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("invalid private result path outside approved MailerLite private root is rejected", async () => {
+  test("invalid private result path blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs({ ...paths, privateResultJson: join(dir, "result.json") }), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("private_result_json_outside_approved_root_rejected");
+      await expect(run(liveArgs({ ...paths, privateResultJson: join(dir, "result.json") }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("private_result_json_outside_approved_root_rejected");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("invalid redacted receipt path outside approved Mantis-Reports root is rejected", async () => {
+  test("invalid redacted receipt path blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs({ ...paths, receiptMd: join(dir, "receipt.md") }), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("redacted_receipt_md_outside_approved_root_rejected");
+      await expect(run(liveArgs({ ...paths, receiptMd: join(dir, "receipt.md") }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("redacted_receipt_md_outside_approved_root_rejected");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("output paths inside repo are rejected", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs({ ...paths, privateResultMd: join(process.cwd(), "tmp-result.md") }), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("private_result_md_inside_repo_rejected");
+      await expect(run(liveArgs({ ...paths, privateResultMd: join(process.cwd(), "tmp-result.md") }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("private_result_md_inside_repo_rejected");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("credential provider is not called if path validation fails", async () => {
-    const { dir, roots, paths } = await makeLivePaths();
-    let credentialCalls = 0;
-    try {
-      await expect(run(liveArgs({ ...paths, receiptJson: join(dir, "receipt.json") }), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("redacted_receipt_json_outside_approved_root_rejected");
-      expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
-  });
-
-  test("credential provider is not called if final check is missing", async () => {
+  test("missing final-check receipt blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths();
     let credentialCalls = 0;
     try {
       await rm(paths.finalCheck, { force: true });
-      await expect(run(liveArgs(paths), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow();
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow();
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("credential provider is not called if final check is stale", async () => {
-    const { dir, roots, paths } = await makeLivePaths({}, { freshness_status: "stale" });
+  test("freshness-unknown final-check receipt blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { checked_at: undefined });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("not_run_final_check_stale");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_freshness_unknown");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("credential provider is not called if final check readiness is not ready", async () => {
-    const { dir, roots, paths } = await makeLivePaths({}, { route_status: "not_ready" });
+  test("stale final-check receipt blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { checked_at: OLD_CHECKED_AT });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("not_run_final_check_failed");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_stale");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("no private packet email lookup input blocks before credential lookup", async () => {
-    const { dir, roots, paths } = await makeLivePaths({ private_lookup: {} });
+  test("final-check readiness not ready blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { mutation_readiness_after_final_check: "blocked" });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), {
-        roots,
-        credentialProvider: async () => {
-          credentialCalls += 1;
-          return { key: "mock" };
-        },
-      })).rejects.toThrow("not_run_missing_private_packet_email_anchor");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_failed");
       expect(credentialCalls).toBe(0);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("safe final check and valid paths block future live without safe mutation client contract", async () => {
-    const { dir, roots, paths } = await makeLivePaths();
+  test("final-check subscriber_lookup_status found blocks with v1 existing-subscriber blocker", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { subscriber_lookup_status: "found", subscriber_status_class: "active", onboarding_group_membership_status: "absent" });
+    let credentialCalls = 0;
     try {
-      const receipt = await run(liveArgs(paths), { roots, runId: "crm_core_mailerlite_exact_mutation_guard_test" });
-      const receiptJsonText = await readFile(paths.receiptJson, "utf8");
-      expect(receipt.mutation_attempted).toBe(false);
-      expect(receipt.mutation_executed).toBe(false);
-      expect(receipt.blockers).toContain(BLOCKED_CLIENT_CONTRACT_MISSING);
-      expect(receipt.recommended_next_step).toBe("resolve_safe_mutation_client_contract");
-      expectNoSensitiveStrings(receiptJsonText);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_existing_subscriber_path_not_supported_by_v1_guard");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("mocked safe final-check receipt allows mocked mutation path only with approval and valid paths", async () => {
-    const { receipt, calls, dir } = await runMockedLive();
-    try {
-      expect(receipt.mutation_attempted).toBe(true);
-      expect(receipt.mutation_executed).toBe(true);
-      expect(receipt.mutation_result_status).toBe("mutation_executed_redacted_receipt_ready");
-      expect(calls).toEqual(["upsertSubscriber", "assignOnboardingGroup"]);
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
-  });
-
-  test("mocked missing freshness final-check receipt blocks", () => {
-    const result = validateFinalCheckReceipt(safeFinalCheck({ freshness_status: undefined }));
-    expect(result.ok).toBe(false);
-    expect(result.status).toBe("not_run_final_check_stale");
-  });
-
-  test("mocked subscriber already in onboarding group blocks", () => {
-    const result = validateFinalCheckReceipt(safeFinalCheck({
-      subscriber_lookup_status: "found",
-      subscriber_status_class: "active",
-      onboarding_group_membership_status: "present",
-    }));
+  test("final-check subscriber already in onboarding group blocks", () => {
+    const result = validateFinalCheckReceipt(safeFinalCheck({ onboarding_group_membership_status: "present" }), { nowMs: NOW_MS });
     expect(result.ok).toBe(false);
     expect(result.reason).toBe("final_check_group_membership_not_safe");
   });
 
-  test.each(["unsubscribed", "bounced", "complained", "junk", "unknown"])("mocked %s state blocks", (statusClass) => {
-    const result = validateFinalCheckReceipt(safeFinalCheck({
-      subscriber_lookup_status: "found",
-      subscriber_status_class: statusClass,
-      onboarding_group_membership_status: "absent",
-    }));
+  test("suppression failure blocks", () => {
+    const result = validateFinalCheckReceipt(safeFinalCheck({ suppression_status: "blocked" }), { nowMs: NOW_MS });
     expect(result.ok).toBe(false);
-    expect(result.reason).toBe("final_check_subscriber_status_blocked");
+    expect(result.reason).toBe("final_check_suppression_not_pass");
   });
 
-  test("mocked exact operation calls only allowed upsert/group assignment behavior", () => {
-    expect(assertAllowedExactMutationRequest({ method: "POST", path: "/mock/exact-onboarding/subscriber-upsert" })).toBe(true);
-    expect(assertAllowedExactMutationRequest({ method: "POST", path: "/mock/exact-onboarding/onboarding-group-assignment" })).toBe(true);
-    expect(() => assertAllowedExactMutationRequest({ method: "GET", path: "/mock/exact-onboarding/subscriber-upsert" })).toThrow("blocked_unapproved_mutation_endpoint");
+  test("idempotency failure blocks", () => {
+    const result = validateFinalCheckReceipt(safeFinalCheck({ idempotency_status: "blocked" }), { nowMs: NOW_MS });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe("final_check_idempotency_not_pass");
   });
 
-  test("POST/PUT/PATCH/DELETE methods outside allowed endpoints throw before execution", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/subscribers" })).toThrow("blocked_unapproved_mutation_endpoint");
-    expect(() => assertAllowedExactMutationRequest({ method: "PUT", path: "/subscribers/abc" })).toThrow("blocked_destructive_or_partial_update_endpoint");
-    expect(() => assertAllowedExactMutationRequest({ method: "PATCH", path: "/subscribers/abc" })).toThrow("blocked_destructive_or_partial_update_endpoint");
-    expect(() => assertAllowedExactMutationRequest({ method: "DELETE", path: "/subscribers/abc" })).toThrow("blocked_subscriber_deletion_endpoint");
+  test("missing private email anchor blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({ private_lookup: {} });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_missing_private_packet_email_anchor");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("field creation endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/fields" })).toThrow("blocked_field_creation_endpoint");
+  test("missing private onboarding group reference blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({ confirmed_onboarding_group_reference: "" });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_missing_private_packet_group_reference");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("automation mutation endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/automations" })).toThrow("blocked_automation_mutation_endpoint");
+  test("only POST /api/subscribers is called in mocked mutation success", async () => {
+    const { requests, dir } = await runMockedLive();
+    try {
+      expect(requests.map((request) => `${request.method} ${request.path}`)).toEqual(["POST /api/subscribers"]);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("POST /api/subscribers payload includes only email, allowed fields, and confirmed group", async () => {
+    const { requests, dir } = await runMockedLive();
+    try {
+      const payload = requests[0].payload as Record<string, unknown>;
+      expect(Object.keys(payload).sort()).toEqual(["email", "fields", "groups"]);
+      expect(payload.email).toBe(FAKE_EMAIL);
+      expect(payload.fields).toEqual({ name: "Synthetic Person", country: "Synthetic Country", city: "Synthetic City" });
+      expect(payload.groups).toEqual([FAKE_GROUP_ID]);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("payload omits source context/private-anchor field families", () => {
+    const payload = buildExactMutationPayload(packet());
+    const encoded = JSON.stringify(payload);
+    expect(encoded).not.toContain("source_channel");
+    expect(encoded).not.toContain("source_context");
+    expect(encoded).not.toContain("onboarding_started_at");
+    expect(encoded).not.toContain("consent_or_context");
+    expect(encoded).not.toContain("crm_core_private_anchor_label");
+  });
+
+  test("payload does not set status or resubscribe", () => {
+    const payload = buildExactMutationPayload(packet());
+    expect(payload).not.toHaveProperty("status");
+    expect(payload).not.toHaveProperty("resubscribe");
+  });
+
+  test("PUT /api/subscribers/{id} is forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "PUT", path: "/api/subscribers/abc" })).toThrow("blocked_put_subscriber_update_endpoint");
+  });
+
+  test("POST /api/subscribers/{id}/groups/{group_id} is forbidden in v1", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/subscribers/sub_fake_secret_000/groups/grp_fake_secret_123" })).toThrow("blocked_existing_subscriber_group_assignment_endpoint_v1");
+  });
+
+  test("DELETE subscriber endpoint is forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "DELETE", path: "/api/subscribers/sub_fake_secret_000" })).toThrow("blocked_subscriber_deletion_endpoint");
+  });
+
+  test("forget endpoint is forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/subscribers/sub_fake_secret_000/forget" })).toThrow("blocked_subscriber_forget_endpoint");
+  });
+
+  test("group create/update/delete endpoints are forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/groups" })).toThrow("blocked_group_create_endpoint");
+    expect(() => assertAllowedExactMutationRequest({ method: "PUT", path: "/api/groups/grp_fake_secret_123" })).toThrow("blocked_group_update_endpoint");
+    expect(() => assertAllowedExactMutationRequest({ method: "DELETE", path: "/api/groups/grp_fake_secret_123" })).toThrow("blocked_group_delete_endpoint");
+  });
+
+  test("GET group subscribers is forbidden inside mutation command", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "GET", path: "/api/groups/grp_fake_secret_123/subscribers" })).toThrow("blocked_group_subscriber_read_in_mutation_command");
+  });
+
+  test("group import endpoint is forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/groups/grp_fake_secret_123/import-subscribers" })).toThrow("blocked_group_import_endpoint");
+  });
+
+  test("group unassign endpoint is forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "DELETE", path: "/api/subscribers/sub_fake_secret_000/groups/grp_fake_secret_123" })).toThrow("blocked_group_unassign_endpoint");
+  });
+
+  test("automation endpoints are forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/automations" })).toThrow("blocked_automation_mutation_endpoint");
   });
 
   test("campaign endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/campaigns/send" })).toThrow("blocked_campaign_endpoint");
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/campaigns" })).toThrow("blocked_campaign_endpoint");
   });
 
-  test("segment endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/segments" })).toThrow("blocked_segment_endpoint");
+  test("segment/form/webhook/account settings endpoints are forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/segments" })).toThrow("blocked_segment_endpoint");
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/forms" })).toThrow("blocked_form_endpoint");
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/webhooks" })).toThrow("blocked_webhook_endpoint");
+    expect(() => assertAllowedExactMutationRequest({ method: "PATCH", path: "/api/account/settings" })).toThrow("blocked_account_settings_endpoint");
   });
 
-  test("form endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/forms" })).toThrow("blocked_form_endpoint");
+  test("broad import endpoint is forbidden", () => {
+    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/api/subscribers/import" })).toThrow("blocked_broad_import_endpoint");
   });
 
-  test("webhook endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/webhooks" })).toThrow("blocked_webhook_endpoint");
+  test("credential provider is not called before all prechecks pass", async () => {
+    const { credentialCalls, dir } = await runMockedLive();
+    try {
+      expect(credentialCalls).toBe(1);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("account settings endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "PATCH", path: "/account/settings" })).toThrow("blocked_account_settings_endpoint");
+  test("network client is not called before all prechecks pass", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { checked_at: OLD_CHECKED_AT });
+    let networkCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), {
+        roots,
+        nowMs: NOW_MS,
+        credentialProvider: async () => ({ key: "mock" }),
+        exactMutationClient: { request: async () => { networkCalls += 1; return { ok: true }; } },
+      })).rejects.toThrow("not_run_final_check_stale");
+      expect(networkCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("broad import endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "POST", path: "/subscribers/import" })).toThrow("blocked_broad_import_endpoint");
+  test("mocked successful mutation writes private result under /tmp in tests", async () => {
+    const { paths, dir } = await runMockedLive();
+    try {
+      expect(paths.privateResultJson).toContain(tmpdir());
+      expect(paths.privateResultMd).toContain(tmpdir());
+      expectNoSensitiveStrings(await readFile(paths.privateResultJson, "utf8"));
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("subscriber deletion is forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "DELETE", path: "/subscribers/abc" })).toThrow("blocked_subscriber_deletion_endpoint");
+  test("mocked successful mutation writes redacted JSON/MD receipts under /tmp in tests", async () => {
+    const { paths, dir } = await runMockedLive();
+    try {
+      expect(paths.receiptJson).toContain(tmpdir());
+      expect(paths.receiptMd).toContain(tmpdir());
+      expectNoSensitiveStrings(await readFile(paths.receiptJson, "utf8"));
+      expectNoSensitiveStrings(await readFile(paths.receiptMd, "utf8"));
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("group removal endpoints are forbidden", () => {
-    expect(() => assertAllowedExactMutationRequest({ method: "DELETE", path: "/groups/abc/subscribers/def" })).toThrow("blocked_group_removal_endpoint");
+  test("stdout/stderr do not contain synthetic private values", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-core-mailerlite-exact-fixture-"));
+    try {
+      const fixtureFile = join(dir, "fixture.json");
+      const privateResultJson = join(dir, "private-result.json");
+      const privateResultMd = join(dir, "private-result.md");
+      const receiptJson = join(dir, "receipt.json");
+      const receiptMd = join(dir, "receipt.md");
+      await writeFile(fixtureFile, `${JSON.stringify({ packet: packet(), finalCheckReceipt: safeFinalCheck({ checked_at: new Date().toISOString() }) }, null, 2)}\n`, "utf8");
+      const { stdout, stderr } = await execFileAsync("node", [SCRIPT, "--fixture-file", fixtureFile, "--private-result-json", privateResultJson, "--private-result-md", privateResultMd, "--redacted-receipt-json", receiptJson, "--redacted-receipt-md", receiptMd], { cwd: process.cwd() });
+      expectNoSensitiveStrings(`${stdout}\n${stderr}`);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("redacted JSON receipt does not contain synthetic private values", async () => {
     const { paths, dir } = await runMockedLive();
-    try {
-      expectNoSensitiveStrings(await readFile(paths.receiptJson, "utf8"));
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    try { expectNoSensitiveStrings(await readFile(paths.receiptJson, "utf8")); }
+    finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("redacted Markdown receipt does not contain synthetic private values", async () => {
     const { paths, dir } = await runMockedLive();
-    try {
-      expectNoSensitiveStrings(await readFile(paths.receiptMd, "utf8"));
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    try { expectNoSensitiveStrings(await readFile(paths.receiptMd, "utf8")); }
+    finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("private result test output is under /tmp only", async () => {
@@ -539,23 +549,23 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     try {
       expect(paths.privateResultJson).toContain(tmpdir());
       expect(paths.privateResultMd).toContain(tmpdir());
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("tests do not touch real Mantis-Reports or real Mantis-Private-Source-Artifacts", async () => {
+  test("tests do not touch real Mantis-Reports", async () => {
     const { paths, dir } = await runMockedLive();
     try {
-      expect(paths.receiptJson).toContain(tmpdir());
-      expect(paths.receiptMd).toContain(tmpdir());
-      expect(paths.privateResultJson).toContain(tmpdir());
-      expect(paths.privateResultMd).toContain(tmpdir());
       expect(paths.receiptJson).not.toContain("/Users/alejandrogomez/Documents/Mantis-Reports");
+      expect(paths.receiptMd).not.toContain("/Users/alejandrogomez/Documents/Mantis-Reports");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("tests do not touch real Mantis-Private-Source-Artifacts", async () => {
+    const { paths, dir } = await runMockedLive();
+    try {
       expect(paths.privateResultJson).not.toContain("/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts");
-    } finally {
-      await rm(dir, { recursive: true, force: true });
-    }
+      expect(paths.privateResultMd).not.toContain("/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts");
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("package.json remains valid JSON and exposes the exact mutation script", async () => {

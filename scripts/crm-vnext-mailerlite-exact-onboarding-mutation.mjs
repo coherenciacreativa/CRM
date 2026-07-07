@@ -1,22 +1,28 @@
 #!/usr/bin/env node
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
-const SCHEMA_VERSION = 'crm-vnext-mailerlite-exact-onboarding-mutation-2026-07-07-v0';
+const execFileAsync = promisify(execFile);
+
+const SCHEMA_VERSION = 'crm-vnext-mailerlite-exact-onboarding-mutation-2026-07-07-v1';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PRIVATE_MAILERLITE_ROOT = '/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite';
 const REDACTED_RECEIPT_ROOT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite/controlled-welcome-flow';
 const OPERATION_CLASS = 'subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass';
 const COMPLETED_FINAL_CHECK_ROUTE_STATUS = 'completed_live_readonly_packet_final_check';
-const BLOCKED_CLIENT_CONTRACT_MISSING = 'blocked_route_not_implemented_safe_mutation_client_contract_missing';
+const SAFE_MUTATION_CLIENT_CONTRACT = 'post_subscribers_only_current_not_found_path';
+const EXACT_MUTATION_GUARD_STATUS = 'exact_mutation_execution_guard_implemented_mocked_live_tested';
+const DEFAULT_API_BASE = ['https:', '', 'connect.mailerlite.com', 'api'].join('/');
+const DEFAULT_SERVICE = 'CRM-MailerLite';
+const DEFAULT_ACCOUNT = 'default';
+const DEFAULT_MAX_FINAL_CHECK_AGE_MS = 15 * 60 * 1000;
 const FUTURE_EXACT_APPROVAL_PHRASE = 'I approve CRM Core to execute one MailerLite onboarding mutation for the explicitly approved repaired private onboarding packet only, using the implemented exact mutation execution guard. Use the approved operation class `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`, the approved native top-level email semantics, the approved existing field mapping, and the confirmed onboarding group. Immediately before mutation, perform or validate the packet-specific idempotency and suppression safety gate. Do not create fields, do not modify automations or campaigns, do not create or modify segments, forms, webhooks, or account settings, do not perform a broad import, do not print raw emails, IDs, subscriber rows, tokens, headers, env values, credentials, raw payloads, private message text, private subscriber content, or private artifact contents, and write only private result artifacts plus redacted aggregate receipts.';
 
-const ALLOWED_MOCK_MUTATION_REQUESTS = new Set([
-  'POST /mock/exact-onboarding/subscriber-upsert',
-  'POST /mock/exact-onboarding/onboarding-group-assignment',
-]);
-
+const ALLOWED_EXACT_MUTATION_REQUESTS = new Set(['POST /api/subscribers']);
+const ALLOWED_FIELD_FAMILIES = ['name', 'country', 'city'];
 const OMITTED_FIELD_FAMILIES = [
   'source_channel',
   'source_context',
@@ -37,31 +43,36 @@ Fixture/mock mode:
 
 Future live exact-mutation mode:
   --allow-live-exact-onboarding-mutation
-  --approval-phrase <exact phrase> OR --approval-file <path>
+  --approval-phrase-file <path>
   --private-packet-json <approved repaired private packet path>
   --final-check-redacted-json <approved final-check redacted receipt path>
   --private-result-json <approved private result JSON path>
   --private-result-md <approved private result MD path>
   --redacted-receipt-json <approved redacted receipt JSON path>
   --redacted-receipt-md <approved redacted receipt MD path>
+  --max-final-check-age-ms <milliseconds>
 
-This command is a redaction-safe exact onboarding mutation guard. This task does
-not implement a live MailerLite mutation client contract; future live mode blocks
-after approval, path, final-check, packet, and redaction prechecks unless an
-approved mock client is injected by tests.`;
+The v1 safe client contract permits exactly one future mutation endpoint:
+POST /api/subscribers. It supports only the current packet-specific not_found
+subscriber path and never prints raw private values.`;
 
 const parseArgs = (argv) => {
   const options = {
     fixtureFile: null,
     allowLiveExactOnboardingMutation: false,
     approvalPhrase: null,
-    approvalFile: null,
+    approvalPhraseFile: null,
     privatePacketJson: null,
     finalCheckRedactedJson: null,
     privateResultJson: null,
     privateResultMd: null,
     redactedReceiptJson: null,
     redactedReceiptMd: null,
+    maxFinalCheckAgeMs: DEFAULT_MAX_FINAL_CHECK_AGE_MS,
+    service: DEFAULT_SERVICE,
+    account: DEFAULT_ACCOUNT,
+    apiBase: DEFAULT_API_BASE,
+    timeoutMs: 30_000,
     help: false,
   };
 
@@ -71,17 +82,27 @@ const parseArgs = (argv) => {
     else if (arg === '--fixture-file') options.fixtureFile = argv[++index];
     else if (arg === '--allow-live-exact-onboarding-mutation') options.allowLiveExactOnboardingMutation = true;
     else if (arg === '--approval-phrase') options.approvalPhrase = argv[++index];
-    else if (arg === '--approval-file') options.approvalFile = argv[++index];
+    else if (arg === '--approval-file' || arg === '--approval-phrase-file') options.approvalPhraseFile = argv[++index];
     else if (arg === '--private-packet-json') options.privatePacketJson = argv[++index];
     else if (arg === '--final-check-redacted-json') options.finalCheckRedactedJson = argv[++index];
     else if (arg === '--private-result-json') options.privateResultJson = argv[++index];
     else if (arg === '--private-result-md') options.privateResultMd = argv[++index];
     else if (arg === '--redacted-receipt-json') options.redactedReceiptJson = argv[++index];
     else if (arg === '--redacted-receipt-md') options.redactedReceiptMd = argv[++index];
+    else if (arg === '--max-final-check-age-ms') options.maxFinalCheckAgeMs = Number.parseInt(argv[++index], 10);
+    else if (arg === '--service') options.service = argv[++index];
+    else if (arg === '--account') options.account = argv[++index];
+    else if (arg === '--api-base') options.apiBase = argv[++index];
+    else if (arg === '--timeout-ms') options.timeoutMs = Number.parseInt(argv[++index], 10);
     else if (/debug|raw|env|credential|header|token/i.test(arg)) throw new Error(`forbidden_flag:${arg}`);
     else throw new Error(`unknown_arg:${arg}`);
   }
 
+  options.apiBase = String(options.apiBase || DEFAULT_API_BASE).replace(/\/+$/, '');
+  options.maxFinalCheckAgeMs = Number.isFinite(options.maxFinalCheckAgeMs) && options.maxFinalCheckAgeMs > 0
+    ? options.maxFinalCheckAgeMs
+    : DEFAULT_MAX_FINAL_CHECK_AGE_MS;
+  options.timeoutMs = Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : 30_000;
   return options;
 };
 
@@ -200,21 +221,51 @@ const firstValue = (record, keys) => {
 
 const packetIdOf = (packet) => cleanString(firstValue(packet, ['packet_id', 'packetId', 'run_id', 'runId'])) ?? 'unknown_packet';
 const privateEmailForLookup = (packet) => cleanString(firstValue(packet, ['private_lookup.email', 'privateLookup.email', 'privateEmailForLookup', 'email_for_lookup', 'top_level_email']));
+const confirmedOnboardingGroupReference = (packet) => cleanString(firstValue(packet, [
+  'confirmed_onboarding_group_reference',
+  'confirmedOnboardingGroupReference',
+  'onboarding_group_reference',
+  'target_onboarding_group_reference',
+  'private_lookup.onboarding_group_reference',
+  'privateLookup.onboardingGroupReference',
+]));
+
+const normalizeList = (value) => Array.isArray(value) ? value.map(cleanString).filter(Boolean) : [];
+const packetFieldValue = (packet, family) => firstValue(packet, [`fields.${family}`, `mapped_fields.${family}`, `private_fields.${family}`, family]);
 
 const mappedFieldFamiliesFor = (packet) => {
-  if (Array.isArray(packet?.mapped_field_families)) return packet.mapped_field_families.map(cleanString).filter(Boolean).filter((item) => ['name', 'country', 'city'].includes(item));
-  if (Array.isArray(packet?.field_families)) return packet.field_families.map(cleanString).filter(Boolean).filter((item) => ['name', 'country', 'city'].includes(item));
+  const explicit = normalizeList(packet?.mapped_field_families ?? packet?.field_families).filter((item) => ALLOWED_FIELD_FAMILIES.includes(item));
+  if (explicit.length) return explicit;
   const families = [];
-  const fields = packet?.fields && typeof packet.fields === 'object' ? packet.fields : {};
-  for (const family of ['name', 'country', 'city']) {
-    if (Object.prototype.hasOwnProperty.call(fields, family) || Object.prototype.hasOwnProperty.call(packet ?? {}, family)) families.push(family);
+  for (const family of ALLOWED_FIELD_FAMILIES) {
+    const value = packetFieldValue(packet, family);
+    if (value !== null && value !== undefined && value !== '') families.push(family);
   }
   return families;
 };
 
+const assertPacketReadyForMutation = (packet) => {
+  if (!privateEmailForLookup(packet)) throw new Error('blocked_missing_private_packet_email_anchor');
+  if (!confirmedOnboardingGroupReference(packet)) throw new Error('blocked_missing_private_packet_group_reference');
+  if (cleanString(packet?.operation_class) !== OPERATION_CLASS) throw new Error('blocked_private_packet_operation_class_mismatch');
+  if (cleanString(packet?.top_level_email_semantics) !== 'native_top_level_subscriber_email_required') throw new Error('blocked_private_packet_email_semantics_mismatch');
+  if (cleanString(packet?.consent_context_gate_status) !== 'present_private_evidence') throw new Error('blocked_private_packet_consent_context_gate_missing');
+  if (cleanString(packet?.mutation_execution_status) !== 'not_executed') throw new Error('blocked_private_packet_already_executed_or_unknown');
+  if (packet?.final_idempotency_check_required !== true) throw new Error('blocked_private_packet_idempotency_gate_missing');
+  if (packet?.final_suppression_check_required !== true) throw new Error('blocked_private_packet_suppression_gate_missing');
+  const allFamilies = normalizeList(packet?.mapped_field_families ?? packet?.field_families);
+  const disallowed = allFamilies.filter((item) => !ALLOWED_FIELD_FAMILIES.includes(item));
+  if (disallowed.length) throw new Error('blocked_private_packet_disallowed_field_family');
+  return {
+    email: privateEmailForLookup(packet),
+    groupReference: confirmedOnboardingGroupReference(packet),
+    mappedFieldFamilies: mappedFieldFamiliesFor(packet),
+  };
+};
+
 const approvalTextFrom = async (options) => {
   if (options.approvalPhrase) return cleanString(options.approvalPhrase);
-  if (options.approvalFile) return cleanString(await readFile(resolve(options.approvalFile), 'utf8'));
+  if (options.approvalPhraseFile) return cleanString(await readFile(resolve(options.approvalPhraseFile), 'utf8'));
   return null;
 };
 
@@ -223,36 +274,31 @@ const assertExactApprovalPhrase = async (options) => {
   if (phrase !== FUTURE_EXACT_APPROVAL_PHRASE) throw new Error('not_run_missing_approval');
 };
 
-const blocker = (reason, status = 'not_run_final_check_failed') => ({
-  ok: false,
-  status,
-  reason,
-});
-
+const blocker = (reason, status = 'not_run_final_check_failed') => ({ ok: false, status, reason });
 const hasBlockers = (value) => Array.isArray(value) ? value.length > 0 : Boolean(value);
+const finalCheckTimestamp = (receipt) => cleanString(firstValue(receipt, ['checked_at', 'completed_at']));
 
-const finalCheckFreshnessStatus = (receipt) => cleanString(firstValue(receipt, [
-  'freshness_status',
-  'final_check_freshness_status',
-  'freshness_window_status',
-  'approved_freshness_status',
-]));
+const validateFreshness = (receipt, { nowMs = Date.now(), maxAgeMs = DEFAULT_MAX_FINAL_CHECK_AGE_MS } = {}) => {
+  const timestamp = finalCheckTimestamp(receipt);
+  if (!timestamp) return blocker('final_check_timestamp_missing', 'blocked_final_check_freshness_unknown');
+  const parsed = Date.parse(timestamp);
+  if (!Number.isFinite(parsed)) return blocker('final_check_timestamp_invalid', 'blocked_final_check_freshness_unknown');
+  if (parsed > nowMs + 60_000) return blocker('final_check_timestamp_from_future', 'blocked_final_check_freshness_unknown');
+  if (nowMs - parsed > maxAgeMs) return blocker('final_check_stale', 'not_run_final_check_stale');
+  return { ok: true, status: 'fresh_within_max_final_check_age_ms' };
+};
 
-const validateFinalCheckReceipt = (receipt) => {
+const validateFinalCheckReceipt = (receipt, options = {}) => {
   if (!receipt || typeof receipt !== 'object') return blocker('final_check_missing', 'not_run_final_check_missing');
   if (receipt.route_status !== COMPLETED_FINAL_CHECK_ROUTE_STATUS) return blocker('final_check_route_status_not_completed');
   if (receipt.live_lookup_ran !== true) return blocker('final_check_live_lookup_not_confirmed');
   if (receipt.mailerlite_api_called !== true) return blocker('final_check_api_call_not_confirmed');
+  if (receipt.mailerlite_api_call_scope !== 'packet_specific_subscriber_status_group_membership_readonly') return blocker('final_check_api_scope_not_packet_specific');
   if (hasBlockers(receipt.blockers)) return blocker('final_check_blockers_present');
+  if (receipt.receipt_consistency_check !== 'passed') return blocker('final_check_receipt_consistency_not_passed');
 
-  const freshness = finalCheckFreshnessStatus(receipt);
-  const freshnessOk = receipt.freshness_approved === true || [
-    'fresh',
-    'fresh_within_approved_window',
-    'within_approved_window',
-    'approved_freshness_window',
-  ].includes(freshness);
-  if (!freshnessOk) return blocker('final_check_freshness_unknown_or_stale', 'not_run_final_check_stale');
+  const freshness = validateFreshness(receipt, options);
+  if (!freshness.ok) return freshness;
 
   const subscriberLookupStatus = cleanString(receipt.subscriber_lookup_status);
   const subscriberStatusClass = cleanString(receipt.subscriber_status_class ?? receipt.subscriber_status);
@@ -260,14 +306,16 @@ const validateFinalCheckReceipt = (receipt) => {
   const duplicateStatus = cleanString(receipt.duplicate_readd_status);
   const suppressionStatus = cleanString(receipt.suppression_status);
   const idempotencyStatus = cleanString(receipt.idempotency_status);
+  const readiness = cleanString(receipt.mutation_readiness_after_final_check);
 
-  if (['unsubscribed', 'bounced', 'complained', 'junk', 'unknown', 'ambiguous'].includes(subscriberStatusClass)) return blocker('final_check_subscriber_status_blocked');
-  if (subscriberLookupStatus === 'found' && subscriberStatusClass !== 'active') return blocker('final_check_found_subscriber_not_active_safe_state');
-  if (!['not_found', 'found'].includes(subscriberLookupStatus)) return blocker('final_check_lookup_not_safe');
-  if (!['not_found', 'absent'].includes(groupMembershipStatus)) return blocker('final_check_group_membership_not_safe');
+  if (subscriberLookupStatus === 'found') return blocker('blocked_existing_subscriber_path_not_supported_by_v1_guard', 'blocked_existing_subscriber_path_not_supported_by_v1_guard');
+  if (subscriberLookupStatus !== 'not_found') return blocker('final_check_lookup_not_safe');
+  if (subscriberStatusClass !== 'not_found') return blocker('final_check_subscriber_status_not_not_found');
+  if (groupMembershipStatus !== 'not_found') return blocker('final_check_group_membership_not_safe');
   if (duplicateStatus !== 'safe_new_or_not_in_group') return blocker('final_check_duplicate_readd_not_safe');
   if (suppressionStatus !== 'pass') return blocker('final_check_suppression_not_pass');
   if (idempotencyStatus !== 'pass') return blocker('final_check_idempotency_not_pass');
+  if (readiness !== 'ready_for_exact_mutation_approval') return blocker('final_check_readiness_not_ready');
 
   return {
     ok: true,
@@ -280,25 +328,50 @@ const validateFinalCheckReceipt = (receipt) => {
 const forbiddenEndpointReason = ({ method = 'GET', path = '' }) => {
   const upper = String(method).toUpperCase();
   const cleanPath = String(path);
-  if (/\/fields(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_field_creation_endpoint';
-  if (/\/automations?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_automation_mutation_endpoint';
-  if (/\/campaigns?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_campaign_endpoint';
-  if (/\/segments?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_segment_endpoint';
-  if (/\/forms?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_form_endpoint';
-  if (/\/webhooks?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_webhook_endpoint';
-  if (/\/account(?:\/|$|\?)/i.test(cleanPath) || /\/settings(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_account_settings_endpoint';
-  if (/imports?/i.test(cleanPath)) return 'blocked_broad_import_endpoint';
-  if (upper === 'DELETE' && /\/groups?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_group_removal_endpoint';
-  if (upper === 'DELETE' && /\/subscribers?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_subscriber_deletion_endpoint';
-  if (['PUT', 'PATCH'].includes(upper)) return 'blocked_destructive_or_partial_update_endpoint';
+  if (upper === 'PUT' && /^\/api\/subscribers\/[^/?#]+/i.test(cleanPath)) return 'blocked_put_subscriber_update_endpoint';
+  if (upper === 'POST' && /^\/api\/subscribers\/[^/]+\/groups\/[^/?#]+/i.test(cleanPath)) return 'blocked_existing_subscriber_group_assignment_endpoint_v1';
+  if (upper === 'POST' && /^\/api\/subscribers\/[^/]+\/forget(?:$|\?)/i.test(cleanPath)) return 'blocked_subscriber_forget_endpoint';
+  if (upper === 'DELETE' && /^\/api\/subscribers\/[^/]+\/groups\/[^/?#]+/i.test(cleanPath)) return 'blocked_group_unassign_endpoint';
+  if (upper === 'DELETE' && /^\/api\/subscribers\/[^/?#]+/i.test(cleanPath)) return 'blocked_subscriber_deletion_endpoint';
+  if (upper === 'POST' && /^\/api\/groups(?:$|\?)/i.test(cleanPath)) return 'blocked_group_create_endpoint';
+  if (['PUT', 'PATCH'].includes(upper) && /^\/api\/groups\/[^/?#]+/i.test(cleanPath)) return 'blocked_group_update_endpoint';
+  if (upper === 'DELETE' && /^\/api\/groups\/[^/?#]+/i.test(cleanPath)) return 'blocked_group_delete_endpoint';
+  if (upper === 'GET' && /^\/api\/groups\/[^/]+\/subscribers/i.test(cleanPath)) return 'blocked_group_subscriber_read_in_mutation_command';
+  if (upper === 'POST' && /^\/api\/groups\/[^/]+\/import-subscribers/i.test(cleanPath)) return 'blocked_group_import_endpoint';
+  if (/imports?|bulk/i.test(cleanPath)) return 'blocked_broad_import_endpoint';
+  if (/\/api\/automations?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_automation_mutation_endpoint';
+  if (/\/api\/campaigns?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_campaign_endpoint';
+  if (/\/api\/segments?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_segment_endpoint';
+  if (/\/api\/forms?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_form_endpoint';
+  if (/\/api\/webhooks?(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_webhook_endpoint';
+  if (/\/api\/account(?:\/|$|\?)|\/api\/settings(?:\/|$|\?)/i.test(cleanPath)) return 'blocked_account_settings_endpoint';
   return 'blocked_unapproved_mutation_endpoint';
 };
 
 const assertAllowedExactMutationRequest = ({ method = 'GET', path }) => {
   const signature = `${String(method).toUpperCase()} ${String(path)}`;
-  if (!ALLOWED_MOCK_MUTATION_REQUESTS.has(signature)) throw new Error(forbiddenEndpointReason({ method, path }));
+  if (!ALLOWED_EXACT_MUTATION_REQUESTS.has(signature)) throw new Error(forbiddenEndpointReason({ method, path }));
   return true;
 };
+
+const buildExactMutationPayload = (packet) => {
+  const { email, groupReference, mappedFieldFamilies } = assertPacketReadyForMutation(packet);
+  const fields = {};
+  for (const family of mappedFieldFamilies) {
+    const value = packetFieldValue(packet, family);
+    if (value !== null && value !== undefined && value !== '') fields[family] = value;
+  }
+  return { email, fields, groups: [groupReference] };
+};
+
+const buildRedactedPayloadShape = (payload) => ({
+  endpoint: 'POST /api/subscribers',
+  has_email: Boolean(payload.email),
+  field_families: Object.keys(payload.fields),
+  group_count: payload.groups.length,
+  status_set: Object.prototype.hasOwnProperty.call(payload, 'status'),
+  resubscribe_set: Object.prototype.hasOwnProperty.call(payload, 'resubscribe'),
+});
 
 const buildReceipt = ({
   runId,
@@ -332,18 +405,20 @@ const buildReceipt = ({
   closed_gates: [
     'no_broad_import',
     'no_multiple_subscribers',
-    'no_field_creation',
+    'no_put_subscriber_update',
+    'no_existing_subscriber_group_assignment_endpoint_v1',
+    'no_subscriber_delete_or_forget',
+    'no_group_create_update_delete_import_or_unassign',
     'no_automation_mutation',
     'no_campaign_creation_or_send',
     'no_segment_form_webhook_or_account_settings_mutation',
-    'no_group_removal',
-    'no_subscriber_deletion',
+    'no_status_or_resubscribe_fields',
     'no_crm_or_source_write',
     'no_raw_email_or_ids_in_redacted_receipt',
   ],
 });
 
-const buildPrivateResult = ({ runId, receipt, privateOutputMode }) => ({
+const buildPrivateResult = ({ runId, receipt, privateOutputMode, redactedPayloadShape, responseStatus }) => ({
   schema_version: SCHEMA_VERSION,
   run_id: runId,
   private_output_mode: privateOutputMode,
@@ -352,6 +427,8 @@ const buildPrivateResult = ({ runId, receipt, privateOutputMode }) => ({
   mutation_attempted: receipt.mutation_attempted,
   mutation_executed: receipt.mutation_executed,
   mutation_result_status: receipt.mutation_result_status,
+  redacted_payload_shape: redactedPayloadShape,
+  response_status: responseStatus ?? 'not_recorded',
   private_result_notice: 'Synthetic or future private-only result. This artifact intentionally omits raw email, IDs, raw payloads, credentials, headers, tokens, and private subscriber content.',
   deletion_or_redaction_controls: [
     'redacted_receipt_contains_aggregate_status_only',
@@ -371,44 +448,138 @@ const writeOutputs = async ({ paths, receipt, privateResult }) => {
 };
 
 const compactStdout = (receipt) => ({
-  ok: !String(receipt.mutation_result_status).startsWith('not_run') && !String(receipt.mutation_result_status).startsWith('mutation_blocked'),
+  ok: receipt.mutation_executed === true,
   mutation_result_status: receipt.mutation_result_status,
   mutation_attempted: receipt.mutation_attempted,
   mutation_executed: receipt.mutation_executed,
   recommended_next_step: receipt.recommended_next_step,
 });
 
-const executeMockedMutation = async ({ client, mappedFieldFamilies }) => {
-  assertAllowedExactMutationRequest({ method: 'POST', path: '/mock/exact-onboarding/subscriber-upsert' });
-  assertAllowedExactMutationRequest({ method: 'POST', path: '/mock/exact-onboarding/onboarding-group-assignment' });
-  if (client?.upsertSubscriber) await client.upsertSubscriber({ operation: 'subscriber_upsert', field_families: mappedFieldFamilies });
-  if (client?.assignOnboardingGroup) await client.assignOnboardingGroup({ operation: 'onboarding_group_assignment' });
+const requestUrl = (base, path) => new URL(`${base}${path.startsWith('/') ? path : `/${path}`}`);
+
+const classifyFailure = (status, bodyText = '') => {
+  const text = bodyText.replace(/\s+/g, ' ').trim();
+  if (status === 401 || /Unauthenticated|unauthorized|token is required/i.test(text)) return 'mailerlite_unauthenticated';
+  if (status === 403 || /forbidden|permission/i.test(text)) return 'mailerlite_forbidden';
+  if (status === 429 || /rate.?limit|too many requests/i.test(text)) return 'mailerlite_rate_limited';
+  if (status === 0 || /timeout|network|fetch failed/i.test(text)) return 'mailerlite_network_or_timeout';
+  return `mailerlite_http_${status || 'unknown'}`;
+};
+
+const createMailerLiteExactMutationClient = ({ options, key, fetchImpl = fetch, calls = [] }) => ({
+  calls,
+  request: async ({ method, path, payload }) => {
+    assertAllowedExactMutationRequest({ method, path });
+    calls.push({ method: String(method).toUpperCase(), path });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), options.timeoutMs);
+    try {
+      const response = await fetchImpl(requestUrl(options.apiBase, path), {
+        method: String(method).toUpperCase(),
+        headers: {
+          Authorization: ['Bearer', key].join(' '),
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'CRM-Core-MailerLite-Exact-Onboarding-Mutation/1.0',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      const text = await response.text();
+      if (!response.ok) {
+        const error = new Error(classifyFailure(response.status, text));
+        error.status = response.status;
+        throw error;
+      }
+      return { ok: true, status: response.status, response_status_class: 'success_no_raw_body_recorded' };
+    } catch (error) {
+      if (error?.status) throw error;
+      throw new Error(classifyFailure(0, error instanceof Error ? error.message : String(error)));
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+});
+
+const getKeychainSecret = async (service, account) => {
+  try {
+    const { stdout } = await execFileAsync('security', ['find-generic-password', '-w', '-s', service, '-a', account], { timeout: 10_000, maxBuffer: 1024 * 1024 });
+    const key = stdout.trim();
+    return key ? { key } : null;
+  } catch {
+    return null;
+  }
+};
+
+const getCredential = async (options) => {
+  const keychain = await getKeychainSecret(options.service, options.account);
+  if (keychain?.key) return { key: keychain.key };
+  for (const name of ['MAILERLITE_API_KEY', 'MAILERLITE_TOKEN', 'ML_API_KEY']) {
+    const key = process.env[name]?.trim();
+    if (key) return { key };
+  }
+  return { key: null };
+};
+
+const executeExactMutation = async ({ client, payload }) => {
+  assertAllowedExactMutationRequest({ method: 'POST', path: '/api/subscribers' });
+  return client.request({ method: 'POST', path: '/api/subscribers', payload });
+};
+
+const receiptFrom = ({ runId, packet, finalCheck, mutationAttempted, mutationExecuted, mutationResultStatus, blockers, recommendedNextStep }) => {
+  const mappedFieldFamilies = mappedFieldFamiliesFor(packet);
+  return buildReceipt({
+    runId,
+    packetId: packetIdOf(packet),
+    mutationAttempted,
+    mutationExecuted,
+    finalPreExecutionCheckStatus: finalCheck.status,
+    subscriberLookupStatus: finalCheck.subscriber_lookup_status ?? 'blocked',
+    groupAssignmentStatus: mutationExecuted ? 'post_subscribers_groups_array_included' : finalCheck.group_assignment_status ?? 'blocked',
+    mappedFieldFamilies,
+    mutationResultStatus,
+    blockers,
+    recommendedNextStep,
+  });
 };
 
 const runFixtureMode = async (options, deps = {}) => {
   const paths = validateFixtureOutputPaths(options, { roots: deps.roots });
   const fixture = await readJson(paths.fixtureFile);
   const packet = fixture.packet ?? {};
-  const finalCheck = validateFinalCheckReceipt(fixture.finalCheckReceipt ?? fixture.final_check_receipt ?? {});
-  const mappedFieldFamilies = mappedFieldFamiliesFor(packet);
-  const runId = deps.runId ?? fixture.run_id ?? 'crm_core_mailerlite_exact_onboarding_mutation_fixture_mock_2026-07-07';
-  const packetId = packetIdOf(packet);
-  const blockers = finalCheck.ok ? [] : [finalCheck.reason];
-  const mutationResultStatus = finalCheck.ok ? 'mutation_executed_redacted_receipt_ready' : finalCheck.status;
-  const receipt = buildReceipt({
-    runId,
-    packetId,
-    mutationAttempted: finalCheck.ok,
-    mutationExecuted: finalCheck.ok,
-    finalPreExecutionCheckStatus: finalCheck.status,
-    subscriberLookupStatus: finalCheck.subscriber_lookup_status ?? 'blocked',
-    groupAssignmentStatus: finalCheck.group_assignment_status ?? 'blocked',
-    mappedFieldFamilies,
-    mutationResultStatus,
-    blockers,
-    recommendedNextStep: finalCheck.ok ? 'central_integration_of_exact_mutation_execution_guard' : 'resolve_final_pre_execution_gate',
+  const finalCheck = validateFinalCheckReceipt(fixture.finalCheckReceipt ?? fixture.final_check_receipt ?? {}, {
+    nowMs: deps.nowMs,
+    maxAgeMs: options.maxFinalCheckAgeMs,
   });
-  const privateResult = buildPrivateResult({ runId, receipt, privateOutputMode: 'fixture_mock_only' });
+  const runId = deps.runId ?? fixture.run_id ?? 'crm_core_mailerlite_exact_onboarding_mutation_fixture_mock_2026-07-07';
+  let receipt;
+  let payloadShape = null;
+  if (finalCheck.ok) {
+    const payload = buildExactMutationPayload(packet);
+    payloadShape = buildRedactedPayloadShape(payload);
+    receipt = receiptFrom({
+      runId,
+      packet,
+      finalCheck,
+      mutationAttempted: true,
+      mutationExecuted: true,
+      mutationResultStatus: 'mutation_executed_redacted_receipt_ready',
+      blockers: [],
+      recommendedNextStep: 'central_integration_of_exact_mutation_execution_guard',
+    });
+  } else {
+    receipt = receiptFrom({
+      runId,
+      packet,
+      finalCheck,
+      mutationAttempted: false,
+      mutationExecuted: false,
+      mutationResultStatus: finalCheck.status,
+      blockers: [finalCheck.reason],
+      recommendedNextStep: 'resolve_final_pre_execution_gate',
+    });
+  }
+  const privateResult = buildPrivateResult({ runId, receipt, privateOutputMode: 'fixture_mock_only', redactedPayloadShape: payloadShape });
   await writeOutputs({ paths, receipt, privateResult });
   return receipt;
 };
@@ -417,48 +588,41 @@ const runLiveMode = async (options, deps = {}) => {
   const paths = validateLiveOutputPaths(options, { roots: deps.roots });
   await assertExactApprovalPhrase(options);
   const finalCheckReceipt = await readJson(paths.finalCheckRedactedJson);
-  const finalCheck = validateFinalCheckReceipt(finalCheckReceipt);
+  const finalCheck = validateFinalCheckReceipt(finalCheckReceipt, { nowMs: deps.nowMs, maxAgeMs: options.maxFinalCheckAgeMs });
   if (!finalCheck.ok) throw new Error(finalCheck.status);
   const packet = await readJson(paths.privatePacketJson);
-  if (!privateEmailForLookup(packet)) throw new Error('not_run_missing_private_packet_email_anchor');
-  const mappedFieldFamilies = mappedFieldFamiliesFor(packet);
+  const payload = buildExactMutationPayload(packet);
+  const payloadShape = buildRedactedPayloadShape(payload);
   const runId = deps.runId ?? 'crm_core_mailerlite_exact_onboarding_mutation_guard_2026-07-07';
-  const packetId = packetIdOf(packet);
 
-  if (deps.allowMockedMutationExecution === true && deps.exactMutationClient) {
-    await executeMockedMutation({ client: deps.exactMutationClient, mappedFieldFamilies });
-    const receipt = buildReceipt({
-      runId,
-      packetId,
-      mutationAttempted: true,
-      mutationExecuted: true,
-      finalPreExecutionCheckStatus: finalCheck.status,
-      subscriberLookupStatus: finalCheck.subscriber_lookup_status,
-      groupAssignmentStatus: 'mocked_assigned',
-      mappedFieldFamilies,
-      mutationResultStatus: 'mutation_executed_redacted_receipt_ready',
-      blockers: [],
-      recommendedNextStep: 'central_integration_of_exact_mutation_execution_guard',
-    });
-    const privateResult = buildPrivateResult({ runId, receipt, privateOutputMode: 'mocked_live_prechecked_only' });
-    await writeOutputs({ paths, receipt, privateResult });
-    return receipt;
-  }
-
-  const receipt = buildReceipt({
-    runId,
-    packetId,
-    mutationAttempted: false,
-    mutationExecuted: false,
-    finalPreExecutionCheckStatus: finalCheck.status,
-    subscriberLookupStatus: finalCheck.subscriber_lookup_status,
-    groupAssignmentStatus: finalCheck.group_assignment_status,
-    mappedFieldFamilies,
-    mutationResultStatus: 'not_run_route_not_redaction_safe',
-    blockers: [BLOCKED_CLIENT_CONTRACT_MISSING],
-    recommendedNextStep: 'resolve_safe_mutation_client_contract',
+  const credentialProvider = deps.credentialProvider ?? getCredential;
+  const credential = await credentialProvider(options);
+  if (!credential?.key) throw new Error('blocked_missing_mailerlite_credential');
+  const client = deps.exactMutationClient ?? createMailerLiteExactMutationClient({
+    options,
+    key: credential.key,
+    fetchImpl: deps.fetchImpl ?? fetch,
+    calls: deps.calls ?? [],
   });
-  const privateResult = buildPrivateResult({ runId, receipt, privateOutputMode: 'prechecked_live_blocked_no_client_contract' });
+  const mutationResponse = await executeExactMutation({ client, payload });
+
+  const receipt = receiptFrom({
+    runId,
+    packet,
+    finalCheck,
+    mutationAttempted: true,
+    mutationExecuted: true,
+    mutationResultStatus: 'mutation_executed_redacted_receipt_ready',
+    blockers: [],
+    recommendedNextStep: 'central_integration_of_exact_mutation_execution_guard',
+  });
+  const privateResult = buildPrivateResult({
+    runId,
+    receipt,
+    privateOutputMode: deps.exactMutationClient ? 'mocked_live_prechecked_only' : 'future_live_prechecked_exact_route',
+    redactedPayloadShape: payloadShape,
+    responseStatus: mutationResponse?.response_status_class ?? 'success_no_raw_body_recorded',
+  });
   await writeOutputs({ paths, receipt, privateResult });
   return receipt;
 };
@@ -482,17 +646,25 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 
 export {
-  ALLOWED_MOCK_MUTATION_REQUESTS,
-  BLOCKED_CLIENT_CONTRACT_MISSING,
+  ALLOWED_EXACT_MUTATION_REQUESTS,
+  ALLOWED_FIELD_FAMILIES,
   COMPLETED_FINAL_CHECK_ROUTE_STATUS,
+  DEFAULT_MAX_FINAL_CHECK_AGE_MS,
+  EXACT_MUTATION_GUARD_STATUS,
   FUTURE_EXACT_APPROVAL_PHRASE,
   OMITTED_FIELD_FAMILIES,
   OPERATION_CLASS,
   PRIVATE_MAILERLITE_ROOT,
   REDACTED_RECEIPT_ROOT,
   REPO_ROOT,
+  SAFE_MUTATION_CLIENT_CONTRACT,
   SCHEMA_VERSION,
   assertAllowedExactMutationRequest,
+  assertPacketReadyForMutation,
+  buildExactMutationPayload,
+  buildRedactedPayloadShape,
+  createMailerLiteExactMutationClient,
+  executeExactMutation,
   isInside,
   parseArgs,
   run,

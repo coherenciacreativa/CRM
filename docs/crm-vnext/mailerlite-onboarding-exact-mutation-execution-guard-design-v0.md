@@ -255,7 +255,7 @@ package-lock preservation.
 
 ```text
 exact_mutation_execution_guard_status:
-exact_mutation_execution_guard_scaffolded_safe_mutation_client_contract_missing
+exact_mutation_execution_guard_implemented_mocked_live_tested
 
 live_mutation_status:
 not_run
@@ -264,13 +264,65 @@ actual_mutation_status:
 not_executed
 ```
 
-The guard, CLI, tests, redaction checks, and docs exist, but future live mutation
-remains blocked until a reviewed redaction-safe MailerLite mutation client
-contract is implemented or validated for this exact operation class.
+The guard, CLI, tests, redaction checks, and docs now include the v1 safe mutation client contract for this exact operation class. Future live mutation remains not run and still requires central integration plus exact CEO mutation approval.
 
 ## Recommended Next Step
 
-Resolve the safe mutation client contract before any exact mutation approval.
-Central integration may record this guard and its blocker, but actual mutation
-must remain blocked until the route status is implemented and tested for live
-use.
+Central integration of the exact mutation execution guard, then exact CEO mutation approval or pause. Actual mutation remains not run and not authorized by this implementation.
+
+
+## Safe Mutation Client Contract v1
+
+```text
+previous_route_status:
+exact_mutation_execution_guard_scaffolded_safe_mutation_client_contract_missing
+
+safe_mutation_client_contract:
+post_subscribers_only_current_not_found_path
+
+v1_readiness:
+exact_mutation_execution_guard_implemented_mocked_live_tested
+
+live_mutation_status:
+not_run
+
+actual_mutation_status:
+not_executed
+```
+
+The v1 contract permits only:
+
+- `POST /api/subscribers`
+
+The v1 scope is intentionally limited to the current packet-specific
+`not_found` subscriber path. It does not support existing-subscriber
+group-assignment behavior. If a future packet reports
+`subscriber_lookup_status=found`, the guard blocks with:
+
+`blocked_existing_subscriber_path_not_supported_by_v1_guard`
+
+The v1 contract disallows:
+
+- `PUT /api/subscribers/{id}`
+- `POST /api/subscribers/{subscriber_id}/groups/{group_id}`
+- subscriber delete or forget endpoints
+- group create, update, delete, import, unassign, or group-subscriber read
+  endpoints inside the mutation command
+- import or bulk endpoints
+- automation endpoints
+- campaign endpoints
+- segment, form, webhook, account, or settings endpoints
+
+The v1 payload is constructed internally only and includes:
+
+- native top-level email from the approved repaired private packet;
+- existing approved field families only: name, country, city;
+- a groups array containing only the confirmed onboarding group reference.
+
+The payload omits source/channel/context fields, consent/context fields, CRM Core
+private anchor fields, status changes, opt-in metadata, and `resubscribe`.
+
+Credential and network/client access occur only after approval, path, freshness,
+final-check, private-packet, and endpoint allowlist prechecks pass. Mock tests
+prove the precheck order and the single endpoint contract without calling live
+MailerLite.

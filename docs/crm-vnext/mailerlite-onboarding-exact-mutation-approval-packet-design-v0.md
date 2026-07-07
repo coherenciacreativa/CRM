@@ -95,7 +95,7 @@ Planned operation semantics:
 ## Execution Route Readiness
 
 ```text
-mutation_execution_route_status:
+previous_mutation_execution_route_status:
 not_implemented
 ```
 
@@ -111,15 +111,14 @@ Therefore:
 - exact mutation approval packet can be designed;
 - actual mutation execution must not be attempted until a redaction-safe
   mutation execution guard is implemented, tested, and centrally integrated;
-- next recommended step after central integration should be implementation or
-  validation of the MailerLite exact mutation execution guard, not mutation
-  approval.
+- this was the previous blocker before the v1 safe mutation client contract
+  was implemented and mock-tested.
 
 ## Mutation Execution Guard Implementation Update
 
 ```text
 mutation_execution_route_guard_status:
-scaffolded_safe_mutation_client_contract_missing
+implemented_mock_tested
 
 live_mutation_status:
 not_run
@@ -131,21 +130,9 @@ exact_approval_required_after_central_integration:
 true
 ```
 
-The exact mutation execution guard has been scaffolded and mock-tested, including
-path checks, final-check freshness checks, endpoint allowlist tests, redaction
-checks, and credential precheck ordering.
+The exact mutation execution guard is now implemented and mock-tested with the v1 safe mutation client contract: `POST /api/subscribers` only, current packet-specific `not_found` path only. Path checks, final-check freshness checks, endpoint allowlist tests, redaction checks, payload-shape tests, and credential/network precheck ordering are covered.
 
-The guard intentionally blocks future live mutation with:
-
-`blocked_route_not_implemented_safe_mutation_client_contract_missing`
-
-until a reviewed redaction-safe MailerLite mutation client contract exists for
-this exact operation class.
-
-If the safe route is not implemented, this approval packet remains conceptual
-and execution blocked. Exact approval remains required after central integration,
-and approval must not be requested as an execution step until the safe route is
-implemented and tested.
+Exact mutation approval remains not requested. Actual mutation remains not executed. After central integration, Alejandro may either approve the exact one-packet mutation using the exact approval phrase or pause.
 
 ## Exact Approval Packet
 
@@ -278,10 +265,10 @@ Stop future mutation if any of these occur:
 
 ```text
 exact_mutation_approval_packet_design_status:
-ready_for_central_integration_but_execution_route_scaffolded
+ready_for_central_integration_with_guard_implemented_mock_tested
 
 mutation_execution_route_guard_status:
-scaffolded_safe_mutation_client_contract_missing
+implemented_mock_tested
 
 live_mutation_status:
 not_run
@@ -289,11 +276,11 @@ not_run
 actual_mutation_status:
 not_executed
 
-execution_blocker:
-blocked_route_not_implemented_safe_mutation_client_contract_missing
+safe_mutation_client_contract:
+post_subscribers_only_current_not_found_path
 
 next_step_after_central_integration:
-resolve_safe_mutation_client_contract_before_exact_mutation_approval
+exact_ceo_mutation_approval_or_pause
 ```
 
 ## Closed Gates
@@ -326,3 +313,29 @@ This design does not authorize:
 
 Complete when CRM Core has a durable exact mutation approval packet design that
 Alejandro can review later, without executing mutation.
+
+
+## Safe Mutation Client Contract v1 Status
+
+```text
+safe_mutation_client_contract_status:
+implemented_mock_tested
+
+safe_mutation_client_contract:
+post_subscribers_only_current_not_found_path
+
+exact_mutation_approval_requested:
+false
+
+live_mutation_status:
+not_run
+
+actual_mutation_status:
+not_executed
+
+next_step_after_central_integration:
+exact_ceo_mutation_approval_or_pause
+```
+
+The approval packet remains packet-specific. The implemented guard does not
+authorize mutation by itself and does not broaden the operation class.
