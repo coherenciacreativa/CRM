@@ -4522,12 +4522,14 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one no-write private packet email anchor repair/regeneration boundary.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v2`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `completed_final_check_ready_for_exact_mutation_approval`
 - `objective`: Wait for Alejandro approval before one final packet-specific
   MailerLite idempotency and suppression read-only check using the repaired
   private no-write packet.
@@ -4572,6 +4574,74 @@ routing and completion pointer.
 - `recommended_default`: Approve one final packet-specific
   idempotency/suppression check, then review the redacted result before any
   mutation approval.
+- `findings`:
+  - Final packet-specific idempotency/suppression check v2 completed.
+  - Live lookup ran.
+  - MailerLite API call scope was packet-specific subscriber status and group
+    membership read-only.
+  - Subscriber lookup status was `not_found`.
+  - Onboarding group membership status was `not_found`.
+  - Suppression status was `pass`.
+  - Idempotency status was `pass`.
+  - Duplicate/re-add status was `safe_new_or_not_in_group`.
+  - Receipt consistency check passed.
+  - Mutation readiness after final check is
+    `ready_for_exact_mutation_approval`.
+  - Blockers are none for the final-check result.
+  - Exact mutation approval packet remains required.
+  - Actual MailerLite mutation remains not executed.
+  - No MailerLite UI, mutation, subscriber row print, CRM/source write, Launch
+    OS touch, Mantis memory touch, or `/Users/alejandrogomez/CRM` use occurred
+    during central closeout.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one final packet-specific idempotency/suppression check using the repaired
   private packet.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_approval_packet_design_v0`
+- `status`: `active`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Prepare, but do not execute, one exact MailerLite onboarding
+  mutation approval packet from the completed no-write packet, repaired private
+  packet anchor, and final idempotency/suppression check v2 result.
+- `why_now`: The prepared/repaired onboarding packet passed the packet-specific
+  live read-only idempotency/suppression check. The subscriber lookup was
+  not_found, suppression passed, idempotency passed, duplicate/re-add was safe,
+  and the receipt consistency check passed. CRM Core may now prepare an exact
+  mutation approval packet for Alejandro review, but actual mutation remains
+  blocked until Alejandro gives exact approval.
+- `allowed_scope`:
+  - Use repo docs and redacted result docs only.
+  - Prepare an exact mutation approval packet design or prompt.
+  - Include operation class, planned field families, group assignment, final
+    check result, closed gates, stop conditions, and exact approval phrase.
+  - No execution.
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No private artifact inspection unless separately approved.
+  - No mutation.
+- `forbidden_scope`:
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No subscriber-row reads.
+  - No raw email in chat.
+  - No raw IDs.
+  - No subscriber row print.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `recommended_default`: Prepare an exact MailerLite mutation approval packet
+  for Alejandro review, without executing mutation.
+- `completion_definition`: CRM Core has a packet-specific mutation approval
+  request that Alejandro can approve, modify, decline, or pause.

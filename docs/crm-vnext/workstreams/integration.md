@@ -501,15 +501,25 @@
   - Final packet-specific idempotency/suppression check is the next approval
     gate
   - Safari upload hardening temporary branch remains ready but untouched
-- `latest_commit`: pending private packet email anchor repair closeout commit
+  - MailerLite final idempotency/suppression check v2 closeout recorded
+  - Central closeout used redacted receipt only
+  - No private result was read
+  - No repaired private packet was read
+  - No private evidence was read
+  - No source actions occurred during closeout
+  - No MailerLite API/UI occurred during central closeout
+  - No mutation occurred during closeout
+  - Final check v2 completed as read-only live check in source run
+  - Mutation readiness is `ready_for_exact_mutation_approval`
+  - Exact mutation approval packet is next gate
+  - Safari upload hardening temporary branch remains ready but untouched
+- `latest_commit`: pending final check v2 closeout commit
 - `latest_receipt`: source result doc integrated at
-  `docs/crm-vnext/mailerlite-onboarding-private-packet-email-anchor-repair-result-v0.md`
-- `blockers`: final live idempotency/suppression check remains unresolved;
-  duplicate/re-add remains blocked until the packet-specific result allows it;
-  MailerLite mutation, CRM enrichment/write, assistant reply, and production
-  automation remain closed
-- `next_approval_needed`: approve or pause one final packet-specific
-  idempotency/suppression check using the repaired private packet
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-result-v0.md`
+- `blockers`: exact mutation approval packet not yet prepared; exact future
+  mutation approval not yet granted; MailerLite mutation, CRM enrichment/write,
+  assistant reply, and production automation remain closed
+- `next_approval_needed`: prepare exact MailerLite mutation approval packet
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

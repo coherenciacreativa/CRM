@@ -237,11 +237,20 @@
   `docs/crm-vnext/mailerlite-onboarding-private-packet-email-anchor-repair-result-v0.md`
 - `internal_lookup_input_resolvable_for_final_check`: true
 - `internal_lookup_input_storage`: `private_packet_only`
-- `final_idempotency_suppression_check_status`: `not_run_after_repair`
+- `final_idempotency_suppression_check_status`:
+  `completed_live_readonly_ready_for_exact_mutation_approval`
+- `final_idempotency_suppression_check_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-result-v0.md`
+- `live_lookup_ran`: true
+- `subscriber_lookup_status`: `not_found`
+- `onboarding_group_membership_status`: `not_found`
+- `suppression_status`: `pass`
+- `idempotency_status`: `pass`
+- `duplicate_readd_status`: `safe_new_or_not_in_group`
 - `mutation_readiness`:
-  `private_packet_email_anchor_repaired_final_check_ready_to_retry`
-- `recommended_next_step`: approve or pause one final packet-specific
-  idempotency/suppression check live run using the repaired private packet.
+  `ready_for_exact_mutation_approval_packet`
+- `actual_mutation_status`: `not_executed`
+- `recommended_next_step`: prepare exact MailerLite mutation approval packet.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
@@ -255,11 +264,10 @@
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
 - `mutation_readiness`:
-  `private_packet_email_anchor_repaired_final_check_ready_to_retry`
-- `next_recommended_step`: approve or pause one final packet-specific
-  idempotency/suppression check live run using the repaired private packet.
-- `next_approval_needed`: separate approval for one final packet-specific
-  idempotency/suppression check using the repaired private packet.
+  `ready_for_exact_mutation_approval_packet`
+- `next_recommended_step`: prepare exact MailerLite mutation approval packet.
+- `next_approval_needed`: exact MailerLite mutation approval packet design and
+  later exact mutation approval.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
@@ -273,8 +281,11 @@
   prevents false ready/pass/not_found statuses when precheck blocks. The private
   packet email anchor repair is complete, and the repaired private packet now
   contains a final-check-route-resolvable internal lookup input stored only in
-  the private packet. Mutation remains blocked pending one final packet-specific
-  suppression/idempotency check using the implemented guard and exact future
+  the private packet. Final check v2 completed as a live read-only
+  packet-specific idempotency/suppression check with subscriber lookup not
+  found, suppression pass, idempotency pass, safe duplicate/re-add status, and
+  receipt consistency passed. CRM Core may prepare an exact mutation approval
+  packet for review, but actual mutation remains blocked until exact future
   mutation approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

@@ -1047,6 +1047,44 @@ No lane outputs in review at creation.
 - `recommended_default`: approve one final packet-specific read-only check
   using the repaired private packet
 
+### controlled_welcome_flow_mailerlite_final_check_v2_closeout_2026-07-06
+
+- `result_type`: `final_idempotency_suppression_check_closeout`
+- `run_id`: `crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-result-v0.md`
+- `check_ran`: true
+- `live_lookup_ran`: true
+- `route_status`: `completed_live_readonly_packet_final_check`
+- `mailerlite_api_called`: true
+- `mailerlite_api_call_scope`: `packet_specific_subscriber_status_group_membership_readonly`
+- `subscriber_lookup_status`: `not_found`
+- `subscriber_status_class`: `not_found`
+- `onboarding_group_membership_status`: `not_found`
+- `duplicate_readd_status`: `safe_new_or_not_in_group`
+- `suppression_status`: `pass`
+- `idempotency_status`: `pass`
+- `mutation_readiness_after_final_check`: `ready_for_exact_mutation_approval`
+- `blockers`: none
+- `receipt_consistency_check`: passed
+- `mailerlite_ui_used`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: prepare exact mutation approval packet
+- `recommended_default`: prepare exact MailerLite mutation approval packet; do
+  not execute mutation.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

@@ -1051,6 +1051,63 @@ Interpretation:
   OS touch, or `/Users/alejandrogomez/CRM` use occurred during the source run
   or central closeout.
 
+## MailerLite Final Idempotency / Suppression Check v2 — Closeout
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-result-v0.md`
+- Source run:
+  `crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06`
+- Final packet-specific idempotency/suppression check v2 completed:
+  true
+- Live lookup ran:
+  true
+- MailerLite API called in source run:
+  true
+- MailerLite API call scope:
+  `packet_specific_subscriber_status_group_membership_readonly`
+- Subscriber lookup status:
+  `not_found`
+- Subscriber status class:
+  `not_found`
+- Onboarding group membership status:
+  `not_found`
+- Duplicate/re-add status:
+  `safe_new_or_not_in_group`
+- Suppression status:
+  `pass`
+- Idempotency status:
+  `pass`
+- Receipt consistency check:
+  passed
+- Mutation readiness after final check:
+  `ready_for_exact_mutation_approval`
+- Blockers:
+  none
+- MailerLite UI occurred:
+  false
+- MailerLite mutation occurred:
+  false
+- Subscriber rows printed:
+  false
+- CRM/source writes occurred:
+  false
+- Exact mutation approval packet remains required:
+  true
+- Actual mutation executed:
+  false
+
+Interpretation:
+
+- The prepared/repaired onboarding packet passed the packet-specific live
+  read-only idempotency/suppression check.
+- This result is not mutation approval.
+- CRM Core may now prepare an exact MailerLite mutation approval packet for
+  Alejandro review.
+- Actual MailerLite mutation remains blocked until Alejandro gives exact future
+  approval.
+- If meaningful time passes, or if another MailerLite/source action changes
+  subscriber/group state, a fresh final check may be required before mutation.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.
