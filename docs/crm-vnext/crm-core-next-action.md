@@ -4597,12 +4597,13 @@ routing and completion pointer.
   one final packet-specific idempotency/suppression check using the repaired
   private packet.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_approval_packet_design_v0`
-- `status`: `active`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
 - `objective`: Prepare, but do not execute, one exact MailerLite onboarding
   mutation approval packet from the completed no-write packet, repaired private
   packet anchor, and final idempotency/suppression check v2 result.
@@ -4643,5 +4644,76 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `recommended_default`: Prepare an exact MailerLite mutation approval packet
   for Alejandro review, without executing mutation.
+- `result`:
+  - Exact mutation approval packet design integrated.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
+  - Final check result recorded
+    `ready_for_exact_mutation_approval_packet`.
+  - `mutation_execution_route_status`: `not_implemented`
+  - Actual MailerLite mutation was not executed.
+  - Exact approval phrase is drafted for later Alejandro review but is not
+    approved by this design.
+  - Because no redaction-safe execution route exists for the exact subscriber
+    upsert plus onboarding-group assignment operation class, mutation must not
+    be attempted until an execution guard is implemented or validated.
+  - No MailerLite API/UI/mutation, private artifact inspection, private
+    evidence read, CRM/source write, Launch OS touch, Mantis memory touch, or
+    `/Users/alejandrogomez/CRM` use occurred during this integration.
 - `completion_definition`: CRM Core has a packet-specific mutation approval
   request that Alejandro can approve, modify, decline, or pause.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_execution_guard_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before implementing or validating a
+  redaction-safe MailerLite exact mutation execution guard for one approved
+  repaired private onboarding packet.
+- `why_now`: The exact mutation approval packet design is complete, and the
+  final packet-specific read-only check passed. Repo-only discovery did not find
+  an implemented redaction-safe execution route for
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`,
+  so actual mutation remains blocked even if Alejandro conceptually likes the
+  approval packet.
+- `allowed_scope`:
+  - Explain the missing execution guard.
+  - Present implementation or validation options.
+  - Preserve final packet-specific idempotency/suppression gates.
+  - Preserve one-packet-only approval.
+  - Wait for Alejandro approval.
+  - No execution.
+- `forbidden_scope`:
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No broad import.
+  - No private artifact inspection.
+  - No private evidence read.
+  - No raw email, IDs, subscriber rows, raw payloads, tokens, headers, env
+    values, credentials, private message text, private subscriber content, or
+    private artifact contents in chat or tracked docs.
+  - No CRM/source writes.
+  - No cards, Fact Store, ledgers, or scoring.
+  - No Instagram, Gmail, DMs, or welcome audio.
+  - No Launch OS docs.
+  - No Mantis memory.
+  - No `/Users/alejandrogomez/CRM`.
+- `resume_instruction`: Start from `/Users/alejandrogomez/CRM-core` on
+  `codex/crm-core-reentry`. Read this file,
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`,
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-result-v0.md`,
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`,
+  `docs/crm-vnext/workstreams/mailerlite-onboarding.md`, and
+  `docs/crm-vnext/crm-core-standing-readonly-source-policy-v0.md`. Do not run
+  APIs, UI, MailerLite, private artifact reads, mutation, CRM/source writes, or
+  execution guard implementation until Alejandro explicitly approves the next
+  task.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  implementation/validation of a MailerLite exact mutation execution guard.

@@ -1444,6 +1444,47 @@ docs/crm-vnext/instagram-welcome-audio-sandbox-send-strategy-design-v0.md
 - CRM-Core-Reports was used for development telemetry.
 - Mantis-Reports and Mantis memory were not used.
 
+## MailerLite Exact Mutation Approval Packet Design Result
+
+- The MailerLite onboarding lane prepared the exact mutation approval packet
+  design as a docs-only result.
+- Source branch:
+
+```text
+codex/crm-core-mailerlite-onboarding
+```
+
+- Source commit:
+
+```text
+a2836073817ad2b62569e2ee64d29362f37556e4
+```
+
+- Result doc:
+
+```text
+docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md
+```
+
+- Final check result was recorded as:
+
+```text
+ready_for_exact_mutation_approval_packet
+```
+
+- Actual MailerLite mutation was not executed.
+- `mutation_execution_route_status`: `not_implemented`
+- The exact approval phrase is drafted for future Alejandro review, but this
+  design does not approve it.
+- Because no redaction-safe route exists yet for the exact subscriber upsert
+  plus onboarding-group assignment operation class, the proof plan must route
+  next to implementation or validation of the execution guard, not mutation
+  approval.
+- No MailerLite API/UI/mutation, private artifact inspection, private evidence
+  read, CRM/source write, Launch OS touch, Mantis memory touch, or
+  `/Users/alejandrogomez/CRM` use occurred during central integration.
+- Central Integration Lock v0 was acquired and released.
+
 ## Stop Conditions
 
 Stop if plan would require:

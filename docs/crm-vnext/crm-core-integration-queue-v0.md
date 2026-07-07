@@ -1085,14 +1085,49 @@ No lane outputs in review at creation.
 - `recommended_default`: prepare exact MailerLite mutation approval packet; do
   not execute mutation.
 
+### controlled_welcome_flow_mailerlite_exact_mutation_approval_packet_design_integration_2026-07-06
+
+- `result_type`: `exact_mutation_approval_packet_design_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `a2836073817ad2b62569e2ee64d29362f37556e4`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
+- `final_check_status_recorded`:
+  `completed_live_readonly_ready_for_exact_mutation_approval`
+- `mutation_readiness_recorded`: `ready_for_exact_mutation_approval_packet`
+- `mutation_execution_route_status`: `not_implemented`
+- `actual_mutation_status`: `not_executed`
+- `mailerlite_api_called_during_integration`: false
+- `mailerlite_ui_used_during_integration`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `private_artifacts_integrated`: false
+- `private_artifacts_inspected_during_integration`: false
+- `private_evidence_read_during_integration`: false
+- `crm_source_writes`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `central_integration_lock_used`: true
+- `decision_needed`: implement or validate a redaction-safe MailerLite exact
+  mutation execution guard before requesting packet-specific mutation approval
+- `recommended_default`: do not request mutation approval yet; implement or
+  validate the execution guard first.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-Decision required: choose the next Controlled Welcome Flow Proof step after the
-first MailerLite no-write payload preview result, or pause.
+Decision required: approve, modify, pause, or decline implementation/validation
+of the MailerLite exact mutation execution guard. Do not request actual
+MailerLite mutation approval until the redaction-safe guard exists and preserves
+the final packet-specific idempotency/suppression gates.
+
 Prior lane approval options remain available for:
 
 - `mailerlite-onboarding`

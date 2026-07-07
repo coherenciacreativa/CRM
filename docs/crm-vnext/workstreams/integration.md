@@ -513,13 +513,33 @@
   - Mutation readiness is `ready_for_exact_mutation_approval`
   - Exact mutation approval packet is next gate
   - Safari upload hardening temporary branch remains ready but untouched
-- `latest_commit`: pending final check v2 closeout commit
+  - MailerLite exact mutation approval packet design integrated
+  - Source branch was canonical MailerLite lane:
+    `codex/crm-core-mailerlite-onboarding`
+  - source commit:
+    `a2836073817ad2b62569e2ee64d29362f37556e4`
+  - result artifact added:
+    `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
+  - Final check result remains `ready_for_exact_mutation_approval_packet`
+  - Actual MailerLite mutation was not executed
+  - `mutation_execution_route_status`: `not_implemented`
+  - No private artifacts or Mantis report contents were inspected during
+    central integration
+  - No new source action occurred during central integration
+  - No MailerLite API/UI occurred during central integration
+  - No mutation occurred
+  - Central Integration Lock v0 was acquired and released
+  - Next central task is implementation or validation of the exact mutation
+    execution guard, not mutation approval
+- `latest_commit`: pending exact mutation approval packet design integration
+  commit
 - `latest_receipt`: source result doc integrated at
-  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-result-v0.md`
-- `blockers`: exact mutation approval packet not yet prepared; exact future
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
+- `blockers`: exact mutation execution route is not implemented; exact future
   mutation approval not yet granted; MailerLite mutation, CRM enrichment/write,
   assistant reply, and production automation remain closed
-- `next_approval_needed`: prepare exact MailerLite mutation approval packet
+- `next_approval_needed`: implement or validate MailerLite exact mutation
+  execution guard
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in
