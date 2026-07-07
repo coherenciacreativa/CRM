@@ -34,7 +34,7 @@
     "crm:vnext:gog-healthcheck": "node scripts/crm-vnext-gog-healthcheck.mjs",
     "crm:vnext:mailerlite-healthcheck": "node scripts/crm-vnext-mailerlite-healthcheck.mjs",
     "crm:vnext:mailerlite-setup-readonly-verification": "node scripts/crm-vnext-mailerlite-setup-readonly-verification.mjs",
-  "crm:vnext:mailerlite-final-idempotency-suppression-check": "node scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs",
+    "crm:vnext:mailerlite-final-idempotency-suppression-check": "node scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs",
     "crm:vnext:official-flow-cohort-map": "node scripts/crm-vnext-official-flow-cohort-map.mjs",
     "crm:vnext:mailerlite-receipt-taxonomy-plan": "node scripts/crm-vnext-mailerlite-receipt-taxonomy-plan.mjs",
     "crm:vnext:mailerlite-empty-group-create": "node scripts/crm-vnext-mailerlite-empty-group-create.mjs",
@@ -198,7 +198,8 @@
     "fix:names": "node scripts/fix-ml-names.mjs",
     "ml:cleanup-lastname": "node scripts/cleanup-ml-lastname.mjs",
     "backfill:names": "node scripts/backfill_names.mjs",
-    "dev:set-debug": "vercel env add DEBUG_TOKEN"
+    "dev:set-debug": "vercel env add DEBUG_TOKEN",
+    "crm:vnext:mailerlite-exact-onboarding-mutation": "node scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs"
   },
   "dependencies": {
     "next": "^13.5.6",

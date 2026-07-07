@@ -41,6 +41,24 @@
 - `redacted_receipt_policy`: Receipt paths may be referenced by label/path only;
   do not commit receipts.
 - `current_tasks`:
+
+- `exact_mutation_execution_guard_status`:
+  `scaffolded_blocked_safe_mutation_client_contract_missing`
+- `exact_mutation_execution_guard_design_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-execution-guard-design-v0.md`
+- `exact_mutation_execution_guard_command`:
+  `npm run crm:vnext:mailerlite-exact-onboarding-mutation`
+- `mutation_execution_route_previous_status`:
+  `not_implemented`
+- `live_mutation_status`:
+  `not_run`
+- `actual_mutation_status`:
+  `not_executed`
+- `mutation_readiness`:
+  `blocked_pending_safe_mutation_client_contract`
+- `recommended_next_step`: central integration of exact mutation execution
+  guard as a blocked scaffold, then resolve the safe mutation client contract
+  before exact CEO mutation approval.
   - current task seed:
     `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
   - current task completed as no-run design:
@@ -255,28 +273,32 @@
 - `exact_mutation_approval_packet_design_doc`:
   `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
 - `final_check_status`: `completed_live_readonly_ready_for_exact_mutation_approval`
-- `mutation_readiness`: `ready_for_exact_mutation_approval_packet`
-- `mutation_execution_route_status`: `not_implemented`
+- `mutation_readiness`: `blocked_pending_safe_mutation_client_contract`
+- `mutation_execution_route_previous_status`: `not_implemented`
+- `mutation_execution_route_guard_status`:
+  `scaffolded_safe_mutation_client_contract_missing`
+- `live_mutation_status`: `not_run`
 - `actual_mutation_status`: `not_executed`
-- `recommended_next_step`: implement or validate MailerLite exact mutation
-  execution guard before asking for packet-specific mutation approval.
+- `recommended_next_step`: resolve safe mutation client contract before asking
+  for packet-specific mutation approval.
 - `latest_commit`: pending central closeout commit for minimal no-write packet
   from private evidence; source run id
   `crm_core_mailerlite_minimal_no_write_mutation_review_packet_from_private_evidence_2026-07-06`
 - `latest_receipt`: redacted receipt path labels recorded in
   `docs/crm-vnext/mailerlite-onboarding-minimal-no-write-mutation-review-packet-from-private-evidence-result-v0.md`
-- `blockers`: final idempotency/suppression checks remain unresolved;
-  duplicate/re-add remains blocked while retrigger behavior is unknown;
-  MailerLite mutation, CRM enrichment/write, assistant reply, and production
-  automation remain closed
+- `blockers`: safe mutation client contract is missing for the exact subscriber
+  upsert plus onboarding-group assignment operation class; MailerLite mutation,
+  CRM enrichment/write, assistant reply, and production automation remain closed
 - `setup_verification_live_mode_status`: `implemented_and_mock_tested`
 - `live_setup_verification_status`: `completed_live_readonly_setup_config_metadata`
 - `previous_blocker`: `live_readonly_setup_verification_not_implemented_in_fixture_task`
 - `mutation_readiness`:
-  `ready_for_exact_mutation_approval_packet`
-- `next_recommended_step`: prepare exact MailerLite mutation approval packet.
-- `next_approval_needed`: exact MailerLite mutation approval packet design and
-  later exact mutation approval.
+  `blocked_pending_safe_mutation_client_contract`
+- `next_recommended_step`: resolve safe mutation client contract for the exact
+  mutation guard before requesting exact mutation approval.
+- `next_approval_needed`: safe mutation client contract implementation or
+  validation, then later exact mutation approval if the route becomes
+  implemented and tested.
 - `proposed_integration_note`: MailerLite lane now has the first private
   no-write payload preview from controlled Instagram email-handoff evidence.
   The preview proves CRM Core can prepare a private onboarding payload preview
@@ -295,9 +317,11 @@
   found, suppression pass, idempotency pass, safe duplicate/re-add status, and
   receipt consistency passed. CRM Core may prepare an exact mutation approval
   packet for review. The exact mutation approval packet design is now complete
-  as no-run docs, but repo-only discovery did not find a redaction-safe
-  execution guard for the exact subscriber upsert plus onboarding-group
-  assignment operation class, so actual mutation remains blocked pending guard
-  implementation or validation and later exact future mutation approval.
+  as no-run docs. The exact mutation execution guard is now scaffolded and
+  mock-tested, but repo-only discovery did not find a reviewed redaction-safe
+  MailerLite mutation client contract for the exact subscriber upsert plus
+  onboarding-group assignment operation class, so actual mutation remains
+  blocked pending safe client contract resolution and later exact future
+  mutation approval.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

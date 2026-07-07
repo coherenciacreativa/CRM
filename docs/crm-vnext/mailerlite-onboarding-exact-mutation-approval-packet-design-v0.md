@@ -115,6 +115,38 @@ Therefore:
   validation of the MailerLite exact mutation execution guard, not mutation
   approval.
 
+## Mutation Execution Guard Implementation Update
+
+```text
+mutation_execution_route_guard_status:
+scaffolded_safe_mutation_client_contract_missing
+
+live_mutation_status:
+not_run
+
+actual_mutation_status:
+not_executed
+
+exact_approval_required_after_central_integration:
+true
+```
+
+The exact mutation execution guard has been scaffolded and mock-tested, including
+path checks, final-check freshness checks, endpoint allowlist tests, redaction
+checks, and credential precheck ordering.
+
+The guard intentionally blocks future live mutation with:
+
+`blocked_route_not_implemented_safe_mutation_client_contract_missing`
+
+until a reviewed redaction-safe MailerLite mutation client contract exists for
+this exact operation class.
+
+If the safe route is not implemented, this approval packet remains conceptual
+and execution blocked. Exact approval remains required after central integration,
+and approval must not be requested as an execution step until the safe route is
+implemented and tested.
+
 ## Exact Approval Packet
 
 ```text
@@ -246,13 +278,22 @@ Stop future mutation if any of these occur:
 
 ```text
 exact_mutation_approval_packet_design_status:
-ready_for_central_integration_but_execution_route_not_ready
+ready_for_central_integration_but_execution_route_scaffolded
 
-next_step_after_central_integration:
-implement_or_validate_mailerlite_exact_mutation_execution_guard
+mutation_execution_route_guard_status:
+scaffolded_safe_mutation_client_contract_missing
+
+live_mutation_status:
+not_run
 
 actual_mutation_status:
-blocked_pending_execution_guard
+not_executed
+
+execution_blocker:
+blocked_route_not_implemented_safe_mutation_client_contract_missing
+
+next_step_after_central_integration:
+resolve_safe_mutation_client_contract_before_exact_mutation_approval
 ```
 
 ## Closed Gates
