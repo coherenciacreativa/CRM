@@ -326,3 +326,26 @@ Credential and network/client access occur only after approval, path, freshness,
 final-check, private-packet, and endpoint allowlist prechecks pass. Mock tests
 prove the precheck order and the single endpoint contract without calling live
 MailerLite.
+
+## Final-Check Receipt Contract Requirement
+
+Mutation execution requires a redacted final-check JSON with:
+
+- `receipt_consistency_check=passed`;
+- usable ISO timestamp from `completed_at` or `checked_at` within the approved freshness window;
+- `live_lookup_ran=true`;
+- `route_status=completed_live_readonly_packet_final_check`;
+- `mailerlite_api_called=true`;
+- `mailerlite_api_call_scope=packet_specific_subscriber_status_group_membership_readonly`;
+- passing suppression and idempotency statuses;
+- `blockers=[]`.
+
+The prior v2 final-check receipt cannot be reused for mutation because it lacks the machine-readable consistency and freshness fields. The guard blocks before credential lookup and before any network/client call when consistency is missing or not passed, when the timestamp is missing, malformed, stale, or from the future, or when any final-check status is non-passing. Actual mutation remains not executed.
+
+Current blocker names:
+
+- `blocked_final_check_receipt_consistency_missing`;
+- `blocked_final_check_receipt_consistency_not_passed`;
+- `blocked_final_check_freshness_timestamp_missing`;
+- `blocked_final_check_freshness_timestamp_invalid`;
+- `blocked_final_check_stale`.

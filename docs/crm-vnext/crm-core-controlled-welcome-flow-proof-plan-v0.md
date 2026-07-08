@@ -1156,6 +1156,56 @@ Interpretation:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Final Check Receipt/Freshness Contract Fix — Integrated
+
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `82cecedfce8381b5686fdf0bcca3b2a32b28fde9`
+- Previous exact mutation attempt state:
+  `mailerlite_exact_mutation_v1_blocked_final_check_not_ready`
+- Previous mutation attempted:
+  false
+- Previous mutation executed:
+  false
+- Previous blocker:
+  final-check redacted JSON was missing machine-readable
+  `receipt_consistency_check=passed` and usable freshness timestamp
+- Root cause category:
+  `both_writer_and_guard_contract_need_alignment`
+- Final-check receipt contract fix status:
+  `completed_mock_tested`
+- Mutation guard freshness contract status:
+  `completed_mock_tested`
+- Prior v2 receipt reuse status:
+  `blocked_cannot_reuse_for_mutation`
+- Live final check real run after fix:
+  false
+- Live mutation real run after fix:
+  false
+- Actual mutation status:
+  `not_executed`
+- Mutation readiness:
+  `blocked_pending_fresh_final_check_v3`
+
+Interpretation:
+
+- A human/operator summary is not sufficient as a mutation precondition.
+- The exact mutation guard must rely on machine-readable redacted JSON fields.
+- Future successful final-check receipts must include
+  `receipt_consistency_check=passed` and a usable ISO timestamp field such as
+  `completed_at` or `checked_at`.
+- The prior v2 final-check receipt cannot be reused for mutation.
+- CRM Core must rerun one final packet-specific idempotency/suppression check
+  v3 before any mutation attempt.
+- Actual MailerLite mutation remains blocked.
+- Receipt/freshness contract fix is integrated.
+- Final check v3 is not complete.
+- Exact mutation is not approved.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.

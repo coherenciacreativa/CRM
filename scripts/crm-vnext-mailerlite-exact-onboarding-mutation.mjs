@@ -276,15 +276,15 @@ const assertExactApprovalPhrase = async (options) => {
 
 const blocker = (reason, status = 'not_run_final_check_failed') => ({ ok: false, status, reason });
 const hasBlockers = (value) => Array.isArray(value) ? value.length > 0 : Boolean(value);
-const finalCheckTimestamp = (receipt) => cleanString(firstValue(receipt, ['checked_at', 'completed_at']));
+const finalCheckTimestamp = (receipt) => cleanString(firstValue(receipt, ['completed_at', 'checked_at']));
 
 const validateFreshness = (receipt, { nowMs = Date.now(), maxAgeMs = DEFAULT_MAX_FINAL_CHECK_AGE_MS } = {}) => {
   const timestamp = finalCheckTimestamp(receipt);
-  if (!timestamp) return blocker('final_check_timestamp_missing', 'blocked_final_check_freshness_unknown');
+  if (!timestamp) return blocker('final_check_timestamp_missing', 'blocked_final_check_freshness_timestamp_missing');
   const parsed = Date.parse(timestamp);
-  if (!Number.isFinite(parsed)) return blocker('final_check_timestamp_invalid', 'blocked_final_check_freshness_unknown');
-  if (parsed > nowMs + 60_000) return blocker('final_check_timestamp_from_future', 'blocked_final_check_freshness_unknown');
-  if (nowMs - parsed > maxAgeMs) return blocker('final_check_stale', 'not_run_final_check_stale');
+  if (!Number.isFinite(parsed)) return blocker('final_check_timestamp_invalid', 'blocked_final_check_freshness_timestamp_invalid');
+  if (parsed > nowMs + 60_000) return blocker('final_check_timestamp_from_future', 'blocked_final_check_freshness_timestamp_invalid');
+  if (nowMs - parsed > maxAgeMs) return blocker('final_check_stale', 'blocked_final_check_stale');
   return { ok: true, status: 'fresh_within_max_final_check_age_ms' };
 };
 
@@ -294,8 +294,13 @@ const validateFinalCheckReceipt = (receipt, options = {}) => {
   if (receipt.live_lookup_ran !== true) return blocker('final_check_live_lookup_not_confirmed');
   if (receipt.mailerlite_api_called !== true) return blocker('final_check_api_call_not_confirmed');
   if (receipt.mailerlite_api_call_scope !== 'packet_specific_subscriber_status_group_membership_readonly') return blocker('final_check_api_scope_not_packet_specific');
+  if (!Object.prototype.hasOwnProperty.call(receipt, 'receipt_consistency_check')) {
+    return blocker('final_check_receipt_consistency_missing', 'blocked_final_check_receipt_consistency_missing');
+  }
+  if (receipt.receipt_consistency_check !== 'passed') {
+    return blocker('final_check_receipt_consistency_not_passed', 'blocked_final_check_receipt_consistency_not_passed');
+  }
   if (hasBlockers(receipt.blockers)) return blocker('final_check_blockers_present');
-  if (receipt.receipt_consistency_check !== 'passed') return blocker('final_check_receipt_consistency_not_passed');
 
   const freshness = validateFreshness(receipt, options);
   if (!freshness.ok) return freshness;

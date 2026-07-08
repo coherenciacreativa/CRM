@@ -337,3 +337,22 @@
   `blocked_pending_exact_ceo_mutation_approval`
 - `recommended_next_step`: ask Alejandro for exact packet-specific MailerLite
   mutation approval or pause.
+
+## Exact Mutation Final-Check Receipt/Freshness Contract Fix
+
+- `exact_mutation_attempt_v1_status`: `blocked_final_check_not_ready`
+- `exact_mutation_attempt_v1_mutation_attempted`: false
+- `exact_mutation_attempt_v1_mutation_executed`: false
+- `blocker`: `final_check_receipt_missing_consistency_and_freshness_fields`
+- `root_cause_category`: `both_writer_and_guard_contract_need_alignment`
+- `exact_mutation_contract_fix_status`: `integrated_completed_mock_tested`
+- `final_check_receipt_contract_fix_status`: `integrated_completed_mock_tested`
+- `mutation_guard_freshness_contract_status`: `integrated_completed_mock_tested`
+- `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+- `live_mutation_status`: `not_run_after_contract_fix`
+- `actual_mutation_status`: `not_executed`
+- `mutation_readiness`: `blocked_pending_fresh_final_check_v3`
+- `recommended_next_step`: approve or pause one fresh final packet-specific
+  idempotency/suppression check v3.
+
+The prior v2 final-check receipt remains non-reusable for mutation execution because it lacks machine-readable consistency and freshness fields. Candidate queue generation, welcome audio, CRM/source writes, and MailerLite mutation remain closed.

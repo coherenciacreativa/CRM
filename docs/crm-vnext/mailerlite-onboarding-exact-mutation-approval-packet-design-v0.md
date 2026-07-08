@@ -339,3 +339,9 @@ exact_ceo_mutation_approval_or_pause
 
 The approval packet remains packet-specific. The implemented guard does not
 authorize mutation by itself and does not broaden the operation class.
+
+## Approval Packet Freshness Contract Correction
+
+Exact mutation approval remains pending. A prior execution attempt was blocked before credential lookup, before MailerLite API access, and before any mutation because the approved v2 final-check redacted JSON lacked machine-readable `receipt_consistency_check=passed` and a usable freshness timestamp. No mutation occurred.
+
+The next safe step after central integration is to rerun the final packet-specific idempotency/suppression check v3 under separate approval, then review a fresh redacted receipt. Mutation must not be attempted from the prior v2 receipt, a chat summary, filesystem mtime, or any inferred freshness evidence.

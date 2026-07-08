@@ -561,9 +561,26 @@ const closedGates = () => ({
   private_message_text_printed: false,
 });
 
-const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [] }) => ({
+const finalCheckReceiptReady = (decision) => decision.route_status === COMPLETED_LIVE_ROUTE_STATUS
+  && decision.live_lookup_ran === true
+  && decision.mailerlite_api_called === true
+  && decision.mailerlite_api_call_scope === PACKET_SPECIFIC_READONLY_SCOPE
+  && decision.subscriber_lookup_status === 'not_found'
+  && decision.subscriber_status_class === 'not_found'
+  && decision.onboarding_group_membership_status === 'not_found'
+  && decision.duplicate_readd_status === 'safe_new_or_not_in_group'
+  && decision.suppression_status === 'pass'
+  && decision.idempotency_status === 'pass'
+  && decision.mutation_readiness_after_final_check === 'ready_for_exact_mutation_approval'
+  && decision.blockers.length === 0;
+
+const receiptConsistencyCheckFor = (decision) => finalCheckReceiptReady(decision) ? 'passed' : 'not_applicable';
+
+const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [], completedAt = new Date().toISOString() }) => ({
   schema_version: SCHEMA_VERSION,
   run_id: runId,
+  completed_at: completedAt,
+  receipt_consistency_check: receiptConsistencyCheckFor(decision),
   packet_id: decision.packet_id,
   check_ran: decision.check_ran,
   live_lookup_ran: decision.live_lookup_ran,
@@ -613,6 +630,8 @@ const buildPrivateResult = ({ runId, decision, mode }) => ({
 
 const renderMarkdown = (receipt) => `# MailerLite Final Idempotency / Suppression Check Redacted Receipt\n\n` +
   `- run_id: \`${receipt.run_id}\`\n` +
+  `- completed_at: \`${receipt.completed_at}\`\n` +
+  `- receipt_consistency_check: \`${receipt.receipt_consistency_check}\`\n` +
   `- packet_id: \`${receipt.packet_id}\`\n` +
   `- check_ran: \`${receipt.check_ran}\`\n` +
   `- live_lookup_ran: \`${receipt.live_lookup_ran}\`\n` +
@@ -685,7 +704,7 @@ const runFixtureMode = async (options, deps = {}) => {
   const runId = fixture.run_id ?? 'crm_core_mailerlite_final_idempotency_suppression_check_fixture';
   const decision = buildDecision({ packet, lookupResult, routeStatus: 'fixture_mock_redaction_safe' });
   const privateResult = buildPrivateResult({ runId, decision, mode: 'fixture_mock' });
-  const receipt = buildReceipt({ runId, decision, mode: 'fixture_mock', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd] });
+  const receipt = buildReceipt({ runId, decision, mode: 'fixture_mock', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt: deps.completedAt });
   await writeOutputs({ paths, receipt, privateResult });
   return receipt;
 };
@@ -828,7 +847,7 @@ const runLiveMode = async (options, deps = {}) => {
     const decision = buildDecision({ packet, lookupResult: { subscriber_lookup_status: 'blocked', records: [], mailerlite_api_called: false, mailerlite_api_call_scope: MISSING_EMAIL_SCOPE }, routeStatus: PRECHECK_MISSING_EMAIL_ROUTE_STATUS });
     const runId = deps.runId ?? 'crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06';
     const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_precheck' });
-    const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_precheck', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd] });
+    const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_precheck', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt: deps.completedAt });
     await writeOutputs({ paths, receipt, privateResult });
     return receipt;
   }
@@ -850,7 +869,7 @@ const runLiveMode = async (options, deps = {}) => {
   const decision = buildDecision({ packet, lookupResult, routeStatus: COMPLETED_LIVE_ROUTE_STATUS });
   const runId = deps.runId ?? 'crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06';
   const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_packet_specific' });
-  const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_packet_specific', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd] });
+  const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_packet_specific', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt: deps.completedAt });
   await writeOutputs({ paths, receipt, privateResult });
   return receipt;
 };

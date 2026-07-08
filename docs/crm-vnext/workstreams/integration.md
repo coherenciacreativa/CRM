@@ -544,15 +544,30 @@
     mutation approval or pause
   - Safari upload hardening temporary branch remains ready but was not
     integrated in this run
-- `latest_commit`: pending exact mutation execution guard integration commit;
-  source lane commit `47d31e6f61582b516093cb63ab5b58f379a22340`
+- MailerLite final check receipt/freshness contract fix integrated.
+- Source branch was canonical MailerLite lane.
+- Integration used source lane summary and source branch diff only.
+- No private artifacts or Mantis report contents were inspected during central
+  integration.
+- No source action occurred during central integration.
+- No MailerLite API/UI occurred during central integration.
+- No mutation occurred.
+- The prior exact mutation attempt did not call MailerLite and did not mutate.
+- The prior v2 final-check receipt cannot be reused because it lacks
+  machine-readable consistency/freshness fields.
+- Next step is one fresh final idempotency/suppression check v3, not mutation.
+- Safari upload hardening temporary branch remains ready but was not integrated
+  in this run.
+- `latest_commit`: pending final check receipt/freshness contract fix
+  integration commit; source lane commit
+  `82cecedfce8381b5686fdf0bcca3b2a32b28fde9`
 - `latest_receipt`: source result doc integrated at
-  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-execution-guard-design-v0.md`
-- `blockers`: exact future mutation approval not yet granted; MailerLite
-  mutation, CRM enrichment/write, assistant reply, and production automation
-  remain closed
-- `next_approval_needed`: exact packet-specific MailerLite mutation approval
-  or pause
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `blockers`: fresh final check v3 not yet run; exact future mutation approval
+  not yet granted; MailerLite mutation, CRM enrichment/write, assistant reply,
+  and production automation remain closed
+- `next_approval_needed`: approve or pause one fresh final packet-specific
+  idempotency/suppression check v3
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

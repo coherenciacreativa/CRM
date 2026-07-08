@@ -1154,6 +1154,39 @@ No lane outputs in review at creation.
 - `recommended_default`: present exact packet-specific MailerLite mutation
   approval phrase to Alejandro.
 
+### controlled_welcome_flow_mailerlite_final_check_receipt_contract_fix_integration_2026-07-06
+
+- `result_type`: `final_check_receipt_freshness_contract_fix_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `82cecedfce8381b5686fdf0bcca3b2a32b28fde9`
+- `previous_attempt_state`:
+  `mailerlite_exact_mutation_v1_blocked_final_check_not_ready`
+- `previous_mutation_attempted`: false
+- `previous_mutation_executed`: false
+- `root_cause_category`: `both_writer_and_guard_contract_need_alignment`
+- `final_check_receipt_contract_fix_status`: `completed_mock_tested`
+- `mutation_guard_freshness_contract_status`: `completed_mock_tested`
+- `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+- `live_final_check_real_run_performed`: false
+- `live_mutation_real_run_performed`: false
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `real_subscriber_rows_read_or_printed`: false
+- `real_private_artifacts_read`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `actual_mutation_status`: `not_executed`
+- `decision_needed`: approve or pause fresh final packet-specific
+  idempotency/suppression check v3
+- `recommended_default`: run one fresh final packet-specific
+  idempotency/suppression check v3, then review redacted receipt before any
+  mutation attempt.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
