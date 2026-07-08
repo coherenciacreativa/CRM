@@ -237,3 +237,19 @@ after this fix.
 
 `central_integration_of_final_idempotency_suppression_check_route_guard`, then a
 separate approval for one final packet-specific idempotency/suppression check.
+
+## Receipt Contract Fix - Consistency And Freshness Fields
+
+Root cause category: `both_writer_and_guard_contract_need_alignment`.
+
+The prior v2 final-check operator summary reported that receipt consistency passed, but the redacted JSON did not include a machine-readable `receipt_consistency_check=passed` field. The prior v2 redacted JSON also lacked a usable freshness timestamp such as `completed_at` or `checked_at`. The exact mutation guard correctly blocked mutation rather than relying on a human summary, filesystem mtime, or inferred text outside the JSON receipt.
+
+Future successful final-check redacted JSON receipts must include:
+
+- `receipt_consistency_check: passed`;
+- `completed_at` or `checked_at` as an ISO-8601 timestamp;
+- completed packet-specific live lookup fields;
+- passing suppression and idempotency statuses;
+- `blockers: []`.
+
+Blocked precheck receipts must not claim `receipt_consistency_check=passed` or `ready_for_exact_mutation_approval`. A fresh final packet-specific idempotency/suppression check v3 is required before any exact mutation execution approval can be attempted. This contract fix is mock-tested only and did not run live MailerLite, inspect credentials, read private packets, or mutate anything.

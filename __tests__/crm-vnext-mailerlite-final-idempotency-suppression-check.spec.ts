@@ -141,11 +141,12 @@ const runMockLive = async (lookupResult: Record<string, unknown>, packetOverride
     const receiptJsonText = await readFile(paths.receiptJson, "utf8");
     const receiptMdText = await readFile(paths.receiptMd, "utf8");
     const privateResultText = await readFile(paths.privateResultJson, "utf8");
+    const receiptJson = JSON.parse(receiptJsonText);
     expectNoSensitiveStrings(receiptJsonText);
     expectNoSensitiveStrings(receiptMdText);
     expectNoSensitiveStrings(privateResultText);
     expect(paths.privateResultJson).toContain(tmpdir());
-    return { receipt, credentialCalls, clientCalls };
+    return { receipt, receiptJson, receiptMdText, credentialCalls, clientCalls };
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -288,7 +289,7 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
   });
 
   test("mocked live route with subscriber not found can classify safe under conservative rules", async () => {
-    const { receipt, credentialCalls, clientCalls } = await runMockLive({ subscriber_lookup_status: "not_found", records: [] });
+    const { receipt, receiptJson, receiptMdText, credentialCalls, clientCalls } = await runMockLive({ subscriber_lookup_status: "not_found", records: [] });
     expect(credentialCalls).toBe(1);
     expect(clientCalls).toBe(1);
     expect(receipt.route_status).toBe(COMPLETED_LIVE_ROUTE_STATUS);
@@ -299,6 +300,11 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
     expect(receipt.suppression_status).toBe("pass");
     expect(receipt.idempotency_status).toBe("pass");
     expect(receipt.mutation_readiness_after_final_check).toBe("ready_for_exact_mutation_approval");
+    expect(receiptJson.receipt_consistency_check).toBe("passed");
+    expect(typeof receiptJson.completed_at).toBe("string");
+    expect(Number.isNaN(Date.parse(receiptJson.completed_at))).toBe(false);
+    expect(receiptMdText).toContain("receipt_consistency_check");
+    expect(receiptMdText).toContain("completed_at");
   });
 
   test("ready state requires completed live route status", () => {
@@ -441,6 +447,9 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
       expect(receipt.recommended_next_step).toBe("repair_private_packet_email_anchor_or_regenerate_no_write_packet");
       expect(receipt.blockers).toContain("missing_private_packet_email_anchor");
       expect(receiptJson.blockers).toContain("missing_private_packet_email_anchor");
+      expect(receiptJson.receipt_consistency_check).not.toBe("passed");
+      expect(receiptJson.mutation_readiness_after_final_check).not.toBe("ready_for_exact_mutation_approval");
+      expect(receiptMdText).not.toContain("receipt_consistency_check: `passed`");
       expect(receiptMdText).not.toContain("blockers: `none`");
       expectNoSensitiveStrings(receiptJsonText);
       expectNoSensitiveStrings(receiptMdText);

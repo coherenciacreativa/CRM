@@ -319,11 +319,47 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
+  test("missing receipt consistency blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_consistency_check: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_consistency_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("receipt consistency not passed blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_consistency_check: "not_passed" });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_consistency_not_passed");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
   test("freshness-unknown final-check receipt blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths({}, { checked_at: undefined });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_freshness_unknown");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_freshness_timestamp_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("malformed freshness timestamp blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { checked_at: "not-an-iso-timestamp" });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_freshness_timestamp_invalid");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("prior v2-style final-check fixture without consistency and timestamp blocks", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_consistency_check: undefined, checked_at: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_consistency_missing");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -332,13 +368,40 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     const { dir, roots, paths } = await makeLivePaths({}, { checked_at: OLD_CHECKED_AT });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_stale");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_stale");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("final-check readiness not ready blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths({}, { mutation_readiness_after_final_check: "blocked" });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_failed");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("ready state still requires live_lookup_ran true", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { live_lookup_ran: false });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_failed");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("ready state still requires mailerlite_api_called true", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { mailerlite_api_called: false });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_failed");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("ready state still requires completed final-check route status", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { route_status: "fixture_mock_redaction_safe" });
     let credentialCalls = 0;
     try {
       await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_final_check_failed");
@@ -494,7 +557,7 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
         nowMs: NOW_MS,
         credentialProvider: async () => ({ key: "mock" }),
         exactMutationClient: { request: async () => { networkCalls += 1; return { ok: true }; } },
-      })).rejects.toThrow("not_run_final_check_stale");
+      })).rejects.toThrow("blocked_final_check_stale");
       expect(networkCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
