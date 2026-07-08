@@ -1108,6 +1108,54 @@ Interpretation:
 - If meaningful time passes, or if another MailerLite/source action changes
   subscriber/group state, a fresh final check may be required before mutation.
 
+## MailerLite Exact Mutation Execution Guard — Integrated
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-execution-guard-design-v0.md`
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `47d31e6f61582b516093cb63ab5b58f379a22340`
+- Previous route status:
+  `not_implemented`
+- Previous guard status:
+  `exact_mutation_execution_guard_scaffolded_safe_mutation_client_contract_missing`
+- Current guard status:
+  `exact_mutation_execution_guard_implemented_mocked_live_tested`
+- Safe mutation client contract:
+  `post_subscribers_only_current_not_found_path`
+- Test result:
+  vitest passed, 48 tests
+- Live mutation real run:
+  false
+- Live MailerLite API called:
+  false
+- MailerLite UI used:
+  false
+- Actual mutation status:
+  `not_executed`
+- Mutation readiness:
+  `blocked_pending_exact_ceo_mutation_approval`
+
+Interpretation:
+
+- The prepared/repaired packet and final check result support an exact mutation
+  approval packet.
+- The exact mutation execution guard now exists and is mock-tested.
+- Actual mutation remains blocked until Alejandro supplies exact
+  packet-specific approval.
+- The v1 route is intentionally narrow: `POST /api/subscribers` only and only
+  for the current `not_found` subscriber path.
+- Existing-subscriber paths remain unsupported in v1.
+- Any stale final check, route mismatch, missing exact phrase, redaction risk,
+  or unexpected subscriber/group state blocks execution.
+- No actual mutation occurred.
+- Exact mutation execution guard is integrated.
+- Exact mutation is not approved.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Assistant Reply Policy Boundary Result — Integrated
 
 - Assistant Reply Policy Boundary design integrated.

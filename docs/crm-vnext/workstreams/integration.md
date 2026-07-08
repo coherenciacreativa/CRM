@@ -531,15 +531,28 @@
   - Central Integration Lock v0 was acquired and released
   - Next central task is implementation or validation of the exact mutation
     execution guard, not mutation approval
-- `latest_commit`: pending exact mutation approval packet design integration
-  commit
+  - MailerLite exact mutation execution guard integrated
+  - Source branch was canonical MailerLite lane
+  - Integration used source lane summary and source branch diff only
+  - No private artifacts or Mantis report contents were inspected during
+    central integration
+  - No source action occurred during central integration
+  - No MailerLite API/UI occurred during central integration
+  - No mutation occurred
+  - The guard implements `post_subscribers_only_current_not_found_path`
+  - The next step is asking Alejandro for exact packet-specific MailerLite
+    mutation approval or pause
+  - Safari upload hardening temporary branch remains ready but was not
+    integrated in this run
+- `latest_commit`: pending exact mutation execution guard integration commit;
+  source lane commit `47d31e6f61582b516093cb63ab5b58f379a22340`
 - `latest_receipt`: source result doc integrated at
-  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-approval-packet-design-v0.md`
-- `blockers`: exact mutation execution route is not implemented; exact future
-  mutation approval not yet granted; MailerLite mutation, CRM enrichment/write,
-  assistant reply, and production automation remain closed
-- `next_approval_needed`: implement or validate MailerLite exact mutation
-  execution guard
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-execution-guard-design-v0.md`
+- `blockers`: exact future mutation approval not yet granted; MailerLite
+  mutation, CRM enrichment/write, assistant reply, and production automation
+  remain closed
+- `next_approval_needed`: exact packet-specific MailerLite mutation approval
+  or pause
 - `proposed_integration_note`: central integration lane owns merges into
   `codex/crm-core-reentry`.
 - `closeout_format`: use template in

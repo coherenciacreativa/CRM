@@ -1117,6 +1117,43 @@ No lane outputs in review at creation.
 - `recommended_default`: do not request mutation approval yet; implement or
   validate the execution guard first.
 
+### controlled_welcome_flow_mailerlite_exact_mutation_execution_guard_integration_2026-07-06
+
+- `result_type`: `exact_mutation_execution_guard_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `47d31e6f61582b516093cb63ab5b58f379a22340`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-execution-guard-design-v0.md`
+- `previous_route_status`: `not_implemented`
+- `previous_guard_status`:
+  `exact_mutation_execution_guard_scaffolded_safe_mutation_client_contract_missing`
+- `exact_mutation_execution_guard_status`:
+  `exact_mutation_execution_guard_implemented_mocked_live_tested`
+- `safe_mutation_client_contract`:
+  `post_subscribers_only_current_not_found_path`
+- `live_mutation_real_run_performed`: false
+- `mocked_live_mode_tested`: true
+- `endpoint_allowlist_tested`: true
+- `forbidden_mutation_endpoints_tested`: true
+- `final_pre_execution_gate_tested`: true
+- `stale_final_check_blocks_tested`: true
+- `credential_provider_precheck_order_tested`: true
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `real_subscriber_rows_read_or_printed`: false
+- `real_private_artifacts_read`: false
+- `real_mantis_reports_read`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `actual_mutation_status`: `not_executed`
+- `decision_needed`: exact CEO mutation approval or pause
+- `recommended_default`: present exact packet-specific MailerLite mutation
+  approval phrase to Alejandro.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

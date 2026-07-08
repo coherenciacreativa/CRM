@@ -4663,12 +4663,14 @@ routing and completion pointer.
 - `completion_definition`: CRM Core has a packet-specific mutation approval
   request that Alejandro can approve, modify, decline, or pause.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_execution_guard_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `exact_mutation_execution_guard_integrated`
 - `objective`: Wait for Alejandro approval before implementing or validating a
   redaction-safe MailerLite exact mutation execution guard for one approved
   repaired private onboarding packet.
@@ -4717,3 +4719,78 @@ routing and completion pointer.
   task.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   implementation/validation of a MailerLite exact mutation execution guard.
+- `findings`:
+  - Exact MailerLite mutation execution guard integrated.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-exact-mutation-execution-guard-design-v0.md`
+  - Guard status:
+    `exact_mutation_execution_guard_implemented_mocked_live_tested`
+  - Safe mutation client contract:
+    `post_subscribers_only_current_not_found_path`
+  - Live mutation real run:
+    false
+  - Actual mutation status:
+    `not_executed`
+  - Mutation readiness:
+    `blocked_pending_exact_ceo_mutation_approval`
+  - No MailerLite API/UI, subscriber rows, mutation, CRM writes, private
+    artifact integration, Mantis memory, Launch OS, or
+    `/Users/alejandrogomez/CRM` use occurred during integration.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro's exact approval before executing one
+  MailerLite onboarding mutation for the explicitly approved repaired private
+  onboarding packet using the implemented exact mutation execution guard.
+- `why_now`: The no-write packet is prepared, the private packet email anchor is
+  repaired, the final packet-specific idempotency/suppression check passed, the
+  exact mutation approval packet design is integrated, and the exact mutation
+  execution guard is implemented and mock-tested. Actual mutation remains
+  blocked until Alejandro gives exact packet-specific approval.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain operation class and closed gates.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No subscriber-row reads.
+  - No raw email in chat.
+  - No raw IDs.
+  - No subscriber row print.
+  - No raw payloads.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to execute one MailerLite
+  onboarding mutation for the explicitly approved repaired private onboarding
+  packet only, using the implemented exact mutation execution guard. Use the
+  approved operation class
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`,
+  the approved native top-level email semantics, the approved existing field
+  mapping, and the confirmed onboarding group. Immediately before mutation,
+  perform or validate the packet-specific idempotency and suppression safety
+  gate. Do not create fields, do not modify automations or campaigns, do not
+  create or modify segments, forms, webhooks, or account settings, do not
+  perform a broad import, do not print raw emails, IDs, subscriber rows, tokens,
+  headers, env values, credentials, raw payloads, private message text, private
+  subscriber content, or private artifact contents, and write only private
+  result artifacts plus redacted aggregate receipts.
+- `recommended_default`: Ask Alejandro whether to approve, modify, or pause
+  this exact packet-specific mutation.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses one
+  exact packet-specific MailerLite onboarding mutation.
