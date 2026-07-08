@@ -652,3 +652,27 @@
   remain closed.
 - `next_approval_needed`: exact packet-specific MailerLite mutation approval or
   pause.
+
+## MailerLite Final Check Receipt Producer/Consumer Contract Harness
+
+- MailerLite final-check receipt producer/consumer contract harness integrated.
+- Source branch was canonical MailerLite lane:
+  `codex/crm-core-mailerlite-onboarding`.
+- Source commit:
+  `42ac1b022c700cc0cf62e717cff255a29ea36eb1`.
+- Integration used source lane summary and source branch diff only.
+- No private artifacts or Mantis report contents were inspected during central
+  integration.
+- No source action occurred during central integration.
+- No MailerLite API/UI occurred during central integration.
+- No mutation occurred.
+- Previous mutation attempts blocked before API/mutation because final-check
+  receipts lacked machine-readable fields expected by mutation guard.
+- The shared contract module now prevents field-name drift between final-check
+  writer and mutation guard.
+- Producer-to-consumer test passed.
+- Preflight-only mode is implemented and mock-tested.
+- Next step is one fresh final idempotency/suppression check v5, not mutation.
+- After v5, run mutation guard preflight-only before exact mutation execution.
+- Safari upload hardening temporary branch remains ready but was not integrated
+  in this run.

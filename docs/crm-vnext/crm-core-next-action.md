@@ -5060,12 +5060,13 @@ routing and completion pointer.
   - Exact mutation approval remains required.
   - Actual mutation remains not executed.
 
-## Active Next Action
+## Completed / Updated Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_awaiting_approval_v2`
-- `status`: `blocked`
+- `status`: `completed_updated`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
 - `objective`: Wait for Alejandro's exact approval before executing one
   MailerLite onboarding mutation for the explicitly approved repaired private
   onboarding packet using the implemented exact mutation execution guard and
@@ -5121,3 +5122,77 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses one
   exact packet-specific MailerLite onboarding mutation using the fresh v4
   final-check receipt.
+- `findings`:
+  - Exact mutation attempt v3 was blocked before any MailerLite API call or
+    mutation.
+  - Final pre-execution check status was
+    `blocked_missing_receipt_contract_check_result`.
+  - Root cause was producer/consumer contract not canonicalized.
+  - Contract harness is now integrated and mock-tested.
+  - Shared ready-receipt contract module exists.
+  - Producer-to-consumer compatibility test passed.
+  - Preflight-only mode is implemented and mock-tested.
+  - Prior v4 final-check receipt cannot be reused.
+  - Real mutation remains not executed.
+  - Mutation readiness is
+    `blocked_pending_fresh_final_check_v5_and_preflight_only_validation`.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v5`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro approval before one fresh final
+  packet-specific MailerLite idempotency and suppression read-only check v5
+  that emits the canonical ready-receipt contract fields required by the exact
+  mutation guard.
+- `why_now`: The prior v4 final-check result was semantically ready, but
+  previous mutation attempts showed the final-check writer and exact mutation
+  guard needed a shared canonical contract. The producer/consumer contract
+  harness is now integrated. CRM Core must rerun the final read-only check once
+  to produce a fresh v5 receipt, then run mutation guard preflight-only before
+  any mutation attempt.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain that this is a read-only final check only.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No subscriber-row printing.
+  - No raw email in chat.
+  - No raw IDs.
+  - No raw payloads.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to perform one fresh final
+  packet-specific MailerLite idempotency and suppression check v5 for the
+  explicitly approved repaired private onboarding packet only, using the
+  implemented read-only final-check guard and canonical ready-receipt contract.
+  Use existing internal credentials without printing or inspecting them. Read
+  only the minimum subscriber/group/status metadata needed to decide whether
+  the approved packet is safe to execute. The redacted JSON receipt must satisfy
+  `mailerlite_final_check_ready_receipt_v1`, including
+  `receipt_contract_check=passed`,
+  `receipt_contract_check_result=passed_ready_contract`,
+  `receipt_consistency_check=passed`, and a usable freshness timestamp if the
+  check succeeds. Do not mutate anything, do not print raw emails, IDs,
+  subscriber rows, tokens, headers, env values, credentials, raw payloads, or
+  private subscriber content, and write only redacted aggregate receipts.
+- `recommended_default`: Approve one fresh final packet-specific
+  idempotency/suppression check v5, then review the redacted result and run
+  mutation guard preflight-only before any mutation execution attempt.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one fresh final packet-specific idempotency/suppression check v5.

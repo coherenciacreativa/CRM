@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `exact_mutation_approval_packet_design_complete_no_run`
+- `status`: `receipt_contract_harness_integrated_fresh_final_check_v5_needed`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -55,9 +55,10 @@
 - `actual_mutation_status`:
   `not_executed`
 - `mutation_readiness`:
-  `blocked_pending_central_integration_and_exact_ceo_mutation_approval`
-- `recommended_next_step`: central integration of exact mutation execution
-  guard, then exact CEO mutation approval or pause.
+  `blocked_pending_fresh_final_check_v5_and_preflight_only_validation`
+- `recommended_next_step`: approve or pause one fresh final packet-specific
+  idempotency/suppression check v5; then run mutation guard preflight-only
+  against v5 before any mutation attempt.
   - current task seed:
     `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
   - current task completed as no-run design:
@@ -433,3 +434,22 @@ Candidate queue generation, welcome audio, CRM/source writes, and MailerLite mut
 The v4 receipt includes the machine-readable contract fields required by the
 exact mutation guard. It supports an approval decision only; actual MailerLite
 mutation remains unexecuted.
+
+## Final Check Producer/Consumer Contract Harness
+
+- `exact_mutation_attempt_v3_status`: `blocked_final_check_not_ready`
+- `blocker`: `final_check_receipt_missing_receipt_contract_check_result`
+- `root_cause_category`: `producer_consumer_contract_not_canonicalized`
+- `canonical_contract_module_status`: `integrated_completed_mock_tested`
+- `final_check_writer_contract_status`: `integrated_completed_mock_tested`
+- `mutation_guard_contract_status`: `integrated_completed_mock_tested`
+- `producer_to_consumer_contract_test_status`: `integrated_passed`
+- `mutation_guard_preflight_only_status`:
+  `integrated_implemented_and_mock_tested`
+- `prior_v4_receipt_reuse_status`: `blocked_non_reusable_missing_receipt_contract_check_result_fresh_v5_required`
+- `live_mutation_status`: `not_run_after_contract_harness_fix`
+- `actual_mutation_status`: `not_executed`
+- `mutation_readiness`: `blocked_pending_fresh_final_check_v5_and_preflight_only_validation`
+- `recommended_next_step`: central integration of producer/consumer receipt contract harness, then rerun final packet-specific idempotency/suppression check v5.
+
+The shared contract module now gives the final-check writer and exact mutation guard one executable ready-receipt contract. Future flow is central integration, fresh v5 final check, preflight-only guard validation, and only then a separate exact mutation approval boundary.

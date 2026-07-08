@@ -1768,6 +1768,77 @@ mutation-readiness purposes. It includes the machine-readable
 freshness timestamp fields required by the exact mutation guard. It does not
 authorize mutation.
 
+## MailerLite Final Check Receipt Producer/Consumer Contract Harness — Integrated
+
+- Source branch:
+
+```text
+codex/crm-core-mailerlite-onboarding
+```
+
+- Source commit:
+
+```text
+42ac1b022c700cc0cf62e717cff255a29ea36eb1
+```
+
+- Previous recurring exact mutation blocker:
+  final-check redacted JSON and exact mutation guard did not share one canonical
+  ready-receipt contract
+- Latest blocked attempt:
+  `mailerlite_exact_mutation_v3_blocked_final_check_not_ready`
+- Latest blocker:
+  `v4 redacted final-check JSON missing receipt_contract_check_result=passed_ready_contract`
+- Root cause category: `producer_consumer_contract_not_canonicalized`
+- Canonical contract module status: `completed_mock_tested`
+- Final-check writer contract status: `completed_mock_tested`
+- Mutation guard contract status: `completed_mock_tested`
+- Producer-to-consumer contract test status: `passed`
+- Preflight-only mode status: `implemented_and_mock_tested`
+- Test result: `passed, 85 tests total`
+- Prior v2 receipt reuse status: `blocked_cannot_reuse_for_mutation`
+- Prior v3 receipt reuse status:
+  `blocked_non_reusable_missing_receipt_contract_check_fresh_v4_required`
+- Prior v4 receipt reuse status:
+  `blocked_non_reusable_missing_receipt_contract_check_result_fresh_v5_required`
+- Live final check real run after harness: false
+- Live mutation real run after harness: false
+- Actual mutation status: `not_executed`
+- Mutation readiness:
+  `blocked_pending_fresh_final_check_v5_and_preflight_only_validation`
+
+Operator summaries, Markdown receipts, central closeout docs, and filesystem
+mtimes are not sufficient as mutation preconditions. The exact mutation guard
+must rely on machine-readable redacted JSON validated by the shared
+ready-receipt contract. A successful final-check receipt must include the
+canonical contract fields:
+
+- `receipt_contract_version`
+- `receipt_contract_check=passed`
+- `receipt_contract_check_result=passed_ready_contract`
+- `receipt_consistency_check=passed`
+- usable ISO timestamp
+- `freshness_timestamp_status=valid_iso8601_present`
+- completed live lookup fields
+- passing suppression/idempotency statuses
+- blockers none
+
+The producer-to-consumer test prevents future field-name mismatches. CRM Core
+must rerun one final packet-specific idempotency/suppression check v5. After
+v5, CRM Core must run mutation guard preflight-only against the v5 receipt and
+repaired private packet before any live mutation attempt. Actual MailerLite
+mutation remains blocked.
+
+Proof progress summary:
+
+- Receipt producer/consumer contract harness is integrated.
+- Final check v5 is not complete.
+- Mutation preflight-only is not complete.
+- Exact mutation is not approved.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

@@ -266,3 +266,21 @@ Future successful final-check receipts must include both:
 - `receipt_contract_check=passed`.
 
 Future successful final-check receipts must also include a usable ISO freshness timestamp and `freshness_timestamp_status=valid_iso8601_present`. Prior v3 final-check JSON cannot be reused for mutation if it lacks `receipt_contract_check`. A fresh final check v4 is required before any mutation execution attempt. This task did not run a live final check and did not mutate MailerLite.
+
+## Producer/Consumer Receipt Contract Harness v0
+
+Prior mutation attempts blocked correctly before API/mutation because the machine-readable final-check receipts lacked required fields. The root issue was absence of a canonical executable contract between the final-check writer and the mutation guard, not business readiness.
+
+A shared ready-receipt contract now defines the required machine-readable fields for mutation readiness. Successful final-check receipts must include:
+
+- `receipt_contract_version=mailerlite_final_check_ready_receipt_v1`;
+- `receipt_contract_check=passed`;
+- `receipt_contract_check_result=passed_ready_contract`;
+- `receipt_consistency_check=passed`;
+- a usable ISO timestamp;
+- `freshness_timestamp_status=valid_iso8601_present`;
+- completed live lookup fields;
+- passing suppression/idempotency statuses;
+- `blockers=[]`.
+
+Fresh final check v5 is required before any mutation execution attempt. This task did not run a live final check and did not mutate MailerLite.

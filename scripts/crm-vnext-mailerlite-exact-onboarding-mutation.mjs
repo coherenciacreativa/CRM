@@ -5,6 +5,8 @@ import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { validateFinalCheckReadyReceipt as validateSharedFinalCheckReadyReceipt } from './crm-vnext-mailerlite-final-check-receipt-contract.mjs';
+
 const execFileAsync = promisify(execFile);
 
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-exact-onboarding-mutation-2026-07-07-v1';
@@ -51,6 +53,7 @@ Future live exact-mutation mode:
   --redacted-receipt-json <approved redacted receipt JSON path>
   --redacted-receipt-md <approved redacted receipt MD path>
   --max-final-check-age-ms <milliseconds>
+  --preflight-only
 
 The v1 safe client contract permits exactly one future mutation endpoint:
 POST /api/subscribers. It supports only the current packet-specific not_found
@@ -60,6 +63,7 @@ const parseArgs = (argv) => {
   const options = {
     fixtureFile: null,
     allowLiveExactOnboardingMutation: false,
+    preflightOnly: false,
     approvalPhrase: null,
     approvalPhraseFile: null,
     privatePacketJson: null,
@@ -81,6 +85,7 @@ const parseArgs = (argv) => {
     if (arg === '--help') options.help = true;
     else if (arg === '--fixture-file') options.fixtureFile = argv[++index];
     else if (arg === '--allow-live-exact-onboarding-mutation') options.allowLiveExactOnboardingMutation = true;
+    else if (arg === '--preflight-only') options.preflightOnly = true;
     else if (arg === '--approval-phrase') options.approvalPhrase = argv[++index];
     else if (arg === '--approval-file' || arg === '--approval-phrase-file') options.approvalPhraseFile = argv[++index];
     else if (arg === '--private-packet-json') options.privatePacketJson = argv[++index];
@@ -153,7 +158,7 @@ const validateFixtureOutputPaths = (options, { roots = {} } = {}) => {
 };
 
 const validateLiveOutputPaths = (options, { roots = {} } = {}) => {
-  if (!options.allowLiveExactOnboardingMutation) throw new Error('not_run_missing_approval');
+  if (!options.allowLiveExactOnboardingMutation && !options.preflightOnly) throw new Error('not_run_missing_approval');
   const resolvedRoots = rootsWithDefaults(roots);
   for (const [key, label] of [
     ['privatePacketJson', 'private_packet_json'],
@@ -278,61 +283,14 @@ const blocker = (reason, status = 'not_run_final_check_failed') => ({ ok: false,
 const hasBlockers = (value) => Array.isArray(value) ? value.length > 0 : Boolean(value);
 const finalCheckTimestamp = (receipt) => cleanString(firstValue(receipt, ['completed_at', 'checked_at']));
 
-const validateFreshness = (receipt, { nowMs = Date.now(), maxAgeMs = DEFAULT_MAX_FINAL_CHECK_AGE_MS } = {}) => {
-  const timestamp = finalCheckTimestamp(receipt);
-  if (!timestamp) return blocker('final_check_timestamp_missing', 'blocked_final_check_freshness_timestamp_missing');
-  const parsed = Date.parse(timestamp);
-  if (!Number.isFinite(parsed)) return blocker('final_check_timestamp_invalid', 'blocked_final_check_freshness_timestamp_invalid');
-  if (parsed > nowMs + 60_000) return blocker('final_check_timestamp_from_future', 'blocked_final_check_freshness_timestamp_invalid');
-  if (nowMs - parsed > maxAgeMs) return blocker('final_check_stale', 'blocked_final_check_stale');
-  return { ok: true, status: 'fresh_within_max_final_check_age_ms' };
-};
-
 const validateFinalCheckReceipt = (receipt, options = {}) => {
-  if (!receipt || typeof receipt !== 'object') return blocker('final_check_missing', 'not_run_final_check_missing');
-  if (receipt.route_status !== COMPLETED_FINAL_CHECK_ROUTE_STATUS) return blocker('final_check_route_status_not_completed');
-  if (receipt.live_lookup_ran !== true) return blocker('final_check_live_lookup_not_confirmed');
-  if (receipt.mailerlite_api_called !== true) return blocker('final_check_api_call_not_confirmed');
-  if (receipt.mailerlite_api_call_scope !== 'packet_specific_subscriber_status_group_membership_readonly') return blocker('final_check_api_scope_not_packet_specific');
-  if (!Object.prototype.hasOwnProperty.call(receipt, 'receipt_contract_check')) {
-    return blocker('final_check_receipt_contract_check_missing', 'blocked_final_check_receipt_contract_check_missing');
-  }
-  if (receipt.receipt_contract_check !== 'passed') {
-    return blocker('final_check_receipt_contract_check_not_passed', 'blocked_final_check_receipt_contract_check_not_passed');
-  }
-  if (!Object.prototype.hasOwnProperty.call(receipt, 'receipt_consistency_check')) {
-    return blocker('final_check_receipt_consistency_missing', 'blocked_final_check_receipt_consistency_missing');
-  }
-  if (receipt.receipt_consistency_check !== 'passed') {
-    return blocker('final_check_receipt_consistency_not_passed', 'blocked_final_check_receipt_consistency_not_passed');
-  }
-  if (hasBlockers(receipt.blockers)) return blocker('final_check_blockers_present');
-
-  const freshness = validateFreshness(receipt, options);
-  if (!freshness.ok) return freshness;
-
-  const subscriberLookupStatus = cleanString(receipt.subscriber_lookup_status);
-  const subscriberStatusClass = cleanString(receipt.subscriber_status_class ?? receipt.subscriber_status);
-  const groupMembershipStatus = cleanString(receipt.onboarding_group_membership_status ?? receipt.group_assignment_status);
-  const duplicateStatus = cleanString(receipt.duplicate_readd_status);
-  const suppressionStatus = cleanString(receipt.suppression_status);
-  const idempotencyStatus = cleanString(receipt.idempotency_status);
-  const readiness = cleanString(receipt.mutation_readiness_after_final_check);
-
-  if (subscriberLookupStatus === 'found') return blocker('blocked_existing_subscriber_path_not_supported_by_v1_guard', 'blocked_existing_subscriber_path_not_supported_by_v1_guard');
-  if (subscriberLookupStatus !== 'not_found') return blocker('final_check_lookup_not_safe');
-  if (subscriberStatusClass !== 'not_found') return blocker('final_check_subscriber_status_not_not_found');
-  if (groupMembershipStatus !== 'not_found') return blocker('final_check_group_membership_not_safe');
-  if (duplicateStatus !== 'safe_new_or_not_in_group') return blocker('final_check_duplicate_readd_not_safe');
-  if (suppressionStatus !== 'pass') return blocker('final_check_suppression_not_pass');
-  if (idempotencyStatus !== 'pass') return blocker('final_check_idempotency_not_pass');
-  if (readiness !== 'ready_for_exact_mutation_approval') return blocker('final_check_readiness_not_ready');
-
+  const validation = validateSharedFinalCheckReadyReceipt(receipt, options);
+  if (!validation.ok) return blocker(validation.reason, validation.status);
   return {
     ok: true,
     status: 'passed_fresh_packet_specific_final_check',
-    subscriber_lookup_status: subscriberLookupStatus,
-    group_assignment_status: groupMembershipStatus,
+    subscriber_lookup_status: validation.subscriber_lookup_status,
+    group_assignment_status: validation.group_assignment_status,
   };
 };
 
@@ -459,7 +417,7 @@ const writeOutputs = async ({ paths, receipt, privateResult }) => {
 };
 
 const compactStdout = (receipt) => ({
-  ok: receipt.mutation_executed === true,
+  ok: receipt.mutation_executed === true || receipt.mutation_result_status === 'preflight_only_ready_for_exact_mutation_approval',
   mutation_result_status: receipt.mutation_result_status,
   mutation_attempted: receipt.mutation_attempted,
   mutation_executed: receipt.mutation_executed,
@@ -595,6 +553,27 @@ const runFixtureMode = async (options, deps = {}) => {
   return receipt;
 };
 
+const runPreflightOnlyMode = async (options, deps = {}) => {
+  const paths = validateLiveOutputPaths(options, { roots: deps.roots });
+  if (options.approvalPhrase || options.approvalPhraseFile) await assertExactApprovalPhrase(options);
+  const finalCheckReceipt = await readJson(paths.finalCheckRedactedJson);
+  const finalCheck = validateFinalCheckReceipt(finalCheckReceipt, { nowMs: deps.nowMs, maxAgeMs: options.maxFinalCheckAgeMs });
+  if (!finalCheck.ok) throw new Error(finalCheck.status);
+  const packet = await readJson(paths.privatePacketJson);
+  const payload = buildExactMutationPayload(packet);
+  const runId = deps.runId ?? 'crm_core_mailerlite_exact_onboarding_mutation_preflight_only_2026-07-07';
+  return receiptFrom({
+    runId,
+    packet,
+    finalCheck,
+    mutationAttempted: false,
+    mutationExecuted: false,
+    mutationResultStatus: 'preflight_only_ready_for_exact_mutation_approval',
+    blockers: [],
+    recommendedNextStep: 'exact_mailerlite_mutation_approval_can_be_requested_after_preflight',
+  });
+};
+
 const runLiveMode = async (options, deps = {}) => {
   const paths = validateLiveOutputPaths(options, { roots: deps.roots });
   await assertExactApprovalPhrase(options);
@@ -644,7 +623,11 @@ const run = async (argv = process.argv.slice(2), deps = {}) => {
     console.log(usage);
     return { ok: true, help: true };
   }
-  const receipt = options.fixtureFile ? await runFixtureMode(options, deps) : await runLiveMode(options, deps);
+  const receipt = options.preflightOnly
+    ? await runPreflightOnlyMode(options, deps)
+    : options.fixtureFile
+      ? await runFixtureMode(options, deps)
+      : await runLiveMode(options, deps);
   console.log(JSON.stringify(compactStdout(receipt)));
   return receipt;
 };
@@ -679,6 +662,7 @@ export {
   isInside,
   parseArgs,
   run,
+  runPreflightOnlyMode,
   validateFinalCheckReceipt,
   validateFixtureOutputPaths,
   validateLiveOutputPaths,
