@@ -15,6 +15,14 @@ import {
   run,
   validateFinalCheckReceipt,
 } from "../scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs";
+import {
+  PACKET_SPECIFIC_READONLY_SCOPE,
+  run as runFinalCheck,
+} from "../scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs";
+import {
+  FINAL_CHECK_READY_RECEIPT_CONTRACT_VERSION,
+  validateFinalCheckReadyReceipt as validateSharedFinalCheckReadyReceipt,
+} from "../scripts/crm-vnext-mailerlite-final-check-receipt-contract.mjs";
 
 const execFileAsync = promisify(execFile);
 const SCRIPT = "scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs";
@@ -93,6 +101,11 @@ const packet = (overrides: Record<string, unknown> = {}) => ({
 
 const safeFinalCheck = (overrides: Record<string, unknown> = {}) => ({
   checked_at: FRESH_CHECKED_AT,
+  receipt_contract_version: FINAL_CHECK_READY_RECEIPT_CONTRACT_VERSION,
+  receipt_contract_check: "passed",
+  receipt_contract_check_result: "passed_ready_contract",
+  receipt_consistency_check: "passed",
+  freshness_timestamp_status: "valid_iso8601_present",
   route_status: COMPLETED_FINAL_CHECK_ROUTE_STATUS,
   live_lookup_ran: true,
   mailerlite_api_called: true,
@@ -104,9 +117,6 @@ const safeFinalCheck = (overrides: Record<string, unknown> = {}) => ({
   suppression_status: "pass",
   idempotency_status: "pass",
   mutation_readiness_after_final_check: "ready_for_exact_mutation_approval",
-  receipt_consistency_check: "passed",
-  receipt_contract_check: "passed",
-  freshness_timestamp_status: "valid_iso8601_present",
   blockers: [],
   ...overrides,
 });
@@ -117,6 +127,9 @@ const makeLivePaths = async (packetOverrides: Record<string, unknown> = {}, fina
     approvalPhraseFile: join(dir, "approval.txt"),
     privatePacket: join(roots.privateMailerLiteRoot, "packet.json"),
     finalCheck: join(roots.redactedReceiptRoot, "final-check.json"),
+    finalCheckReceiptMd: join(roots.redactedReceiptRoot, "final-check.md"),
+    finalCheckPrivateResultJson: join(roots.privateMailerLiteRoot, "final-check-private-result.json"),
+    finalCheckPrivateResultMd: join(roots.privateMailerLiteRoot, "final-check-private-result.md"),
     privateResultJson: join(roots.privateMailerLiteRoot, "mutation-result.json"),
     privateResultMd: join(roots.privateMailerLiteRoot, "mutation-result.md"),
     receiptJson: join(roots.redactedReceiptRoot, "mutation-receipt.json"),
@@ -146,6 +159,25 @@ const liveArgs = (paths: Record<string, string>, approvalFile = paths.approvalPh
   paths.receiptMd,
   "--max-final-check-age-ms",
   "900000",
+];
+
+const preflightArgs = (paths: Record<string, string>) => [
+  ...liveArgs(paths),
+  "--preflight-only",
+];
+
+const finalCheckLiveArgs = (paths: Record<string, string>) => [
+  "--allow-live-packet-final-check",
+  "--private-packet-json",
+  paths.privatePacket,
+  "--private-result-json",
+  paths.finalCheckPrivateResultJson,
+  "--private-result-md",
+  paths.finalCheckPrivateResultMd,
+  "--redacted-receipt-json",
+  paths.finalCheck,
+  "--redacted-receipt-md",
+  paths.finalCheckReceiptMd,
 ];
 
 const runMockedLive = async (packetOverrides: Record<string, unknown> = {}, finalOverrides: Record<string, unknown> = {}) => {
@@ -238,6 +270,76 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     }
   });
 
+  test("shared final-check ready receipt contract accepts canonical receipt", () => {
+    const result = validateSharedFinalCheckReadyReceipt(safeFinalCheck(), { nowMs: NOW_MS });
+    expect(result.ok).toBe(true);
+    expect(result.status).toBe("passed_fresh_packet_specific_final_check");
+  });
+
+  test("preflight-only accepts canonical final check without credentials or network", async () => {
+    const { dir, roots, paths } = await makeLivePaths();
+    let credentialCalls = 0;
+    let networkCalls = 0;
+    try {
+      const receipt = await run(preflightArgs(paths), {
+        roots,
+        nowMs: NOW_MS,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        exactMutationClient: { request: async () => { networkCalls += 1; return { ok: true }; } },
+      });
+      expect(receipt.mutation_attempted).toBe(false);
+      expect(receipt.mutation_executed).toBe(false);
+      expect(receipt.mutation_result_status).toBe("preflight_only_ready_for_exact_mutation_approval");
+      expect(credentialCalls).toBe(0);
+      expect(networkCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("producer-to-consumer contract: final-check writer output passes mutation preflight-only", async () => {
+    const { dir, roots, paths } = await makeLivePaths();
+    let finalCheckCredentialCalls = 0;
+    let mutationCredentialCalls = 0;
+    let networkCalls = 0;
+    try {
+      await runFinalCheck(finalCheckLiveArgs(paths), {
+        roots,
+        completedAt: FRESH_CHECKED_AT,
+        runId: "crm_core_mailerlite_final_check_producer_contract_test",
+        credentialProvider: async () => {
+          finalCheckCredentialCalls += 1;
+          return { key: "mock-secret-value" };
+        },
+        finalCheckClient: {
+          lookupSubscriberByEmail: async () => ({
+            subscriber_lookup_status: "not_found",
+            records: [],
+            mailerlite_api_called: true,
+            mailerlite_api_call_scope: PACKET_SPECIFIC_READONLY_SCOPE,
+          }),
+        },
+      });
+      const producedReceiptText = await readFile(paths.finalCheck, "utf8");
+      const producedReceipt = JSON.parse(producedReceiptText);
+      expect(producedReceipt.receipt_contract_version).toBe(FINAL_CHECK_READY_RECEIPT_CONTRACT_VERSION);
+      expect(producedReceipt.receipt_contract_check_result).toBe("passed_ready_contract");
+      expectNoSensitiveStrings(producedReceiptText);
+
+      const preflightReceipt = await run(preflightArgs(paths), {
+        roots,
+        nowMs: NOW_MS,
+        credentialProvider: async () => { mutationCredentialCalls += 1; return { key: "mock-secret-value" }; },
+        exactMutationClient: { request: async () => { networkCalls += 1; return { ok: true }; } },
+        runId: "crm_core_mailerlite_exact_mutation_preflight_contract_test",
+      });
+      expect(finalCheckCredentialCalls).toBe(1);
+      expect(preflightReceipt.mutation_result_status).toBe("preflight_only_ready_for_exact_mutation_approval");
+      expect(preflightReceipt.mutation_attempted).toBe(false);
+      expect(preflightReceipt.mutation_executed).toBe(false);
+      expect(mutationCredentialCalls).toBe(0);
+      expect(networkCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
   test("live mode without explicit approval blocks before credential provider", async () => {
     let credentialCalls = 0;
     await expect(run([], { credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_missing_approval");
@@ -321,6 +423,24 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
+  test("missing receipt contract check result blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check_result: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_result_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("missing receipt contract version blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_version: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_version_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
   test("missing receipt contract check blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check: undefined });
     let credentialCalls = 0;
@@ -376,10 +496,10 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
   });
 
   test("prior v2-style final-check fixture without consistency and timestamp blocks", async () => {
-    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check: undefined, receipt_consistency_check: undefined, checked_at: undefined });
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check_result: undefined, receipt_contract_check: undefined, receipt_consistency_check: undefined, checked_at: undefined });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_missing");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_result_missing");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -389,6 +509,15 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     let credentialCalls = 0;
     try {
       await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("prior v4-style final-check fixture missing receipt_contract_check_result blocks", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check_result: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_result_missing");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });

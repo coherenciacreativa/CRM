@@ -362,3 +362,11 @@ Mutation execution requires machine-readable redacted final-check JSON fields:
 - blockers none.
 
 A prior v3-style receipt without `receipt_contract_check` is not executable. The guard blocks before credentials and before network/client access when required fields are missing, stale, invalid, or non-passing. Actual mutation remains not executed.
+
+## Final-Check Receipt Producer/Consumer Contract
+
+Mutation execution now validates final-check redacted JSON through the shared contract validator in `scripts/crm-vnext-mailerlite-final-check-receipt-contract.mjs`. Operator summaries, central closeout docs, Markdown receipts, and file mtimes are insufficient readiness proof.
+
+The guard blocks before credentials/network when required fields are missing, stale, invalid, contradictory, or non-passing. `--preflight-only` provides a no-live validation mode before any future mutation attempt: it validates the approval phrase when supplied, validates approved path shapes, validates the final-check redacted JSON through the shared ready-receipt contract, validates the private packet shape without printing private content, and does not invoke credentials, network, or mutation clients.
+
+A generated final-check success fixture is consumed by the mutation guard in preflight-only mode in tests. Actual mutation remains not executed.

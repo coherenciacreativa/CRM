@@ -351,3 +351,9 @@ The next safe step after central integration is to rerun the final packet-specif
 Exact mutation approval remains pending. A prior mutation execution attempt blocked before API because the final-check receipt lacked machine-readable `receipt_contract_check=passed`. No mutation occurred.
 
 The next step after central integration should be a fresh final packet-specific idempotency/suppression check v4, not mutation. Mutation must not be attempted from the prior v3 receipt, an operator summary, filesystem mtime, or central closeout text.
+
+## Producer/Consumer Contract Harness Boundary
+
+Exact mutation approval remains pending. Prior mutation attempts blocked before API/mutation because final-check receipts were not contract-complete for the mutation guard. No mutation occurred.
+
+After central integration, the next step should be a fresh final packet-specific idempotency/suppression check v5. After v5, run the mutation guard in preflight-only mode against the v5 receipt and repaired private packet before any live mutation attempt.

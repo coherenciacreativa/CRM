@@ -5,6 +5,12 @@ import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import {
+  buildFinalCheckNotReadyContractFields,
+  buildFinalCheckReadyContractFields,
+  validateFinalCheckReadyReceipt,
+} from './crm-vnext-mailerlite-final-check-receipt-contract.mjs';
+
 const execFileAsync = promisify(execFile);
 
 const SCHEMA_VERSION = 'crm-vnext-mailerlite-final-idempotency-suppression-check-2026-07-06-v0';
@@ -57,6 +63,7 @@ const READINESS = new Set([
   'blocked_idempotency_unknown',
   'blocked_missing_private_packet_email_anchor',
   'blocked_route_not_redaction_safe',
+  'blocked_existing_subscriber_path_not_supported_by_v1_guard',
 ]);
 const SAFE_STATUS_CLASSES = new Set(['active']);
 const BLOCKING_STATUS_CLASSES = new Set(['unsubscribed', 'bounced', 'complained', 'junk']);
@@ -475,6 +482,10 @@ const buildDecision = ({ packet, lookupResult, routeStatus = 'fixture_mock_redac
     });
   }
 
+  const completedPacketSpecificLookup = routeStatus === COMPLETED_LIVE_ROUTE_STATUS
+    && Boolean(lookupResult?.mailerlite_api_called)
+    && lookupResult?.mailerlite_api_call_scope === PACKET_SPECIFIC_READONLY_SCOPE;
+  if (completedPacketSpecificLookup) blockers.push('existing_subscriber_path_not_supported_by_v1_guard');
   return normalizedDecision({
     packetId,
     checkRan: true,
@@ -487,7 +498,9 @@ const buildDecision = ({ packet, lookupResult, routeStatus = 'fixture_mock_redac
     duplicateReaddStatus: 'safe_new_or_not_in_group',
     suppressionStatus: 'pass',
     idempotencyStatus: 'pass',
-    mutationReadinessAfterFinalCheck: 'ready_for_exact_mutation_approval',
+    mutationReadinessAfterFinalCheck: completedPacketSpecificLookup
+      ? 'blocked_existing_subscriber_path_not_supported_by_v1_guard'
+      : 'ready_for_exact_mutation_approval',
     blockers,
   });
 };
@@ -561,30 +574,37 @@ const closedGates = () => ({
   private_message_text_printed: false,
 });
 
-const finalCheckReceiptReady = (decision) => decision.route_status === COMPLETED_LIVE_ROUTE_STATUS
-  && decision.live_lookup_ran === true
-  && decision.mailerlite_api_called === true
-  && decision.mailerlite_api_call_scope === PACKET_SPECIFIC_READONLY_SCOPE
-  && decision.subscriber_lookup_status === 'not_found'
-  && decision.subscriber_status_class === 'not_found'
-  && decision.onboarding_group_membership_status === 'not_found'
-  && decision.duplicate_readd_status === 'safe_new_or_not_in_group'
-  && decision.suppression_status === 'pass'
-  && decision.idempotency_status === 'pass'
-  && decision.mutation_readiness_after_final_check === 'ready_for_exact_mutation_approval'
-  && decision.blockers.length === 0;
-
-const receiptConsistencyCheckFor = (decision) => finalCheckReceiptReady(decision) ? 'passed' : 'not_applicable';
-const receiptContractCheckFor = (decision) => finalCheckReceiptReady(decision) ? 'passed' : 'not_applicable';
-const freshnessTimestampStatusFor = (completedAt) => Number.isNaN(Date.parse(completedAt)) ? 'invalid_or_missing' : 'valid_iso8601_present';
+const finalCheckContractFieldsFor = ({ decision, completedAt }) => {
+  const readyCandidate = {
+    completed_at: completedAt,
+    route_status: decision.route_status,
+    live_lookup_ran: decision.live_lookup_ran,
+    mailerlite_api_called: decision.mailerlite_api_called,
+    mailerlite_api_call_scope: decision.mailerlite_api_call_scope,
+    subscriber_lookup_status: decision.subscriber_lookup_status,
+    subscriber_status_class: decision.subscriber_status_class,
+    onboarding_group_membership_status: decision.onboarding_group_membership_status,
+    duplicate_readd_status: decision.duplicate_readd_status,
+    suppression_status: decision.suppression_status,
+    idempotency_status: decision.idempotency_status,
+    mutation_readiness_after_final_check: decision.mutation_readiness_after_final_check,
+    blockers: decision.blockers,
+    ...buildFinalCheckReadyContractFields({ completedAt }),
+  };
+  const validation = validateFinalCheckReadyReceipt(readyCandidate, {
+    nowMs: Number.isNaN(Date.parse(completedAt)) ? Date.now() : Date.parse(completedAt),
+    maxAgeMs: Number.POSITIVE_INFINITY,
+  });
+  return validation.ok
+    ? buildFinalCheckReadyContractFields({ completedAt })
+    : buildFinalCheckNotReadyContractFields({ completedAt });
+};
 
 const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [], completedAt = new Date().toISOString() }) => ({
   schema_version: SCHEMA_VERSION,
   run_id: runId,
   completed_at: completedAt,
-  freshness_timestamp_status: freshnessTimestampStatusFor(completedAt),
-  receipt_consistency_check: receiptConsistencyCheckFor(decision),
-  receipt_contract_check: receiptContractCheckFor(decision),
+  ...finalCheckContractFieldsFor({ decision, completedAt }),
   packet_id: decision.packet_id,
   check_ran: decision.check_ran,
   live_lookup_ran: decision.live_lookup_ran,
@@ -636,7 +656,9 @@ const renderMarkdown = (receipt) => `# MailerLite Final Idempotency / Suppressio
   `- run_id: \`${receipt.run_id}\`\n` +
   `- completed_at: \`${receipt.completed_at}\`\n` +
   `- freshness_timestamp_status: \`${receipt.freshness_timestamp_status}\`\n` +
+  `- receipt_contract_version: \`${receipt.receipt_contract_version}\`\n` +
   `- receipt_contract_check: \`${receipt.receipt_contract_check}\`\n` +
+  `- receipt_contract_check_result: \`${receipt.receipt_contract_check_result}\`\n` +
   `- receipt_consistency_check: \`${receipt.receipt_consistency_check}\`\n` +
   `- packet_id: \`${receipt.packet_id}\`\n` +
   `- check_ran: \`${receipt.check_ran}\`\n` +
