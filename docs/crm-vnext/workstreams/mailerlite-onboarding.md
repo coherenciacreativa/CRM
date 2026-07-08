@@ -405,3 +405,31 @@ not executable for mutation; actual MailerLite mutation remains unexecuted.
   idempotency/suppression check v4.
 
 Candidate queue generation, welcome audio, CRM/source writes, and MailerLite mutation remain closed.
+
+## Final Idempotency / Suppression Check v4 Result
+
+- `final_idempotency_suppression_check_v4_status`:
+  `completed_live_readonly_ready_for_exact_mutation_approval`
+- `final_idempotency_suppression_check_v4_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-v4-result-v0.md`
+- `live_lookup_ran`: true
+- `subscriber_lookup_status`: `not_found`
+- `onboarding_group_membership_status`: `not_found`
+- `suppression_status`: `pass`
+- `idempotency_status`: `pass`
+- `duplicate_readd_status`: `safe_new_or_not_in_group`
+- `receipt_contract_check`: `passed`
+- `receipt_consistency_check`: `passed`
+- `freshness_timestamp_status`: `valid_iso8601_present`
+- `receipt_contract_check_result`: `passed_ready_contract`
+- `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+- `prior_v3_receipt_reuse_status`:
+  `blocked_non_reusable_missing_receipt_contract_check_fresh_v4_required`
+- `mutation_readiness`: `ready_for_exact_mutation_approval`
+- `actual_mutation_status`: `not_executed`
+- `recommended_next_step`: ask Alejandro exact packet-specific MailerLite
+  mutation approval or pause.
+
+The v4 receipt includes the machine-readable contract fields required by the
+exact mutation guard. It supports an approval decision only; actual MailerLite
+mutation remains unexecuted.

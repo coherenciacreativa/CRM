@@ -4970,12 +4970,14 @@ routing and completion pointer.
   - Real mutation remains not executed.
   - Mutation readiness is `blocked_pending_fresh_final_check_v4`.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v4`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `completed_live_readonly_v4_ready_for_exact_mutation_approval`
 - `objective`: Wait for Alejandro approval before one fresh final
   packet-specific MailerLite idempotency and suppression read-only check v4
   that emits both machine-readable `receipt_contract_check=passed` and
@@ -5027,3 +5029,95 @@ routing and completion pointer.
   mutation approval or mutation execution attempt.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one fresh final packet-specific idempotency/suppression check v4.
+- `findings`:
+  - Fresh final packet-specific idempotency/suppression check v4 completed.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-v4-result-v0.md`
+  - `live_lookup_ran`: true
+  - `mailerlite_api_called`: true
+  - `mailerlite_api_call_scope`:
+    `packet_specific_subscriber_status_group_membership_readonly`
+  - `subscriber_lookup_status`: `not_found`
+  - `subscriber_status_class`: `not_found`
+  - `onboarding_group_membership_status`: `not_found`
+  - `duplicate_readd_status`: `safe_new_or_not_in_group`
+  - `suppression_status`: `pass`
+  - `idempotency_status`: `pass`
+  - `receipt_contract_check`: `passed`
+  - `receipt_consistency_check`: `passed`
+  - `freshness_timestamp_status`: `valid_iso8601_present`
+  - `receipt_contract_check_result`: `passed_ready_contract`
+  - `mutation_readiness_after_final_check`:
+    `ready_for_exact_mutation_approval`
+  - `blockers`: none
+  - `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+  - `prior_v3_receipt_reuse_status`:
+    `blocked_non_reusable_missing_receipt_contract_check_fresh_v4_required`
+  - No MailerLite UI occurred.
+  - No MailerLite mutation occurred.
+  - No subscriber rows were printed.
+  - No CRM/source writes occurred.
+  - Exact mutation approval remains required.
+  - Actual mutation remains not executed.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_awaiting_approval_v2`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro's exact approval before executing one
+  MailerLite onboarding mutation for the explicitly approved repaired private
+  onboarding packet using the implemented exact mutation execution guard and
+  fresh final-check v4 receipt.
+- `why_now`: The no-write packet is prepared, the private packet email anchor is
+  repaired, the final packet-specific idempotency/suppression check v4 passed
+  with machine-readable `receipt_contract_check`, `receipt_consistency_check`,
+  and freshness timestamp fields, the exact mutation approval packet design is
+  integrated, and the exact mutation execution guard is implemented and
+  mock-tested. Actual mutation remains blocked until Alejandro gives exact
+  packet-specific approval.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain operation class and closed gates.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No subscriber-row reads.
+  - No raw email in chat.
+  - No raw IDs.
+  - No subscriber row print.
+  - No raw payloads.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to execute one MailerLite
+  onboarding mutation for the explicitly approved repaired private onboarding
+  packet only, using the implemented exact mutation execution guard and the
+  fresh v4 final-check receipt. Use the approved operation class
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`,
+  the approved native top-level email semantics, the approved existing field
+  mapping, and the confirmed onboarding group. Immediately before mutation,
+  validate the packet-specific idempotency and suppression safety gate from the
+  v4 receipt. Do not create fields, do not modify automations or campaigns, do
+  not create or modify segments, forms, webhooks, or account settings, do not
+  perform a broad import, do not print raw emails, IDs, subscriber rows, tokens,
+  headers, env values, credentials, raw payloads, private message text, private
+  subscriber content, or private artifact contents, and write only private
+  result artifacts plus redacted aggregate receipts.
+- `recommended_default`: Ask Alejandro whether to approve, modify, or pause
+  this exact packet-specific mutation.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses one
+  exact packet-specific MailerLite onboarding mutation using the fresh v4
+  final-check receipt.

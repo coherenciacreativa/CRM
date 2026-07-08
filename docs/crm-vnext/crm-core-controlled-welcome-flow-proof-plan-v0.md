@@ -1722,6 +1722,52 @@ Proof progress summary:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Final Idempotency / Suppression Check v4 Result
+
+- Fresh final packet-specific idempotency/suppression check v4 completed.
+- Result doc:
+
+```text
+docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-v4-result-v0.md
+```
+
+- `run_id`:
+  `crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06`
+- `final_state`: `completed_live_readonly_v4_ready_for_exact_mutation_approval`
+- `live_lookup_ran`: true
+- `mailerlite_api_called`: true
+- `mailerlite_api_call_scope`:
+  `packet_specific_subscriber_status_group_membership_readonly`
+- `subscriber_lookup_status`: `not_found`
+- `subscriber_status_class`: `not_found`
+- `onboarding_group_membership_status`: `not_found`
+- `duplicate_readd_status`: `safe_new_or_not_in_group`
+- `suppression_status`: `pass`
+- `idempotency_status`: `pass`
+- `receipt_contract_check`: `passed`
+- `receipt_consistency_check`: `passed`
+- `freshness_timestamp_status`: `valid_iso8601_present`
+- `receipt_contract_check_result`: `passed_ready_contract`
+- `mutation_readiness_after_final_check`:
+  `ready_for_exact_mutation_approval`
+- `blockers`: none
+- `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+- `prior_v3_receipt_reuse_status`:
+  `blocked_non_reusable_missing_receipt_contract_check_fresh_v4_required`
+- `v4_receipt_contract_status`: `passed`
+- No MailerLite UI occurred.
+- No MailerLite mutation occurred.
+- No subscriber rows were printed.
+- No CRM/source writes occurred.
+- Exact mutation approval remains required.
+- Actual mutation remains not executed.
+
+The v4 result replaces the prior v2 and v3 final-check receipts for
+mutation-readiness purposes. It includes the machine-readable
+`receipt_contract_check=passed`, `receipt_consistency_check=passed`, and
+freshness timestamp fields required by the exact mutation guard. It does not
+authorize mutation.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

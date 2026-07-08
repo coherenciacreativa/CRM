@@ -624,3 +624,31 @@
   and production automation remain closed.
 - `next_approval_needed`: approve or pause one fresh final packet-specific
   idempotency/suppression check v4
+
+## MailerLite Final Check v4 Closeout
+
+- Central closeout used redacted receipt only.
+- No private result was read.
+- No repaired private packet was read.
+- No private evidence was read.
+- No source actions occurred during closeout.
+- No MailerLite API/UI occurred during closeout.
+- No mutation occurred during closeout.
+- Final check v4 completed as read-only live check in source run.
+- v4 receipt includes machine-readable `receipt_contract_check=passed`.
+- v4 receipt includes machine-readable `receipt_consistency_check=passed`.
+- v4 receipt includes usable freshness timestamp.
+- v4 `receipt_contract_check_result` passed_ready_contract.
+- Prior v2 final-check receipt remains blocked for mutation reuse.
+- Prior v3 final-check receipt remains blocked for mutation reuse.
+- Mutation readiness is `ready_for_exact_mutation_approval`.
+- Exact packet-specific MailerLite mutation approval is next gate.
+- Safari upload hardening temporary branch remains ready but untouched.
+- `latest_commit`: pending final check v4 readiness closeout commit.
+- `latest_receipt`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-v4-result-v0.md`
+- `blockers`: exact future mutation approval not yet granted; MailerLite
+  mutation, CRM enrichment/write, assistant reply, and production automation
+  remain closed.
+- `next_approval_needed`: exact packet-specific MailerLite mutation approval or
+  pause.
