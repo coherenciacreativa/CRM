@@ -598,3 +598,29 @@
   remain closed.
 - `next_approval_needed`: exact packet-specific MailerLite mutation approval or
   pause.
+
+## MailerLite Final Check Receipt Contract Field Alignment Fix
+
+- MailerLite final-check receipt contract field alignment fix integrated.
+- Source branch was canonical MailerLite lane.
+- Integration used source lane summary and source branch diff only.
+- No private artifacts or Mantis report contents were inspected during central
+  integration.
+- No source action occurred during central integration.
+- No MailerLite API/UI occurred during central integration.
+- No mutation occurred.
+- The prior exact mutation attempt did not call MailerLite and did not mutate.
+- The prior v3 final-check receipt cannot be reused because it lacks
+  machine-readable `receipt_contract_check=passed`.
+- Next step is one fresh final idempotency/suppression check v4, not mutation.
+- Safari upload hardening temporary branch remains ready but was not integrated
+  in this run.
+- `latest_commit`: pending receipt contract alignment fix integration commit;
+  source lane commit `74be0f8aba6c0600107a9f223ad174c6b03e34bc`
+- `latest_receipt`: source result doc integrated at
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-route-design-v0.md`
+- `blockers`: fresh final check v4 not yet run; exact future mutation approval
+  not yet granted; MailerLite mutation, CRM enrichment/write, assistant reply,
+  and production automation remain closed.
+- `next_approval_needed`: approve or pause one fresh final packet-specific
+  idempotency/suppression check v4

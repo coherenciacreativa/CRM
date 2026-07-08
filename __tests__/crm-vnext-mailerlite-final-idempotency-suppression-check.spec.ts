@@ -301,9 +301,13 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
     expect(receipt.idempotency_status).toBe("pass");
     expect(receipt.mutation_readiness_after_final_check).toBe("ready_for_exact_mutation_approval");
     expect(receiptJson.receipt_consistency_check).toBe("passed");
+    expect(receiptJson.receipt_contract_check).toBe("passed");
     expect(typeof receiptJson.completed_at).toBe("string");
     expect(Number.isNaN(Date.parse(receiptJson.completed_at))).toBe(false);
+    expect(receiptJson.freshness_timestamp_status).toBe("valid_iso8601_present");
     expect(receiptMdText).toContain("receipt_consistency_check");
+    expect(receiptMdText).toContain("receipt_contract_check");
+    expect(receiptMdText).toContain("freshness_timestamp_status");
     expect(receiptMdText).toContain("completed_at");
   });
 
@@ -448,8 +452,10 @@ describe("CRM Core MailerLite final idempotency/suppression readonly guard", () 
       expect(receipt.blockers).toContain("missing_private_packet_email_anchor");
       expect(receiptJson.blockers).toContain("missing_private_packet_email_anchor");
       expect(receiptJson.receipt_consistency_check).not.toBe("passed");
+      expect(receiptJson.receipt_contract_check).not.toBe("passed");
       expect(receiptJson.mutation_readiness_after_final_check).not.toBe("ready_for_exact_mutation_approval");
       expect(receiptMdText).not.toContain("receipt_consistency_check: `passed`");
+      expect(receiptMdText).not.toContain("receipt_contract_check: `passed`");
       expect(receiptMdText).not.toContain("blockers: `none`");
       expectNoSensitiveStrings(receiptJsonText);
       expectNoSensitiveStrings(receiptMdText);

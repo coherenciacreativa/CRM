@@ -1230,6 +1230,44 @@ No lane outputs in review at creation.
 - `recommended_default`: ask Alejandro for exact packet-specific MailerLite
   mutation approval; do not execute mutation without exact phrase.
 
+### controlled_welcome_flow_mailerlite_receipt_contract_alignment_fix_integration_2026-07-06
+
+- `result_type`: `final_check_receipt_contract_field_alignment_fix_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `74be0f8aba6c0600107a9f223ad174c6b03e34bc`
+- `previous_attempt_state`:
+  `mailerlite_exact_mutation_v2_blocked_final_check_not_ready`
+- `previous_mutation_attempted`: false
+- `previous_mutation_executed`: false
+- `root_cause_category`:
+  `field_name_mismatch_between_operator_summary_and_json_receipt`
+- `final_check_receipt_contract_alignment_status`: `completed_mock_tested`
+- `mutation_guard_contract_alignment_status`: `completed_mock_tested`
+- `prior_v3_receipt_reuse_status`:
+  `blocked_non_reusable_missing_receipt_contract_check_fresh_v4_required`
+- `live_final_check_real_run_performed`: false
+- `live_mutation_real_run_performed`: false
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `real_subscriber_rows_read_or_printed`: false
+- `real_private_artifacts_read`: false
+- `real_mantis_reports_read_by_source_lane`: true
+- `used_mantis_reports_by_source_lane`: true
+- `used_mantis_private_source_artifacts_by_source_lane`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `actual_mutation_status`: `not_executed`
+- `decision_needed`: approve or pause fresh final packet-specific
+  idempotency/suppression check v4
+- `recommended_default`: run one fresh final packet-specific
+  idempotency/suppression check v4, then review redacted receipt before any
+  mutation attempt.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

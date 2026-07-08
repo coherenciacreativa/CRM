@@ -252,4 +252,17 @@ Future successful final-check redacted JSON receipts must include:
 - passing suppression and idempotency statuses;
 - `blockers: []`.
 
-Blocked precheck receipts must not claim `receipt_consistency_check=passed` or `ready_for_exact_mutation_approval`. A fresh final packet-specific idempotency/suppression check v3 is required before any exact mutation execution approval can be attempted. This contract fix is mock-tested only and did not run live MailerLite, inspect credentials, read private packets, or mutate anything.
+Blocked precheck receipts must not claim `receipt_consistency_check=passed` or `ready_for_exact_mutation_approval`. After the receipt-contract alignment fix, a fresh final packet-specific idempotency/suppression check v4 is required before any exact mutation execution approval can be attempted. This contract fix is mock-tested only and did not run live MailerLite, inspect credentials, read private packets, or mutate anything.
+
+## Receipt Contract Alignment Fix - `receipt_contract_check`
+
+Root cause category: `field_name_mismatch_between_operator_summary_and_json_receipt`.
+
+A mutation attempt after final-check v3 blocked before API/mutation because the v3 redacted JSON lacked machine-readable `receipt_contract_check=passed`. The final-check operator summary was not sufficient for mutation execution.
+
+Future successful final-check receipts must include both:
+
+- `receipt_consistency_check=passed`;
+- `receipt_contract_check=passed`.
+
+Future successful final-check receipts must also include a usable ISO freshness timestamp and `freshness_timestamp_status=valid_iso8601_present`. Prior v3 final-check JSON cannot be reused for mutation if it lacks `receipt_contract_check`. A fresh final check v4 is required before any mutation execution attempt. This task did not run a live final check and did not mutate MailerLite.

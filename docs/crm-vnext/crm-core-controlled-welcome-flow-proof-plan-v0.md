@@ -1672,6 +1672,56 @@ The v3 result replaces the prior v2 final-check receipt for mutation-readiness
 purposes because it includes the machine-readable consistency and freshness
 fields required by the exact mutation guard. It does not authorize mutation.
 
+## MailerLite Final Check Receipt Contract Field Alignment Fix — Integrated
+
+- Source branch:
+
+```text
+codex/crm-core-mailerlite-onboarding
+```
+
+- Source commit:
+
+```text
+74be0f8aba6c0600107a9f223ad174c6b03e34bc
+```
+
+- Previous exact mutation attempt state:
+  `mailerlite_exact_mutation_v2_blocked_final_check_not_ready`
+- Previous mutation attempted: false
+- Previous mutation executed: false
+- Previous blocker:
+  `receipt_contract_check=passed missing from v3 redacted JSON`
+- Root cause category:
+  `field_name_mismatch_between_operator_summary_and_json_receipt`
+- Final-check receipt contract alignment status:
+  `completed_mock_tested`
+- Mutation guard contract alignment status:
+  `completed_mock_tested`
+- Prior v3 receipt reuse status:
+  `blocked_non_reusable_missing_receipt_contract_check_fresh_v4_required`
+- Live final check real run after fix: false
+- Live mutation real run after fix: false
+- Actual mutation status: `not_executed`
+- Mutation readiness: `blocked_pending_fresh_final_check_v4`
+
+Operator summaries are not sufficient as mutation preconditions. The exact
+mutation guard must rely on machine-readable redacted JSON fields. Future
+successful final-check receipts must include `receipt_consistency_check=passed`,
+`receipt_contract_check=passed`, and a usable ISO timestamp. The prior v3
+final-check receipt cannot be reused for mutation, so CRM Core must rerun one
+final packet-specific idempotency/suppression check v4 before any mutation
+attempt. Actual MailerLite mutation remains blocked.
+
+Proof progress summary:
+
+- Receipt contract field alignment fix is integrated.
+- Final check v4 is not complete.
+- Exact mutation is not approved.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

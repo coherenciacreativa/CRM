@@ -344,4 +344,10 @@ authorize mutation by itself and does not broaden the operation class.
 
 Exact mutation approval remains pending. A prior execution attempt was blocked before credential lookup, before MailerLite API access, and before any mutation because the approved v2 final-check redacted JSON lacked machine-readable `receipt_consistency_check=passed` and a usable freshness timestamp. No mutation occurred.
 
-The next safe step after central integration is to rerun the final packet-specific idempotency/suppression check v3 under separate approval, then review a fresh redacted receipt. Mutation must not be attempted from the prior v2 receipt, a chat summary, filesystem mtime, or any inferred freshness evidence.
+The next safe step after central integration is to rerun the final packet-specific idempotency/suppression check v4 under separate approval, then review a fresh redacted receipt. Mutation must not be attempted from the prior v2/v3 receipts, a chat summary, filesystem mtime, or any inferred freshness evidence.
+
+## Approval Packet Contract Field Alignment
+
+Exact mutation approval remains pending. A prior mutation execution attempt blocked before API because the final-check receipt lacked machine-readable `receipt_contract_check=passed`. No mutation occurred.
+
+The next step after central integration should be a fresh final packet-specific idempotency/suppression check v4, not mutation. Mutation must not be attempted from the prior v3 receipt, an operator summary, filesystem mtime, or central closeout text.

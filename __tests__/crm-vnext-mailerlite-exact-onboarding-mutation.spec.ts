@@ -105,6 +105,8 @@ const safeFinalCheck = (overrides: Record<string, unknown> = {}) => ({
   idempotency_status: "pass",
   mutation_readiness_after_final_check: "ready_for_exact_mutation_approval",
   receipt_consistency_check: "passed",
+  receipt_contract_check: "passed",
+  freshness_timestamp_status: "valid_iso8601_present",
   blockers: [],
   ...overrides,
 });
@@ -319,6 +321,24 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
+  test("missing receipt contract check blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("receipt contract check not passed blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check: "not_passed" });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_not_passed");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
   test("missing receipt consistency blocks before credential provider", async () => {
     const { dir, roots, paths } = await makeLivePaths({}, { receipt_consistency_check: undefined });
     let credentialCalls = 0;
@@ -356,10 +376,19 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
   });
 
   test("prior v2-style final-check fixture without consistency and timestamp blocks", async () => {
-    const { dir, roots, paths } = await makeLivePaths({}, { receipt_consistency_check: undefined, checked_at: undefined });
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check: undefined, receipt_consistency_check: undefined, checked_at: undefined });
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_consistency_missing");
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("prior v3-style final-check fixture missing receipt_contract_check blocks", async () => {
+    const { dir, roots, paths } = await makeLivePaths({}, { receipt_contract_check: undefined });
+    let credentialCalls = 0;
+    try {
+      await expect(run(liveArgs(paths), { roots, nowMs: NOW_MS, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_final_check_receipt_contract_check_missing");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });

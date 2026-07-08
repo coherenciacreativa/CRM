@@ -575,12 +575,16 @@ const finalCheckReceiptReady = (decision) => decision.route_status === COMPLETED
   && decision.blockers.length === 0;
 
 const receiptConsistencyCheckFor = (decision) => finalCheckReceiptReady(decision) ? 'passed' : 'not_applicable';
+const receiptContractCheckFor = (decision) => finalCheckReceiptReady(decision) ? 'passed' : 'not_applicable';
+const freshnessTimestampStatusFor = (completedAt) => Number.isNaN(Date.parse(completedAt)) ? 'invalid_or_missing' : 'valid_iso8601_present';
 
 const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [], completedAt = new Date().toISOString() }) => ({
   schema_version: SCHEMA_VERSION,
   run_id: runId,
   completed_at: completedAt,
+  freshness_timestamp_status: freshnessTimestampStatusFor(completedAt),
   receipt_consistency_check: receiptConsistencyCheckFor(decision),
+  receipt_contract_check: receiptContractCheckFor(decision),
   packet_id: decision.packet_id,
   check_ran: decision.check_ran,
   live_lookup_ran: decision.live_lookup_ran,
@@ -631,6 +635,8 @@ const buildPrivateResult = ({ runId, decision, mode }) => ({
 const renderMarkdown = (receipt) => `# MailerLite Final Idempotency / Suppression Check Redacted Receipt\n\n` +
   `- run_id: \`${receipt.run_id}\`\n` +
   `- completed_at: \`${receipt.completed_at}\`\n` +
+  `- freshness_timestamp_status: \`${receipt.freshness_timestamp_status}\`\n` +
+  `- receipt_contract_check: \`${receipt.receipt_contract_check}\`\n` +
   `- receipt_consistency_check: \`${receipt.receipt_consistency_check}\`\n` +
   `- packet_id: \`${receipt.packet_id}\`\n` +
   `- check_ran: \`${receipt.check_ran}\`\n` +
