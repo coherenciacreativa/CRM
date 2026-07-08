@@ -349,3 +349,16 @@ Current blocker names:
 - `blocked_final_check_freshness_timestamp_missing`;
 - `blocked_final_check_freshness_timestamp_invalid`;
 - `blocked_final_check_stale`.
+
+## Final-Check Receipt Contract Field Alignment
+
+Mutation execution requires machine-readable redacted final-check JSON fields:
+
+- `receipt_contract_check=passed`;
+- `receipt_consistency_check=passed`;
+- usable ISO timestamp;
+- completed live lookup;
+- passing suppression/idempotency statuses;
+- blockers none.
+
+A prior v3-style receipt without `receipt_contract_check` is not executable. The guard blocks before credentials and before network/client access when required fields are missing, stale, invalid, or non-passing. Actual mutation remains not executed.

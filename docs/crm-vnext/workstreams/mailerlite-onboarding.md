@@ -371,13 +371,28 @@ The prior v2 final-check receipt remains non-reusable for mutation execution bec
 - `duplicate_readd_status`: `safe_new_or_not_in_group`
 - `receipt_consistency_check`: `passed`
 - `freshness_timestamp_status`: `valid_iso8601_present`
-- `receipt_contract_check`: `passed`
+- `operator_summary_receipt_contract_check`: `passed`
+- `machine_readable_json_receipt_contract_check`: `missing`
 - `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
-- `mutation_readiness`: `ready_for_exact_mutation_approval`
+- `prior_v3_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation_missing_receipt_contract_check`
+- `mutation_readiness`: `blocked_pending_fresh_final_check_v4`
 - `actual_mutation_status`: `not_executed`
-- `recommended_next_step`: ask Alejandro exact packet-specific MailerLite
-  mutation approval or pause.
+- `recommended_next_step`: central integration of receipt contract alignment
+  fix, then rerun final packet-specific idempotency/suppression check v4.
 
-The v3 receipt passed the machine-readable consistency and freshness contract
-required by the exact mutation guard. It supports an approval decision only;
-actual MailerLite mutation remains unexecuted.
+The v3 operator summary reported contract readiness, but the machine-readable
+redacted JSON lacked `receipt_contract_check=passed`. The prior v3 receipt is
+not executable for mutation; actual MailerLite mutation remains unexecuted.
+
+## Final Check Receipt Contract Field Alignment
+
+- `exact_mutation_attempt_v2_status`: `blocked_final_check_not_ready`
+- `blocker`: `final_check_receipt_missing_receipt_contract_check`
+- `root_cause_category`: `field_name_mismatch_between_operator_summary_and_json_receipt`
+- `final_check_receipt_contract_alignment_fix_status`: `completed_mock_tested`
+- `live_mutation_status`: `not_run_after_contract_alignment_fix`
+- `actual_mutation_status`: `not_executed`
+- `mutation_readiness`: `blocked_pending_fresh_final_check_v4`
+- `recommended_next_step`: central integration of receipt contract alignment fix, then rerun final packet-specific idempotency/suppression check v4.
+
+Candidate queue generation, welcome audio, CRM/source writes, and MailerLite mutation remain closed.

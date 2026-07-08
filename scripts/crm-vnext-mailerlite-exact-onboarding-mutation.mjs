@@ -294,6 +294,12 @@ const validateFinalCheckReceipt = (receipt, options = {}) => {
   if (receipt.live_lookup_ran !== true) return blocker('final_check_live_lookup_not_confirmed');
   if (receipt.mailerlite_api_called !== true) return blocker('final_check_api_call_not_confirmed');
   if (receipt.mailerlite_api_call_scope !== 'packet_specific_subscriber_status_group_membership_readonly') return blocker('final_check_api_scope_not_packet_specific');
+  if (!Object.prototype.hasOwnProperty.call(receipt, 'receipt_contract_check')) {
+    return blocker('final_check_receipt_contract_check_missing', 'blocked_final_check_receipt_contract_check_missing');
+  }
+  if (receipt.receipt_contract_check !== 'passed') {
+    return blocker('final_check_receipt_contract_check_not_passed', 'blocked_final_check_receipt_contract_check_not_passed');
+  }
   if (!Object.prototype.hasOwnProperty.call(receipt, 'receipt_consistency_check')) {
     return blocker('final_check_receipt_consistency_missing', 'blocked_final_check_receipt_consistency_missing');
   }
