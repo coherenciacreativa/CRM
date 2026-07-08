@@ -1631,6 +1631,47 @@ Stop if plan would require:
 - no Launch OS;
 - no `/Users/alejandrogomez/CRM`.
 
+## MailerLite Final Idempotency / Suppression Check v3 Result
+
+- Fresh final packet-specific idempotency/suppression check v3 completed.
+- Result doc:
+
+```text
+docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-v3-result-v0.md
+```
+
+- `run_id`:
+  `crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06`
+- `final_state`: `completed_live_readonly_ready_for_exact_mutation_approval`
+- `live_lookup_ran`: true
+- `mailerlite_api_called`: true
+- `mailerlite_api_call_scope`:
+  `packet_specific_subscriber_status_group_membership_readonly`
+- `subscriber_lookup_status`: `not_found`
+- `subscriber_status_class`: `not_found`
+- `onboarding_group_membership_status`: `not_found`
+- `duplicate_readd_status`: `safe_new_or_not_in_group`
+- `suppression_status`: `pass`
+- `idempotency_status`: `pass`
+- `receipt_consistency_check`: `passed`
+- `freshness_timestamp_status`: `valid_iso8601_present`
+- `receipt_contract_check`: `passed`
+- `mutation_readiness_after_final_check`:
+  `ready_for_exact_mutation_approval`
+- `blockers`: none
+- `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+- `v3_receipt_contract_status`: `passed`
+- No MailerLite UI occurred.
+- No MailerLite mutation occurred.
+- No subscriber rows were printed.
+- No CRM/source writes occurred.
+- Exact mutation approval remains required.
+- Actual mutation remains not executed.
+
+The v3 result replaces the prior v2 final-check receipt for mutation-readiness
+purposes because it includes the machine-readable consistency and freshness
+fields required by the exact mutation guard. It does not authorize mutation.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

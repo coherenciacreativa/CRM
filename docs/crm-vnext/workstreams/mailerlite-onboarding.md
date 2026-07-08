@@ -356,3 +356,28 @@
   idempotency/suppression check v3.
 
 The prior v2 final-check receipt remains non-reusable for mutation execution because it lacks machine-readable consistency and freshness fields. Candidate queue generation, welcome audio, CRM/source writes, and MailerLite mutation remain closed.
+
+## Final Idempotency / Suppression Check v3 Result
+
+- `final_idempotency_suppression_check_v3_status`:
+  `completed_live_readonly_ready_for_exact_mutation_approval`
+- `final_idempotency_suppression_check_v3_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-final-idempotency-suppression-check-v3-result-v0.md`
+- `live_lookup_ran`: true
+- `subscriber_lookup_status`: `not_found`
+- `onboarding_group_membership_status`: `not_found`
+- `suppression_status`: `pass`
+- `idempotency_status`: `pass`
+- `duplicate_readd_status`: `safe_new_or_not_in_group`
+- `receipt_consistency_check`: `passed`
+- `freshness_timestamp_status`: `valid_iso8601_present`
+- `receipt_contract_check`: `passed`
+- `prior_v2_receipt_reuse_status`: `blocked_cannot_reuse_for_mutation`
+- `mutation_readiness`: `ready_for_exact_mutation_approval`
+- `actual_mutation_status`: `not_executed`
+- `recommended_next_step`: ask Alejandro exact packet-specific MailerLite
+  mutation approval or pause.
+
+The v3 receipt passed the machine-readable consistency and freshness contract
+required by the exact mutation guard. It supports an approval decision only;
+actual MailerLite mutation remains unexecuted.
