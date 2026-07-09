@@ -1348,16 +1348,62 @@ No lane outputs in review at creation.
 - `recommended_default`: run one fresh final check v5, then mutation guard
   preflight-only against v5 before any mutation attempt.
 
+### controlled_welcome_flow_mailerlite_group_reference_repair_final_check_v6_preflight_closeout_2026-07-06
+
+- `result_type`: `group_reference_repair_final_check_v6_preflight_closeout`
+- `run_id`:
+  `crm_core_mailerlite_group_reference_repair_final_check_v6_preflight_v1_2026-07-06`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-group-reference-repair-final-check-v6-preflight-result-v0.md`
+- `repair_status`: `completed_private_packet_group_reference_repaired`
+- `repaired_packet_created`: true
+- `confirmed_onboarding_group_reference_source`:
+  `setup_verification_private_artifact`
+- `internal_email_lookup_input_resolvable`: true
+- `internal_group_reference_resolvable_for_exact_mutation_guard`: true
+- `final_check_v6_run`: true
+- `final_check_v6_live_lookup_ran`: true
+- `final_check_v6_mailerlite_api_called`: true
+- `final_check_v6_contract_validation`: `passed`
+- `final_check_v6_mutation_readiness_after_final_check`:
+  `ready_for_exact_mutation_approval`
+- `preflight_only_run`: true
+- `preflight_only_status`: `passed_ready_for_exact_mutation_execution_gate`
+- `preflight_credential_provider_called`: false
+- `preflight_network_client_called`: false
+- `preflight_mailerlite_api_called`: false
+- `mutation_attempted`: false
+- `mutation_executed`: false
+- `mutation_readiness`: `ready_for_exact_mutation_approval_after_closeout`
+- `blockers`: none
+- `mailerlite_ui_used`: false
+- `mailerlite_mutation`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: exact packet-specific MailerLite mutation approval or
+  pause
+- `recommended_default`: ask Alejandro for exact packet-specific MailerLite
+  mutation approval; do not execute mutation without exact phrase.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-Decision required: approve, modify, pause, or decline implementation/validation
-of the MailerLite exact mutation execution guard. Do not request actual
-MailerLite mutation approval until the redaction-safe guard exists and preserves
-the final packet-specific idempotency/suppression gates.
+Decision required: approve, modify, pause, or decline one exact
+packet-specific MailerLite mutation. Do not execute mutation without the exact
+approval phrase.
 
 Prior lane approval options remain available for:
 

@@ -5137,12 +5137,14 @@ routing and completion pointer.
   - Mutation readiness is
     `blocked_pending_fresh_final_check_v5_and_preflight_only_validation`.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_final_packet_specific_idempotency_suppression_check_live_run_awaiting_approval_v5`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-06`
 - `updated_at`: `2026-07-06`
+- `completed_at`: `2026-07-06`
+- `result`: `completed_group_reference_repair_final_check_v6_and_preflight_only_validation`
 - `objective`: Wait for Alejandro approval before one fresh final
   packet-specific MailerLite idempotency and suppression read-only check v5
   that emits the canonical ready-receipt contract fields required by the exact
@@ -5196,3 +5198,98 @@ routing and completion pointer.
   mutation guard preflight-only before any mutation execution attempt.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one fresh final packet-specific idempotency/suppression check v5.
+- `findings`:
+  - Private packet group reference repair completed.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-group-reference-repair-final-check-v6-preflight-result-v0.md`
+  - `internal_email_lookup_input_resolvable`: true
+  - `internal_group_reference_resolvable_for_exact_mutation_guard`: true
+  - `confirmed_onboarding_group_reference_source`:
+    `setup_verification_private_artifact`
+  - `final_check_v6_run`: true
+  - `final_check_v6_live_lookup_ran`: true
+  - `final_check_v6_mailerlite_api_called`: true
+  - `final_check_v6_contract_validation`: `passed`
+  - `final_check_v6_mutation_readiness_after_final_check`:
+    `ready_for_exact_mutation_approval`
+  - `preflight_only_run`: true
+  - `preflight_only_status`: `passed_ready_for_exact_mutation_execution_gate`
+  - `preflight_credential_provider_called`: false
+  - `preflight_network_client_called`: false
+  - `preflight_mailerlite_api_called`: false
+  - `mutation_attempted`: false
+  - `mutation_executed`: false
+  - `mutation_readiness`: `ready_for_exact_mutation_approval_after_closeout`
+  - `blockers`: none
+  - No MailerLite UI occurred.
+  - No MailerLite mutation occurred.
+  - No subscriber rows were printed.
+  - No CRM/source writes occurred.
+  - Exact mutation approval remains required.
+  - Actual mutation remains not executed.
+
+## Active Next Action
+
+- `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_awaiting_approval_v3`
+- `status`: `blocked`
+- `created_at`: `2026-07-06`
+- `updated_at`: `2026-07-06`
+- `objective`: Wait for Alejandro's exact approval before executing one
+  MailerLite onboarding mutation for the explicitly approved repaired private
+  onboarding packet, using the implemented exact mutation execution guard, the
+  group-reference-repaired private packet, the fresh final-check v6 receipt,
+  and the successful preflight-only validation.
+- `why_now`: The no-write packet is prepared, the private packet email anchor
+  and confirmed onboarding group reference are resolvable for the exact
+  mutation guard, final check v6 passed under the canonical ready-receipt
+  contract, and mutation guard preflight-only passed without credentials,
+  network, MailerLite API, or mutation. Actual mutation remains blocked until
+  Alejandro gives exact packet-specific approval.
+- `allowed_scope`:
+  - Present exact approval phrase.
+  - Explain operation class and closed gates.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No subscriber mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No subscriber-row reads.
+  - No raw email in chat.
+  - No raw IDs.
+  - No group references in chat.
+  - No subscriber row print.
+  - No raw payloads.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to execute one MailerLite
+  onboarding mutation for the explicitly approved group-reference-repaired
+  private onboarding packet only, using the implemented exact mutation
+  execution guard, the fresh v6 final-check receipt, and the successful
+  preflight-only validation. Use the approved operation class
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`,
+  the approved native top-level email semantics, the approved existing field
+  mapping, and the confirmed onboarding group. Immediately before mutation,
+  validate the packet-specific idempotency and suppression safety gate from the
+  v6 receipt. Do not create fields, do not modify automations or campaigns, do
+  not create or modify segments, forms, webhooks, or account settings, do not
+  perform a broad import, do not print raw emails, IDs, group references,
+  subscriber rows, tokens, headers, env values, credentials, raw payloads,
+  private message text, private subscriber content, or private artifact
+  contents, and write only private result artifacts plus redacted aggregate
+  receipts.
+- `recommended_default`: Ask Alejandro whether to approve, modify, or pause
+  this exact packet-specific mutation.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one exact packet-specific MailerLite onboarding mutation using the
+  group-reference-repaired private packet, fresh v6 final-check receipt, and
+  successful preflight-only validation.

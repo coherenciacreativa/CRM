@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `receipt_contract_harness_integrated_fresh_final_check_v5_needed`
+- `status`: `ready_for_exact_mutation_approval_after_group_repair_final_check_v6_and_preflight`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -55,10 +55,9 @@
 - `actual_mutation_status`:
   `not_executed`
 - `mutation_readiness`:
-  `blocked_pending_fresh_final_check_v5_and_preflight_only_validation`
-- `recommended_next_step`: approve or pause one fresh final packet-specific
-  idempotency/suppression check v5; then run mutation guard preflight-only
-  against v5 before any mutation attempt.
+  `ready_for_exact_mutation_approval_after_closeout`
+- `recommended_next_step`: ask Alejandro exact packet-specific MailerLite
+  mutation approval or pause.
   - current task seed:
     `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
   - current task completed as no-run design:
@@ -453,3 +452,27 @@ mutation remains unexecuted.
 - `recommended_next_step`: central integration of producer/consumer receipt contract harness, then rerun final packet-specific idempotency/suppression check v5.
 
 The shared contract module now gives the final-check writer and exact mutation guard one executable ready-receipt contract. Future flow is central integration, fresh v5 final check, preflight-only guard validation, and only then a separate exact mutation approval boundary.
+
+## Group Reference Repair, Final Check v6, And Preflight-Only Validation
+
+- `group_reference_repair_status`:
+  `completed_private_packet_group_reference_repaired`
+- `group_reference_repair_final_check_v6_preflight_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-group-reference-repair-final-check-v6-preflight-result-v0.md`
+- `internal_email_lookup_input_resolvable`: true
+- `internal_group_reference_resolvable_for_exact_mutation_guard`: true
+- `final_check_v6_status`:
+  `completed_live_readonly_ready_for_exact_mutation_approval`
+- `final_check_v6_contract_validation`: `passed`
+- `preflight_only_status`: `passed_ready_for_exact_mutation_execution_gate`
+- `preflight_credential_provider_called`: false
+- `preflight_network_client_called`: false
+- `preflight_mailerlite_api_called`: false
+- `mutation_readiness`: `ready_for_exact_mutation_approval_after_closeout`
+- `actual_mutation_status`: `not_executed`
+- `recommended_next_step`: ask Alejandro exact packet-specific MailerLite
+  mutation approval or pause.
+
+The repaired private packet now has resolvable internal inputs for the exact
+mutation guard. Final check v6 and mutation guard preflight-only validation are
+complete, but actual mutation remains unexecuted and requires exact approval.

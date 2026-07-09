@@ -1839,6 +1839,44 @@ Proof progress summary:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Group Reference Repair, Final Check v6, And Preflight-Only Validation
+
+- Group reference repair completed.
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-group-reference-repair-final-check-v6-preflight-result-v0.md`
+- `internal_email_lookup_input_resolvable`: true
+- `internal_group_reference_resolvable_for_exact_mutation_guard`: true
+- `confirmed_onboarding_group_reference_source`:
+  `setup_verification_private_artifact`
+- `final_check_v6_run`: true
+- `final_check_v6_live_lookup_ran`: true
+- `final_check_v6_mailerlite_api_called`: true
+- `final_check_v6_contract_validation`: `passed`
+- `final_check_v6_mutation_readiness_after_final_check`:
+  `ready_for_exact_mutation_approval`
+- `preflight_only_run`: true
+- `preflight_only_status`: `passed_ready_for_exact_mutation_execution_gate`
+- `preflight_credential_provider_called`: false
+- `preflight_network_client_called`: false
+- `preflight_mailerlite_api_called`: false
+- `mutation_attempted`: false
+- `mutation_executed`: false
+- `mutation_readiness`: `ready_for_exact_mutation_approval_after_closeout`
+- `blockers`: none
+- No MailerLite UI occurred.
+- No MailerLite mutation occurred.
+- No subscriber rows were printed.
+- No CRM/source writes occurred.
+- Exact mutation approval remains required.
+- Actual mutation remains not executed.
+
+This result says the exact mutation private packet now has both required
+internal inputs for the exact mutation guard: email lookup input and confirmed
+onboarding group reference. It also records that final check v6 passed under
+the canonical ready-receipt contract, and mutation guard preflight-only passed
+without credentials, network, MailerLite API, or mutation. This result is not
+mutation approval.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that
