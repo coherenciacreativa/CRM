@@ -716,3 +716,21 @@
   guard-emitted canonical phrase, not a hand-written phrase.
 - Safari upload hardening temporary branch remains ready but was not integrated
   in this run.
+
+## MailerLite Exact Mutation Route Fix And Result Closeout
+
+- Central integration used source lane summary, source branch diff, and
+  redacted mutation/final-check receipts only.
+- No private result was read.
+- No private packet was read.
+- No private setup artifact was read.
+- No private evidence was read.
+- No source actions occurred during central closeout.
+- No MailerLite API/UI occurred during central closeout.
+- No mutation occurred during central closeout.
+- Source run executed one exact MailerLite onboarding mutation.
+- Source run produced redacted mutation receipt.
+- Route fix resolving the 404 was integrated.
+- Exact route scope remained `POST /api/subscribers` only.
+- Next recommended gate is post-mutation read-only verification.
+- Safari upload hardening temporary branch remains ready but untouched.

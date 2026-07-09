@@ -1928,6 +1928,34 @@ Proof progress summary:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## MailerLite Exact Onboarding Mutation — Executed Once
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-result-v0.md`
+- Route fix integrated:
+  `e89e25754c3ba2c12feecf4e500b76af4884f108`
+- `route_scope_preserved`: `true_post_api_subscribers_only`
+- `mutation_attempted`: true
+- `mutation_executed`: true
+- `mutation_result_status`: `mutation_executed_redacted_receipt_ready`
+- `operation_class`:
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+- No MailerLite UI occurred.
+- No broad import occurred.
+- No field creation occurred.
+- No automation/campaign mutation occurred.
+- No CRM/source writes occurred.
+- No subscriber rows or private values were printed.
+- `actual_mutation_status`: `executed_once_controlled`
+- `next_gate`: post-mutation read-only verification or pause
+
+Proof progress summary:
+
+- Exact MailerLite onboarding mutation is completed/executed once.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+- Repeatability or generalization is not complete.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

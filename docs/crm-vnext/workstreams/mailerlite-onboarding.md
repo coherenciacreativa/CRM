@@ -501,3 +501,30 @@ complete, but actual mutation remains unexecuted and requires exact approval.
   run using canonical approval phrase from guard.
 
 The exact mutation approval phrase is now executable contract state rather than a hand-written prompt string. The guard can print and validate the canonical phrase without credentials, network, private artifacts, MailerLite API, or mutation.
+
+## Exact Mutation Route Fix And Executed Result
+
+- `exact_mutation_route_fix_status`: `integrated`
+- `exact_mutation_route_fix_commit`:
+  `e89e25754c3ba2c12feecf4e500b76af4884f108`
+- `exact_mutation_status`: `executed_once_controlled`
+- `exact_mutation_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-result-v0.md`
+- `mutation_attempted`: true
+- `mutation_executed`: true
+- `operation_class`:
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+- `mutation_result_status`: `mutation_executed_redacted_receipt_ready`
+- `route_scope_preserved`: `true_post_api_subscribers_only`
+- `mailerlite_ui_used`: false
+- `broad_import`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `recommended_next_step`: approve or pause one post-mutation read-only
+  verification.
+
+The exact MailerLite onboarding mutation executed once under packet-specific
+approval. This does not authorize repeats, CRM enrichment/write, or production
+automation generalization.

@@ -1428,15 +1428,50 @@ No lane outputs in review at creation.
 - `recommended_default`: run one atomic final-check/preflight/mutation sequence
   using the guard-emitted approval template; do not handwrite phrase variants.
 
+### controlled_welcome_flow_mailerlite_exact_mutation_route_fix_and_result_closeout_2026-07-09
+
+- `result_type`: `exact_mutation_route_fix_and_result_closeout`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `e89e25754c3ba2c12feecf4e500b76af4884f108`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-mutation-result-v0.md`
+- `exact_route_fix_status`: `integrated`
+- `route_scope_preserved`: `true_post_api_subscribers_only`
+- `mutation_already_executed_before_route_fix_commit_task`: true
+- `mutation_attempted`: true
+- `mutation_executed`: true
+- `operation_class`:
+  `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+- `mutation_result_status`: `mutation_executed_redacted_receipt_ready`
+- `mailerlite_ui_used`: false
+- `broad_import`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `crm_source_writes`: false
+- `card_writes`: false
+- `fact_store_writes`: false
+- `ledger_writes`: false
+- `scoring_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: approve or pause post-mutation read-only verification
+- `recommended_default`: run one post-mutation read-only verification to
+  confirm subscriber/group/onboarding state, then close out.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-Decision required: approve, modify, pause, or decline one exact
-packet-specific MailerLite mutation. Do not execute mutation without the exact
-approval phrase.
+Decision required: approve, modify, pause, or decline one post-mutation
+read-only MailerLite verification. Do not run another mutation without a
+separate approval gate.
 
 Prior lane approval options remain available for:
 

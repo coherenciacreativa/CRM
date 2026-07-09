@@ -5309,13 +5309,14 @@ routing and completion pointer.
   - Mutation readiness is blocked pending atomic run with guard-emitted
     canonical approval phrase.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_mailerlite_atomic_final_check_preflight_mutation_with_canonical_approval_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-09`
 - `updated_at`: `2026-07-09`
+- `completed_at`: `2026-07-09`
 - `objective`: Wait for Alejandro approval before one atomic source/live
   sequence that obtains the canonical approval phrase from the exact mutation
   guard, runs a fresh final packet-specific MailerLite idempotency/suppression
@@ -5364,3 +5365,71 @@ routing and completion pointer.
   phrase.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses one
   atomic source/live mutation run using the canonical approval phrase.
+- `findings`:
+  - One exact MailerLite onboarding mutation executed successfully.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-exact-mutation-result-v0.md`
+  - Route fix integrated:
+    `e89e25754c3ba2c12feecf4e500b76af4884f108`
+  - `mutation_attempted`: true
+  - `mutation_executed`: true
+  - `mutation_result_status`: `mutation_executed_redacted_receipt_ready`
+  - `operation_class`:
+    `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`
+  - No MailerLite UI, broad import, field creation, automation/campaign
+    mutation, CRM/source write, private value print, or
+    `/Users/alejandrogomez/CRM` occurred.
+  - This was packet-specific and not standing authorization.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_mailerlite_post_mutation_readonly_verification_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-09`
+- `updated_at`: `2026-07-09`
+- `objective`: Wait for Alejandro approval before one post-mutation read-only
+  MailerLite verification of the exact packet-specific subscriber/group/onboarding
+  state after the controlled mutation.
+- `why_now`: The exact MailerLite onboarding mutation executed once. A read-only
+  verification can confirm the subscriber now exists, the onboarding group
+  assignment is present, and whether the configured onboarding automation
+  appears triggered or queued, without mutating anything.
+- `allowed_scope`:
+  - Present approval phrase.
+  - Explain the verification.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `forbidden_scope`:
+  - No MailerLite API until exact approval.
+  - No MailerLite UI.
+  - No mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation/campaign mutation.
+  - No broad import.
+  - No raw email in chat.
+  - No raw IDs.
+  - No subscriber rows in chat.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_required`: I approve CRM Core to perform one post-mutation
+  read-only MailerLite verification for the explicitly approved packet-specific
+  onboarding mutation only. Use existing internal credentials without printing
+  or inspecting them. Read only the minimum subscriber/group/onboarding-status
+  metadata needed to confirm the mutation result and onboarding state. Do not
+  mutate anything, do not create fields, do not modify groups, automations,
+  campaigns, segments, forms, webhooks, or account settings, do not print raw
+  emails, IDs, subscriber rows, tokens, headers, env values, credentials, raw
+  payloads, private subscriber content, or private artifact contents, and write
+  only private result artifacts plus redacted aggregate receipts.
+- `recommended_default`: Approve one post-mutation read-only verification, then
+  review the redacted result before deciding CRM enrichment, repeatability, or
+  pause.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses one
+  post-mutation read-only verification.

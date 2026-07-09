@@ -14,6 +14,8 @@ import {
   SAFE_MUTATION_CLIENT_CONTRACT,
   assertAllowedExactMutationRequest,
   buildExactMutationPayload,
+  createMailerLiteExactMutationClient,
+  executeExactMutation,
   run,
   validateFinalCheckReceipt,
 } from "../scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs";
@@ -714,6 +716,30 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
       expect(payload.fields).toEqual({ name: "Synthetic Person", country: "Synthetic Country", city: "Synthetic City" });
       expect(payload.groups).toEqual([FAKE_CONFIRMED_GROUP_REFERENCE]);
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("POST /api/subscribers is sent once relative to the configured API base", async () => {
+    const urls: string[] = [];
+    const client = createMailerLiteExactMutationClient({
+      options: { apiBase: "https://connect.mailerlite.test/api", timeoutMs: 1000 },
+      key: "mock-secret-value",
+      fetchImpl: async (url: URL | string) => {
+        urls.push(String(url));
+        return new Response("{}", { status: 200 });
+      },
+    });
+
+    await executeExactMutation({
+      client,
+      payload: {
+        email: FAKE_EMAIL,
+        fields: { name: "Synthetic Person" },
+        groups: [FAKE_CONFIRMED_GROUP_REFERENCE],
+      },
+    });
+
+    expect(client.calls).toEqual([{ method: "POST", path: "/api/subscribers" }]);
+    expect(urls).toEqual(["https://connect.mailerlite.test/api/subscribers"]);
   });
 
   test("payload omits source context/private-anchor field families", () => {
