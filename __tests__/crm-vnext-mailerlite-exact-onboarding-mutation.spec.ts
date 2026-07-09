@@ -8,6 +8,8 @@ import { describe, expect, test } from "vitest";
 import {
   COMPLETED_FINAL_CHECK_ROUTE_STATUS,
   EXACT_MUTATION_GUARD_STATUS,
+  EXACT_ONBOARDING_MUTATION_APPROVAL_CONTRACT_VERSION,
+  EXACT_ONBOARDING_MUTATION_APPROVAL_PHRASE,
   FUTURE_EXACT_APPROVAL_PHRASE,
   SAFE_MUTATION_CLIENT_CONTRACT,
   assertAllowedExactMutationRequest,
@@ -23,6 +25,11 @@ import {
   FINAL_CHECK_READY_RECEIPT_CONTRACT_VERSION,
   validateFinalCheckReadyReceipt as validateSharedFinalCheckReadyReceipt,
 } from "../scripts/crm-vnext-mailerlite-final-check-receipt-contract.mjs";
+import {
+  EXACT_ONBOARDING_MUTATION_APPROVAL_CONTRACT_VERSION as SHARED_APPROVAL_CONTRACT_VERSION,
+  EXACT_ONBOARDING_MUTATION_APPROVAL_PHRASE as SHARED_APPROVAL_PHRASE,
+  validateExactOnboardingMutationApprovalPhrase as validateSharedApprovalPhrase,
+} from "../scripts/crm-vnext-mailerlite-exact-mutation-approval-contract.mjs";
 
 const execFileAsync = promisify(execFile);
 const SCRIPT = "scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs";
@@ -33,6 +40,7 @@ const OLD_CHECKED_AT = "2026-07-07T10:00:00.000Z";
 const FAKE_EMAIL = "person@example.test";
 const FAKE_SUBSCRIBER_ID = "sub_fake_secret_000";
 const FAKE_GROUP_ID = "grp_fake_secret_123";
+const FAKE_CONFIRMED_GROUP_REFERENCE = "grp_fake_confirmed_onboarding_123";
 const FAKE_AUTO_ID = "auto_fake_secret_456";
 const FAKE_FIELD_ID = "fld_fake_secret_789";
 const FAKE_TOKEN = "Bearer fake_secret_token";
@@ -42,6 +50,7 @@ const sensitiveStrings = [
   FAKE_EMAIL,
   FAKE_SUBSCRIBER_ID,
   FAKE_GROUP_ID,
+  FAKE_CONFIRMED_GROUP_REFERENCE,
   FAKE_AUTO_ID,
   FAKE_FIELD_ID,
   FAKE_TOKEN,
@@ -79,7 +88,7 @@ const packet = (overrides: Record<string, unknown> = {}) => ({
   final_idempotency_check_required: true,
   final_suppression_check_required: true,
   private_lookup: { email: FAKE_EMAIL },
-  confirmed_onboarding_group_reference: FAKE_GROUP_ID,
+  confirmed_onboarding_group_reference: FAKE_CONFIRMED_GROUP_REFERENCE,
   mapped_field_families: ["name", "country", "city"],
   fields: {
     name: "Synthetic Person",
@@ -215,6 +224,83 @@ const runMockedLive = async (packetOverrides: Record<string, unknown> = {}, fina
 };
 
 describe("CRM Core MailerLite exact onboarding mutation execution guard", () => {
+  test("canonical approval contract module exports version and expected exact phrase", () => {
+    expect(SHARED_APPROVAL_CONTRACT_VERSION).toBeTruthy();
+    expect(EXACT_ONBOARDING_MUTATION_APPROVAL_CONTRACT_VERSION).toBe(SHARED_APPROVAL_CONTRACT_VERSION);
+    expect(SHARED_APPROVAL_PHRASE).toBe(EXACT_ONBOARDING_MUTATION_APPROVAL_PHRASE);
+    expect(FUTURE_EXACT_APPROVAL_PHRASE).toBe(SHARED_APPROVAL_PHRASE);
+    expect(SHARED_APPROVAL_PHRASE).toContain("mailerlite_final_check_ready_receipt_v1");
+    expect(SHARED_APPROVAL_PHRASE).toContain("group-reference-repaired private onboarding packet");
+  });
+
+  test("exact mutation guard uses the shared approval contract validator", () => {
+    expect(validateSharedApprovalPhrase(SHARED_APPROVAL_PHRASE).ok).toBe(true);
+    expect(validateSharedApprovalPhrase("I approve a paraphrased mutation").reason).toBe("not_run_approval_phrase_contract_mismatch");
+  });
+
+  test("approval template mode prints canonical phrase and no private values", async () => {
+    const { stdout, stderr } = await execFileAsync("node", [SCRIPT, "--print-approval-template"], { cwd: process.cwd() });
+    const payload = JSON.parse(stdout);
+    expect(payload.contract_version).toBe(SHARED_APPROVAL_CONTRACT_VERSION);
+    expect(payload.approval_phrase).toBe(SHARED_APPROVAL_PHRASE);
+    expectNoSensitiveStrings(`${stdout}\n${stderr}`);
+  });
+
+  test("approval template mode does not call credentials, network, or mutate", async () => {
+    const result = await run(["--print-approval-template"], {
+      credentialProvider: async () => { throw new Error("credential_provider_called"); },
+      exactMutationClient: { request: async () => { throw new Error("network_client_called"); } },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.approval_template_printed).toBe(true);
+  });
+
+  test("approval validation mode accepts exact canonical phrase without live paths", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "crm-core-mailerlite-approval-contract-"));
+    try {
+      const phrasePath = join(dir, "approval.txt");
+      await writeFile(phrasePath, `${SHARED_APPROVAL_PHRASE}\n`, "utf8");
+      const result = await run(["--validate-approval-phrase-file", phrasePath], {
+        credentialProvider: async () => { throw new Error("credential_provider_called"); },
+        exactMutationClient: { request: async () => { throw new Error("network_client_called"); } },
+      });
+      expect(result.ok).toBe(true);
+      expect(result.status).toBe("passed_exact_approval_phrase_contract");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("old prompt phrase variant blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths();
+    let credentialCalls = 0;
+    try {
+      const oldPhrase = "I approve CRM Core to execute one MailerLite onboarding mutation for the explicitly approved repaired private onboarding packet only, using the implemented exact mutation execution guard and the fresh v4 final-check receipt.";
+      await writeFile(paths.approvalPhraseFile, `${oldPhrase}\n`, "utf8");
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_approval_phrase_contract_mismatch");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("paraphrased approval phrase blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths();
+    let credentialCalls = 0;
+    try {
+      await writeFile(paths.approvalPhraseFile, "I approve the MailerLite mutation with the same safeguards.\n", "utf8");
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_approval_phrase_contract_mismatch");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("approval phrase with extra or missing material blocks before credential provider", async () => {
+    const { dir, roots, paths } = await makeLivePaths();
+    let credentialCalls = 0;
+    try {
+      await writeFile(paths.approvalPhraseFile, `${SHARED_APPROVAL_PHRASE} Extra approval text.\n`, "utf8");
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_approval_phrase_contract_mismatch");
+      await writeFile(paths.approvalPhraseFile, `${SHARED_APPROVAL_PHRASE.replace("and write only private result artifacts plus redacted aggregate receipts.", "")}\n`, "utf8");
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_approval_phrase_contract_mismatch");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
   test("fixture/mock mode succeeds and writes redacted JSON/Markdown receipts", async () => {
     const dir = await mkdtemp(join(tmpdir(), "crm-core-mailerlite-exact-fixture-"));
     try {
@@ -361,7 +447,7 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
     let credentialCalls = 0;
     try {
       await writeFile(paths.approvalPhraseFile, "I approve a different unsafe thing\n", "utf8");
-      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_missing_approval");
+      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("not_run_approval_phrase_contract_mismatch");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -626,7 +712,7 @@ describe("CRM Core MailerLite exact onboarding mutation execution guard", () => 
       expect(Object.keys(payload).sort()).toEqual(["email", "fields", "groups"]);
       expect(payload.email).toBe(FAKE_EMAIL);
       expect(payload.fields).toEqual({ name: "Synthetic Person", country: "Synthetic Country", city: "Synthetic City" });
-      expect(payload.groups).toEqual([FAKE_GROUP_ID]);
+      expect(payload.groups).toEqual([FAKE_CONFIRMED_GROUP_REFERENCE]);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 

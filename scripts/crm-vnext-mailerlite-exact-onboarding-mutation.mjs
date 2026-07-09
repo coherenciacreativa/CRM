@@ -6,6 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { validateFinalCheckReadyReceipt as validateSharedFinalCheckReadyReceipt } from './crm-vnext-mailerlite-final-check-receipt-contract.mjs';
+import {
+  EXACT_ONBOARDING_MUTATION_APPROVAL_CONTRACT_VERSION,
+  EXACT_ONBOARDING_MUTATION_APPROVAL_PHRASE,
+  approvalTemplatePayload,
+  validateExactOnboardingMutationApprovalPhrase,
+} from './crm-vnext-mailerlite-exact-mutation-approval-contract.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -21,7 +27,7 @@ const DEFAULT_API_BASE = ['https:', '', 'connect.mailerlite.com', 'api'].join('/
 const DEFAULT_SERVICE = 'CRM-MailerLite';
 const DEFAULT_ACCOUNT = 'default';
 const DEFAULT_MAX_FINAL_CHECK_AGE_MS = 15 * 60 * 1000;
-const FUTURE_EXACT_APPROVAL_PHRASE = 'I approve CRM Core to execute one MailerLite onboarding mutation for the explicitly approved repaired private onboarding packet only, using the implemented exact mutation execution guard. Use the approved operation class `subscriber_upsert_then_add_to_confirmed_onboarding_group_if_final_checks_pass`, the approved native top-level email semantics, the approved existing field mapping, and the confirmed onboarding group. Immediately before mutation, perform or validate the packet-specific idempotency and suppression safety gate. Do not create fields, do not modify automations or campaigns, do not create or modify segments, forms, webhooks, or account settings, do not perform a broad import, do not print raw emails, IDs, subscriber rows, tokens, headers, env values, credentials, raw payloads, private message text, private subscriber content, or private artifact contents, and write only private result artifacts plus redacted aggregate receipts.';
+const FUTURE_EXACT_APPROVAL_PHRASE = EXACT_ONBOARDING_MUTATION_APPROVAL_PHRASE;
 
 const ALLOWED_EXACT_MUTATION_REQUESTS = new Set(['POST /api/subscribers']);
 const ALLOWED_FIELD_FAMILIES = ['name', 'country', 'city'];
@@ -55,6 +61,11 @@ Future live exact-mutation mode:
   --max-final-check-age-ms <milliseconds>
   --preflight-only
 
+Safe no-live approval contract modes:
+  --print-approval-template
+  --approval-template
+  --validate-approval-phrase-file <path>
+
 The v1 safe client contract permits exactly one future mutation endpoint:
 POST /api/subscribers. It supports only the current packet-specific not_found
 subscriber path and never prints raw private values.`;
@@ -77,12 +88,16 @@ const parseArgs = (argv) => {
     account: DEFAULT_ACCOUNT,
     apiBase: DEFAULT_API_BASE,
     timeoutMs: 30_000,
+    printApprovalTemplate: false,
+    validateApprovalPhraseFile: null,
     help: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--help') options.help = true;
+    else if (arg === '--print-approval-template' || arg === '--approval-template') options.printApprovalTemplate = true;
+    else if (arg === '--validate-approval-phrase-file') options.validateApprovalPhraseFile = argv[++index];
     else if (arg === '--fixture-file') options.fixtureFile = argv[++index];
     else if (arg === '--allow-live-exact-onboarding-mutation') options.allowLiveExactOnboardingMutation = true;
     else if (arg === '--preflight-only') options.preflightOnly = true;
@@ -269,14 +284,17 @@ const assertPacketReadyForMutation = (packet) => {
 };
 
 const approvalTextFrom = async (options) => {
-  if (options.approvalPhrase) return cleanString(options.approvalPhrase);
-  if (options.approvalPhraseFile) return cleanString(await readFile(resolve(options.approvalPhraseFile), 'utf8'));
+  if (options.approvalPhrase) return options.approvalPhrase;
+  if (options.approvalPhraseFile) return readFile(resolve(options.approvalPhraseFile), 'utf8');
+  if (options.validateApprovalPhraseFile) return readFile(resolve(options.validateApprovalPhraseFile), 'utf8');
   return null;
 };
 
 const assertExactApprovalPhrase = async (options) => {
   const phrase = await approvalTextFrom(options);
-  if (phrase !== FUTURE_EXACT_APPROVAL_PHRASE) throw new Error('not_run_missing_approval');
+  const validation = validateExactOnboardingMutationApprovalPhrase(phrase);
+  if (!validation.ok) throw new Error(validation.reason);
+  return validation;
 };
 
 const blocker = (reason, status = 'not_run_final_check_failed') => ({ ok: false, status, reason });
@@ -623,6 +641,16 @@ const run = async (argv = process.argv.slice(2), deps = {}) => {
     console.log(usage);
     return { ok: true, help: true };
   }
+  if (options.printApprovalTemplate) {
+    const payload = approvalTemplatePayload();
+    console.log(JSON.stringify(payload));
+    return { ok: true, approval_template_printed: true, ...payload };
+  }
+  if (options.validateApprovalPhraseFile) {
+    const validation = await assertExactApprovalPhrase(options);
+    console.log(JSON.stringify({ ok: true, status: validation.status, contract_version: validation.contract_version }));
+    return validation;
+  }
   const receipt = options.preflightOnly
     ? await runPreflightOnlyMode(options, deps)
     : options.fixtureFile
@@ -645,6 +673,8 @@ export {
   COMPLETED_FINAL_CHECK_ROUTE_STATUS,
   DEFAULT_MAX_FINAL_CHECK_AGE_MS,
   EXACT_MUTATION_GUARD_STATUS,
+  EXACT_ONBOARDING_MUTATION_APPROVAL_CONTRACT_VERSION,
+  EXACT_ONBOARDING_MUTATION_APPROVAL_PHRASE,
   FUTURE_EXACT_APPROVAL_PHRASE,
   OMITTED_FIELD_FAMILIES,
   OPERATION_CLASS,
@@ -661,6 +691,7 @@ export {
   executeExactMutation,
   isInside,
   parseArgs,
+  validateExactOnboardingMutationApprovalPhrase,
   run,
   runPreflightOnlyMode,
   validateFinalCheckReceipt,

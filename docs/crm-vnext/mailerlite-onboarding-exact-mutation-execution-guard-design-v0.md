@@ -370,3 +370,22 @@ Mutation execution now validates final-check redacted JSON through the shared co
 The guard blocks before credentials/network when required fields are missing, stale, invalid, contradictory, or non-passing. `--preflight-only` provides a no-live validation mode before any future mutation attempt: it validates the approval phrase when supplied, validates approved path shapes, validates the final-check redacted JSON through the shared ready-receipt contract, validates the private packet shape without printing private content, and does not invoke credentials, network, or mutation clients.
 
 A generated final-check success fixture is consumed by the mutation guard in preflight-only mode in tests. Actual mutation remains not executed.
+
+## Exact Mutation Approval Phrase Contract Harness v0
+
+- Prior atomic attempt blocked because approval phrase in prompt did not match guard contract.
+- Root cause categories:
+  - `approval_phrase_not_canonicalized`
+  - `prompt_phrase_drifted_from_guard_contract`
+  - `guard_phrase_contract_not_discoverable`
+  - `docs_and_guard_phrase_mismatch`
+  - `approval_phrase_contract_needs_shared_module`
+- The exact mutation guard now uses a shared approval phrase contract:
+  `scripts/crm-vnext-mailerlite-exact-mutation-approval-contract.mjs`.
+- The current canonical approval phrase is discoverable with safe no-live CLI mode:
+  `--print-approval-template` or `--approval-template`.
+- The current canonical approval phrase can be checked with no-live validation mode:
+  `--validate-approval-phrase-file <path>`.
+- Missing, stale, paraphrased, or old prompt phrases block before credentials/network.
+- Template printing does not inspect credentials, does not read private artifacts, does not call MailerLite, and does not mutate.
+- Actual mutation remains not executed.
