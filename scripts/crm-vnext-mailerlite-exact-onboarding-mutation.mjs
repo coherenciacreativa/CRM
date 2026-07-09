@@ -443,6 +443,7 @@ const compactStdout = (receipt) => ({
 });
 
 const requestUrl = (base, path) => new URL(`${base}${path.startsWith('/') ? path : `/${path}`}`);
+const apiBaseRelativePathFor = (path) => (path === '/api/subscribers' ? '/subscribers' : path);
 
 const classifyFailure = (status, bodyText = '') => {
   const text = bodyText.replace(/\s+/g, ' ').trim();
@@ -461,7 +462,7 @@ const createMailerLiteExactMutationClient = ({ options, key, fetchImpl = fetch, 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), options.timeoutMs);
     try {
-      const response = await fetchImpl(requestUrl(options.apiBase, path), {
+      const response = await fetchImpl(requestUrl(options.apiBase, apiBaseRelativePathFor(path)), {
         method: String(method).toUpperCase(),
         headers: {
           Authorization: ['Bearer', key].join(' '),
