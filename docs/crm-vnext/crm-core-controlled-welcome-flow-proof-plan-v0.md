@@ -1877,6 +1877,57 @@ the canonical ready-receipt contract, and mutation guard preflight-only passed
 without credentials, network, MailerLite API, or mutation. This result is not
 mutation approval.
 
+## MailerLite Exact Mutation Approval Phrase Contract Harness — Integrated
+
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `2b544510f36baa6db593558df66eb9f2b372fe3e`
+- Latest blocked atomic attempt:
+  `mailerlite_atomic_v7_mutation_v5_blocked_cli_contract_unclear`
+- Latest blocker:
+  `approval_phrase_contract_mismatch_between_prompt_and_guard`
+- Root cause category:
+  `approval_phrase_not_canonicalized`; `prompt_phrase_drifted_from_guard_contract`;
+  `guard_phrase_contract_not_discoverable`; `docs_and_guard_phrase_mismatch`;
+  `approval_phrase_contract_needs_shared_module`
+- Approval phrase contract status: `completed_mock_tested`
+- Approval template mode status: `implemented_or_verified`
+- Approval validation mode status: `implemented_mock_tested`
+- Canonical approval phrase contract version:
+  `mailerlite_exact_mutation_approval_phrase_v1_2026-07-09`
+- Exact mutation guard uses shared approval contract: true
+- Live final check real run after fix: false
+- Live mutation real run after fix: false
+- Actual mutation status: `not_executed`
+- Mutation readiness:
+  `blocked_pending_atomic_run_with_guard_emitted_canonical_approval_phrase`
+
+Interpretation:
+
+- Future exact mutation prompts must not hand-write or paraphrase the approval
+  phrase.
+- The operator or worker must obtain the canonical approval template from the
+  guard's safe template mode.
+- Missing, stale, paraphrased, or old approval phrases block before
+  credentials/network.
+- The approval template mode does not inspect credentials, read private
+  artifacts, call MailerLite, or mutate.
+- CRM Core must rerun the atomic sequence using the guard-emitted canonical
+  approval phrase: final check, canonical validation, preflight-only, then
+  exact mutation if all gates pass.
+- Actual MailerLite mutation remains blocked until that exact sequence is
+  approved and run.
+
+Proof progress summary:
+
+- Approval phrase contract harness is integrated.
+- Atomic run is not complete.
+- Exact mutation is not approved.
+- MailerLite mutation is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

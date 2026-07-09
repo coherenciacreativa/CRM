@@ -476,3 +476,28 @@ The shared contract module now gives the final-check writer and exact mutation g
 The repaired private packet now has resolvable internal inputs for the exact
 mutation guard. Final check v6 and mutation guard preflight-only validation are
 complete, but actual mutation remains unexecuted and requires exact approval.
+
+## Exact Mutation Approval Phrase Contract Harness
+
+- `exact_mutation_attempt_v4_status`: `blocked_cli_contract_unclear`
+- `blocker`: `approval_phrase_contract_mismatch_between_prompt_and_guard`
+- `root_cause_category`:
+  - `approval_phrase_not_canonicalized`
+  - `prompt_phrase_drifted_from_guard_contract`
+  - `guard_phrase_contract_not_discoverable`
+  - `docs_and_guard_phrase_mismatch`
+  - `approval_phrase_contract_needs_shared_module`
+- `exact_mutation_approval_phrase_contract_status`: `integrated_completed_mock_tested`
+- `approval_phrase_template_mode_status`: `integrated_implemented_or_verified`
+- `approval_phrase_validation_mode_status`: `integrated_implemented_mock_tested`
+- `canonical_approval_phrase_contract_version`:
+  `mailerlite_exact_mutation_approval_phrase_v1_2026-07-09`
+- `exact_mutation_guard_uses_shared_approval_contract`: true
+- `live_mutation_status`: `not_run_after_approval_contract_fix`
+- `actual_mutation_status`: `not_executed`
+- `mutation_readiness`:
+  `blocked_pending_atomic_run_with_guard_emitted_canonical_approval_phrase`
+- `recommended_next_step`: approve or pause atomic final-check/preflight/mutation
+  run using canonical approval phrase from guard.
+
+The exact mutation approval phrase is now executable contract state rather than a hand-written prompt string. The guard can print and validate the canonical phrase without credentials, network, private artifacts, MailerLite API, or mutation.

@@ -694,3 +694,25 @@
 - Mutation readiness is `ready_for_exact_mutation_approval_after_closeout`.
 - Exact packet-specific MailerLite mutation approval is next gate.
 - Safari upload hardening temporary branch remains ready but untouched.
+
+## MailerLite Exact Mutation Approval Phrase Contract Harness
+
+- MailerLite exact mutation approval phrase contract harness integrated.
+- Source branch was canonical MailerLite lane:
+  `codex/crm-core-mailerlite-onboarding`.
+- Source commit:
+  `2b544510f36baa6db593558df66eb9f2b372fe3e`.
+- Integration used source lane summary and source branch diff only.
+- No private artifacts or Mantis report contents were inspected during central
+  integration.
+- No source action occurred during central integration.
+- No MailerLite API/UI occurred during central integration.
+- No mutation occurred.
+- Previous atomic run blocked before final check/preflight/mutation because
+  approval phrase drifted from guard contract.
+- Shared approval contract now prevents future prompt/guard drift.
+- Approval template mode is available or verified.
+- Next step is one atomic final-check/preflight/mutation run using the
+  guard-emitted canonical phrase, not a hand-written phrase.
+- Safari upload hardening temporary branch remains ready but was not integrated
+  in this run.

@@ -5228,12 +5228,13 @@ routing and completion pointer.
   - Exact mutation approval remains required.
   - Actual mutation remains not executed.
 
-## Active Next Action
+## Completed / Updated Next Action
 
 - `next_action_id`: `crm_core_controlled_welcome_flow_mailerlite_exact_mutation_awaiting_approval_v3`
-- `status`: `blocked`
+- `status`: `completed_updated`
 - `created_at`: `2026-07-06`
-- `updated_at`: `2026-07-06`
+- `updated_at`: `2026-07-09`
+- `completed_at`: `2026-07-09`
 - `objective`: Wait for Alejandro's exact approval before executing one
   MailerLite onboarding mutation for the explicitly approved repaired private
   onboarding packet, using the implemented exact mutation execution guard, the
@@ -5293,3 +5294,73 @@ routing and completion pointer.
   one exact packet-specific MailerLite onboarding mutation using the
   group-reference-repaired private packet, fresh v6 final-check receipt, and
   successful preflight-only validation.
+- `findings`:
+  - Atomic mutation attempt blocked before final check/preflight/mutation
+    because approval phrase contract was unclear.
+  - Root cause was approval phrase not canonicalized and prompt phrase drift
+    from guard contract.
+  - Approval phrase contract harness is now integrated and mock-tested.
+  - Exact mutation guard uses shared approval contract.
+  - Canonical approval phrase contract version:
+    `mailerlite_exact_mutation_approval_phrase_v1_2026-07-09`
+  - Future atomic run must obtain canonical approval phrase from guard template
+    mode.
+  - Real mutation remains not executed.
+  - Mutation readiness is blocked pending atomic run with guard-emitted
+    canonical approval phrase.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_mailerlite_atomic_final_check_preflight_mutation_with_canonical_approval_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-09`
+- `updated_at`: `2026-07-09`
+- `objective`: Wait for Alejandro approval before one atomic source/live
+  sequence that obtains the canonical approval phrase from the exact mutation
+  guard, runs a fresh final packet-specific MailerLite idempotency/suppression
+  check, validates the canonical ready-receipt contract, runs mutation guard
+  preflight-only, and only if all gates pass executes one exact MailerLite
+  onboarding mutation for the approved group-reference-repaired private packet.
+- `why_now`: The packet has passed prior readiness gates, group-reference
+  repair, final-check checks, and preflight-only validation, but the latest
+  atomic attempt blocked because the approval phrase was not canonicalized. The
+  approval phrase contract harness is now integrated. The next run must use the
+  guard-emitted canonical approval template to prevent phrase drift.
+- `allowed_scope`:
+  - Present or use the guard's canonical approval phrase template.
+  - Run one atomic sequence only after explicit approval.
+  - One fresh final check.
+  - One preflight-only validation.
+  - One exact mutation only if all gates pass.
+  - Stop and report.
+  - No standing authorization.
+- `forbidden_scope`:
+  - No MailerLite API before exact approval.
+  - No MailerLite UI.
+  - No broad import.
+  - No field creation.
+  - No automation mutation.
+  - No campaign send.
+  - No subscriber-row printing.
+  - No raw email in chat.
+  - No raw IDs.
+  - No group references in chat.
+  - No raw payloads.
+  - No credentials.
+  - No private subscriber content.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_source_required`: guard-emitted canonical approval phrase from
+  `scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs` template mode or
+  the shared approval contract module.
+- `approval_phrase_contract_version`:
+  `mailerlite_exact_mutation_approval_phrase_v1_2026-07-09`
+- `recommended_default`: Ask Alejandro to approve one atomic
+  final-check/preflight/mutation run using the guard-emitted canonical approval
+  phrase.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses one
+  atomic source/live mutation run using the canonical approval phrase.

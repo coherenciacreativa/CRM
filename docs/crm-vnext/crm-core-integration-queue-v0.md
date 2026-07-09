@@ -1395,6 +1395,39 @@ No lane outputs in review at creation.
 - `recommended_default`: ask Alejandro for exact packet-specific MailerLite
   mutation approval; do not execute mutation without exact phrase.
 
+### controlled_welcome_flow_mailerlite_exact_mutation_approval_phrase_contract_harness_integration_2026-07-09
+
+- `result_type`: `exact_mutation_approval_phrase_contract_harness_integration`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `2b544510f36baa6db593558df66eb9f2b372fe3e`
+- `root_cause_category`: `approval_phrase_not_canonicalized`
+- `approval_phrase_contract_status`: `completed_mock_tested`
+- `approval_template_mode_status`: `implemented_or_verified`
+- `approval_validation_mode_status`: `implemented_mock_tested`
+- `canonical_approval_phrase_contract_version`:
+  `mailerlite_exact_mutation_approval_phrase_v1_2026-07-09`
+- `exact_mutation_guard_uses_shared_approval_contract`: true
+- `approval_contract_tests_result`: pass
+- `exact_mutation_tests_result`: `pass_72_tests`
+- `live_final_check_real_run_performed`: false
+- `live_mutation_real_run_performed`: false
+- `live_mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `credentials_inspected_or_printed`: false
+- `real_subscriber_rows_read_or_printed`: false
+- `real_private_artifacts_read`: false
+- `real_mantis_reports_read`: false
+- `subscriber_mutation`: false
+- `group_assignment`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `actual_mutation_status`: `not_executed`
+- `decision_needed`: approve or pause atomic final-check/preflight/mutation
+  run using canonical approval phrase from guard
+- `recommended_default`: run one atomic final-check/preflight/mutation sequence
+  using the guard-emitted approval template; do not handwrite phrase variants.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

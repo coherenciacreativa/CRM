@@ -357,3 +357,13 @@ The next step after central integration should be a fresh final packet-specific 
 Exact mutation approval remains pending. Prior mutation attempts blocked before API/mutation because final-check receipts were not contract-complete for the mutation guard. No mutation occurred.
 
 After central integration, the next step should be a fresh final packet-specific idempotency/suppression check v5. After v5, run the mutation guard in preflight-only mode against the v5 receipt and repaired private packet before any live mutation attempt.
+
+## Shared Approval Phrase Contract Update
+
+- The exact mutation approval phrase is now governed by the shared approval phrase contract in:
+  `scripts/crm-vnext-mailerlite-exact-mutation-approval-contract.mjs`.
+- Future prompts must use the guard's canonical phrase, not hand-written variants.
+- The safe no-live source for the phrase is the guard template mode:
+  `--print-approval-template` or `--approval-template`.
+- Exact mutation approval remains pending.
+- Actual mutation remains not executed.
