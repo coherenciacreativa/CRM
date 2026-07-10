@@ -1463,15 +1463,54 @@ No lane outputs in review at creation.
 - `recommended_default`: run one post-mutation read-only verification to
   confirm subscriber/group/onboarding state, then close out.
 
+### controlled_welcome_flow_mailerlite_post_mutation_readonly_verification_closeout_2026-07-09
+
+- `result_type`: `post_mutation_readonly_verification_closeout`
+- `run_id`:
+  `crm_core_mailerlite_post_mutation_readonly_verification_v1_2026-07-09`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-post-mutation-readonly-verification-result-v0.md`
+- `verification_ran`: true
+- `route_status`: `completed_post_mutation_readonly_packet_verification`
+- `mailerlite_api_called`: true
+- `mailerlite_api_call_scope`:
+  `packet_specific_subscriber_status_group_membership_readonly`
+- `subscriber_lookup_status`: `found`
+- `subscriber_status_class`: `active`
+- `onboarding_group_membership_status`: `present`
+- `group_assignment_verification_status`: `pass_present`
+- `automation_or_onboarding_state_status`:
+  `verification_not_supported_readonly`
+- `mutation_result_verification`: `pass`
+- `blockers`: none
+- `mailerlite_ui_used`: false
+- `mutation_during_verification`: false
+- `subscriber_mutation_during_verification`: false
+- `group_assignment_during_verification`: false
+- `field_creation`: false
+- `automation_mutation`: false
+- `campaign_send`: false
+- `broad_import`: false
+- `crm_source_writes`: false
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: choose next controlled welcome flow product step
+- `recommended_default`: controlled repeatability run or CRM enrichment
+  no-write packet, depending on CEO priority.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-Decision required: approve, modify, pause, or decline one post-mutation
-read-only MailerLite verification. Do not run another mutation without a
-separate approval gate.
+Decision required: choose the next controlled welcome flow product step:
+repeatability, CRM enrichment no-write packet, automation observation, Safari
+upload hardening, or pause.
 
 Prior lane approval options remain available for:
 

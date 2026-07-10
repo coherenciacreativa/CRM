@@ -453,7 +453,7 @@ controlled send only.
   final dedupe/suppression check, reply monitoring, email handoff, MailerLite
   no-write preview, and CRM enrichment/write boundaries separate.
 - The exact future Instagram private source artifact root is:
-  `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/`.
+  `the private source artifact folder/instagram/`.
 - No execution approval packet was generated from real data.
 - No candidate queue was generated.
 - No candidate set or candidate was created.
@@ -497,7 +497,7 @@ controlled send only.
 - Welcome audio send was attempted and confirmed.
 - `welcome_audio_sent`: true.
 - Private artifact root path label:
-  `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/controlled-welcome-flow/first-controlled-handle-send-v5-safari-upload-2026-07-05/`.
+  `the private source artifact folder/instagram/controlled-welcome-flow/first-controlled-handle-send-v5-safari-upload-2026-07-05/`.
 - Redacted receipt path labels:
   - `/Users/alejandrogomez/Documents/Mantis-Reports/instagram/controlled-welcome-flow/crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05.json`
   - `/Users/alejandrogomez/Documents/Mantis-Reports/instagram/controlled-welcome-flow/crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05.md`
@@ -1361,7 +1361,7 @@ Source/operator receipts:
 Source private artifacts:
 
 ```text
-/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/
+the private source artifact folder/
 ```
 
 Repo durable records:
@@ -1955,6 +1955,41 @@ Proof progress summary:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 - Repeatability or generalization is not complete.
+
+## MailerLite Post-Mutation Read-Only Verification — Passed
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-post-mutation-readonly-verification-result-v0.md`
+- `verification_ran`: true
+- `mailerlite_api_called`: true
+- `mailerlite_api_call_scope`:
+  `packet_specific_subscriber_status_group_membership_readonly`
+- `subscriber_lookup_status`: `found`
+- `subscriber_status_class`: `active`
+- `onboarding_group_membership_status`: `present`
+- `group_assignment_verification_status`: `pass_present`
+- `automation_or_onboarding_state_status`:
+  `verification_not_supported_readonly`
+- `mutation_result_verification`: `pass`
+- `blockers`: none
+- No MailerLite UI occurred.
+- No mutation occurred during verification.
+- No subscriber rows were printed.
+- No CRM/source writes occurred.
+- Exact MailerLite onboarding mutation hito is verified at subscriber/group
+  level.
+- Repeatability, CRM enrichment, automation observation, and production
+  generalization remain separate gates.
+
+Proof progress summary:
+
+- Post-mutation read-only verification is completed.
+- Controlled MailerLite onboarding mutation is verified at subscriber/group
+  level.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+- Repeatability is not complete.
+- Automation-state verification is not complete.
 
 ## Completion Boundary
 

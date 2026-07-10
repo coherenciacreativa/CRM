@@ -414,7 +414,7 @@ routing and completion pointer.
   - A no-run plan exists for a private local person-level MailerLite email
     relationship-depth preview.
   - The plan requires private person-level artifacts to live outside the repo
-    under `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`.
+    under `the private source artifact folder/mailerlite/`.
   - The plan defines redacted receipt rules for aggregate counts, tier counts,
     blocker counts, suppression/status counts, confidence categories, and next
     safe operator step.
@@ -519,7 +519,7 @@ routing and completion pointer.
   - A no-run private review queue design exists for selected MailerLite
     relationship-depth cohorts.
   - The design requires private queue artifacts to live outside the repo under
-    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite/`.
+    `the private source artifact folder/mailerlite/`.
   - The design allows redacted receipts to include total queue candidates, counts
     by tier, counts by review status, suppression/safety counts, blocker counts,
     and next safe operator step.
@@ -3013,7 +3013,7 @@ routing and completion pointer.
   - The bookmark/active-tab target routes were insufficient for this lane.
   - A private target URL registry route was tested and succeeded.
   - Target registry was written outside the repo at a private path label only:
-    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/consultant-relay/consultant-target-registry-v0.json`.
+    `the private source artifact folder/consultant-relay/consultant-target-registry-v0.json`.
   - Raw target URL was not printed.
   - Target handshake confirmed `consultant_id=instagram-api-readiness`.
   - Consultant selected
@@ -3055,7 +3055,7 @@ routing and completion pointer.
     successfully to MailerLite onboarding.
   - The private target URL registry route succeeded again.
   - Target registry was written outside the repo at a private path label only:
-    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/consultant-relay/consultant-target-registry-v0.json`.
+    `the private source artifact folder/consultant-relay/consultant-target-registry-v0.json`.
   - Raw target URL was not printed.
   - Target handshake confirmed `consultant_id=mailerlite-onboarding`.
   - Consultant selected
@@ -3763,7 +3763,7 @@ routing and completion pointer.
   - Central Integration Lock v0 was acquired and released.
   - The final v3 artifact corrected the future storage path to the exact
     Instagram private source artifact root:
-    `/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/instagram/`.
+    `the private source artifact folder/instagram/`.
   - The artifact defines the future approval surface for one controlled
     sandbox welcome-audio send to an Alejandro-owned or controlled test
     account.
@@ -5381,13 +5381,14 @@ routing and completion pointer.
     `/Users/alejandrogomez/CRM` occurred.
   - This was packet-specific and not standing authorization.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_mailerlite_post_mutation_readonly_verification_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-09`
 - `updated_at`: `2026-07-09`
+- `completed_at`: `2026-07-09`
 - `objective`: Wait for Alejandro approval before one post-mutation read-only
   MailerLite verification of the exact packet-specific subscriber/group/onboarding
   state after the controlled mutation.
@@ -5433,3 +5434,70 @@ routing and completion pointer.
   pause.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses one
   post-mutation read-only verification.
+- `findings`:
+  - Post-mutation read-only verification passed.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-post-mutation-readonly-verification-result-v0.md`
+  - `subscriber_lookup_status`: `found`
+  - `subscriber_status_class`: `active`
+  - `onboarding_group_membership_status`: `present`
+  - `group_assignment_verification_status`: `pass_present`
+  - `automation_or_onboarding_state_status`:
+    `verification_not_supported_readonly`
+  - `mutation_result_verification`: `pass`
+  - No mutation occurred during verification.
+  - No MailerLite UI occurred.
+  - No CRM/source writes occurred.
+  - Controlled MailerLite onboarding mutation is verified at subscriber/group
+    level.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_after_mailerlite_verified_mutation_next_step_selection_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-09`
+- `updated_at`: `2026-07-09`
+- `objective`: Choose the next product step after the first controlled
+  MailerLite onboarding mutation was executed and verified at subscriber/group
+  level.
+- `why_now`: The end-to-end controlled welcome flow has now reached and verified
+  a real MailerLite onboarding mutation. CRM Core should not continue into
+  repeatability, CRM enrichment, automation observation, or production
+  generalization without an explicit CEO decision.
+- `allowed_scope`:
+  - Present decision options.
+  - Recommend a default.
+  - Wait for Alejandro decision.
+  - No execution in this next-action selection step.
+- `options`:
+  1. Controlled repeatability run:
+     Prove the same Instagram to welcome audio to reply/email to MailerLite
+     onboarding path can be repeated safely for a second controlled account.
+  2. CRM enrichment no-write packet:
+     Prepare the next CRM-side representation of the verified lead/contact
+     without writing CRM source state.
+  3. MailerLite automation observation:
+     Design or run a read-only observation of automation/onboarding email state
+     if a safe route exists.
+  4. Safari upload hardening central integration:
+     Revisit the previously prepared Safari upload hardening design.
+  5. Pause:
+     Stop after this milestone.
+- `recommended_default`: CRM enrichment no-write packet if the CEO wants to move
+  toward the larger intelligence/community system; controlled repeatability run
+  if the CEO wants reliability proof before expanding.
+- `forbidden_scope`:
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No Instagram.
+  - No Gmail.
+  - No CRM/source writes.
+  - No private artifact inspection.
+  - No mutation.
+  - No Safari hardening integration.
+  - No repeatability run.
+  - No CRM enrichment run.
+  - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: Alejandro chooses, modifies, declines, or pauses the
+  next controlled welcome flow product step.

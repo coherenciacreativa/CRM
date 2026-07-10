@@ -734,3 +734,24 @@
 - Exact route scope remained `POST /api/subscribers` only.
 - Next recommended gate is post-mutation read-only verification.
 - Safari upload hardening temporary branch remains ready but untouched.
+
+## MailerLite Post-Mutation Read-Only Verification Closeout
+
+- Central closeout used redacted receipts only.
+- No private result was read.
+- No private packet was read.
+- No private mutation result was read.
+- No private evidence was read.
+- No source actions occurred during closeout.
+- No MailerLite API/UI occurred during closeout.
+- No mutation occurred during closeout.
+- Source run verified subscriber/group state after mutation.
+- Subscriber was found.
+- Subscriber status was active.
+- Onboarding group membership was present.
+- Automation state was not supported by read-only verification.
+- Controlled MailerLite onboarding mutation is now verified at subscriber/group
+  level.
+- Next step should be a CEO product decision: repeatability, CRM enrichment
+  no-write packet, automation observation, or pause.
+- Safari upload hardening temporary branch remains ready but untouched.

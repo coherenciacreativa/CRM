@@ -528,3 +528,25 @@ The exact mutation approval phrase is now executable contract state rather than 
 The exact MailerLite onboarding mutation executed once under packet-specific
 approval. This does not authorize repeats, CRM enrichment/write, or production
 automation generalization.
+
+## Post-Mutation Read-Only Verification
+
+- `post_mutation_readonly_verification_status`: `passed`
+- `post_mutation_readonly_verification_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-post-mutation-readonly-verification-result-v0.md`
+- `subscriber_lookup_status`: `found`
+- `subscriber_status_class`: `active`
+- `onboarding_group_membership_status`: `present`
+- `group_assignment_verification_status`: `pass_present`
+- `automation_or_onboarding_state_status`:
+  `verification_not_supported_readonly`
+- `mutation_result_verification`: `pass`
+- `mutation_status`: `executed_once_verified_at_subscriber_group_level`
+- `mailerlite_ui_used`: false
+- `mutation_during_verification`: false
+- `crm_source_writes`: false
+- `recommended_next_step`: choose next controlled welcome flow product step.
+
+The controlled MailerLite onboarding mutation is now verified at subscriber/group
+level. Automation-state verification, repeatability, CRM enrichment/write, and
+production generalization remain separate gates.
