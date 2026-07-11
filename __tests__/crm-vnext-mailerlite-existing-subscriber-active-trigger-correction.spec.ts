@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
-import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { chmod, mkdir, mkdtemp, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -19,6 +20,7 @@ import {
   assertAllowedExactAutomationRequest,
   classifyExactAutomationMapping,
   controlledInboxQuery,
+  createFileBridgeMailboxEvidenceProvider,
   createMailerLiteActiveTriggerCorrectionClient,
   exactAutomationGetPath,
   firstEmailLocatorFromAutomation,
@@ -54,6 +56,12 @@ const FAKE_FIRST_EMAIL_SUBJECT = "Welcome fixture subject";
 const FAKE_FIRST_EMAIL_SENDER = "sender@example.test";
 const FAKE_MESSAGE_ID = "msg_fake_first_email_001";
 const MISSION_RUN_ID = "crm_core_mission_contract_2026_07_11_v1_run_001";
+const FILE_BRIDGE_BUDGET_CLAIM = {
+  approval_contract_version: MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  run_id: MISSION_RUN_ID,
+  packet_id: "packet_file_bridge_fixture_001",
+  mailbox_check_ordinal: 1,
+};
 const EXPECTED_HEAD = "a".repeat(40);
 const MISSION_NOW = new Date("2026-07-11T18:00:00.000Z");
 const FAKE_TOKEN = "Bearer fake_secret_token";
@@ -77,6 +85,72 @@ const sensitiveStrings = [
 
 const expectNoSensitiveStrings = (content: string) => {
   for (const value of sensitiveStrings) expect(content).not.toContain(value);
+};
+
+const publishFileBridgeResponse = async ({
+  bridgeDir,
+  request,
+  consumptionOverrides = {},
+  responseOverrides = {},
+  responseExtras = {},
+}: {
+  bridgeDir: string;
+  request: Record<string, unknown>;
+  consumptionOverrides?: Record<string, unknown>;
+  responseOverrides?: Record<string, unknown>;
+  responseExtras?: Record<string, unknown>;
+}) => {
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 5));
+  const consumption = {
+    schema_version: request.schema_version,
+    request_id: request.request_id,
+    request_nonce_private: request.request_nonce_private,
+    request_digest_private: request.request_digest_private,
+    mission_binding_private: request.mission_binding_private,
+    consumption_status: "claimed_before_connector_call",
+    retry_allowed: false,
+    claimed_at_epoch_seconds: request.requested_at_epoch_seconds,
+    ...consumptionOverrides,
+  };
+  const consumptionPath = join(bridgeDir, `${request.request_id}.consumed.json`);
+  const consumptionTempPath = `${consumptionPath}.tmp`;
+  await writeFile(consumptionTempPath, `${JSON.stringify(consumption)}\n`, { encoding: "utf8", mode: 0o600, flag: "wx" });
+  await rename(consumptionTempPath, consumptionPath);
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 2));
+  const response = {
+    schema_version: request.schema_version,
+    request_id: request.request_id,
+    request_nonce_private: request.request_nonce_private,
+    request_digest_private: request.request_digest_private,
+    mission_binding_private: request.mission_binding_private,
+    connector_operation: "gmail_search_email_ids",
+    query_binding_status: "matched",
+    profile_email_private: FAKE_EMAIL,
+    id_digests_private: [createHash("sha256").update(FAKE_MESSAGE_ID).digest("hex")],
+    has_more: false,
+    search_executed_at_epoch_seconds: request.requested_at_epoch_seconds,
+    worker_consumption_status: "consumed_once",
+    ...responseOverrides,
+    ...responseExtras,
+  };
+  const responseBytes = `${JSON.stringify(response)}\n`;
+  const responsePath = join(bridgeDir, `${request.request_id}.response.json`);
+  const responseTempPath = `${responsePath}.tmp`;
+  await writeFile(responseTempPath, responseBytes, { encoding: "utf8", mode: 0o600, flag: "wx" });
+  await rename(responseTempPath, responsePath);
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 2));
+  const ready = {
+    schema_version: request.schema_version,
+    request_id: request.request_id,
+    request_nonce_private: request.request_nonce_private,
+    request_digest_private: request.request_digest_private,
+    response_digest_private: createHash("sha256").update(responseBytes).digest("hex"),
+    publication_status: "atomic_response_ready",
+  };
+  const readyPath = join(bridgeDir, `${request.request_id}.ready.json`);
+  const readyTempPath = `${readyPath}.tmp`;
+  await writeFile(readyTempPath, `${JSON.stringify(ready)}\n`, { encoding: "utf8", mode: 0o600, flag: "wx" });
+  await rename(readyTempPath, readyPath);
 };
 
 const packet = (overrides: Record<string, unknown> = {}) => ({
@@ -554,7 +628,10 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       expect(receipt.automation_trigger_mapping_status).toBe("exact_active_trigger_mapping_verified");
       expect(receipt.all_prior_groups_preservation_status).toBe("all_preserved");
       expect(receipt.group_transition_status).toBe("passed_exact_add_only_transition");
-      expect(automationRequests).toEqual([{ method: "GET", path: exactAutomationGetPath(FAKE_AUTOMATION_ID) }]);
+      expect(automationRequests).toEqual([
+        { method: "GET", path: exactAutomationGetPath(FAKE_AUTOMATION_ID) },
+        { method: "GET", path: exactAutomationGetPath(FAKE_AUTOMATION_ID) },
+      ]);
       expect(correctionRequests.map((request) => request.method)).toEqual(["GET", "POST", "GET"]);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -607,12 +684,14 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       locator,
       afterEpochSeconds: 1_700_000_000,
       beforeEpochSeconds: 1_700_000_100,
+      nowMs: () => 1_700_000_200_000,
       execFileImpl: async (bin: string, args: string[]) => {
         captured = { bin, args };
         return { stdout: JSON.stringify({ messages: [{ id: FAKE_MESSAGE_ID }] }), stderr: "" };
       },
     });
-    expect(result).toEqual({ ok: true, ids_private: [FAKE_MESSAGE_ID], has_more: false });
+    expect(result).toMatchObject({ ok: true, ids_private: [FAKE_MESSAGE_ID], has_more: false });
+    expect(result.source_checked_at_epoch_seconds).toBe(1_700_000_200);
     expect(captured.bin).toBe("/opt/homebrew/bin/gog");
     expect(captured.args?.slice(0, 3)).toEqual(["gmail", "messages", "search"]);
     expect(captured.args).toContain("--select=id");
@@ -623,6 +702,219 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     expect(captured.args?.[3]).toContain(`to:\"${FAKE_EMAIL}\"`);
     expect(captured.args?.[3]).toContain(`from:\"${FAKE_FIRST_EMAIL_SENDER}\"`);
     expect(captured.args?.[3]).toContain(`subject:\"${FAKE_FIRST_EMAIL_SUBJECT}\"`);
+    expect(captured.args?.[3]).toContain("after:1700000000");
+    expect(captured.args?.[3]).toContain("before:1700000232");
+  });
+
+  test("private file bridge performs a 0600 request-response handshake for connector ID results", async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), "crm-core-mailbox-file-bridge-")));
+    const bridgeDir = join(dir, "bridge");
+    const locator = firstEmailLocatorFromAutomation(automationDetail());
+    let responseWritten = false;
+    try {
+      const provider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir,
+        privateRoot: dir,
+        nowMs: () => 1_700_000_000_000,
+        nonceProvider: () => "a".repeat(64),
+        sleep: async () => {
+          if (responseWritten) return;
+          responseWritten = true;
+          const request = JSON.parse(await readFile(join(bridgeDir, "01-baseline.request.json"), "utf8"));
+          await publishFileBridgeResponse({ bridgeDir, request });
+        },
+      });
+      const result = await provider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator,
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      });
+      expect(result).toEqual({
+        ok: true,
+        ids_private: [createHash("sha256").update(FAKE_MESSAGE_ID).digest("hex")],
+        has_more: false,
+        source_checked_at_epoch_seconds: 1_700_000_000,
+      });
+      const requestPath = join(bridgeDir, "01-baseline.request.json");
+      const request = JSON.parse(await readFile(requestPath, "utf8"));
+      expect(request.connector_operation).toBe("gmail_search_email_ids");
+      expect(request.label_ids).toEqual(["INBOX"]);
+      expect(request.max_results).toBe(2);
+      expect(request.mission_binding_private).toEqual(FILE_BRIDGE_BUDGET_CLAIM);
+      expect(request.worker_contract).toBe("one_shot_request_id_no_reprocessing");
+      expect(request.digest_contract.message_id_digest).toBe("sha256_lowercase_hex_of_utf8_raw_gmail_message_id");
+      expect((await stat(requestPath)).mode & 0o777).toBe(0o600);
+      expect((await stat(join(bridgeDir, "01-baseline.consumed.json"))).mode & 0o777).toBe(0o600);
+      expect((await stat(join(bridgeDir, "01-baseline.ready.json"))).mode & 0o777).toBe(0o600);
+      expect((await stat(bridgeDir)).mode & 0o777).toBe(0o700);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("private file bridge rejects forbidden extra private response fields", async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), "crm-core-mailbox-file-bridge-fields-")));
+    const bridgeDir = join(dir, "bridge");
+    try {
+      let published = false;
+      const provider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir,
+        privateRoot: dir,
+        nowMs: () => 1_700_000_000_000,
+        nonceProvider: () => "b".repeat(64),
+        sleep: async () => {
+          if (published) return;
+          published = true;
+          const request = JSON.parse(await readFile(join(bridgeDir, "01-baseline.request.json"), "utf8"));
+          await publishFileBridgeResponse({ bridgeDir, request, responseExtras: { snippet_private: "forbidden" } });
+        },
+      });
+      await expect(provider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator: firstEmailLocatorFromAutomation(automationDetail()),
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      })).rejects.toThrow("blocked_mailbox_bridge_response_fields_invalid");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("private file bridge rejects a response digest mismatch", async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), "crm-core-mailbox-file-bridge-binding-")));
+    const bridgeDir = join(dir, "bridge");
+    try {
+      let published = false;
+      const provider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir,
+        privateRoot: dir,
+        nowMs: () => 1_700_000_000_000,
+        nonceProvider: () => "c".repeat(64),
+        sleep: async () => {
+          if (published) return;
+          published = true;
+          const request = JSON.parse(await readFile(join(bridgeDir, "01-baseline.request.json"), "utf8"));
+          await publishFileBridgeResponse({ bridgeDir, request, responseOverrides: { request_digest_private: "0".repeat(64) } });
+        },
+      });
+      await expect(provider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator: firstEmailLocatorFromAutomation(automationDetail()),
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      })).rejects.toThrow("blocked_mailbox_bridge_digest_mismatch");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("private file bridge rejects body or snippet text disguised as a message ID", async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), "crm-core-mailbox-file-bridge-id-digest-")));
+    const bridgeDir = join(dir, "bridge");
+    try {
+      let published = false;
+      const provider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir,
+        privateRoot: dir,
+        nowMs: () => 1_700_000_000_000,
+        nonceProvider: () => "f".repeat(64),
+        sleep: async () => {
+          if (published) return;
+          published = true;
+          const request = JSON.parse(await readFile(join(bridgeDir, "01-baseline.request.json"), "utf8"));
+          await publishFileBridgeResponse({
+            bridgeDir,
+            request,
+            responseOverrides: { id_digests_private: ["this is body or snippet content, not a Gmail message ID"] },
+          });
+        },
+      });
+      await expect(provider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator: firstEmailLocatorFromAutomation(automationDetail()),
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      })).rejects.toThrow("blocked_mailbox_bridge_id_digests_invalid");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("private file bridge rejects a durable consumption claim reported after the connector search", async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), "crm-core-mailbox-file-bridge-consumption-time-")));
+    const bridgeDir = join(dir, "bridge");
+    try {
+      let published = false;
+      const provider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir,
+        privateRoot: dir,
+        nowMs: () => 1_700_000_000_000,
+        nonceProvider: () => "1".repeat(64),
+        sleep: async () => {
+          if (published) return;
+          published = true;
+          const request = JSON.parse(await readFile(join(bridgeDir, "01-baseline.request.json"), "utf8"));
+          await publishFileBridgeResponse({
+            bridgeDir,
+            request,
+            consumptionOverrides: { claimed_at_epoch_seconds: request.requested_at_epoch_seconds + 1 },
+          });
+        },
+      });
+      await expect(provider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator: firstEmailLocatorFromAutomation(automationDetail()),
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      })).rejects.toThrow("blocked_mailbox_bridge_consumption_after_search");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("private file bridge rejects preexisting or non-private bridge directories", async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), "crm-core-mailbox-file-bridge-dir-")));
+    const locator = firstEmailLocatorFromAutomation(automationDetail());
+    try {
+      const preexistingDir = join(dir, "preexisting");
+      await mkdir(preexistingDir, { mode: 0o700 });
+      const preexistingProvider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir: preexistingDir,
+        privateRoot: dir,
+        nonceProvider: () => "d".repeat(64),
+      });
+      await expect(preexistingProvider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator,
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      })).rejects.toThrow("blocked_mailbox_bridge_directory_preexisting");
+
+      const wrongModeDir = join(dir, "wrong-mode");
+      let modeChanged = false;
+      const wrongModeProvider = createFileBridgeMailboxEvidenceProvider({
+        bridgeDir: wrongModeDir,
+        privateRoot: dir,
+        nowMs: () => 1_700_000_000_000,
+        nonceProvider: () => "e".repeat(64),
+        sleep: async () => {
+          if (modeChanged) return;
+          modeChanged = true;
+          await chmod(wrongModeDir, 0o755);
+        },
+      });
+      await expect(wrongModeProvider.search({
+        phase: "baseline",
+        mailboxAnchor: FAKE_EMAIL,
+        locator,
+        afterEpochSeconds: 1_700_000_000,
+        beforeEpochSeconds: 1_700_000_100,
+        budgetClaim: FILE_BRIDGE_BUDGET_CLAIM,
+      })).rejects.toThrow("blocked_mailbox_bridge_directory_permissions_or_scope");
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("mailbox baseline ambiguity stops before subscriber access or mutation", async () => {
@@ -640,6 +932,75 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       expect(receipt.mailbox_evidence_check_count).toBe(1);
       expect(correctionCalls).toBe(0);
       expect(receipt.mutation_endpoint_call_count).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("stale mailbox source time blocks before the assignment POST", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    try {
+      const missionNowEpoch = Math.floor(MISSION_NOW.getTime() / 1000);
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: {
+          search: async () => ({
+            ok: true,
+            has_more: false,
+            ids_private: [],
+            source_checked_at_epoch_seconds: missionNowEpoch - 31,
+          }),
+        },
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP])], requests),
+      });
+      expect(receipt.correction_result_status).toBe("blocked_pre_mutation_freshness_not_verified");
+      expect(requests.map((request) => request.method)).toEqual(["GET"]);
+      expect(receipt.mutation_endpoint_call_count).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("freshness expiring while the terminal lock is acquired blocks the POST with no retry", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    let clockCalls = 0;
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        nowProvider: () => {
+          clockCalls += 1;
+          return clockCalls >= 6
+            ? new Date(MISSION_NOW.getTime() + 31_000)
+            : MISSION_NOW;
+        },
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP])], requests),
+      });
+      expect(receipt.correction_result_status).toBe("blocked_post_lock_pre_post_freshness_not_verified_no_retry");
+      expect(requests.map((request) => request.method)).toEqual(["GET"]);
+      expect(receipt.mutation_endpoint_call_count).toBe(0);
+      expect(clockCalls).toBeGreaterThanOrEqual(6);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("fresh automation recheck after mailbox baseline blocks drift before subscriber access", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let automationCalls = 0;
+    let subscriberCalls = 0;
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        automationClient: {
+          request: async () => {
+            automationCalls += 1;
+            return automationCalls === 1 ? automationDetail() : automationDetail({ enabled: false });
+          },
+        },
+        correctionClient: { request: async () => { subscriberCalls += 1; return subscriber([FAKE_PRIOR_GROUP]); } },
+      });
+      expect(receipt.correction_result_status).toBe("blocked_fresh_automation_mapping_not_verified_after_mailbox_baseline");
+      expect(automationCalls).toBe(2);
+      expect(subscriberCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 

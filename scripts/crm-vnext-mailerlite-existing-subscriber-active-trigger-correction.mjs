@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { execFile } from 'node:child_process';
-import { access, mkdir, open, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { createHash, randomBytes } from 'node:crypto';
+import { constants as FS_CONSTANTS } from 'node:fs';
+import { access, lstat, mkdir, open, readFile, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -37,6 +39,48 @@ const MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS = 8;
 const PRE_EFFECT_LIVE_ATTEMPT_LIMIT = 3;
 const MAILBOX_POST_POLL_DELAYS_MS = Object.freeze([0, 5_000, 10_000, 15_000, 30_000, 45_000, 60_000]);
 const GOG_BIN = '/opt/homebrew/bin/gog';
+const GOG_MAILBOX_SEARCH_TIMEOUT_MS = 30_000;
+const FILE_BRIDGE_SCHEMA_VERSION = 'crm-core-controlled-mailbox-file-bridge-v1';
+const FILE_BRIDGE_RESPONSE_TIMEOUT_MS = 90_000;
+const FILE_BRIDGE_RESPONSE_KEYS = Object.freeze([
+  'connector_operation',
+  'has_more',
+  'id_digests_private',
+  'mission_binding_private',
+  'profile_email_private',
+  'query_binding_status',
+  'request_digest_private',
+  'request_id',
+  'request_nonce_private',
+  'search_executed_at_epoch_seconds',
+  'schema_version',
+  'worker_consumption_status',
+]);
+const FILE_BRIDGE_READY_KEYS = Object.freeze([
+  'publication_status',
+  'response_digest_private',
+  'request_digest_private',
+  'request_id',
+  'request_nonce_private',
+  'schema_version',
+]);
+const FILE_BRIDGE_CONSUMPTION_KEYS = Object.freeze([
+  'claimed_at_epoch_seconds',
+  'consumption_status',
+  'mission_binding_private',
+  'request_digest_private',
+  'request_id',
+  'request_nonce_private',
+  'retry_allowed',
+  'schema_version',
+]);
+const FILE_BRIDGE_MISSION_BINDING_KEYS = Object.freeze([
+  'approval_contract_version',
+  'mailbox_check_ordinal',
+  'packet_id',
+  'run_id',
+]);
+const FILE_BRIDGE_RESPONSE_FRESHNESS_SECONDS = 30;
 const ALLOWED_CORRECTION_REQUESTS = [
   { method: 'GET', pattern: /^\/api\/subscribers\/[^/?#]+\?include=groups$/i, label: 'packet_specific_subscriber_get_with_groups' },
   { method: 'POST', pattern: /^\/api\/subscribers\/[^/]+\/groups\/[^/?#]+$/i, label: 'packet_specific_subscriber_group_assignment' },
@@ -65,6 +109,8 @@ Future live correction mode:
   --expected-active-next-action <id>
   --expected-packet-id <id>
   --run-id <id>
+  --mailbox-evidence-provider <gog|file-bridge>
+  --private-mailbox-bridge-dir <path>
 
 No raw email, subscriber ID or group ID is accepted on the CLI.`;
 
@@ -86,6 +132,8 @@ const parseArgs = (argv) => {
     expectedActiveNextAction: null,
     expectedPacketId: null,
     runId: null,
+    mailboxEvidenceProvider: 'gog',
+    privateMailboxBridgeDir: null,
     service: DEFAULT_SERVICE,
     account: DEFAULT_ACCOUNT,
     apiBase: DEFAULT_API_BASE,
@@ -109,6 +157,8 @@ const parseArgs = (argv) => {
     else if (arg === '--expected-active-next-action') options.expectedActiveNextAction = argv[++index];
     else if (arg === '--expected-packet-id') options.expectedPacketId = argv[++index];
     else if (arg === '--run-id') options.runId = argv[++index];
+    else if (arg === '--mailbox-evidence-provider') options.mailboxEvidenceProvider = argv[++index];
+    else if (arg === '--private-mailbox-bridge-dir') options.privateMailboxBridgeDir = argv[++index];
     else if (arg === '--service') options.service = argv[++index];
     else if (arg === '--account') options.account = argv[++index];
     else if (arg === '--api-base') options.apiBase = argv[++index];
@@ -118,6 +168,7 @@ const parseArgs = (argv) => {
   }
   options.apiBase = String(options.apiBase || DEFAULT_API_BASE).replace(/\/+$/, '');
   if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 1_000 || options.timeoutMs > 30_000) throw new Error('blocked_timeout_out_of_bounds');
+  if (!['gog', 'file-bridge'].includes(options.mailboxEvidenceProvider)) throw new Error('blocked_mailbox_evidence_provider_invalid');
   return options;
 };
 
@@ -245,12 +296,19 @@ const validatePathPolicy = (options, { roots = {} } = {}) => {
   assertUnderRoot(options.privateResultMd, resolvedRoots.privateMailerLiteRoot, 'private_result_md');
   assertUnderRoot(options.redactedReceiptJson, resolvedRoots.redactedReceiptRoot, 'redacted_receipt_json');
   assertUnderRoot(options.redactedReceiptMd, resolvedRoots.redactedReceiptRoot, 'redacted_receipt_md');
+  if (options.mailboxEvidenceProvider === 'file-bridge') {
+    assertOutsideRoot(options.privateMailboxBridgeDir, resolvedRoots.repoRoot, 'private_mailbox_bridge_dir');
+    assertUnderRoot(options.privateMailboxBridgeDir, resolvedRoots.privateMailerLiteRoot, 'private_mailbox_bridge_dir');
+  } else if (options.privateMailboxBridgeDir) {
+    throw new Error('blocked_mailbox_bridge_dir_without_provider');
+  }
   return {
     privateCorrectionPacketJson: resolve(options.privateCorrectionPacketJson),
     privateResultJson: resolve(options.privateResultJson),
     privateResultMd: resolve(options.privateResultMd),
     redactedReceiptJson: resolve(options.redactedReceiptJson),
     redactedReceiptMd: resolve(options.redactedReceiptMd),
+    privateMailboxBridgeDir: options.privateMailboxBridgeDir ? resolve(options.privateMailboxBridgeDir) : null,
   };
 };
 
@@ -364,6 +422,7 @@ const assertFreshOutputPaths = async (paths, deterministicExecutionLockPath = nu
     paths.privateResultMd,
     paths.redactedReceiptJson,
     paths.redactedReceiptMd,
+    paths.privateMailboxBridgeDir,
     deterministicExecutionLockPath,
   ].filter(Boolean);
   for (const filePath of candidates) {
@@ -833,11 +892,20 @@ const parseGogMessageIdResult = (raw) => {
   return { ok: true, ids_private: ids, has_more: hasMore };
 };
 
-const searchControlledInboxIds = async ({ mailboxAnchor, locator, afterEpochSeconds, beforeEpochSeconds, execFileImpl = execFileAsync }) => {
+const searchControlledInboxIds = async ({ mailboxAnchor, locator, afterEpochSeconds, beforeEpochSeconds, execFileImpl = execFileAsync, nowMs = () => Date.now() }) => {
   const account = exactEmailAddress(mailboxAnchor);
   if (!account || account !== cleanString(mailboxAnchor)?.toLowerCase()) throw new Error('blocked_controlled_mailbox_binding_invalid');
   if (!locator?.ok || !locator.sender_private || !locator.subject_private) throw new Error('blocked_first_email_locator_not_verified');
-  const query = controlledInboxQuery({ mailboxAnchor: account, locator, afterEpochSeconds, beforeEpochSeconds });
+  const searchStartedAtEpochSeconds = Math.floor(nowMs() / 1000);
+  const query = controlledInboxQuery({
+    mailboxAnchor: account,
+    locator,
+    afterEpochSeconds,
+    beforeEpochSeconds: Math.max(
+      beforeEpochSeconds,
+      searchStartedAtEpochSeconds + Math.ceil(GOG_MAILBOX_SEARCH_TIMEOUT_MS / 1000) + 2,
+    ),
+  });
   try {
     const { stdout } = await execFileImpl(GOG_BIN, [
       'gmail', 'messages', 'search', query,
@@ -846,14 +914,309 @@ const searchControlledInboxIds = async ({ mailboxAnchor, locator, afterEpochSeco
       '--max=2',
       '--select=id',
       '--account', account,
-    ], { timeout: 30_000, maxBuffer: 1024 * 1024 });
+    ], { timeout: GOG_MAILBOX_SEARCH_TIMEOUT_MS, maxBuffer: 1024 * 1024 });
     const parsed = parseGogMessageIdResult(stdout);
     if (!parsed.ok) throw new Error('blocked_controlled_mailbox_response_invalid');
-    return parsed;
+    return { ...parsed, source_checked_at_epoch_seconds: searchStartedAtEpochSeconds };
   } catch (error) {
     if (String(error?.message ?? '').startsWith('blocked_')) throw error;
     throw new Error('blocked_controlled_mailbox_search_failed');
   }
+};
+
+const exactObjectKeys = (value, expected) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
+};
+
+const fileBridgeRequestDigest = (requestWithoutDigest) => createHash('sha256')
+  .update(JSON.stringify(requestWithoutDigest))
+  .digest('hex');
+
+const fileBridgeResponseDigest = (responseBytes) => createHash('sha256')
+  .update(responseBytes)
+  .digest('hex');
+
+const validFileBridgeMissionBinding = (binding) => (
+  exactObjectKeys(binding, FILE_BRIDGE_MISSION_BINDING_KEYS)
+  && cleanString(binding.approval_contract_version) === MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION
+  && Boolean(cleanString(binding.run_id))
+  && Boolean(cleanString(binding.packet_id))
+  && Number.isInteger(binding.mailbox_check_ordinal)
+  && binding.mailbox_check_ordinal >= 1
+  && binding.mailbox_check_ordinal <= MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS
+);
+
+const sameFileBridgeMissionBinding = (left, right) => (
+  validFileBridgeMissionBinding(left)
+  && validFileBridgeMissionBinding(right)
+  && left.approval_contract_version === right.approval_contract_version
+  && left.run_id === right.run_id
+  && left.packet_id === right.packet_id
+  && left.mailbox_check_ordinal === right.mailbox_check_ordinal
+);
+
+const assertPrivateBridgeDirectory = async ({ bridgeDir, privateRoot, expectedIdentity = null }) => {
+  const metadataBefore = await lstat(bridgeDir);
+  const resolvedBridgeDir = await realpath(bridgeDir);
+  const resolvedPrivateRoot = await realpath(privateRoot);
+  const metadata = await lstat(bridgeDir);
+  if (
+    !metadata.isDirectory()
+    || metadata.isSymbolicLink()
+    || (metadata.mode & 0o777) !== 0o700
+    || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
+    || !isInside(resolvedBridgeDir, resolvedPrivateRoot)
+    || resolve(resolvedBridgeDir) === resolve(resolvedPrivateRoot)
+    || metadataBefore.dev !== metadata.dev
+    || metadataBefore.ino !== metadata.ino
+    || (expectedIdentity && (metadata.dev !== expectedIdentity.dev || metadata.ino !== expectedIdentity.ino))
+  ) throw new Error('blocked_mailbox_bridge_directory_permissions_or_scope');
+  return metadata;
+};
+
+const assertPrivateBridgeFile = async (filePath) => {
+  const metadata = await lstat(filePath);
+  if (
+    !metadata.isFile()
+    || metadata.isSymbolicLink()
+    || (metadata.mode & 0o777) !== 0o600
+    || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
+  ) throw new Error('blocked_mailbox_bridge_response_permissions');
+  return metadata;
+};
+
+const readPrivateBridgeFileNoFollow = async (filePath) => {
+  let handle;
+  try {
+    handle = await open(filePath, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW);
+    const before = await handle.stat();
+    if (
+      !before.isFile()
+      || (before.mode & 0o777) !== 0o600
+      || (typeof process.getuid === 'function' && before.uid !== process.getuid())
+    ) throw new Error('blocked_mailbox_bridge_response_permissions');
+    const bytes = await handle.readFile();
+    const after = await handle.stat();
+    if (
+      before.dev !== after.dev
+      || before.ino !== after.ino
+      || before.size !== after.size
+      || before.mtimeMs !== after.mtimeMs
+      || after.size !== bytes.length
+    ) throw new Error('blocked_mailbox_bridge_response_changed_during_read');
+    return { metadata: after, bytes };
+  } catch (error) {
+    if (error?.code === 'ELOOP') throw new Error('blocked_mailbox_bridge_response_permissions');
+    throw error;
+  } finally {
+    await handle?.close();
+  }
+};
+
+const validateFileBridgeReady = ({ ready, request }) => {
+  if (!exactObjectKeys(ready, FILE_BRIDGE_READY_KEYS)) throw new Error('blocked_mailbox_bridge_ready_invalid');
+  if (ready.schema_version !== FILE_BRIDGE_SCHEMA_VERSION) throw new Error('blocked_mailbox_bridge_ready_version_mismatch');
+  if (ready.request_id !== request.request_id) throw new Error('blocked_mailbox_bridge_ready_request_mismatch');
+  if (ready.request_nonce_private !== request.request_nonce_private) throw new Error('blocked_mailbox_bridge_ready_nonce_mismatch');
+  if (ready.request_digest_private !== request.request_digest_private) throw new Error('blocked_mailbox_bridge_ready_digest_mismatch');
+  if (!/^[a-f0-9]{64}$/i.test(cleanString(ready.response_digest_private))) throw new Error('blocked_mailbox_bridge_ready_response_digest_invalid');
+  if (ready.publication_status !== 'atomic_response_ready') throw new Error('blocked_mailbox_bridge_ready_status_mismatch');
+  return true;
+};
+
+const validateFileBridgeConsumption = ({ consumption, request }) => {
+  if (!exactObjectKeys(consumption, FILE_BRIDGE_CONSUMPTION_KEYS)) throw new Error('blocked_mailbox_bridge_consumption_invalid');
+  if (consumption.schema_version !== FILE_BRIDGE_SCHEMA_VERSION) throw new Error('blocked_mailbox_bridge_consumption_version_mismatch');
+  if (consumption.request_id !== request.request_id) throw new Error('blocked_mailbox_bridge_consumption_request_mismatch');
+  if (consumption.request_nonce_private !== request.request_nonce_private) throw new Error('blocked_mailbox_bridge_consumption_nonce_mismatch');
+  if (consumption.request_digest_private !== request.request_digest_private) throw new Error('blocked_mailbox_bridge_consumption_digest_mismatch');
+  if (!sameFileBridgeMissionBinding(consumption.mission_binding_private, request.mission_binding_private)) throw new Error('blocked_mailbox_bridge_consumption_mission_binding_mismatch');
+  if (consumption.consumption_status !== 'claimed_before_connector_call' || consumption.retry_allowed !== false) throw new Error('blocked_mailbox_bridge_consumption_policy_mismatch');
+  if (
+    !Number.isInteger(consumption.claimed_at_epoch_seconds)
+    || consumption.claimed_at_epoch_seconds < request.requested_at_epoch_seconds - 1
+  ) throw new Error('blocked_mailbox_bridge_consumption_time_invalid');
+  return true;
+};
+
+const validateFileBridgeResponse = ({ response, request, acceptedAtEpochSeconds }) => {
+  if (!response || typeof response !== 'object') throw new Error('blocked_mailbox_bridge_response_invalid');
+  if (!exactObjectKeys(response, FILE_BRIDGE_RESPONSE_KEYS)) throw new Error('blocked_mailbox_bridge_response_fields_invalid');
+  if (response.schema_version !== FILE_BRIDGE_SCHEMA_VERSION) throw new Error('blocked_mailbox_bridge_response_version_mismatch');
+  if (response.request_id !== request.request_id) throw new Error('blocked_mailbox_bridge_request_mismatch');
+  if (response.request_nonce_private !== request.request_nonce_private) throw new Error('blocked_mailbox_bridge_nonce_mismatch');
+  if (response.request_digest_private !== request.request_digest_private) throw new Error('blocked_mailbox_bridge_digest_mismatch');
+  if (!sameFileBridgeMissionBinding(response.mission_binding_private, request.mission_binding_private)) throw new Error('blocked_mailbox_bridge_mission_binding_mismatch');
+  if (response.connector_operation !== 'gmail_search_email_ids') throw new Error('blocked_mailbox_bridge_operation_mismatch');
+  if (response.query_binding_status !== 'matched') throw new Error('blocked_mailbox_bridge_query_binding_mismatch');
+  if (!sameReference(response.profile_email_private, request.mailbox_anchor_private)) throw new Error('blocked_mailbox_bridge_profile_mismatch');
+  if (response.has_more !== false) throw new Error('blocked_mailbox_bridge_pagination_or_ambiguity');
+  if (response.worker_consumption_status !== 'consumed_once') throw new Error('blocked_mailbox_bridge_worker_consumption_invalid');
+  if (
+    !Number.isInteger(response.search_executed_at_epoch_seconds)
+    || response.search_executed_at_epoch_seconds < request.requested_at_epoch_seconds - 1
+    || response.search_executed_at_epoch_seconds > acceptedAtEpochSeconds + 1
+    || acceptedAtEpochSeconds - response.search_executed_at_epoch_seconds > FILE_BRIDGE_RESPONSE_FRESHNESS_SECONDS
+  ) throw new Error('blocked_mailbox_bridge_search_execution_stale_or_invalid');
+  if (
+    !Array.isArray(response.id_digests_private)
+    || response.id_digests_private.some((value) => typeof value !== 'string' || !/^[a-f0-9]{64}$/i.test(value))
+  ) {
+    throw new Error('blocked_mailbox_bridge_id_digests_invalid');
+  }
+  const ids = response.id_digests_private.map((value) => value.toLowerCase());
+  if (ids.length > 2 || new Set(ids).size !== ids.length) throw new Error('blocked_mailbox_bridge_id_digests_invalid');
+  return {
+    ok: true,
+    ids_private: ids,
+    has_more: false,
+    source_checked_at_epoch_seconds: response.search_executed_at_epoch_seconds,
+  };
+};
+
+const createFileBridgeMailboxEvidenceProvider = ({
+  bridgeDir,
+  privateRoot,
+  sleep = waitFor,
+  nowMs = () => Date.now(),
+  nonceProvider = () => randomBytes(32).toString('hex'),
+}) => {
+  if (!bridgeDir) throw new Error('blocked_mailbox_bridge_dir_missing');
+  if (!privateRoot) throw new Error('blocked_mailbox_bridge_private_root_missing');
+  let requestCounter = 0;
+  let bridgeInitialized = false;
+  let canonicalBridgeDir = null;
+  let bridgeIdentity = null;
+  const usedNonces = new Set();
+  return {
+    search: async ({ phase, mailboxAnchor, locator, afterEpochSeconds, beforeEpochSeconds, budgetClaim }) => {
+      if (!bridgeInitialized) {
+        const requestedBridgeDir = resolve(bridgeDir);
+        const requestedParent = dirname(requestedBridgeDir);
+        const targetName = basename(requestedBridgeDir);
+        const [resolvedPrivateRoot, resolvedParent, privateRootMetadata, parentMetadata] = await Promise.all([
+          realpath(privateRoot),
+          realpath(requestedParent),
+          lstat(privateRoot),
+          lstat(requestedParent),
+        ]);
+        if (
+          resolve(privateRoot) !== resolvedPrivateRoot
+          || resolve(requestedParent) !== resolvedParent
+          || !privateRootMetadata.isDirectory()
+          || privateRootMetadata.isSymbolicLink()
+          || !parentMetadata.isDirectory()
+          || parentMetadata.isSymbolicLink()
+          || (parentMetadata.mode & 0o022) !== 0
+          || (typeof process.getuid === 'function' && (privateRootMetadata.uid !== process.getuid() || parentMetadata.uid !== process.getuid()))
+          || !isInside(resolvedParent, resolvedPrivateRoot)
+          || !targetName
+          || targetName === '.'
+          || targetName === '..'
+        ) throw new Error('blocked_mailbox_bridge_parent_scope_or_permissions');
+        canonicalBridgeDir = join(resolvedParent, targetName);
+        try {
+          await mkdir(canonicalBridgeDir, { mode: 0o700 });
+        } catch (error) {
+          if (error?.code === 'EEXIST') throw new Error('blocked_mailbox_bridge_directory_preexisting');
+          throw error;
+        }
+        bridgeInitialized = true;
+        const createdMetadata = await assertPrivateBridgeDirectory({ bridgeDir: canonicalBridgeDir, privateRoot });
+        bridgeIdentity = { dev: createdMetadata.dev, ino: createdMetadata.ino };
+      }
+      await assertPrivateBridgeDirectory({ bridgeDir: canonicalBridgeDir, privateRoot, expectedIdentity: bridgeIdentity });
+      if (!validFileBridgeMissionBinding(budgetClaim)) throw new Error('blocked_mailbox_bridge_budget_binding_invalid');
+      requestCounter += 1;
+      const requestId = `${String(requestCounter).padStart(2, '0')}-${phase}`;
+      const requestPath = join(canonicalBridgeDir, `${requestId}.request.json`);
+      const responsePath = join(canonicalBridgeDir, `${requestId}.response.json`);
+      const readyPath = join(canonicalBridgeDir, `${requestId}.ready.json`);
+      const consumptionPath = join(canonicalBridgeDir, `${requestId}.consumed.json`);
+      const requestNonce = cleanString(nonceProvider());
+      if (!/^[a-f0-9]{64}$/i.test(requestNonce) || usedNonces.has(requestNonce)) throw new Error('blocked_mailbox_bridge_nonce_invalid_or_reused');
+      usedNonces.add(requestNonce);
+      const requestedAtEpochSeconds = Math.floor(nowMs() / 1000);
+      const bridgeSafeBeforeEpochSeconds = requestedAtEpochSeconds + Math.ceil(FILE_BRIDGE_RESPONSE_TIMEOUT_MS / 1000) + 2;
+      const requestWithoutDigest = {
+        schema_version: FILE_BRIDGE_SCHEMA_VERSION,
+        request_id: requestId,
+        request_nonce_private: requestNonce,
+        requested_at_epoch_seconds: requestedAtEpochSeconds,
+        mission_binding_private: { ...budgetClaim },
+        worker_contract: 'one_shot_request_id_no_reprocessing',
+        digest_contract: {
+          request_digest: 'sha256_lowercase_hex_of_utf8_json_stringify_request_without_request_digest_private',
+          response_digest: 'sha256_lowercase_hex_of_exact_response_file_bytes',
+          message_id_digest: 'sha256_lowercase_hex_of_utf8_raw_gmail_message_id',
+        },
+        connector_operation: 'gmail_search_email_ids',
+        phase,
+        label_ids: ['INBOX'],
+        max_results: 2,
+        mailbox_anchor_private: mailboxAnchor,
+        locator_private: {
+          sender: locator?.sender_private,
+          subject: locator?.subject_private,
+        },
+        query_private: controlledInboxQuery({
+          mailboxAnchor,
+          locator,
+          afterEpochSeconds,
+          beforeEpochSeconds: Math.max(beforeEpochSeconds, bridgeSafeBeforeEpochSeconds),
+        }),
+      };
+      const request = {
+        ...requestWithoutDigest,
+        request_digest_private: fileBridgeRequestDigest(requestWithoutDigest),
+      };
+      const tempRequestPath = `${requestPath}.tmp-${process.pid}`;
+      try {
+        await writeFile(tempRequestPath, `${JSON.stringify(request, null, 2)}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+        await rename(tempRequestPath, requestPath);
+      } finally {
+        await unlink(tempRequestPath).catch(() => {});
+      }
+      await assertPrivateBridgeDirectory({ bridgeDir: canonicalBridgeDir, privateRoot, expectedIdentity: bridgeIdentity });
+      const requestMetadata = await assertPrivateBridgeFile(requestPath);
+      const deadline = nowMs() + FILE_BRIDGE_RESPONSE_TIMEOUT_MS;
+      while (nowMs() <= deadline) {
+        try {
+          await assertPrivateBridgeDirectory({ bridgeDir: canonicalBridgeDir, privateRoot, expectedIdentity: bridgeIdentity });
+          const consumptionFile = await readPrivateBridgeFileNoFollow(consumptionPath);
+          const readyFile = await readPrivateBridgeFileNoFollow(readyPath);
+          const responseFile = await readPrivateBridgeFileNoFollow(responsePath);
+          const consumptionMetadata = consumptionFile.metadata;
+          const readyMetadata = readyFile.metadata;
+          const responseMetadata = responseFile.metadata;
+          if (
+            responseMetadata.mtimeMs <= requestMetadata.mtimeMs
+            || consumptionMetadata.mtimeMs <= requestMetadata.mtimeMs
+            || consumptionMetadata.mtimeMs > responseMetadata.mtimeMs
+            || readyMetadata.mtimeMs < responseMetadata.mtimeMs
+            || readyMetadata.mtimeMs <= requestMetadata.mtimeMs
+          ) throw new Error('blocked_mailbox_bridge_response_stale_or_non_atomic');
+          const consumption = JSON.parse(consumptionFile.bytes.toString('utf8'));
+          validateFileBridgeConsumption({ consumption, request });
+          const ready = JSON.parse(readyFile.bytes.toString('utf8'));
+          validateFileBridgeReady({ ready, request });
+          if (ready.response_digest_private !== fileBridgeResponseDigest(responseFile.bytes)) throw new Error('blocked_mailbox_bridge_response_digest_mismatch');
+          const response = JSON.parse(responseFile.bytes.toString('utf8'));
+          if (consumption.claimed_at_epoch_seconds > response.search_executed_at_epoch_seconds) throw new Error('blocked_mailbox_bridge_consumption_after_search');
+          const validated = validateFileBridgeResponse({ response, request, acceptedAtEpochSeconds: Math.floor(nowMs() / 1000) });
+          await assertPrivateBridgeDirectory({ bridgeDir: canonicalBridgeDir, privateRoot, expectedIdentity: bridgeIdentity });
+          return validated;
+        } catch (error) {
+          if (error?.code !== 'ENOENT') throw error;
+          await sleep(250);
+        }
+      }
+      throw new Error('blocked_mailbox_bridge_response_timeout');
+    },
+  };
 };
 
 const validateMailboxSearchResult = (result) => {
@@ -861,7 +1224,14 @@ const validateMailboxSearchResult = (result) => {
   if (result?.ok !== true || result?.has_more === true || ids.length > 1 || new Set(ids).size !== ids.length) {
     return { ok: false, status: 'ambiguous_or_invalid', ids_private: [] };
   }
-  return { ok: true, status: 'bounded_exact_id_search', ids_private: ids };
+  return {
+    ok: true,
+    status: 'bounded_exact_id_search',
+    ids_private: ids,
+    source_checked_at_epoch_seconds: Number.isInteger(result?.source_checked_at_epoch_seconds)
+      ? result.source_checked_at_epoch_seconds
+      : null,
+  };
 };
 
 const waitFor = (delayMs) => new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs));
@@ -872,7 +1242,8 @@ const pollFirstEmailEvidence = async ({ mailboxEvidenceProvider, mailboxAnchor, 
   const privateIdsSeen = [];
   for (const delayMs of MAILBOX_POST_POLL_DELAYS_MS.slice(0, MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS - 1)) {
     if (delayMs) await sleep(delayMs);
-    try { await claimEvidenceCheck(); }
+    let budgetClaim;
+    try { budgetClaim = await claimEvidenceCheck(); }
     catch { return { status: 'not_verified_evidence_budget_exhausted_no_resend', check_count: checkCount, new_match_count: 0, private_ids_seen: privateIdsSeen }; }
     checkCount += 1;
     let result;
@@ -884,6 +1255,7 @@ const pollFirstEmailEvidence = async ({ mailboxEvidenceProvider, mailboxAnchor, 
         locator,
         afterEpochSeconds: Math.floor(baselineAt.getTime() / 1000) - CONTROLLED_INBOX_LOOKBACK_SECONDS,
         beforeEpochSeconds: Math.floor(now.getTime() / 1000) + 60,
+        budgetClaim,
       }));
     } catch {
       return { status: 'not_verified_mailbox_search_failed_no_resend', check_count: checkCount, new_match_count: 0, private_ids_seen: privateIdsSeen };
@@ -1136,9 +1508,13 @@ const runLiveMode = async (options, deps = {}) => {
   const limiter = mutationAttemptLimiter();
   const nowProvider = deps.nowProvider ?? (() => deps.now ?? new Date());
   const now = nowProvider();
-  const mailboxEvidenceProvider = deps.mailboxEvidenceProvider ?? {
-    search: (request) => searchControlledInboxIds(request),
-  };
+  const mailboxEvidenceProvider = deps.mailboxEvidenceProvider ?? (options.mailboxEvidenceProvider === 'file-bridge'
+    ? createFileBridgeMailboxEvidenceProvider({
+      bridgeDir: paths.privateMailboxBridgeDir,
+      privateRoot: rootsWithDefaults(deps.roots).privateMailerLiteRoot,
+      sleep: deps.bridgeSleep ?? waitFor,
+    })
+    : { search: (request) => searchControlledInboxIds(request) });
   let mapping = {
     automation_reference_match_status: isMissionContract ? 'not_run' : 'not_required_by_selected_legacy_contract',
     automation_active_status: isMissionContract ? 'not_run' : 'not_required_by_selected_legacy_contract',
@@ -1150,6 +1526,7 @@ const runLiveMode = async (options, deps = {}) => {
   let mailboxBindingStatus = 'not_run';
   let mailboxBaseline = { ids_private: [] };
   let mailboxBaselineCount = 0;
+  let mailboxBaselineSourceCheckedAtEpochSeconds = null;
   let mailboxEvidenceCheckCount = 0;
   let firstEmailNewMatchCount = 0;
   let firstEmailEvidenceStatus = 'not_run';
@@ -1162,7 +1539,12 @@ const runLiveMode = async (options, deps = {}) => {
       packetId: packetValidation.packet_id,
     });
     mailboxEvidenceCheckCount = state.mailbox_evidence_check_count;
-    return mailboxEvidenceCheckCount;
+    return {
+      approval_contract_version: approvalValidation.contract_version,
+      run_id: runId,
+      packet_id: packetValidation.packet_id,
+      mailbox_check_ordinal: mailboxEvidenceCheckCount,
+    };
   };
 
   const receiptBase = () => ({
@@ -1237,17 +1619,21 @@ const runLiveMode = async (options, deps = {}) => {
 
   const baselineAt = nowProvider();
   try {
-    await claimEvidenceCheck();
+    const budgetClaim = await claimEvidenceCheck();
     const baselineResult = validateMailboxSearchResult(await mailboxEvidenceProvider.search({
       phase: 'baseline',
       mailboxAnchor: packetValidation.existing_subscriber_lookup_anchor,
       locator: firstEmailLocator,
       afterEpochSeconds: Math.floor(baselineAt.getTime() / 1000) - CONTROLLED_INBOX_LOOKBACK_SECONDS,
       beforeEpochSeconds: Math.floor(baselineAt.getTime() / 1000) + 1,
+      budgetClaim,
     }));
     if (!baselineResult.ok) throw new Error('blocked_controlled_mailbox_baseline_ambiguous');
     mailboxBaseline = baselineResult;
     mailboxBaselineCount = baselineResult.ids_private.length;
+    mailboxBaselineSourceCheckedAtEpochSeconds = baselineResult.source_checked_at_epoch_seconds
+      ?? (deps.mailboxEvidenceProvider ? Math.floor(nowProvider().getTime() / 1000) : null);
+    if (!Number.isInteger(mailboxBaselineSourceCheckedAtEpochSeconds)) throw new Error('blocked_controlled_mailbox_baseline_source_time_missing');
     mailboxBindingStatus = 'matched_exact_controlled_mailbox';
     mailboxPrivateEvidenceValues.push(...baselineResult.ids_private);
   } catch {
@@ -1257,6 +1643,38 @@ const runLiveMode = async (options, deps = {}) => {
       ...receiptBase(),
       correctionResultStatus: 'blocked_controlled_mailbox_baseline_not_verified',
       blockers: ['controlled_mailbox_baseline_not_verified'],
+      recommendedNextStep: 'stop_before_subscriber_read_or_mutation',
+    }));
+  }
+
+  try {
+    const refreshedAutomationClient = deps.automationClient ?? createMailerLiteExactAutomationClient({
+      options,
+      key: credential.key,
+      expectedAutomationReference: automationReference,
+      fetchImpl: deps.fetchImpl ?? fetch,
+      calls: deps.automationCalls ?? [],
+    });
+    const refreshedAutomationResponse = await refreshedAutomationClient.request({ method: 'GET', path: exactAutomationGetPath(automationReference) });
+    const refreshedMapping = classifyExactAutomationMapping(
+      refreshedAutomationResponse,
+      automationReference,
+      packetValidation.active_live_trigger_group_reference,
+    );
+    const refreshedLocator = firstEmailLocatorFromAutomation(refreshedAutomationResponse);
+    if (
+      !refreshedMapping.ok
+      || !refreshedLocator.ok
+      || !sameReference(refreshedLocator.sender_private, firstEmailLocator.sender_private)
+      || cleanString(refreshedLocator.subject_private) !== cleanString(firstEmailLocator.subject_private)
+    ) throw new Error('blocked_fresh_automation_mapping_or_locator_mismatch');
+    mapping = refreshedMapping;
+    mappingCheckedAt = nowProvider().toISOString();
+  } catch {
+    return finish(buildReceipt({
+      ...receiptBase(),
+      correctionResultStatus: 'blocked_fresh_automation_mapping_not_verified_after_mailbox_baseline',
+      blockers: ['fresh_automation_mapping_not_verified_after_mailbox_baseline'],
       recommendedNextStep: 'stop_before_subscriber_read_or_mutation',
     }));
   }
@@ -1279,6 +1697,19 @@ const runLiveMode = async (options, deps = {}) => {
     packetValidation.prior_non_active_group_reference,
     packetValidation.existing_subscriber_lookup_anchor,
   );
+  const mutationDecisionAtEpochSeconds = Math.floor(nowProvider().getTime() / 1000);
+  const refreshedAutomationCheckedAtEpochSeconds = Number.isFinite(Date.parse(mappingCheckedAt))
+    ? Math.floor(Date.parse(mappingCheckedAt) / 1000)
+    : null;
+  const mutationFreshnessVerifiedAt = (checkedAtEpochSeconds) => (
+    Number.isInteger(mailboxBaselineSourceCheckedAtEpochSeconds)
+    && mailboxBaselineSourceCheckedAtEpochSeconds <= checkedAtEpochSeconds + 1
+    && checkedAtEpochSeconds - mailboxBaselineSourceCheckedAtEpochSeconds <= FILE_BRIDGE_RESPONSE_FRESHNESS_SECONDS
+    && Number.isInteger(refreshedAutomationCheckedAtEpochSeconds)
+    && refreshedAutomationCheckedAtEpochSeconds <= checkedAtEpochSeconds + 1
+    && checkedAtEpochSeconds - refreshedAutomationCheckedAtEpochSeconds <= FILE_BRIDGE_RESPONSE_FRESHNESS_SECONDS
+  );
+  const mutationFreshnessVerified = mutationFreshnessVerifiedAt(mutationDecisionAtEpochSeconds);
   let receipt;
   let after = {};
   if (before.subscriber_lookup_status !== 'found') {
@@ -1315,8 +1746,24 @@ const runLiveMode = async (options, deps = {}) => {
     firstEmailEvidenceStatus = 'preexisting_unique_bounded_locator_match_assignment_blocked';
     await claimMissionExecution({ roots: deps.roots, runId, packetId: packetValidation.packet_id, approvalContractVersion: approvalValidation.contract_version, executionClass: 'preexisting_first_email_assignment_blocked' });
     receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'blocked_preexisting_first_email_evidence_before_assignment', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: before.identity_anchor_match, activeTriggerMembershipBefore: 'absent', mutationEndpointCallCount: limiter.count, blockers: ['preexisting_first_email_evidence_before_assignment'], recommendedNextStep: 'stop_without_assignment_or_retrigger' });
+  } else if (!mutationFreshnessVerified) {
+    receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'blocked_pre_mutation_freshness_not_verified', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: before.identity_anchor_match, activeTriggerMembershipBefore: 'absent', mutationEndpointCallCount: limiter.count, blockers: ['mailbox_or_automation_freshness_not_verified'], recommendedNextStep: 'stop_without_assignment_or_retrigger' });
   } else {
     await claimMissionExecution({ roots: deps.roots, runId, packetId: packetValidation.packet_id, approvalContractVersion: approvalValidation.contract_version, executionClass: 'single_add_only_assignment_attempt' });
+    const postLockAtEpochSeconds = Math.floor(nowProvider().getTime() / 1000);
+    if (!mutationFreshnessVerifiedAt(postLockAtEpochSeconds)) {
+      return finish(buildReceipt({
+        ...receiptBase(),
+        correctionResultStatus: 'blocked_post_lock_pre_post_freshness_not_verified_no_retry',
+        subscriberLookupStatus: before.subscriber_lookup_status,
+        subscriberStatusClass: before.subscriber_status_class,
+        identityVerificationStatus: before.identity_anchor_match,
+        activeTriggerMembershipBefore: 'absent',
+        mutationEndpointCallCount: limiter.count,
+        blockers: ['post_lock_pre_post_freshness_not_verified_no_retry'],
+        recommendedNextStep: 'stop_terminal_without_assignment_or_retrigger',
+      }), before);
+    }
     let postOutcome = 'unknown_no_retry';
     try {
       await guardedRequest(baseClient, limiter, { method: 'POST', path: assignmentPath(before.subscriber_id_private, packetValidation.active_live_trigger_group_reference), payload: null });
@@ -1420,6 +1867,7 @@ export {
   classifyExactAutomationMapping,
   classifySubscriberLookup,
   controlledInboxQuery,
+  createFileBridgeMailboxEvidenceProvider,
   createMailerLiteActiveTriggerCorrectionClient,
   createMailerLiteExactAutomationClient,
   firstEmailLocatorFromAutomation,
@@ -1439,6 +1887,7 @@ export {
   subscriberGetPath,
   verifyGroupTransition,
   verifyIdentityContinuity,
+  validateFileBridgeResponse,
   validateActiveTriggerCorrectionApprovalPhrase,
   validateActiveTriggerCorrectionPacket,
   validatePathPolicy,
