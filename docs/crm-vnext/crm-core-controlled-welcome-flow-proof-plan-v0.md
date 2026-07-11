@@ -1991,6 +1991,72 @@ Proof progress summary:
 - Repeatability is not complete.
 - Automation-state verification is not complete.
 
+## Controlled E2E Welcome Flow Repeatability v0 — Technical Completion With Active Trigger Mismatch
+
+- Result doc:
+  `docs/crm-vnext/crm-core-e2e-welcome-flow-repeatability-result-v0.md`
+- Active trigger mapping result doc:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-mapping-mismatch-result-v0.md`
+- Controlled end-to-end welcome flow technical repeatability completed.
+- Active onboarding trigger mapping reconciliation completed and found mismatch.
+- Verified chain:
+  Instagram controlled candidate -> welcome audio -> reply/contact evidence ->
+  MailerLite technical group mutation -> post-mutation subscriber/group
+  verification.
+- Active live onboarding trigger enrollment was not verified.
+- `controlled_candidate_detected`: true
+- `controlled_candidate_unique`: true
+- `unapproved_candidates_touched`: false
+- `welcome_audio_sent`: true
+- `reply_seen_after_audio`: true
+- `email_detected`: true
+- `mailerlite_packet_created`: true
+- `mutation_attempted`: true
+- `mutation_executed`: true
+- `post_mutation_verification_status`: `passed`
+- `subscriber_lookup_status`: `found`
+- `subscriber_status_class`: `active`
+- `onboarding_group_membership_status`: `present`
+- `active_trigger_mapping_reconciliation_status`:
+  `mismatch_non_active_group_used`
+- `impact_on_e2e_result`:
+  `technical_e2e_completed_but_active_onboarding_not_verified`
+- `recommended_closeout_language_class`:
+  `technical_e2e_group_mutation_verified_active_trigger_not_enrolled`
+- `automation_or_onboarding_state_status`:
+  `verification_not_supported_readonly`
+- `crm_write_status`: `not_written`
+- `card_status`: `not_created`
+- `fact_store_status`: `not_written`
+- `ledger_status`: `not_written`
+- `scoring_status`: `not_written`
+- `mati_reply_status`: `not_run`
+- `blockers`: `executed_mutation_group_did_not_match_active_live_trigger`
+
+Interpretation:
+
+- This proves a controlled technical operational vertical slice.
+- This does not prove active onboarding flow enrollment.
+- This does not verify first onboarding email inbox delivery.
+- This does not authorize production automation.
+- This does not authorize future DMs, welcome audio sends, MailerLite mutations,
+  CRM writes, or Mati replies.
+- Active trigger correction, CRM enrichment, repeatability scaling,
+  automation/inbox observation, and assistant replies remain separate gates.
+
+Proof progress summary:
+
+- Controlled technical end-to-end repeatability v0 is completed.
+- Active onboarding trigger enrollment is not achieved; correction is required.
+- Welcome audio repeatability path is completed for one controlled candidate.
+- MailerLite technical group mutation repeatability path is completed for one
+  controlled candidate.
+- Production automation is not complete.
+- CRM enrichment/write is not complete.
+- Multi-candidate queue production readiness is not complete.
+- Mati dynamic replies are not complete.
+- Inbox delivery is not complete.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

@@ -5451,13 +5451,14 @@ routing and completion pointer.
   - Controlled MailerLite onboarding mutation is verified at subscriber/group
     level.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_after_mailerlite_verified_mutation_next_step_selection_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-09`
-- `updated_at`: `2026-07-09`
+- `updated_at`: `2026-07-10`
+- `completed_at`: `2026-07-10`
 - `objective`: Choose the next product step after the first controlled
   MailerLite onboarding mutation was executed and verified at subscriber/group
   level.
@@ -5501,3 +5502,75 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `completion_definition`: Alejandro chooses, modifies, declines, or pauses the
   next controlled welcome flow product step.
+- `findings`:
+  - E2E repeatability v0 completed technically.
+  - Final active trigger reconciliation found mismatch.
+  - Result docs:
+    - `docs/crm-vnext/crm-core-e2e-welcome-flow-repeatability-result-v0.md`
+    - `docs/crm-vnext/mailerlite-onboarding-active-trigger-mapping-mismatch-result-v0.md`
+  - Controlled candidate detected and unique.
+  - Welcome audio sent and confirmed.
+  - Reply/contact evidence captured.
+  - MailerLite exact technical group mutation executed.
+  - Active live onboarding trigger enrollment was not achieved.
+  - Post-mutation verification passed for the group/reference used.
+  - Subscriber found active and group present.
+  - No unapproved candidates touched.
+  - No CRM writes.
+  - No Mati reply.
+  - No cards, Fact Store, ledgers, or scoring.
+  - Inbox delivery not verified.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_mailerlite_active_trigger_correction_packet_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-10`
+- `updated_at`: `2026-07-10`
+- `objective`: Wait for Alejandro approval before preparing a no-write active
+  onboarding trigger correction packet for the controlled E2E candidate, because
+  the executed MailerLite mutation group/reference did not match the active live
+  onboarding trigger group.
+- `why_now`: CRM Core completed the technical end-to-end welcome flow, but final
+  reconciliation showed the mutation did not enroll the candidate into the
+  active live onboarding trigger group. A correction packet can determine the
+  safest packet-specific operation to enroll the already-created subscriber into
+  the active trigger path without broad mutation.
+- `allowed_scope`:
+  - Present correction options.
+  - Prepare a no-write correction packet after approval.
+  - No execution in this next-action selection step.
+- `options`:
+  1. Prepare active onboarding trigger correction packet:
+     No-write packet for the already-created subscriber, likely requiring an
+     existing-subscriber add-to-active-trigger-group guard.
+  2. Repeat E2E with corrected mapping and a new email/contact:
+     Clean proof with the active trigger from the start.
+  3. Pause:
+     Stop after documenting the technical E2E and mapping mismatch.
+- `recommended_default`: Prepare active onboarding trigger correction packet
+  first, then decide whether to correct the existing contact or repeat E2E with
+  corrected mapping.
+- `forbidden_scope`:
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation/campaign mutation.
+  - No broad import.
+  - No raw email in chat.
+  - No raw IDs.
+  - No group references in chat.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Mati reply.
+  - No repeatability run.
+  - No CRM enrichment run.
+  - No inbox/automation observation.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  active onboarding trigger correction planning.

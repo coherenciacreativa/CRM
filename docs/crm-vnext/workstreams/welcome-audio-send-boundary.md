@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome audio lane worker
-- `status`: `assistant_reply_policy_boundary_integrated_no_run`
+- `status`: `e2e_repeatability_welcome_audio_confirmed_active_trigger_mismatch_downstream`
 - `objective`: Audio asset registry, already-welcomed history, send approval
   packet, duplicate prevention.
 - `why_now`: Welcome audio is a high-value action lane, but no send is
@@ -172,6 +172,17 @@
 - `next_approval_needed`: choose MailerLite setup inventory, controlled
   assistant reply draft preview, controlled one-reply send, CRM enrichment
   preview, or pause.
+- `e2e_repeatability_v0_status`: `completed_technical_verified`
+- `welcome_audio_sent`: true
+- `welcome_audio_confirmation_status`: `confirmed_ui_signal`
+- `controlled_candidate_unique`: true
+- `unapproved_candidates_touched`: false
+- `reply_seen_after_audio`: true
+- `mati_reply_status`: `not_run`
+- `downstream_mailerlite_active_trigger_status`:
+  `mismatch_correction_required`
+- `recommended_next_step`: active MailerLite trigger correction packet or
+  choose next controlled product step.
 - `proposed_integration_note`: Welcome Audio lane now has a no-run assistant
   reply policy boundary for the Controlled Welcome Flow Proof. The artifact
   defines assistant identity disclosure, Mantis/Mati signature rules,

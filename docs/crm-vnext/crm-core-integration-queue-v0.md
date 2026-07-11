@@ -1502,6 +1502,61 @@ No lane outputs in review at creation.
 - `recommended_default`: controlled repeatability run or CRM enrichment
   no-write packet, depending on CEO priority.
 
+### controlled_welcome_flow_e2e_repeatability_v0_with_active_trigger_mismatch_closeout_2026-07-10
+
+- `result_type`: `e2e_welcome_flow_repeatability_with_active_trigger_mismatch_closeout`
+- `run_id`: `crm_core_e2e_welcome_flow_repeatability_v0_2026-07-10`
+- `result_doc`:
+  `docs/crm-vnext/crm-core-e2e-welcome-flow-repeatability-result-v0.md`
+- `active_trigger_mapping_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-mapping-mismatch-result-v0.md`
+- `controlled_candidate_detected`: true
+- `controlled_candidate_unique`: true
+- `post_ready_new_follower_notification_count`: 1
+- `unapproved_candidate_count`: 0
+- `unapproved_candidates_touched`: false
+- `welcome_audio_sent`: true
+- `welcome_audio_confirmation_status`: `confirmed_ui_signal`
+- `reply_seen_after_audio`: true
+- `email_detected`: true
+- `contact_fields_detected_count`: 1
+- `mailerlite_packet_created`: true
+- `final_check_status`: `completed_live_readonly_ready_for_exact_mutation_approval`
+- `preflight_only_status`: `preflight_only_ready_for_exact_mutation_approval`
+- `mutation_attempted`: true
+- `mutation_executed`: true
+- `mutation_result_status`: `mutation_executed_redacted_receipt_ready`
+- `post_mutation_verification_status`: `passed`
+- `subscriber_lookup_status`: `found`
+- `subscriber_status_class`: `active`
+- `onboarding_group_membership_status`: `present`
+- `group_assignment_verification_status`: `pass_present`
+- `active_flow_status`: `active`
+- `active_live_trigger_reference_status`: `found`
+- `executed_mutation_group_semantic_class`: `non_active_group`
+- `mutation_included_active_live_trigger`: false
+- `active_trigger_mapping_reconciliation_status`:
+  `mismatch_non_active_group_used`
+- `impact_on_e2e_result`:
+  `technical_e2e_completed_but_active_onboarding_not_verified`
+- `automation_or_onboarding_state_status`:
+  `verification_not_supported_readonly`
+- `inbox_delivery_status`: `not_verified`
+- `crm_write_status`: `not_written`
+- `card_status`: `not_created`
+- `fact_store_status`: `not_written`
+- `ledger_status`: `not_written`
+- `scoring_status`: `not_written`
+- `mati_reply_status`: `not_run`
+- `private_artifacts_integrated`: false
+- `used_mantis_reports_by_source_run`: true
+- `used_mantis_private_source_artifacts_by_source_run`: true
+- `used_mantis_memory`: false
+- `launch_os_touched`: false
+- `legacy_crm_used`: false
+- `decision_needed`: active onboarding trigger correction packet or pause
+- `recommended_default`: prepare active onboarding trigger correction packet.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

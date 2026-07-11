@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `ready_for_exact_mutation_approval_after_group_repair_final_check_v6_and_preflight`
+- `status`: `technical_group_mutation_verified_active_trigger_mismatch_correction_required`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -550,3 +550,41 @@ automation generalization.
 The controlled MailerLite onboarding mutation is now verified at subscriber/group
 level. Automation-state verification, repeatability, CRM enrichment/write, and
 production generalization remain separate gates.
+
+## E2E Repeatability Active Trigger Mismatch Closeout
+
+- `e2e_repeatability_mailerlite_status`:
+  `completed_technical_group_mutation_verified`
+- `active_flow_status`: `active`
+- `active_live_trigger_reference_status`: `found`
+- `executed_mutation_group_semantic_class`: `non_active_group`
+- `mutation_included_active_live_trigger`: false
+- `active_trigger_mapping_reconciliation_status`:
+  `mismatch_non_active_group_used`
+- `impact_on_e2e_result`:
+  `technical_e2e_completed_but_active_onboarding_not_verified`
+- `recommended_closeout_language_class`:
+  `technical_e2e_group_mutation_verified_active_trigger_not_enrolled`
+- `mailerlite_packet_created`: true
+- `final_check_status`: `completed_live_readonly_ready_for_exact_mutation_approval`
+- `preflight_only_status`: `preflight_only_ready_for_exact_mutation_approval`
+- `mutation_attempted`: true
+- `mutation_executed`: true
+- `mutation_result_status`: `mutation_executed_redacted_receipt_ready`
+- `post_mutation_verification_status`: `passed`
+- `subscriber_lookup_status`: `found`
+- `subscriber_status_class`: `active`
+- `onboarding_group_membership_status`: `present`
+- `group_assignment_verification_status`: `pass_present`
+- `automation_or_onboarding_state_status`:
+  `verification_not_supported_readonly`
+- `inbox_delivery_status`: `not_verified`
+- `active_onboarding_flow_enrollment_status`:
+  `not_verified_correction_required`
+- `crm_source_writes`: false
+- `recommended_next_step`: prepare active onboarding trigger correction packet.
+
+The controlled E2E source run verified a technical MailerLite group mutation,
+but final reconciliation found the mutation group/reference did not match the
+active live onboarding trigger group. Active onboarding trigger correction is
+required before claiming active onboarding flow enrollment.

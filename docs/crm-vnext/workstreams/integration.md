@@ -755,3 +755,23 @@
 - Next step should be a CEO product decision: repeatability, CRM enrichment
   no-write packet, automation observation, or pause.
 - Safari upload hardening temporary branch remains ready but untouched.
+
+## Controlled E2E Repeatability With Active Trigger Mismatch Closeout
+
+- Central closeout used redacted receipts only.
+- No private candidate state was read.
+- No private Instagram evidence was read.
+- No private MailerLite packet was read.
+- No private trigger mapping artifact was read.
+- No private subscriber content was read.
+- No source actions occurred during closeout.
+- No MailerLite API/UI occurred during closeout.
+- No mutation occurred during closeout.
+- Source run completed technical end-to-end controlled welcome flow
+  repeatability.
+- Source run touched no unapproved candidates.
+- Source run performed no CRM/source writes.
+- Source run sent no Mati dynamic replies.
+- Final active trigger reconciliation found that the executed mutation
+  group/reference did not match the active live onboarding trigger group.
+- Next step should be active onboarding trigger correction packet or pause.

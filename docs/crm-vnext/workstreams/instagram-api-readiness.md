@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-instagram-api`
 - `consultant_chat`: Meta/Instagram API consultant
 - `codex_worker`: Instagram API readiness lane worker
-- `status`: `task_complete_pending_integration`
+- `status`: `controlled_ui_candidate_detection_verified_once_api_source_still_not_generalized`
 - `objective`: Meta setup facts, app readiness, API/webhook path, no secrets.
 - `why_now`: Official docs reviewed for this lane did not show a new-follower
   webhook, per-follower identity stream, or CRM-usable follower-delta candidate
@@ -73,6 +73,19 @@
 - `next_approval_needed`: approve selected-task artifact review for the reply
   monitoring and email handoff boundary design, then Chief Architect
   self-integration review if green
+- `e2e_repeatability_candidate_detection_status`:
+  `completed_controlled_ui_candidate_detection`
+- `official_api_follower_source_status`: `still_not_proven`
+- `controlled_candidate_detected`: true
+- `controlled_candidate_unique`: true
+- `post_ready_new_follower_notification_count`: 1
+- `unapproved_candidate_count`: 0
+- `unapproved_candidates_touched`: false
+- `production_multi_follower_handling_status`: `not_generalized`
+- `downstream_mailerlite_active_trigger_status`:
+  `mismatch_correction_required`
+- `recommended_next_step`: queue-aware design or controlled repeatability
+  expansion only under separate approval after MailerLite trigger correction.
 - `proposed_integration_note`: Integrate
   `docs/crm-vnext/instagram-crm-prior-art-inventory-v0.md`,
   `docs/crm-vnext/instagram-meta-api-setup-decision-packet-v0.md`, and
