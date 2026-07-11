@@ -2140,6 +2140,36 @@ Interpretation:
   approval.
 - The active onboarding trigger mismatch remains unresolved operationally.
 
+## Exact Active-Trigger Correction Review Packet - Prepared And Preflighted
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-exact-active-trigger-correction-review-result-v0.md`
+- Exact active-trigger correction review packet:
+  `prepared_no_live_preflight_validated`
+- Packet contract validation:
+  `passed_existing_subscriber_active_trigger_correction_packet_contract`
+- Preflight-only status:
+  `preflight_only_ready_for_exact_active_trigger_correction_approval`
+- Credentials called during preflight: false
+- Network called during preflight: false
+- MailerLite API called during preflight: false
+- Correction attempted: false
+- Correction executed: false
+- Prior non-active group preservation required: true
+- Next gate: exact live active-trigger correction approval
+
+Interpretation:
+
+- The active-trigger mismatch remains unresolved operationally.
+- All non-live preparation gates for a packet-specific correction are closed.
+- A future approved live command must perform the fresh subscriber and
+  membership check, mutation-if-absent, and immediate verification atomically.
+- The future command must preserve the prior non-active group and every other
+  existing group.
+- No stale external final-check receipt is required because the future atomic
+  command performs its own fresh checks.
+- This result does not authorize or execute the live correction.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

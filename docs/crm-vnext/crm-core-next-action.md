@@ -5656,13 +5656,14 @@ routing and completion pointer.
   - Correction was not attempted or executed.
   - No CRM/source write occurred.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_mailerlite_exact_active_trigger_correction_review_packet_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-11`
 - `updated_at`: `2026-07-11`
+- `completed_at`: `2026-07-11`
 - `objective`: Wait for Alejandro approval before preparing one exact private
   active-trigger correction review packet for the already-created controlled
   subscriber, using the integrated correction guard contract.
@@ -5692,3 +5693,74 @@ routing and completion pointer.
   live correction approval.
 - `completion_definition`: Alejandro approves, modifies, declines or pauses
   exact correction packet preparation.
+- `findings`:
+  - Exact private correction review packet prepared.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-exact-active-trigger-correction-review-result-v0.md`
+  - Packet status:
+    `prepared_no_live_preflight_validated`
+  - Packet contract validation:
+    `passed_existing_subscriber_active_trigger_correction_packet_contract`
+  - Preflight-only status:
+    `preflight_only_ready_for_exact_active_trigger_correction_approval`
+  - Preflight did not call credentials, network, or MailerLite API.
+  - Correction was not attempted or executed.
+  - Prior non-active group preservation remains mandatory.
+  - Active onboarding flow enrollment remains unverified and requires an exact
+    approved correction.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_mailerlite_exact_active_trigger_correction_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-11`
+- `updated_at`: `2026-07-11`
+- `objective`: Wait for Alejandro's exact approval before executing one
+  packet-specific atomic MailerLite correction that adds the already-created
+  controlled subscriber to the active live onboarding trigger group if absent,
+  preserves all existing groups, and immediately verifies membership.
+- `why_now`: The correction guard is integrated and mock-tested. The exact
+  private correction packet is contract-valid. Preflight-only passed without
+  credentials, network, or MailerLite API. The existing subscriber anchor and
+  active trigger reference are available privately. The original E2E
+  active-trigger mismatch remains unresolved until the live correction succeeds
+  or returns an idempotent already-present no-op.
+- `allowed_scope`:
+  - Present the exact correction consequence and approval gate.
+  - Wait for approval, modification, decline, or pause.
+  - No execution in this next-action selection step.
+- `future_live_operation`:
+  `existing_subscriber_add_to_active_live_onboarding_trigger_group_if_not_present`
+- `future_atomic_sequence`:
+  - Validate packet and canonical approval.
+  - Fresh packet-specific subscriber lookup.
+  - Confirm subscriber exists and is active and safe.
+  - Confirm active trigger membership.
+  - If already present, no-op and verify.
+  - If absent, perform exactly one group assignment.
+  - Fetch the same subscriber again.
+  - Verify active trigger membership is present.
+  - Preserve all previous groups.
+  - Stop.
+- `forbidden_scope`:
+  - No API before exact approval.
+  - No MailerLite UI.
+  - No group removal.
+  - No subscriber upsert.
+  - No field or status update.
+  - No resubscribe.
+  - No automation or campaign mutation.
+  - No broad import.
+  - No CRM/source write.
+  - No Instagram or Gmail.
+  - No private values in chat.
+  - No `/Users/alejandrogomez/CRM`.
+- `approval_phrase_source_required`: guard-emitted canonical approval template
+  from the integrated correction guard.
+- `approval_phrase_contract_version`:
+  `mailerlite_active_trigger_correction_approval_phrase_v1_2026-07-11`
+- `recommended_default`: Approve one atomic packet-specific correction, then
+  central-close the correction result before any other product work.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  one exact active-trigger correction.

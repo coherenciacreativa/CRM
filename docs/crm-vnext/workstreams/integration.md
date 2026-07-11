@@ -801,3 +801,22 @@
 - Prior non-active group preservation is mandatory.
 - Next step is private correction review packet preparation.
 - No live approval exists yet.
+
+## Exact Active-Trigger Correction Review Closeout
+
+- Central closeout read only the exact redacted review JSON and Markdown
+  receipts.
+- No private correction packet was read.
+- No private subscriber anchor or group reference was read.
+- No API or UI occurred.
+- Preflight-only was not rerun during central closeout.
+- No correction occurred.
+- No CRM/source write occurred.
+- The exact packet contract passed in the source run.
+- The source preflight-only gate passed without credentials, network, or
+  MailerLite API.
+- The next boundary is exact live correction approval.
+- A future approved correction must preserve the prior non-active group and all
+  other existing groups.
+- The active onboarding trigger mismatch remains unresolved until the live
+  correction succeeds or returns a verified already-present no-op.

@@ -1619,6 +1619,33 @@ No lane outputs in review at creation.
   request separate CEO correction approval
 - `recommended_default`: prepare exact private correction review packet
 
+### controlled_welcome_flow_mailerlite_exact_active_trigger_correction_review_closeout_2026-07-11
+
+- `result_type`: `exact_active_trigger_correction_review_closeout`
+- `run_id`:
+  `crm_core_mailerlite_exact_active_trigger_correction_review_packet_v0_2026-07-11`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-active-trigger-correction-review-result-v0.md`
+- `packet_status`: `prepared_no_live_preflight_validated`
+- `packet_contract_version`:
+  `mailerlite_existing_subscriber_active_trigger_correction_packet_v1`
+- `operation_class`:
+  `existing_subscriber_add_to_active_live_onboarding_trigger_group_if_not_present`
+- `packet_contract_validation`:
+  `passed_existing_subscriber_active_trigger_correction_packet_contract`
+- `preflight_only_status`:
+  `preflight_only_ready_for_exact_active_trigger_correction_approval`
+- `preflight_credential_provider_called`: false
+- `preflight_network_client_called`: false
+- `preflight_mailerlite_api_called`: false
+- `correction_attempted`: false
+- `correction_executed`: false
+- `prior_non_active_group_preservation_required`: true
+- `blockers`: none
+- `decision_needed`: exact packet-specific correction approval or pause
+- `recommended_default`: approve one atomic correction, followed by immediate
+  packet-specific verification.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

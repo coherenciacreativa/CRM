@@ -642,3 +642,30 @@ Implementation artifacts:
 - `docs/crm-vnext/mailerlite-onboarding-existing-subscriber-active-trigger-correction-guard-design-v0.md`
 
 Scope note: this lane task used synthetic fixtures only. It did not call live MailerLite APIs, use MailerLite UI, inspect credentials, read real private packets, read real Mantis reports, mutate subscribers/groups, or write CRM/source state.
+
+## Exact Active-Trigger Correction Review Packet - 2026-07-11
+
+- `exact_active_trigger_correction_review_packet_status`:
+  `prepared_no_live_preflight_validated`
+- `exact_active_trigger_correction_review_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-exact-active-trigger-correction-review-result-v0.md`
+- `packet_contract_validation`:
+  `passed_existing_subscriber_active_trigger_correction_packet_contract`
+- `preflight_only_status`:
+  `preflight_only_ready_for_exact_active_trigger_correction_approval`
+- `preflight_credentials_called`: false
+- `preflight_network_called`: false
+- `preflight_mailerlite_api_called`: false
+- `correction_attempted`: false
+- `correction_executed`: false
+- `prior_non_active_group_preservation_required`: true
+- `correction_readiness`: `ready_for_exact_live_correction_approval`
+- `active_onboarding_flow_enrollment_status`:
+  `not_verified_correction_required`
+- `recommended_next_step`: ask Alejandro to approve, modify, or pause one
+  exact atomic correction.
+
+The packet and preflight gates are complete, but the live correction remains a
+separate exact approval boundary. A future approved command must fresh-check
+the packet-specific subscriber and membership, add the active live trigger only
+if absent, preserve all existing groups, verify immediately, and stop.
