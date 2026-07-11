@@ -1557,6 +1557,40 @@ No lane outputs in review at creation.
 - `decision_needed`: active onboarding trigger correction packet or pause
 - `recommended_default`: prepare active onboarding trigger correction packet.
 
+### controlled_welcome_flow_mailerlite_active_trigger_correction_packet_closeout_2026-07-10
+
+- `result_type`: `active_trigger_correction_packet_closeout`
+- `run_id`:
+  `crm_core_mailerlite_active_trigger_correction_packet_v0_2026-07-10`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-packet-result-v0.md`
+- `packet_status`: `prepared_no_write_not_executed`
+- `mismatch_confirmed`: true
+- `impact_on_e2e_result`:
+  `technical_e2e_completed_but_active_onboarding_not_verified`
+- `existing_subscriber_private_anchor_status`: `available_private_only`
+- `active_live_trigger_private_reference_status`: `available_private_only`
+- `prior_non_active_group_reference_status`: `available_private_only`
+- `existing_subscriber_active_trigger_correction_route_status`:
+  `not_implemented`
+- `correction_options_available`:
+  `option_a_correct_existing_subscriber`;
+  `option_b_repeat_e2e_with_corrected_active_trigger_from_start`;
+  `option_c_pause`
+- `recommended_correction_strategy`:
+  `prepare_existing_subscriber_correction_guard`
+- `blockers`:
+  `existing_subscriber_active_trigger_correction_guard_not_mock_tested`
+- `mailerlite_api_called`: false
+- `mailerlite_ui_used`: false
+- `mutation_performed`: false
+- `crm_source_writes`: false
+- `private_artifacts_integrated`: false
+- `decision_needed`: implement guard, repeat E2E with corrected mapping, or
+  pause
+- `recommended_default`: implement existing-subscriber active-trigger
+  correction guard.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `technical_group_mutation_verified_active_trigger_mismatch_correction_required`
+- `status`: `active_trigger_correction_packet_prepared_guard_needed`
 - `objective`: No-secret setup inventory, no-write payload, future mutation
   packet.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
@@ -55,9 +55,9 @@
 - `actual_mutation_status`:
   `not_executed`
 - `mutation_readiness`:
-  `ready_for_exact_mutation_approval_after_closeout`
-- `recommended_next_step`: ask Alejandro exact packet-specific MailerLite
-  mutation approval or pause.
+  `blocked_pending_existing_subscriber_active_trigger_correction_guard`
+- `recommended_next_step`: implement existing-subscriber active-trigger
+  correction guard.
   - current task seed:
     `crm_core_mailerlite_onboarding_setup_inventory_awaiting_approval_v0`
   - current task completed as no-run design:
@@ -588,3 +588,34 @@ The controlled E2E source run verified a technical MailerLite group mutation,
 but final reconciliation found the mutation group/reference did not match the
 active live onboarding trigger group. Active onboarding trigger correction is
 required before claiming active onboarding flow enrollment.
+
+## Active Trigger Correction Packet Result
+
+- `active_trigger_correction_packet_status`:
+  `prepared_no_write_not_executed`
+- `active_trigger_correction_packet_result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-packet-result-v0.md`
+- `mismatch_confirmed`: true
+- `existing_subscriber_private_anchor_status`: `available_private_only`
+- `active_live_trigger_private_reference_status`: `available_private_only`
+- `prior_non_active_group_reference_status`: `available_private_only`
+- `existing_subscriber_active_trigger_correction_route_status`:
+  `not_implemented`
+- `correction_options_available`:
+  `option_a_correct_existing_subscriber`;
+  `option_b_repeat_e2e_with_corrected_active_trigger_from_start`;
+  `option_c_pause`
+- `recommended_correction_strategy`:
+  `prepare_existing_subscriber_correction_guard`
+- `mutation_readiness`:
+  `blocked_pending_existing_subscriber_active_trigger_correction_guard`
+- `active_onboarding_flow_enrollment_status`:
+  `not_verified_correction_required`
+- `recommended_next_step`: implement existing-subscriber active-trigger
+  correction guard.
+
+The no-write correction packet confirms private-only evidence is available to
+plan a correction, but the existing-subscriber correction route is not
+implemented. No MailerLite API, MailerLite UI, mutation, or CRM/source write
+occurred during central closeout. Correction mutation remains blocked until the
+guard is implemented, mock-tested, and separately approved.

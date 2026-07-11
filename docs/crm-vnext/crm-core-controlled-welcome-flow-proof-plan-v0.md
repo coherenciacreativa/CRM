@@ -2057,6 +2057,44 @@ Proof progress summary:
 - Mati dynamic replies are not complete.
 - Inbox delivery is not complete.
 
+## MailerLite Active Trigger Correction Packet — Prepared No-Write
+
+- Result doc:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-packet-result-v0.md`
+- Active trigger correction packet prepared.
+- `mismatch_confirmed`: true
+- `impact_on_e2e_result`:
+  `technical_e2e_completed_but_active_onboarding_not_verified`
+- `existing_subscriber_private_anchor_status`: `available_private_only`
+- `active_live_trigger_private_reference_status`: `available_private_only`
+- `prior_non_active_group_reference_status`: `available_private_only`
+- `existing_subscriber_active_trigger_correction_route_status`:
+  `not_implemented`
+- `recommended_correction_strategy`:
+  `prepare_existing_subscriber_correction_guard`
+- `blockers`:
+  `existing_subscriber_active_trigger_correction_guard_not_mock_tested`
+- No MailerLite API was called.
+- No MailerLite UI was used.
+- No mutation was performed.
+- No CRM/source write occurred.
+
+Interpretation:
+
+- The E2E technical flow remains useful but active live onboarding enrollment is
+  still not achieved.
+- The next safe step is guard implementation, not correction mutation.
+- Correction mutation remains blocked pending a mock-tested existing-subscriber
+  active-trigger correction guard.
+
+Proof progress summary:
+
+- Active trigger correction packet is prepared.
+- Active trigger correction mutation is not complete.
+- Active onboarding enrollment is not complete.
+- CRM enrichment/write is not complete.
+- Production automation is not complete.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

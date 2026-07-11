@@ -5521,13 +5521,14 @@ routing and completion pointer.
   - No cards, Fact Store, ledgers, or scoring.
   - Inbox delivery not verified.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_mailerlite_active_trigger_correction_packet_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-10`
 - `updated_at`: `2026-07-10`
+- `completed_at`: `2026-07-10`
 - `objective`: Wait for Alejandro approval before preparing a no-write active
   onboarding trigger correction packet for the controlled E2E candidate, because
   the executed MailerLite mutation group/reference did not match the active live
@@ -5574,3 +5575,60 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   active onboarding trigger correction planning.
+- `findings`:
+  - Correction packet prepared.
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-packet-result-v0.md`
+  - Mismatch confirmed.
+  - Existing subscriber private anchor available.
+  - Active live trigger private reference available.
+  - Prior non-active group reference available.
+  - Existing subscriber active-trigger correction route not implemented.
+  - Recommended correction strategy is to prepare/implement the guard.
+  - No API, UI, mutation, or CRM/source write occurred.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_mailerlite_existing_subscriber_active_trigger_correction_guard_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-10`
+- `updated_at`: `2026-07-10`
+- `objective`: Wait for Alejandro approval before implementing a mock-tested
+  MailerLite guard for one packet-specific existing-subscriber active-trigger
+  correction operation.
+- `why_now`: The E2E technical flow succeeded but did not enroll the candidate
+  into the active live onboarding trigger group. The no-write correction packet
+  shows the existing subscriber private anchor and active trigger private
+  reference are available privately, but no safe correction route is
+  implemented. CRM Core needs a guard before any correction mutation can be
+  considered.
+- `allowed_scope`:
+  - Present guard implementation proposal.
+  - Implement only after approval.
+  - Mock-test correction route.
+  - No live MailerLite API.
+  - No mutation.
+  - No CRM/source writes.
+- `forbidden_scope`:
+  - No MailerLite API.
+  - No MailerLite UI.
+  - No mutation.
+  - No group assignment.
+  - No field creation.
+  - No automation/campaign mutation.
+  - No broad import.
+  - No raw email in chat.
+  - No raw IDs.
+  - No group references in chat.
+  - No CRM/source writes.
+  - No Instagram.
+  - No Gmail.
+  - No Mati reply.
+  - No repeatability run.
+  - No CRM enrichment run.
+  - No inbox/automation observation.
+  - No Safari hardening integration.
+  - No `/Users/alejandrogomez/CRM`.
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  implementation of the existing-subscriber active-trigger correction guard.
