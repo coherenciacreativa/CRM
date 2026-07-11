@@ -12,8 +12,10 @@ import {
   CORRECTION_PACKET_CONTRACT_VERSION,
   GUARD_STATUS,
   assertAllowedCorrectionRequest,
+  createMailerLiteActiveTriggerCorrectionClient,
   mutationAttemptLimiter,
   run,
+  subscriberGetPath,
   validateActiveTriggerCorrectionApprovalPhrase,
   validateActiveTriggerCorrectionPacket,
 } from "../scripts/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.mjs";
@@ -262,6 +264,29 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       expect(receipt.mutation_endpoint_call_count).toBe(0);
       expect(requests.map((request) => request.method)).toEqual(["GET"]);
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("live lookup requests group membership through the proven subscriber route", () => {
+    expect(subscriberGetPath(FAKE_EMAIL)).toBe(`/api/subscribers/${encodeURIComponent(FAKE_EMAIL)}?include=groups`);
+    expect(assertAllowedCorrectionRequest({ method: "GET", path: subscriberGetPath(FAKE_EMAIL) })).toBe(true);
+  });
+
+  test("live lookup converts a MailerLite 404 into a no-mutation not-found result", async () => {
+    const calls: Array<Record<string, unknown>> = [];
+    const client = createMailerLiteActiveTriggerCorrectionClient({
+      options: { apiBase: "https://connect.mailerlite.test/api", timeoutMs: 1_000 },
+      key: "mock",
+      calls,
+      fetchImpl: async () => new Response(JSON.stringify({ message: "not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      }),
+    });
+
+    const response = await client.request({ method: "GET", path: subscriberGetPath(FAKE_EMAIL) });
+
+    expect(response).toEqual({ subscriber_lookup_status: "not_found", status: 404 });
+    expect(calls).toEqual([{ method: "GET", path: subscriberGetPath(FAKE_EMAIL) }]);
   });
 
   test("unsafe subscriber statuses block with zero mutation calls", async () => {

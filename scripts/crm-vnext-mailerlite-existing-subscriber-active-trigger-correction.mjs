@@ -238,6 +238,12 @@ const createMailerLiteActiveTriggerCorrectionClient = ({ options, key, fetchImpl
       });
       const text = await response.text();
       if (!response.ok) {
+        if (response.status === 404 && String(method).toUpperCase() === 'GET') {
+          return {
+            subscriber_lookup_status: 'not_found',
+            status: 404,
+          };
+        }
         const error = new Error(classifyFailure(response.status, text));
         error.status = response.status;
         throw error;
@@ -275,7 +281,7 @@ const getCredential = async (options) => {
 };
 
 const encodePathPart = (value) => encodeURIComponent(String(value));
-const subscriberGetPath = (anchor) => `/api/subscribers/${encodePathPart(anchor)}`;
+const subscriberGetPath = (anchor) => `/api/subscribers/${encodePathPart(anchor)}?include=groups`;
 const assignmentPath = (subscriberId, groupReference) => `/api/subscribers/${encodePathPart(subscriberId)}/groups/${encodePathPart(groupReference)}`;
 
 const arrayFrom = (value) => Array.isArray(value) ? value : [];
