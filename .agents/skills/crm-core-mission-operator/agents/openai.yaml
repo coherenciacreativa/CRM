@@ -1,0 +1,4 @@
+interface:
+  display_name: "CRM Core Mission Operator"
+  short_description: "Operate bounded CRM Core missions safely"
+  default_prompt: "Use $crm-core-mission-operator to prepare a bounded CRM Core mission, or execute it only when its exact contract is already explicitly approved."

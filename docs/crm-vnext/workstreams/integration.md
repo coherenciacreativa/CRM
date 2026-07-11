@@ -820,3 +820,25 @@
   other existing groups.
 - The active onboarding trigger mismatch remains unresolved until the live
   correction succeeds or returns a verified already-present no-op.
+
+## Mission Operating Model v1 Adoption
+
+- `integration_packet_id`:
+  `crm_core_operating_model_v1_bootstrap_integration_2026_07_11`
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `operating_model_source_branch`: `codex/crm-core-operating-model-v2`
+- `operating_model_source_commit`:
+  `d5bfa212e41649cbb0d936ee6291ead371cd4a29`
+- `mailerlite_fix_source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `mailerlite_fix_source_commit`:
+  `05b1c598e922457112c102b34ad49915d5c94bdd`
+- Mission Operating Model v1, Chief Architect bootstrap specification, compact
+  contract templates, Proof/Hardening policy, current strategic context, and
+  repo-local `crm-core-mission-operator` skill are adopted.
+- The lookup-route fix is integrated with its exact two-file allowlist.
+- Future default is one CEO approval, zero routine handoffs, one final brief,
+  and one central integration.
+- No live correction retry, source action, private-artifact read, or CRM/source
+  write occurred during this integration.
+- Current product mission remains one freshly approved atomic active-trigger
+  correction plus observable first-email proof.

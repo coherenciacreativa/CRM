@@ -1646,6 +1646,42 @@ No lane outputs in review at creation.
 - `recommended_default`: approve one atomic correction, followed by immediate
   packet-specific verification.
 
+## crm_core_mission_operating_model_v1_and_mailerlite_lookup_fix_integration_2026_07_11
+
+- `source_workstream`: `integration` and `mailerlite-onboarding`
+- `source_branches`:
+  - `codex/crm-core-operating-model-v2`
+  - `codex/crm-core-mailerlite-onboarding`
+- `source_commits`:
+  - `d5bfa212e41649cbb0d936ee6291ead371cd4a29`
+  - `05b1c598e922457112c102b34ad49915d5c94bdd`
+- `integration_packet_id`:
+  `crm_core_operating_model_v1_bootstrap_integration_2026_07_11`
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `source_file_allowlist`:
+  - five operating-model/bootstrap documents;
+  - three repo-local skill files;
+  - exact MailerLite correction script and targeted test.
+- `central_coordination_files`:
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+- `tests_or_checks`:
+  - independent adversarial review;
+  - skill forward test and YAML/schema validation;
+  - exact changed-file allowlists;
+  - targeted MailerLite syntax and Vitest checks;
+  - central lock tests;
+  - redaction scan and `git diff --check`.
+- `private_artifacts_touched`: false
+- `source_actions_executed`: false
+- `live_correction_retried`: false
+- `integration_recommendation`: integrated in the central commit containing
+  this queue item.
+- `decision_needed`: fresh exact approval of the Chief Architect compact
+  mission contract for active-trigger correction and first-email proof.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

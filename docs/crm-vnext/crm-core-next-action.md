@@ -5709,7 +5709,7 @@ routing and completion pointer.
   - Active onboarding flow enrollment remains unverified and requires an exact
     approved correction.
 
-## Active Next Action
+## Superseded Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_mailerlite_exact_active_trigger_correction_awaiting_approval_v0`
@@ -5764,3 +5764,51 @@ routing and completion pointer.
   central-close the correction result before any other product work.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one exact active-trigger correction.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_fresh_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-11`
+- `updated_at`: `2026-07-11`
+- `objective`: Wait for a fresh exact CEO approval of one compact atomic
+  mission that adds the controlled subscriber to the real active onboarding
+  trigger if absent, preserves all existing groups, immediately verifies
+  membership, and obtains observable proof of the first onboarding email.
+- `why_now`:
+  - The previous exact approval was consumed by an attempt that stopped on
+    subscriber lookup HTTP 404 before mutation.
+  - `correction_attempted`: false.
+  - `correction_executed`: false.
+  - `mutation_endpoint_call_count`: 0.
+  - The lookup route fix is committed and integrated with group membership
+    included and a redacted 404 terminal result.
+  - Active-trigger membership and first-email delivery remain unproven.
+- `approved_in_this_bootstrap`:
+  - Operating-model docs, mission skill, offline tests, project bootstrap, and
+    central integration only.
+  - No live retry, MailerLite UI/API, correction, send, or source write.
+- `future_atomic_sequence_after_fresh_approval`:
+  - Fresh packet and approval validation.
+  - Fresh packet-specific subscriber lookup.
+  - Confirm safe active subscriber and current group membership.
+  - If active trigger membership is present, perform no mutation.
+  - If absent, perform at most one add-only group assignment.
+  - Re-fetch immediately and verify active trigger membership.
+  - Preserve every existing group and subscriber field/status.
+  - Obtain observable first-email evidence through the approved boundary.
+  - Emit one redacted receipt and one closeout.
+- `forbidden_scope`:
+  - No live action before fresh exact approval.
+  - No group removal or replacement.
+  - No subscriber upsert, field/status update, or resubscribe.
+  - No automation/campaign mutation or broad import.
+  - No unrelated Instagram, Gmail, CRM/source, card, Fact Store, ledger,
+    scoring, or Mati action.
+  - No private values in chat.
+  - No `/Users/alejandrogomez/CRM`.
+- `recommended_default`:
+  `open_chief_architect_current_mission_chat_and_approve_compact_mission_contract`
+- `completion_definition`: Alejandro approves, modifies, declines, or pauses
+  the compact atomic correction and first-email proof mission contract.
