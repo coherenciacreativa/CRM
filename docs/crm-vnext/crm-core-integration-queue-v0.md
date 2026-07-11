@@ -1591,6 +1591,34 @@ No lane outputs in review at creation.
 - `recommended_default`: implement existing-subscriber active-trigger
   correction guard.
 
+### controlled_welcome_flow_mailerlite_existing_subscriber_active_trigger_correction_guard_integration_2026-07-11
+
+- `result_type`:
+  `existing_subscriber_active_trigger_correction_guard_integration`
+- `source_branch`:
+  `codex/crm-core-mailerlite-onboarding`
+- `source_commit`:
+  `49bc5fcfc0e81ff4a26ff1df242d321876d42a44`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-existing-subscriber-active-trigger-correction-guard-design-v0.md`
+- `guard_status`: `implemented_and_mock_tested`
+- `operation_class`:
+  `existing_subscriber_add_to_active_live_onboarding_trigger_group_if_not_present`
+- `packet_contract_version`:
+  `mailerlite_existing_subscriber_active_trigger_correction_packet_v1`
+- `approval_contract_version`:
+  `mailerlite_active_trigger_correction_approval_phrase_v1_2026-07-11`
+- `preflight_only_status`: `implemented_and_mock_tested`
+- `mocked_live_atomic_route_status`: `implemented_and_mock_tested`
+- `idempotent_already_present_status`: `implemented_and_mock_tested`
+- `existing_groups_preserved`: true
+- `live_mailerlite_api_called`: false
+- `correction_attempted`: false
+- `correction_executed`: false
+- `decision_needed`: prepare/review an exact private correction packet, then
+  request separate CEO correction approval
+- `recommended_default`: prepare exact private correction review packet
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

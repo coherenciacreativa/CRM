@@ -619,3 +619,26 @@ plan a correction, but the existing-subscriber correction route is not
 implemented. No MailerLite API, MailerLite UI, mutation, or CRM/source write
 occurred during central closeout. Correction mutation remains blocked until the
 guard is implemented, mock-tested, and separately approved.
+
+## Existing Subscriber Active Trigger Correction Guard v0 - 2026-07-11
+
+- existing_subscriber_active_trigger_correction_guard_status: `integrated_implemented_and_mock_tested`
+- correction_operation_class: `existing_subscriber_add_to_active_live_onboarding_trigger_group_if_not_present`
+- endpoint_scope: `packet_specific_get_then_post_assign_then_get_verify`
+- prior_non_active_group_removal: `forbidden`
+- preflight_only_status: `integrated_implemented_and_mock_tested`
+- approval_phrase_contract_status: `integrated_implemented_and_mock_tested`
+- live_correction_run: `not_run`
+- actual_correction_status: `not_executed`
+- mutation_readiness: `blocked_pending_exact_private_correction_review_packet`
+- recommended_next_step: `prepare exact private correction review packet from approved private evidence`
+
+Implementation artifacts:
+
+- `scripts/crm-vnext-mailerlite-active-trigger-correction-contract.mjs`
+- `scripts/crm-vnext-mailerlite-active-trigger-correction-approval-contract.mjs`
+- `scripts/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.mjs`
+- `__tests__/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.spec.ts`
+- `docs/crm-vnext/mailerlite-onboarding-existing-subscriber-active-trigger-correction-guard-design-v0.md`
+
+Scope note: this lane task used synthetic fixtures only. It did not call live MailerLite APIs, use MailerLite UI, inspect credentials, read real private packets, read real Mantis reports, mutate subscribers/groups, or write CRM/source state.

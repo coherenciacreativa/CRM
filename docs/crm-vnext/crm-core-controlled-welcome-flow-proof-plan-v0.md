@@ -2095,6 +2095,51 @@ Proof progress summary:
 - CRM enrichment/write is not complete.
 - Production automation is not complete.
 
+## Existing Subscriber Active Trigger Correction Guard — Integrated
+
+- Source branch:
+  `codex/crm-core-mailerlite-onboarding`
+- Source commit:
+  `49bc5fcfc0e81ff4a26ff1df242d321876d42a44`
+- Guard status:
+  `implemented_and_mock_tested`
+- Operation class:
+  `existing_subscriber_add_to_active_live_onboarding_trigger_group_if_not_present`
+- Packet contract:
+  `mailerlite_existing_subscriber_active_trigger_correction_packet_v1`
+- Approval contract:
+  `mailerlite_active_trigger_correction_approval_phrase_v1_2026-07-11`
+- Approval template:
+  `implemented_and_mock_tested`
+- Approval validation:
+  `implemented_and_mock_tested`
+- Preflight-only:
+  `implemented_and_mock_tested`
+- Mocked live atomic route:
+  `implemented_and_mock_tested`
+- Endpoint allowlist:
+  `implemented_and_mock_tested`
+- Idempotent already-present path:
+  `implemented_and_mock_tested`
+- Existing-group preservation:
+  `implemented_and_mock_tested`
+- Live correction run:
+  false
+- Actual correction:
+  `not_executed`
+- Current readiness:
+  `blocked_pending_exact_private_correction_review_packet`
+
+Interpretation:
+
+- The guard can support a future atomic fresh-check, assign-if-absent, and
+  verify sequence.
+- It never removes or replaces existing groups.
+- It does not reuse the subscriber-upsert route.
+- A private packet-specific correction review is required before any live
+  approval.
+- The active onboarding trigger mismatch remains unresolved operationally.
+
 ## Completion Boundary
 
 Complete when CRM Core has a no-run Controlled Welcome Flow Proof plan that

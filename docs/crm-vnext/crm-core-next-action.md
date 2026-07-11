@@ -5587,13 +5587,14 @@ routing and completion pointer.
   - Recommended correction strategy is to prepare/implement the guard.
   - No API, UI, mutation, or CRM/source write occurred.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_mailerlite_existing_subscriber_active_trigger_correction_guard_awaiting_approval_v0`
-- `status`: `blocked`
+- `status`: `completed`
 - `created_at`: `2026-07-10`
-- `updated_at`: `2026-07-10`
+- `updated_at`: `2026-07-11`
+- `completed_at`: `2026-07-11`
 - `objective`: Wait for Alejandro approval before implementing a mock-tested
   MailerLite guard for one packet-specific existing-subscriber active-trigger
   correction operation.
@@ -5632,3 +5633,62 @@ routing and completion pointer.
   - No `/Users/alejandrogomez/CRM`.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   implementation of the existing-subscriber active-trigger correction guard.
+- `findings`:
+  - Existing-subscriber active-trigger correction guard integrated.
+  - Source branch:
+    `codex/crm-core-mailerlite-onboarding`
+  - Source commit:
+    `49bc5fcfc0e81ff4a26ff1df242d321876d42a44`
+  - Result doc:
+    `docs/crm-vnext/mailerlite-onboarding-existing-subscriber-active-trigger-correction-guard-design-v0.md`
+  - Guard status:
+    `implemented_and_mock_tested`
+  - Operation class:
+    `existing_subscriber_add_to_active_live_onboarding_trigger_group_if_not_present`
+  - Packet contract:
+    `mailerlite_existing_subscriber_active_trigger_correction_packet_v1`
+  - Approval contract:
+    `mailerlite_active_trigger_correction_approval_phrase_v1_2026-07-11`
+  - Preflight-only, approval template, approval validation, endpoint allowlist,
+    idempotent already-present path, existing-group preservation, and mocked
+    live atomic route are implemented and mock-tested.
+  - Live MailerLite API was not called.
+  - Correction was not attempted or executed.
+  - No CRM/source write occurred.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_mailerlite_exact_active_trigger_correction_review_packet_awaiting_approval_v0`
+- `status`: `blocked`
+- `created_at`: `2026-07-11`
+- `updated_at`: `2026-07-11`
+- `objective`: Wait for Alejandro approval before preparing one exact private
+  active-trigger correction review packet for the already-created controlled
+  subscriber, using the integrated correction guard contract.
+- `why_now`: The active trigger mismatch is confirmed and the packet-specific
+  correction guard is integrated and mock-tested. The existing subscriber
+  private anchor and active live trigger private reference are available
+  privately. A private exact review packet is required before any live
+  correction approval.
+- `allowed_scope`:
+  - Present packet-preparation approval.
+  - Prepare one private no-write correction packet after approval.
+  - Run correction guard preflight-only after packet creation if separately
+    included in the approved task.
+  - No live API or mutation.
+- `forbidden_scope`:
+  - No MailerLite API/UI.
+  - No correction mutation.
+  - No group assignment.
+  - No CRM/source writes.
+  - No Instagram/Gmail.
+  - No private values in chat.
+  - No repeatability run.
+  - No CRM enrichment.
+  - No `/Users/alejandrogomez/CRM`.
+- `recommended_default`: Prepare the exact private correction review packet and
+  run preflight-only, then review the redacted result before requesting exact
+  live correction approval.
+- `completion_definition`: Alejandro approves, modifies, declines or pauses
+  exact correction packet preparation.

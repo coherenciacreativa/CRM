@@ -790,3 +790,14 @@
   are available privately.
 - Correction route is not implemented.
 - Next safe step is mock-tested guard implementation.
+
+## Existing Subscriber Active Trigger Correction Guard Integration
+
+- Central integration used source diff and lane result only.
+- No private artifacts or receipts were read.
+- No API/UI occurred.
+- No correction occurred.
+- Guard supports atomic packet-specific correction.
+- Prior non-active group preservation is mandatory.
+- Next step is private correction review packet preparation.
+- No live approval exists yet.
