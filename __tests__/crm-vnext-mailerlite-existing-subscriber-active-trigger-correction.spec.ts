@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -8,12 +8,20 @@ import { describe, expect, test } from "vitest";
 import {
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION,
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE,
+  DEFAULT_API_BASE,
+  MISSION_ACTIVE_NEXT_ACTION,
+  MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  MISSION_CONTRACT_APPROVAL_PHRASE,
   CORRECTION_OPERATION_CLASS,
   CORRECTION_PACKET_CONTRACT_VERSION,
   GUARD_STATUS,
   assertAllowedCorrectionRequest,
+  assertAllowedExactAutomationRequest,
+  classifyExactAutomationMapping,
   createMailerLiteActiveTriggerCorrectionClient,
+  exactAutomationGetPath,
   mutationAttemptLimiter,
+  parseArgs,
   run,
   subscriberGetPath,
   validateActiveTriggerCorrectionApprovalPhrase,
@@ -22,6 +30,8 @@ import {
 import {
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION as SHARED_APPROVAL_VERSION,
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE as SHARED_APPROVAL_PHRASE,
+  MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION as SHARED_MISSION_APPROVAL_VERSION,
+  MISSION_CONTRACT_APPROVAL_PHRASE as SHARED_MISSION_APPROVAL_PHRASE,
 } from "../scripts/crm-vnext-mailerlite-active-trigger-correction-approval-contract.mjs";
 import {
   CORRECTION_PACKET_CONTRACT_VERSION as SHARED_PACKET_VERSION,
@@ -34,6 +44,11 @@ const FAKE_EMAIL = "person@example.test";
 const FAKE_SUBSCRIBER_ID = "sub_fake_existing_001";
 const FAKE_ACTIVE_GROUP = "grp_fake_active_trigger_001";
 const FAKE_PRIOR_GROUP = "grp_fake_prior_non_active_002";
+const FAKE_OTHER_GROUP = "grp_fake_other_existing_003";
+const FAKE_AUTOMATION_ID = "aut_fake_exact_onboarding_001";
+const MISSION_RUN_ID = "crm_core_mission_contract_2026_07_11_v1_run_001";
+const EXPECTED_HEAD = "a".repeat(40);
+const MISSION_NOW = new Date("2026-07-11T18:00:00.000Z");
 const FAKE_TOKEN = "Bearer fake_secret_token";
 const RAW_PAYLOAD = "rawPayloadFixture";
 const sensitiveStrings = [
@@ -41,6 +56,8 @@ const sensitiveStrings = [
   FAKE_SUBSCRIBER_ID,
   FAKE_ACTIVE_GROUP,
   FAKE_PRIOR_GROUP,
+  FAKE_OTHER_GROUP,
+  FAKE_AUTOMATION_ID,
   FAKE_TOKEN,
   RAW_PAYLOAD,
   "Authorization",
@@ -86,9 +103,10 @@ const packet = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const subscriber = (groups: string[], status = "active") => ({
+const subscriber = (groups: string[], status = "active", email = FAKE_EMAIL, id = FAKE_SUBSCRIBER_ID) => ({
   subscriber: {
-    id: FAKE_SUBSCRIBER_ID,
+    id,
+    email,
     status,
     groups: groups.map((id) => ({ id })),
   },
@@ -116,8 +134,8 @@ const makePaths = async (packetOverrides: Record<string, unknown> = {}) => {
     receiptJson: join(roots.redactedReceiptRoot, "correction-receipt.json"),
     receiptMd: join(roots.redactedReceiptRoot, "correction-receipt.md"),
   };
-  await writeFile(paths.approvalPhraseFile, `${ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE}\n`, "utf8");
-  await writeFile(paths.privatePacket, `${JSON.stringify(packet(packetOverrides), null, 2)}\n`, "utf8");
+  await writeFile(paths.approvalPhraseFile, `${MISSION_CONTRACT_APPROVAL_PHRASE}\n`, { encoding: "utf8", mode: 0o600 });
+  await writeFile(paths.privatePacket, `${JSON.stringify(missionPacket(packetOverrides), null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
   return { dir, roots, paths };
 };
 
@@ -125,6 +143,8 @@ const liveArgs = (paths: Record<string, string>, approvalPhraseFile = paths.appr
   "--allow-live-existing-subscriber-active-trigger-correction",
   "--approval-phrase-file",
   approvalPhraseFile,
+  "--approval-contract-version",
+  MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
   "--private-correction-packet-json",
   paths.privatePacket,
   "--private-result-json",
@@ -135,7 +155,78 @@ const liveArgs = (paths: Record<string, string>, approvalPhraseFile = paths.appr
   paths.receiptJson,
   "--redacted-receipt-md",
   paths.receiptMd,
+  "--expected-repo-head",
+  EXPECTED_HEAD,
+  "--expected-active-next-action",
+  MISSION_ACTIVE_NEXT_ACTION,
+  "--expected-packet-id",
+  "crm_core_mission_contract_2026_07_11_v1_execution_packet",
+  "--run-id",
+  MISSION_RUN_ID,
 ];
+
+const missionPacket = (overrides: Record<string, unknown> = {}) => packet({
+  packet_id: "crm_core_mission_contract_2026_07_11_v1_execution_packet",
+  mission_contract_version: MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  mission_run_id: MISSION_RUN_ID,
+  mission_created_at: "2026-07-11T17:30:00.000Z",
+  expected_repo_head: EXPECTED_HEAD,
+  expected_active_next_action: MISSION_ACTIVE_NEXT_ACTION,
+  private_lookup: {
+    existing_subscriber_lookup_anchor: FAKE_EMAIL,
+    active_live_trigger_group_reference: FAKE_ACTIVE_GROUP,
+    prior_non_active_group_reference: FAKE_PRIOR_GROUP,
+    active_onboarding_automation_reference: FAKE_AUTOMATION_ID,
+  },
+  ...overrides,
+});
+
+const makeMissionPaths = async () => {
+  return makePaths();
+};
+
+const missionArgs = (paths: Record<string, string>) => liveArgs(paths);
+
+const executionContextProvider = async () => ({
+  repo_head: EXPECTED_HEAD,
+  worktree_clean: true,
+  active_next_action: MISSION_ACTIVE_NEXT_ACTION,
+});
+
+const automationDetail = (overrides: Record<string, unknown> = {}) => ({
+  data: {
+    id: FAKE_AUTOMATION_ID,
+    enabled: true,
+    complete: true,
+    broken: false,
+    triggers: [{
+      type: "subscriber_joins_group",
+      group_ids: [FAKE_ACTIVE_GROUP],
+      groups: [{ id: FAKE_ACTIVE_GROUP }],
+      exclude_group_ids: [],
+      complete: true,
+      broken: false,
+    }],
+    ...overrides,
+  },
+});
+
+const missionDeps = (deps: Record<string, unknown> = {}) => ({
+  now: MISSION_NOW,
+  executionContextProvider,
+  automationClient: { request: async () => automationDetail() },
+  ...deps,
+});
+
+const runMission = (args: string[], deps: Record<string, unknown> = {}) => run(args, missionDeps(deps));
+
+const replaceArgValue = (args: string[], flag: string, value: string) => {
+  const next = [...args];
+  const index = next.indexOf(flag);
+  if (index < 0) throw new Error(`missing_test_flag:${flag}`);
+  next[index + 1] = value;
+  return next;
+};
 
 const preflightArgs = (paths: Record<string, string>) => [
   ...liveArgs(paths),
@@ -157,6 +248,9 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     expect(ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).toBe("mailerlite_active_trigger_correction_approval_phrase_v1_2026-07-11");
     expect(ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).toBe(SHARED_APPROVAL_VERSION);
     expect(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE).toBe(SHARED_APPROVAL_PHRASE);
+    expect(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe("Mission Contract 2026-07-11.v1");
+    expect(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe(SHARED_MISSION_APPROVAL_VERSION);
+    expect(MISSION_CONTRACT_APPROVAL_PHRASE).toBe(SHARED_MISSION_APPROVAL_PHRASE);
     expect(GUARD_STATUS).toBe("implemented_and_mock_tested");
   });
 
@@ -174,13 +268,19 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
   });
 
   test("exact phrase validation passes and paraphrased phrase blocks", async () => {
-    expect(validateActiveTriggerCorrectionApprovalPhrase(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE).ok).toBe(true);
-    expect(validateActiveTriggerCorrectionApprovalPhrase("I approve the same thing").reason).toBe("blocked_approval_phrase_mismatch");
+    expect(validateActiveTriggerCorrectionApprovalPhrase(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE, ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
+    expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
+    expect(validateActiveTriggerCorrectionApprovalPhrase(`  ${MISSION_CONTRACT_APPROVAL_PHRASE.replace(/\n/g, "   ")}  `, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
+    expect(validateActiveTriggerCorrectionApprovalPhrase("I approve the same thing", ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
+    expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE, ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
+    expect(validateActiveTriggerCorrectionApprovalPhrase(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
+    expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE, undefined).reason).toBe("blocked_approval_contract_version_missing");
+    expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE, "unknown").reason).toBe("blocked_approval_contract_version_unknown");
     const { dir, roots, paths } = await makePaths();
     let credentialCalls = 0;
     try {
       await writeFile(paths.approvalPhraseFile, "I approve the same thing\n", "utf8");
-      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_approval_phrase_mismatch");
+      await expect(runMission(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_approval_phrase_mismatch");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -190,7 +290,49 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     let credentialCalls = 0;
     try {
       await rm(paths.approvalPhraseFile, { force: true });
-      await expect(run(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_approval_phrase_missing");
+      await expect(runMission(liveArgs(paths), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_approval_phrase_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("missing explicit approval contract version blocks before credentials", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    const args = liveArgs(paths);
+    const versionIndex = args.indexOf("--approval-contract-version");
+    args.splice(versionIndex, 2);
+    try {
+      await expect(runMission(args, {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_approval_contract_version_missing");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("legacy approval contract cannot execute the live route", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    try {
+      await writeFile(paths.approvalPhraseFile, `${ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE}\n`, { encoding: "utf8", mode: 0o600 });
+      const args = replaceArgValue(liveArgs(paths), "--approval-contract-version", ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION);
+      await expect(runMission(args, {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_live_requires_current_mission_contract");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("approval file must be a private owner-only regular file", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    try {
+      await chmod(paths.approvalPhraseFile, 0o644);
+      await expect(runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_approval_file_permissions");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -210,7 +352,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const { dir, roots, paths } = await makePaths();
     let credentialCalls = 0;
     try {
-      await expect(run(liveArgs({ ...paths, privateResultJson: join(process.cwd(), "private-result.json") }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_output_path_policy");
+      await expect(runMission(liveArgs({ ...paths, privateResultJson: join(process.cwd(), "private-result.json") }), { roots, credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; } })).rejects.toThrow("blocked_output_path_policy");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -220,7 +362,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     let credentialCalls = 0;
     let networkCalls = 0;
     try {
-      const receipt = await run(preflightArgs(paths), {
+      const receipt = await runMission(preflightArgs(paths), {
         roots,
         credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
         correctionClient: { request: async () => { networkCalls += 1; return { ok: true }; } },
@@ -238,7 +380,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const requests: Array<Record<string, unknown>> = [];
     let credentialCalls = 0;
     try {
-      const receipt = await run(liveArgs(paths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
         correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
@@ -255,7 +397,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const { dir, roots, paths } = await makePaths();
     const requests: Array<Record<string, unknown>> = [];
     try {
-      const receipt = await run(liveArgs(paths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
         correctionClient: makeClient([{ subscriber_lookup_status: "not_found" }], requests),
@@ -274,7 +416,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
   test("live lookup converts a MailerLite 404 into a no-mutation not-found result", async () => {
     const calls: Array<Record<string, unknown>> = [];
     const client = createMailerLiteActiveTriggerCorrectionClient({
-      options: { apiBase: "https://connect.mailerlite.test/api", timeoutMs: 1_000 },
+      options: { apiBase: DEFAULT_API_BASE, timeoutMs: 1_000 },
       key: "mock",
       calls,
       fetchImpl: async () => new Response(JSON.stringify({ message: "not found" }), {
@@ -294,7 +436,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       const { dir, roots, paths } = await makePaths();
       const requests: Array<Record<string, unknown>> = [];
       try {
-        const receipt = await run(liveArgs(paths), {
+        const receipt = await runMission(liveArgs(paths), {
           roots,
           credentialProvider: async () => ({ key: "mock" }),
           correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP], status)], requests),
@@ -309,15 +451,16 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const { dir, roots, paths } = await makePaths();
     const requests: Array<Record<string, unknown>> = [];
     try {
-      const receipt = await run(liveArgs(paths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
-        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP]), subscriber([FAKE_ACTIVE_GROUP, FAKE_PRIOR_GROUP])], requests),
       });
-      expect(receipt.correction_result_status).toBe("already_present_idempotent_noop");
+      expect(receipt.correction_result_status).toBe("already_present_idempotent_noop_verified");
       expect(receipt.correction_executed).toBe(false);
       expect(receipt.mutation_endpoint_call_count).toBe(0);
-      expect(requests.map((request) => request.method)).toEqual(["GET"]);
+      expect(requests.map((request) => request.method)).toEqual(["GET", "GET"]);
+      expect(receipt.all_prior_groups_preservation_status).toBe("all_preserved");
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
@@ -325,7 +468,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const { dir, roots, paths } = await makePaths();
     const requests: Array<Record<string, unknown>> = [];
     try {
-      const receipt = await run(liveArgs(paths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
         correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
@@ -344,14 +487,409 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const { dir, roots, paths } = await makePaths();
     const requests: Array<Record<string, unknown>> = [];
     try {
-      const receipt = await run(liveArgs(paths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
         correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP])], requests),
       });
-      expect(receipt.correction_result_status).toBe("blocked_post_correction_verification_failed");
-      expect(receipt.post_correction_verification_status).toBe("failed");
+      expect(receipt.correction_result_status).toBe("blocked_post_correction_verification_failed_no_retry");
+      expect(receipt.post_correction_verification_status).toBe("failed_or_unknown");
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("mission contract binds exact automation, clean execution context, and one exact add-only transition", async () => {
+    const { dir, roots, paths } = await makeMissionPaths();
+    const correctionRequests: Array<Record<string, unknown>> = [];
+    const automationRequests: Array<Record<string, unknown>> = [];
+    try {
+      const receipt = await runMission(missionArgs(paths), {
+        roots,
+        now: MISSION_NOW,
+        executionContextProvider,
+        credentialProvider: async () => ({ key: "mock" }),
+        automationClient: { request: async (request: Record<string, unknown>) => { automationRequests.push(request); return automationDetail(); } },
+        correctionClient: makeClient([
+          subscriber([FAKE_PRIOR_GROUP, FAKE_OTHER_GROUP]),
+          subscriber([FAKE_OTHER_GROUP, FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP]),
+        ], correctionRequests),
+      });
+      expect(receipt.correction_result_status).toBe("correction_executed_verified");
+      expect(receipt.approval_contract_version).toBe(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION);
+      expect(receipt.execution_binding_status).toBe("passed_clean_head_active_action_packet_and_freshness_binding");
+      expect(receipt.automation_trigger_mapping_status).toBe("exact_active_trigger_mapping_verified");
+      expect(receipt.all_prior_groups_preservation_status).toBe("all_preserved");
+      expect(receipt.group_transition_status).toBe("passed_exact_add_only_transition");
+      expect(automationRequests).toEqual([{ method: "GET", path: exactAutomationGetPath(FAKE_AUTOMATION_ID) }]);
+      expect(correctionRequests.map((request) => request.method)).toEqual(["GET", "POST", "GET"]);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("exact automation classifier requires strict active state and one complete non-excluded group-join trigger", () => {
+    expect(classifyExactAutomationMapping(automationDetail(), FAKE_AUTOMATION_ID, FAKE_ACTIVE_GROUP).ok).toBe(true);
+    expect(classifyExactAutomationMapping(automationDetail({ enabled: false }), FAKE_AUTOMATION_ID, FAKE_ACTIVE_GROUP).ok).toBe(false);
+    expect(classifyExactAutomationMapping(automationDetail({ triggers: [] }), FAKE_AUTOMATION_ID, FAKE_ACTIVE_GROUP).ok).toBe(false);
+    expect(classifyExactAutomationMapping(automationDetail({
+      triggers: [
+        { type: "subscriber_joins_group", group_ids: [FAKE_ACTIVE_GROUP], complete: true, broken: false },
+        { type: "subscriber_joins_group", group_ids: [FAKE_ACTIVE_GROUP], complete: true, broken: false },
+      ],
+    }), FAKE_AUTOMATION_ID, FAKE_ACTIVE_GROUP).ok).toBe(false);
+    expect(exactAutomationGetPath(FAKE_AUTOMATION_ID)).toBe(`/api/automations/${FAKE_AUTOMATION_ID}`);
+    expect(assertAllowedExactAutomationRequest({ method: "GET", path: exactAutomationGetPath(FAKE_AUTOMATION_ID), expectedAutomationReference: FAKE_AUTOMATION_ID })).toBe(true);
+    expect(() => assertAllowedExactAutomationRequest({ method: "GET", path: "/api/automations", expectedAutomationReference: FAKE_AUTOMATION_ID })).toThrow("blocked_non_exact_automation_read");
+  });
+
+  test("mission mapping failure stops before subscriber read or mutation", async () => {
+    const { dir, roots, paths } = await makeMissionPaths();
+    let correctionCalls = 0;
+    try {
+      const receipt = await runMission(missionArgs(paths), {
+        roots,
+        now: MISSION_NOW,
+        executionContextProvider,
+        credentialProvider: async () => ({ key: "mock" }),
+        automationClient: { request: async () => automationDetail({ enabled: false }) },
+        correctionClient: { request: async () => { correctionCalls += 1; return {}; } },
+      });
+      expect(receipt.correction_result_status).toBe("blocked_exact_automation_trigger_mapping_not_verified");
+      expect(correctionCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("mission binding rejects dirty worktree before credentials or network", async () => {
+    const { dir, roots, paths } = await makeMissionPaths();
+    let credentialCalls = 0;
+    try {
+      await expect(runMission(missionArgs(paths), {
+        roots,
+        now: MISSION_NOW,
+        executionContextProvider: async () => ({ repo_head: EXPECTED_HEAD, worktree_clean: false, active_next_action: MISSION_ACTIVE_NEXT_ACTION }),
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_dirty_worktree");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("mission binding rejects head, action, packet, run, contract, and freshness mismatches before credentials", async () => {
+    const cases: Array<{
+      packetOverrides?: Record<string, unknown>;
+      args?: (args: string[]) => string[];
+      deps?: Record<string, unknown>;
+      reason: string;
+    }> = [
+      {
+        args: (args) => replaceArgValue(args, "--expected-repo-head", "b".repeat(40)),
+        reason: "blocked_repo_head_mismatch",
+      },
+      {
+        deps: { executionContextProvider: async () => ({ repo_head: EXPECTED_HEAD, worktree_clean: true, active_next_action: "crm_core_different_active_action_v0" }) },
+        reason: "blocked_active_next_action_mismatch",
+      },
+      {
+        args: (args) => replaceArgValue(args, "--expected-packet-id", "crm_core_different_execution_packet"),
+        reason: "blocked_packet_id_mismatch",
+      },
+      {
+        args: (args) => replaceArgValue(args, "--run-id", "crm_core_mission_contract_2026_07_11_v1_run_002"),
+        reason: "blocked_mission_packet_run_id_mismatch",
+      },
+      {
+        packetOverrides: { mission_contract_version: "Mission Contract 2026-07-11.v0" },
+        reason: "blocked_mission_packet_contract_version_mismatch",
+      },
+      {
+        packetOverrides: { mission_created_at: "2026-07-11T18:30:00.000Z" },
+        reason: "blocked_mission_packet_stale_or_invalid",
+      },
+      {
+        packetOverrides: { mission_created_at: "2026-07-11T15:00:00.000Z" },
+        reason: "blocked_mission_packet_stale_or_invalid",
+      },
+    ];
+    for (const item of cases) {
+      const { dir, roots, paths } = await makePaths(item.packetOverrides ?? {});
+      let credentialCalls = 0;
+      try {
+        const args = item.args ? item.args(liveArgs(paths)) : liveArgs(paths);
+        await expect(runMission(args, {
+          roots,
+          ...(item.deps ?? {}),
+          credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        })).rejects.toThrow(item.reason);
+        expect(credentialCalls).toBe(0);
+      } finally { await rm(dir, { recursive: true, force: true }); }
+    }
+  });
+
+  test("subscriber identity must match the packet anchor before POST", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP], "active", "different@example.test")], requests),
+      });
+      expect(receipt.correction_result_status).toBe("blocked_subscriber_identity_mismatch_or_unknown");
+      expect(requests.map((request) => request.method)).toEqual(["GET"]);
+      expect(receipt.mutation_endpoint_call_count).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("post-read identity must remain the same subscriber", async () => {
+    const { dir, roots, paths } = await makePaths();
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: makeClient([
+          subscriber([FAKE_PRIOR_GROUP]),
+          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP], "active", FAKE_EMAIL, "sub_different_after_002"),
+        ], []),
+      });
+      expect(receipt.correction_result_status).toBe("blocked_post_correction_verification_failed_no_retry");
+      expect(receipt.identity_verification_status).toBe("failed_subscriber_changed_or_unknown");
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("missing or duplicate complete-group snapshot blocks before POST", async () => {
+    const cases = [
+      { subscriber: { id: FAKE_SUBSCRIBER_ID, email: FAKE_EMAIL, status: "active" } },
+      { subscriber: { id: FAKE_SUBSCRIBER_ID, email: FAKE_EMAIL, status: "active", groups: [{ id: FAKE_PRIOR_GROUP }, { id: FAKE_PRIOR_GROUP }] } },
+    ];
+    for (const response of cases) {
+      const { dir, roots, paths } = await makePaths();
+      const requests: Array<Record<string, unknown>> = [];
+      try {
+        const receipt = await runMission(liveArgs(paths), {
+          roots,
+          credentialProvider: async () => ({ key: "mock" }),
+          correctionClient: makeClient([response], requests),
+        });
+        expect(receipt.correction_result_status).toBe("blocked_active_trigger_membership_unknown");
+        expect(receipt.mutation_endpoint_call_count).toBe(0);
+        expect(requests.map((request) => request.method)).toEqual(["GET"]);
+      } finally { await rm(dir, { recursive: true, force: true }); }
+    }
+  });
+
+  test("complete group transition blocks a dropped prior group or an unrelated addition", async () => {
+    for (const afterGroups of [
+      [FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP],
+      [FAKE_PRIOR_GROUP, FAKE_OTHER_GROUP, FAKE_ACTIVE_GROUP, "grp_unrelated_new_004"],
+    ]) {
+      const { dir, roots, paths } = await makePaths();
+      try {
+        const receipt = await runMission(liveArgs(paths), {
+          roots,
+          credentialProvider: async () => ({ key: "mock" }),
+          correctionClient: makeClient([
+            subscriber([FAKE_PRIOR_GROUP, FAKE_OTHER_GROUP]),
+            subscriber(afterGroups),
+          ], []),
+        });
+        expect(receipt.correction_result_status).toBe("blocked_post_correction_verification_failed_no_retry");
+        expect(receipt.all_prior_groups_preservation_status).toBe(afterGroups.includes(FAKE_OTHER_GROUP) ? "all_preserved" : "failed_or_unknown");
+      } finally { await rm(dir, { recursive: true, force: true }); }
+    }
+  });
+
+  test("no-op immediate reread blocks group drift", async () => {
+    const { dir, roots, paths } = await makePaths();
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: makeClient([
+          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP]),
+          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP, FAKE_OTHER_GROUP]),
+        ], []),
+      });
+      expect(receipt.correction_result_status).toBe("blocked_noop_immediate_verification_failed");
+      expect(receipt.group_transition_status).toBe("failed_noop_group_drift");
+      expect(receipt.mutation_endpoint_call_count).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("unknown POST outcome is never retried and one readback can verify the effect", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    let getCount = 0;
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: {
+          request: async (request: Record<string, unknown>) => {
+            requests.push(request);
+            if (request.method === "POST") throw new Error("simulated_timeout");
+            getCount += 1;
+            return getCount === 1 ? subscriber([FAKE_PRIOR_GROUP]) : subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP]);
+          },
+        },
+      });
+      expect(receipt.correction_result_status).toBe("assignment_effect_verified_after_unknown_post_outcome");
+      expect(receipt.correction_executed).toBeNull();
+      expect(receipt.mutation_endpoint_call_count).toBe(1);
+      expect(requests.filter((request) => request.method === "POST")).toHaveLength(1);
+      expect(requests.map((request) => request.method)).toEqual(["GET", "POST", "GET"]);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("unknown POST outcome without verified effect stops permanently after one readback", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    let getCount = 0;
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: {
+          request: async (request: Record<string, unknown>) => {
+            requests.push(request);
+            if (request.method === "POST") throw new Error("simulated_timeout");
+            getCount += 1;
+            return subscriber([FAKE_PRIOR_GROUP]);
+          },
+        },
+      });
+      expect(receipt.correction_result_status).toBe("blocked_assignment_outcome_unknown_no_retry");
+      expect(receipt.correction_executed).toBeNull();
+      expect(requests.filter((request) => request.method === "POST")).toHaveLength(1);
+      expect(requests.map((request) => request.method)).toEqual(["GET", "POST", "GET"]);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("existing output or mutation-attempt state blocks replay before credentials", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    try {
+      await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], []),
+      });
+      await expect(runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_existing_output_or_attempt_state");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("one-use mission approval blocks a second packet, run, and output set before credentials", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let secondCredentialCalls = 0;
+    try {
+      await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], []),
+      });
+      const secondPacketId = "crm_core_mission_contract_2026_07_11_v1_execution_packet_002";
+      const secondRunId = "crm_core_mission_contract_2026_07_11_v1_run_002";
+      const secondPaths = {
+        approvalPhraseFile: paths.approvalPhraseFile,
+        privatePacket: join(roots.privateMailerLiteRoot, "correction-packet-002.json"),
+        privateResultJson: join(roots.privateMailerLiteRoot, "correction-result-002.json"),
+        privateResultMd: join(roots.privateMailerLiteRoot, "correction-result-002.md"),
+        receiptJson: join(roots.redactedReceiptRoot, "correction-receipt-002.json"),
+        receiptMd: join(roots.redactedReceiptRoot, "correction-receipt-002.md"),
+      };
+      await writeFile(secondPaths.privatePacket, `${JSON.stringify(missionPacket({
+        packet_id: secondPacketId,
+        mission_run_id: secondRunId,
+      }), null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+      let secondArgs = replaceArgValue(liveArgs(secondPaths), "--expected-packet-id", secondPacketId);
+      secondArgs = replaceArgValue(secondArgs, "--run-id", secondRunId);
+      await expect(runMission(secondArgs, {
+        roots,
+        credentialProvider: async () => { secondCredentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_existing_output_or_attempt_state");
+      expect(secondCredentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("verified no-op also consumes the one-use mission approval", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let secondCredentialCalls = 0;
+    try {
+      const first = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        correctionClient: makeClient([
+          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP]),
+          subscriber([FAKE_ACTIVE_GROUP, FAKE_PRIOR_GROUP]),
+        ], []),
+      });
+      expect(first.correction_result_status).toBe("already_present_idempotent_noop_verified");
+      const secondPacketId = "crm_core_mission_contract_2026_07_11_v1_after_noop_packet_002";
+      const secondRunId = "crm_core_mission_contract_2026_07_11_v1_after_noop_run_002";
+      const secondPaths = {
+        approvalPhraseFile: paths.approvalPhraseFile,
+        privatePacket: join(roots.privateMailerLiteRoot, "after-noop-packet-002.json"),
+        privateResultJson: join(roots.privateMailerLiteRoot, "after-noop-result-002.json"),
+        privateResultMd: join(roots.privateMailerLiteRoot, "after-noop-result-002.md"),
+        receiptJson: join(roots.redactedReceiptRoot, "after-noop-receipt-002.json"),
+        receiptMd: join(roots.redactedReceiptRoot, "after-noop-receipt-002.md"),
+      };
+      await writeFile(secondPaths.privatePacket, `${JSON.stringify(missionPacket({
+        packet_id: secondPacketId,
+        mission_run_id: secondRunId,
+      }), null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+      let secondArgs = replaceArgValue(liveArgs(secondPaths), "--expected-packet-id", secondPacketId);
+      secondArgs = replaceArgValue(secondArgs, "--run-id", secondRunId);
+      await expect(runMission(secondArgs, {
+        roots,
+        credentialProvider: async () => { secondCredentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_existing_output_or_attempt_state");
+      expect(secondCredentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("unapproved API bases block before credential access", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    try {
+      for (const apiBase of [
+        "http://connect.mailerlite.com/api",
+        "https://connect.mailerlite.com.evil.test/api",
+        "https://user@connect.mailerlite.com/api",
+        "https://connect.mailerlite.com/other",
+        "https://connect.mailerlite.com/api?redirect=evil",
+      ]) {
+        await expect(runMission([...liveArgs(paths), "--api-base", apiBase], {
+          roots,
+          credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        })).rejects.toThrow("blocked_unapproved_mailerlite_api_base");
+      }
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("request timeout is bounded before credentials", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    try {
+      for (const timeout of ["999", "30001"]) {
+        await expect(runMission([...liveArgs(paths), "--timeout-ms", timeout], {
+          roots,
+          credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        })).rejects.toThrow("blocked_timeout_out_of_bounds");
+      }
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("direct client never invokes fetch for an unapproved host", async () => {
+    let fetchCalls = 0;
+    const client = createMailerLiteActiveTriggerCorrectionClient({
+      options: { apiBase: "https://connect.mailerlite.com.evil.test/api", timeoutMs: 1_000 },
+      key: "mock",
+      fetchImpl: async () => { fetchCalls += 1; return new Response("{}"); },
+    });
+    await expect(client.request({ method: "GET", path: subscriberGetPath(FAKE_EMAIL) })).rejects.toThrow("blocked_unapproved_mailerlite_api_base");
+    expect(fetchCalls).toBe(0);
   });
 
   test("endpoint allowlist blocks unsafe routes", () => {
@@ -368,8 +906,23 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     expect(() => assertAllowedCorrectionRequest({ method: "POST", path: "/api/forms" })).toThrow("blocked_form_endpoint");
     expect(() => assertAllowedCorrectionRequest({ method: "POST", path: "/api/webhooks" })).toThrow("blocked_webhook_endpoint");
     expect(() => assertAllowedCorrectionRequest({ method: "PATCH", path: "/api/account/settings" })).toThrow("blocked_account_settings_endpoint");
-    expect(assertAllowedCorrectionRequest({ method: "GET", path: `/api/subscribers/${FAKE_EMAIL}` })).toBe(true);
+    expect(() => assertAllowedCorrectionRequest({ method: "GET", path: `/api/subscribers/${FAKE_EMAIL}` })).toThrow("blocked_endpoint_not_allowlisted");
+    expect(assertAllowedCorrectionRequest({ method: "GET", path: subscriberGetPath(FAKE_EMAIL) })).toBe(true);
     expect(assertAllowedCorrectionRequest({ method: "POST", path: `/api/subscribers/${FAKE_SUBSCRIBER_ID}/groups/${FAKE_ACTIVE_GROUP}` })).toBe(true);
+  });
+
+  test("CLI parse blockers never echo accidental argument values", () => {
+    const privateAccidentalValue = "private-person@example.test";
+    for (const args of [["--email", privateAccidentalValue], ["--unexpected", privateAccidentalValue]]) {
+      try {
+        parseArgs(args);
+        throw new Error("expected_parse_block");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        expect(message).not.toContain(privateAccidentalValue);
+        expect(["forbidden_cli_argument", "unknown_cli_argument"]).toContain(message);
+      }
+    }
   });
 
   test("second mutation attempt is blocked by limiter", () => {
@@ -383,7 +936,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     let credentialCalls = 0;
     let networkCalls = 0;
     try {
-      await expect(run(liveArgs(paths), {
+      await expect(runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
         correctionClient: { request: async () => { networkCalls += 1; return { ok: true }; } },
@@ -397,7 +950,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     const { dir, roots, paths } = await makePaths();
     const requests: Array<Record<string, unknown>> = [];
     try {
-      const receipt = await run(liveArgs(paths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
         correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
@@ -413,7 +966,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
   test("private results are written only to approved private or tmp fixture paths", async () => {
     const { dir, roots, paths } = await makePaths();
     try {
-      await run(liveArgs(paths), {
+      await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
         correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], []),
@@ -422,6 +975,8 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       expect(paths.privateResultMd).toContain(tmpdir());
       expect(paths.receiptJson).toContain(tmpdir());
       expect(paths.receiptMd).toContain(tmpdir());
+      expect((await stat(paths.privateResultJson)).mode & 0o777).toBe(0o600);
+      expect((await stat(paths.privateResultMd)).mode & 0o777).toBe(0o600);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
