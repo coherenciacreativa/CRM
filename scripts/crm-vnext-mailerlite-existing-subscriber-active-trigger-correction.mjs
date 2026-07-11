@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFile } from 'node:child_process';
-import { access, mkdir, open, readFile, stat, writeFile } from 'node:fs/promises';
+import { access, mkdir, open, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -25,13 +25,18 @@ const execFileAsync = promisify(execFile);
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PRIVATE_MAILERLITE_ROOT = '/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite';
 const REDACTED_RECEIPT_ROOT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite/controlled-welcome-flow';
-const SCHEMA_VERSION = 'crm-vnext-mailerlite-existing-subscriber-active-trigger-correction-2026-07-11-v1';
+const SCHEMA_VERSION = 'crm-vnext-mailerlite-existing-subscriber-active-trigger-correction-2026-07-11-v2';
 const GUARD_STATUS = 'implemented_and_mock_tested';
 const DEFAULT_API_BASE = ['https:', '', 'connect.mailerlite.com', 'api'].join('/');
 const DEFAULT_SERVICE = 'CRM-MailerLite';
 const DEFAULT_ACCOUNT = 'default';
 const MISSION_ACTIVE_NEXT_ACTION = 'crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_fresh_approval_v0';
 const MISSION_PACKET_MAX_AGE_MS = 120 * 60 * 1000;
+const CONTROLLED_INBOX_LOOKBACK_SECONDS = 90 * 24 * 60 * 60;
+const MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS = 8;
+const PRE_EFFECT_LIVE_ATTEMPT_LIMIT = 3;
+const MAILBOX_POST_POLL_DELAYS_MS = Object.freeze([0, 5_000, 10_000, 15_000, 30_000, 45_000, 60_000]);
+const GOG_BIN = '/opt/homebrew/bin/gog';
 const ALLOWED_CORRECTION_REQUESTS = [
   { method: 'GET', pattern: /^\/api\/subscribers\/[^/?#]+\?include=groups$/i, label: 'packet_specific_subscriber_get_with_groups' },
   { method: 'POST', pattern: /^\/api\/subscribers\/[^/]+\/groups\/[^/?#]+$/i, label: 'packet_specific_subscriber_group_assignment' },
@@ -267,6 +272,92 @@ const missionExecutionLockPath = ({ roots, approvalContractVersion }) => {
   );
 };
 
+const missionBudgetStatePath = ({ roots, approvalContractVersion }) => {
+  if (approvalContractVersion !== MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION) throw new Error('blocked_mission_budget_contract_version_mismatch');
+  return join(
+    rootsWithDefaults(roots).privateMailerLiteRoot,
+    'controlled-welcome-flow',
+    'mission-attempt-locks',
+    'mission-contract-2026-07-11-v1--budget-state.json',
+  );
+};
+
+const validBudgetCount = (value) => Number.isInteger(value) && value >= 0;
+
+const updateMissionBudgetState = async ({ roots, approvalContractVersion, updater }) => {
+  const statePath = missionBudgetStatePath({ roots, approvalContractVersion });
+  const mutexPath = `${statePath}.mutex`;
+  const tempPath = `${statePath}.tmp-${process.pid}`;
+  await mkdir(dirname(statePath), { recursive: true });
+  let mutex;
+  try {
+    mutex = await open(mutexPath, 'wx', 0o600);
+  } catch (error) {
+    if (error?.code === 'EEXIST') throw new Error('blocked_mission_budget_state_locked');
+    throw error;
+  }
+  try {
+    let current = {
+      schema_version: 'crm-core-mailerlite-mission-budget-state-v1',
+      approval_contract_version: approvalContractVersion,
+      pre_effect_live_attempt_count: 0,
+      mailbox_evidence_check_count: 0,
+    };
+    try {
+      const metadata = await stat(statePath);
+      if (!metadata.isFile() || (metadata.mode & 0o077) !== 0 || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())) {
+        throw new Error('blocked_mission_budget_state_permissions');
+      }
+      const parsed = JSON.parse(await readFile(statePath, 'utf8'));
+      if (
+        parsed?.schema_version !== current.schema_version
+        || parsed?.approval_contract_version !== approvalContractVersion
+        || !validBudgetCount(parsed?.pre_effect_live_attempt_count)
+        || !validBudgetCount(parsed?.mailbox_evidence_check_count)
+      ) throw new Error('blocked_mission_budget_state_invalid');
+      current = parsed;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    const next = updater({ ...current });
+    await writeFile(tempPath, `${JSON.stringify(next, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+    await rename(tempPath, statePath);
+    return next;
+  } finally {
+    await mutex?.close();
+    await unlink(mutexPath).catch(() => {});
+    await unlink(tempPath).catch(() => {});
+  }
+};
+
+const claimPreEffectLiveAttemptBudget = ({ roots, approvalContractVersion, runId, packetId }) => updateMissionBudgetState({
+  roots,
+  approvalContractVersion,
+  updater: (state) => {
+    if (state.pre_effect_live_attempt_count >= PRE_EFFECT_LIVE_ATTEMPT_LIMIT) throw new Error('blocked_pre_effect_live_attempt_budget_exhausted');
+    return {
+      ...state,
+      pre_effect_live_attempt_count: state.pre_effect_live_attempt_count + 1,
+      last_run_id: runId,
+      last_packet_id: packetId,
+    };
+  },
+});
+
+const claimMailboxEvidenceCheckBudget = ({ roots, approvalContractVersion, runId, packetId }) => updateMissionBudgetState({
+  roots,
+  approvalContractVersion,
+  updater: (state) => {
+    if (state.mailbox_evidence_check_count >= MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS) throw new Error('blocked_mailbox_evidence_check_budget_exhausted');
+    return {
+      ...state,
+      mailbox_evidence_check_count: state.mailbox_evidence_check_count + 1,
+      last_run_id: runId,
+      last_packet_id: packetId,
+    };
+  },
+});
+
 const assertFreshOutputPaths = async (paths, deterministicExecutionLockPath = null) => {
   const candidates = [
     paths.privateResultJson,
@@ -293,8 +384,7 @@ const claimMissionExecution = async ({ roots, runId, packetId, approvalContractV
       packet_id: packetId,
       approval_contract_version: approvalContractVersion,
       mission_execution_class: executionClass,
-      mutation_attempt_claimed: executionClass === 'single_add_only_assignment_attempt',
-      verified_noop_claimed: executionClass === 'verified_noop',
+      terminal_or_mutation_effect_scope_claimed: true,
       retry_allowed: false,
     }, null, 2)}\n`, 'utf8');
   } catch (error) {
@@ -647,6 +737,166 @@ const classifyExactAutomationMapping = (response, expectedAutomationReference, e
   };
 };
 
+const exactEmailAddress = (value) => {
+  const text = cleanString(value);
+  if (!text) return null;
+  const matches = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig) ?? [];
+  return matches.length === 1 ? matches[0].toLowerCase() : null;
+};
+
+const firstEmailLocatorFromAutomation = (response) => {
+  const automation = automationFromResponse(response);
+  const steps = arrayFrom(automation?.steps);
+  if (!steps.length) return { ok: false, status: 'missing_automation_steps' };
+  const idOf = (step) => cleanString(step?.id ?? step?.step_id);
+  const parentOf = (step) => cleanString(step?.parent_id ?? step?.parentId);
+  const byId = new Map(steps.map((step) => [idOf(step), step]).filter(([id]) => Boolean(id)));
+  if (byId.size !== steps.length) return { ok: false, status: 'incomplete_or_duplicate_step_identity' };
+  const roots = steps.filter((step) => !parentOf(step) || !byId.has(parentOf(step)));
+  if (roots.length !== 1) return { ok: false, status: 'ambiguous_first_step' };
+  const childrenByParent = new Map();
+  for (const step of steps) {
+    const parent = parentOf(step);
+    if (!parent) continue;
+    if (!childrenByParent.has(parent)) childrenByParent.set(parent, []);
+    childrenByParent.get(parent).push(idOf(step));
+  }
+  let cursor = roots[0];
+  const visited = new Set();
+  while (cursor) {
+    const cursorId = idOf(cursor);
+    if (!cursorId || visited.has(cursorId)) return { ok: false, status: 'ambiguous_or_cyclic_first_email_path' };
+    visited.add(cursorId);
+    const type = cleanString(cursor?.type)?.toLowerCase();
+    if (type === 'email') {
+      if (cursor?.complete !== true || cursor?.broken !== false) return { ok: false, status: 'first_email_step_incomplete_or_broken' };
+      const subject = cleanString(cursor?.subject ?? cursor?.email?.subject);
+      const sender = exactEmailAddress(cursor?.from)
+        ?? exactEmailAddress(cursor?.from?.email)
+        ?? exactEmailAddress(cursor?.from?.address)
+        ?? exactEmailAddress(cursor?.email?.from)
+        ?? exactEmailAddress(cursor?.email?.from?.email)
+        ?? exactEmailAddress(cursor?.email?.from?.address)
+        ?? exactEmailAddress(cursor?.from_email)
+        ?? exactEmailAddress(cursor?.email?.from_email);
+      if (!subject || !sender) return { ok: false, status: 'first_email_locator_incomplete' };
+      return {
+        ok: true,
+        status: 'exact_first_email_locator_verified',
+        subject_private: subject,
+        sender_private: sender,
+      };
+    }
+    const nextIds = [...new Set([
+      cleanString(cursor?.yes_step_id),
+      cleanString(cursor?.no_step_id),
+      ...arrayFrom(childrenByParent.get(cursorId)),
+    ].filter(Boolean))];
+    if (nextIds.length !== 1) return { ok: false, status: 'ambiguous_first_email_path' };
+    cursor = byId.get(nextIds[0]);
+  }
+  return { ok: false, status: 'first_email_not_found' };
+};
+
+const gmailQueryQuote = (value) => `"${String(value).replace(/[\r\n]+/g, ' ').replace(/([\\"])/g, '\\$1')}"`;
+
+const controlledInboxQuery = ({ mailboxAnchor, locator, afterEpochSeconds, beforeEpochSeconds }) => [
+  'in:inbox',
+  `to:${gmailQueryQuote(mailboxAnchor)}`,
+  `from:${gmailQueryQuote(locator.sender_private)}`,
+  `subject:${gmailQueryQuote(locator.subject_private)}`,
+  `after:${Math.floor(afterEpochSeconds)}`,
+  `before:${Math.floor(beforeEpochSeconds)}`,
+  '-in:trash',
+  '-in:spam',
+  '-in:sent',
+  '-in:drafts',
+].join(' ');
+
+const parseGogMessageIdResult = (raw) => {
+  let payload;
+  try { payload = typeof raw === 'string' ? JSON.parse(raw) : raw; }
+  catch { return { ok: false, ids_private: [], has_more: false }; }
+  const collections = [
+    Array.isArray(payload) ? payload : null,
+    payload?.messages,
+    payload?.emails,
+    payload?.results,
+    payload?.data?.messages,
+    payload?.data?.results,
+  ];
+  const collection = collections.find(Array.isArray);
+  if (!collection) return { ok: false, ids_private: [], has_more: false };
+  const ids = [...new Set(collection.map((item) => cleanString(typeof item === 'string' ? item : item?.id)).filter(Boolean))];
+  const hasMore = Boolean(payload?.nextPageToken ?? payload?.next_page_token ?? payload?.data?.nextPageToken ?? payload?.data?.next_page_token);
+  if (ids.length !== collection.length) return { ok: false, ids_private: [], has_more: hasMore };
+  return { ok: true, ids_private: ids, has_more: hasMore };
+};
+
+const searchControlledInboxIds = async ({ mailboxAnchor, locator, afterEpochSeconds, beforeEpochSeconds, execFileImpl = execFileAsync }) => {
+  const account = exactEmailAddress(mailboxAnchor);
+  if (!account || account !== cleanString(mailboxAnchor)?.toLowerCase()) throw new Error('blocked_controlled_mailbox_binding_invalid');
+  if (!locator?.ok || !locator.sender_private || !locator.subject_private) throw new Error('blocked_first_email_locator_not_verified');
+  const query = controlledInboxQuery({ mailboxAnchor: account, locator, afterEpochSeconds, beforeEpochSeconds });
+  try {
+    const { stdout } = await execFileImpl(GOG_BIN, [
+      'gmail', 'messages', 'search', query,
+      '--json',
+      '--no-input',
+      '--max=2',
+      '--select=id',
+      '--account', account,
+    ], { timeout: 30_000, maxBuffer: 1024 * 1024 });
+    const parsed = parseGogMessageIdResult(stdout);
+    if (!parsed.ok) throw new Error('blocked_controlled_mailbox_response_invalid');
+    return parsed;
+  } catch (error) {
+    if (String(error?.message ?? '').startsWith('blocked_')) throw error;
+    throw new Error('blocked_controlled_mailbox_search_failed');
+  }
+};
+
+const validateMailboxSearchResult = (result) => {
+  const ids = arrayFrom(result?.ids_private).map(cleanString).filter(Boolean);
+  if (result?.ok !== true || result?.has_more === true || ids.length > 1 || new Set(ids).size !== ids.length) {
+    return { ok: false, status: 'ambiguous_or_invalid', ids_private: [] };
+  }
+  return { ok: true, status: 'bounded_exact_id_search', ids_private: ids };
+};
+
+const waitFor = (delayMs) => new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs));
+
+const pollFirstEmailEvidence = async ({ mailboxEvidenceProvider, mailboxAnchor, locator, baselineIds, baselineAt, nowProvider, claimEvidenceCheck, sleep = waitFor }) => {
+  const baselineSet = new Set(baselineIds);
+  let checkCount = 0;
+  const privateIdsSeen = [];
+  for (const delayMs of MAILBOX_POST_POLL_DELAYS_MS.slice(0, MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS - 1)) {
+    if (delayMs) await sleep(delayMs);
+    try { await claimEvidenceCheck(); }
+    catch { return { status: 'not_verified_evidence_budget_exhausted_no_resend', check_count: checkCount, new_match_count: 0, private_ids_seen: privateIdsSeen }; }
+    checkCount += 1;
+    let result;
+    try {
+      const now = nowProvider();
+      result = validateMailboxSearchResult(await mailboxEvidenceProvider.search({
+        phase: 'post_action',
+        mailboxAnchor,
+        locator,
+        afterEpochSeconds: Math.floor(baselineAt.getTime() / 1000) - CONTROLLED_INBOX_LOOKBACK_SECONDS,
+        beforeEpochSeconds: Math.floor(now.getTime() / 1000) + 60,
+      }));
+    } catch {
+      return { status: 'not_verified_mailbox_search_failed_no_resend', check_count: checkCount, new_match_count: 0, private_ids_seen: privateIdsSeen };
+    }
+    if (!result.ok) return { status: 'not_verified_mailbox_result_ambiguous_no_resend', check_count: checkCount, new_match_count: 0, private_ids_seen: privateIdsSeen };
+    privateIdsSeen.push(...result.ids_private);
+    const newIds = result.ids_private.filter((id) => !baselineSet.has(id));
+    if (newIds.length === 1) return { status: 'inbox_received_unique_bounded_locator_match', check_count: checkCount, new_match_count: 1, private_ids_seen: privateIdsSeen };
+    if (newIds.length > 1) return { status: 'not_verified_multiple_new_matches_no_resend', check_count: checkCount, new_match_count: newIds.length, private_ids_seen: privateIdsSeen };
+  }
+  return { status: 'not_verified_after_bounded_checks_no_resend', check_count: checkCount, new_match_count: 0, private_ids_seen: privateIdsSeen };
+};
+
 const buildReceipt = ({
   runId,
   packetValidation,
@@ -656,6 +906,13 @@ const buildReceipt = ({
   automationActiveStatus = 'not_run',
   automationTriggerMappingStatus = 'not_run',
   automationMappingCheckedAt = null,
+  firstEmailLocatorStatus = 'not_run',
+  mailboxBindingStatus = 'not_run',
+  preEffectLiveAttemptCount = 0,
+  mailboxBaselineCount = 0,
+  mailboxEvidenceCheckCount = 0,
+  firstEmailNewMatchCount = 0,
+  firstEmailEvidenceStatus = 'not_run',
   correctionAttempted = false,
   correctionExecuted = false,
   mutationOutcomeStatus = 'not_attempted',
@@ -683,6 +940,13 @@ const buildReceipt = ({
   automation_active_status: automationActiveStatus,
   automation_trigger_mapping_status: automationTriggerMappingStatus,
   automation_mapping_checked_at: automationMappingCheckedAt,
+  first_email_locator_status: firstEmailLocatorStatus,
+  mailbox_binding_status: mailboxBindingStatus,
+  pre_effect_live_attempt_count: preEffectLiveAttemptCount,
+  mailbox_baseline_count: mailboxBaselineCount,
+  mailbox_evidence_check_count: mailboxEvidenceCheckCount,
+  first_email_new_match_count: firstEmailNewMatchCount,
+  first_email_evidence_status: firstEmailEvidenceStatus,
   correction_attempted: correctionAttempted,
   correction_executed: correctionExecuted,
   mutation_outcome_status: mutationOutcomeStatus,
@@ -709,11 +973,14 @@ const buildReceipt = ({
     'no_automation_or_campaign_mutation',
     'no_broad_import',
     'no_raw_private_values_in_redacted_receipts',
+    'controlled_mailbox_exact_id_search_only',
+    'no_mail_body_snippet_or_thread_read',
+    'no_direct_send_resend_or_retrigger',
     'no_crm_or_source_write',
   ],
 });
 
-const markdownReceipt = (receipt) => `# MailerLite Existing Subscriber Active Trigger Correction Receipt\n\n- run_id: ${receipt.run_id}\n- packet_id: ${receipt.packet_id}\n- operation_class: ${receipt.operation_class}\n- approval_contract_version: ${receipt.approval_contract_version}\n- execution_binding_status: ${receipt.execution_binding_status}\n- automation_reference_match_status: ${receipt.automation_reference_match_status}\n- automation_active_status: ${receipt.automation_active_status}\n- automation_trigger_mapping_status: ${receipt.automation_trigger_mapping_status}\n- automation_mapping_checked_at: ${receipt.automation_mapping_checked_at ?? 'not_run'}\n- correction_attempted: ${receipt.correction_attempted}\n- correction_executed: ${receipt.correction_executed}\n- mutation_outcome_status: ${receipt.mutation_outcome_status}\n- correction_result_status: ${receipt.correction_result_status}\n- subscriber_lookup_status: ${receipt.subscriber_lookup_status}\n- subscriber_status_class: ${receipt.subscriber_status_class}\n- identity_verification_status: ${receipt.identity_verification_status}\n- active_trigger_membership_before: ${receipt.active_trigger_membership_before}\n- active_trigger_membership_after: ${receipt.active_trigger_membership_after}\n- prior_non_active_group_preservation_status: ${receipt.prior_non_active_group_preservation_status}\n- all_prior_groups_preservation_status: ${receipt.all_prior_groups_preservation_status}\n- group_transition_status: ${receipt.group_transition_status}\n- mutation_endpoint_call_count: ${receipt.mutation_endpoint_call_count}\n- post_correction_verification_status: ${receipt.post_correction_verification_status}\n- blockers: ${receipt.blockers.length ? receipt.blockers.join(', ') : 'none'}\n- recommended_next_step: ${receipt.recommended_next_step}\n`;
+const markdownReceipt = (receipt) => `# MailerLite Existing Subscriber Active Trigger Correction Receipt\n\n- run_id: ${receipt.run_id}\n- packet_id: ${receipt.packet_id}\n- operation_class: ${receipt.operation_class}\n- approval_contract_version: ${receipt.approval_contract_version}\n- execution_binding_status: ${receipt.execution_binding_status}\n- automation_reference_match_status: ${receipt.automation_reference_match_status}\n- automation_active_status: ${receipt.automation_active_status}\n- automation_trigger_mapping_status: ${receipt.automation_trigger_mapping_status}\n- automation_mapping_checked_at: ${receipt.automation_mapping_checked_at ?? 'not_run'}\n- first_email_locator_status: ${receipt.first_email_locator_status}\n- mailbox_binding_status: ${receipt.mailbox_binding_status}\n- pre_effect_live_attempt_count: ${receipt.pre_effect_live_attempt_count}\n- mailbox_baseline_count: ${receipt.mailbox_baseline_count}\n- mailbox_evidence_check_count: ${receipt.mailbox_evidence_check_count}\n- first_email_new_match_count: ${receipt.first_email_new_match_count}\n- first_email_evidence_status: ${receipt.first_email_evidence_status}\n- correction_attempted: ${receipt.correction_attempted}\n- correction_executed: ${receipt.correction_executed}\n- mutation_outcome_status: ${receipt.mutation_outcome_status}\n- correction_result_status: ${receipt.correction_result_status}\n- subscriber_lookup_status: ${receipt.subscriber_lookup_status}\n- subscriber_status_class: ${receipt.subscriber_status_class}\n- identity_verification_status: ${receipt.identity_verification_status}\n- active_trigger_membership_before: ${receipt.active_trigger_membership_before}\n- active_trigger_membership_after: ${receipt.active_trigger_membership_after}\n- prior_non_active_group_preservation_status: ${receipt.prior_non_active_group_preservation_status}\n- all_prior_groups_preservation_status: ${receipt.all_prior_groups_preservation_status}\n- group_transition_status: ${receipt.group_transition_status}\n- mutation_endpoint_call_count: ${receipt.mutation_endpoint_call_count}\n- post_correction_verification_status: ${receipt.post_correction_verification_status}\n- blockers: ${receipt.blockers.length ? receipt.blockers.join(', ') : 'none'}\n- recommended_next_step: ${receipt.recommended_next_step}\n`;
 
 const buildPrivateResult = ({ receipt, privateOutputMode }) => ({
   schema_version: SCHEMA_VERSION,
@@ -724,12 +991,14 @@ const buildPrivateResult = ({ receipt, privateOutputMode }) => ({
   correction_attempted: receipt.correction_attempted,
   correction_executed: receipt.correction_executed,
   correction_result_status: receipt.correction_result_status,
+  first_email_evidence_status: receipt.first_email_evidence_status,
+  mailbox_evidence_check_count: receipt.mailbox_evidence_check_count,
   private_result_notice: 'Private correction run metadata only. Raw private lookup anchors, subscriber rows, raw payloads, credentials, headers, tokens, and private subscriber content are intentionally omitted by this guard.',
 });
 
-const privateMarkdown = (result) => `# MailerLite Active Trigger Correction Private Result\n\n- run_id: ${result.run_id}\n- packet_id: ${result.packet_id}\n- correction_attempted: ${result.correction_attempted}\n- correction_executed: ${result.correction_executed}\n- correction_result_status: ${result.correction_result_status}\n\n${result.private_result_notice}\n`;
+const privateMarkdown = (result) => `# MailerLite Active Trigger Correction Private Result\n\n- run_id: ${result.run_id}\n- packet_id: ${result.packet_id}\n- correction_attempted: ${result.correction_attempted}\n- correction_executed: ${result.correction_executed}\n- correction_result_status: ${result.correction_result_status}\n- first_email_evidence_status: ${result.first_email_evidence_status}\n- mailbox_evidence_check_count: ${result.mailbox_evidence_check_count}\n\n${result.private_result_notice}\n`;
 
-const sensitiveValuesFor = (packetValidation, lookupBefore = {}, lookupAfter = {}, automationReference = null) => [
+const sensitiveValuesFor = (packetValidation, lookupBefore = {}, lookupAfter = {}, automationReference = null, extraPrivateValues = []) => [
   packetValidation?.existing_subscriber_lookup_anchor,
   packetValidation?.active_live_trigger_group_reference,
   packetValidation?.prior_non_active_group_reference,
@@ -740,6 +1009,7 @@ const sensitiveValuesFor = (packetValidation, lookupBefore = {}, lookupAfter = {
   lookupAfter?.subscriber_email_private,
   ...arrayFrom(lookupBefore?.group_keys_private),
   ...arrayFrom(lookupAfter?.group_keys_private),
+  ...arrayFrom(extraPrivateValues),
 ].filter(Boolean);
 
 const redactScan = (text, sensitiveValues = []) => {
@@ -773,10 +1043,12 @@ const SUCCESS_RESULT_STATUSES = new Set([
 ]);
 
 const compactStdout = (receipt) => ({
-  ok: SUCCESS_RESULT_STATUSES.has(receipt.correction_result_status),
+  ok: receipt.correction_result_status === 'preflight_only_ready_for_exact_active_trigger_correction_approval'
+    || (SUCCESS_RESULT_STATUSES.has(receipt.correction_result_status) && ['inbox_received_unique_bounded_locator_match', 'inbox_received_preexisting_unique_bounded_locator_match'].includes(receipt.first_email_evidence_status)),
   correction_result_status: receipt.correction_result_status,
   correction_attempted: receipt.correction_attempted,
   correction_executed: receipt.correction_executed,
+  first_email_evidence_status: receipt.first_email_evidence_status,
   recommended_next_step: receipt.recommended_next_step,
 });
 
@@ -853,15 +1125,45 @@ const runLiveMode = async (options, deps = {}) => {
   const credentialProvider = deps.credentialProvider ?? getCredential;
   const credential = await credentialProvider(options);
   if (!credential?.key) throw new Error('blocked_missing_mailerlite_credential');
+  const liveBudgetState = await claimPreEffectLiveAttemptBudget({
+    roots: deps.roots,
+    approvalContractVersion: approvalValidation.contract_version,
+    runId,
+    packetId: packetValidation.packet_id,
+  });
+  const preEffectLiveAttemptCount = liveBudgetState.pre_effect_live_attempt_count;
   const baseClient = deps.correctionClient ?? createMailerLiteActiveTriggerCorrectionClient({ options, key: credential.key, fetchImpl: deps.fetchImpl ?? fetch, calls: deps.calls ?? [] });
   const limiter = mutationAttemptLimiter();
-  const now = deps.now ?? new Date();
+  const nowProvider = deps.nowProvider ?? (() => deps.now ?? new Date());
+  const now = nowProvider();
+  const mailboxEvidenceProvider = deps.mailboxEvidenceProvider ?? {
+    search: (request) => searchControlledInboxIds(request),
+  };
   let mapping = {
     automation_reference_match_status: isMissionContract ? 'not_run' : 'not_required_by_selected_legacy_contract',
     automation_active_status: isMissionContract ? 'not_run' : 'not_required_by_selected_legacy_contract',
     automation_trigger_mapping_status: isMissionContract ? 'not_run' : 'not_required_by_selected_legacy_contract',
   };
   let mappingCheckedAt = null;
+  let firstEmailLocator = null;
+  let firstEmailLocatorStatus = 'not_run';
+  let mailboxBindingStatus = 'not_run';
+  let mailboxBaseline = { ids_private: [] };
+  let mailboxBaselineCount = 0;
+  let mailboxEvidenceCheckCount = 0;
+  let firstEmailNewMatchCount = 0;
+  let firstEmailEvidenceStatus = 'not_run';
+  const mailboxPrivateEvidenceValues = [];
+  const claimEvidenceCheck = async () => {
+    const state = await claimMailboxEvidenceCheckBudget({
+      roots: deps.roots,
+      approvalContractVersion: approvalValidation.contract_version,
+      runId,
+      packetId: packetValidation.packet_id,
+    });
+    mailboxEvidenceCheckCount = state.mailbox_evidence_check_count;
+    return mailboxEvidenceCheckCount;
+  };
 
   const receiptBase = () => ({
     runId,
@@ -872,13 +1174,24 @@ const runLiveMode = async (options, deps = {}) => {
     automationActiveStatus: mapping.automation_active_status,
     automationTriggerMappingStatus: mapping.automation_trigger_mapping_status,
     automationMappingCheckedAt: mappingCheckedAt,
+    firstEmailLocatorStatus,
+    mailboxBindingStatus,
+    preEffectLiveAttemptCount,
+    mailboxBaselineCount,
+    mailboxEvidenceCheckCount,
+    firstEmailNewMatchCount,
+    firstEmailEvidenceStatus,
   });
   const finish = async (receipt, before = {}, after = {}) => {
     await writeOutputs({
       paths,
       receipt,
       privateResult: buildPrivateResult({ receipt, privateOutputMode: deps.correctionClient || deps.automationClient ? 'mocked_live_atomic_route' : 'live_atomic_route' }),
-      sensitiveValues: sensitiveValuesFor(packetValidation, before, after, automationReference),
+      sensitiveValues: sensitiveValuesFor(packetValidation, before, after, automationReference, [
+        firstEmailLocator?.subject_private,
+        firstEmailLocator?.sender_private,
+        ...mailboxPrivateEvidenceValues,
+      ]),
     });
     return receipt;
   };
@@ -895,6 +1208,8 @@ const runLiveMode = async (options, deps = {}) => {
       });
       const mappingResponse = await automationClient.request({ method: 'GET', path: exactAutomationGetPath(automationReference) });
       mapping = classifyExactAutomationMapping(mappingResponse, automationReference, packetValidation.active_live_trigger_group_reference);
+      firstEmailLocator = firstEmailLocatorFromAutomation(mappingResponse);
+      firstEmailLocatorStatus = firstEmailLocator.status;
     } catch {
       mapping = {
         automation_reference_match_status: 'unknown',
@@ -910,6 +1225,40 @@ const runLiveMode = async (options, deps = {}) => {
         recommendedNextStep: 'stop_before_subscriber_read_or_mutation',
       }));
     }
+    if (!firstEmailLocator?.ok) {
+      return finish(buildReceipt({
+        ...receiptBase(),
+        correctionResultStatus: 'blocked_first_email_locator_not_verified',
+        blockers: ['first_email_locator_not_verified'],
+        recommendedNextStep: 'stop_before_subscriber_read_or_mutation',
+      }));
+    }
+  }
+
+  const baselineAt = nowProvider();
+  try {
+    await claimEvidenceCheck();
+    const baselineResult = validateMailboxSearchResult(await mailboxEvidenceProvider.search({
+      phase: 'baseline',
+      mailboxAnchor: packetValidation.existing_subscriber_lookup_anchor,
+      locator: firstEmailLocator,
+      afterEpochSeconds: Math.floor(baselineAt.getTime() / 1000) - CONTROLLED_INBOX_LOOKBACK_SECONDS,
+      beforeEpochSeconds: Math.floor(baselineAt.getTime() / 1000) + 1,
+    }));
+    if (!baselineResult.ok) throw new Error('blocked_controlled_mailbox_baseline_ambiguous');
+    mailboxBaseline = baselineResult;
+    mailboxBaselineCount = baselineResult.ids_private.length;
+    mailboxBindingStatus = 'matched_exact_controlled_mailbox';
+    mailboxPrivateEvidenceValues.push(...baselineResult.ids_private);
+  } catch {
+    mailboxBindingStatus = 'not_verified';
+    firstEmailEvidenceStatus = 'not_run_baseline_failed';
+    return finish(buildReceipt({
+      ...receiptBase(),
+      correctionResultStatus: 'blocked_controlled_mailbox_baseline_not_verified',
+      blockers: ['controlled_mailbox_baseline_not_verified'],
+      recommendedNextStep: 'stop_before_subscriber_read_or_mutation',
+    }));
   }
 
   let beforeResponse;
@@ -949,14 +1298,23 @@ const runLiveMode = async (options, deps = {}) => {
       const transition = verifyGroupTransition({ before, after, activeReference: packetValidation.active_live_trigger_group_reference, mode: 'noop' });
       const preservation = priorPreservationStatus(before, after, packetValidation.prior_non_active_group_reference);
       if (identity === 'passed' && transition.status === 'passed_noop_exact_group_set') {
+        firstEmailEvidenceStatus = mailboxBaselineCount === 1
+          ? 'inbox_received_preexisting_unique_bounded_locator_match'
+          : 'not_verified_noop_no_retrigger';
+        firstEmailNewMatchCount = 0;
+        const emailVerified = firstEmailEvidenceStatus === 'inbox_received_preexisting_unique_bounded_locator_match';
         await claimMissionExecution({ roots: deps.roots, runId, packetId: packetValidation.packet_id, approvalContractVersion: approvalValidation.contract_version, executionClass: 'verified_noop' });
-        receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'already_present_idempotent_noop_verified', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'present', activeTriggerMembershipAfter: 'present', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: 'all_preserved', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'passed_noop_immediate_reread', recommendedNextStep: 'continue_to_bounded_first_email_evidence' });
+        receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'already_present_idempotent_noop_verified', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'present', activeTriggerMembershipAfter: 'present', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: 'all_preserved', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'passed_noop_immediate_reread', blockers: emailVerified ? [] : ['first_email_delivery_not_verified_no_retrigger'], recommendedNextStep: emailVerified ? 'independent_review_and_closeout' : 'closeout_email_evidence_not_verified_no_retrigger' });
       } else {
         receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'blocked_noop_immediate_verification_failed', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'present', activeTriggerMembershipAfter: after.active_trigger_membership, priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: transition.all_prior_groups_preserved ? 'all_preserved' : 'failed_or_unknown', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'failed', blockers: ['noop_immediate_verification_failed'], recommendedNextStep: 'stop_without_mutation_or_retrigger' });
       }
     } catch {
       receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'blocked_noop_immediate_verification_failed', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: 'unknown_after_read_failure', activeTriggerMembershipBefore: 'present', mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'failed', blockers: ['noop_immediate_verification_read_failed'], recommendedNextStep: 'stop_without_mutation_or_retrigger' });
     }
+  } else if (mailboxBaselineCount !== 0) {
+    firstEmailEvidenceStatus = 'preexisting_unique_bounded_locator_match_assignment_blocked';
+    await claimMissionExecution({ roots: deps.roots, runId, packetId: packetValidation.packet_id, approvalContractVersion: approvalValidation.contract_version, executionClass: 'preexisting_first_email_assignment_blocked' });
+    receipt = buildReceipt({ ...receiptBase(), correctionResultStatus: 'blocked_preexisting_first_email_evidence_before_assignment', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: before.identity_anchor_match, activeTriggerMembershipBefore: 'absent', mutationEndpointCallCount: limiter.count, blockers: ['preexisting_first_email_evidence_before_assignment'], recommendedNextStep: 'stop_without_assignment_or_retrigger' });
   } else {
     await claimMissionExecution({ roots: deps.roots, runId, packetId: packetValidation.packet_id, approvalContractVersion: approvalValidation.contract_version, executionClass: 'single_add_only_assignment_attempt' });
     let postOutcome = 'unknown_no_retry';
@@ -976,10 +1334,34 @@ const runLiveMode = async (options, deps = {}) => {
     const transition = verifyGroupTransition({ before, after, activeReference: packetValidation.active_live_trigger_group_reference, mode: 'assignment' });
     const preservation = priorPreservationStatus(before, after, packetValidation.prior_non_active_group_reference);
     const verifiedEffect = identity === 'passed' && transition.status === 'passed_exact_add_only_transition';
+    let emailEvidenceBlockers = [];
+    let emailEvidenceRecommendedNextStep = 'closeout_email_evidence_not_verified_no_resend';
+    if (verifiedEffect) {
+      const emailEvidence = await pollFirstEmailEvidence({
+        mailboxEvidenceProvider,
+        mailboxAnchor: packetValidation.existing_subscriber_lookup_anchor,
+        locator: firstEmailLocator,
+        baselineIds: mailboxBaseline.ids_private,
+        baselineAt,
+        nowProvider,
+        claimEvidenceCheck,
+        sleep: deps.sleep ?? waitFor,
+      });
+      firstEmailNewMatchCount = emailEvidence.new_match_count;
+      firstEmailEvidenceStatus = emailEvidence.status;
+      mailboxPrivateEvidenceValues.push(...emailEvidence.private_ids_seen);
+      if (firstEmailEvidenceStatus === 'inbox_received_unique_bounded_locator_match') {
+        emailEvidenceRecommendedNextStep = 'independent_review_and_closeout';
+      } else {
+        emailEvidenceBlockers = ['first_email_delivery_not_verified_no_resend'];
+      }
+    } else {
+      firstEmailEvidenceStatus = 'not_run_correction_verification_failed_no_resend';
+    }
     if (verifiedEffect && postOutcome === 'acknowledged') {
-      receipt = buildReceipt({ ...receiptBase(), correctionAttempted: true, correctionExecuted: true, mutationOutcomeStatus: 'acknowledged_and_effect_verified', correctionResultStatus: 'correction_executed_verified', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'absent', activeTriggerMembershipAfter: 'present', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: 'all_preserved', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'passed', recommendedNextStep: 'continue_to_bounded_first_email_evidence' });
+      receipt = buildReceipt({ ...receiptBase(), correctionAttempted: true, correctionExecuted: true, mutationOutcomeStatus: 'acknowledged_and_effect_verified', correctionResultStatus: 'correction_executed_verified', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'absent', activeTriggerMembershipAfter: 'present', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: 'all_preserved', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'passed', blockers: emailEvidenceBlockers, recommendedNextStep: emailEvidenceRecommendedNextStep });
     } else if (verifiedEffect && postOutcome === 'unknown_no_retry') {
-      receipt = buildReceipt({ ...receiptBase(), correctionAttempted: true, correctionExecuted: null, mutationOutcomeStatus: 'response_unknown_effect_verified_no_retry', correctionResultStatus: 'assignment_effect_verified_after_unknown_post_outcome', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'absent', activeTriggerMembershipAfter: 'present', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: 'all_preserved', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'passed_effect_only', blockers: ['post_response_unknown_no_retry'], recommendedNextStep: 'continue_read_only_evidence_only_never_retry_assignment' });
+      receipt = buildReceipt({ ...receiptBase(), correctionAttempted: true, correctionExecuted: null, mutationOutcomeStatus: 'response_unknown_effect_verified_no_retry', correctionResultStatus: 'assignment_effect_verified_after_unknown_post_outcome', subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'absent', activeTriggerMembershipAfter: 'present', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: 'all_preserved', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'passed_effect_only', blockers: ['post_response_unknown_no_retry', ...emailEvidenceBlockers], recommendedNextStep: firstEmailEvidenceStatus === 'inbox_received_unique_bounded_locator_match' ? 'independent_review_and_closeout_no_assignment_retry' : 'closeout_email_evidence_not_verified_never_retry_assignment' });
     } else {
       const resultStatus = postOutcome === 'unknown_no_retry' ? 'blocked_assignment_outcome_unknown_no_retry' : 'blocked_post_correction_verification_failed_no_retry';
       receipt = buildReceipt({ ...receiptBase(), correctionAttempted: true, correctionExecuted: postOutcome === 'acknowledged' ? true : null, mutationOutcomeStatus: postOutcome, correctionResultStatus: resultStatus, subscriberLookupStatus: before.subscriber_lookup_status, subscriberStatusClass: before.subscriber_status_class, identityVerificationStatus: identity, activeTriggerMembershipBefore: 'absent', activeTriggerMembershipAfter: after.active_trigger_membership ?? 'unknown', priorNonActiveGroupPreservationStatus: preservation, allPriorGroupsPreservationStatus: transition.all_prior_groups_preserved ? 'all_preserved' : 'failed_or_unknown', groupTransitionStatus: transition.status, mutationEndpointCallCount: limiter.count, postCorrectionVerificationStatus: 'failed_or_unknown', blockers: [resultStatus], recommendedNextStep: 'stop_no_retry_escalate_terminal_receipt' });
@@ -1037,18 +1419,23 @@ export {
   assertMissionPacketBinding,
   classifyExactAutomationMapping,
   classifySubscriberLookup,
+  controlledInboxQuery,
   createMailerLiteActiveTriggerCorrectionClient,
   createMailerLiteExactAutomationClient,
+  firstEmailLocatorFromAutomation,
   exactAutomationGetPath,
   forbiddenEndpointReason,
   isInside,
   mutationAttemptLimiter,
+  parseGogMessageIdResult,
   parseArgs,
+  pollFirstEmailEvidence,
   priorPreservationStatus,
   redactScan,
   run,
   runLiveMode,
   runPreflightOnlyMode,
+  searchControlledInboxIds,
   subscriberGetPath,
   verifyGroupTransition,
   verifyIdentityContinuity,

@@ -18,11 +18,15 @@ import {
   assertAllowedCorrectionRequest,
   assertAllowedExactAutomationRequest,
   classifyExactAutomationMapping,
+  controlledInboxQuery,
   createMailerLiteActiveTriggerCorrectionClient,
   exactAutomationGetPath,
+  firstEmailLocatorFromAutomation,
   mutationAttemptLimiter,
+  parseGogMessageIdResult,
   parseArgs,
   run,
+  searchControlledInboxIds,
   subscriberGetPath,
   validateActiveTriggerCorrectionApprovalPhrase,
   validateActiveTriggerCorrectionPacket,
@@ -46,6 +50,9 @@ const FAKE_ACTIVE_GROUP = "grp_fake_active_trigger_001";
 const FAKE_PRIOR_GROUP = "grp_fake_prior_non_active_002";
 const FAKE_OTHER_GROUP = "grp_fake_other_existing_003";
 const FAKE_AUTOMATION_ID = "aut_fake_exact_onboarding_001";
+const FAKE_FIRST_EMAIL_SUBJECT = "Welcome fixture subject";
+const FAKE_FIRST_EMAIL_SENDER = "sender@example.test";
+const FAKE_MESSAGE_ID = "msg_fake_first_email_001";
 const MISSION_RUN_ID = "crm_core_mission_contract_2026_07_11_v1_run_001";
 const EXPECTED_HEAD = "a".repeat(40);
 const MISSION_NOW = new Date("2026-07-11T18:00:00.000Z");
@@ -58,6 +65,9 @@ const sensitiveStrings = [
   FAKE_PRIOR_GROUP,
   FAKE_OTHER_GROUP,
   FAKE_AUTOMATION_ID,
+  FAKE_FIRST_EMAIL_SUBJECT,
+  FAKE_FIRST_EMAIL_SENDER,
+  FAKE_MESSAGE_ID,
   FAKE_TOKEN,
   RAW_PAYLOAD,
   "Authorization",
@@ -207,6 +217,15 @@ const automationDetail = (overrides: Record<string, unknown> = {}) => ({
       complete: true,
       broken: false,
     }],
+    steps: [{
+      id: "step_fake_first_email_001",
+      parent_id: null,
+      type: "email",
+      subject: FAKE_FIRST_EMAIL_SUBJECT,
+      from: FAKE_FIRST_EMAIL_SENDER,
+      complete: true,
+      broken: false,
+    }],
     ...overrides,
   },
 });
@@ -215,6 +234,14 @@ const missionDeps = (deps: Record<string, unknown> = {}) => ({
   now: MISSION_NOW,
   executionContextProvider,
   automationClient: { request: async () => automationDetail() },
+  mailboxEvidenceProvider: {
+    search: async ({ phase }: { phase: string }) => ({
+      ok: true,
+      has_more: false,
+      ids_private: phase === "baseline" ? [] : [FAKE_MESSAGE_ID],
+    }),
+  },
+  sleep: async () => {},
   ...deps,
 });
 
@@ -227,6 +254,14 @@ const replaceArgValue = (args: string[], flag: string, value: string) => {
   next[index + 1] = value;
   return next;
 };
+
+const alternateOutputPaths = (paths: Record<string, string>, roots: Record<string, string>, suffix: string) => ({
+  ...paths,
+  privateResultJson: join(roots.privateMailerLiteRoot, `correction-result-${suffix}.json`),
+  privateResultMd: join(roots.privateMailerLiteRoot, `correction-result-${suffix}.md`),
+  receiptJson: join(roots.redactedReceiptRoot, `correction-receipt-${suffix}.json`),
+  receiptMd: join(roots.redactedReceiptRoot, `correction-receipt-${suffix}.md`),
+});
 
 const preflightArgs = (paths: Record<string, string>) => [
   ...liveArgs(paths),
@@ -537,6 +572,228 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     expect(exactAutomationGetPath(FAKE_AUTOMATION_ID)).toBe(`/api/automations/${FAKE_AUTOMATION_ID}`);
     expect(assertAllowedExactAutomationRequest({ method: "GET", path: exactAutomationGetPath(FAKE_AUTOMATION_ID), expectedAutomationReference: FAKE_AUTOMATION_ID })).toBe(true);
     expect(() => assertAllowedExactAutomationRequest({ method: "GET", path: "/api/automations", expectedAutomationReference: FAKE_AUTOMATION_ID })).toThrow("blocked_non_exact_automation_read");
+  });
+
+  test("first-email locator and Gmail ID parser stay exact and metadata-only", () => {
+    const locator = firstEmailLocatorFromAutomation(automationDetail());
+    expect(locator).toMatchObject({
+      ok: true,
+      status: "exact_first_email_locator_verified",
+      subject_private: FAKE_FIRST_EMAIL_SUBJECT,
+      sender_private: FAKE_FIRST_EMAIL_SENDER,
+    });
+    const query = controlledInboxQuery({
+      mailboxAnchor: FAKE_EMAIL,
+      locator,
+      afterEpochSeconds: 1_700_000_000,
+      beforeEpochSeconds: 1_700_000_100,
+    });
+    expect(query).toContain("in:inbox");
+    expect(query).toContain("-in:sent");
+    expect(query).toContain("-in:drafts");
+    expect(parseGogMessageIdResult(JSON.stringify({ messages: [{ id: FAKE_MESSAGE_ID }] }))).toEqual({ ok: true, ids_private: [FAKE_MESSAGE_ID], has_more: false });
+    expect(parseGogMessageIdResult(JSON.stringify({ messages: [{ id: FAKE_MESSAGE_ID }], nextPageToken: "more" })).has_more).toBe(true);
+    expect(parseGogMessageIdResult("not-json").ok).toBe(false);
+    expect(firstEmailLocatorFromAutomation(automationDetail({
+      steps: [{ id: "broken-first-email", parent_id: null, type: "email", subject: FAKE_FIRST_EMAIL_SUBJECT, from: FAKE_FIRST_EMAIL_SENDER, complete: false, broken: true }],
+    })).status).toBe("first_email_step_incomplete_or_broken");
+  });
+
+  test("production Gmail wrapper fixes binary, account, message search, ID selection, and exact bounded query inputs", async () => {
+    const locator = firstEmailLocatorFromAutomation(automationDetail());
+    let captured: { bin?: string; args?: string[] } = {};
+    const result = await searchControlledInboxIds({
+      mailboxAnchor: FAKE_EMAIL,
+      locator,
+      afterEpochSeconds: 1_700_000_000,
+      beforeEpochSeconds: 1_700_000_100,
+      execFileImpl: async (bin: string, args: string[]) => {
+        captured = { bin, args };
+        return { stdout: JSON.stringify({ messages: [{ id: FAKE_MESSAGE_ID }] }), stderr: "" };
+      },
+    });
+    expect(result).toEqual({ ok: true, ids_private: [FAKE_MESSAGE_ID], has_more: false });
+    expect(captured.bin).toBe("/opt/homebrew/bin/gog");
+    expect(captured.args?.slice(0, 3)).toEqual(["gmail", "messages", "search"]);
+    expect(captured.args).toContain("--select=id");
+    expect(captured.args).toContain("--max=2");
+    expect(captured.args).not.toContain("--include-body");
+    const accountIndex = captured.args?.indexOf("--account") ?? -1;
+    expect(captured.args?.[accountIndex + 1]).toBe(FAKE_EMAIL);
+    expect(captured.args?.[3]).toContain(`to:\"${FAKE_EMAIL}\"`);
+    expect(captured.args?.[3]).toContain(`from:\"${FAKE_FIRST_EMAIL_SENDER}\"`);
+    expect(captured.args?.[3]).toContain(`subject:\"${FAKE_FIRST_EMAIL_SUBJECT}\"`);
+  });
+
+  test("mailbox baseline ambiguity stops before subscriber access or mutation", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let correctionCalls = 0;
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: { search: async () => ({ ok: true, has_more: true, ids_private: [FAKE_MESSAGE_ID] }) },
+        correctionClient: { request: async () => { correctionCalls += 1; return {}; } },
+      });
+      expect(receipt.correction_result_status).toBe("blocked_controlled_mailbox_baseline_not_verified");
+      expect(receipt.mailbox_binding_status).toBe("not_verified");
+      expect(receipt.mailbox_evidence_check_count).toBe(1);
+      expect(correctionCalls).toBe(0);
+      expect(receipt.mutation_endpoint_call_count).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("persistent repair and mailbox ledgers bound resumed pre-effect failures across changed outputs", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let mailboxCalls = 0;
+    let automationCalls = 0;
+    try {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        const attemptPaths = alternateOutputPaths(paths, roots, `baseline-failure-${attempt}`);
+        const receipt = await runMission(liveArgs(attemptPaths), {
+          roots,
+          credentialProvider: async () => ({ key: "mock" }),
+          automationClient: { request: async () => { automationCalls += 1; return automationDetail(); } },
+          mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
+          correctionClient: { request: async () => { throw new Error("subscriber_route_must_not_run"); } },
+        });
+        expect(receipt.correction_result_status).toBe("blocked_controlled_mailbox_baseline_not_verified");
+        expect(receipt.pre_effect_live_attempt_count).toBe(attempt);
+        expect(receipt.mailbox_evidence_check_count).toBe(attempt);
+      }
+      const exhaustedPaths = alternateOutputPaths(paths, roots, "baseline-failure-4");
+      await expect(runMission(liveArgs(exhaustedPaths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        automationClient: { request: async () => { automationCalls += 1; return automationDetail(); } },
+        mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
+      })).rejects.toThrow("blocked_pre_effect_live_attempt_budget_exhausted");
+      expect(automationCalls).toBe(3);
+      expect(mailboxCalls).toBe(3);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("a resumed successful correction receives only the globally remaining mailbox checks", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let mailboxCalls = 0;
+    try {
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        const attemptPaths = alternateOutputPaths(paths, roots, `prior-baseline-failure-${attempt}`);
+        await runMission(liveArgs(attemptPaths), {
+          roots,
+          credentialProvider: async () => ({ key: "mock" }),
+          mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
+        });
+      }
+      const finalPaths = alternateOutputPaths(paths, roots, "remaining-budget-correction");
+      const requests: Array<Record<string, unknown>> = [];
+      const receipt = await runMission(liveArgs(finalPaths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: true, has_more: false, ids_private: [] }; } },
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
+        sleep: async () => {},
+      });
+      expect(receipt.correction_result_status).toBe("correction_executed_verified");
+      expect(receipt.pre_effect_live_attempt_count).toBe(3);
+      expect(receipt.mailbox_evidence_check_count).toBe(8);
+      expect(receipt.first_email_evidence_status).toBe("not_verified_evidence_budget_exhausted_no_resend");
+      expect(mailboxCalls).toBe(8);
+      expect(requests.filter((request) => request.method === "POST")).toHaveLength(1);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("preexisting exact first-email evidence blocks an absent-group assignment", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: { search: async () => ({ ok: true, has_more: false, ids_private: [FAKE_MESSAGE_ID] }) },
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP])], requests),
+      });
+      expect(receipt.correction_result_status).toBe("blocked_preexisting_first_email_evidence_before_assignment");
+      expect(receipt.first_email_evidence_status).toBe("preexisting_unique_bounded_locator_match_assignment_blocked");
+      expect(requests.map((request) => request.method)).toEqual(["GET"]);
+      expect(receipt.mutation_endpoint_call_count).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("preexisting-email terminal block consumes approval across changed run, packet, and outputs", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let secondCredentialCalls = 0;
+    try {
+      const first = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: { search: async () => ({ ok: true, has_more: false, ids_private: [FAKE_MESSAGE_ID] }) },
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP])], []),
+      });
+      expect(first.correction_result_status).toBe("blocked_preexisting_first_email_evidence_before_assignment");
+      const secondPacketId = "crm_core_mission_contract_2026_07_11_v1_after_email_block_packet_002";
+      const secondRunId = "crm_core_mission_contract_2026_07_11_v1_after_email_block_run_002";
+      const secondPaths = {
+        approvalPhraseFile: paths.approvalPhraseFile,
+        privatePacket: join(roots.privateMailerLiteRoot, "after-email-block-packet-002.json"),
+        privateResultJson: join(roots.privateMailerLiteRoot, "after-email-block-result-002.json"),
+        privateResultMd: join(roots.privateMailerLiteRoot, "after-email-block-result-002.md"),
+        receiptJson: join(roots.redactedReceiptRoot, "after-email-block-receipt-002.json"),
+        receiptMd: join(roots.redactedReceiptRoot, "after-email-block-receipt-002.md"),
+      };
+      await writeFile(secondPaths.privatePacket, `${JSON.stringify(missionPacket({
+        packet_id: secondPacketId,
+        mission_run_id: secondRunId,
+      }), null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+      let secondArgs = replaceArgValue(liveArgs(secondPaths), "--expected-packet-id", secondPacketId);
+      secondArgs = replaceArgValue(secondArgs, "--run-id", secondRunId);
+      await expect(runMission(secondArgs, {
+        roots,
+        credentialProvider: async () => { secondCredentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_existing_output_or_attempt_state");
+      expect(secondCredentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("verified no-op can use one preexisting exact inbox match as first-email proof", async () => {
+    const { dir, roots, paths } = await makePaths();
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: { search: async () => ({ ok: true, has_more: false, ids_private: [FAKE_MESSAGE_ID] }) },
+        correctionClient: makeClient([
+          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP]),
+          subscriber([FAKE_ACTIVE_GROUP, FAKE_PRIOR_GROUP]),
+        ], []),
+      });
+      expect(receipt.correction_result_status).toBe("already_present_idempotent_noop_verified");
+      expect(receipt.first_email_evidence_status).toBe("inbox_received_preexisting_unique_bounded_locator_match");
+      expect(receipt.mailbox_evidence_check_count).toBe(1);
+      expect(receipt.blockers).toEqual([]);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("missing delivery after the bounded eight checks never resends or retriggers", async () => {
+    const { dir, roots, paths } = await makePaths();
+    const requests: Array<Record<string, unknown>> = [];
+    const phases: string[] = [];
+    try {
+      const receipt = await runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        mailboxEvidenceProvider: { search: async ({ phase }: { phase: string }) => { phases.push(phase); return { ok: true, has_more: false, ids_private: [] }; } },
+        correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
+        sleep: async () => {},
+      });
+      expect(receipt.correction_result_status).toBe("correction_executed_verified");
+      expect(receipt.first_email_evidence_status).toBe("not_verified_after_bounded_checks_no_resend");
+      expect(receipt.mailbox_evidence_check_count).toBe(8);
+      expect(receipt.first_email_new_match_count).toBe(0);
+      expect(phases.filter((phase) => phase === "baseline")).toHaveLength(1);
+      expect(phases.filter((phase) => phase === "post_action")).toHaveLength(7);
+      expect(requests.filter((request) => request.method === "POST")).toHaveLength(1);
+    } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
   test("mission mapping failure stops before subscriber read or mutation", async () => {
