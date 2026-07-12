@@ -842,3 +842,28 @@
   write occurred during this integration.
 - Current product mission remains one freshly approved atomic active-trigger
   correction plus observable first-email proof.
+
+## Mission Contract v1 Blocked Closeout Integration
+
+- `integration_packet_id`:
+  `crm_core_mission_contract_v1_blocked_closeout_integration_2026_07_11`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `fb82fc6f629c61dc181c0281494b9e0c6c74450a`
+- `chief_architect_verdict`: `green_to_self_integrate_safe_stop`
+- The exact automation and active-trigger mapping were verified by the source
+  run.
+- The final mailbox baseline was not verified because the one-shot connector
+  result was not atomically published.
+- Subscriber lookup was never run.
+- No MailerLite POST, group assignment, mutation, resend, retrigger, or
+  automatic email occurred.
+- Durable budgets ended at `3/3` pre-effect attempts and `3/8` mailbox evidence
+  checks.
+- The terminal effect lock is absent.
+- The narrow Gmail base-profile to exact `+tag` recipient rule is integrated;
+  no dot, domain, account, recipient, or source widening is allowed.
+- Redacted closeout and independent safe-stop review are GREEN for privacy and
+  stop behavior, but the product mission is incomplete.
+- `Mission Contract 2026-07-11.v1` cannot be retried.
+- Next step is a synthetic publisher handshake fix followed by a newly
+  versioned CEO contract, or pause.

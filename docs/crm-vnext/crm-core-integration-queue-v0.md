@@ -1682,6 +1682,58 @@ No lane outputs in review at creation.
 - `decision_needed`: fresh exact approval of the Chief Architect compact
   mission contract for active-trigger correction and first-email proof.
 
+## crm_core_mission_contract_v1_blocked_closeout_integration_2026_07_11
+
+- `source_workstream`: `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commits`:
+  - `a96f9f9f0583bd785e09704a9a6927b98c843bce`
+  - `ab5df81403105cc76219d798c7fa877f96898330`
+  - `475d3ea7e81562ed6fa95281bbb1663783a16c13`
+  - `ec4f4d0255365030eba68b036304e1cf9783ab34`
+  - `fb82fc6f629c61dc181c0281494b9e0c6c74450a`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
+- `result_status`: `blocked_pre_effect_mission_incomplete`
+- `mission_contract_version`: `Mission Contract 2026-07-11.v1`
+- `pre_effect_live_attempt_budget`: `3_of_3_exhausted`
+- `mailbox_evidence_check_budget`: `3_of_8_used`
+- `exact_automation_reference_status`: `matched`
+- `automation_active_status`: `active_complete_not_broken`
+- `automation_trigger_mapping_status`: `exact_active_trigger_mapping_verified`
+- `mailbox_baseline_status`: `not_verified`
+- `subscriber_lookup_status`: `not_run`
+- `correction_attempted`: false
+- `correction_executed`: false
+- `mutation_endpoint_call_count`: 0
+- `automatic_email_caused_by_mission`: 0
+- `terminal_effect_lock_status`: `absent`
+- `gmail_plus_alias_binding_status`:
+  `narrow_exact_recipient_to_base_profile_rule_integrated`
+- `publisher_failure_class`:
+  `noninteractive_stdin_closed_before_private_result_publication`
+- `one_shot_research_allowed`: false
+- `tests_or_checks`:
+  - targeted Vitest suite `62/62`;
+  - syntax and `git diff --check`;
+  - redaction scan passed;
+  - independent alias-boundary review GREEN;
+  - independent safe-stop closeout review GREEN;
+  - independent worker postmortem completed.
+- `private_artifacts_touched_by_source_run`: true
+- `private_artifacts_integrated`: false
+- `source_reads_executed`:
+  `exact_automation_read_and_one_bounded_gmail_id_search`
+- `subscriber_read_executed`: false
+- `source_mutation_executed`: false
+- `crm_source_write_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`:
+  `publisher_handshake_fix_then_new_versioned_contract_or_pause`
+- `integration_recommendation`:
+  `integrate_safe_closeout_but_do_not_claim_mission_success_or_retry_v1`
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

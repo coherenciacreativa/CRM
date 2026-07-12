@@ -5768,39 +5768,44 @@ routing and completion pointer.
 ## Active Next Action
 
 - `next_action_id`:
-  `crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_fresh_approval_v0`
+  `crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_new_contract_required_v0`
 - `status`: `blocked`
 - `created_at`: `2026-07-11`
 - `updated_at`: `2026-07-11`
-- `objective`: Wait for a fresh exact CEO approval of one compact atomic
-  mission that adds the controlled subscriber to the real active onboarding
-  trigger if absent, preserves all existing groups, immediately verifies
-  membership, and obtains observable proof of the first onboarding email.
+- `objective`: Stop the exhausted v1 mission and require a newly versioned
+  contract before any further active-trigger correction or first-email proof
+  attempt.
 - `why_now`:
-  - The previous exact approval was consumed by an attempt that stopped on
-    subscriber lookup HTTP 404 before mutation.
+  - `Mission Contract 2026-07-11.v1` used all `3/3` pre-effect attempts.
+  - The final mailbox evidence ledger is `3/8`; it must not be silently reset.
+  - The exact automation reference, active state, trigger mapping, and private
+    first-email locator were verified.
+  - Attempt 3 stopped because the one-shot Gmail result could not be published
+    atomically into the private bridge.
+  - Subscriber lookup was not run.
   - `correction_attempted`: false.
   - `correction_executed`: false.
   - `mutation_endpoint_call_count`: 0.
-  - The lookup route fix is committed and integrated with group membership
-    included and a redacted 404 terminal result.
+  - Terminal effect lock: absent.
   - Active-trigger membership and first-email delivery remain unproven.
-- `approved_in_this_bootstrap`:
-  - Operating-model docs, mission skill, offline tests, project bootstrap, and
-    central integration only.
-  - No live retry, MailerLite UI/API, correction, send, or source write.
-- `future_atomic_sequence_after_fresh_approval`:
-  - Fresh packet and approval validation.
-  - Fresh packet-specific subscriber lookup.
-  - Confirm safe active subscriber and current group membership.
-  - If active trigger membership is present, perform no mutation.
-  - If absent, perform at most one add-only group assignment.
-  - Re-fetch immediately and verify active trigger membership.
-  - Preserve every existing group and subscriber field/status.
-  - Obtain observable first-email evidence through the approved boundary.
-  - Emit one redacted receipt and one closeout.
+- `allowed_scope_before_new_contract`:
+  - Preserve the redacted blocked closeout.
+  - Prepare and test a synthetic publisher handshake that proves a waiting
+    private input session before any one-shot connector call.
+  - Draft a newly versioned contract for CEO review.
+  - No live attempt under v1.
+- `required_new_contract_terms`:
+  - Exactly one additional pre-effect live attempt.
+  - Continue mailbox evidence accounting from `3/8`, retaining the global
+    ceiling of eight.
+  - Bind only the exact Gmail `+tag` recipient to its exact authenticated base
+    mailbox; no dot normalization, alternate domain, alias, or other account.
+  - Preserve the same person, subscriber, group, automation, recipient,
+    source, no-op, add-only effect, atomicity, freshness, and stop rules.
+  - Require fresh packet/HEAD binding and independent pre-live review.
 - `forbidden_scope`:
-  - No live action before fresh exact approval.
+  - No fourth attempt or replay under `Mission Contract 2026-07-11.v1`.
+  - No repeat of the consumed baseline search.
   - No group removal or replacement.
   - No subscriber upsert, field/status update, or resubscribe.
   - No automation/campaign mutation or broad import.
@@ -5809,6 +5814,10 @@ routing and completion pointer.
   - No private values in chat.
   - No `/Users/alejandrogomez/CRM`.
 - `recommended_default`:
-  `open_chief_architect_current_mission_chat_and_approve_compact_mission_contract`
-- `completion_definition`: Alejandro approves, modifies, declines, or pauses
-  the compact atomic correction and first-email proof mission contract.
+  `prepare_publisher_handshake_fix_then_new_versioned_mission_contract`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
+- `completion_definition`: A synthetic no-session test proves zero marker and
+  zero connector calls, then Alejandro approves, modifies, declines, or pauses
+  a newly versioned exact mission contract. No live work is included in this
+  next-action state.
