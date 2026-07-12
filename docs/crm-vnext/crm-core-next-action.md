@@ -5768,44 +5768,51 @@ routing and completion pointer.
 ## Active Next Action
 
 - `next_action_id`:
-  `crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_new_contract_required_v0`
-- `status`: `blocked`
+  `crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_mission_v2_approval_v0`
+- `status`: `awaiting_exact_ceo_approval`
 - `created_at`: `2026-07-11`
 - `updated_at`: `2026-07-11`
-- `objective`: Stop the exhausted v1 mission and require a newly versioned
-  contract before any further active-trigger correction or first-email proof
-  attempt.
+- `objective`: Wait for Alejandro to approve, modify, decline, or pause the
+  exact `Mission Contract 2026-07-11.v2` before any new live read, marker,
+  connector call, subscriber read, mutation, or consequential email effect.
 - `why_now`:
   - `Mission Contract 2026-07-11.v1` used all `3/3` pre-effect attempts.
   - The final mailbox evidence ledger is `3/8`; it must not be silently reset.
-  - The exact automation reference, active state, trigger mapping, and private
-    first-email locator were verified.
-  - Attempt 3 stopped because the one-shot Gmail result could not be published
-    atomically into the private bridge.
-  - Subscriber lookup was not run.
-  - `correction_attempted`: false.
-  - `correction_executed`: false.
-  - `mutation_endpoint_call_count`: 0.
-  - Terminal effect lock: absent.
-  - Active-trigger membership and first-email delivery remain unproven.
-- `allowed_scope_before_new_contract`:
-  - Preserve the redacted blocked closeout.
-  - Prepare and test a synthetic publisher handshake that proves a waiting
-    private input session before any one-shot connector call.
-  - Draft a newly versioned contract for CEO review.
-  - No live attempt under v1.
-- `required_new_contract_terms`:
-  - Exactly one additional pre-effect live attempt.
-  - Continue mailbox evidence accounting from `3/8`, retaining the global
-    ceiling of eight.
-  - Bind only the exact Gmail `+tag` recipient to its exact authenticated base
-    mailbox; no dot normalization, alternate domain, alias, or other account.
-  - Preserve the same person, subscriber, group, automation, recipient,
-    source, no-op, add-only effect, atomicity, freshness, and stop rules.
-  - Require fresh packet/HEAD binding and independent pre-live review.
+  - The publisher now requires an echo-disabled interactive TTY and reports a
+    waiting sentinel before a one-shot marker may be created.
+  - The controller test proves no waiting session means zero marker and zero
+    connector calls.
+  - The synthetic response/ready publication is compatible with the existing
+    guard and never persists raw Gmail IDs.
+  - The v2 guard requires the exact v1 lineage at `3/3` and `3/8`, permits only
+    one new v2 attempt, and exposes only global mailbox ordinals `4..8`.
+  - v1 remains registered for audit but cannot execute live.
+  - The exact Gmail `+tag` recipient/base-account rule is required with no dot,
+    alternate-domain, tag, alias, account, person, or recipient widening.
+  - All implementation and tests are offline and synthetic; no Gmail or
+    MailerLite live call was made.
+- `allowed_scope_now`:
+  - Present the exact v2 contract and approval phrase.
+  - Accept Alejandro's approval, modification, decline, or pause.
+  - Continue offline review and correction if a reviewer finds a defect.
+  - No live execution before exact approval.
+- `future_live_scope_if_approved`:
+  - Exactly one additional v2 pre-effect attempt.
+  - Continue the global mailbox ledger from `3/8`, never above `8/8`.
+  - Preserve the same exact private person, subscriber, group, automation,
+    tagged recipient, base mailbox, no-op rule, add-only effect, and at-most-one
+    automatic first-email consequence.
+  - Require a fresh owner-only packet bound to the exact clean reviewed HEAD and
+    this exact active-next-action ID.
+  - Require the publisher waiting gate before every marker and connector call.
+  - Require independent adversarial review, at most one central integration for
+    v2, and final closeout.
 - `forbidden_scope`:
-  - No fourth attempt or replay under `Mission Contract 2026-07-11.v1`.
-  - No repeat of the consumed baseline search.
+  - No live read, marker, connector call, subscriber GET, mutation, or email
+    effect from the current unapproved state.
+  - No reuse or replay of v1 approval, packet, request, marker, response,
+    result, or search.
+  - No second v2 attempt.
   - No group removal or replacement.
   - No subscriber upsert, field/status update, or resubscribe.
   - No automation/campaign mutation or broad import.
@@ -5814,10 +5821,11 @@ routing and completion pointer.
   - No private values in chat.
   - No `/Users/alejandrogomez/CRM`.
 - `recommended_default`:
-  `prepare_publisher_handshake_fix_then_new_versioned_mission_contract`
+  `approve_modify_decline_or_pause_mission_contract_2026_07_11_v2`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-controlled-welcome-flow-mission-contract-2026-07-11-v2.md`
 - `result_doc`:
   `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
-- `completion_definition`: A synthetic no-session test proves zero marker and
-  zero connector calls, then Alejandro approves, modifies, declines, or pauses
-  a newly versioned exact mission contract. No live work is included in this
-  next-action state.
+- `completion_definition`: Alejandro supplies the exact v2 approval phrase,
+  modifies it, declines it, or pauses it. This state itself includes no live
+  work.

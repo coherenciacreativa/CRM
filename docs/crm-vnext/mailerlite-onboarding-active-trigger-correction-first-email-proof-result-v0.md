@@ -125,3 +125,32 @@ zero marker creation and zero connector calls.
 
 Until that new contract is approved, no retry, assignment, resend, retrigger,
 central claim of success, or active-onboarding claim is authorized.
+
+## Offline V2 Preparation
+
+The required offline remediation is now prepared on the MailerLite lane:
+
+- a dedicated publisher requires a real interactive TTY and disables echo
+  before reporting that it is waiting;
+- no waiting session produces zero consumption marker and zero connector calls;
+- consumption must be claimed before a connector call;
+- raw message IDs are validated, hashed immediately, never persisted raw, and
+  never printed;
+- response is published before the ready commit marker, with an exact
+  response-byte digest and owner-only `0600` permissions;
+- EOF or failure after a durable marker preserves the one-shot stop rule;
+- the synthetic publisher handshake is compatible end-to-end with the guard;
+- v2 requires the exact v1 budget lineage at `3/3` and `3/8`, permits only one
+  additional attempt, and limits future mailbox ordinals to `4..8`;
+- v1 remains available for audit validation but is rejected for live use;
+- the exact Gmail tagged-recipient/base-account relationship is now a mandatory
+  v2 packet gate.
+
+The proposed contract is:
+
+`docs/crm-vnext/crm-core-controlled-welcome-flow-mission-contract-2026-07-11-v2.md`
+
+This preparation used synthetic fixtures only. It did not read Gmail or
+MailerLite live, did not create a private v2 execution packet, did not claim the
+v2 attempt, and did not authorize itself. Live work still requires Alejandro's
+exact v2 approval after independent review.

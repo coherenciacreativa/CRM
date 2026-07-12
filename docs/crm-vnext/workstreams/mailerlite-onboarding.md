@@ -698,3 +698,32 @@ if absent, preserve all existing groups, verify immediately, and stop.
 No current approval authorizes a fourth attempt, replay of the consumed
 baseline search, group assignment, resend, retrigger, or claim of active
 onboarding enrollment.
+
+## Mission Contract 2026-07-11.v2 Offline Preparation
+
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-controlled-welcome-flow-mission-contract-2026-07-11-v2.md`
+- `status`: `offline_ready_awaiting_exact_ceo_approval`
+- `publisher_status`: `implemented_synthetic_end_to_end_tested`
+- `publisher_requires_interactive_tty`: true
+- `publisher_echo_disabled_before_waiting`: true
+- `no_session_behavior`: `zero_consumption_marker_zero_connector_calls`
+- `raw_message_ids_persisted_or_printed`: false
+- `guard_compatibility_status`: `synthetic_end_to_end_passed`
+- `v1_live_execution_status`: `blocked_audit_only`
+- `v1_lineage_required`: `exact_3_of_3_attempts_and_3_of_8_mailbox_checks`
+- `v2_pre_effect_attempt_budget`: `exactly_one`
+- `global_mailbox_ordinals_available`: `4_through_8`
+- `gmail_binding_scope`:
+  `exact_single_plus_tag_recipient_to_exact_base_gmail_profile_only`
+- `live_gmail_called_during_preparation`: false
+- `live_mailerlite_called_during_preparation`: false
+- `private_v2_execution_packet_created`: false
+- `v2_budget_claimed`: false
+- `central_integration_performed_for_v2`: false
+- `recommended_next_step`:
+  `alejandro_approve_modify_decline_or_pause_exact_mission_contract_v2`
+
+The current lane contains only offline code, synthetic tests, the public
+contract, and the approval boundary. It cannot execute v2 from the old v1
+approval and does not treat contract preparation as approval.

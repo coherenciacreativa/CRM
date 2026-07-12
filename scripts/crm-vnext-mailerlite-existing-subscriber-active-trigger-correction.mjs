@@ -10,6 +10,8 @@ import { promisify } from 'node:util';
 import {
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION,
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE,
+  LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  LEGACY_MISSION_CONTRACT_APPROVAL_PHRASE,
   MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
   MISSION_CONTRACT_APPROVAL_PHRASE,
   approvalTemplatePayload,
@@ -27,16 +29,18 @@ const execFileAsync = promisify(execFile);
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PRIVATE_MAILERLITE_ROOT = '/Users/alejandrogomez/Documents/Mantis-Private-Source-Artifacts/mailerlite';
 const REDACTED_RECEIPT_ROOT = '/Users/alejandrogomez/Documents/Mantis-Reports/mailerlite/controlled-welcome-flow';
-const SCHEMA_VERSION = 'crm-vnext-mailerlite-existing-subscriber-active-trigger-correction-2026-07-11-v2';
+const SCHEMA_VERSION = 'crm-vnext-mailerlite-existing-subscriber-active-trigger-correction-2026-07-11-v3';
 const GUARD_STATUS = 'implemented_and_mock_tested';
 const DEFAULT_API_BASE = ['https:', '', 'connect.mailerlite.com', 'api'].join('/');
 const DEFAULT_SERVICE = 'CRM-MailerLite';
 const DEFAULT_ACCOUNT = 'default';
-const MISSION_ACTIVE_NEXT_ACTION = 'crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_fresh_approval_v0';
+const MISSION_ACTIVE_NEXT_ACTION = 'crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_mission_v2_approval_v0';
 const MISSION_PACKET_MAX_AGE_MS = 120 * 60 * 1000;
 const CONTROLLED_INBOX_LOOKBACK_SECONDS = 90 * 24 * 60 * 60;
 const MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS = 8;
-const PRE_EFFECT_LIVE_ATTEMPT_LIMIT = 3;
+const PRE_EFFECT_LIVE_ATTEMPT_LIMIT = 1;
+const LEGACY_PRE_EFFECT_LIVE_ATTEMPT_COUNT = 3;
+const MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT = 3;
 const MAILBOX_POST_POLL_DELAYS_MS = Object.freeze([0, 5_000, 10_000, 15_000, 30_000, 45_000, 60_000]);
 const GOG_BIN = '/opt/homebrew/bin/gog';
 const GOG_MAILBOX_SEARCH_TIMEOUT_MS = 30_000;
@@ -236,7 +240,7 @@ const missionPacketAutomationReference = (packet) => {
   return unique[0];
 };
 
-const assertMissionPacketBinding = ({ options, packet, packetValidation, executionContext, now = new Date() }) => {
+const assertMissionPacketBinding = ({ options, packet, packetValidation, executionContext, legacyLineage, now = new Date() }) => {
   const runId = safeBindingValue(options.runId, /^[a-z0-9][a-z0-9._-]{7,160}$/i, 'blocked_mission_run_id_invalid');
   const expectedHead = safeBindingValue(options.expectedRepoHead, /^[0-9a-f]{40}$/i, 'blocked_expected_repo_head_invalid');
   const expectedAction = safeBindingValue(options.expectedActiveNextAction, /^[a-z0-9][a-z0-9._-]{7,200}$/i, 'blocked_expected_active_next_action_invalid');
@@ -247,6 +251,15 @@ const assertMissionPacketBinding = ({ options, packet, packetValidation, executi
   if (cleanString(executionContext?.active_next_action) !== expectedAction) throw new Error('blocked_active_next_action_mismatch');
   if (packetValidation.packet_id !== expectedPacketId) throw new Error('blocked_packet_id_mismatch');
   if (cleanString(packet?.mission_contract_version) !== MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION) throw new Error('blocked_mission_packet_contract_version_mismatch');
+  const legacyPacketId = safeBindingValue(legacyLineage?.last_packet_id, /^[a-z0-9][a-z0-9._-]{7,200}$/i, 'blocked_v2_lineage_packet_id_invalid');
+  if (
+    cleanString(packet?.lineage_contract_version) !== LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION
+    || cleanString(packet?.lineage_source_packet_id) !== legacyPacketId
+    || packet?.lineage_identity_binding_status !== 'verified_exact_private_values_unchanged_from_v1_source_packet'
+  ) throw new Error('blocked_mission_packet_identity_lineage_not_verified');
+  if (!controlledMailboxAnchorIsExactGmailPlus(packetValidation.existing_subscriber_lookup_anchor)) {
+    throw new Error('blocked_mission_mailbox_requires_exact_gmail_plus_anchor');
+  }
   if (cleanString(packet?.mission_run_id) !== runId) throw new Error('blocked_mission_packet_run_id_mismatch');
   if (cleanString(packet?.expected_repo_head) !== expectedHead) throw new Error('blocked_mission_packet_repo_head_mismatch');
   if (cleanString(packet?.expected_active_next_action) !== expectedAction) throw new Error('blocked_mission_packet_active_next_action_mismatch');
@@ -312,6 +325,13 @@ const validatePathPolicy = (options, { roots = {} } = {}) => {
   };
 };
 
+const assertMissionV2FileBridgeRoute = (options) => {
+  if (options.mailboxEvidenceProvider !== 'file-bridge' || !options.privateMailboxBridgeDir) {
+    throw new Error('blocked_mission_v2_requires_prearmed_file_bridge_publisher');
+  }
+  return true;
+};
+
 const fileExists = async (filePath) => {
   try { await access(filePath); return true; }
   catch (error) {
@@ -326,9 +346,16 @@ const missionExecutionLockPath = ({ roots, approvalContractVersion }) => {
     rootsWithDefaults(roots).privateMailerLiteRoot,
     'controlled-welcome-flow',
     'mission-attempt-locks',
-    'mission-contract-2026-07-11-v1--active-trigger-correction-and-first-email-proof.json',
+    'mission-contract-2026-07-11-v2--active-trigger-correction-and-first-email-proof.json',
   );
 };
+
+const legacyMissionExecutionLockPath = ({ roots }) => join(
+  rootsWithDefaults(roots).privateMailerLiteRoot,
+  'controlled-welcome-flow',
+  'mission-attempt-locks',
+  'mission-contract-2026-07-11-v1--active-trigger-correction-and-first-email-proof.json',
+);
 
 const missionBudgetStatePath = ({ roots, approvalContractVersion }) => {
   if (approvalContractVersion !== MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION) throw new Error('blocked_mission_budget_contract_version_mismatch');
@@ -336,16 +363,71 @@ const missionBudgetStatePath = ({ roots, approvalContractVersion }) => {
     rootsWithDefaults(roots).privateMailerLiteRoot,
     'controlled-welcome-flow',
     'mission-attempt-locks',
-    'mission-contract-2026-07-11-v1--budget-state.json',
+    'mission-contract-2026-07-11-v2--budget-state.json',
   );
 };
 
+const legacyMissionBudgetStatePath = ({ roots }) => join(
+  rootsWithDefaults(roots).privateMailerLiteRoot,
+  'controlled-welcome-flow',
+  'mission-attempt-locks',
+  'mission-contract-2026-07-11-v1--budget-state.json',
+);
+
 const validBudgetCount = (value) => Number.isInteger(value) && value >= 0;
+
+const assertMissionBudgetStateFile = async (statePath) => {
+  let handle;
+  try {
+    handle = await open(statePath, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW);
+    const before = await handle.stat();
+    if (
+      !before.isFile()
+      || before.nlink !== 1
+      || (before.mode & 0o077) !== 0
+      || (typeof process.getuid === 'function' && before.uid !== process.getuid())
+    ) throw new Error('blocked_mission_budget_state_permissions');
+    const bytes = await handle.readFile();
+    const after = await handle.stat();
+    if (
+      before.dev !== after.dev
+      || before.ino !== after.ino
+      || before.size !== after.size
+      || before.mtimeMs !== after.mtimeMs
+      || after.size !== bytes.length
+    ) throw new Error('blocked_mission_budget_state_changed_during_read');
+    try { return JSON.parse(bytes.toString('utf8')); }
+    catch { throw new Error('blocked_mission_budget_state_invalid'); }
+  } catch (error) {
+    if (error?.code === 'ELOOP') throw new Error('blocked_mission_budget_state_permissions');
+    throw error;
+  } finally {
+    await handle?.close();
+  }
+};
+
+const assertV2MissionLineage = async ({ roots }) => {
+  let legacy;
+  try {
+    legacy = await assertMissionBudgetStateFile(legacyMissionBudgetStatePath({ roots }));
+  } catch (error) {
+    if (error?.code === 'ENOENT') throw new Error('blocked_v2_lineage_budget_state_missing');
+    throw error;
+  }
+  if (
+    legacy?.schema_version !== 'crm-core-mailerlite-mission-budget-state-v1'
+    || legacy?.approval_contract_version !== LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION
+    || legacy?.pre_effect_live_attempt_count !== LEGACY_PRE_EFFECT_LIVE_ATTEMPT_COUNT
+    || legacy?.mailbox_evidence_check_count !== MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT
+  ) throw new Error('blocked_v2_lineage_budget_state_invalid');
+  if (await fileExists(legacyMissionExecutionLockPath({ roots }))) throw new Error('blocked_v2_lineage_terminal_lock_present');
+  return legacy;
+};
 
 const updateMissionBudgetState = async ({ roots, approvalContractVersion, updater }) => {
   const statePath = missionBudgetStatePath({ roots, approvalContractVersion });
   const mutexPath = `${statePath}.mutex`;
-  const tempPath = `${statePath}.tmp-${process.pid}`;
+  const tempPath = `${statePath}.tmp-${process.pid}-${randomBytes(8).toString('hex')}`;
   await mkdir(dirname(statePath), { recursive: true });
   let mutex;
   try {
@@ -355,30 +437,39 @@ const updateMissionBudgetState = async ({ roots, approvalContractVersion, update
     throw error;
   }
   try {
+    await assertV2MissionLineage({ roots });
     let current = {
-      schema_version: 'crm-core-mailerlite-mission-budget-state-v1',
+      schema_version: 'crm-core-mailerlite-mission-budget-state-v2',
       approval_contract_version: approvalContractVersion,
-      pre_effect_live_attempt_count: 0,
-      mailbox_evidence_check_count: 0,
+      lineage_contract_version: LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+      lineage_pre_effect_live_attempt_count: LEGACY_PRE_EFFECT_LIVE_ATTEMPT_COUNT,
+      mailbox_evidence_lineage_initial_count: MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT,
+      pre_effect_live_attempt_count: LEGACY_PRE_EFFECT_LIVE_ATTEMPT_COUNT,
+      v2_pre_effect_live_attempt_count: 0,
+      mailbox_evidence_check_count: MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT,
     };
     try {
-      const metadata = await stat(statePath);
-      if (!metadata.isFile() || (metadata.mode & 0o077) !== 0 || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())) {
-        throw new Error('blocked_mission_budget_state_permissions');
-      }
-      const parsed = JSON.parse(await readFile(statePath, 'utf8'));
+      const parsed = await assertMissionBudgetStateFile(statePath);
       if (
         parsed?.schema_version !== current.schema_version
         || parsed?.approval_contract_version !== approvalContractVersion
+        || parsed?.lineage_contract_version !== LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION
+        || parsed?.lineage_pre_effect_live_attempt_count !== LEGACY_PRE_EFFECT_LIVE_ATTEMPT_COUNT
+        || parsed?.mailbox_evidence_lineage_initial_count !== MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT
         || !validBudgetCount(parsed?.pre_effect_live_attempt_count)
+        || !validBudgetCount(parsed?.v2_pre_effect_live_attempt_count)
         || !validBudgetCount(parsed?.mailbox_evidence_check_count)
+        || parsed.pre_effect_live_attempt_count !== LEGACY_PRE_EFFECT_LIVE_ATTEMPT_COUNT + parsed.v2_pre_effect_live_attempt_count
+        || parsed.v2_pre_effect_live_attempt_count > PRE_EFFECT_LIVE_ATTEMPT_LIMIT
+        || parsed.mailbox_evidence_check_count < MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT
+        || parsed.mailbox_evidence_check_count > MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS
       ) throw new Error('blocked_mission_budget_state_invalid');
       current = parsed;
     } catch (error) {
       if (error?.code !== 'ENOENT') throw error;
     }
     const next = updater({ ...current });
-    await writeFile(tempPath, `${JSON.stringify(next, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+    await writeFile(tempPath, `${JSON.stringify(next, null, 2)}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
     await rename(tempPath, statePath);
     return next;
   } finally {
@@ -392,10 +483,11 @@ const claimPreEffectLiveAttemptBudget = ({ roots, approvalContractVersion, runId
   roots,
   approvalContractVersion,
   updater: (state) => {
-    if (state.pre_effect_live_attempt_count >= PRE_EFFECT_LIVE_ATTEMPT_LIMIT) throw new Error('blocked_pre_effect_live_attempt_budget_exhausted');
+    if (state.v2_pre_effect_live_attempt_count >= PRE_EFFECT_LIVE_ATTEMPT_LIMIT) throw new Error('blocked_pre_effect_live_attempt_budget_exhausted');
     return {
       ...state,
       pre_effect_live_attempt_count: state.pre_effect_live_attempt_count + 1,
+      v2_pre_effect_live_attempt_count: state.v2_pre_effect_live_attempt_count + 1,
       last_run_id: runId,
       last_packet_id: packetId,
     };
@@ -455,7 +547,54 @@ const claimMissionExecution = async ({ roots, runId, packetId, approvalContractV
   return lockPath;
 };
 
-const readJson = async (filePath) => JSON.parse(await readFile(filePath, 'utf8'));
+const readPrivateJsonStable = async ({ filePath, privateRoot, invalidReason = 'blocked_private_json_permissions_or_stability' }) => {
+  let handle;
+  try {
+    const [canonicalRoot, canonicalFileBefore] = await Promise.all([realpath(privateRoot), realpath(filePath)]);
+    const lexicalRelativePath = relative(resolve(privateRoot), resolve(filePath));
+    const expectedCanonicalPath = resolve(canonicalRoot, lexicalRelativePath);
+    if (
+      !lexicalRelativePath
+      || lexicalRelativePath.startsWith('..')
+      || isAbsolute(lexicalRelativePath)
+      || canonicalFileBefore !== expectedCanonicalPath
+      || !isInside(canonicalFileBefore, canonicalRoot)
+    ) throw new Error(invalidReason);
+    handle = await open(filePath, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW);
+    const before = await handle.stat();
+    if (
+      !before.isFile()
+      || before.nlink !== 1
+      || (before.mode & 0o777) !== 0o600
+      || (typeof process.getuid === 'function' && before.uid !== process.getuid())
+      || before.size < 2
+      || before.size > 512 * 1024
+    ) throw new Error(invalidReason);
+    const bytes = await handle.readFile();
+    const [after, canonicalFileAfter, pathMetadata] = await Promise.all([
+      handle.stat(),
+      realpath(filePath),
+      stat(filePath),
+    ]);
+    if (
+      before.dev !== after.dev
+      || before.ino !== after.ino
+      || before.size !== after.size
+      || before.mtimeMs !== after.mtimeMs
+      || after.size !== bytes.length
+      || canonicalFileAfter !== canonicalFileBefore
+      || pathMetadata.dev !== after.dev
+      || pathMetadata.ino !== after.ino
+    ) throw new Error(invalidReason);
+    try { return JSON.parse(bytes.toString('utf8')); }
+    catch { throw new Error('blocked_private_packet_json_invalid'); }
+  } catch (error) {
+    if (error?.code === 'ELOOP') throw new Error(invalidReason);
+    throw error;
+  } finally {
+    await handle?.close();
+  }
+};
 const writeJson = async (filePath, value, mode = 0o644) => {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', mode });
@@ -827,6 +966,15 @@ const controlledMailboxProfileMatchesAnchor = (profileEmail, mailboxAnchor) => {
   );
 };
 
+const controlledMailboxAnchorIsExactGmailPlus = (mailboxAnchor) => {
+  const exact = exactEmailAddress(mailboxAnchor);
+  const authenticated = gmailAuthenticatedAccountForAnchor(mailboxAnchor);
+  if (!exact || !authenticated || exact !== cleanString(mailboxAnchor)?.toLowerCase() || !exact.endsWith('@gmail.com')) return false;
+  const local = exact.slice(0, exact.lastIndexOf('@'));
+  const plus = local.indexOf('+');
+  return plus > 0 && plus < local.length - 1 && plus === local.lastIndexOf('+') && authenticated !== exact;
+};
+
 const firstEmailLocatorFromAutomation = (response) => {
   const automation = automationFromResponse(response);
   const steps = arrayFrom(automation?.steps);
@@ -970,7 +1118,7 @@ const validFileBridgeMissionBinding = (binding) => (
   && Boolean(cleanString(binding.run_id))
   && Boolean(cleanString(binding.packet_id))
   && Number.isInteger(binding.mailbox_check_ordinal)
-  && binding.mailbox_check_ordinal >= 1
+  && binding.mailbox_check_ordinal > MAILBOX_EVIDENCE_LINEAGE_INITIAL_COUNT
   && binding.mailbox_check_ordinal <= MAILBOX_EVIDENCE_MAX_TOTAL_CHECKS
 );
 
@@ -1469,18 +1617,29 @@ const guardedRequest = async (client, limiter, request) => {
 };
 
 const runPreflightOnlyMode = async (options, deps = {}) => {
+  assertMissionV2FileBridgeRoute(options);
   const paths = validatePathPolicy(options, { roots: deps.roots });
   assertApprovedMailerLiteOptions(options);
-  if (options.approvalPhraseFile) await assertExactApprovalPhrase(options);
-  const packet = await readJson(paths.privateCorrectionPacketJson);
+  if (options.approvalPhraseFile) {
+    const approvalValidation = await assertExactApprovalPhrase(options);
+    if (approvalValidation.contract_version !== MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION) {
+      throw new Error('blocked_preflight_requires_current_mission_contract');
+    }
+  }
+  const packet = await readPrivateJsonStable({
+    filePath: paths.privateCorrectionPacketJson,
+    privateRoot: rootsWithDefaults(deps.roots).privateMailerLiteRoot,
+    invalidReason: 'blocked_private_packet_permissions_or_stability',
+  });
   const packetValidation = validateActiveTriggerCorrectionPacket(packet);
   if (!packetValidation.ok) throw new Error(packetValidation.reason);
   let runId = deps.runId ?? options.runId ?? 'crm_core_mailerlite_active_trigger_correction_preflight_only_2026-07-11';
   let executionBindingStatus = 'not_required_by_selected_legacy_contract';
   if (options.approvalContractVersion === MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION) {
+    const legacyLineage = await assertV2MissionLineage({ roots: deps.roots });
     const contextProvider = deps.executionContextProvider ?? defaultExecutionContextProvider;
     const executionContext = await contextProvider(rootsWithDefaults(deps.roots).repoRoot);
-    const binding = assertMissionPacketBinding({ options, packet, packetValidation, executionContext, now: deps.now ?? new Date() });
+    const binding = assertMissionPacketBinding({ options, packet, packetValidation, executionContext, legacyLineage, now: deps.now ?? new Date() });
     runId = binding.run_id;
     executionBindingStatus = 'passed_clean_head_active_action_packet_and_freshness_binding';
     await assertFreshOutputPaths(paths);
@@ -1497,11 +1656,17 @@ const runPreflightOnlyMode = async (options, deps = {}) => {
 
 const runLiveMode = async (options, deps = {}) => {
   if (!options.allowLiveExistingSubscriberActiveTriggerCorrection) throw new Error('not_run_missing_approval');
+  assertMissionV2FileBridgeRoute(options);
   const paths = validatePathPolicy(options, { roots: deps.roots });
   assertApprovedMailerLiteOptions(options);
   const approvalValidation = await assertExactApprovalPhrase(options);
   if (approvalValidation.contract_version !== MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION) throw new Error('blocked_live_requires_current_mission_contract');
-  const packet = await readJson(paths.privateCorrectionPacketJson);
+  const legacyLineage = await assertV2MissionLineage({ roots: deps.roots });
+  const packet = await readPrivateJsonStable({
+    filePath: paths.privateCorrectionPacketJson,
+    privateRoot: rootsWithDefaults(deps.roots).privateMailerLiteRoot,
+    invalidReason: 'blocked_private_packet_permissions_or_stability',
+  });
   const packetValidation = validateActiveTriggerCorrectionPacket(packet);
   if (!packetValidation.ok) throw new Error('blocked_private_packet_contract_invalid');
   const isMissionContract = true;
@@ -1511,7 +1676,7 @@ const runLiveMode = async (options, deps = {}) => {
   if (isMissionContract) {
     const contextProvider = deps.executionContextProvider ?? defaultExecutionContextProvider;
     const executionContext = await contextProvider(rootsWithDefaults(deps.roots).repoRoot);
-    const binding = assertMissionPacketBinding({ options, packet, packetValidation, executionContext, now: deps.now ?? new Date() });
+    const binding = assertMissionPacketBinding({ options, packet, packetValidation, executionContext, legacyLineage, now: deps.now ?? new Date() });
     runId = binding.run_id;
     executionBindingStatus = 'passed_clean_head_active_action_packet_and_freshness_binding';
     automationReference = binding.automation_reference_private;
@@ -1849,7 +2014,7 @@ const run = async (argv = process.argv.slice(2), deps = {}) => {
     return { ok: true, help: true };
   }
   if (options.printApprovalTemplate) {
-    const payload = approvalTemplatePayload(options.approvalContractVersion ?? ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION);
+    const payload = approvalTemplatePayload(options.approvalContractVersion ?? MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION);
     console.log(JSON.stringify(payload));
     return { ok: true, approval_template_printed: true, ...payload };
   }
@@ -1873,6 +2038,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 export {
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION,
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE,
+  LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  LEGACY_MISSION_CONTRACT_APPROVAL_PHRASE,
   MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
   MISSION_CONTRACT_APPROVAL_PHRASE,
   ALLOWED_CORRECTION_REQUESTS,
@@ -1889,9 +2056,11 @@ export {
   assertAllowedExactAutomationRequest,
   assertApprovedMailerLiteOptions,
   assertMissionPacketBinding,
+  assertMissionV2FileBridgeRoute,
   classifyExactAutomationMapping,
   classifySubscriberLookup,
   controlledInboxQuery,
+  controlledMailboxAnchorIsExactGmailPlus,
   controlledMailboxProfileMatchesAnchor,
   createFileBridgeMailboxEvidenceProvider,
   createMailerLiteActiveTriggerCorrectionClient,
@@ -1907,6 +2076,7 @@ export {
   pollFirstEmailEvidence,
   priorPreservationStatus,
   redactScan,
+  readPrivateJsonStable,
   run,
   runLiveMode,
   runPreflightOnlyMode,
