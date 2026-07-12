@@ -1,9 +1,53 @@
 # MailerLite Active-Trigger Correction And First-Email Proof Result v0
 
 Date: 2026-07-11
-Status: blocked pre-effect; Mission Contract attempt budget exhausted
+Status: Mission Contract v2 complete; trigger-group effect verified; first-email delivery unverified
 
-## Executive Result
+## Mission Contract 2026-07-11.v2 Final Closeout
+
+Alejandro supplied the exact v2 approval and the lane completed the one
+authorized end-to-end Proof Mode execution.
+
+- exact automation reference: matched;
+- automation state: active, complete, and not broken;
+- exact active-trigger mapping: verified;
+- first-email locator: verified privately;
+- controlled Gmail baseline at global ordinal `4/8`: zero matches;
+- controlled subscriber: found, active, and identity-verified;
+- active trigger membership before: absent;
+- mutation endpoint calls: exactly one;
+- mutation class: add-only assignment to the exact active trigger group;
+- mutation outcome: acknowledged and immediately verified;
+- active trigger membership after: present;
+- all prior groups: preserved;
+- exact group transition: passed;
+- post-correction verification: passed;
+- v2 pre-effect attempt budget: `1/1` consumed;
+- global mailbox evidence budget: `8/8` consumed;
+- post-action Gmail evidence: zero new matches;
+- first automatic email delivery: unverified;
+- direct send, resend, or retrigger: none.
+
+The acceptance criterion is met for the MailerLite effect: the exact controlled
+subscriber was added once to the exact active trigger group and the complete
+group reread verified the add-only transition. This does not claim that the
+automatic email was sent or delivered.
+
+After the bounded Gmail budget closed, Alejandro requested one additional
+read-only MailerLite corroboration against the same subscriber. It verified
+that MailerLite stores the exact approved private recipient and preserves its
+single `+tag` Gmail shape. At the time of that bounded read, the subscriber's
+sent counter remained zero and no `automation_email_sent` activity was
+present. The corroboration made two bounded GET reads, followed no pagination,
+performed zero mutations, and exposed no private values.
+
+Private packet, bridge, lock, budget, and result artifacts remain owner-only.
+The redacted receipts passed the private-pattern scan. Independent adversarial
+review returned GREEN for closeout and one bounded central integration, with
+the email-evidence gap explicitly preserved and no authority for any retry,
+resend, retrigger, or additional Gmail check.
+
+## Mission Contract v1 Executive Result
 
 The approved `Mission Contract 2026-07-11.v1` stopped safely without reading
 the controlled subscriber, assigning any group, or causing any email.
@@ -125,3 +169,32 @@ zero marker creation and zero connector calls.
 
 Until that new contract is approved, no retry, assignment, resend, retrigger,
 central claim of success, or active-onboarding claim is authorized.
+
+## Offline V2 Preparation
+
+The required offline remediation is now prepared on the MailerLite lane:
+
+- a dedicated publisher requires a real interactive TTY and disables echo
+  before reporting that it is waiting;
+- no waiting session produces zero consumption marker and zero connector calls;
+- consumption must be claimed before a connector call;
+- raw message IDs are validated, hashed immediately, never persisted raw, and
+  never printed;
+- response is published before the ready commit marker, with an exact
+  response-byte digest and owner-only `0600` permissions;
+- EOF or failure after a durable marker preserves the one-shot stop rule;
+- the synthetic publisher handshake is compatible end-to-end with the guard;
+- v2 requires the exact v1 budget lineage at `3/3` and `3/8`, permits only one
+  additional attempt, and limits future mailbox ordinals to `4..8`;
+- v1 remains available for audit validation but is rejected for live use;
+- the exact Gmail tagged-recipient/base-account relationship is now a mandatory
+  v2 packet gate.
+
+The proposed contract is:
+
+`docs/crm-vnext/crm-core-controlled-welcome-flow-mission-contract-2026-07-11-v2.md`
+
+This preparation used synthetic fixtures only. It did not read Gmail or
+MailerLite live, did not create a private v2 execution packet, did not claim the
+v2 attempt, and did not authorize itself. Live work still requires Alejandro's
+exact v2 approval after independent review.

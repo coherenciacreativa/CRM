@@ -1734,6 +1734,51 @@ No lane outputs in review at creation.
 - `integration_recommendation`:
   `integrate_safe_closeout_but_do_not_claim_mission_success_or_retry_v1`
 
+## crm_core_mission_contract_v2_verified_group_email_unverified_integration_2026_07_11
+
+- `source_workstream`: `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `5326edc5b8cd47a511521261328e2018e2cc6dfc`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
+- `result_status`: `completed_group_effect_verified_email_unverified`
+- `mission_contract_version`: `Mission Contract 2026-07-11.v2`
+- `v2_pre_effect_attempt_budget`: `1_of_1_consumed`
+- `global_mailbox_evidence_budget`: `8_of_8_consumed`
+- `exact_automation_reference_status`: `matched`
+- `automation_active_status`: `active_complete_not_broken`
+- `automation_trigger_mapping_status`: `exact_active_trigger_mapping_verified`
+- `subscriber_lookup_status`: `found_active_identity_verified`
+- `active_trigger_membership_before`: `absent`
+- `active_trigger_membership_after`: `present`
+- `mutation_endpoint_call_count`: 1
+- `mutation_outcome_status`: `acknowledged_and_effect_verified`
+- `group_transition_status`: `passed_exact_add_only_transition`
+- `all_prior_groups_preservation_status`: `all_preserved`
+- `first_email_evidence_status`:
+  `not_verified_evidence_budget_exhausted_no_resend`
+- `mailerlite_readonly_corroboration`:
+  `exact_private_recipient_binding_preserved_no_send_activity_observed`
+- `direct_send_resend_or_retrigger`: false
+- `tests_or_checks`:
+  - targeted mission suite `81/81`;
+  - full suite `1381/1382`, with the sole failure in an unchanged unrelated
+    approval-queue assertion;
+  - `git diff --check` and redaction scan passed;
+  - independent live closeout review GREEN;
+  - Chief Architect verdict `green_to_self_integrate`.
+- `private_artifacts_touched_by_source_run`: true
+- `private_artifacts_integrated`: false
+- `source_mutation_executed`: true
+- `source_execution_during_integration`: false
+- `crm_source_write_executed`: false
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`:
+  `pause_or_separately_approved_no_effect_non_send_diagnosis`
+- `integration_recommendation`:
+  `integrate_verified_group_effect_and_preserve_email_unverified_no_retry_closeout`
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

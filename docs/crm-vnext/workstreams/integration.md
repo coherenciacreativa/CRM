@@ -867,3 +867,30 @@
 - `Mission Contract 2026-07-11.v1` cannot be retried.
 - Next step is a synthetic publisher handshake fix followed by a newly
   versioned CEO contract, or pause.
+
+## Mission Contract v2 Verified-Group Closeout Integration
+
+- `integration_packet_id`:
+  `crm_core_controlled_welcome_flow_mission_v2_integration_packet_001`
+- `source_branch`: `codex/crm-core-mailerlite-onboarding`
+- `source_commit`: `5326edc5b8cd47a511521261328e2018e2cc6dfc`
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `safe_to_self_integrate_now`: true
+- `ceo_decision_needed_for_this_integration`: false
+- The exact automation remained active, complete, not broken, and mapped to
+  the exact trigger group.
+- One acknowledged add-only assignment moved the exact subscriber from absent
+  to present in that group.
+- Immediate verification passed and all prior groups were preserved.
+- The global Gmail evidence budget closed at `8/8` with no new match.
+- The later bounded MailerLite corroboration found no send activity at check
+  time, so first-email delivery remains unverified.
+- No direct send, resend, retrigger, second assignment, or additional Gmail
+  search is authorized or performed.
+- This integration phase performs no live calls, source action, private read,
+  or CRM/source write.
+- `private_artifacts_integrated`: false
+- `targeted_tests`: `81_passed_0_failed`
+- `full_suite`: `1381_passed_1_unrelated_preexisting_failure`
+- `active_next_action`:
+  `crm_core_controlled_welcome_flow_after_mission_v2_email_not_sent_next_step_selection_v0`

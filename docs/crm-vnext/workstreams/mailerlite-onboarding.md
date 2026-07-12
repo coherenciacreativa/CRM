@@ -698,3 +698,63 @@ if absent, preserve all existing groups, verify immediately, and stop.
 No current approval authorizes a fourth attempt, replay of the consumed
 baseline search, group assignment, resend, retrigger, or claim of active
 onboarding enrollment.
+
+## Mission Contract 2026-07-11.v2 Offline Preparation
+
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-controlled-welcome-flow-mission-contract-2026-07-11-v2.md`
+- `status`: `offline_ready_awaiting_exact_ceo_approval`
+- `publisher_status`: `implemented_synthetic_end_to_end_tested`
+- `publisher_requires_interactive_tty`: true
+- `publisher_echo_disabled_before_waiting`: true
+- `no_session_behavior`: `zero_consumption_marker_zero_connector_calls`
+- `raw_message_ids_persisted_or_printed`: false
+- `guard_compatibility_status`: `synthetic_end_to_end_passed`
+- `v1_live_execution_status`: `blocked_audit_only`
+- `v1_lineage_required`: `exact_3_of_3_attempts_and_3_of_8_mailbox_checks`
+- `v2_pre_effect_attempt_budget`: `exactly_one`
+- `global_mailbox_ordinals_available`: `4_through_8`
+- `gmail_binding_scope`:
+  `exact_single_plus_tag_recipient_to_exact_base_gmail_profile_only`
+- `live_gmail_called_during_preparation`: false
+- `live_mailerlite_called_during_preparation`: false
+- `private_v2_execution_packet_created`: false
+- `v2_budget_claimed`: false
+- `central_integration_performed_for_v2`: false
+- `recommended_next_step`:
+  `alejandro_approve_modify_decline_or_pause_exact_mission_contract_v2`
+
+The current lane contains only offline code, synthetic tests, the public
+contract, and the approval boundary. It cannot execute v2 from the old v1
+approval and does not treat contract preparation as approval.
+
+## Mission Contract 2026-07-11.v2 Live Closeout
+
+- `mission_status`: `completed_group_effect_verified_email_unverified`
+- `v2_pre_effect_attempt_budget`: `1_of_1_consumed`
+- `global_mailbox_evidence_budget`: `8_of_8_consumed`
+- `exact_automation_reference_status`: `matched`
+- `automation_active_status`: `active_complete_not_broken`
+- `automation_trigger_mapping_status`: `exact_active_trigger_mapping_verified`
+- `subscriber_lookup_status`: `found_active_identity_verified`
+- `active_trigger_membership_before`: `absent`
+- `active_trigger_membership_after`: `present`
+- `mutation_endpoint_call_count`: `1`
+- `mutation_outcome_status`: `acknowledged_and_effect_verified`
+- `group_transition_status`: `passed_exact_add_only_transition`
+- `all_prior_groups_preservation_status`: `all_preserved`
+- `first_email_evidence_status`:
+  `not_verified_evidence_budget_exhausted_no_resend`
+- `mailerlite_readonly_corroboration`:
+  `exact_private_recipient_plus_tag_preserved_no_send_activity_observed`
+- `direct_send_resend_or_retrigger`: false
+- `private_artifacts_integrated`: false
+- `independent_review`: `green_for_closeout_and_one_bounded_central_integration`
+- `recommended_next_step`:
+  `preserve_verified_group_effect_and_choose_pause_or_separately_approved_no_effect_non_send_diagnosis`
+
+The exact active automation and trigger-group membership are verified. The
+automatic email is not: bounded Gmail evidence returned no match through the
+global `8/8` ceiling, and the subsequent MailerLite read-only corroboration
+showed no sent activity at check time. This outcome must not be converted into
+a resend, retrigger, repeat assignment, or new mailbox search.

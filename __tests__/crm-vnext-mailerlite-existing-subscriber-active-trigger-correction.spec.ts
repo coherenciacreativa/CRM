@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmod, mkdir, mkdtemp, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
+import { chmod, link, mkdir, mkdtemp, readFile, realpath, rename, rm, stat, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -10,6 +10,8 @@ import {
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION,
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE,
   DEFAULT_API_BASE,
+  LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  LEGACY_MISSION_CONTRACT_APPROVAL_PHRASE,
   MISSION_ACTIVE_NEXT_ACTION,
   MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
   MISSION_CONTRACT_APPROVAL_PHRASE,
@@ -20,6 +22,7 @@ import {
   assertAllowedExactAutomationRequest,
   classifyExactAutomationMapping,
   controlledInboxQuery,
+  controlledMailboxAnchorIsExactGmailPlus,
   controlledMailboxProfileMatchesAnchor,
   createFileBridgeMailboxEvidenceProvider,
   createMailerLiteActiveTriggerCorrectionClient,
@@ -38,6 +41,8 @@ import {
 import {
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION as SHARED_APPROVAL_VERSION,
   ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE as SHARED_APPROVAL_PHRASE,
+  LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION as SHARED_LEGACY_MISSION_APPROVAL_VERSION,
+  LEGACY_MISSION_CONTRACT_APPROVAL_PHRASE as SHARED_LEGACY_MISSION_APPROVAL_PHRASE,
   MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION as SHARED_MISSION_APPROVAL_VERSION,
   MISSION_CONTRACT_APPROVAL_PHRASE as SHARED_MISSION_APPROVAL_PHRASE,
 } from "../scripts/crm-vnext-mailerlite-active-trigger-correction-approval-contract.mjs";
@@ -59,12 +64,12 @@ const FAKE_AUTOMATION_ID = "aut_fake_exact_onboarding_001";
 const FAKE_FIRST_EMAIL_SUBJECT = "Welcome fixture subject";
 const FAKE_FIRST_EMAIL_SENDER = "sender@example.test";
 const FAKE_MESSAGE_ID = "msg_fake_first_email_001";
-const MISSION_RUN_ID = "crm_core_mission_contract_2026_07_11_v1_run_001";
+const MISSION_RUN_ID = "crm_core_mission_contract_2026_07_11_v2_run_001";
 const FILE_BRIDGE_BUDGET_CLAIM = {
   approval_contract_version: MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
   run_id: MISSION_RUN_ID,
   packet_id: "packet_file_bridge_fixture_001",
-  mailbox_check_ordinal: 1,
+  mailbox_check_ordinal: 4,
 };
 const EXPECTED_HEAD = "a".repeat(40);
 const MISSION_NOW = new Date("2026-07-11T18:00:00.000Z");
@@ -195,7 +200,7 @@ const packet = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const subscriber = (groups: string[], status = "active", email = FAKE_EMAIL, id = FAKE_SUBSCRIBER_ID) => ({
+const subscriber = (groups: string[], status = "active", email = FAKE_GMAIL_PLUS, id = FAKE_SUBSCRIBER_ID) => ({
   subscriber: {
     id,
     email,
@@ -213,6 +218,16 @@ const makeTempRoots = async () => {
   };
   await mkdir(roots.privateMailerLiteRoot, { recursive: true });
   await mkdir(roots.redactedReceiptRoot, { recursive: true });
+  const legacyBudgetDir = join(roots.privateMailerLiteRoot, "controlled-welcome-flow", "mission-attempt-locks");
+  await mkdir(legacyBudgetDir, { recursive: true });
+  await writeFile(join(legacyBudgetDir, "mission-contract-2026-07-11-v1--budget-state.json"), `${JSON.stringify({
+    schema_version: "crm-core-mailerlite-mission-budget-state-v1",
+    approval_contract_version: LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+    pre_effect_live_attempt_count: 3,
+    mailbox_evidence_check_count: 3,
+    last_run_id: "synthetic_v1_attempt_003",
+    last_packet_id: "synthetic_v1_packet_003",
+  }, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
   return { dir, roots };
 };
 
@@ -223,6 +238,7 @@ const makePaths = async (packetOverrides: Record<string, unknown> = {}) => {
     privatePacket: join(roots.privateMailerLiteRoot, "correction-packet.json"),
     privateResultJson: join(roots.privateMailerLiteRoot, "correction-result.json"),
     privateResultMd: join(roots.privateMailerLiteRoot, "correction-result.md"),
+    privateMailboxBridgeDir: join(roots.privateMailerLiteRoot, "controlled-mailbox-bridge-v2"),
     receiptJson: join(roots.redactedReceiptRoot, "correction-receipt.json"),
     receiptMd: join(roots.redactedReceiptRoot, "correction-receipt.md"),
   };
@@ -252,20 +268,27 @@ const liveArgs = (paths: Record<string, string>, approvalPhraseFile = paths.appr
   "--expected-active-next-action",
   MISSION_ACTIVE_NEXT_ACTION,
   "--expected-packet-id",
-  "crm_core_mission_contract_2026_07_11_v1_execution_packet",
+  "crm_core_mission_contract_2026_07_11_v2_execution_packet",
   "--run-id",
   MISSION_RUN_ID,
+  "--mailbox-evidence-provider",
+  "file-bridge",
+  "--private-mailbox-bridge-dir",
+  paths.privateMailboxBridgeDir,
 ];
 
 const missionPacket = (overrides: Record<string, unknown> = {}) => packet({
-  packet_id: "crm_core_mission_contract_2026_07_11_v1_execution_packet",
+  packet_id: "crm_core_mission_contract_2026_07_11_v2_execution_packet",
   mission_contract_version: MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
   mission_run_id: MISSION_RUN_ID,
   mission_created_at: "2026-07-11T17:30:00.000Z",
+  lineage_contract_version: LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+  lineage_source_packet_id: "synthetic_v1_packet_003",
+  lineage_identity_binding_status: "verified_exact_private_values_unchanged_from_v1_source_packet",
   expected_repo_head: EXPECTED_HEAD,
   expected_active_next_action: MISSION_ACTIVE_NEXT_ACTION,
   private_lookup: {
-    existing_subscriber_lookup_anchor: FAKE_EMAIL,
+    existing_subscriber_lookup_anchor: FAKE_GMAIL_PLUS,
     active_live_trigger_group_reference: FAKE_ACTIVE_GROUP,
     prior_non_active_group_reference: FAKE_PRIOR_GROUP,
     active_onboarding_automation_reference: FAKE_AUTOMATION_ID,
@@ -359,19 +382,28 @@ const makeClient = (responses: Array<Record<string, unknown>>, requests: Array<R
 });
 
 describe("CRM Core MailerLite existing-subscriber active-trigger correction guard", () => {
-  test("contract modules export expected versions", () => {
+  test("contract modules and public v2 document export one exact current approval", async () => {
     expect(CORRECTION_PACKET_CONTRACT_VERSION).toBe("mailerlite_existing_subscriber_active_trigger_correction_packet_v1");
     expect(CORRECTION_PACKET_CONTRACT_VERSION).toBe(SHARED_PACKET_VERSION);
     expect(ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).toBe("mailerlite_active_trigger_correction_approval_phrase_v1_2026-07-11");
     expect(ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).toBe(SHARED_APPROVAL_VERSION);
     expect(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE).toBe(SHARED_APPROVAL_PHRASE);
-    expect(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe("Mission Contract 2026-07-11.v1");
+    expect(LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe("Mission Contract 2026-07-11.v1");
+    expect(LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe(SHARED_LEGACY_MISSION_APPROVAL_VERSION);
+    expect(LEGACY_MISSION_CONTRACT_APPROVAL_PHRASE).toBe(SHARED_LEGACY_MISSION_APPROVAL_PHRASE);
+    expect(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe("Mission Contract 2026-07-11.v2");
     expect(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).toBe(SHARED_MISSION_APPROVAL_VERSION);
     expect(MISSION_CONTRACT_APPROVAL_PHRASE).toBe(SHARED_MISSION_APPROVAL_PHRASE);
+    expect(MISSION_ACTIVE_NEXT_ACTION).toBe("crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_mission_v2_approval_v0");
+    const contractDoc = await readFile(
+      join(process.cwd(), "docs/crm-vnext/crm-core-controlled-welcome-flow-mission-contract-2026-07-11-v2.md"),
+      "utf8",
+    );
+    expect(contractDoc).toContain(MISSION_CONTRACT_APPROVAL_PHRASE);
     expect(GUARD_STATUS).toBe("implemented_and_mock_tested");
   });
 
-  test("approval template mode prints canonical template safely and does not call dependencies", async () => {
+  test("approval template mode prints the current v2 mission template safely and does not call dependencies", async () => {
     const direct = await run(["--print-approval-template"], {
       credentialProvider: async () => { throw new Error("credential_provider_called"); },
       correctionClient: { request: async () => { throw new Error("network_client_called"); } },
@@ -379,15 +411,16 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     expect(direct.approval_template_printed).toBe(true);
     const { stdout, stderr } = await execFileAsync("node", [SCRIPT, "--print-approval-template"], { cwd: process.cwd() });
     const payload = JSON.parse(stdout);
-    expect(payload.contract_version).toBe(ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION);
-    expect(payload.approval_phrase).toBe(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE);
+    expect(payload.contract_version).toBe(MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION);
+    expect(payload.approval_phrase).toBe(MISSION_CONTRACT_APPROVAL_PHRASE);
     expectNoSensitiveStrings(`${stdout}\n${stderr}`);
   });
 
   test("exact phrase validation passes and paraphrased phrase blocks", async () => {
     expect(validateActiveTriggerCorrectionApprovalPhrase(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE, ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
     expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
-    expect(validateActiveTriggerCorrectionApprovalPhrase(`  ${MISSION_CONTRACT_APPROVAL_PHRASE.replace(/\n/g, "   ")}  `, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
+    expect(validateActiveTriggerCorrectionApprovalPhrase(`${MISSION_CONTRACT_APPROVAL_PHRASE.replace(/\n/g, "\r\n")}\r\n`, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).ok).toBe(true);
+    expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE.replace(/\n/g, "   "), MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
     expect(validateActiveTriggerCorrectionApprovalPhrase("I approve the same thing", ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
     expect(validateActiveTriggerCorrectionApprovalPhrase(MISSION_CONTRACT_APPROVAL_PHRASE, ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
     expect(validateActiveTriggerCorrectionApprovalPhrase(ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE, MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION).reason).toBe("blocked_approval_phrase_mismatch");
@@ -427,16 +460,95 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("legacy approval contract cannot execute the live route", async () => {
+  test("v2 rejects the default or direct gog route before credentials and connector calls", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    let connectorCalls = 0;
+    const args = liveArgs(paths);
+    for (const flag of ["--private-mailbox-bridge-dir", "--mailbox-evidence-provider"]) {
+      const index = args.indexOf(flag);
+      args.splice(index, 2);
+    }
+    try {
+      await expect(runMission(args, {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        mailboxEvidenceProvider: { search: async () => { connectorCalls += 1; return { ok: true, has_more: false, ids_private: [] }; } },
+      })).rejects.toThrow("blocked_mission_v2_requires_prearmed_file_bridge_publisher");
+      await expect(runMission([...args, "--preflight-only"], {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_mission_v2_requires_prearmed_file_bridge_publisher");
+      expect(credentialCalls).toBe(0);
+      expect(connectorCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("exhausted Mission Contract v1 remains registered for audit but cannot execute the live route", async () => {
     const { dir, roots, paths } = await makePaths();
     let credentialCalls = 0;
     try {
-      await writeFile(paths.approvalPhraseFile, `${ACTIVE_TRIGGER_CORRECTION_APPROVAL_PHRASE}\n`, { encoding: "utf8", mode: 0o600 });
-      const args = replaceArgValue(liveArgs(paths), "--approval-contract-version", ACTIVE_TRIGGER_CORRECTION_APPROVAL_CONTRACT_VERSION);
+      await writeFile(paths.approvalPhraseFile, `${LEGACY_MISSION_CONTRACT_APPROVAL_PHRASE}\n`, { encoding: "utf8", mode: 0o600 });
+      const args = replaceArgValue(liveArgs(paths), "--approval-contract-version", LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION);
       await expect(runMission(args, {
         roots,
         credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
       })).rejects.toThrow("blocked_live_requires_current_mission_contract");
+      await expect(runMission([...args, "--preflight-only"], {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_preflight_requires_current_mission_contract");
+      expect(credentialCalls).toBe(0);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("v2 blocks before credentials when the exact v1 3/3 and 3/8 lineage is missing or changed", async () => {
+    for (const mode of ["missing", "changed"]) {
+      const { dir, roots, paths } = await makePaths();
+      let credentialCalls = 0;
+      const legacyStatePath = join(
+        roots.privateMailerLiteRoot,
+        "controlled-welcome-flow",
+        "mission-attempt-locks",
+        "mission-contract-2026-07-11-v1--budget-state.json",
+      );
+      try {
+        if (mode === "missing") {
+          await rm(legacyStatePath);
+        } else {
+          await writeFile(legacyStatePath, `${JSON.stringify({
+            schema_version: "crm-core-mailerlite-mission-budget-state-v1",
+            approval_contract_version: LEGACY_MISSION_CONTRACT_APPROVAL_CONTRACT_VERSION,
+            pre_effect_live_attempt_count: 3,
+            mailbox_evidence_check_count: 0,
+          }, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+        }
+        await expect(runMission(liveArgs(paths), {
+          roots,
+          credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        })).rejects.toThrow(mode === "missing"
+          ? "blocked_v2_lineage_budget_state_missing"
+          : "blocked_v2_lineage_budget_state_invalid");
+        expect(credentialCalls).toBe(0);
+      } finally { await rm(dir, { recursive: true, force: true }); }
+    }
+  });
+
+  test("v2 blocks before credentials if a v1 terminal-effect lock exists", async () => {
+    const { dir, roots, paths } = await makePaths();
+    let credentialCalls = 0;
+    const legacyLockPath = join(
+      roots.privateMailerLiteRoot,
+      "controlled-welcome-flow",
+      "mission-attempt-locks",
+      "mission-contract-2026-07-11-v1--active-trigger-correction-and-first-email-proof.json",
+    );
+    try {
+      await writeFile(legacyLockPath, "{}\n", { encoding: "utf8", mode: 0o600 });
+      await expect(runMission(liveArgs(paths), {
+        roots,
+        credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+      })).rejects.toThrow("blocked_v2_lineage_terminal_lock_present");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -452,6 +564,38 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       })).rejects.toThrow("blocked_approval_file_permissions");
       expect(credentialCalls).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test("private v2 packet must be a stable owner-only 0600 file without symlink or hard-link substitution", async () => {
+    for (const mode of ["permissions", "hardlink", "symlink", "parent_symlink_escape"]) {
+      const { dir, roots, paths } = await makePaths();
+      let credentialCalls = 0;
+      try {
+        if (mode === "permissions") {
+          await chmod(paths.privatePacket, 0o644);
+        } else if (mode === "hardlink") {
+          await link(paths.privatePacket, join(roots.privateMailerLiteRoot, "packet-hard-link.json"));
+        } else if (mode === "symlink") {
+          const target = join(roots.privateMailerLiteRoot, "packet-symlink-target.json");
+          await rename(paths.privatePacket, target);
+          await symlink(target, paths.privatePacket);
+        } else {
+          const packetBytes = await readFile(paths.privatePacket);
+          const outsideRoot = join(dir, "outside-private-root");
+          const outsidePacket = join(outsideRoot, "packet.json");
+          const linkedParent = join(roots.privateMailerLiteRoot, "linked-parent");
+          await mkdir(outsideRoot);
+          await writeFile(outsidePacket, packetBytes, { mode: 0o600 });
+          await symlink(outsideRoot, linkedParent);
+          paths.privatePacket = join(linkedParent, "packet.json");
+        }
+        await expect(runMission(liveArgs(paths), {
+          roots,
+          credentialProvider: async () => { credentialCalls += 1; return { key: "mock" }; },
+        })).rejects.toThrow("blocked_private_packet_permissions_or_stability");
+        expect(credentialCalls).toBe(0);
+      } finally { await rm(dir, { recursive: true, force: true }); }
+    }
   });
 
   test("packet validator rejects unsafe or incomplete packets", () => {
@@ -685,6 +829,8 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
   });
 
   test("controlled mailbox binding accepts only the exact Gmail plus-alias relation", () => {
+    expect(controlledMailboxAnchorIsExactGmailPlus(FAKE_GMAIL_PLUS)).toBe(true);
+    expect(controlledMailboxAnchorIsExactGmailPlus(FAKE_GMAIL_BASE)).toBe(false);
     expect(gmailAuthenticatedAccountForAnchor(FAKE_GMAIL_PLUS)).toBe(FAKE_GMAIL_BASE);
     expect(gmailAuthenticatedAccountForAnchor(FAKE_GMAIL_BASE)).toBe(FAKE_GMAIL_BASE);
     expect(controlledMailboxProfileMatchesAnchor(FAKE_GMAIL_BASE, FAKE_GMAIL_PLUS)).toBe(true);
@@ -953,7 +1099,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       });
       expect(receipt.correction_result_status).toBe("blocked_controlled_mailbox_baseline_not_verified");
       expect(receipt.mailbox_binding_status).toBe("not_verified");
-      expect(receipt.mailbox_evidence_check_count).toBe(1);
+      expect(receipt.mailbox_evidence_check_count).toBe(4);
       expect(correctionCalls).toBe(0);
       expect(receipt.mutation_endpoint_call_count).toBe(0);
     } finally { await rm(dir, { recursive: true, force: true }); }
@@ -1028,62 +1174,58 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("persistent repair and mailbox ledgers bound resumed pre-effect failures across changed outputs", async () => {
+  test("v2 permits exactly one additional pre-effect attempt and preserves the global mailbox lineage", async () => {
     const { dir, roots, paths } = await makePaths();
     let mailboxCalls = 0;
     let automationCalls = 0;
     try {
-      for (let attempt = 1; attempt <= 3; attempt += 1) {
-        const attemptPaths = alternateOutputPaths(paths, roots, `baseline-failure-${attempt}`);
-        const receipt = await runMission(liveArgs(attemptPaths), {
-          roots,
-          credentialProvider: async () => ({ key: "mock" }),
-          automationClient: { request: async () => { automationCalls += 1; return automationDetail(); } },
-          mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
-          correctionClient: { request: async () => { throw new Error("subscriber_route_must_not_run"); } },
-        });
-        expect(receipt.correction_result_status).toBe("blocked_controlled_mailbox_baseline_not_verified");
-        expect(receipt.pre_effect_live_attempt_count).toBe(attempt);
-        expect(receipt.mailbox_evidence_check_count).toBe(attempt);
-      }
-      const exhaustedPaths = alternateOutputPaths(paths, roots, "baseline-failure-4");
+      const firstPaths = alternateOutputPaths(paths, roots, "v2-baseline-failure-1");
+      const receipt = await runMission(liveArgs(firstPaths), {
+        roots,
+        credentialProvider: async () => ({ key: "mock" }),
+        automationClient: { request: async () => { automationCalls += 1; return automationDetail(); } },
+        mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
+        correctionClient: { request: async () => { throw new Error("subscriber_route_must_not_run"); } },
+      });
+      expect(receipt.correction_result_status).toBe("blocked_controlled_mailbox_baseline_not_verified");
+      expect(receipt.pre_effect_live_attempt_count).toBe(4);
+      expect(receipt.mailbox_evidence_check_count).toBe(4);
+
+      const exhaustedPaths = alternateOutputPaths(paths, roots, "v2-baseline-failure-2");
       await expect(runMission(liveArgs(exhaustedPaths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
         automationClient: { request: async () => { automationCalls += 1; return automationDetail(); } },
         mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
       })).rejects.toThrow("blocked_pre_effect_live_attempt_budget_exhausted");
-      expect(automationCalls).toBe(3);
-      expect(mailboxCalls).toBe(3);
+      expect(automationCalls).toBe(1);
+      expect(mailboxCalls).toBe(1);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("a resumed successful correction receives only the globally remaining mailbox checks", async () => {
+  test("the single v2 attempt receives only mailbox ordinals 4 through 8", async () => {
     const { dir, roots, paths } = await makePaths();
     let mailboxCalls = 0;
+    const ordinals: number[] = [];
     try {
-      for (let attempt = 1; attempt <= 2; attempt += 1) {
-        const attemptPaths = alternateOutputPaths(paths, roots, `prior-baseline-failure-${attempt}`);
-        await runMission(liveArgs(attemptPaths), {
-          roots,
-          credentialProvider: async () => ({ key: "mock" }),
-          mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: false, has_more: false, ids_private: [] }; } },
-        });
-      }
-      const finalPaths = alternateOutputPaths(paths, roots, "remaining-budget-correction");
       const requests: Array<Record<string, unknown>> = [];
-      const receipt = await runMission(liveArgs(finalPaths), {
+      const receipt = await runMission(liveArgs(paths), {
         roots,
         credentialProvider: async () => ({ key: "mock" }),
-        mailboxEvidenceProvider: { search: async () => { mailboxCalls += 1; return { ok: true, has_more: false, ids_private: [] }; } },
+        mailboxEvidenceProvider: { search: async ({ budgetClaim }: { budgetClaim: { mailbox_check_ordinal: number } }) => {
+          mailboxCalls += 1;
+          ordinals.push(budgetClaim.mailbox_check_ordinal);
+          return { ok: true, has_more: false, ids_private: [] };
+        } },
         correctionClient: makeClient([subscriber([FAKE_PRIOR_GROUP]), subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP])], requests),
         sleep: async () => {},
       });
       expect(receipt.correction_result_status).toBe("correction_executed_verified");
-      expect(receipt.pre_effect_live_attempt_count).toBe(3);
+      expect(receipt.pre_effect_live_attempt_count).toBe(4);
       expect(receipt.mailbox_evidence_check_count).toBe(8);
       expect(receipt.first_email_evidence_status).toBe("not_verified_evidence_budget_exhausted_no_resend");
-      expect(mailboxCalls).toBe(8);
+      expect(mailboxCalls).toBe(5);
+      expect(ordinals).toEqual([4, 5, 6, 7, 8]);
       expect(requests.filter((request) => request.method === "POST")).toHaveLength(1);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -1123,6 +1265,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
         privatePacket: join(roots.privateMailerLiteRoot, "after-email-block-packet-002.json"),
         privateResultJson: join(roots.privateMailerLiteRoot, "after-email-block-result-002.json"),
         privateResultMd: join(roots.privateMailerLiteRoot, "after-email-block-result-002.md"),
+        privateMailboxBridgeDir: join(roots.privateMailerLiteRoot, "after-email-block-bridge-002"),
         receiptJson: join(roots.redactedReceiptRoot, "after-email-block-receipt-002.json"),
         receiptMd: join(roots.redactedReceiptRoot, "after-email-block-receipt-002.md"),
       };
@@ -1154,12 +1297,12 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       });
       expect(receipt.correction_result_status).toBe("already_present_idempotent_noop_verified");
       expect(receipt.first_email_evidence_status).toBe("inbox_received_preexisting_unique_bounded_locator_match");
-      expect(receipt.mailbox_evidence_check_count).toBe(1);
+      expect(receipt.mailbox_evidence_check_count).toBe(4);
       expect(receipt.blockers).toEqual([]);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test("missing delivery after the bounded eight checks never resends or retriggers", async () => {
+  test("missing delivery exhausts only the globally remaining checks and never resends or retriggers", async () => {
     const { dir, roots, paths } = await makePaths();
     const requests: Array<Record<string, unknown>> = [];
     const phases: string[] = [];
@@ -1172,11 +1315,11 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
         sleep: async () => {},
       });
       expect(receipt.correction_result_status).toBe("correction_executed_verified");
-      expect(receipt.first_email_evidence_status).toBe("not_verified_after_bounded_checks_no_resend");
+      expect(receipt.first_email_evidence_status).toBe("not_verified_evidence_budget_exhausted_no_resend");
       expect(receipt.mailbox_evidence_check_count).toBe(8);
       expect(receipt.first_email_new_match_count).toBe(0);
       expect(phases.filter((phase) => phase === "baseline")).toHaveLength(1);
-      expect(phases.filter((phase) => phase === "post_action")).toHaveLength(7);
+      expect(phases.filter((phase) => phase === "post_action")).toHaveLength(4);
       expect(requests.filter((request) => request.method === "POST")).toHaveLength(1);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
@@ -1240,6 +1383,10 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
         reason: "blocked_mission_packet_contract_version_mismatch",
       },
       {
+        packetOverrides: { lineage_identity_binding_status: "not_verified" },
+        reason: "blocked_mission_packet_identity_lineage_not_verified",
+      },
+      {
         packetOverrides: { mission_created_at: "2026-07-11T18:30:00.000Z" },
         reason: "blocked_mission_packet_stale_or_invalid",
       },
@@ -1286,7 +1433,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
         credentialProvider: async () => ({ key: "mock" }),
         correctionClient: makeClient([
           subscriber([FAKE_PRIOR_GROUP]),
-          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP], "active", FAKE_EMAIL, "sub_different_after_002"),
+          subscriber([FAKE_PRIOR_GROUP, FAKE_ACTIVE_GROUP], "active", FAKE_GMAIL_PLUS, "sub_different_after_002"),
         ], []),
       });
       expect(receipt.correction_result_status).toBe("blocked_post_correction_verification_failed_no_retry");
@@ -1296,8 +1443,8 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
 
   test("missing or duplicate complete-group snapshot blocks before POST", async () => {
     const cases = [
-      { subscriber: { id: FAKE_SUBSCRIBER_ID, email: FAKE_EMAIL, status: "active" } },
-      { subscriber: { id: FAKE_SUBSCRIBER_ID, email: FAKE_EMAIL, status: "active", groups: [{ id: FAKE_PRIOR_GROUP }, { id: FAKE_PRIOR_GROUP }] } },
+      { subscriber: { id: FAKE_SUBSCRIBER_ID, email: FAKE_GMAIL_PLUS, status: "active" } },
+      { subscriber: { id: FAKE_SUBSCRIBER_ID, email: FAKE_GMAIL_PLUS, status: "active", groups: [{ id: FAKE_PRIOR_GROUP }, { id: FAKE_PRIOR_GROUP }] } },
     ];
     for (const response of cases) {
       const { dir, roots, paths } = await makePaths();
@@ -1435,6 +1582,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
         privatePacket: join(roots.privateMailerLiteRoot, "correction-packet-002.json"),
         privateResultJson: join(roots.privateMailerLiteRoot, "correction-result-002.json"),
         privateResultMd: join(roots.privateMailerLiteRoot, "correction-result-002.md"),
+        privateMailboxBridgeDir: join(roots.privateMailerLiteRoot, "correction-bridge-002"),
         receiptJson: join(roots.redactedReceiptRoot, "correction-receipt-002.json"),
         receiptMd: join(roots.redactedReceiptRoot, "correction-receipt-002.md"),
       };
@@ -1472,6 +1620,7 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
         privatePacket: join(roots.privateMailerLiteRoot, "after-noop-packet-002.json"),
         privateResultJson: join(roots.privateMailerLiteRoot, "after-noop-result-002.json"),
         privateResultMd: join(roots.privateMailerLiteRoot, "after-noop-result-002.md"),
+        privateMailboxBridgeDir: join(roots.privateMailerLiteRoot, "after-noop-bridge-002"),
         receiptJson: join(roots.redactedReceiptRoot, "after-noop-receipt-002.json"),
         receiptMd: join(roots.redactedReceiptRoot, "after-noop-receipt-002.md"),
       };
@@ -1625,6 +1774,8 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
   test("package.json remains valid and package-lock is unchanged", async () => {
     const pkg = JSON.parse(await readFile(join(process.cwd(), "package.json"), "utf8"));
     expect(pkg.scripts[EXPECTED_SCRIPT]).toBe("node scripts/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.mjs");
+    expect(pkg.scripts["crm:vnext:controlled-mailbox-file-bridge-publisher"])
+      .toBe("node scripts/crm-vnext-controlled-mailbox-file-bridge-publisher.mjs");
     const { stdout } = await execFileAsync("git", ["diff", "--name-only", "--", "package-lock.json"], { cwd: process.cwd() });
     expect(stdout.trim()).toBe("");
   });

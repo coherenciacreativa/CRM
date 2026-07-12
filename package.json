@@ -200,7 +200,8 @@
     "backfill:names": "node scripts/backfill_names.mjs",
     "dev:set-debug": "vercel env add DEBUG_TOKEN",
     "crm:vnext:mailerlite-exact-onboarding-mutation": "node scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs",
-    "crm:vnext:mailerlite-existing-subscriber-active-trigger-correction": "node scripts/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.mjs"
+    "crm:vnext:mailerlite-existing-subscriber-active-trigger-correction": "node scripts/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.mjs",
+    "crm:vnext:controlled-mailbox-file-bridge-publisher": "node scripts/crm-vnext-controlled-mailbox-file-bridge-publisher.mjs"
   },
   "dependencies": {
     "next": "^13.5.6",
