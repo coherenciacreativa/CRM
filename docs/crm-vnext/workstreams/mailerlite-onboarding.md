@@ -5,9 +5,9 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-mailerlite`
 - `consultant_chat`: MailerLite onboarding consultant
 - `codex_worker`: MailerLite onboarding lane worker
-- `status`: `active_trigger_correction_packet_prepared_guard_needed`
-- `objective`: No-secret setup inventory, no-write payload, future mutation
-  packet.
+- `status`: `mission_contract_execution_blocked_pre_effect_budget_exhausted`
+- `objective`: Close the safely blocked active-trigger correction and
+  first-email proof mission without retrying its exhausted approval.
 - `why_now`: MailerLite onboarding is the highest-leverage downstream lane once
   Instagram/DM/manual evidence provides email handoff.
 - `allowed_files`:
@@ -669,3 +669,32 @@ The packet and preflight gates are complete, but the live correction remains a
 separate exact approval boundary. A future approved command must fresh-check
 the packet-specific subscriber and membership, add the active live trigger only
 if absent, preserve all existing groups, verify immediately, and stop.
+
+## Mission Contract 2026-07-11.v1 Closeout
+
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
+- `mission_status`: `blocked_pre_effect_incomplete`
+- `exact_automation_reference_status`: `matched`
+- `automation_active_status`: `active_complete_not_broken`
+- `automation_trigger_mapping_status`: `exact_active_trigger_mapping_verified`
+- `first_email_locator_status`: `verified_private`
+- `mailbox_baseline_status`: `not_verified_bridge_publication_failed_one_shot_no_retry`
+- `subscriber_lookup_status`: `not_run`
+- `correction_attempted`: false
+- `correction_executed`: false
+- `mutation_endpoint_call_count`: 0
+- `automatic_email_caused_by_mission`: 0
+- `pre_effect_live_attempt_budget`: `3_of_3_exhausted`
+- `mailbox_evidence_check_budget`: `3_of_8_used`
+- `terminal_effect_lock_status`: `absent`
+- `gmail_plus_alias_binding_status`:
+  `narrow_base_profile_exact_plus_recipient_rule_implemented_and_tested`
+- `redaction_scan_status`: `passed`
+- `independent_stop_review`: `green_safe_stop_mission_incomplete`
+- `recommended_next_step`:
+  `stop_and_require_new_versioned_contract_for_exactly_one_additional_attempt`
+
+No current approval authorizes a fourth attempt, replay of the consumed
+baseline search, group assignment, resend, retrigger, or claim of active
+onboarding enrollment.
