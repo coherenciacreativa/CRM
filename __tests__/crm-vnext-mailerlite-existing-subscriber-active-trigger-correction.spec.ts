@@ -20,10 +20,12 @@ import {
   assertAllowedExactAutomationRequest,
   classifyExactAutomationMapping,
   controlledInboxQuery,
+  controlledMailboxProfileMatchesAnchor,
   createFileBridgeMailboxEvidenceProvider,
   createMailerLiteActiveTriggerCorrectionClient,
   exactAutomationGetPath,
   firstEmailLocatorFromAutomation,
+  gmailAuthenticatedAccountForAnchor,
   mutationAttemptLimiter,
   parseGogMessageIdResult,
   parseArgs,
@@ -47,6 +49,8 @@ const execFileAsync = promisify(execFile);
 const SCRIPT = "scripts/crm-vnext-mailerlite-existing-subscriber-active-trigger-correction.mjs";
 const EXPECTED_SCRIPT = "crm:vnext:mailerlite-existing-subscriber-active-trigger-correction";
 const FAKE_EMAIL = "person@example.test";
+const FAKE_GMAIL_BASE = "person.fixture@gmail.com";
+const FAKE_GMAIL_PLUS = "person.fixture+controlled-proof@gmail.com";
 const FAKE_SUBSCRIBER_ID = "sub_fake_existing_001";
 const FAKE_ACTIVE_GROUP = "grp_fake_active_trigger_001";
 const FAKE_PRIOR_GROUP = "grp_fake_prior_non_active_002";
@@ -68,6 +72,8 @@ const FAKE_TOKEN = "Bearer fake_secret_token";
 const RAW_PAYLOAD = "rawPayloadFixture";
 const sensitiveStrings = [
   FAKE_EMAIL,
+  FAKE_GMAIL_BASE,
+  FAKE_GMAIL_PLUS,
   FAKE_SUBSCRIBER_ID,
   FAKE_ACTIVE_GROUP,
   FAKE_PRIOR_GROUP,
@@ -90,12 +96,14 @@ const expectNoSensitiveStrings = (content: string) => {
 const publishFileBridgeResponse = async ({
   bridgeDir,
   request,
+  profileEmail = FAKE_EMAIL,
   consumptionOverrides = {},
   responseOverrides = {},
   responseExtras = {},
 }: {
   bridgeDir: string;
   request: Record<string, unknown>;
+  profileEmail?: string;
   consumptionOverrides?: Record<string, unknown>;
   responseOverrides?: Record<string, unknown>;
   responseExtras?: Record<string, unknown>;
@@ -125,7 +133,7 @@ const publishFileBridgeResponse = async ({
     mission_binding_private: request.mission_binding_private,
     connector_operation: "gmail_search_email_ids",
     query_binding_status: "matched",
-    profile_email_private: FAKE_EMAIL,
+    profile_email_private: profileEmail,
     id_digests_private: [createHash("sha256").update(FAKE_MESSAGE_ID).digest("hex")],
     has_more: false,
     search_executed_at_epoch_seconds: request.requested_at_epoch_seconds,
@@ -676,11 +684,25 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     })).status).toBe("first_email_step_incomplete_or_broken");
   });
 
+  test("controlled mailbox binding accepts only the exact Gmail plus-alias relation", () => {
+    expect(gmailAuthenticatedAccountForAnchor(FAKE_GMAIL_PLUS)).toBe(FAKE_GMAIL_BASE);
+    expect(gmailAuthenticatedAccountForAnchor(FAKE_GMAIL_BASE)).toBe(FAKE_GMAIL_BASE);
+    expect(controlledMailboxProfileMatchesAnchor(FAKE_GMAIL_BASE, FAKE_GMAIL_PLUS)).toBe(true);
+    expect(controlledMailboxProfileMatchesAnchor(FAKE_GMAIL_BASE, FAKE_GMAIL_BASE)).toBe(true);
+    expect(controlledMailboxProfileMatchesAnchor(FAKE_GMAIL_PLUS, FAKE_GMAIL_PLUS)).toBe(false);
+    expect(controlledMailboxProfileMatchesAnchor("personfixture@gmail.com", FAKE_GMAIL_PLUS)).toBe(false);
+    expect(controlledMailboxProfileMatchesAnchor(FAKE_GMAIL_BASE, "person.fixture+controlled-proof@googlemail.com")).toBe(false);
+    expect(controlledMailboxProfileMatchesAnchor("person.fixture+other@gmail.com", FAKE_GMAIL_PLUS)).toBe(false);
+    expect(controlledMailboxProfileMatchesAnchor("person.fixture@example.test", "person.fixture+controlled-proof@example.test")).toBe(false);
+    expect(gmailAuthenticatedAccountForAnchor("person.fixture+@gmail.com")).toBeNull();
+    expect(gmailAuthenticatedAccountForAnchor("person.fixture+one+two@gmail.com")).toBeNull();
+  });
+
   test("production Gmail wrapper fixes binary, account, message search, ID selection, and exact bounded query inputs", async () => {
     const locator = firstEmailLocatorFromAutomation(automationDetail());
     let captured: { bin?: string; args?: string[] } = {};
     const result = await searchControlledInboxIds({
-      mailboxAnchor: FAKE_EMAIL,
+      mailboxAnchor: FAKE_GMAIL_PLUS,
       locator,
       afterEpochSeconds: 1_700_000_000,
       beforeEpochSeconds: 1_700_000_100,
@@ -698,8 +720,8 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
     expect(captured.args).toContain("--max=2");
     expect(captured.args).not.toContain("--include-body");
     const accountIndex = captured.args?.indexOf("--account") ?? -1;
-    expect(captured.args?.[accountIndex + 1]).toBe(FAKE_EMAIL);
-    expect(captured.args?.[3]).toContain(`to:\"${FAKE_EMAIL}\"`);
+    expect(captured.args?.[accountIndex + 1]).toBe(FAKE_GMAIL_BASE);
+    expect(captured.args?.[3]).toContain(`to:\"${FAKE_GMAIL_PLUS}\"`);
     expect(captured.args?.[3]).toContain(`from:\"${FAKE_FIRST_EMAIL_SENDER}\"`);
     expect(captured.args?.[3]).toContain(`subject:\"${FAKE_FIRST_EMAIL_SUBJECT}\"`);
     expect(captured.args?.[3]).toContain("after:1700000000");
@@ -721,12 +743,12 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
           if (responseWritten) return;
           responseWritten = true;
           const request = JSON.parse(await readFile(join(bridgeDir, "01-baseline.request.json"), "utf8"));
-          await publishFileBridgeResponse({ bridgeDir, request });
+          await publishFileBridgeResponse({ bridgeDir, request, profileEmail: FAKE_GMAIL_BASE });
         },
       });
       const result = await provider.search({
         phase: "baseline",
-        mailboxAnchor: FAKE_EMAIL,
+        mailboxAnchor: FAKE_GMAIL_PLUS,
         locator,
         afterEpochSeconds: 1_700_000_000,
         beforeEpochSeconds: 1_700_000_100,
@@ -743,6 +765,8 @@ describe("CRM Core MailerLite existing-subscriber active-trigger correction guar
       expect(request.connector_operation).toBe("gmail_search_email_ids");
       expect(request.label_ids).toEqual(["INBOX"]);
       expect(request.max_results).toBe(2);
+      expect(request.mailbox_anchor_private).toBe(FAKE_GMAIL_PLUS);
+      expect(request.query_private).toContain(`to:\"${FAKE_GMAIL_PLUS}\"`);
       expect(request.mission_binding_private).toEqual(FILE_BRIDGE_BUDGET_CLAIM);
       expect(request.worker_contract).toBe("one_shot_request_id_no_reprocessing");
       expect(request.digest_contract.message_id_digest).toBe("sha256_lowercase_hex_of_utf8_raw_gmail_message_id");

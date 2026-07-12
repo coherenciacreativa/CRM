@@ -803,6 +803,30 @@ const exactEmailAddress = (value) => {
   return matches.length === 1 ? matches[0].toLowerCase() : null;
 };
 
+const gmailAuthenticatedAccountForAnchor = (mailboxAnchor) => {
+  const exact = exactEmailAddress(mailboxAnchor);
+  if (!exact || exact !== cleanString(mailboxAnchor)?.toLowerCase()) return null;
+  const at = exact.lastIndexOf('@');
+  const local = exact.slice(0, at);
+  const domain = exact.slice(at + 1);
+  if (domain !== 'gmail.com') return exact;
+  const plus = local.indexOf('+');
+  if (plus < 0) return exact;
+  if (plus === 0 || plus === local.length - 1 || plus !== local.lastIndexOf('+')) return null;
+  return `${local.slice(0, plus)}@${domain}`;
+};
+
+const controlledMailboxProfileMatchesAnchor = (profileEmail, mailboxAnchor) => {
+  const profile = exactEmailAddress(profileEmail);
+  const expectedAuthenticatedAccount = gmailAuthenticatedAccountForAnchor(mailboxAnchor);
+  return Boolean(
+    profile
+    && expectedAuthenticatedAccount
+    && profile === cleanString(profileEmail)?.toLowerCase()
+    && profile === expectedAuthenticatedAccount
+  );
+};
+
 const firstEmailLocatorFromAutomation = (response) => {
   const automation = automationFromResponse(response);
   const steps = arrayFrom(automation?.steps);
@@ -893,12 +917,13 @@ const parseGogMessageIdResult = (raw) => {
 };
 
 const searchControlledInboxIds = async ({ mailboxAnchor, locator, afterEpochSeconds, beforeEpochSeconds, execFileImpl = execFileAsync, nowMs = () => Date.now() }) => {
-  const account = exactEmailAddress(mailboxAnchor);
-  if (!account || account !== cleanString(mailboxAnchor)?.toLowerCase()) throw new Error('blocked_controlled_mailbox_binding_invalid');
+  const exactMailboxAnchor = exactEmailAddress(mailboxAnchor);
+  const account = gmailAuthenticatedAccountForAnchor(mailboxAnchor);
+  if (!exactMailboxAnchor || !account) throw new Error('blocked_controlled_mailbox_binding_invalid');
   if (!locator?.ok || !locator.sender_private || !locator.subject_private) throw new Error('blocked_first_email_locator_not_verified');
   const searchStartedAtEpochSeconds = Math.floor(nowMs() / 1000);
   const query = controlledInboxQuery({
-    mailboxAnchor: account,
+    mailboxAnchor: exactMailboxAnchor,
     locator,
     afterEpochSeconds,
     beforeEpochSeconds: Math.max(
@@ -1052,7 +1077,7 @@ const validateFileBridgeResponse = ({ response, request, acceptedAtEpochSeconds 
   if (!sameFileBridgeMissionBinding(response.mission_binding_private, request.mission_binding_private)) throw new Error('blocked_mailbox_bridge_mission_binding_mismatch');
   if (response.connector_operation !== 'gmail_search_email_ids') throw new Error('blocked_mailbox_bridge_operation_mismatch');
   if (response.query_binding_status !== 'matched') throw new Error('blocked_mailbox_bridge_query_binding_mismatch');
-  if (!sameReference(response.profile_email_private, request.mailbox_anchor_private)) throw new Error('blocked_mailbox_bridge_profile_mismatch');
+  if (!controlledMailboxProfileMatchesAnchor(response.profile_email_private, request.mailbox_anchor_private)) throw new Error('blocked_mailbox_bridge_profile_mismatch');
   if (response.has_more !== false) throw new Error('blocked_mailbox_bridge_pagination_or_ambiguity');
   if (response.worker_consumption_status !== 'consumed_once') throw new Error('blocked_mailbox_bridge_worker_consumption_invalid');
   if (
@@ -1867,10 +1892,12 @@ export {
   classifyExactAutomationMapping,
   classifySubscriberLookup,
   controlledInboxQuery,
+  controlledMailboxProfileMatchesAnchor,
   createFileBridgeMailboxEvidenceProvider,
   createMailerLiteActiveTriggerCorrectionClient,
   createMailerLiteExactAutomationClient,
   firstEmailLocatorFromAutomation,
+  gmailAuthenticatedAccountForAnchor,
   exactAutomationGetPath,
   forbiddenEndpointReason,
   isInside,
