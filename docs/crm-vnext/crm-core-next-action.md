@@ -5765,11 +5765,11 @@ routing and completion pointer.
 - `completion_definition`: Alejandro approves, modifies, declines, or pauses
   one exact active-trigger correction.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_active_trigger_correction_and_first_email_proof_awaiting_mission_v2_approval_v0`
-- `status`: `awaiting_exact_ceo_approval`
+- `status`: `completed_exact_ceo_approval_received_and_executed`
 - `created_at`: `2026-07-11`
 - `updated_at`: `2026-07-11`
 - `objective`: Wait for Alejandro to approve, modify, decline, or pause the
@@ -5829,3 +5829,46 @@ routing and completion pointer.
 - `completion_definition`: Alejandro supplies the exact v2 approval phrase,
   modifies it, declines it, or pauses it. This state itself includes no live
   work.
+- `completion_result`:
+  `one_add_only_assignment_acknowledged_and_verified_email_delivery_unverified`
+- `completed_at`: `2026-07-11`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_after_mission_v2_email_not_sent_next_step_selection_v0`
+- `status`: `awaiting_ceo_direction_after_bounded_closeout`
+- `created_at`: `2026-07-11`
+- `updated_at`: `2026-07-11`
+- `objective`: Preserve the verified active-trigger group effect and choose
+  whether to pause or prepare a separately approved, no-effect diagnosis for
+  why the exact active automation did not record its first automatic email.
+- `why_now`:
+  - Mission v2 used its single additional attempt and closed the global Gmail
+    evidence budget at `8/8`.
+  - The exact automation remained active, complete, and not broken, with the
+    exact trigger mapping verified.
+  - The exact controlled subscriber moved from absent to present in the
+    trigger group through one acknowledged add-only assignment.
+  - The immediate reread verified membership and preservation of all previous
+    groups.
+  - Gmail found no first-email evidence and the later bounded MailerLite
+    read-only corroboration found no sent activity at check time.
+- `allowed_scope_now`:
+  - Complete the one v2 central integration already authorized.
+  - Present the terminal redacted result and options to Alejandro.
+  - Prepare a new no-effect diagnostic contract only after a separate choice.
+- `forbidden_scope`:
+  - No second v2 attempt or repeat group assignment.
+  - No additional Gmail search beyond `8/8`.
+  - No direct send, resend, retrigger, or automation mutation.
+  - No subscriber, group, field, status, campaign, source, CRM, card, Fact
+    Store, scoring, Instagram, Mati, or Launch OS change.
+  - No private values in chat or repository documents.
+  - No `/Users/alejandrogomez/CRM`.
+- `recommended_default`:
+  `pause_with_verified_group_membership_then_prepare_readonly_non_send_diagnosis_only_if_requested`
+- `result_doc`:
+  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
+- `completion_definition`: Alejandro chooses pause, a separately approved
+  read-only non-send diagnosis, or another explicitly bounded future mission.
