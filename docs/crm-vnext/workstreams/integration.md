@@ -1024,3 +1024,32 @@
   `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
 - `active_status`:
   `this_central_integration_commit_complete_private_start_gates_pending_no_campaign_launched`
+
+## Chief Architect Canonical Route Rebind and Fail-Closed Gate
+
+- `checkpoint_date`: `2026-07-13`
+- `status`: `implemented_and_verified_pilot_still_paused`
+- `finding`: The canonical private Project was present with Project-only memory,
+  private ownership, thirteen expected sources, and all four standing chats,
+  but the active `chief-architect-integration` registry entry still pointed to
+  a pre-bootstrap chat inside legacy project `CRM build`.
+- `repair`:
+  - restored the canonical project instructions from the durable bootstrap;
+  - privately rebound the existing target to a standing chat inside project
+    `CRM Core — Chief Architect`;
+  - removed one unrelated generic chat from the project without deleting it,
+    so it no longer contributes to the Chief Architect project context;
+  - made the registry owner-only and wrote one owner-only redacted receipt;
+  - made Consultant Relay Lock fail closed on exact project binding, private
+    registry mode, Project-only/private/instruction/source/chat attestations,
+    canonical route fingerprint, and a fresh visible UI observation;
+  - fixed raw-URL rejection for project-chat routes;
+  - installed the mandatory single-paste, Send-button, Copy-response, and
+    clipboard-replacement protocol in repo-root `AGENTS.md`.
+- `verification`: focused relay-lock suite `37/37` green, production static and
+  dynamic preflights green, raw target URL printed false.
+- `legacy_verdict_status`: `non_actionable_not_reused`
+- `pilot_status`: `paused`
+- `campaign_authorized`: false
+- `next_gate`: one fresh verdict from the canonical project before pilot
+  activation.

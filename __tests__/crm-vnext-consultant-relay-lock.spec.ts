@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -9,10 +10,17 @@ const execFileAsync = promisify(execFile);
 const script = 'scripts/crm-vnext-consultant-relay-lock.mjs';
 const tmpRoots: string[] = [];
 const rawTargetUrlSample = ['https://chatgpt.com', 'c', 'synthetic-private-target'].join('/');
+const projectRawTargetUrlSample = ['https://chatgpt.com', 'g', `g-p-${'a'.repeat(32)}-crm-core-chief-architect`, 'c', 'synthetic-private-target'].join('/');
 const rawTargetUrlPatternLabel = ['chatgpt.com', 'c', ''].join('/');
 const legacyRawTargetUrlPatternLabel = ['chat.openai.com', 'c', ''].join('/');
+const projectRawTargetUrlPatternLabel = ['chatgpt.com', 'g', ''].join('/');
 const unsafeEmailValue = 'unsafe-lock@example.test';
 const fakeOwnerTokenHash = `sha256:${'a'.repeat(64)}`;
+const canonicalChiefArchitectProjectName = 'CRM Core — Chief Architect';
+const canonicalChiefArchitectConsultantId = 'chief-architect-integration';
+const canonicalProjectRouteToken = `g-p-${'a'.repeat(32)}`;
+const canonicalProjectRouteHash = `sha256:${createHash('sha256').update(canonicalProjectRouteToken).digest('hex')}`;
+const canonicalChatRouteHash = `sha256:${createHash('sha256').update('synthetic-private-target').digest('hex')}`;
 
 const makeTmpRoot = async () => {
   const root = await mkdtemp(join(tmpdir(), 'crm-core-relay-lock-'));
@@ -44,6 +52,175 @@ const baseAcquireArgs = (lockDir: string, overrides: string[] = []) => [
   ...overrides,
 ];
 
+const baseChiefArchitectAcquireArgs = (lockDir: string, overrides: string[] = []) => baseAcquireArgs(lockDir, [
+  '--owner-id',
+  canonicalChiefArchitectConsultantId,
+  '--consultant-id',
+  canonicalChiefArchitectConsultantId,
+  '--observed-project-name',
+  canonicalChiefArchitectProjectName,
+  '--observed-project-only-memory',
+  'true',
+  '--observed-private-unshared',
+  'true',
+  '--observed-instructions-match',
+  'true',
+  '--observed-chat-project-bound',
+  'true',
+  '--observed-chat-label',
+  '00 — North Star & Portfolio',
+  '--observed-project-route-sha256',
+  canonicalProjectRouteHash,
+  '--observed-chat-route-sha256',
+  canonicalChatRouteHash,
+  '--ui-observed-at',
+  new Date().toISOString(),
+  ...overrides,
+]);
+
+const canonicalInstructionsHash = async () => {
+  const raw = await readFile('docs/crm-vnext/crm-core-chief-architect-project-bootstrap-v1.md', 'utf8');
+  const match = raw.match(/## Canonical project instructions[\s\S]*?```text\n([\s\S]*?)\n```/);
+  if (!match?.[1]) throw new Error('canonical instructions missing in fixture');
+  return `sha256:${createHash('sha256').update(match[1]).digest('hex')}`;
+};
+
+const createChiefArchitectRegistry = async ({
+  fileMode = 0o600,
+  directoryMode = 0o700,
+  projectName = canonicalChiefArchitectProjectName,
+  targetUrl = projectRawTargetUrlSample,
+  routeHash = canonicalProjectRouteHash,
+  chatRouteHash = canonicalChatRouteHash,
+  bindingVerifiedAt = '2026-07-13T12:00:00.000Z',
+  instructionsHash,
+}: {
+  fileMode?: number;
+  directoryMode?: number;
+  projectName?: string;
+  targetUrl?: string;
+  routeHash?: string;
+  chatRouteHash?: string;
+  bindingVerifiedAt?: string;
+  instructionsHash?: string;
+} = {}) => {
+  const root = await makeTmpRoot();
+  const directory = join(root, 'private-registry');
+  const file = join(directory, 'consultant-target-registry-v0.json');
+  await mkdir(directory, { recursive: true, mode: directoryMode });
+  await chmod(directory, directoryMode);
+  await writeFile(file, `${JSON.stringify({
+    version: 'v0',
+    updated_at: bindingVerifiedAt,
+    targets: {
+      [canonicalChiefArchitectConsultantId]: {
+        target_id: canonicalChiefArchitectConsultantId,
+        expected_consultant_id: canonicalChiefArchitectConsultantId,
+        target_chat_label: '00 — North Star & Portfolio',
+        target_url: targetUrl,
+        target_url_secret: true,
+        canonical_project_name: projectName,
+        canonical_project_route_sha256: routeHash,
+        canonical_chat_route_sha256: chatRouteHash,
+        project_only_memory: true,
+        private_unshared: true,
+        project_instructions_sha256: instructionsHash ?? await canonicalInstructionsHash(),
+        sources_count: 13,
+        required_chats_verified: true,
+        bootstrap_receipt_green: true,
+        legacy_project_used: false,
+        project_binding_verified_at: bindingVerifiedAt,
+      },
+    },
+  }, null, 2)}\n`, { mode: fileMode });
+  await chmod(file, fileMode);
+  return file;
+};
+
+const createBootstrapReceipt = async () => {
+  const root = await makeTmpRoot();
+  const file = join(root, 'bootstrap-receipt.json');
+  await writeFile(file, `${JSON.stringify({
+    project_created: true,
+    project_name: canonicalChiefArchitectProjectName,
+    project_memory_mode: 'project_only',
+    project_private: true,
+    files_uploaded_count: 13,
+    chat_labels: [
+      '00 — North Star & Portfolio',
+      '01 — Operating Model & Mission Templates',
+      '02 — Architecture Exceptions',
+      'Mission — Active Trigger Correction & First Email Proof — 2026-07-11',
+    ],
+    legacy_crm_used: false,
+    blockers: [],
+  }, null, 2)}\n`, { mode: 0o600 });
+  return file;
+};
+
+const registryUpdateAcquireArgs = (lockDir: string, ttlMs = '300000') => baseAcquireArgs(lockDir, [
+  '--owner-id',
+  'chief-architect-route-rebind',
+  '--consultant-id',
+  'chief-architect-route-rebind',
+  '--packet-id',
+  'chief_architect_route_rebind_test_packet',
+  '--branch',
+  'codex/crm-core-reentry',
+  '--worktree',
+  process.cwd(),
+  '--critical-section',
+  'target_registry_update',
+  '--target-id',
+  canonicalChiefArchitectConsultantId,
+  '--ttl-ms',
+  ttlMs,
+]);
+
+const registryUpdateCommandArgs = (lockDir: string, overrides: string[] = []) => [
+  script,
+  'register-chief-architect-target',
+  '--lock-dir',
+  lockDir,
+  '--target-id',
+  canonicalChiefArchitectConsultantId,
+  '--target-url-stdin',
+  'true',
+  '--target-chat-label',
+  '00 — North Star & Portfolio',
+  '--observed-project-name',
+  canonicalChiefArchitectProjectName,
+  '--observed-project-only-memory',
+  'true',
+  '--observed-private-unshared',
+  'true',
+  '--observed-instructions-match',
+  'true',
+  '--observed-chat-project-bound',
+  'true',
+  '--observed-chat-label',
+  '00 — North Star & Portfolio',
+  '--observed-project-route-sha256',
+  canonicalProjectRouteHash,
+  '--observed-chat-route-sha256',
+  canonicalChatRouteHash,
+  '--observed-required-chats',
+  'true',
+  '--observed-sources-count',
+  '13',
+  '--ui-observed-at',
+  new Date().toISOString(),
+  '--expected-lock-owner-id',
+  'chief-architect-route-rebind',
+  '--expected-lock-consultant-id',
+  'chief-architect-route-rebind',
+  '--expected-lock-packet-id',
+  'chief_architect_route_rebind_test_packet',
+  '--expected-lock-branch',
+  'codex/crm-core-reentry',
+  ...overrides,
+];
+
 const runCli = async (args: string[], env: Record<string, string | undefined> = {}) => {
   const result = await execFileAsync('node', args, {
     cwd: process.cwd(),
@@ -58,6 +235,48 @@ const runCli = async (args: string[], env: Record<string, string | undefined> = 
     stderr: result.stderr,
     json: JSON.parse(result.stdout),
   };
+};
+
+const runCliWithInput = async (
+  args: string[],
+  input: string,
+  env: Record<string, string | undefined> = {},
+) => new Promise<{ stdout: string; stderr: string; json: any }>((resolve, reject) => {
+  const child = execFile('node', args, {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      ...env,
+    },
+  }, (error, stdout, stderr) => {
+    if (error) {
+      (error as any).stdout = stdout;
+      (error as any).stderr = stderr;
+      reject(error);
+      return;
+    }
+    resolve({ stdout, stderr, json: JSON.parse(stdout) });
+  });
+  child.stdin?.end(input);
+});
+
+const runCliWithInputFail = async (
+  args: string[],
+  input: string,
+  env: Record<string, string | undefined> = {},
+) => {
+  try {
+    await runCliWithInput(args, input, env);
+    throw new Error('expected_cli_failure');
+  } catch (error: any) {
+    if (error.message === 'expected_cli_failure') throw error;
+    return {
+      stdout: error.stdout ?? '',
+      stderr: error.stderr ?? '',
+      json: JSON.parse(error.stdout),
+    };
+  }
 };
 
 const runCliFail = async (args: string[], env: Record<string, string | undefined> = {}) => {
@@ -455,5 +674,379 @@ describe('crm-vnext Consultant Relay Lock utility', () => {
     const failure = await runCliFail(baseAcquireArgs(outsideLockDir), env);
     expect(failure.json.error).toBe('lock_dir_outside_approved_crm_core_reports_rejected');
     await expect(stat(outsideLockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('acquire rejects project-chat raw target URLs without leaking them', async () => {
+    const lockDir = await lockDirFor();
+    const failure = await runCliFail(baseAcquireArgs(lockDir, [
+      '--owner-id',
+      projectRawTargetUrlSample,
+    ]));
+    const serialized = JSON.stringify(failure.json);
+
+    expect(failure.json.error).toContain('raw_target_url_rejected');
+    expect(serialized).not.toContain(projectRawTargetUrlPatternLabel);
+    expect(serialized).not.toContain('synthetic-private-target');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire passes only with canonical private registry and fresh UI observation', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const env = { CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath };
+    const acquired = await runCli(baseChiefArchitectAcquireArgs(lockDir), env);
+
+    expect(acquired.json).toMatchObject({
+      ok: true,
+      acquired: true,
+      consultant_id: canonicalChiefArchitectConsultantId,
+      chief_architect_route_preflight_passed: true,
+      canonical_project_match: true,
+      ui_observation_fresh: true,
+      raw_target_url_printed: false,
+    });
+    const serialized = JSON.stringify(acquired.json);
+    expect(serialized).not.toContain(projectRawTargetUrlPatternLabel);
+
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      acquired.json.owner_token,
+    ], env);
+  });
+
+  test('chief architect direct open uses static-only preflight before UI observation exists', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const acquired = await runCli(baseAcquireArgs(lockDir, [
+      '--owner-id',
+      canonicalChiefArchitectConsultantId,
+      '--consultant-id',
+      canonicalChiefArchitectConsultantId,
+      '--critical-section',
+      'direct_target_open',
+    ]), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(acquired.json).toMatchObject({
+      ok: true,
+      acquired: true,
+      chief_architect_static_route_preflight_passed: true,
+      chief_architect_route_preflight_scope: 'static_open_only',
+      canonical_project_match: true,
+    });
+    expect(acquired.json.chief_architect_route_preflight_passed).toBeUndefined();
+    expect(acquired.json.ui_observation_fresh).toBeUndefined();
+
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      acquired.json.owner_token,
+    ], { CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath });
+  });
+
+  test('chief architect acquire fails closed when UI project observation is missing', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const args = baseChiefArchitectAcquireArgs(lockDir);
+    const flagIndex = args.indexOf('--observed-chat-project-bound');
+    args.splice(flagIndex, 2);
+    const failure = await runCliFail(args, {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('missing_required_arg:observed-chat-project-bound');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects visible CRM build project', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir, [
+      '--observed-project-name',
+      'CRM build',
+    ]), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_observed_project_mismatch');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects a different chat inside the canonical project', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir, [
+      '--observed-chat-label',
+      'Mission Correction Proof',
+    ]), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_observed_chat_mismatch');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects registry that is not owner-only', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry({ fileMode: 0o644 });
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_registry_not_owner_only');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects legacy project metadata', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry({ projectName: 'CRM build' });
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_registry_project_mismatch');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects target URL drift to another project', async () => {
+    const lockDir = await lockDirFor();
+    const otherProjectUrl = ['https://chatgpt.com', 'g', `g-p-${'b'.repeat(32)}-legacy`, 'c', 'synthetic-private-target'].join('/');
+    const registryPath = await createChiefArchitectRegistry({ targetUrl: otherProjectUrl });
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_project_route_fingerprint_mismatch');
+    expect(JSON.stringify(failure.json)).not.toContain('synthetic-private-target');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects target URL drift to another chat in the same project', async () => {
+    const lockDir = await lockDirFor();
+    const otherChatUrl = ['https://chatgpt.com', 'g', `${canonicalProjectRouteToken}-crm-core-chief-architect`, 'c', 'different-chat'].join('/');
+    const registryPath = await createChiefArchitectRegistry({ targetUrl: otherChatUrl });
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_chat_route_fingerprint_mismatch');
+    expect(JSON.stringify(failure.json)).not.toContain('different-chat');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire revalidates UI freshness while waiting for the lock', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const holder = await runCli(baseAcquireArgs(lockDir, ['--ttl-ms', '300000']));
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir, [
+      '--wait-ms',
+      '500',
+      '--poll-ms',
+      '30',
+    ]), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_UI_OBSERVATION_MAX_AGE_MS: '150',
+    });
+
+    expect(failure.json.error).toBe('chief_architect_ui_observation_stale');
+    const status = await runCli([script, 'status', '--lock-dir', lockDir]);
+    expect(status.json.locked).toBe(true);
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ]);
+  });
+
+  test('chief architect acquire rejects stale UI observation', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const staleObservedAt = new Date(Date.now() - (11 * 60 * 1000)).toISOString();
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir, [
+      '--ui-observed-at',
+      staleObservedAt,
+    ]), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_ui_observation_stale');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect acquire rejects project instruction fingerprint drift', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry({
+      instructionsHash: `sha256:${'0'.repeat(64)}`,
+    });
+    const failure = await runCliFail(baseChiefArchitectAcquireArgs(lockDir), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+    });
+
+    expect(failure.json.error).toBe('chief_architect_project_instructions_fingerprint_mismatch');
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('chief architect target registration is owner-only, redacted, and immediately usable by dynamic preflight', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry({
+      fileMode: 0o644,
+      directoryMode: 0o755,
+      projectName: 'CRM build',
+    });
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const routeReceiptRoot = await makeTmpRoot();
+    const routeReceiptPath = join(routeReceiptRoot, 'route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const holder = await runCli(registryUpdateAcquireArgs(lockDir), registryEnv);
+    const registered = await runCliWithInput(
+      registryUpdateCommandArgs(lockDir),
+      projectRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+    const registry = JSON.parse(await readFile(registryPath, 'utf8'));
+    const target = registry.targets[canonicalChiefArchitectConsultantId];
+    const registryStats = await stat(registryPath);
+    const registryDirectoryStats = await stat(join(registryPath, '..'));
+    const routeReceipt = JSON.parse(await readFile(routeReceiptPath, 'utf8'));
+
+    expect(registered.json).toMatchObject({
+      ok: true,
+      canonical_project_match: true,
+      target_registry_rebound: true,
+      registry_owner_only: true,
+      legacy_project_used: false,
+      raw_target_url_printed: false,
+    });
+    expect(JSON.stringify(registered.json)).not.toContain(projectRawTargetUrlPatternLabel);
+    expect(registryStats.mode & 0o077).toBe(0);
+    expect(registryDirectoryStats.mode & 0o077).toBe(0);
+    expect(target).toMatchObject({
+      canonical_project_name: canonicalChiefArchitectProjectName,
+      canonical_project_route_sha256: canonicalProjectRouteHash,
+      canonical_chat_route_sha256: canonicalChatRouteHash,
+      project_only_memory: true,
+      private_unshared: true,
+      legacy_project_used: false,
+    });
+    expect(routeReceipt).toMatchObject({
+      target_registry_rebound: true,
+      registry_owner_only: true,
+      legacy_project_used: false,
+      raw_target_url_printed: false,
+    });
+
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
+
+    const dynamic = await runCli(baseChiefArchitectAcquireArgs(lockDir), registryEnv);
+    expect(dynamic.json).toMatchObject({
+      chief_architect_route_preflight_passed: true,
+      chief_architect_static_route_preflight_passed: true,
+      chief_architect_route_preflight_scope: 'dynamic_post_open',
+      ui_observation_fresh: true,
+    });
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      dynamic.json.owner_token,
+    ], registryEnv);
+  });
+
+  test('chief architect target registration rejects a stale registry-update lock without URL leakage', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const routeReceiptRoot = await makeTmpRoot();
+    const routeReceiptPath = join(routeReceiptRoot, 'route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const holder = await runCli(registryUpdateAcquireArgs(lockDir, '1'), registryEnv);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const failure = await runCliWithInputFail(
+      registryUpdateCommandArgs(lockDir),
+      projectRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+
+    expect(failure.json.error).toBe('target_registry_update_lock_stale');
+    expect(JSON.stringify(failure.json)).not.toContain(projectRawTargetUrlPatternLabel);
+    await expect(stat(routeReceiptPath)).rejects.toMatchObject({ code: 'ENOENT' });
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
+  });
+
+  test('chief architect target registration rejects another mission lock binding', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const routeReceiptRoot = await makeTmpRoot();
+    const routeReceiptPath = join(routeReceiptRoot, 'route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const holder = await runCli(registryUpdateAcquireArgs(lockDir), registryEnv);
+    const failure = await runCliWithInputFail(
+      registryUpdateCommandArgs(lockDir, [
+        '--expected-lock-packet-id',
+        'different_mission_packet',
+      ]),
+      projectRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+
+    expect(failure.json.error).toBe('target_registry_update_packet_id_mismatch');
+    expect(JSON.stringify(failure.json)).not.toContain(projectRawTargetUrlPatternLabel);
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
   });
 });

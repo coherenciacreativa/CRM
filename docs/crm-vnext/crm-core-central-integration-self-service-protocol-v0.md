@@ -69,6 +69,15 @@ Target id:
 chief-architect-integration
 ```
 
+Canonical project gate:
+
+- Project name must be exactly `CRM Core — Chief Architect`.
+- Standing target chat must be exactly `00 — North Star & Portfolio`.
+- A chat in `CRM build` or any other project is not this consultant.
+- Consultant Relay Lock v0 must pass its fresh Chief Architect route preflight
+  before the handshake, packet send, response capture, or verdict use.
+- Prior target confirmation does not bypass the project gate.
+
 Target registry path label:
 
 ```text

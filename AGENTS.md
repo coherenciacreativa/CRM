@@ -6,6 +6,36 @@
 - In every new session, assume strict mode is ON unless the user explicitly asks to disable it for that session.
 - Before any credential task, restate: `Strict secret mode ON (no secret output, no env dumps).`
 
+## Chief Architect UI Relay — Initial Gate
+
+Before every ChatGPT Chief Architect consultation, treat this as the mandatory
+first protocol, not as a remembered preference:
+
+1. Work from `/Users/alejandrogomez/CRM-core`, refresh branch/HEAD/status, and
+   treat the repo plus central integration records as current truth.
+2. The destination project must be exactly `CRM Core — Chief Architect`.
+   The registered standing target is `00 — North Star & Portfolio`. Never use
+   a Chief Architect chat inside `CRM build`, another project, or another chat
+   without an explicit re-registration.
+3. For `direct_target_open`, acquire
+   `scripts/crm-vnext-consultant-relay-lock.mjs` through its static private
+   registry preflight, then confirm the visible exact project and chat while
+   the lock is held. Every subsequent handshake, prompt, or capture acquisition
+   must pass the dynamic preflight with that fresh visible observation and the
+   redacted project/chat route fingerprints computed from the visible tab. If
+   either preflight is not green, stop.
+4. Prepare the complete prompt before touching the composer. Insert it in one
+   clipboard paste and click the Send button. Never press Enter to send and
+   never stream a multiline prompt with repeated typing actions.
+5. Capture the answer with ChatGPT's `Copy response` button, verify that the
+   clipboard was replaced, and validate the complete packet, identifiers, and
+   sentinel before acting.
+6. Never print or track raw ChatGPT target URLs, private chat text, clipboard
+   contents, or target-registry contents. Use redacted receipts only.
+
+This gate is fail-closed and applies even when a target was previously
+handshake-confirmed.
+
 ## Project Routing: Launch OS Work
 
 For Launch OS, MailerLite, microproduct market-learning, or Goals/play resume

@@ -5947,6 +5947,10 @@ routing and completion pointer.
   - Before that correction, one bounded read-only production-configuration
     readiness check inspected only the proxy membership count; there was no
     proxy call, configuration, deployment, or modification.
+  - The July 13 consultant relay was later proven to have used a Chief
+    Architect-named chat inside legacy project `CRM build`, so that verdict is
+    non-actionable until the canonical-project gate passes and a fresh verdict
+    is captured from project `CRM Core — Chief Architect`.
 - `approval_receipt`:
   - `Go` approved the bounded v0 limits on `2026-07-13` by direct reference.
   - `adelante` approved the immediately preceding explicit architecture
@@ -5962,6 +5966,11 @@ routing and completion pointer.
     actions during quiet hours.
   - One final redacted CEO brief and no routine handoffs.
 - `start_gates`:
+  - mandatory Chief Architect relay preflight confirms the exact canonical
+    project, owner-only registry, Project-only memory, private state, canonical
+    instructions, canonical route fingerprint, and fresh visible UI binding;
+  - one fresh canonical-project pilot verdict; the earlier `CRM build` verdict
+    cannot be reused;
   - independent atomicity and adversarial verdicts
     `green_to_self_integrate` after final privacy, mutex, retry, and last-moment
     freshness hardening;
@@ -5987,7 +5996,7 @@ routing and completion pointer.
   - No duplicate send, retry after mutation attempt, resend, retrigger, deletion,
     automation change, or raw private value disclosure.
 - `recommended_default`:
-  `integrate_v1_validate_start_gates_then_activate_bounded_pilot_without_routine_handoffs`
+  `keep_pilot_paused_capture_fresh_canonical_project_verdict_then_activate_only_if_all_start_gates_remain_green`
 - `mission_contract`:
   `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v1.md`
 - `completion_definition`: The operator completes the bounded mission and

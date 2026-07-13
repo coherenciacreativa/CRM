@@ -118,8 +118,41 @@ preferred v0 target route when available.
   history, bookmarks, new chat creation, project browsing, or unrelated chat
   inspection.
 - Existing target registry under Mantis-Private-Source-Artifacts may remain as
-  a legacy continuity path until re-registered. Future registry writes should
-  prefer CRM-Core-Private-Artifacts.
+  a legacy continuity path only for non-Chief-Architect historical targets.
+  It is forbidden for every Chief Architect relay. Future registry writes
+  should prefer CRM-Core-Private-Artifacts.
+
+### Chief Architect Canonical Project Gate
+
+Every relay whose `consultant_id` is `chief-architect-integration` uses two
+fail-closed phases built into Consultant Relay Lock v0:
+
+1. `direct_target_open` first passes the static private-registry gate, opens
+   the registered target while holding the lock, and confirms the visible
+   exact project and chat.
+2. Every handshake, send, capture, reformat, or receipt acquisition then passes
+   the dynamic gate using that fresh visible observation.
+
+The preflight requires all of the following:
+
+- the private registry and its directory are owner-only;
+- the target is bound to project name exactly `CRM Core — Chief Architect`;
+- the standing target chat is exactly `00 — North Star & Portfolio`;
+- the target URL is a project-chat route whose private route fingerprint
+  and private chat fingerprint match the registered canonical fingerprints;
+- Project-only memory, private/unshared state, the canonical instructions,
+  thirteen sources, and the four required standing chats were verified;
+- the binding was verified after the 2026-07-11 bootstrap;
+- `legacy_project_used=false`;
+- before any post-open action, the operator supplies a fresh visible UI
+  observation, no older than ten
+  minutes, confirming the exact project, exact standing chat, Project-only
+  memory, private state, canonical instructions, and redacted project/chat
+  route fingerprints matching the registry.
+
+`CRM build` and every other project fail closed. A prior handshake cannot
+override this gate. Preflight output is boolean/redacted and never returns the
+raw target URL or registry contents.
 
 ## Chief Architect Integration Relay
 
@@ -216,6 +249,12 @@ Alejandro is using Chrome during a critical section, stop or wait.
 10. Validate packet_id, consultant_id, verdict, and sentinel outside or after
     critical section.
 
+Chief Architect carve-out: the `direct_target_open` lock is static-open-only.
+It may open the registered route and confirm the visible exact project/chat,
+then it must be released. A separate dynamic post-open acquisition with a fresh
+UI observation is mandatory before handshake, paste/send, Copy response, or
+capture. Never reuse the static-open lock for a post-open action.
+
 ### Parallelism Rule
 
 Multiple lanes may work concurrently on local docs, task packet preparation,
@@ -268,9 +307,12 @@ For any accepted target route, the transport remains:
 - No ChatGPT history browsing.
 - No unrelated chats.
 - No project browsing.
-- Clipboard paste single-message transport.
-- Send by clicking Send button, not pressing Enter.
-- Copy final assistant message using the ChatGPT Copy button.
+- Prepare the complete prompt before touching the composer.
+- Insert it with one clipboard paste; never stream multiline content with
+  repeated typing actions.
+- Send by clicking the Send button, never by pressing Enter.
+- Copy the final assistant message using ChatGPT's Copy response button and
+  verify that the clipboard was replaced before parsing it.
 - Store copied reply under:
 
 ```text
