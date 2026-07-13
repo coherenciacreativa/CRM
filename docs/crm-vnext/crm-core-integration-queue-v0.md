@@ -1779,15 +1779,73 @@ No lane outputs in review at creation.
 - `integration_recommendation`:
   `integrate_verified_group_effect_and_preserve_email_unverified_no_retry_closeout`
 
+## crm_core_fresh_dual_group_first_email_proof_closeout_2026_07_12
+
+- `source_workstream`: `controlled-welcome-flow` and `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-reentry`
+- `commits`: none; local central closeout pending review
+- `files_changed`:
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: A fresh controlled subscriber was created once through one API
+  upsert with the two required onboarding memberships. Gmail confirmed the
+  first automatic email at the exact controlled `+tag` recipient approximately
+  73 seconds later, and MailerLite later corroborated the send event. The prior
+  product-level email-unverified conclusion is superseded without rewriting
+  Mission v2 history.
+- `tests_or_checks`:
+  - redacted receipt and delivery-reconciliation receipt reviewed;
+  - exact controlled Gmail recipient match confirmed privately;
+  - later MailerLite sent counter and one automatic-email event confirmed;
+  - repository redaction scan and `git diff --check` required before closeout.
+- `private_artifacts_touched`: true outside repository; none requested for integration
+- `source_actions_executed`: one approved fresh MailerLite upsert and bounded read-only verification; no campaign
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: Chief Architect compact bounded operational-pilot Mission Contract, then one CEO approval, modification, decline, or pause
+- `integration_recommendation`: close the MailerLite first-email proof milestone and keep campaign launch plus recurring operator activation closed
+
+## crm_core_limited_operational_pilot_contract_2026_07_13_v0
+
+- `source_workstream`: `integration` and `controlled-welcome-flow`
+- `source_branch`: `codex/crm-core-reentry`
+- `commits`: none; exact approval received, local central integration pending
+- `files_changed`:
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
+  - `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: The Chief Architect recommends one bounded 24-hour or
+  10-observation hardening pilot with at most 5 end-to-end candidates, no
+  campaign launch, no CRM writes, and one final redacted CEO brief.
+- `tests_or_checks`:
+  - Chief Architect checkpoint reviewed;
+  - exact mission-level approval phrase preserved;
+  - direct approval by reference received as `Go` on 2026-07-13;
+  - repository diff and redaction checks required before integration.
+- `private_artifacts_touched`: none by contract registration
+- `source_actions_executed`: none by contract registration; no campaign
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: none; mission-level execution approval received
+- `integration_recommendation`: perform the single locked central docs-only commit and push after fresh independent green review, then execute the bounded mission without routine CEO handoffs
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-Decision required: choose the next controlled welcome flow product step:
-repeatability, CRM enrichment no-write packet, automation observation, Safari
-upload hardening, or pause.
+No CEO decision is currently required. Mission Contract
+`crm_core_limited_operational_pilot_hardening_v0_2026-07-13` was approved by
+direct reference on 2026-07-13. Complete the fresh independent review, one
+locked central docs-only integration, and the pilot start gates. Do not launch
+a campaign. No routine CEO handoffs are required.
 
 Prior lane approval options remain available for:
 

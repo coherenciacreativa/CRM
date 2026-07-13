@@ -892,5 +892,56 @@
 - `private_artifacts_integrated`: false
 - `targeted_tests`: `81_passed_0_failed`
 - `full_suite`: `1381_passed_1_unrelated_preexisting_failure`
-- `active_next_action`:
+- `historical_next_action_at_v2_closeout`:
   `crm_core_controlled_welcome_flow_after_mission_v2_email_not_sent_next_step_selection_v0`
+
+## Fresh Dual-Group First-Email Proof Reconciliation
+
+- `reconciliation_id`:
+  `crm_core_fresh_dual_group_first_email_proof_reconciliation_2026_07_12`
+- A later fresh controlled proof created one subscriber through one API upsert
+  carrying the two memberships required by the live onboarding path.
+- Gmail confirmed the first automatic onboarding email at the exact controlled
+  `+tag` recipient approximately 73 seconds after mutation.
+- A later MailerLite read-only recheck confirmed a positive sent counter and
+  one automatic-email event.
+- The earlier Mission v2 result remains historically accurate for its own
+  bounded attempt, but `email_not_sent` is no longer the current product state.
+- The MailerLite terminal-stage product proof is green.
+- No campaign was launched and no recurring operator was created or activated.
+- The next boundary is Chief Architect architecture for one bounded operational
+  pilot followed by one CEO decision.
+- `current_result_doc`:
+  `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
+- `historical_next_action_at_reconciliation`:
+  `crm_core_controlled_welcome_flow_bounded_operational_pilot_architecture_v0`
+
+## Chief Architect Bounded Operational Pilot Contract
+
+- `checkpoint_date`: `2026-07-12`
+- `chief_architect_decision`:
+  `go_for_one_bounded_hardening_pilot_no_go_for_campaign_or_normal_operation`
+- `mission_id`:
+  `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+- `bounded_duration`: `24_hours_or_10_new_followers_observed_whichever_first`
+- `candidate_cap`: 5
+- `welcome_audio_cap`: 5
+- `mailerlite_upsert_cap`: 5
+- `cadence`: `every_20_minutes_08_00_to_22_00_America_Bogota`
+- `quiet_hours`: `22_00_to_08_00_America_Bogota`
+- `mailerlite_route`: `existing_approved_vercel_proxy_two_memberships`
+- `telemetry_rule`:
+  `wait_at_least_120_seconds_then_at_most_one_additional_readonly_verification`
+- `ceo_handoff_model`:
+  `one_exact_start_approval_no_routine_handoffs_one_final_redacted_brief`
+- `campaign_status`: `not_launched_not_authorized_by_this_contract`
+- `crm_write_status`: `not_authorized`
+- `source_actions_during_checkpoint_or_contract_registration`: false
+- `private_values_in_central_docs`: false
+- `active_next_action`:
+  `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
+- `approval_received`: `Go` by direct reference on `2026-07-13`
+- `active_status`:
+  `approved_central_integration_pending_no_campaign_launched`

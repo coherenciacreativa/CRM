@@ -5833,42 +5833,116 @@ routing and completion pointer.
   `one_add_only_assignment_acknowledged_and_verified_email_delivery_unverified`
 - `completed_at`: `2026-07-11`
 
-## Active Next Action
+## Superseded Next Action
 
 - `next_action_id`:
   `crm_core_controlled_welcome_flow_after_mission_v2_email_not_sent_next_step_selection_v0`
-- `status`: `awaiting_ceo_direction_after_bounded_closeout`
+- `status`: `superseded_by_fresh_dual_group_delivery_reconciliation`
 - `created_at`: `2026-07-11`
-- `updated_at`: `2026-07-11`
-- `objective`: Preserve the verified active-trigger group effect and choose
-  whether to pause or prepare a separately approved, no-effect diagnosis for
-  why the exact active automation did not record its first automatic email.
+- `updated_at`: `2026-07-12`
+- `historical_scope`: Mission v2 correctly closed with verified trigger-group
+  membership and first-email delivery unverified inside its own bounded evidence
+  budget.
+- `supersession_result`:
+  `initial_product_level_no_delivery_conclusion_withdrawn_after_authoritative_fresh_delivery_confirmation`
+- `superseded_by`:
+  `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
+- `note`: Mission v2 history and budgets remain unchanged. Only the current
+  product conclusion and next step are superseded.
+
+## Completed Next Action
+
+- `next_action_id`:
+  `crm_core_controlled_welcome_flow_bounded_operational_pilot_architecture_v0`
+- `status`: `completed_chief_architect_contract_received_no_campaign`
+- `created_at`: `2026-07-12`
+- `updated_at`: `2026-07-12`
+- `objective`: Ask the CRM Core Chief Architect for one compact Mission
+  Contract that graduates the now-verified controlled welcome-flow proof into a
+  bounded operational pilot without launching a campaign or activating a
+  recurring operator yet.
 - `why_now`:
-  - Mission v2 used its single additional attempt and closed the global Gmail
-    evidence budget at `8/8`.
-  - The exact automation remained active, complete, and not broken, with the
-    exact trigger mapping verified.
-  - The exact controlled subscriber moved from absent to present in the
-    trigger group through one acknowledged add-only assignment.
-  - The immediate reread verified membership and preservation of all previous
-    groups.
-  - Gmail found no first-email evidence and the later bounded MailerLite
-    read-only corroboration found no sent activity at check time.
+  - Mission v2 remains historically closed with its own bounded evidence.
+  - A later fresh controlled proof created one new subscriber through one API
+    upsert carrying the two required group memberships.
+  - Gmail confirmed the first automatic onboarding email at the exact
+    controlled `+tag` recipient approximately 73 seconds after mutation.
+  - A later MailerLite read-only recheck confirmed a positive sent counter and
+    one automatic-email event.
+  - The MailerLite first-email milestone is now closed at product-proof level.
+  - No active Codex recurring automation currently operates the full Instagram
+    follower-to-onboarding route.
+  - The existing standing Instagram notification ritual remains read-only and
+    separate from DMs, welcome audio, email handoff, and MailerLite effects.
 - `allowed_scope_now`:
-  - Complete the one v2 central integration already authorized.
-  - Present the terminal redacted result and options to Alejandro.
-  - Prepare a new no-effect diagnostic contract only after a separate choice.
+  - Preserve the Mission v2 historical result unchanged.
+  - Use the fresh proof closeout as the current redacted product state.
+  - Send one compact redacted checkpoint to the Chief Architect after the
+    required UI action-time confirmation.
+  - Ask for one bounded operational-pilot Mission Contract covering cadence,
+    capacity, dedupe, one-time sends, fallback, stop rules, telemetry lag,
+    campaign cap, recurring operator boundary, and final CEO brief.
+  - Return the copied Chief Architect response to Alejandro for one decision.
 - `forbidden_scope`:
-  - No second v2 attempt or repeat group assignment.
-  - No additional Gmail search beyond `8/8`.
-  - No direct send, resend, retrigger, or automation mutation.
-  - No subscriber, group, field, status, campaign, source, CRM, card, Fact
-    Store, scoring, Instagram, Mati, or Launch OS change.
+  - No campaign launch.
+  - No recurring automation creation or activation.
+  - No Instagram UI, follower processing, welcome audio, DM, or reply action.
+  - No MailerLite or Gmail live action.
+  - No direct send, resend, retrigger, subscriber mutation, group mutation, or
+    automation/campaign configuration change.
+  - No CRM card, Fact Store, ledger, scoring, Mati, or Launch OS change.
   - No private values in chat or repository documents.
   - No `/Users/alejandrogomez/CRM`.
 - `recommended_default`:
-  `pause_with_verified_group_membership_then_prepare_readonly_non_send_diagnosis_only_if_requested`
+  `obtain_one_compact_chief_architect_contract_then_request_one_ceo_pilot_approval`
 - `result_doc`:
-  `docs/crm-vnext/mailerlite-onboarding-active-trigger-correction-first-email-proof-result-v0.md`
-- `completion_definition`: Alejandro chooses pause, a separately approved
-  read-only non-send diagnosis, or another explicitly bounded future mission.
+  `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
+- `completion_definition`: The Chief Architect returns one compact bounded
+  operational-pilot Mission Contract and one exact mission-level approval
+  phrase.
+- `completion_result`:
+  `go_for_one_bounded_hardening_pilot_no_go_for_campaign_or_normal_operation`
+- `completed_at`: `2026-07-12`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
+- `status`: `approved_central_integration_pending_no_campaign_launched`
+- `created_at`: `2026-07-12`
+- `updated_at`: `2026-07-12`
+- `objective`: Execute the approved central docs-only integration and limited
+  24-hour standing
+  operator without routine CEO handoffs.
+- `why_now`:
+  - The Chief Architect recommends a bounded hardening pilot and explicitly
+    does not recommend normal operation or campaign launch yet.
+  - The controlled MailerLite product slices are green.
+  - The remaining proof is safe autonomous operation across the already-proven
+    Instagram, welcome-audio, reply, proxy, group, and verification boundaries.
+  - The operating model requires one approval at mission start and one final
+    brief, not repeated approvals for ordinary steps.
+- `approval_receipt`: `Go` received on `2026-07-13`, directly approving the
+  immediately preceding exact contract by reference.
+- `approved_execution_scope`:
+  - One central docs-only integration, including its bounded commit and push.
+  - One 24-hour or 10-observation hardening pilot, whichever ends first.
+  - At most 5 candidates end-to-end, 5 exact welcome audios, and 5 MailerLite
+    upserts through the existing Vercel proxy with two memberships.
+  - Twenty-minute cadence between 08:00 and 22:00 America/Bogota and no source
+    actions during quiet hours.
+  - One final redacted CEO brief and no routine handoffs.
+- `forbidden_scope`:
+  - No campaign launch, edit, or configuration.
+  - No normal-operation declaration or scope expansion.
+  - No unrelated Instagram, Gmail, MailerLite, CRM, Launch OS, Mantis, or
+    legacy-repository action.
+  - No duplicate send, retry mutation, resend, retrigger, deletion, automation
+    change, or raw private value disclosure.
+- `recommended_default`:
+  `complete_central_integration_then_activate_bounded_pilot_without_routine_handoffs`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+- `completion_definition`: The operator completes the bounded mission and
+  returns one redacted final brief, stopping early only on a listed genuine
+  escalation condition.
