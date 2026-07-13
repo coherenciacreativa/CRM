@@ -916,7 +916,7 @@
 - `historical_next_action_at_reconciliation`:
   `crm_core_controlled_welcome_flow_bounded_operational_pilot_architecture_v0`
 
-## Chief Architect Bounded Operational Pilot Contract
+## Superseded Chief Architect Bounded Operational Pilot Contract v0
 
 - `checkpoint_date`: `2026-07-12`
 - `chief_architect_decision`:
@@ -925,6 +925,7 @@
   `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
 - `mission_contract`:
   `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+- `status`: `superseded_before_effects_by_v1`
 - `bounded_duration`: `24_hours_or_10_new_followers_observed_whichever_first`
 - `candidate_cap`: 5
 - `welcome_audio_cap`: 5
@@ -944,4 +945,82 @@
   `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
 - `approval_received`: `Go` by direct reference on `2026-07-13`
 - `active_status`:
-  `approved_central_integration_pending_no_campaign_launched`
+  `historical_superseded_before_effects_no_campaign_launched`
+- `supersession_note`: v0 accidentally mixed the legacy Custom GPT / Vercel
+  proxy lane with CRM Core. No pilot source read, send, mutation, proxy call,
+  configuration, deployment, or modification occurred under v0. Before the
+  correction, one bounded read-only production-configuration readiness check
+  inspected only the proxy membership count; no further proxy access is
+  permitted. The original record remains unchanged except for this supersession
+  status.
+
+## Corrected Bounded Operational Pilot Contract v1
+
+- `checkpoint_date`: `2026-07-13`
+- `chief_architect_decision`:
+  `go_for_one_bounded_hardening_pilot_no_go_for_campaign_or_normal_operation`
+- `mission_id`:
+  `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v1.md`
+- `route_correction`:
+  `crm_core_guarded_direct_api_single_dual_group_upsert`
+- `legacy_proxy_status`:
+  `out_of_scope_no_further_access_never_called_configured_deployed_or_modified`
+- `guard_contract`:
+  - historical single-group operation class remains unchanged;
+  - pilot operation class requires exactly two distinct proven private group
+    references in one `POST /api/subscribers` payload;
+  - packet exact-byte digest is anchored before the final check, whose private
+    output binds that digest plus the operation ID and operation class;
+  - stable exact-email identity dedupe preserves the complete local part,
+    `+tag`, and domain without Gmail alias normalization;
+  - current clean HEAD, active action, contextual approval, group evidence,
+    packet ID, registry state, and canonical API route must all match;
+  - packet, registry, and final-check freshness must each be at most five minutes
+    old and are revalidated immediately pre-effect after credential resolution;
+  - one mission-wide atomic claim enforces exact-email dedupe and the global
+    5-upsert cap before the network boundary;
+  - the owner-bound leased claim mutex uses an atomic directory and
+    generation-specific marker, recovering only dead owners while expired live
+    owners remain fail-closed; effect locks are atomically materialized from
+    complete pending files;
+  - five-minute freshness is checked under the claim and again immediately
+    before the request;
+  - public receipts replace private packet IDs and paths with opaque state and
+    generic owner-only artifact labels.
+  - a leased retryable pre-effect reservation is promoted to no-retry only at
+    the network boundary; only explicitly cancelled or dead-owner zero-network
+    reservations are excluded from cap accounting, while expired live owners
+    remain fenced.
+- `central_integration_allowlist`: exact 11 files, including
+  `scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs`
+- `verification_status`:
+  - exact mutation guard suite `101/101` green;
+  - combined mutation guard and final-check suites `122/122` green;
+  - full suite `1409/1410`, with only the same pre-existing unrelated Launch OS
+    approval-queue failure outside the exact allowlist;
+  - independent atomicity and adversarial re-reviews both returned
+    `green_to_self_integrate` after privacy, mutex, retry, and last-moment
+    freshness hardening;
+  - diff, syntax, redaction, exact allowlist, and one-active-action checks green.
+- `bounded_duration`: `24_hours_or_10_new_followers_observed_whichever_first`
+- `candidate_cap`: 5
+- `welcome_audio_cap`: 5
+- `mailerlite_upsert_cap`: 5
+- `cadence`: `every_20_minutes_08_00_to_22_00_America_Bogota`
+- `quiet_hours`: `22_00_to_08_00_America_Bogota`
+- `telemetry_rule`:
+  `wait_at_least_120_seconds_then_at_most_one_additional_readonly_verification`
+- `ceo_handoff_model`:
+  `no_routine_handoffs_action_time_confirmation_only_if_platform_requires_actual_send`
+- `approval_received`:
+  `Go_for_v0_limits_plus_adelante_for_immediately_preceding_direct_api_route_correction`
+- `campaign_status`: `not_launched_not_authorized_by_this_contract`
+- `crm_write_status`: `not_authorized`
+- `source_actions_during_correction_or_integration`: false
+- `private_values_in_central_docs`: false
+- `active_next_action`:
+  `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
+- `active_status`:
+  `this_central_integration_commit_complete_private_start_gates_pending_no_campaign_launched`

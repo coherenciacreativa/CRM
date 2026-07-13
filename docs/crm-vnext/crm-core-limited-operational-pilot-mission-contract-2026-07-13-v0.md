@@ -3,7 +3,20 @@
 Date prepared: 2026-07-12
 Mission ID: `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
 Mode: `hardening`
-Status: `approved_central_integration_pending_no_campaign_launched`
+Status: `superseded_before_effects_by_2026-07-13.v1_no_campaign_launched`
+
+## Supersession Notice
+
+This v0 contract is preserved as historical evidence and is not an active
+authorization. It accidentally mixed the legacy Custom GPT / Vercel proxy lane
+with the CRM Core machine lane. Before any pilot source read, welcome send, or
+MailerLite mutation occurred under v0, Alejandro corrected that architecture and
+authorized the CRM Core direct-API route. Before that correction, one bounded
+read-only production-configuration readiness check inspected only the proxy's
+membership count. The proxy was never called, configured, deployed, or modified,
+and no further proxy access is permitted. Contract v1 is the only current
+operational authority. The original `Go`, budgets, proxy language, and boundaries
+below are left unchanged so the correction remains auditable.
 
 ## Mission Operator Contract Schema
 

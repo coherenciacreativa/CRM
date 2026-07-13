@@ -88,12 +88,20 @@ MailerLite proof or introduce a broad production launch.
 ## Chief Architect Follow-Through
 
 The CRM Core Chief Architect has reviewed this redacted closeout and recommends
-one bounded hardening pilot, not normal operation or campaign launch. The exact
-contract is now registered at:
+one bounded hardening pilot, not normal operation or campaign launch. This proof
+already used the CRM Core direct MailerLite API with both groups in one request.
+The first pilot contract accidentally mixed that machine lane with Alejandro's
+legacy Custom GPT / Vercel proxy lane and was superseded before pilot effects.
+The current contract is:
 
-`docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+`docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v1.md`
 
-Mission-level CEO approval was received by direct reference on 2026-07-13. The
-next step is the approved central docs-only integration followed by the bounded
-operator, without per-candidate or routine CEO handoffs, and one redacted final
-brief. Campaign launch remains outside that contract.
+Mission-level limits were approved by direct reference and the direct-API route
+correction was then explicitly authorized on 2026-07-13. The next step is one
+exact eleven-file code-test-doc integration followed by the bounded operator,
+without routine CEO handoffs, and one redacted final brief. Before the route
+correction, one bounded
+read-only production-configuration readiness check inspected only the proxy
+membership count. The proxy was never called, configured, deployed, or modified;
+no further proxy access is permitted, and campaign launch remains outside the
+contract.

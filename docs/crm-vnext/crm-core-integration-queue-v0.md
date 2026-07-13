@@ -1812,7 +1812,8 @@ No lane outputs in review at creation.
 
 - `source_workstream`: `integration` and `controlled-welcome-flow`
 - `source_branch`: `codex/crm-core-reentry`
-- `commits`: none; exact approval received, local central integration pending
+- `status`: `superseded_before_effects_by_v1`
+- `commits`: `78f03813392d2ccda4ba5face0f595291b4101a4`; historical v0 registration
 - `files_changed`:
   - `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
   - `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
@@ -1820,20 +1821,87 @@ No lane outputs in review at creation.
   - `docs/crm-vnext/crm-core-workstream-board-v0.md`
   - `docs/crm-vnext/crm-core-integration-queue-v0.md`
   - `docs/crm-vnext/workstreams/integration.md`
-- `summary`: The Chief Architect recommends one bounded 24-hour or
-  10-observation hardening pilot with at most 5 end-to-end candidates, no
-  campaign launch, no CRM writes, and one final redacted CEO brief.
+- `summary`: Historical v0 registered the bounded limits but accidentally mixed
+  the legacy Custom GPT / Vercel proxy lane with CRM Core. It was superseded
+  before pilot effects. Before correction, one bounded read-only
+  production-configuration readiness check inspected only the proxy membership
+  count. The proxy was never called, configured, deployed, or modified, and no
+  further proxy access is permitted; the original v0 text remains intact as
+  audit history.
 - `tests_or_checks`:
   - Chief Architect checkpoint reviewed;
   - exact mission-level approval phrase preserved;
   - direct approval by reference received as `Go` on 2026-07-13;
   - repository diff and redaction checks required before integration.
 - `private_artifacts_touched`: none by contract registration
-- `source_actions_executed`: none by contract registration; no campaign
+- `source_actions_executed`: no pilot source read, send, mutation, proxy call,
+  or campaign under v0; one pre-correction bounded read-only proxy
+  production-configuration membership-count inspection only, with no
+  configuration change
 - `central_files_requested`: true
 - `conflicts_expected`: none
-- `decision_needed`: none; mission-level execution approval received
-- `integration_recommendation`: perform the single locked central docs-only commit and push after fresh independent green review, then execute the bounded mission without routine CEO handoffs
+- `decision_needed`: none; use v1 only
+- `integration_recommendation`: preserve as superseded history and do not execute
+
+## crm_core_limited_operational_pilot_direct_api_contract_2026_07_13_v1
+
+- `source_workstream`: `integration`, `controlled-welcome-flow`, and `mailerlite-onboarding`
+- `source_branch`: `codex/crm-core-reentry`
+- `status`: `green_to_self_integrate_after_independent_atomicity_and_adversarial_review_no_campaign`
+- `commits`: this exact allowlisted integration commit under the central lock
+- `files_changed`:
+  - `scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs`
+  - `scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs`
+  - `scripts/crm-vnext-mailerlite-limited-pilot-dual-group-approval-contract.mjs`
+  - `__tests__/crm-vnext-mailerlite-exact-onboarding-mutation.spec.ts`
+  - `docs/crm-vnext/crm-core-controlled-welcome-flow-fresh-dual-group-proof-closeout-v0.md`
+  - `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+  - `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v1.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: v1 keeps the approved 24-hour/10-observation and 5-effect caps,
+  replaces the erroneous proxy route with the CRM Core guarded direct API, and
+  adds a backward-compatible operation class that permits exactly one subscriber
+  POST carrying exactly two proven private memberships.
+- `tests_or_checks`:
+  - legacy one-group path remains compatible;
+  - exact mutation guard suite passes `101/101` and the combined guard plus final
+    check suites pass `122/122`;
+  - the complete suite passes `1409/1410`; its sole failure is the same
+    pre-existing unrelated Launch OS approval-queue case outside this allowlist;
+  - dual-group synthetic tests and no-effect preflight pass;
+  - private final-check output binds the packet ID, exact packet-byte digest,
+    operation ID, and operation class;
+  - stable exact-email identity dedupe, an atomically enforced mission-wide
+    5-upsert cap, current clean HEAD, active next action, exact group evidence,
+    canonical API route, and no-retry effect lock fail closed before network;
+  - packet, registry, and final-check freshness are each capped at five minutes
+    and revalidated immediately pre-effect after credential resolution;
+  - public receipts use opaque packet state and generic private-artifact labels;
+  - dead-process claim mutexes recover automatically through an atomic
+    directory and generation-specific owner marker; expired live owners remain
+    fail-closed, machine-written effect locks are atomic, and freshness is
+    rechecked under the claim and immediately before the request;
+  - pre-effect reservations are leased and retryable, atomically promoted to
+    no-retry only at the network boundary, and only explicitly cancelled or
+    dead-owner zero-network claims are reclaimable without consuming the
+    five-effect cap;
+  - exact eleven-file diff, redaction, upstream freshness, and one active action checks;
+  - independent atomicity and adversarial reviewers both returned
+    `green_to_self_integrate` after the final hardening pass.
+- `approval_receipt`:
+  `Go` approved v0 limits and `adelante` approved the immediately preceding
+  explicit direct-API/two-membership correction with no further proxy access.
+- `private_artifacts_touched`: owner-only readiness, approval, registry, packets,
+  locks, and results only; never integrated
+- `source_actions_executed`: none during correction or integration; no campaign
+- `central_files_requested`: true
+- `conflicts_expected`: none
+- `decision_needed`: none; complete the remaining private start gates
+- `integration_recommendation`: after this locked code-test-doc commit and push,
+  activate the bounded v1 operator only after every remaining start gate is green
 
 ## Rejected / Needs Rework
 
@@ -1842,10 +1910,12 @@ No lane outputs rejected at creation.
 ## CEO Decision Required
 
 No CEO decision is currently required. Mission Contract
-`crm_core_limited_operational_pilot_hardening_v0_2026-07-13` was approved by
-direct reference on 2026-07-13. Complete the fresh independent review, one
-locked central docs-only integration, and the pilot start gates. Do not launch
-a campaign. No routine CEO handoffs are required.
+`crm_core_limited_operational_pilot_hardening_v1_2026-07-13` combines the
+approved v0 limits with Alejandro's immediately following `adelante` for the
+direct-API/two-membership route correction. Complete one locked code-test-doc
+integration and the remaining pilot start gates. Do not
+access the proxy further or launch a campaign. No routine CEO handoffs are
+required.
 
 Prior lane approval options remain available for:
 

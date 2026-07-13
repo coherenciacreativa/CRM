@@ -5904,45 +5904,92 @@ routing and completion pointer.
   `go_for_one_bounded_hardening_pilot_no_go_for_campaign_or_normal_operation`
 - `completed_at`: `2026-07-12`
 
-## Active Next Action
+## Superseded Next Action
 
 - `next_action_id`:
   `crm_core_limited_operational_pilot_hardening_v0_2026-07-13`
-- `status`: `approved_central_integration_pending_no_campaign_launched`
+- `status`: `superseded_before_effects`
 - `created_at`: `2026-07-12`
-- `updated_at`: `2026-07-12`
-- `objective`: Execute the approved central docs-only integration and limited
-  24-hour standing
-  operator without routine CEO handoffs.
-- `why_now`:
-  - The Chief Architect recommends a bounded hardening pilot and explicitly
-    does not recommend normal operation or campaign launch yet.
-  - The controlled MailerLite product slices are green.
-  - The remaining proof is safe autonomous operation across the already-proven
-    Instagram, welcome-audio, reply, proxy, group, and verification boundaries.
-  - The operating model requires one approval at mission start and one final
-    brief, not repeated approvals for ordinary steps.
+- `updated_at`: `2026-07-13`
+- `superseded_by`:
+  `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
+- `supersession_reason`: The v0 contract accidentally bound CRM Core to the
+  legacy Custom GPT / Vercel proxy lane. Alejandro clarified that the machine
+  uses MailerLite directly and authorized the exact correction. No pilot source
+  read, send, or mutation occurred under v0. Before the correction, one bounded
+  read-only production-configuration readiness check inspected only the proxy
+  membership count; the proxy was never called, configured, deployed, or
+  modified, and no further proxy access is permitted.
 - `approval_receipt`: `Go` received on `2026-07-13`, directly approving the
-  immediately preceding exact contract by reference.
+  immediately preceding v0 contract by reference; preserved historically.
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+- `completion_definition`: v0 remains historical and cannot authorize effects.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
+- `status`: `fresh_re_review_single_commit_and_start_gates_pending_no_campaign_launched`
+- `created_at`: `2026-07-13`
+- `updated_at`: `2026-07-13`
+- `objective`: Integrate and activate one bounded 24-hour standing operator on
+  the correct CRM Core direct MailerLite API route without routine CEO handoffs.
+- `why_now`:
+  - The Chief Architect recommends a bounded hardening pilot, not normal
+    operation or campaign launch.
+  - The fresh product proof already succeeded through one direct API upsert
+    carrying both required memberships.
+  - The reusable guard needed one backward-compatible dual-group operation
+    class so the pilot can reproduce that exact proof route.
+  - Alejandro explicitly authorized replacing the erroneous proxy route while
+    excluding the legacy Custom GPT / Vercel proxy from all further access.
+  - Before that correction, one bounded read-only production-configuration
+    readiness check inspected only the proxy membership count; there was no
+    proxy call, configuration, deployment, or modification.
+- `approval_receipt`:
+  - `Go` approved the bounded v0 limits on `2026-07-13` by direct reference.
+  - `adelante` approved the immediately preceding explicit architecture
+    correction to CRM Core direct API, exactly two memberships in one upsert,
+    and proxy excluded from all further access.
 - `approved_execution_scope`:
-  - One central docs-only integration, including its bounded commit and push.
+  - One central eleven-file code-test-doc integration, commit, and push.
   - One 24-hour or 10-observation hardening pilot, whichever ends first.
-  - At most 5 candidates end-to-end, 5 exact welcome audios, and 5 MailerLite
-    upserts through the existing Vercel proxy with two memberships.
+  - At most 5 candidates end-to-end, 5 exact welcome audios, and 5 guarded
+    direct MailerLite `POST /api/subscribers` upserts with exactly two private
+    memberships in the same payload.
   - Twenty-minute cadence between 08:00 and 22:00 America/Bogota and no source
     actions during quiet hours.
   - One final redacted CEO brief and no routine handoffs.
+- `start_gates`:
+  - independent atomicity and adversarial verdicts
+    `green_to_self_integrate` after final privacy, mutex, retry, and last-moment
+    freshness hardening;
+  - exact mutation guard `101/101` and combined guard/final-check `122/122`;
+  - central v1 integration committed and pushed from a clean current branch;
+  - legacy and dual-group targeted tests green;
+  - synthetic dual-group preflight with zero credential, network, or effect;
+  - private contextual approval receipt, group-evidence digest, packet registry,
+    exact audio, dedupe store, and Safari source health green;
+  - private final-check binding covers the exact packet-byte digest, operation
+    ID, and operation class;
+  - stable exact-email identity dedupe and an atomically enforced mission-wide
+    cap of 5 MailerLite upserts are green;
+  - packet, registry, and final-check freshness are all at most five minutes old
+    and revalidated immediately pre-effect;
+  - v1 automation active with contracted caps and quiet hours.
 - `forbidden_scope`:
   - No campaign launch, edit, or configuration.
+  - No further proxy read, call, configuration, deploy, or modification.
+  - No MailerLite UI or endpoint other than the one guarded subscriber POST.
   - No normal-operation declaration or scope expansion.
-  - No unrelated Instagram, Gmail, MailerLite, CRM, Launch OS, Mantis, or
-    legacy-repository action.
-  - No duplicate send, retry mutation, resend, retrigger, deletion, automation
-    change, or raw private value disclosure.
+  - No unrelated Instagram, Gmail, CRM, Launch OS, Mantis, or legacy-repository action.
+  - No duplicate send, retry after mutation attempt, resend, retrigger, deletion,
+    automation change, or raw private value disclosure.
 - `recommended_default`:
-  `complete_central_integration_then_activate_bounded_pilot_without_routine_handoffs`
+  `integrate_v1_validate_start_gates_then_activate_bounded_pilot_without_routine_handoffs`
 - `mission_contract`:
-  `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
+  `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v1.md`
 - `completion_definition`: The operator completes the bounded mission and
   returns one redacted final brief, stopping early only on a listed genuine
-  escalation condition.
+  escalation condition. Campaign remains off.

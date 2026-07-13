@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -27,6 +28,7 @@ const COMPLETED_LIVE_ROUTE_STATUS = 'completed_live_readonly_packet_final_check'
 const PRECHECK_MISSING_EMAIL_ROUTE_STATUS = 'precheck_blocked_missing_private_packet_email_anchor';
 const PACKET_SPECIFIC_READONLY_SCOPE = 'packet_specific_subscriber_status_group_membership_readonly';
 const MISSING_EMAIL_SCOPE = 'not_called_missing_private_packet_email_anchor';
+const FINAL_CHECK_PRIVATE_PACKET_BINDING_CONTRACT_VERSION = 'crm_core_final_check_private_packet_binding_v1';
 
 const usage = `Usage:
   node scripts/crm-vnext-mailerlite-final-idempotency-suppression-check.mjs [options]
@@ -605,7 +607,8 @@ const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [], com
   run_id: runId,
   completed_at: completedAt,
   ...finalCheckContractFieldsFor({ decision, completedAt }),
-  packet_id: decision.packet_id,
+  packet_id: decision.packet_id ? 'redacted_private_packet' : 'redacted_private_packet_unavailable',
+  packet_binding_status: decision.packet_id ? 'private_exact_packet_bound' : 'private_packet_unavailable',
   check_ran: decision.check_ran,
   live_lookup_ran: decision.live_lookup_ran,
   route_status: decision.route_status,
@@ -622,14 +625,22 @@ const buildReceipt = ({ runId, decision, mode, privateResultPathLabels = [], com
   mutation_readiness_after_final_check: decision.mutation_readiness_after_final_check,
   blockers: decision.blockers,
   recommended_next_step: decision.recommended_next_step,
-  private_result_path_labels: privateResultPathLabels,
+  private_result_artifact_count: privateResultPathLabels.length,
+  private_result_path_labels: privateResultPathLabels.map((_, index) => index === 0
+    ? 'owner_only_private_result_json'
+    : 'owner_only_private_result_markdown'),
   closed_gates: closedGates(),
 });
 
-const buildPrivateResult = ({ runId, decision, mode }) => ({
+const buildPrivateResult = ({ runId, decision, mode, completedAt = new Date().toISOString(), packetBinding = null }) => ({
   schema_version: `${SCHEMA_VERSION}-private-result`,
   run_id: runId,
+  completed_at: completedAt,
   packet_id: decision.packet_id,
+  packet_binding_contract_version: packetBinding ? FINAL_CHECK_PRIVATE_PACKET_BINDING_CONTRACT_VERSION : 'not_applicable_fixture',
+  packet_sha256_private: packetBinding?.packet_sha256 ?? null,
+  operation_id_private: packetBinding?.operation_id ?? null,
+  operation_class_private: packetBinding?.operation_class ?? null,
   mode,
   route_status: decision.route_status,
   check_ran: decision.check_ran,
@@ -661,6 +672,7 @@ const renderMarkdown = (receipt) => `# MailerLite Final Idempotency / Suppressio
   `- receipt_contract_check_result: \`${receipt.receipt_contract_check_result}\`\n` +
   `- receipt_consistency_check: \`${receipt.receipt_consistency_check}\`\n` +
   `- packet_id: \`${receipt.packet_id}\`\n` +
+  `- packet_binding_status: \`${receipt.packet_binding_status}\`\n` +
   `- check_ran: \`${receipt.check_ran}\`\n` +
   `- live_lookup_ran: \`${receipt.live_lookup_ran}\`\n` +
   `- route_status: \`${receipt.route_status}\`\n` +
@@ -682,7 +694,9 @@ const renderMarkdown = (receipt) => `# MailerLite Final Idempotency / Suppressio
 
 const renderPrivateMarkdown = (privateResult) => `# MailerLite Final Idempotency / Suppression Check Private Result\n\n` +
   `- run_id: \`${privateResult.run_id}\`\n` +
+  `- completed_at: \`${privateResult.completed_at}\`\n` +
   `- packet_id: \`${privateResult.packet_id}\`\n` +
+  `- packet_binding_contract_version: \`${privateResult.packet_binding_contract_version}\`\n` +
   `- route_status: \`${privateResult.route_status}\`\n` +
   `- check_ran: \`${privateResult.check_ran}\`\n` +
   `- live_lookup_ran: \`${privateResult.live_lookup_ran}\`\n` +
@@ -694,17 +708,28 @@ const renderPrivateMarkdown = (privateResult) => `# MailerLite Final Idempotency
   `- mutation_readiness_after_final_check: \`${privateResult.result.mutation_readiness_after_final_check}\`\n`;
 
 const writeOutputs = async ({ paths, receipt, privateResult }) => {
-  await mkdir(dirname(paths.privateResultJson), { recursive: true });
-  await mkdir(dirname(paths.privateResultMd), { recursive: true });
-  await mkdir(dirname(paths.redactedReceiptJson), { recursive: true });
-  await mkdir(dirname(paths.redactedReceiptMd), { recursive: true });
-  await writeFile(paths.privateResultJson, `${JSON.stringify(privateResult, null, 2)}\n`, 'utf8');
-  await writeFile(paths.privateResultMd, renderPrivateMarkdown(privateResult), 'utf8');
-  await writeFile(paths.redactedReceiptJson, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
-  await writeFile(paths.redactedReceiptMd, renderMarkdown(receipt), 'utf8');
+  await mkdir(dirname(paths.privateResultJson), { recursive: true, mode: 0o700 });
+  await mkdir(dirname(paths.privateResultMd), { recursive: true, mode: 0o700 });
+  await mkdir(dirname(paths.redactedReceiptJson), { recursive: true, mode: 0o700 });
+  await mkdir(dirname(paths.redactedReceiptMd), { recursive: true, mode: 0o700 });
+  await writeFile(paths.privateResultJson, `${JSON.stringify(privateResult, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+  await writeFile(paths.privateResultMd, renderPrivateMarkdown(privateResult), { encoding: 'utf8', mode: 0o600 });
+  await writeFile(paths.redactedReceiptJson, `${JSON.stringify(receipt, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+  await writeFile(paths.redactedReceiptMd, renderMarkdown(receipt), { encoding: 'utf8', mode: 0o600 });
+  await Promise.all([
+    chmod(paths.privateResultJson, 0o600),
+    chmod(paths.privateResultMd, 0o600),
+    chmod(paths.redactedReceiptJson, 0o600),
+    chmod(paths.redactedReceiptMd, 0o600),
+  ]);
 };
 
 const readJson = async (path) => JSON.parse(await readFile(path, 'utf8'));
+const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+const readJsonWithDigest = async (path) => {
+  const bytes = await readFile(path);
+  return { value: JSON.parse(bytes.toString('utf8')), digest: sha256(bytes) };
+};
 
 const compactStdout = (receipt) => ({
   ok: true,
@@ -731,8 +756,9 @@ const runFixtureMode = async (options, deps = {}) => {
   const lookupResult = fixture.lookupResult ?? fixture.mailerLiteLookup ?? {};
   const runId = fixture.run_id ?? 'crm_core_mailerlite_final_idempotency_suppression_check_fixture';
   const decision = buildDecision({ packet, lookupResult, routeStatus: 'fixture_mock_redaction_safe' });
-  const privateResult = buildPrivateResult({ runId, decision, mode: 'fixture_mock' });
-  const receipt = buildReceipt({ runId, decision, mode: 'fixture_mock', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt: deps.completedAt });
+  const completedAt = deps.completedAt ?? new Date().toISOString();
+  const privateResult = buildPrivateResult({ runId, decision, mode: 'fixture_mock', completedAt });
+  const receipt = buildReceipt({ runId, decision, mode: 'fixture_mock', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt });
   await writeOutputs({ paths, receipt, privateResult });
   return receipt;
 };
@@ -869,13 +895,20 @@ const createMailerLiteFinalCheckClient = ({ options, key, fetchImpl = fetch, cal
 
 const runLiveMode = async (options, deps = {}) => {
   const paths = validateLivePrechecks(options, { roots: deps.roots });
-  const packet = await readJson(paths.privatePacketJson);
+  const packetRecord = await readJsonWithDigest(paths.privatePacketJson);
+  const packet = packetRecord.value;
+  const packetBinding = {
+    packet_sha256: packetRecord.digest,
+    operation_id: typeof packet?.operation_id === 'string' ? packet.operation_id.trim() || null : null,
+    operation_class: typeof packet?.operation_class === 'string' ? packet.operation_class.trim() || null : null,
+  };
+  const completedAt = deps.completedAt ?? new Date().toISOString();
   const email = privateEmailForLookup(packet);
   if (!email) {
     const decision = buildDecision({ packet, lookupResult: { subscriber_lookup_status: 'blocked', records: [], mailerlite_api_called: false, mailerlite_api_call_scope: MISSING_EMAIL_SCOPE }, routeStatus: PRECHECK_MISSING_EMAIL_ROUTE_STATUS });
     const runId = deps.runId ?? 'crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06';
-    const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_precheck' });
-    const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_precheck', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt: deps.completedAt });
+    const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_precheck', completedAt, packetBinding });
+    const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_precheck', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt });
     await writeOutputs({ paths, receipt, privateResult });
     return receipt;
   }
@@ -896,8 +929,8 @@ const runLiveMode = async (options, deps = {}) => {
   const lookupResult = await client.lookupSubscriberByEmail(email);
   const decision = buildDecision({ packet, lookupResult, routeStatus: COMPLETED_LIVE_ROUTE_STATUS });
   const runId = deps.runId ?? 'crm_core_mailerlite_final_idempotency_suppression_check_2026-07-06';
-  const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_packet_specific' });
-  const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_packet_specific', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt: deps.completedAt });
+  const privateResult = buildPrivateResult({ runId, decision, mode: 'live_readonly_packet_specific', completedAt, packetBinding });
+  const receipt = buildReceipt({ runId, decision, mode: 'live_readonly_packet_specific', privateResultPathLabels: [paths.privateResultJson, paths.privateResultMd], completedAt });
   await writeOutputs({ paths, receipt, privateResult });
   return receipt;
 };
@@ -923,6 +956,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 export {
   COMPLETED_LIVE_ROUTE_STATUS,
   DEFAULT_TARGET_GROUP_LABEL,
+  FINAL_CHECK_PRIVATE_PACKET_BINDING_CONTRACT_VERSION,
   MISSING_EMAIL_SCOPE,
   PACKET_SPECIFIC_READONLY_SCOPE,
   PRECHECK_MISSING_EMAIL_ROUTE_STATUS,
