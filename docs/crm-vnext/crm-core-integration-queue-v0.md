@@ -1847,7 +1847,9 @@ No lane outputs in review at creation.
 
 - `source_workstream`: `integration`, `controlled-welcome-flow`, and `mailerlite-onboarding`
 - `source_branch`: `codex/crm-core-reentry`
-- `status`: `green_to_self_integrate_after_independent_atomicity_and_adversarial_review_no_campaign`
+- `status`: `integrated_historical_capability_pilot_closed_superseded_no_authority`
+- `superseded_by`:
+  `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026_07_14`
 - `commits`: this exact allowlisted integration commit under the central lock
 - `files_changed`:
   - `scripts/crm-vnext-mailerlite-exact-onboarding-mutation.mjs`
@@ -1899,9 +1901,98 @@ No lane outputs in review at creation.
 - `source_actions_executed`: none during correction or integration; no campaign
 - `central_files_requested`: true
 - `conflicts_expected`: none
-- `decision_needed`: none; complete the remaining private start gates
-- `integration_recommendation`: after this locked code-test-doc commit and push,
-  activate the bounded v1 operator only after every remaining start gate is green
+- `decision_needed`: none for this historical item; never activate or resume it
+- `integration_recommendation`: preserve the integrated direct MailerLite guard
+  as historical capability only. Any future use requires a new mission contract,
+  fresh private gates, and explicit authority.
+
+## crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026_07_14
+
+- `source_workstream`: `welcome-audio-send-boundary`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
+- `status`:
+  `safari_action_adapter_v1_centrally_integrated_readiness_only_no_live`
+- `commits`: three source commits were merged as one central merge commit; Git
+  history is authoritative for both the source chain and central result
+- `files_changed_allowlist`:
+  - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+  - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
+  - `scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs`
+  - `__tests__/crm-vnext-instagram-welcome-audio-operation-guard.spec.ts`
+  - `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/crm-core-limited-operational-pilot-v1-closeout-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Build a no-live, fail-closed Safari end-to-end action rail from
+  current central state. Preserve the previous Safari protocol and isolated
+  success only as design evidence; do not merge the stale lane wholesale or
+  claim production proof.
+- `required_guard_contract`:
+  - fresh recent-follower evidence;
+  - exact source-to-profile-to-thread binding and follows-owner verification;
+  - business eligibility separated from audio capability;
+  - exact approved asset plus attachment preview;
+  - strict root and nested input allowlists with no unknown or missing fields;
+  - one immutable canonical-operation digest, identical at the root and across
+    operation, approval, mission context, claim, execution, and confirmation,
+    whose canonical projection freezes the complete dynamic preclaim snapshot;
+  - mandatory owner-only external `expectedCanonicalOperationSha256` for
+    validator and receipt-builder calls;
+  - fresh timestamped approval, surface, follower, binding, eligibility,
+    asset-preview, context, and dedupe observations, all no later than the
+    permanent claim;
+  - exact immutable `confirmation_max_delay_ms: 300000` in `operation`,
+    `approval`, and `context`; a later confirmation is terminal
+    unknown/no-retry even with a strong marker;
+  - atomic permanent pre-send claim and one Send action;
+  - strict current claim owner/token/revision/attempt lineage and ordered token
+    consumption at or after the claim and at or before the attempt;
+  - explicit confirmation-evidence enum;
+  - every non-current claim/token outcome terminal unknown/no-retry;
+  - `TERMINAL_EVIDENCE` only when private terminal evidence disappears from the
+    redacted public tuple; confirmed blockers limited to aging reasons plus
+    `TERMINAL_NO_RETRY`; blocked results carry no terminal signal;
+  - duplicate suppression and terminal attempted-or-unknown no-retry state;
+  - owner-only private evidence and a redacted receipt with strict cross-field
+    semantic coherence.
+- `tests_or_checks`:
+  - corrected focused/adversarial operation-guard suite `157/157` green,
+    including mutation/backdating of the dynamic preclaim snapshot and the
+    exact five-minute confirmation boundary;
+  - full repository suite `1582/1583`; the sole failure is the unchanged
+    out-of-lane `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` newer
+    replacement-set case;
+  - Node syntax, exact receipt allowlist/cross-field semantics, exact file
+    allowlist, `git diff --check`, redaction, and no-live-effect checks green;
+  - fresh independent guard and documentation/scope reviews green;
+  - corrected formal Chief Architect integration review returned
+    `green_to_self_integrate`, authorized the exact eleven-file code-test-doc
+    exception, and required no CEO decision;
+  - central merge completed with zero conflicts under the Central Integration
+    Lock; focused `157/157` and full `1582/1583` remained unchanged, with only
+    the known out-of-lane baseline failure.
+- `private_artifacts_touched`: owner-only consultant reply and redacted receipt
+  only; never integrated
+- `source_actions_executed`: none
+- `central_files_requested`: true, limited to the exact allowlist
+- `conflicts_expected`: none; the locked central merge completed with zero
+  conflicts
+- `decision_needed`: none for the no-live correction; any future live use
+  requires a newly written and freshly approved mission
+- `central_integration_lock_used`: true
+- `chief_architect_integration_verdict`: `green_to_self_integrate`
+- `guard_integrated`: true
+- `one_shot_executor_absent`: true
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `integration_recommendation`: preserve the integrated action rail and keep
+  all live gates closed. The missing one-shot executor and a newly approved
+  future mission remain prerequisites; do not execute live.
 
 ## Rejected / Needs Rework
 
@@ -1909,19 +2000,18 @@ No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-No CEO decision is currently required. Mission Contract
-`crm_core_limited_operational_pilot_hardening_v1_2026-07-13` combines the
-approved v0 limits with Alejandro's immediately following `adelante` for the
-direct-API/two-membership route correction. Complete one locked code-test-doc
-integration and the remaining pilot start gates. Do not
-access the proxy further or launch a campaign. No routine CEO handoffs are
-required.
+No CEO decision is required to finish, validate, commit, and push the current
+no-live Welcome Audio hardening lane. Mission Contract
+`crm_core_limited_operational_pilot_hardening_v1_2026-07-13` is closed,
+superseded, and supplies no current source, message, MailerLite, CRM, or
+campaign authority.
 
-Prior lane approval options remain available for:
-
-- `mailerlite-onboarding`
-- `instagram-api-readiness`
-- `welcome-audio-send-boundary`
+Central integration of the action rail grants no live authority. Any live use
+requires the missing one-shot executor, a newly written mission contract, and
+fresh explicit approval plus its complete private gates. The legacy proxy
+remains out of scope. No lane result or integration receipt may be reused as
+permission to activate `mailerlite-onboarding`, `instagram-api-readiness`, or
+`welcome-audio-send-boundary`.
 
 ## Queue Item Template
 

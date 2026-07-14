@@ -13,8 +13,9 @@ Welcome Flow Proof, using only redacted source-action closeout data.
 - `run_id`:
   `crm_core_controlled_welcome_flow_first_controlled_handle_send_v5_safari_upload_2026-07-05`
 - `final_state`: `completed_confirmed_single_controlled_send`
-- `target_instagram_profile_url`:
-  `https://www.instagram.com/alejandro_gomez_bernal/`
+- `target_instagram_profile_url`: `redacted_private_reference`
+- `private_profile_reference_regression`:
+  `passed_raw_value_absent_redacted_marker_only`
 - `approved_audio_asset_label`: `saludo_welcome_audio_v1`
 - `browser_used`: Safari
 - `safari_isolated_window_confirmed`: true
