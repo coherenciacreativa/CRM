@@ -5926,14 +5926,20 @@ routing and completion pointer.
   `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v0.md`
 - `completion_definition`: v0 remains historical and cannot authorize effects.
 
-## Active Next Action
+## Superseded Next Action
 
 - `next_action_id`:
   `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
-- `status`: `fresh_re_review_single_commit_and_start_gates_pending_no_campaign_launched`
+- `superseded_by`:
+  `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026-07-14`
+- `supersession_reason`: The bounded pilot exposed an incomplete Welcome Audio
+  action rail. The pilot is closed and cannot authorize more live sends. A
+  fresh no-live hardening lane must land before any later mission contract.
+- `status`: `superseded_closed_no_authority`
 - `created_at`: `2026-07-13`
-- `updated_at`: `2026-07-13`
-- `objective`: Integrate and activate one bounded 24-hour standing operator on
+- `updated_at`: `2026-07-14`
+- `historical_plan_is_non_executable`: true
+- `historical_objective_at_creation`: Integrate and activate one bounded 24-hour standing operator on
   the correct CRM Core direct MailerLite API route without routine CEO handoffs.
 - `why_now`:
   - The Chief Architect recommends a bounded hardening pilot, not normal
@@ -5956,7 +5962,7 @@ routing and completion pointer.
   - `adelante` approved the immediately preceding explicit architecture
     correction to CRM Core direct API, exactly two memberships in one upsert,
     and proxy excluded from all further access.
-- `approved_execution_scope`:
+- `historical_scope_never_reusable`:
   - One central eleven-file code-test-doc integration, commit, and push.
   - One 24-hour or 10-observation hardening pilot, whichever ends first.
   - At most 5 candidates end-to-end, 5 exact welcome audios, and 5 guarded
@@ -5965,7 +5971,7 @@ routing and completion pointer.
   - Twenty-minute cadence between 08:00 and 22:00 America/Bogota and no source
     actions during quiet hours.
   - One final redacted CEO brief and no routine handoffs.
-- `start_gates`:
+- `historical_start_gates_closed`:
   - mandatory Chief Architect relay preflight confirms the exact canonical
     project, owner-only registry, Project-only memory, private state, canonical
     instructions, canonical route fingerprint, and fresh visible UI binding;
@@ -5996,9 +6002,70 @@ routing and completion pointer.
   - No duplicate send, retry after mutation attempt, resend, retrigger, deletion,
     automation change, or raw private value disclosure.
 - `recommended_default`:
-  `keep_pilot_paused_capture_fresh_canonical_project_verdict_then_activate_only_if_all_start_gates_remain_green`
+  `do_not_activate_do_not_resume_follow_only_the_current_active_next_action`
 - `mission_contract`:
   `docs/crm-vnext/crm-core-limited-operational-pilot-mission-contract-2026-07-13-v1.md`
-- `completion_definition`: The operator completes the bounded mission and
-  returns one redacted final brief, stopping early only on a listed genuine
-  escalation condition. Campaign remains off.
+- `completion_definition`: Completed by
+  `crm-core-limited-operational-pilot-v1-closeout-v0.md`; the pilot remains
+  closed, supplies no authority, and cannot be resumed.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026-07-14`
+- `status`: `lane_validated_artifact_review_pending_no_live`
+- `created_at`: `2026-07-14`
+- `objective`: Build and verify the missing deterministic Welcome Audio action
+  rail from the current canonical CRM Core state, without performing any live
+  source or messaging action.
+- `why_now`:
+  - The bounded pilot is closed and superseded before any further live send.
+  - The canonical Chief Architect confirmed that the adjacent-repository
+    bootstrap contributed to the incident but did not fully explain it.
+  - The central repository lacked an executable, fail-closed action rail even
+    though an earlier lane preserved useful Safari design evidence.
+  - One isolated Safari success is design evidence, not production proof.
+- `approved_lane`:
+  `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
+- `implementation_scope`:
+  - Safari end-to-end action adapter v1 and surface capability matrix v1.
+  - Pure local operation guard plus adversarial tests.
+  - Mechanical redaction repair in the historical controlled-send result.
+  - Pilot v1 closeout and synchronized workstream, board, queue, next-action,
+    and integration records.
+- `required_invariants`:
+  - Fresh recent-follower evidence and unambiguous source-to-profile-to-thread
+    binding.
+  - Private follows-owner verification.
+  - Separate business eligibility from actual audio attachment capability.
+  - Exact approved asset and attachment preview before any future send.
+  - One permanent pre-send claim, one Send action, and explicit confirmation
+    evidence tied to the current operation.
+  - Duplicate, attempted, ambiguous, or unknown outcomes are terminal no-retry.
+  - Only owner-only private evidence and redacted receipts.
+- `forbidden_scope`:
+  - No Instagram, Safari, Chrome upload, in-app upload, DM, audio, MailerLite,
+    Gmail, campaign, CRM write, proxy, or other live effect.
+  - No text fallback and no hybrid handoff in this version.
+  - No full merge or cherry-pick of the stale historical hardening lane.
+  - No claim that the prior Safari result proves production reliability.
+- `completion_definition`:
+  - Exact allowlist only.
+  - Focused and adversarial tests green.
+  - Redaction regression green.
+  - Independent review green.
+  - One lane commit and push recorded by source-branch Git history.
+  - Fresh Chief Architect artifact review before central integration.
+- `validation_evidence`:
+  - Operation-guard suite `32/32` green.
+  - Neighboring central regressions `69/69` green.
+  - Exact eleven-file allowlist, redaction regression, receipt-schema match,
+    and `git diff --check` green.
+  - Independent guard and documentation reviews green.
+  - Full repository suite `1457/1458`; the sole failure is an untouched Launch
+    OS approval-queue test outside this lane and its allowlist.
+- `next_external_gate`: Fresh Chief Architect artifact review, followed by the
+  central integration lock. Git history is authoritative for the exact lane
+  commit; this record grants no live authority.
+- `recommended_default`:
+  `submit_validated_artifact_packet_then_integrate_once_under_central_lock_no_live`

@@ -1,30 +1,42 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-welcome-audio`
-- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
+- `branch`:
+  `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
+- `worktree_path`:
+  `/Users/alejandrogomez/CRM-core-welcome-audio-safari-action-adapter-v1-hardening`
 - `consultant_chat`: Welcome audio consultant
-- `codex_worker`: Welcome audio lane worker
-- `status`: `e2e_repeatability_welcome_audio_confirmed_active_trigger_mismatch_downstream`
-- `objective`: Audio asset registry, already-welcomed history, send approval
-  packet, duplicate prevention.
-- `why_now`: Welcome audio is a high-value action lane, but no send is
-  authorized and duplicate prevention must exist before execution.
+- `codex_worker`: Welcome Audio Safari action-adapter v1 hardening lane
+- `status`:
+  `safari_action_adapter_v1_code_test_doc_validated_artifact_review_pending_no_live`
+- `objective`: Make one fail-closed Safari end-to-end action adapter canonical,
+  align its operation enums with the guard, close the old pilot, and require a
+  new mission before execution.
+- `why_now`: The historical one-send result and upload-route v0 are useful
+  design evidence but are not production proof or standing live authority.
 - `allowed_files`:
-  - `docs/crm-vnext/welcome-audio-*.md`
-  - `docs/crm-vnext/instagram-welcome-audio-*.md`
+  - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+  - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
+  - `scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs`
+  - `__tests__/crm-vnext-instagram-welcome-audio-operation-guard.spec.ts`
+  - `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
   - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/crm-core-limited-operational-pilot-v1-closeout-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
 - `forbidden_files`:
-  - central files unless integration approves
+  - every file outside the exact eleven-file allowlist above
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
-  - design only
-  - audio asset registry design
-  - already-welcomed history design
-  - send approval packet design
-  - duplicate prevention design
+  - no-live protocol and capability design
+  - deterministic pure operation guard
+  - focused adversarial tests
+  - mechanical historical private-reference redaction
+  - pilot closeout and synchronized durable coordination records
 - `forbidden_scope`:
   - sending audio
   - opening DMs
@@ -37,6 +49,47 @@
 - `redacted_receipt_policy`: Receipts may include counts and status only; no
   identities or message content.
 - `current_tasks`:
+  - completed docs-only immediate canonical Safari action-adapter v1 design
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+  - completed docs-only v1 surface/capability decision matrix
+  - artifact:
+    `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
+  - completed docs-only closeout of the 2026-07-13 limited operational pilot
+  - artifact:
+    `docs/crm-vnext/crm-core-limited-operational-pilot-v1-closeout-v0.md`
+  - mechanically redacted the historical tracked private profile/reference
+    field and added a no-value regression status
+  - implemented the deterministic pure operation guard and adversarial focused
+    suite; the guard separates pre-claim eligibility from post-CAS readiness
+  - a repeated pure READY snapshot is readiness-only: `send_ready: true`,
+    `send_allowed: false`; a separately integrated one-shot token consumer is
+    still required before any live mission
+  - canonical surface: `safari_instagram_web_dm`
+  - canonical surface detail: `safari_standard_isolated_native_picker`
+  - exact positive pre-attempt gates: `exact_recent`,
+    `exact_recent_source_bound`, `present_and_usable`, and
+    `exact_asset_and_preview_match`
+  - pre-send `effect_claim: permanently_claimed_before_attempt` is distinct
+    from the post-send claim, with `attempt_budget: 1`
+  - strong current-operation confirmation markers:
+    `new_audio_bubble_with_sent_marker`,
+    `new_audio_bubble_without_sent_marker`, or
+    `sent_marker_without_new_audio_bubble`
+  - only `confirmation_marker: none` maps to `attempted_unconfirmed`
+  - every attempted or unknown outcome is terminal with permanent no-retry
+  - validation complete: operation-guard suite `32/32`, neighboring central
+    regressions `69/69`, exact allowlist and diff checks green, independent
+    guard review green, and independent documentation review green
+  - full repository suite `1457/1458`; the sole failing test is an untouched
+    Launch OS approval-queue test outside this lane and its exact allowlist
+  - the next external gate is fresh Chief Architect artifact review, followed
+    by the central integration lock; no live authority exists
+  - in-app upload, Chrome, text, and hybrid routes are out of scope
+  - no live effects, browser/source actions, private artifact creation,
+    MailerLite actions, campaign actions, or CRM/source writes occurred
+  - the old pilot is closed and cannot be resumed; a new future mission with
+    fresh explicit authority is required
   - completed no-run send-boundary design
   - artifact:
     `docs/crm-vnext/instagram-welcome-audio-send-boundary-v0.md`
@@ -144,56 +197,44 @@
     stop/close conversation, human escalation, email handoff, MailerLite
     no-write preview, CRM enrichment preview, and CRM/source write remain
     separate approval boundaries
-- `latest_commit`: pending lane-local commit for assistant reply policy
-  boundary design source commit
-  `1f01154e357e5842ffeaf81a068cd34def5d58f3`; pending central integration
-  commit
-- `latest_receipt`: redacted receipt path labels recorded in
-  `docs/crm-vnext/instagram-welcome-audio-first-controlled-reply-email-handoff-result-v0.md`
-- `blockers`: assistant reply draft preview remains unapproved; assistant reply
-  send remains unapproved; MailerLite mutation remains blocked by setup
-  inventory and no-write preview blockers; CRM enrichment/write remains
-  unapproved; no repeatability run selected; no production reply monitoring
-  approval; no CRM/source write approval
-- `latest_execution_note`: assistant reply policy boundary was designed as a
-  no-run lane-local artifact after the confirmed controlled welcome send,
-  reply/email-handoff result, and MailerLite no-write payload preview. This
-  lane work did not execute source actions. The boundary design is integrated
-  centrally as docs-only policy.
-- `assistant_reply_policy_boundary_status`: `integrated_design_complete`
-- `assistant_reply_execution_status`: `not_enabled`
-- `assistant_reply_draft_preview_status`: `not_started`
-- `assistant_reply_send_status`: `not_started`
-- `identity_disclosure_required`: true
-- `assistant_must_not_pretend_to_be_alejandro`: true
-- `next_recommended_step`: MailerLite no-secret setup inventory remains the
-  current default, unless Alejandro redirects to assistant draft preview or CRM
-  enrichment preview.
-- `next_approval_needed`: choose MailerLite setup inventory, controlled
-  assistant reply draft preview, controlled one-reply send, CRM enrichment
-  preview, or pause.
-- `e2e_repeatability_v0_status`: `completed_technical_verified`
-- `welcome_audio_sent`: true
-- `welcome_audio_confirmation_status`: `confirmed_ui_signal`
-- `controlled_candidate_unique`: true
-- `unapproved_candidates_touched`: false
-- `reply_seen_after_audio`: true
-- `mati_reply_status`: `not_run`
-- `downstream_mailerlite_active_trigger_status`:
-  `mismatch_correction_required`
-- `recommended_next_step`: active MailerLite trigger correction packet or
-  choose next controlled product step.
-- `proposed_integration_note`: Welcome Audio lane now has a no-run assistant
-  reply policy boundary for the Controlled Welcome Flow Proof. The artifact
-  defines assistant identity disclosure, Mantis/Mati signature rules,
-  no-Alejandro-impersonation rules, allowed and forbidden reply classes, human
-  escalation classes, conversation state, cadence and closure, private content
-  handling, future draft-preview and one-reply send approval boundaries,
-  storage/reference policy, stop conditions, and closed gates. It creates no
-  real reply draft, assistant reply send, MailerLite preview artifact, CRM
-  enrichment preview artifact, candidate queue, assistant persona deployment,
-  source state, or CRM write. MailerLite mutation, CRM enrichment/write,
-  assistant draft preview, assistant reply send, repeatability, standing
-  monitoring, and production automation remain separately gated.
+- `latest_commit`: supplied by Git history for this exact lane; no hash is
+  duplicated inside the commit that creates it
+- `latest_receipt`: no live receipt; the tracked historical private-reference
+  field now contains only a redaction marker and a passed regression status
+- `blockers`: fresh Chief Architect artifact review and central integration are
+  pending; no new future mission or live authority exists
+- `latest_execution_note`: this eleven-file code-test-doc hardening lane created
+  no browser, source, send, MailerLite, campaign, CRM, automation, or
+  private-artifact effect.
+- `safari_action_adapter_v1_status`: `code_test_doc_contract_complete`
+- `surface_capability_matrix_v1_status`: `docs_only_design_complete`
+- `operation_guard_status`: `focused_tested_readiness_only_no_live_executor`
+- `one_shot_executor_status`: `required_not_implemented`
+- `old_limited_operational_pilot_status`: `closed_superseded_cannot_resume`
+- `future_mission_status`: `required_not_created`
+- `prior_one_send_evidence_status`:
+  `historical_single_send_design_evidence_only_not_production_proof`
+- `prior_upload_route_v0_status`:
+  `historical_no_run_design_evidence_only_not_current_health_proof`
+- `canonical_surface`: `safari_instagram_web_dm`
+- `canonical_surface_detail`: `safari_standard_isolated_native_picker`
+- `attempt_budget`: 1
+- `permanent_pre_send_effect_claim_required`: true
+- `effect_claim_after_admission`: `permanently_claimed_before_attempt`
+- `permanent_no_retry_after_attempt`: true
+- `retry_disposition_after_attempt`:
+  `retry_forbidden_permanently_after_attempt`
+- `next_recommended_step`: review the adapter, matrix, closeout, redaction
+  regression, and aligned operation guard; integrate only under a separate
+  approval; then write a new future mission if the CEO explicitly requests one
+- `next_approval_needed`: separate central integration approval, followed by a
+  newly written and explicitly approved future mission before any live effect
+- `proposed_integration_note`: Welcome Audio now has one immediate canonical
+  Safari end-to-end action adapter, one explicit surface/capability matrix, a
+  permanent pre-send effect claim distinct from post-send confirmation, a
+  single-attempt terminal no-retry rule, private/redacted evidence boundaries,
+  and a closeout that prevents reuse of the old pilot. The prior controlled send
+  and v0 protocol remain design evidence only. In-app upload, Chrome, text, and
+  hybrid routes remain out of scope. No live effect is authorized.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

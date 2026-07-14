@@ -1020,10 +1020,14 @@
 - `crm_write_status`: `not_authorized`
 - `source_actions_during_correction_or_integration`: false
 - `private_values_in_central_docs`: false
-- `active_next_action`:
+- `historical_active_next_action_at_checkpoint`:
   `crm_core_limited_operational_pilot_hardening_v1_2026-07-13`
-- `active_status`:
+- `historical_active_status_at_checkpoint`:
   `this_central_integration_commit_complete_private_start_gates_pending_no_campaign_launched`
+- `historical_checkpoint_superseded_on`: `2026-07-14`
+- `historical_checkpoint_superseded_by`:
+  `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026-07-14`
+- `historical_checkpoint_authority`: `none_do_not_activate_or_resume`
 
 ## Chief Architect Canonical Route Rebind and Fail-Closed Gate
 
@@ -1049,7 +1053,57 @@
 - `verification`: focused relay-lock suite `37/37` green, production static and
   dynamic preflights green, raw target URL printed false.
 - `legacy_verdict_status`: `non_actionable_not_reused`
-- `pilot_status`: `paused`
+- `pilot_status_at_checkpoint`: `paused`
 - `campaign_authorized`: false
-- `next_gate`: one fresh verdict from the canonical project before pilot
-  activation.
+- `superseded_on`: `2026-07-14`
+- `pilot_status_current`: `closed_superseded_no_authority`
+- `next_gate`: historical only; do not activate. Follow the Welcome Audio
+  Safari Action Rail v1 hardening checkpoint below.
+
+## Welcome Audio Safari Action Rail v1 Hardening Lane
+
+- `checkpoint_date`: `2026-07-14`
+- `status`: `lane_validated_artifact_review_pending_no_live`
+- `canonical_target`: canonical Chief Architect project and standing portfolio
+  chat confirmed through static and dynamic private-registry gates
+- `chief_architect_verdict`: task packet authorized the bounded build; the
+  validated source-branch commit now requires fresh artifact review before
+  central integration
+- `causal_refinement`:
+  - starting from the adjacent CRM repository contributed to missed project
+    context;
+  - the useful Safari protocol remained lane-local and unintegrated;
+  - the decisive central gap was the absence of an executable, fail-closed
+    Welcome Audio action rail.
+- `pilot_disposition`: the bounded pilot v1 is closed and superseded; it cannot
+  authorize another send
+- `canonical_action_adapter`: Safari standard isolated window end-to-end
+- `historical_evidence_status`: the prior protocol and single controlled Safari
+  success are design inputs only, not production proof
+- `fresh_lane`:
+  `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
+- `selective_port_rule`: inspect the historical Safari protocol as a pinned
+  source, but do not merge or cherry-pick the stale branch wholesale
+- `required_artifacts`:
+  - Safari action adapter v1;
+  - surface capability matrix v1;
+  - deterministic local operation guard and adversarial tests;
+  - narrow historical-result redaction repair;
+  - pilot closeout and synchronized central coordination records.
+- `closed_gates`:
+  - no source UI or browser execution;
+  - no Instagram profile, DM, upload, audio, reply, or fallback text;
+  - no in-app upload, Chrome upload, or hybrid handoff;
+  - no MailerLite, Gmail, campaign, proxy, CRM write, or other live effect;
+  - no central integration before exact artifact review and central lock.
+- `documentation_continuity_rule`: Git-tracked next-action, board, queue,
+  workstream, protocol, test, and closeout artifacts are the durable memory;
+  chat history is not an execution dependency.
+- `validation_evidence`: operation-guard suite `32/32`, neighboring central
+  regressions `69/69`, exact allowlist and diff checks, receipt and redaction
+  checks, and both independent reviews are green. Full repository suite is
+  `1457/1458`; the sole failure is an untouched Launch OS approval-queue test
+  outside this lane and its allowlist.
+- `next_gate`: Git history supplies the exact lane commit; send the exact
+  artifact packet for fresh Chief Architect review, then use the central
+  integration lock. No live authority exists.
