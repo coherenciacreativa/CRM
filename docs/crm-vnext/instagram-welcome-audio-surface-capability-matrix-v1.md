@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Surface Capability Matrix v1
 
 Date: 2026-07-14
-Status: `docs_only_canonical_surface_matrix_validated_independent_review_green_no_run_ca_delta_review_pending`
+Status: `guard_centrally_integrated_executor_lane_validated_no_live`
 Matrix ID: `instagram_welcome_audio_surface_capability_matrix_v1`
 
 ## Purpose
@@ -172,9 +172,12 @@ terminal unknown/no-retry.
 
 The pure guard reports this state as `send_ready: true` but keeps
 `send_allowed: false`. Revalidating the same immutable snapshot is only a
-repeat readiness observation. A separately integrated serialized executor must
-atomically consume the exact token once before the UI effect; without that
-consumer, READY is not live authority.
+repeat readiness observation. The separate contract in
+`instagram-welcome-audio-one-shot-executor-v1.md` accepts the READY record only
+when an independently trusted canonical digest and the exact authoritative
+owner/token/revision/attempt lineage also match. It must durably consume once
+before any future UI effect; without that consumer, READY is not live
+authority.
 
 ## Exact Recent Binding Semantics
 
@@ -259,6 +262,22 @@ The same digest must also equal the trusted external
 digest copies consistently still fails when it differs from that owner-only
 anchor.
 
+The executor publication order is immutable:
+
+```text
+authoritative READY
+  -> exclusive per-operation mutex
+  -> synced pending terminal evidence
+  -> exclusive non-replace final tombstone
+  -> terminal outcome / redacted receipt
+```
+
+No stale lock, dead owner, pending record, malformed record, timeout, callback
+failure, process death, or missing receipt may be reclaimed into another
+attempt. Pending, final, partial, or coexisting terminal evidence always blocks
+replay. The synthetic v1 implementation invokes no callback at all; future
+actuation remains a separate mission-bound contract.
+
 After the attempt, one of these current-operation markers is selected:
 
 | Marker | Post-send claim |
@@ -299,6 +318,7 @@ neutral enums.
 | --- | --- | --- | --- |
 | First controlled Safari send result v0 | `historical_single_send_design_evidence` | Choosing Safari and native picker for the adapter design | Production readiness, repeatability, current capability, live authorization |
 | Safari upload-route hardening protocol v0 | `historical_no_run_design_evidence` | Fail-closed isolation, picker, and fallback rules | Current route health or an executable mission |
+| Synthetic one-shot executor adversarial suite v1 | `mechanical_serialization_evidence_only` | Durable one-consumer, crash, replay, privacy, and no-retry mechanics | Current Safari health, Instagram delivery, live authority, or production readiness |
 | Fresh future operation observation | `operation_scoped_evidence` | The exact enum values for that operation | Another operation, another surface, or standing automation |
 
 ## Receipt Boundary
@@ -316,10 +336,13 @@ in an impossible combination fail with `RECEIPT_SEMANTICS`.
 
 ## No-Run Boundary
 
-This matrix did not open Safari or Instagram, inspect a DM, probe an upload
-control, select an asset, send audio or text, write a private artifact, activate
-automation, touch MailerLite or the legacy proxy, launch or alter a campaign,
-or mutate CRM/source state.
+This matrix and the synthetic executor lane do not open Safari or Instagram,
+inspect a DM, probe an upload control, select an asset, send audio or text,
+activate automation, touch MailerLite or the legacy proxy, launch or alter a
+campaign, or mutate CRM/source state. Only temporary owner-only synthetic
+fixtures and fixed deterministic no-effect fault enums are permitted. Browser,
+UI, network, private operational data, arbitrary callbacks and live registries
+remain forbidden.
 
 ## Future Mission Requirement
 
@@ -332,8 +355,8 @@ observations sealed into the complete dynamic preclaim snapshot, exact
 immutable `confirmation_max_delay_ms: 300000` in operation/approval/context,
 current claim/token/revision/attempt lineage, exact terminal semantics,
 terminal no-retry, and private/redacted evidence boundaries. The corrected
-focused/adversarial suite is `157/157` green and the full suite is `1582/1583`,
-with only the unchanged out-of-lane MailerLite Launch OS approval-queue
-failure. Node syntax, diff, allowlist, redaction, and fresh independent guard
-and documentation/scope reviews are green. Fresh Chief Architect delta review
-and central integration remain pending.
+guard and its prior adapter/matrix chain are already centrally integrated,
+readiness-only and no-live. The separate synthetic executor's focused
+adversarial proof and independent reviews are green; lane commit/push, formal
+artifact review and central integration remain separate. None of those steps
+removes the need for a new future mission.
