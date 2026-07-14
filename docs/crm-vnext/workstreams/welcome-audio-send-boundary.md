@@ -8,7 +8,7 @@
 - `consultant_chat`: Welcome audio consultant
 - `codex_worker`: Welcome Audio Safari action-adapter v1 hardening lane
 - `status`:
-  `safari_action_adapter_v1_round2_independent_review_green_ca_delta_re_review_pending_no_live`
+  `safari_action_adapter_v1_dynamic_snapshot_fix_validated_independent_reviews_green_fresh_ca_delta_review_pending_no_live`
 - `objective`: Make one fail-closed Safari end-to-end action adapter canonical,
   align its operation enums with the guard, close the old pilot, and require a
   new mission before execution.
@@ -67,9 +67,15 @@
     timestamped dynamic observations before claim, strict current
     claim/token/revision/attempt lineage, terminal non-current claims, and
     cross-field receipt semantics
-  - round-2 implementation and documentation now mirror the final frozen schema,
+  - the prior round-2 implementation and documentation mirror its then-frozen schema,
     including required trusted external `expectedCanonicalOperationSha256`,
     exact terminal evidence semantics, and corrected confirmation nullability
+  - the latest Chief Architect delta review found one remaining mechanical
+    boundary: the canonical digest must freeze the complete dynamic preclaim
+    snapshot, and confirmation must use an immutable exact five-minute window
+  - the correction requires `confirmation_max_delay_ms: 300000` to match in
+    `operation`, `approval`, and `context`; a later check is terminal
+    unknown/no-retry even with a strong marker
   - a repeated pure READY snapshot is readiness-only: `send_ready: true`,
     `send_allowed: false`; a separately integrated one-shot token consumer is
     still required before any live mission
@@ -86,15 +92,17 @@
     `sent_marker_without_new_audio_bubble`
   - only `confirmation_marker: none` maps to `attempted_unconfirmed`
   - every attempted or unknown outcome is terminal with permanent no-retry
-  - fresh round-2 validation: focused operation-guard `136/136`, neighboring
-    regressions `69/69`, and full repository `1561/1562`
-  - the sole full-suite failure remains the untouched out-of-lane
-    `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` / newer replacement
-    set
-  - syntax, exact allowlist, `git diff --check`, redaction, receipt schema, and
-    receipt semantic checks are green
-  - final independent re-review is green; Chief Architect delta re-review
-    remains pending, and central integration is blocked until it is green
+  - corrected focused/adversarial operation-guard suite `157/157` is green,
+    including dynamic-snapshot mutation/backdating and the exact confirmation
+    window
+  - full repository suite is `1582/1583`; the sole failure is the unchanged
+    out-of-lane `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` newer
+    replacement-set case
+  - Node syntax, exact allowlist, `git diff --check`, redaction, receipt schema,
+    and receipt semantic checks are green
+  - fresh independent guard and documentation/scope reviews are green
+  - a fresh Chief Architect delta review remains pending, and central
+    integration is blocked until it is green
   - in-app upload, Chrome, text, and hybrid routes are out of scope
   - no live effects, browser/source actions, private artifact creation,
     MailerLite actions, campaign actions, or CRM/source writes occurred
@@ -211,17 +219,17 @@
   duplicated inside the commit that creates it
 - `latest_receipt`: no live receipt; the tracked historical private-reference
   field now contains only a redaction marker and a passed regression status
-- `blockers`: Chief Architect delta re-review and central integration are
+- `blockers`: fresh Chief Architect delta re-review and central integration are
   pending; no new future mission or live authority exists
 - `latest_execution_note`: this eleven-file code-test-doc hardening lane created
-  no browser, source, send, MailerLite, campaign, CRM, automation, or
-  private-artifact effect.
+  no browser, source, send, MailerLite, legacy proxy, campaign, CRM,
+  automation, or private-artifact effect.
 - `safari_action_adapter_v1_status`:
-  `round2_implementation_reruns_and_independent_review_green_ca_delta_pending`
+  `dynamic_preclaim_snapshot_and_confirmation_window_fix_validated_ca_delta_pending`
 - `surface_capability_matrix_v1_status`:
-  `round2_docs_synced_independent_review_green_ca_delta_pending`
+  `dynamic_snapshot_and_confirmation_window_docs_independent_review_green_ca_delta_pending`
 - `operation_guard_status`:
-  `round2_focused_136_of_136_green_readiness_only_no_live_executor`
+  `focused_157_of_157_green_readiness_only_no_live_executor`
 - `one_shot_executor_status`: `required_not_implemented`
 - `old_limited_operational_pilot_status`: `closed_superseded_cannot_resume`
 - `future_mission_status`: `required_not_created`
@@ -237,21 +245,25 @@
 - `permanent_no_retry_after_attempt`: true
 - `retry_disposition_after_attempt`:
   `retry_forbidden_permanently_after_attempt`
-- `next_recommended_step`: submit the round-2 delta packet for Chief Architect
-  re-review, and integrate only after it is green and a separate approval exists
+- `next_recommended_step`: submit the validated complete dynamic preclaim
+  snapshot and exact confirmation-window correction in a fresh delta packet
+  for Chief Architect re-review;
+  integrate only after it is green and a separate approval exists
 - `next_approval_needed`: Chief Architect delta re-review, then separate central
   integration approval, followed by a newly
   written and explicitly approved future mission before any live effect
 - `proposed_integration_note`: Welcome Audio now has one immediate canonical
   Safari end-to-end action adapter, one explicit surface/capability matrix, a
   strict root/nested input contract, one immutable canonical-operation digest,
-  a trusted external owner-only expected digest, fresh observations before
-  claim, current owner/token/revision/attempt lineage, exact confirmed/unknown/
-  blocked terminal semantics, a permanent pre-send effect claim distinct from
-  post-send confirmation, cross-field receipt semantics, a single-attempt
-  terminal no-retry rule, and a closeout that prevents reuse of the old pilot.
+  a trusted external owner-only expected digest that freezes the complete
+  dynamic preclaim snapshot, fresh observations before claim, exact immutable
+  `confirmation_max_delay_ms: 300000` in operation/approval/context, current
+  owner/token/revision/attempt lineage, exact confirmed/unknown/blocked terminal
+  semantics, a permanent pre-send effect claim distinct from post-send
+  confirmation, cross-field receipt semantics, a single-attempt terminal
+  no-retry rule, and a closeout that prevents reuse of the old pilot.
   The prior controlled send and v0 protocol remain design evidence only. No live
-  effect is authorized; final independent re-review is green and Chief
-  Architect delta re-review is the next gate.
+  effect is authorized; corrected validation and independent review are green,
+  while fresh Chief Architect delta re-review remains the next gate.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

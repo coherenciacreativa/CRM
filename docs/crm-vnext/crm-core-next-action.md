@@ -6014,7 +6014,7 @@ routing and completion pointer.
 - `next_action_id`:
   `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026-07-14`
 - `status`:
-  `round2_implementation_reruns_and_independent_review_green_ca_delta_re_review_pending_no_live`
+  `dynamic_preclaim_snapshot_fix_validated_independent_reviews_green_fresh_ca_delta_review_pending_no_live`
 - `created_at`: `2026-07-14`
 - `objective`: Build and verify the missing deterministic Welcome Audio action
   rail from the current canonical CRM Core state, without performing any live
@@ -6043,13 +6043,19 @@ routing and completion pointer.
   - Exact root and nested input allowlists; extra or missing fields fail closed.
   - One immutable `canonical_operation_sha256`, built by the canonical helper
     and identical across operation, approval, mission context, effect claim,
-    execution, and confirmation.
+    execution, and confirmation. Its projection freezes the complete dynamic
+    preclaim snapshot, including every status, timestamp, capability, dedupe
+    result, mission-bound age/budget/restriction, and immutable preclaim
+    lifecycle binding.
   - Mandatory independently trusted owner-only
     `expectedCanonicalOperationSha256` for validator and
     receipt-builder calls; never source it from `input`.
   - Fresh timestamped approval, surface, follower, binding, eligibility,
     asset-preview, context, and dedupe observations, all no later than the
     permanent claim.
+  - Exact immutable `confirmation_max_delay_ms: 300000` in `operation`,
+    `approval`, and `context`; a check beyond that window is terminal
+    unknown/no-retry even when a strong marker exists.
   - One permanent pre-send claim, one Send action, and explicit confirmation
     evidence tied to the current operation.
   - Strict current claim owner/token/revision/attempt lineage, with token
@@ -6070,26 +6076,26 @@ routing and completion pointer.
   - No claim that the prior Safari result proves production reliability.
 - `completion_definition`:
   - Exact allowlist only.
-  - Round-2 focused, adversarial, neighboring, and full-suite evidence recorded.
+  - Corrected focused/adversarial and full-suite evidence recorded with the
+    current validated counts.
   - Redaction regression green.
-  - Final independent guard/documentation re-review green.
+  - Fresh independent guard/documentation re-review green.
   - Final corrected source-branch HEAD recorded by Git history.
-  - Chief Architect round-2 delta re-review green before central
-    integration.
+  - Fresh Chief Architect delta review green before central integration.
 - `validation_evidence`:
-  - Focused operation-guard suite `136/136` green.
-  - Neighboring central regressions `69/69` green.
-  - Full repository suite `1561/1562`; the sole failure remains the untouched
-    `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` / newer replacement
-    set outside this lane.
-  - Syntax, exact eleven-file allowlist, redaction, receipt schema/semantics,
-    and `git diff --check` are green.
-  - Final independent re-review is green; Chief Architect delta re-review is
-    pending.
-- `next_external_gate`: Submit the round-2 delta artifact packet for Chief
-  Architect re-review. The central integration lock follows only after that
-  review is green. Git history is
-  authoritative for the final corrected HEAD; this record grants no live
-  authority.
+  - Corrected focused/adversarial operation-guard suite `157/157` green,
+    including post-digest mutation/backdating of the dynamic preclaim snapshot
+    and the exact five-minute confirmation boundary.
+  - Full repository suite `1582/1583`; the sole failure is the unchanged
+    out-of-lane `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` newer
+    replacement-set case.
+  - Node syntax, exact eleven-file allowlist, redaction, receipt
+    schema/semantics, and `git diff --check` are green.
+  - Fresh independent guard and documentation/scope re-reviews are green;
+    fresh Chief Architect delta review remains pending.
+- `next_external_gate`: Submit the validated corrected delta artifact packet
+  for fresh Chief Architect re-review. The central integration lock follows
+  only after that review is green. Git history is authoritative for the final
+  corrected HEAD; this record grants no live authority.
 - `recommended_default`:
-  `submit_round2_delta_for_ca_re_review_no_live`
+  `submit_validated_dynamic_snapshot_delta_for_fresh_ca_re_review_no_live`

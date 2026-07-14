@@ -1064,13 +1064,15 @@
 
 - `checkpoint_date`: `2026-07-14`
 - `status`:
-  `round2_implementation_reruns_and_independent_review_green_ca_delta_re_review_pending_no_live`
+  `dynamic_preclaim_snapshot_fix_validated_independent_reviews_green_fresh_ca_delta_review_pending_no_live`
 - `canonical_target`: canonical Chief Architect project and standing portfolio
   chat confirmed through static and dynamic private-registry gates
-- `chief_architect_verdict`: artifact review and threat-model delta returned two
-  bounded mechanical correction rounds. Round-2 implementation, reruns, and
-  final independent re-review are green; Chief Architect delta re-review remains
-  required before central integration.
+- `chief_architect_verdict`: the latest artifact delta review returned one more
+  bounded mechanical correction: freeze the complete dynamic preclaim snapshot
+  in the trusted digest and enforce one exact immutable five-minute
+  confirmation window. Corrected validation and fresh independent re-reviews
+  are green; a fresh Chief Architect delta review remains required before
+  central integration.
 - `causal_refinement`:
   - starting from the adjacent CRM repository contributed to missed project
     context;
@@ -1093,6 +1095,11 @@
   - strict root/nested allowlists, immutable canonical-operation digest, fresh
     observation timestamps before claim, current owner/token/revision/attempt
     lineage, terminal non-current claims, and receipt semantic coherence;
+  - complete dynamic preclaim snapshot sealed by that digest, including
+    statuses, timestamps, capabilities, dedupe, ages, budgets, restrictions,
+    and immutable preclaim lifecycle bindings;
+  - exact immutable `confirmation_max_delay_ms: 300000` in operation,
+    approval, and context; later evidence is terminal unknown/no-retry;
   - mandatory trusted external `expectedCanonicalOperationSha256`, exact
     confirmation nullability, confirmed aging-only blocker allowlist,
     `TERMINAL_EVIDENCE` only for redacted-away private terminal evidence, and
@@ -1108,14 +1115,14 @@
 - `documentation_continuity_rule`: Git-tracked next-action, board, queue,
   workstream, protocol, test, and closeout artifacts are the durable memory;
   chat history is not an execution dependency.
-- `validation_evidence`: round-2 focused operation-guard `136/136`, neighboring
-  central regressions `69/69`, and full repository `1561/1562`. The sole failure
-  remains the untouched `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts`
-  / newer replacement set outside this lane. Syntax, exact allowlist,
-  `git diff --check`, redaction, receipt schema, and receipt semantic checks are
-  green. Final independent re-review is green; Chief Architect delta re-review
-  is pending.
-- `next_gate`: use Git history for the final corrected source-branch HEAD,
-  and send the exact round-2 delta packet for Chief Architect re-review. Use the
-  central integration lock only after that review is green. No live authority
-  exists.
+- `validation_evidence`: corrected focused/adversarial operation-guard
+  `157/157` green, including every dynamic-preclaim mutation/backdating case and
+  the exact five-minute confirmation boundary. Full repository suite
+  `1582/1583`; the sole failure is the unchanged out-of-lane
+  `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` newer replacement-set
+  case. Node syntax, exact allowlist, `git diff --check`, redaction, receipt
+  schema/semantics, and fresh independent guard and documentation/scope reviews
+  are green. Fresh Chief Architect delta review remains pending.
+- `next_gate`: use Git history for the validated corrected source-branch HEAD
+  and send a fresh delta packet for Chief Architect re-review. Use the central
+  integration lock only after that review is green. No live authority exists.

@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Surface Capability Matrix v1
 
 Date: 2026-07-14
-Status: `docs_only_canonical_surface_matrix_no_run`
+Status: `docs_only_canonical_surface_matrix_validated_independent_review_green_no_run_ca_delta_review_pending`
 Matrix ID: `instagram_welcome_audio_surface_capability_matrix_v1`
 
 ## Purpose
@@ -105,6 +105,15 @@ The packet also requires the exact root/nested input allowlists and one
 identical at the root and in `operation`, `approval`, `context`, `effect_claim`,
 `execution`, and `confirmation`; it is not a redacted-receipt field.
 
+The digest freezes the complete dynamic preclaim snapshot: approval and
+context status/timestamps; exact surface, follower, binding, eligibility and
+capability observations; exact asset-preview and dedupe evidence; all
+mission-bound ages, budgets, and restrictions; and the immutable preclaim
+claim/execution/confirmation bindings. Only legitimate post-claim lifecycle
+mutations and digest self-copies are excluded. Any later mutation or backdating
+of a preclaim section changes the canonical bytes and fails the trusted
+external anchor.
+
 Self-consistency never supplies trust. The owner-only caller must pass the
 independently approved digest as the required
 `expectedCanonicalOperationSha256` option to operation validation and
@@ -134,6 +143,9 @@ follower_evidence.observed_at: fresh_timestamp
 binding.observed_at: fresh
 eligibility.observed_at: fresh
 asset.preview_observed_at: fresh
+operation.confirmation_max_delay_ms: 300000
+approval.confirmation_max_delay_ms: 300000
+context.confirmation_max_delay_ms: 300000
 ```
 
 That combination can yield only `eligible_for_atomic_claim`; it never permits a
@@ -186,6 +198,11 @@ The eight required observation/freshness timestamps are
 and `dedupe.checked_at`. Each must be fresh; they need not be distinct, and
 `effect_claim.claimed_at` must be at or after all eight.
 
+The complete values and statuses represented by these observations are sealed
+into the canonical preclaim digest. Freshness validation alone is not enough:
+mutating or backdating one of them after the digest is approved is a canonical
+operation mismatch.
+
 ## Audio And Preview Semantics
 
 `present_and_usable` means the exact bound Safari thread visibly exposes an
@@ -230,7 +247,9 @@ the fresh claim, the operation is terminal and cannot be retried.
 
 The one-shot consumer records `claim_token_consumed_at` at or after the current
 claim and at or before `attempted_at`. Confirmation is at or after that exact
-attempt. Owner,
+attempt and no more than `300000` milliseconds later. The immutable
+`confirmation_max_delay_ms: 300000` must match in `operation`, `approval`, and
+`context`. Owner,
 token, registry revision, attempt ID, operation, approval, mission, and
 canonical-operation digest must remain identical across claim, execution, and
 confirmation.
@@ -258,6 +277,11 @@ consumed current token, matching revision and attempt lineage, identical
 canonical-operation digest, and valid claim/consume/attempt/confirmation order.
 Every non-current claim or token remains terminal unknown/no-retry even when a
 strong marker is present.
+
+Any confirmation checked more than `300000` milliseconds after the exact
+attempt is too late. Even a strong marker then produces
+`attempted_or_unknown_terminal_no_retry` and permanent no-retry, never a
+confirmed terminal result.
 
 Confirmed terminal blockers are restricted to the internal aging-only allowlist
 plus `TERMINAL_NO_RETRY`. Unknown terminal requires either a terminal signal in
@@ -294,7 +318,8 @@ in an impossible combination fail with `RECEIPT_SEMANTICS`.
 
 This matrix did not open Safari or Instagram, inspect a DM, probe an upload
 control, select an asset, send audio or text, write a private artifact, activate
-automation, touch MailerLite, launch a campaign, or mutate CRM/source state.
+automation, touch MailerLite or the legacy proxy, launch or alter a campaign,
+or mutate CRM/source state.
 
 ## Future Mission Requirement
 
@@ -303,7 +328,12 @@ mission must explicitly bind the v1 adapter, this matrix, the operation guard,
 one exact recent source, one exact asset, one attempt, the permanent pre-send
 claim, strict root/nested allowlists, immutable canonical-operation digest,
 trusted external `expectedCanonicalOperationSha256`, fresh timestamped
-observations, current claim/token/revision/attempt lineage, exact terminal
-semantics, terminal no-retry, and private/redacted evidence boundaries. Round-2
-implementation, reruns, and final independent re-review are green; Chief
-Architect delta re-review remains pending before central integration.
+observations sealed into the complete dynamic preclaim snapshot, exact
+immutable `confirmation_max_delay_ms: 300000` in operation/approval/context,
+current claim/token/revision/attempt lineage, exact terminal semantics,
+terminal no-retry, and private/redacted evidence boundaries. The corrected
+focused/adversarial suite is `157/157` green and the full suite is `1582/1583`,
+with only the unchanged out-of-lane MailerLite Launch OS approval-queue
+failure. Node syntax, diff, allowlist, redaction, and fresh independent guard
+and documentation/scope reviews are green. Fresh Chief Architect delta review
+and central integration remain pending.

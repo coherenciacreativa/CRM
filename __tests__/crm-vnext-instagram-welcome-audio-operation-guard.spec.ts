@@ -8,6 +8,7 @@ import {
   WELCOME_AUDIO_AUDIO_CAPABILITY,
   WELCOME_AUDIO_CLAIM_RESULT,
   WELCOME_AUDIO_CLAIM_TOKEN_STATUS,
+  WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
   WELCOME_AUDIO_CONFIRMATION_MARKER,
   WELCOME_AUDIO_EFFECT_CLAIM,
   WELCOME_AUDIO_GUARD_DECISION,
@@ -101,6 +102,7 @@ const preclaimOperation = () => {
     approved_audio_asset_id: ASSET_ID,
     approved_audio_asset_sha256: ASSET_SHA,
     expected_send_count: 1,
+    confirmation_max_delay_ms: WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
     canonical_operation_sha256: "0".repeat(64),
   },
   approval: {
@@ -118,6 +120,7 @@ const preclaimOperation = () => {
     approved_audio_asset_sha256: ASSET_SHA,
     source_recency_max_age_ms: SOURCE_MAX_AGE_MS,
     expected_send_count: 1,
+    confirmation_max_delay_ms: WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
     canonical_operation_sha256: "0".repeat(64),
   },
   execution_surface: {
@@ -180,6 +183,7 @@ const preclaimOperation = () => {
     mission_status: "active",
     operation_id: OPERATION_ID,
     approval_packet_id: APPROVAL_PACKET_ID,
+    confirmation_max_delay_ms: WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
     canonical_operation_sha256: "0".repeat(64),
   },
   dedupe: {
@@ -379,6 +383,20 @@ describe("Instagram welcome-audio operation guard", () => {
     expect(second.one_shot_consumer_required).toBe(true);
   });
 
+  test("keeps the canonical snapshot digest stable across legitimate lifecycle transitions", () => {
+    const preclaim = preclaimOperation();
+    const sendReady = sendReadyOperation();
+    const confirmed = confirmedOperation();
+    const digest = preclaim.canonical_operation_sha256;
+
+    expect(WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS).toBe(300_000);
+    expect(buildWelcomeAudioCanonicalOperationDigest(preclaim)).toBe(digest);
+    expect(buildWelcomeAudioCanonicalOperationDigest(sendReady)).toBe(digest);
+    expect(buildWelcomeAudioCanonicalOperationDigest(confirmed)).toBe(digest);
+    expect(sendReady.canonical_operation_sha256).toBe(digest);
+    expect(confirmed.canonical_operation_sha256).toBe(digest);
+  });
+
   test("classifies a malformed missing packet as blocked, not as an attempted operation", () => {
     const result = validateWelcomeAudioOperation({}, { nowMs: NOW_MS });
     expect(result).toMatchObject({
@@ -434,6 +452,46 @@ describe("Instagram welcome-audio operation guard", () => {
       decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
     });
     expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE);
+  });
+
+  test.each(["operation", "approval", "context"])(
+    "requires the exact confirmation_max_delay_ms field in %s",
+    (section) => {
+      const input = preclaimOperation();
+      const sections = input as unknown as Record<string, Record<string, unknown>>;
+      delete sections[section].confirmation_max_delay_ms;
+      const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+      expect(result).toMatchObject({
+        ok: false,
+        terminal: false,
+        send_allowed: false,
+        decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+      });
+      expect(result.blockers).toEqual(expect.arrayContaining([
+        WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE,
+        WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_MAX_DELAY,
+      ]));
+    },
+  );
+
+  test("rejects a coherently rebound confirmation delay that is not the fixed contract value", () => {
+    const input = preclaimOperation();
+    input.operation.confirmation_max_delay_ms = 600_000;
+    input.approval.confirmation_max_delay_ms = 600_000;
+    input.context.confirmation_max_delay_ms = 600_000;
+    bindCanonicalOperationDigest(input);
+
+    const result = validateWelcomeAudioOperationRaw(input, {
+      nowMs: NOW_MS,
+      expectedCanonicalOperationSha256: input.canonical_operation_sha256,
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_MAX_DELAY);
   });
 
   test.each([
@@ -699,6 +757,72 @@ describe("Instagram welcome-audio operation guard", () => {
   });
 
   test.each([
+    ["approval", "approval", "checked_at", "2026-07-14T15:55:59.000Z"],
+    ["execution surface", "execution_surface", "observed_at", "2026-07-14T15:58:09.000Z"],
+    ["follower evidence", "follower_evidence", "observed_at", "2026-07-14T13:59:59.000Z"],
+    ["binding", "binding", "observed_at", "2026-07-14T15:58:19.000Z"],
+    ["eligibility", "eligibility", "observed_at", "2026-07-14T15:58:29.000Z"],
+    ["asset preview", "asset", "preview_observed_at", "2026-07-14T15:58:39.000Z"],
+    ["mission context", "context", "checked_at", "2026-07-14T15:56:59.000Z"],
+    ["dedupe", "dedupe", "checked_at", "2026-07-14T15:57:59.000Z"],
+  ])(
+    "terminalizes post-claim mutation of the trusted %s snapshot",
+    (_label, section, field, value) => {
+      const input = sendReadyOperation();
+      const trustedDigest = input.canonical_operation_sha256;
+      const sections = input as unknown as Record<string, Record<string, unknown>>;
+      sections[section][field] = value;
+
+      expect(buildWelcomeAudioCanonicalOperationDigest(input)).not.toBe(trustedDigest);
+      bindCanonicalOperationDigest(input);
+      expect(input.canonical_operation_sha256).not.toBe(trustedDigest);
+      const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+      expect(result).toMatchObject({
+        ok: false,
+        terminal: true,
+        send_ready: false,
+        send_allowed: false,
+        decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      });
+      expect(result.blockers).toEqual(expect.arrayContaining([
+        WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+      ]));
+    },
+  );
+
+  test.each([
+    ["effect-claim asset binding", "effect_claim", "approved_audio_asset_id", "alternate_audio_asset_002"],
+    ["execution mission binding", "execution", "mission_id", "alternate_welcome_audio_mission_002"],
+    ["confirmation candidate binding", "confirmation", "candidate_anchor_sha256", "7".repeat(64)],
+    ["attempt budget", "execution", "attempt_budget", 2],
+    ["no-retry-request restriction", "execution", "retry_requested", true],
+  ])(
+    "terminalizes post-claim mutation of immutable %s",
+    (_label, section, field, value) => {
+      const input = sendReadyOperation();
+      const trustedDigest = input.canonical_operation_sha256;
+      const sections = input as unknown as Record<string, Record<string, unknown>>;
+      sections[section][field] = value;
+
+      expect(buildWelcomeAudioCanonicalOperationDigest(input)).not.toBe(trustedDigest);
+      bindCanonicalOperationDigest(input);
+      expect(input.canonical_operation_sha256).not.toBe(trustedDigest);
+      const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+      expect(result).toMatchObject({
+        terminal: true,
+        send_ready: false,
+        send_allowed: false,
+        decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      });
+      expect(result.blockers).toEqual(expect.arrayContaining([
+        WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+      ]));
+    },
+  );
+
+  test.each([
     [WELCOME_AUDIO_CLAIM_RESULT.PREEXISTING_OR_REPLAYED, WELCOME_AUDIO_CLAIM_TOKEN_STATUS.FRESH_UNCONSUMED_CURRENT_INVOCATION],
     [WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION, WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED],
     [WELCOME_AUDIO_CLAIM_RESULT.STALE, WELCOME_AUDIO_CLAIM_TOKEN_STATUS.STALE],
@@ -942,9 +1066,55 @@ describe("Instagram welcome-audio operation guard", () => {
       expect(result.terminal).toBe(true);
       expect(result.decision).toBe(WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL);
       expect(result.send_allowed).toBe(false);
-      expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING);
+      expect(result.blockers).toContain(
+        kind === "historical"
+          ? WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_TIMESTAMP
+          : WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING,
+      );
     },
   );
+
+  test("accepts a strong confirmation exactly at the immutable maximum-delay boundary", () => {
+    const input = confirmedOperation();
+    input.confirmation.checked_at = "2026-07-14T16:04:30.000Z";
+    const result = validateWelcomeAudioOperation(input, {
+      nowMs: Date.parse(input.confirmation.checked_at),
+    });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.CONFIRMED_TERMINAL,
+    });
+    expect(result.blockers).not.toContain(
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_DELAY_EXCEEDED,
+    );
+  });
+
+  test("makes a strong confirmation beyond the immutable maximum delay unknown-terminal", () => {
+    const input = confirmedOperation();
+    input.confirmation.checked_at = "2026-07-14T16:04:30.001Z";
+    const options = { nowMs: Date.parse(input.confirmation.checked_at) };
+    const result = validateWelcomeAudioOperation(input, options);
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: true,
+      send_ready: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_DELAY_EXCEEDED,
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+
+    const receipt = buildWelcomeAudioRedactedReceipt(input, options);
+    expect(receipt.decision).toBe(WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL);
+    expect(receipt.blocker_codes).toContain(
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_DELAY_EXCEEDED,
+    );
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
+  });
 
   test("enforces mission-bound absolute source age plus Bogota calendar bucket", () => {
     expect(classifyRecentFollowerBucket("2026-07-14T04:59:00.000Z", NOW_MS)).toBe("previous_calendar_day");
@@ -1128,6 +1298,7 @@ describe("Instagram welcome-audio operation guard", () => {
     WELCOME_AUDIO_GUARD_REASON.EXECUTION_BINDING,
     WELCOME_AUDIO_GUARD_REASON.CLAIM_TOKEN_CONSUMPTION,
     WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING,
+    WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_DELAY_EXCEEDED,
     WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_SEQUENCE,
   ])("rejects a confirmed receipt with incompatible blocker %s", (blocker) => {
     const receipt = buildWelcomeAudioRedactedReceipt(confirmedOperation(), { nowMs: NOW_MS });

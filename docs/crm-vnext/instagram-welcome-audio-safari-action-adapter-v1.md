@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
 Date: 2026-07-14
-Status: `code_test_doc_contract_no_run`
+Status: `code_test_doc_contract_validated_independent_reviews_green_no_run_ca_delta_review_pending`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -71,6 +71,7 @@ and every extra root or nested key fails closed with `INPUT_SHAPE`. The optional
 | --- | --- | --- |
 | `adapter_version` | `instagram_welcome_audio_safari_action_adapter_v1` | exact value |
 | `canonical_operation_sha256` | SHA-256 from `buildWelcomeAudioCanonicalOperationDigest(input)` | exact identical digest at every binding surface and equal to the trusted external expected anchor |
+| `confirmation_max_delay_ms` | integer | exact immutable value `300000` in `operation`, `approval`, and `context` |
 | `surface` | `safari_instagram_web_dm` | exact value |
 | `surface_detail` | `safari_standard_isolated_native_picker` | exact value |
 | `source_recency` | `exact_recent`, `stale`, `unknown` | `exact_recent` |
@@ -113,6 +114,7 @@ operation:
   approved_audio_asset_id: private opaque
   approved_audio_asset_sha256: private
   expected_send_count: 1
+  confirmation_max_delay_ms: 300000
   canonical_operation_sha256: exact root digest
 approval:
   status: approved_exact_single_send
@@ -129,6 +131,7 @@ approval:
   approved_audio_asset_sha256: private
   source_recency_max_age_ms: mission-bound positive integer
   expected_send_count: 1
+  confirmation_max_delay_ms: 300000
   canonical_operation_sha256: exact root digest
 execution_surface:
   surface: safari_instagram_web_dm
@@ -185,6 +188,7 @@ context:
   mission_status: active
   operation_id: private opaque
   approval_packet_id: private opaque
+  confirmation_max_delay_ms: 300000
   canonical_operation_sha256: exact root digest
 dedupe:
   status: clear_no_prior_welcome_or_attempt
@@ -277,6 +281,17 @@ The option must come from the independently approved owner-only mission/packet
 boundary, never from any digest field inside `input`. Missing, malformed, or
 mismatched expected anchors fail with `CANONICAL_OPERATION`.
 
+The canonical projection freezes the complete dynamic preclaim snapshot, not
+only static identifiers. It includes approval and mission-context status and
+timestamps; the exact surface observation; follower evidence; source/profile/
+thread binding; business, composer, attachment, and audio capability;
+asset-preview evidence; dedupe evidence; budgets and restrictions; and the
+immutable claim/execution/confirmation bindings already present before the
+claim. Only legitimate post-claim lifecycle mutations and digest self-copies
+are excluded from the projection. Mutating or backdating any preclaim section
+after the digest is approved changes the canonical bytes and fails the trusted
+external anchor.
+
 ## Future Mission Binding
 
 No invocation is valid without a new future mission that explicitly binds:
@@ -286,7 +301,8 @@ No invocation is valid without a new future mission that explicitly binds:
 - one private stable operation key;
 - one strict root/nested input shape;
 - one immutable canonical-operation projection and digest built only through
-  `buildWelcomeAudioCanonicalOperationDigest(input)`;
+  `buildWelcomeAudioCanonicalOperationDigest(input)`, covering the complete
+  dynamic preclaim snapshot;
 - one independently trusted owner-only `expectedCanonicalOperationSha256`
   supplied to validator and receipt-builder calls;
 - one exact approved recent source observation;
@@ -300,6 +316,8 @@ No invocation is valid without a new future mission that explicitly binds:
 - one separately integrated one-shot executor that atomically consumes the
   ready token before actuating the UI effect;
 - the permanent no-retry rule;
+- one exact immutable `confirmation_max_delay_ms: 300000` copied through
+  `operation`, `approval`, and `context`;
 - private evidence and redacted receipt destinations;
 - explicit live authority and all applicable action-time confirmations.
 
@@ -333,6 +351,12 @@ The dynamic observations are independently fresh: `execution_surface.observed_at
 context, and dedupe retain their own fresh `checked_at` fields. A permanent
 claim is valid only when `claimed_at` is at or after every one of those
 observations/checks.
+
+Those observations, their statuses, the capability and dedupe results, and the
+mission-bound age, budget, and restriction values are all sealed into the
+canonical preclaim digest. Rewriting or backdating them after approval is a
+canonical-operation mismatch, even when all in-packet digest copies are
+rewritten together.
 
 If any item is stale, missing, mismatched, or ambiguous, stop before an attempt.
 Do not search unrelated profiles or DMs to repair the binding.
@@ -427,7 +451,9 @@ The ordering is strict and inclusive. `approval.checked_at`,
 all be no later than `effect_claim.claimed_at`.
 `claim_token_consumed_at` must be at or after the current `claimed_at` and at or
 before `attempted_at`; confirmation `checked_at` must be at or after that exact
-attempt.
+attempt and no more than exactly `300000` milliseconds later. The same
+immutable `confirmation_max_delay_ms: 300000` must match in `operation`,
+`approval`, and `context`.
 
 There is no second click, resend, retrigger, alternate browser, in-app retry,
 manual completion, or hybrid fallback after the attempt boundary.
@@ -453,6 +479,11 @@ attempt state, count, and timestamps all cohere across claim, execution, and
 confirmation. Any non-current claim/token/revision or lineage mismatch produces
 terminal unknown/no-retry. A missing confirmation is terminal and must never
 trigger a retry.
+
+A strong marker observed more than `300000` milliseconds after `attempted_at`
+is too late to confirm this operation. It is classified
+`attempted_or_unknown_terminal_no_retry` with permanent no-retry, never
+`confirmed_sent`, even when every other lineage field matches.
 
 ## Private Evidence And Redacted Receipt
 
@@ -541,7 +572,8 @@ forbidden surface/fallback would be required.
 Also stop on `INPUT_SHAPE`, `CANONICAL_OPERATION`, `SURFACE_OBSERVATION`,
 `BINDING_OBSERVATION`, `ELIGIBILITY_OBSERVATION`,
 `ASSET_PREVIEW_OBSERVATION`, `EXECUTION_BINDING`,
-`CLAIM_TOKEN_CONSUMPTION`, `TERMINAL_EVIDENCE`, or `RECEIPT_SEMANTICS`.
+`CLAIM_TOKEN_CONSUMPTION`, `CONFIRMATION_MAX_DELAY`,
+`CONFIRMATION_DELAY_EXCEEDED`, `TERMINAL_EVIDENCE`, or `RECEIPT_SEMANTICS`.
 
 Stop terminally after an attempt, regardless of confirmation quality. Record
 the claim and marker once; do not repair by sending again.
@@ -553,7 +585,8 @@ the claim and marker once; do not repair by sending again.
 - no upload, preview, or send;
 - no source read or DM opening;
 - no in-app, Chrome, text, or hybrid route;
-- no MailerLite, campaign, CRM, card, Fact Store, ledger, or scoring action;
+- no MailerLite, campaign, legacy proxy, CRM, card, Fact Store, ledger, or
+  scoring action;
 - no private artifact or operational receipt creation;
 - no automation activation;
 - no central integration or future live-mission authorization; lane commit and
@@ -566,7 +599,12 @@ the claim and marker once; do not repair by sending again.
 This docs-only adapter is complete when its enums align with the operation
 guard and surface matrix, the private-reference regression remains green, and
 review confirms that no file or live effect outside the approved hardening
-allowlist changed. Round-2 implementation, reruns, and final independent
-re-review are green; Chief Architect delta re-review remains pending before central
-integration. Operational readiness still requires separate integration and a
-new future mission with explicit authority.
+allowlist changed. The Chief Architect's latest delta review requires the
+complete dynamic preclaim snapshot and fixed confirmation-window correction;
+the corrected focused/adversarial suite is `157/157` green and the full suite is
+`1582/1583`, with only the unchanged out-of-lane MailerLite Launch OS
+approval-queue failure. Node syntax, diff, allowlist, redaction, and fresh
+independent guard and documentation/scope reviews are green. Fresh Chief
+Architect delta review and central integration remain pending. Operational
+readiness still requires separate integration and a new future mission with
+explicit authority.

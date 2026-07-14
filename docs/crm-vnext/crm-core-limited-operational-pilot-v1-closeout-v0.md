@@ -17,6 +17,8 @@ authorization_carryover: forbidden
 campaign_authority: none
 production_proof: false
 future_mission_required: true
+superseding_hardening_status: validated_independent_reviews_green_fresh_ca_delta_review_pending
+central_integration_status: closed_pending_fresh_ca_delta_review
 ```
 
 ## Artifacts Closed
@@ -43,6 +45,7 @@ This closeout is documentation only. It performed no:
 - Safari, Instagram, DM, upload, preview, or send action;
 - source observation or private-source read;
 - MailerLite read or mutation;
+- legacy proxy read, call, configuration, deployment, or mutation;
 - campaign launch, configuration, or audience action;
 - CRM, card, Fact Store, ledger, scoring, or enrichment write;
 - automation creation, update, activation, or scheduling action;
@@ -92,6 +95,12 @@ adapter_version: instagram_welcome_audio_safari_action_adapter_v1
 input_shape: exact_root_and_nested_allowlists
 canonical_operation_sha256: required_identical_private_digest
 expectedCanonicalOperationSha256: required_trusted_owner_only_external_anchor
+operation:
+  confirmation_max_delay_ms: 300000
+approval:
+  confirmation_max_delay_ms: 300000
+context:
+  confirmation_max_delay_ms: 300000
 surface: safari_instagram_web_dm
 surface_detail: safari_standard_isolated_native_picker
 source_recency_required: exact_recent
@@ -120,7 +129,12 @@ cap, duration, source/private boundaries, stable operation key, dedupe inputs,
 stop rules, evidence destinations, and action-time confirmation requirements.
 It must use `buildWelcomeAudioCanonicalOperationDigest(input)` and preserve that
 exact digest at the root and in operation, approval, mission context, claim,
-execution, and confirmation. It must also timestamp the approval, surface,
+execution, and confirmation. The digest must freeze the complete dynamic
+preclaim snapshot: approval and context status/timestamps; surface, follower,
+binding, eligibility/capability, asset-preview, and dedupe evidence; mission
+ages, budgets, restrictions; and immutable preclaim lifecycle bindings. Only
+legitimate post-claim lifecycle mutations and digest self-copies may be
+excluded. It must also timestamp the approval, surface,
 follower, binding, eligibility, asset-preview, context, and dedupe observations
 no later than the claim. It must
 pass an independently approved owner-only
@@ -146,6 +160,12 @@ requires the fresh current claim, consumed current token, matching owner/token,
 registry revision and attempt ID, the identical canonical-operation digest, and
 the valid observation/claim/consumption/attempt/confirmation order. Any
 non-current or mismatched lineage is terminal unknown/no-retry.
+
+The exact immutable confirmation window is five minutes:
+`confirmation_max_delay_ms: 300000` must match in `operation`, `approval`, and
+`context`. A confirmation checked more than `300000` milliseconds after
+`attempted_at` is terminal unknown/no-retry even when it presents a strong
+marker; it can never establish `confirmed_sent`.
 
 Confirmed terminal permits only the strict confirmed tuple with aging-only
 blockers plus `TERMINAL_NO_RETRY`. Unknown terminal requires a public terminal
@@ -174,8 +194,12 @@ This pilot cannot be reopened. If CRM Core later needs a limited operational
 pilot, it must be a new versioned mission with a new mission ID, a new approval
 receipt, fresh source and asset bindings, and explicit reference to the
 integrated corrected v1 adapter, matrix, and operation guard. The corrected
-round-2 implementation, reruns, and final independent re-review are green, but
-Chief Architect delta re-review must pass before central integration.
+dynamic-snapshot and confirmation-window implementation is validated: focused
+`157/157`, full repository `1582/1583` with only the unchanged out-of-lane
+MailerLite Launch OS approval-queue failure, and green Node syntax, diff,
+allowlist, redaction, and fresh independent guard and documentation/scope
+reviews. Fresh Chief Architect delta review must still pass before central
+integration.
 
 ## Completion Boundary
 

@@ -1912,7 +1912,7 @@ No lane outputs in review at creation.
 - `source_branch`:
   `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
 - `status`:
-  `round2_implementation_reruns_and_independent_review_green_ca_delta_re_review_pending_no_live`
+  `dynamic_preclaim_snapshot_fix_validated_independent_reviews_green_fresh_ca_delta_review_pending_no_live`
 - `commits`: Git history is authoritative for the final corrected source-branch
   HEAD; do not infer a one-commit lane after the correction cycle
 - `files_changed_allowlist`:
@@ -1938,12 +1938,16 @@ No lane outputs in review at creation.
   - exact approved asset plus attachment preview;
   - strict root and nested input allowlists with no unknown or missing fields;
   - one immutable canonical-operation digest, identical at the root and across
-    operation, approval, mission context, claim, execution, and confirmation;
+    operation, approval, mission context, claim, execution, and confirmation,
+    whose canonical projection freezes the complete dynamic preclaim snapshot;
   - mandatory owner-only external `expectedCanonicalOperationSha256` for
     validator and receipt-builder calls;
   - fresh timestamped approval, surface, follower, binding, eligibility,
     asset-preview, context, and dedupe observations, all no later than the
     permanent claim;
+  - exact immutable `confirmation_max_delay_ms: 300000` in `operation`,
+    `approval`, and `context`; a later confirmation is terminal
+    unknown/no-retry even with a strong marker;
   - atomic permanent pre-send claim and one Send action;
   - strict current claim owner/token/revision/attempt lineage and ordered token
     consumption at or after the claim and at or before the attempt;
@@ -1956,23 +1960,17 @@ No lane outputs in review at creation.
   - owner-only private evidence and a redacted receipt with strict cross-field
     semantic coherence.
 - `tests_or_checks`:
-  - fresh round-2 focused operation-guard suite `136/136` green;
-  - neighboring central regressions `69/69` green;
-  - adversarial coverage green for extra root/nested fields,
-    missing execution fields, mission/approval/packet substitution, observation
-    freshness, claim-after-observations, non-current claim/token terminality,
-    owner/token/revision mismatch, ordered claim/consume/attempt/confirmation,
-    exact attempt confirmation, trusted external digest anchoring, terminal
-    public/private evidence semantics, and receipt cross-field coherence;
-  - exact 31-field receipt allowlist plus cross-field semantic coherence must
-    pass and is green;
-  - syntax, exact allowlist, `git diff --check`, redaction, and no-live-effect
-    checks are green;
-  - full repository suite `1561/1562`; the sole failure remains the untouched
-    `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` / newer replacement
-    set outside this lane;
-  - final independent re-review is green; Chief Architect delta re-review is
-    required before central integration.
+  - corrected focused/adversarial operation-guard suite `157/157` green,
+    including mutation/backdating of the dynamic preclaim snapshot and the
+    exact five-minute confirmation boundary;
+  - full repository suite `1582/1583`; the sole failure is the unchanged
+    out-of-lane `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` newer
+    replacement-set case;
+  - Node syntax, exact receipt allowlist/cross-field semantics, exact file
+    allowlist, `git diff --check`, redaction, and no-live-effect checks green;
+  - fresh independent guard and documentation/scope reviews green;
+  - fresh Chief Architect delta review remains required before central
+    integration.
 - `private_artifacts_touched`: owner-only consultant reply and redacted receipt
   only; never integrated
 - `source_actions_executed`: none
@@ -1981,10 +1979,10 @@ No lane outputs in review at creation.
   integration after lane review
 - `decision_needed`: none for the no-live correction; future pilot still
   requires a new mission contract
-- `integration_recommendation`: use Git history to identify the final corrected
-  HEAD, return the exact round-2 delta packet for Chief Architect re-review,
-  and integrate once under the central lock only after that review is green;
-  do not execute live
+- `integration_recommendation`: use Git history to identify the validated
+  corrected HEAD, return a fresh delta packet for Chief
+  Architect re-review, and integrate once under the central lock only after
+  that review is green; do not execute live
 
 ## Rejected / Needs Rework
 
