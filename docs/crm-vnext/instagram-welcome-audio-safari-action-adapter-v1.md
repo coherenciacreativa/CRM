@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
 Date: 2026-07-14
-Status: `code_test_doc_contract_validated_independent_reviews_green_no_run_ca_delta_review_pending`
+Status: `guard_centrally_integrated_executor_lane_validated_no_live`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -315,6 +315,8 @@ No invocation is valid without a new future mission that explicitly binds:
   claim token, attempt ID, and monotonically bound registry revision;
 - one separately integrated one-shot executor that atomically consumes the
   ready token before actuating the UI effect;
+- the exact executor contract in
+  `instagram-welcome-audio-one-shot-executor-v1.md`;
 - the permanent no-retry rule;
 - one exact immutable `confirmation_max_delay_ms: 300000` copied through
   `operation`, `approval`, and `context`;
@@ -426,11 +428,25 @@ produces no retry. The pre-send claim is never a claim that the send succeeded.
 
 Because the guard is pure, evaluating the same immutable fresh snapshot twice
 can repeat only the readiness result. It cannot mint or consume a one-shot
-authorization. Therefore `send_allowed` remains `false` in this guard. A future
-live mission must integrate and test the separate serialized executor that
-accepts one READY snapshot, atomically consumes its exact token, and performs
-at most one UI actuation. Until that executor exists, READY is not executable
-authority.
+authorization. Therefore `send_allowed` remains `false` in this guard. The
+separate executor contract accepts only an authoritative READY record plus an
+independently trusted canonical digest and exact owner/token/revision/attempt
+lineage. It re-reads under serialization, consumes durably once, and makes any
+pending, final, partial, malformed, or replayed terminal evidence permanently
+non-retryable. READY alone is never executable authority.
+
+### Synthetic No-Effect Executor Boundary
+
+The first executor implementation is
+`synthetic_no_effect_proof_only`. It proves serialization, durable publication,
+crash dominance, replay closure, and terminal guard revalidation against
+temporary owner-only fixtures. It has no browser, UI, network, upload, send,
+actuator callback, operational CLI, or live registry access. It keeps
+`send_allowed: false` and creates no mission or live authority.
+
+A later browser-bound executor remains a separate reviewed boundary. It may
+not exist until this synthetic proof is centrally integrated and a new future
+mission explicitly authorizes the exact effect path.
 
 The send-control actuation is the effect boundary. The claim was already
 durably committed before this boundary. Immediately at the boundary, the
@@ -591,20 +607,18 @@ the claim and marker once; do not repair by sending again.
 - no automation activation;
 - no central integration or future live-mission authorization; lane commit and
   push are allowed only after the required no-live validation and review;
-- no one-shot token consumer or live executor implementation;
+- no live one-shot executor, browser-bound actuator, or effect callback; the
+  only allowed implementation is the synthetic no-effect consumer proof;
 - no reuse of the closed pilot as live authority.
 
 ## Completion Boundary
 
-This docs-only adapter is complete when its enums align with the operation
-guard and surface matrix, the private-reference regression remains green, and
-review confirms that no file or live effect outside the approved hardening
-allowlist changed. The Chief Architect's latest delta review requires the
-complete dynamic preclaim snapshot and fixed confirmation-window correction;
-the corrected focused/adversarial suite is `157/157` green and the full suite is
-`1582/1583`, with only the unchanged out-of-lane MailerLite Launch OS
-approval-queue failure. Node syntax, diff, allowlist, redaction, and fresh
-independent guard and documentation/scope reviews are green. Fresh Chief
-Architect delta review and central integration remain pending. Operational
-readiness still requires separate integration and a new future mission with
-explicit authority.
+The corrected guard and its prior eleven-file adapter/matrix chain are already
+centrally integrated, readiness-only and no-live. The current lane adds the
+separate synthetic one-shot executor proof under
+`instagram-welcome-audio-one-shot-executor-v1.md`. Its focused adversarial
+validation and independent reviews are green; lane commit/push, formal artifact
+review and central integration remain separate gates. Even after that
+integration, operational readiness still requires claim issuance, a
+browser-bound adapter, and a newly written and freshly approved future mission
+with explicit live authority.

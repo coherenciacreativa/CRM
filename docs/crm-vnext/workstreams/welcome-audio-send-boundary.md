@@ -1,42 +1,37 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`:
-  `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
-- `worktree_path`:
-  `/Users/alejandrogomez/CRM-core-welcome-audio-safari-action-adapter-v1-hardening`
-- `consultant_chat`: Welcome audio consultant
-- `codex_worker`: Welcome Audio Safari action-adapter v1 hardening lane
-- `status`:
-  `safari_action_adapter_v1_centrally_integrated_readiness_only_no_live`
-- `objective`: Make one fail-closed Safari end-to-end action adapter canonical,
-  align its operation enums with the guard, keep the old pilot closed, and
-  require a new mission before execution.
-- `why_now`: The historical one-send result and upload-route v0 are useful
-  design evidence but are not production proof or standing live authority.
+- `branch`: `codex/crm-core-welcome-audio`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio`
+- `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
+- `codex_worker`: Welcome Audio one-shot executor hardening lane
+- `status`: `one_shot_executor_synthetic_no_effect_lane_validated_no_live`
+- `objective`: Prove that one authoritative READY attempt can be consumed
+  durably exactly once, without browser, network, UI or live effect.
+- `why_now`: The guard and canonical Safari adapter are centrally integrated,
+  but READY remains readiness-only until a separately serialized consumer
+  closes replay, crash and concurrency ambiguity.
 - `allowed_files`:
+  - `scripts/crm-vnext-instagram-welcome-audio-one-shot-executor.mjs`
+  - `__tests__/crm-vnext-instagram-welcome-audio-one-shot-executor.spec.ts`
+  - `docs/crm-vnext/instagram-welcome-audio-one-shot-executor-v1.md`
   - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
   - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
-  - `scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs`
-  - `__tests__/crm-vnext-instagram-welcome-audio-operation-guard.spec.ts`
-  - `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
   - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
-  - `docs/crm-vnext/crm-core-limited-operational-pilot-v1-closeout-v0.md`
-  - `docs/crm-vnext/crm-core-next-action.md`
-  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
-  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
-  - `docs/crm-vnext/workstreams/integration.md`
 - `forbidden_files`:
-  - every file outside the exact eleven-file allowlist above
+  - every file outside the exact six-file allowlist above
+  - the integrated operation guard and its existing test file
+  - central next-action, board, queue and integration records before formal
+    central integration
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
-  - no-live protocol and capability design
-  - deterministic pure operation guard
-  - focused adversarial tests
-  - mechanical historical private-reference redaction
-  - pilot closeout and synchronized durable coordination records
+  - synthetic no-effect one-shot consumer
+  - owner-only temporary fixtures
+  - durable mutex, pending evidence and terminal tombstone mechanics
+  - focused concurrency, crash, replay, filesystem and receipt tests
+  - narrow adapter, matrix and workstream synchronization
 - `forbidden_scope`:
   - sending audio
   - opening DMs
@@ -49,6 +44,19 @@
 - `redacted_receipt_policy`: Receipts may include counts and status only; no
   identities or message content.
 - `current_tasks`:
+  - current task: implement
+    `crm_core_instagram_welcome_audio_one_shot_executor_v1` only in
+    `synthetic_no_effect_proof_only` mode
+  - Chief Architect task-packet verdict: `green_to_commit_later`, boundary `A`,
+    no CEO decision required
+  - authoritative input: READY is already issued outside this executor; the
+    trusted digest and exact owner/token/revision/attempt lineage are supplied
+    independently and must match under serialized re-read
+  - terminal transition: synced pending evidence, exclusive non-replace final
+    tombstone, terminal-unconfirmed guard revalidation, permanent no-retry,
+    zero external effect
+  - lane stop: focused/adversarial proof, independent review, commit and push;
+    stop before central integration
   - completed docs-only immediate canonical Safari action-adapter v1 design
   - artifact:
     `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
@@ -111,6 +119,12 @@
     MailerLite actions, campaign actions, or CRM/source writes occurred
   - the old pilot is closed and cannot be resumed; a new future mission with
     fresh explicit authority is required
+  - current executor-focused suite `45/45` is green; the integrated guard plus
+    executor suite is `202/202` green
+  - current full repository suite is `1627/1628`; the sole failure is the same
+    unchanged out-of-lane MailerLite Launch OS approval-queue baseline
+  - three independent executor security, adversarial-test and
+    documentation/scope delta reviews are green with no remaining findings
   - completed no-run send-boundary design
   - artifact:
     `docs/crm-vnext/instagram-welcome-audio-send-boundary-v0.md`
@@ -222,11 +236,13 @@
   duplicated inside the commit that creates it
 - `latest_receipt`: no live receipt; the tracked historical private-reference
   field now contains only a redaction marker and a passed regression status
-- `blockers`: central integration is complete; the one-shot executor remains
-  absent and no newly approved future mission exists
-- `latest_execution_note`: this eleven-file code-test-doc hardening lane created
+- `blockers`: the prior guard/adapter chain is centrally integrated; the
+  validated synthetic executor still requires lane commit/push, formal artifact
+  review and separate central integration. No newly approved future mission
+  exists.
+- `latest_execution_note`: this exact six-file synthetic hardening lane creates
   no browser, source, send, MailerLite, legacy proxy, campaign, CRM,
-  automation, or private-artifact effect.
+  automation, actuator, network, or private operational effect.
 - `safari_action_adapter_v1_status`:
   `dynamic_preclaim_snapshot_and_confirmation_window_fix_integrated_no_live`
 - `surface_capability_matrix_v1_status`:
@@ -234,11 +250,13 @@
 - `operation_guard_status`:
   `focused_157_of_157_green_readiness_only_no_live_executor`
 - `guard_integrated`: true
-- `one_shot_executor_absent`: true
+- `one_shot_executor_present_in_lane`: true
+- `one_shot_executor_centrally_integrated`: false
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
-- `one_shot_executor_status`: `required_not_implemented`
+- `one_shot_executor_status`:
+  `synthetic_no_effect_boundary_a_lane_validated_not_centrally_integrated`
 - `old_limited_operational_pilot_status`:
   `closed_superseded_effect_history_requires_owner_only_reconciliation`
 - `future_mission_status`: `required_not_created`
@@ -254,11 +272,12 @@
 - `permanent_no_retry_after_attempt`: true
 - `retry_disposition_after_attempt`:
   `retry_forbidden_permanently_after_attempt`
-- `next_recommended_step`: preserve the integrated rail and design/review the
-  still-missing one-shot executor while every live gate remains closed
-- `next_approval_needed`: no integration approval remains; after separate
-  executor review, any future live use requires a newly written and freshly
-  approved mission with all of its gates green
+- `next_recommended_step`: commit/push the validated canonical lane and request
+  a fresh formal artifact/integration decision while every live gate remains
+  closed
+- `next_approval_needed`: no CEO decision is needed for this synthetic lane;
+  central integration remains a separate reviewed step, and any future live
+  use still requires a newly written and freshly approved mission
 - `proposed_integration_note`: Welcome Audio now has one immediate canonical
   Safari end-to-end action adapter, one explicit surface/capability matrix, a
   strict root/nested input contract, one immutable canonical-operation digest,
@@ -269,9 +288,13 @@
   semantics, a permanent pre-send effect claim distinct from post-send
   confirmation, cross-field receipt semantics, a single-attempt terminal
   no-retry rule, and a closeout that prevents reuse of the old pilot.
-  The prior controlled send and v0 protocol remain design evidence only. No live
-  effect is authorized; corrected validation, independent review, formal Chief
-  Architect review, and central integration are green. The missing one-shot
-  executor plus a newly approved mission remain the next gates.
+  The prior controlled send and v0 protocol remain design evidence only. The
+  guard/adapter chain is centrally integrated, but the new boundary-A executor
+  is synthetic-only and still lane-local. It consumes an independently bound
+  authoritative READY once through synced pending evidence and an exclusive
+  terminal tombstone, revalidates terminal-unconfirmed no-retry, and exposes no
+  actuator. No live effect is authorized; executor artifact review, separate
+  central integration, claim issuance, a browser-bound adapter, and a newly
+  approved mission remain future gates.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
