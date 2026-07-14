@@ -6097,13 +6097,21 @@ routing and completion pointer.
     `green_to_self_integrate`; the exact source chain merged with zero conflicts
     under the central lock.
 - `guard_integrated`: true
-- `one_shot_executor_absent`: true
+- `one_shot_executor_centrally_integrated`: true
+- `one_shot_executor_mode`: `synthetic_no_effect_proof_only`
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
-- `next_external_gate`: Design and separately review the missing one-shot
-  executor, then write and freshly approve a new mission before any live use.
-  Git history is authoritative for the central merge and source chain; this
-  action grants no live authority.
+- `validation_evidence_after_executor_integration`: focused executor `45/45`
+  green; integrated guard plus executor `202/202` green; full repository suite
+  `1627/1628`, with the sole failure the unchanged out-of-lane MailerLite
+  Launch OS approval-queue baseline.
+- `integration_effects`: no live, source, private, browser, Instagram,
+  MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
+- `next_external_gate`: Claim issuance and a separately reviewed browser-bound
+  executor/actuator remain missing. Only after those are integrated may a newly
+  written and freshly approved live mission authorize any send. Git history is
+  authoritative for the central merge and source chain; this action grants no
+  live authority.
 - `recommended_default`:
   `preserve_integrated_readiness_keep_all_live_gates_closed`

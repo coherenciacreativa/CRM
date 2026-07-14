@@ -1127,10 +1127,18 @@
 - `central_integration_result`: completed under the Central Integration Lock;
   Git history is authoritative for the merge commit and source chain
 - `guard_integrated`: true
-- `one_shot_executor_absent`: true
+- `one_shot_executor_centrally_integrated`: true
+- `one_shot_executor_mode`: `synthetic_no_effect_proof_only`
+- `validation_evidence_after_executor_integration`: focused executor `45/45`
+  green; integrated guard plus executor `202/202` green; full repository suite
+  `1627/1628`, with the sole failure the unchanged out-of-lane MailerLite
+  Launch OS approval-queue baseline.
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
-- `next_gate`: the missing one-shot executor must be implemented and reviewed,
-  then a new mission must be written and freshly approved before any live use.
-  Central integration alone grants no live authority.
+- `integration_effects`: no live, source, private, browser, Instagram,
+  MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
+- `next_gate`: Claim issuance and a separately reviewed browser-bound
+  executor/actuator remain missing. Only after those are integrated may a new
+  mission be written and freshly approved before any live use. Central
+  integration alone grants no live authority.
