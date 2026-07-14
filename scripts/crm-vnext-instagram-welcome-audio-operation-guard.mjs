@@ -11,6 +11,8 @@
  * snapshot is never a second send authorization.
  */
 
+import { createHash } from 'node:crypto';
+
 const WELCOME_AUDIO_ADAPTER_VERSION = 'instagram_welcome_audio_safari_action_adapter_v1';
 const WELCOME_AUDIO_OPERATION_GUARD_CONTRACT_VERSION =
   'crm_core_instagram_welcome_audio_operation_guard_v1';
@@ -21,6 +23,8 @@ const WELCOME_AUDIO_FUTURE_CLOCK_TOLERANCE_MS = 60 * 1000;
 const WELCOME_AUDIO_ATTEMPT_BUDGET = 1;
 const WELCOME_AUDIO_TIME_ZONE = 'America/Bogota';
 const WELCOME_AUDIO_RECEIPT_INVALID_SENTINEL = 'invalid_or_unknown';
+const WELCOME_AUDIO_CANONICAL_OPERATION_PROJECTION_VERSION =
+  'crm_core_instagram_welcome_audio_canonical_operation_projection_v1';
 
 const WELCOME_AUDIO_SURFACE = Object.freeze({
   STATUS: 'safari_instagram_web_dm',
@@ -119,9 +123,11 @@ const WELCOME_AUDIO_GUARD_DECISION = Object.freeze({
 });
 
 const WELCOME_AUDIO_GUARD_REASON = Object.freeze({
+  INPUT_SHAPE: 'blocked_input_shape_unknown_or_missing_fields',
   ADAPTER_VERSION: 'blocked_adapter_version_mismatch',
   CONTRACT_VERSION: 'blocked_guard_contract_version_mismatch',
   OPERATION_IDENTITY: 'blocked_operation_identity_missing_or_invalid',
+  CANONICAL_OPERATION: 'blocked_canonical_operation_digest_missing_or_mismatched',
   APPROVAL: 'blocked_exact_operation_approval_missing_or_mismatched',
   APPROVAL_FRESHNESS: 'blocked_exact_operation_approval_stale_or_invalid',
   EXPECTED_SEND_COUNT: 'blocked_expected_send_count_must_equal_one',
@@ -133,6 +139,7 @@ const WELCOME_AUDIO_GUARD_REASON = Object.freeze({
   UPLOAD_ROUTE: 'blocked_upload_route_must_use_native_file_picker',
   CHROME_UPLOAD: 'blocked_chrome_upload_forbidden',
   IN_APP_UPLOAD: 'blocked_in_app_browser_upload_forbidden',
+  SURFACE_OBSERVATION: 'blocked_surface_observation_stale_or_invalid',
   SOURCE_RECENCY: 'blocked_recent_follower_evidence_missing_stale_or_ambiguous',
   SOURCE_TIMESTAMP: 'blocked_follower_evidence_timestamp_invalid',
   SOURCE_MAX_AGE: 'blocked_follower_evidence_exceeds_mission_bound_max_age',
@@ -145,15 +152,18 @@ const WELCOME_AUDIO_GUARD_REASON = Object.freeze({
   IDENTITY_AMBIGUITY: 'blocked_source_profile_thread_binding_ambiguous',
   PRIVATE_ANCHORS: 'blocked_private_binding_anchors_missing_or_invalid',
   BINDING_MISMATCH: 'blocked_private_source_profile_thread_binding_mismatch',
+  BINDING_OBSERVATION: 'blocked_source_profile_thread_observation_stale_or_invalid',
   BUSINESS_ELIGIBILITY: 'blocked_business_eligibility_not_confirmed_recent_follower',
   AUDIO_CAPABILITY: 'blocked_audio_capability_not_present_and_usable',
   COMPOSER_CAPABILITY: 'blocked_dm_composer_not_present_and_usable',
   ATTACHMENT_CAPABILITY: 'blocked_attachment_control_not_present_and_usable',
   TEXT_FALLBACK: 'blocked_text_fallback_forbidden',
+  ELIGIBILITY_OBSERVATION: 'blocked_business_capability_observation_stale_or_invalid',
   ASSET: 'blocked_approved_audio_asset_missing_or_invalid',
   ASSET_APPROVAL: 'blocked_approved_audio_asset_binding_mismatch',
   ASSET_PREVIEW: 'blocked_exact_asset_and_preview_binding_missing',
   PREVIEW_BINDING: 'blocked_preview_does_not_match_exact_asset_or_thread',
+  ASSET_PREVIEW_OBSERVATION: 'blocked_asset_preview_observation_stale_or_invalid',
   CONTEXT_STATUS: 'blocked_central_mission_context_not_fresh_exact',
   CONTEXT_FRESHNESS: 'blocked_central_mission_context_stale_or_invalid',
   CENTRAL_HEAD: 'blocked_central_repo_head_mismatch',
@@ -168,6 +178,9 @@ const WELCOME_AUDIO_GUARD_REASON = Object.freeze({
   EFFECT_CLAIM_SEQUENCE: 'blocked_effect_claim_sequence_invalid',
   EFFECT_CLAIM_OWNER: 'blocked_effect_claim_not_owned_by_current_invocation',
   EFFECT_CLAIM_REENTRY: 'blocked_preexisting_replayed_or_consumed_claim_terminal_no_retry',
+  TERMINAL_EVIDENCE: 'blocked_non_neutral_lifecycle_evidence_terminal_no_retry',
+  EXECUTION_BINDING: 'blocked_execution_not_bound_to_current_operation_claim_or_attempt',
+  CLAIM_TOKEN_CONSUMPTION: 'blocked_claim_token_not_consumed_before_attempt',
   ATTEMPT_BUDGET: 'blocked_attempt_budget_must_equal_one',
   SEND_COUNT: 'blocked_send_attempt_count_exceeds_one',
   ATTEMPT_STATE: 'blocked_attempt_state_invalid_or_inconsistent',
@@ -181,6 +194,7 @@ const WELCOME_AUDIO_GUARD_REASON = Object.freeze({
   CONFIRMATION_INSUFFICIENT: 'blocked_attempted_unconfirmed_terminal_no_retry',
   RECEIPT_PRIVATE_FIELDS: 'blocked_redacted_receipt_contains_private_or_extra_fields',
   RECEIPT_CONTRACT: 'blocked_redacted_receipt_contract_mismatch',
+  RECEIPT_SEMANTICS: 'blocked_redacted_receipt_semantic_mismatch',
 });
 
 const STRONG_CONFIRMATION_MARKERS = new Set([
@@ -204,6 +218,21 @@ const RETRY_DISPOSITIONS = enumSet(WELCOME_AUDIO_RETRY_DISPOSITION);
 const GUARD_PHASES = enumSet(WELCOME_AUDIO_GUARD_PHASE);
 const GUARD_DECISIONS = enumSet(WELCOME_AUDIO_GUARD_DECISION);
 const REASON_CODES = enumSet(WELCOME_AUDIO_GUARD_REASON);
+
+const CONFIRMED_TERMINAL_COMPATIBLE_BLOCKERS = new Set([
+  WELCOME_AUDIO_GUARD_REASON.APPROVAL_FRESHNESS,
+  WELCOME_AUDIO_GUARD_REASON.SURFACE_OBSERVATION,
+  WELCOME_AUDIO_GUARD_REASON.SOURCE_MAX_AGE,
+  WELCOME_AUDIO_GUARD_REASON.SOURCE_CALENDAR_WINDOW,
+  WELCOME_AUDIO_GUARD_REASON.SOURCE_BUCKET,
+  WELCOME_AUDIO_GUARD_REASON.BINDING_OBSERVATION,
+  WELCOME_AUDIO_GUARD_REASON.ELIGIBILITY_OBSERVATION,
+  WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW_OBSERVATION,
+  WELCOME_AUDIO_GUARD_REASON.CONTEXT_FRESHNESS,
+  WELCOME_AUDIO_GUARD_REASON.DEDUPE_FRESHNESS,
+  WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_FRESHNESS,
+  WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+]);
 
 const REDACTED_RECEIPT_FIELDS = Object.freeze([
   'receipt_schema_version',
@@ -238,6 +267,188 @@ const REDACTED_RECEIPT_FIELDS = Object.freeze([
   'retry_disposition',
   'blocker_codes',
 ]);
+
+const WELCOME_AUDIO_INPUT_ROOT_FIELDS = Object.freeze([
+  'adapter_version',
+  'contract_version',
+  'canonical_operation_sha256',
+  'operation',
+  'approval',
+  'execution_surface',
+  'follower_evidence',
+  'binding',
+  'eligibility',
+  'asset',
+  'context',
+  'dedupe',
+  'effect_claim',
+  'execution',
+  'confirmation',
+]);
+
+const WELCOME_AUDIO_INPUT_SECTION_FIELDS = Object.freeze({
+  operation: Object.freeze([
+    'operation_id',
+    'approval_packet_id',
+    'mission_id',
+    'source_event_anchor_sha256',
+    'profile_anchor_sha256',
+    'candidate_anchor_sha256',
+    'thread_anchor_sha256',
+    'owner_anchor_sha256',
+    'approved_audio_asset_id',
+    'approved_audio_asset_sha256',
+    'expected_send_count',
+    'canonical_operation_sha256',
+  ]),
+  approval: Object.freeze([
+    'status',
+    'checked_at',
+    'operation_id',
+    'approval_packet_id',
+    'mission_id',
+    'source_event_anchor_sha256',
+    'profile_anchor_sha256',
+    'candidate_anchor_sha256',
+    'thread_anchor_sha256',
+    'owner_anchor_sha256',
+    'approved_audio_asset_id',
+    'approved_audio_asset_sha256',
+    'source_recency_max_age_ms',
+    'expected_send_count',
+    'canonical_operation_sha256',
+  ]),
+  execution_surface: Object.freeze([
+    'surface',
+    'surface_detail',
+    'browser',
+    'browser_mode',
+    'isolation',
+    'upload_route',
+    'private_browsing',
+    'chrome_upload_attempted',
+    'in_app_browser_upload_attempted',
+    'observed_at',
+  ]),
+  follower_evidence: Object.freeze([
+    'source_recency',
+    'observed_at',
+    'time_bucket',
+    'source_recency_max_age_ms',
+    'source_event_anchor_sha256',
+  ]),
+  binding: Object.freeze([
+    'source_binding',
+    'source_to_profile',
+    'profile_to_thread',
+    'follows_owner',
+    'ambiguity',
+    'source_event_anchor_sha256',
+    'profile_anchor_sha256',
+    'candidate_anchor_sha256',
+    'thread_anchor_sha256',
+    'owner_anchor_sha256',
+    'observed_at',
+  ]),
+  eligibility: Object.freeze([
+    'business_eligibility',
+    'audio_capability',
+    'composer_capability',
+    'attachment_capability',
+    'text_fallback',
+    'observed_at',
+  ]),
+  asset: Object.freeze([
+    'approved_audio_asset_id',
+    'approved_audio_asset_sha256',
+    'asset_preview_binding',
+    'preview_status',
+    'preview_audio_asset_id',
+    'preview_audio_asset_sha256',
+    'preview_thread_anchor_sha256',
+    'preview_observed_at',
+  ]),
+  context: Object.freeze([
+    'status',
+    'checked_at',
+    'central_repo_head',
+    'expected_central_repo_head',
+    'mission_id',
+    'expected_mission_id',
+    'mission_status',
+    'operation_id',
+    'approval_packet_id',
+    'canonical_operation_sha256',
+  ]),
+  dedupe: Object.freeze([
+    'status',
+    'already_welcomed_status',
+    'send_history_status',
+    'checked_at',
+    'operation_id',
+    'approval_packet_id',
+    'mission_id',
+    'candidate_anchor_sha256',
+    'thread_anchor_sha256',
+    'owner_anchor_sha256',
+    'approved_audio_asset_sha256',
+  ]),
+  effect_claim: Object.freeze([
+    'status',
+    'claim_result',
+    'claim_token_status',
+    'atomic',
+    'permanent',
+    'claimed_at',
+    'claim_owner_id',
+    'claim_token_id',
+    'registry_revision',
+    'attempt_id',
+    'operation_id',
+    'approval_packet_id',
+    'mission_id',
+    'candidate_anchor_sha256',
+    'thread_anchor_sha256',
+    'owner_anchor_sha256',
+    'approved_audio_asset_id',
+    'approved_audio_asset_sha256',
+    'canonical_operation_sha256',
+  ]),
+  execution: Object.freeze([
+    'attempt_budget',
+    'send_attempt_count',
+    'attempt_state',
+    'send_claim',
+    'retry_disposition',
+    'retry_requested',
+    'operation_id',
+    'approval_packet_id',
+    'mission_id',
+    'canonical_operation_sha256',
+    'claim_owner_id',
+    'claim_token_id',
+    'claim_registry_revision',
+    'attempt_id',
+    'claim_token_consumed_at',
+    'attempted_at',
+  ]),
+  confirmation: Object.freeze([
+    'confirmation_marker',
+    'operation_id',
+    'approval_packet_id',
+    'mission_id',
+    'canonical_operation_sha256',
+    'candidate_anchor_sha256',
+    'thread_anchor_sha256',
+    'approved_audio_asset_sha256',
+    'claim_owner_id',
+    'claim_token_id',
+    'claim_registry_revision',
+    'attempt_id',
+    'bound_to_current_operation',
+    'checked_at',
+  ]),
+});
 
 const cleanString = (value) => {
   if (typeof value !== 'string') return null;
@@ -308,8 +519,230 @@ const exactObjectKeys = (value, expected) => {
   return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
 };
 
+const validateWelcomeAudioInputShape = (input) => {
+  const rootFields = input?.receipt === undefined
+    ? WELCOME_AUDIO_INPUT_ROOT_FIELDS
+    : [...WELCOME_AUDIO_INPUT_ROOT_FIELDS, 'receipt'];
+  if (!exactObjectKeys(input, rootFields)) return false;
+  return Object.entries(WELCOME_AUDIO_INPUT_SECTION_FIELDS)
+    .every(([section, fields]) => exactObjectKeys(input[section], fields));
+};
+
+const canonicalOperationProjection = (input) => ({
+  projection_version: WELCOME_AUDIO_CANONICAL_OPERATION_PROJECTION_VERSION,
+  adapter_version: input?.adapter_version ?? null,
+  contract_version: input?.contract_version ?? null,
+  operation: {
+    operation_id: input?.operation?.operation_id ?? null,
+    approval_packet_id: input?.operation?.approval_packet_id ?? null,
+    mission_id: input?.operation?.mission_id ?? null,
+    source_event_anchor_sha256: input?.operation?.source_event_anchor_sha256 ?? null,
+    profile_anchor_sha256: input?.operation?.profile_anchor_sha256 ?? null,
+    candidate_anchor_sha256: input?.operation?.candidate_anchor_sha256 ?? null,
+    thread_anchor_sha256: input?.operation?.thread_anchor_sha256 ?? null,
+    owner_anchor_sha256: input?.operation?.owner_anchor_sha256 ?? null,
+    approved_audio_asset_id: input?.operation?.approved_audio_asset_id ?? null,
+    approved_audio_asset_sha256: input?.operation?.approved_audio_asset_sha256 ?? null,
+    expected_send_count: input?.operation?.expected_send_count ?? null,
+  },
+  approval: {
+    status: input?.approval?.status ?? null,
+    operation_id: input?.approval?.operation_id ?? null,
+    approval_packet_id: input?.approval?.approval_packet_id ?? null,
+    mission_id: input?.approval?.mission_id ?? null,
+    source_event_anchor_sha256: input?.approval?.source_event_anchor_sha256 ?? null,
+    profile_anchor_sha256: input?.approval?.profile_anchor_sha256 ?? null,
+    candidate_anchor_sha256: input?.approval?.candidate_anchor_sha256 ?? null,
+    thread_anchor_sha256: input?.approval?.thread_anchor_sha256 ?? null,
+    owner_anchor_sha256: input?.approval?.owner_anchor_sha256 ?? null,
+    approved_audio_asset_id: input?.approval?.approved_audio_asset_id ?? null,
+    approved_audio_asset_sha256: input?.approval?.approved_audio_asset_sha256 ?? null,
+    source_recency_max_age_ms: input?.approval?.source_recency_max_age_ms ?? null,
+    expected_send_count: input?.approval?.expected_send_count ?? null,
+  },
+  execution_surface: {
+    surface: input?.execution_surface?.surface ?? null,
+    surface_detail: input?.execution_surface?.surface_detail ?? null,
+    browser: input?.execution_surface?.browser ?? null,
+    browser_mode: input?.execution_surface?.browser_mode ?? null,
+    isolation: input?.execution_surface?.isolation ?? null,
+    upload_route: input?.execution_surface?.upload_route ?? null,
+    private_browsing: input?.execution_surface?.private_browsing ?? null,
+    chrome_upload_attempted: input?.execution_surface?.chrome_upload_attempted ?? null,
+    in_app_browser_upload_attempted:
+      input?.execution_surface?.in_app_browser_upload_attempted ?? null,
+  },
+  mission: {
+    operation_id: input?.context?.operation_id ?? null,
+    approval_packet_id: input?.context?.approval_packet_id ?? null,
+    mission_id: input?.context?.mission_id ?? null,
+    expected_mission_id: input?.context?.expected_mission_id ?? null,
+    mission_status: input?.context?.mission_status ?? null,
+    central_repo_head: input?.context?.central_repo_head ?? null,
+    expected_central_repo_head: input?.context?.expected_central_repo_head ?? null,
+  },
+  execution: {
+    attempt_budget: input?.execution?.attempt_budget ?? null,
+  },
+});
+
+const buildWelcomeAudioCanonicalOperationDigest = (input) => createHash('sha256')
+  .update(JSON.stringify(canonicalOperationProjection(input)), 'utf8')
+  .digest('hex');
+
 const receiptEnum = (value, allowed) => value === WELCOME_AUDIO_RECEIPT_INVALID_SENTINEL
   || allowed.has(value);
+
+const receiptHasPublicTerminalSignal = (receipt) => (
+  receipt.effect_claim === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+  || (CLAIM_RESULTS.has(receipt.claim_result)
+    && receipt.claim_result !== WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED)
+  || (CLAIM_TOKEN_STATUSES.has(receipt.claim_token_status)
+    && receipt.claim_token_status !== WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED)
+  || receipt.send_attempt_count === 1
+  || (ATTEMPT_STATES.has(receipt.attempt_state)
+    && receipt.attempt_state !== WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED)
+  || (SEND_CLAIMS.has(receipt.send_claim)
+    && receipt.send_claim !== WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED)
+  || STRONG_CONFIRMATION_MARKERS.has(receipt.confirmation_marker)
+);
+
+const validateReceiptSemantics = (receipt) => {
+  const blockers = receipt.blocker_codes;
+  const uniqueBlockers = new Set(blockers);
+  const phaseDecisionValid = (
+    receipt.phase === WELCOME_AUDIO_GUARD_PHASE.PRECLAIM
+      && receipt.decision === WELCOME_AUDIO_GUARD_DECISION.ELIGIBLE_TO_CLAIM
+  ) || (
+    receipt.phase === WELCOME_AUDIO_GUARD_PHASE.SEND_READY
+      && receipt.decision === WELCOME_AUDIO_GUARD_DECISION.READY
+  ) || (
+    receipt.phase === WELCOME_AUDIO_GUARD_PHASE.TERMINAL
+      && [
+        WELCOME_AUDIO_GUARD_DECISION.CONFIRMED_TERMINAL,
+        WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      ].includes(receipt.decision)
+  ) || (
+    receipt.phase === WELCOME_AUDIO_GUARD_PHASE.BLOCKED
+      && receipt.decision === WELCOME_AUDIO_GUARD_DECISION.BLOCKED
+  );
+  const commonValid = receipt.send_allowed === false
+    && phaseDecisionValid
+    && receipt.one_shot_consumer_required === receipt.send_ready
+    && uniqueBlockers.size === blockers.length
+    && receipt.claim_allowed === (
+      receipt.phase === WELCOME_AUDIO_GUARD_PHASE.PRECLAIM
+      && receipt.decision === WELCOME_AUDIO_GUARD_DECISION.ELIGIBLE_TO_CLAIM
+    )
+    && receipt.send_ready === (
+      receipt.phase === WELCOME_AUDIO_GUARD_PHASE.SEND_READY
+      && receipt.decision === WELCOME_AUDIO_GUARD_DECISION.READY
+    )
+    && receipt.terminal === (receipt.phase === WELCOME_AUDIO_GUARD_PHASE.TERMINAL);
+  if (!commonValid) return false;
+
+  const exactPreAttemptEvidence = receipt.expected_send_count === 1
+    && receipt.attempt_budget === 1
+    && receipt.send_attempt_count === 0
+    && receipt.surface === WELCOME_AUDIO_SURFACE.STATUS
+    && receipt.surface_detail === WELCOME_AUDIO_SURFACE.DETAIL
+    && receipt.source_recency === WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT
+    && receipt.source_binding === WELCOME_AUDIO_SOURCE_BINDING.EXACT
+    && receipt.business_eligibility === 'eligible_confirmed_recent_follower'
+    && receipt.audio_capability === WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE
+    && receipt.asset_preview_binding === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT
+    && receipt.context_status === 'fresh_exact_central_mission_context'
+    && receipt.dedupe_status === 'clear_no_prior_welcome_or_attempt';
+
+  if (receipt.decision === WELCOME_AUDIO_GUARD_DECISION.ELIGIBLE_TO_CLAIM) {
+    return exactPreAttemptEvidence
+      && receipt.effect_claim === WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED
+      && receipt.claim_result === WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED
+      && receipt.claim_token_status === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED
+      && receipt.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED
+      && receipt.send_claim === WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED
+      && receipt.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+      && receipt.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT
+      && blockers.length === 0;
+  }
+
+  if (receipt.decision === WELCOME_AUDIO_GUARD_DECISION.READY) {
+    return exactPreAttemptEvidence
+      && receipt.effect_claim === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+      && receipt.claim_result === WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION
+      && receipt.claim_token_status
+        === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.FRESH_UNCONSUMED_CURRENT_INVOCATION
+      && receipt.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPT_COMMITTED
+      && receipt.send_claim === WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED
+      && receipt.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+      && receipt.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT
+      && blockers.length === 0;
+  }
+
+  if (receipt.decision === WELCOME_AUDIO_GUARD_DECISION.CONFIRMED_TERMINAL) {
+    return receipt.expected_send_count === 1
+      && receipt.attempt_budget === 1
+      && receipt.send_attempt_count === 1
+      && receipt.effect_claim === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+      && receipt.claim_result === WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION
+      && receipt.claim_token_status === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED
+      && receipt.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPTED_TERMINAL
+      && receipt.send_claim === WELCOME_AUDIO_SEND_CLAIM.CONFIRMED_SENT
+      && STRONG_CONFIRMATION_MARKERS.has(receipt.confirmation_marker)
+      && receipt.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT
+      && blockers.includes(WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY)
+      && blockers.every((reason) => CONFIRMED_TERMINAL_COMPATIBLE_BLOCKERS.has(reason));
+  }
+
+  if (receipt.decision === WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL) {
+    const publicTerminalSignal = receiptHasPublicTerminalSignal(receipt);
+    const publicEffectClaimSignal = receipt.effect_claim
+        === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+      || (CLAIM_RESULTS.has(receipt.claim_result)
+        && receipt.claim_result !== WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED)
+      || (CLAIM_TOKEN_STATUSES.has(receipt.claim_token_status)
+        && receipt.claim_token_status !== WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED);
+    const evidenceReasonCoherent = (
+      blockers.includes(WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY)
+        && publicEffectClaimSignal
+    ) || (
+      blockers.includes(WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT)
+        && publicTerminalSignal
+    ) || (
+      blockers.includes(WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE)
+        && !publicTerminalSignal
+    );
+    const everyEvidenceReasonCoherent = (
+      !blockers.includes(WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY)
+        || publicEffectClaimSignal
+    ) && (
+      !blockers.includes(WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE)
+        || !publicTerminalSignal
+    );
+    return [null, 1].includes(receipt.expected_send_count)
+      && [null, 1].includes(receipt.attempt_budget)
+      && [null, 0, 1].includes(receipt.send_attempt_count)
+      && receipt.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT
+      && blockers.includes(WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY)
+      && evidenceReasonCoherent
+      && everyEvidenceReasonCoherent;
+  }
+
+  return receipt.decision === WELCOME_AUDIO_GUARD_DECISION.BLOCKED
+    && receipt.phase === WELCOME_AUDIO_GUARD_PHASE.BLOCKED
+    && receipt.claim_allowed === false
+    && receipt.send_ready === false
+    && receipt.terminal === false
+    && blockers.length > 0
+    && !receiptHasPublicTerminalSignal(receipt)
+    && receipt.retry_disposition !== WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT
+    && !blockers.some((reason) => [
+      WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ].includes(reason));
+};
 
 const validateReceiptShape = (receipt) => {
   if (!exactObjectKeys(receipt, REDACTED_RECEIPT_FIELDS)) {
@@ -362,13 +795,24 @@ const validateReceiptShape = (receipt) => {
     && receiptEnum(receipt.retry_disposition, RETRY_DISPOSITIONS)
     && Array.isArray(receipt.blocker_codes)
     && receipt.blocker_codes.every((reason) => REASON_CODES.has(reason));
-  return fixedValid
+  if (!fixedValid) {
+    return { ok: false, reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_CONTRACT };
+  }
+  return validateReceiptSemantics(receipt)
     ? { ok: true, reason: null }
-    : { ok: false, reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_CONTRACT };
+    : { ok: false, reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS };
 };
 
-const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateReceipt = true } = {}) => {
+const evaluateWelcomeAudioOperation = (
+  input,
+  {
+    nowMs = Date.now(),
+    validateReceipt = true,
+    expectedCanonicalOperationSha256 = null,
+  } = {},
+) => {
   const reasons = [];
+  const inputShapeValid = validateWelcomeAudioInputShape(input);
   const operation = input?.operation ?? {};
   const approval = input?.approval ?? {};
   const surface = input?.execution_surface ?? {};
@@ -381,6 +825,8 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
   const effectClaim = input?.effect_claim ?? {};
   const execution = input?.execution ?? {};
   const confirmation = input?.confirmation ?? {};
+
+  if (!inputShapeValid) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE);
 
   if (input?.adapter_version !== WELCOME_AUDIO_ADAPTER_VERSION) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ADAPTER_VERSION);
@@ -398,6 +844,9 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
   ];
   if (!isOpaqueId(operation.operation_id)
     || !isOpaqueId(operation.approval_packet_id)
+    || !isOpaqueId(operation.mission_id)
+    || !isOpaqueId(operation.approved_audio_asset_id)
+    || !isSha256(operation.approved_audio_asset_sha256)
     || !operationAnchors.every(isSha256)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.OPERATION_IDENTITY);
   }
@@ -409,15 +858,38 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     && approval.expected_send_count === 1
     && sameCleanString(approval.operation_id, operation.operation_id)
     && sameCleanString(approval.approval_packet_id, operation.approval_packet_id)
+    && sameCleanString(approval.mission_id, operation.mission_id)
     && sameSha256(approval.source_event_anchor_sha256, operation.source_event_anchor_sha256)
     && sameSha256(approval.profile_anchor_sha256, operation.profile_anchor_sha256)
     && sameSha256(approval.candidate_anchor_sha256, operation.candidate_anchor_sha256)
     && sameSha256(approval.thread_anchor_sha256, operation.thread_anchor_sha256)
     && sameSha256(approval.owner_anchor_sha256, operation.owner_anchor_sha256)
+    && sameCleanString(approval.approved_audio_asset_id, operation.approved_audio_asset_id)
+    && sameSha256(approval.approved_audio_asset_sha256, operation.approved_audio_asset_sha256)
     && isPositiveInteger(approval.source_recency_max_age_ms);
   if (!approvalValid) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.APPROVAL);
   if (!isFreshTimestamp(approval.checked_at, nowMs)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.APPROVAL_FRESHNESS);
+  }
+
+  const computedCanonicalOperationSha256 = buildWelcomeAudioCanonicalOperationDigest(input);
+  const canonicalOperationDigests = [
+    input?.canonical_operation_sha256,
+    operation.canonical_operation_sha256,
+    approval.canonical_operation_sha256,
+    context.canonical_operation_sha256,
+    effectClaim.canonical_operation_sha256,
+    execution.canonical_operation_sha256,
+    confirmation.canonical_operation_sha256,
+  ];
+  const canonicalOperationValid = isSha256(expectedCanonicalOperationSha256)
+    && sameSha256(expectedCanonicalOperationSha256, computedCanonicalOperationSha256)
+    && canonicalOperationDigests.every((digest) => sameSha256(
+      digest,
+      computedCanonicalOperationSha256,
+    ));
+  if (!canonicalOperationValid) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION);
   }
 
   if (surface.surface !== WELCOME_AUDIO_SURFACE.STATUS) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SURFACE);
@@ -430,6 +902,9 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
   if (surface.upload_route !== WELCOME_AUDIO_SURFACE.UPLOAD_ROUTE) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.UPLOAD_ROUTE);
   if (surface.chrome_upload_attempted !== false) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CHROME_UPLOAD);
   if (surface.in_app_browser_upload_attempted !== false) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.IN_APP_UPLOAD);
+  if (!isFreshTimestamp(surface.observed_at, nowMs)) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SURFACE_OBSERVATION);
+  }
 
   if (follower.source_recency !== WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_RECENCY);
@@ -473,6 +948,9 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     && sameSha256(binding.thread_anchor_sha256, operation.thread_anchor_sha256)
     && sameSha256(binding.owner_anchor_sha256, operation.owner_anchor_sha256);
   if (!exactBinding) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.BINDING_MISMATCH);
+  if (!isFreshTimestamp(binding.observed_at, nowMs)) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.BINDING_OBSERVATION);
+  }
 
   if (eligibility.business_eligibility !== 'eligible_confirmed_recent_follower') {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.BUSINESS_ELIGIBILITY);
@@ -487,12 +965,17 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ATTACHMENT_CAPABILITY);
   }
   if (eligibility.text_fallback !== 'forbidden') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.TEXT_FALLBACK);
+  if (!isFreshTimestamp(eligibility.observed_at, nowMs)) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ELIGIBILITY_OBSERVATION);
+  }
 
   if (!isOpaqueId(asset.approved_audio_asset_id) || !isSha256(asset.approved_audio_asset_sha256)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ASSET);
   }
   if (!sameCleanString(asset.approved_audio_asset_id, approval.approved_audio_asset_id)
-    || !sameSha256(asset.approved_audio_asset_sha256, approval.approved_audio_asset_sha256)) {
+    || !sameSha256(asset.approved_audio_asset_sha256, approval.approved_audio_asset_sha256)
+    || !sameCleanString(asset.approved_audio_asset_id, operation.approved_audio_asset_id)
+    || !sameSha256(asset.approved_audio_asset_sha256, operation.approved_audio_asset_sha256)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ASSET_APPROVAL);
   }
   if (asset.asset_preview_binding !== WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT) {
@@ -504,6 +987,9 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     || !sameSha256(asset.preview_thread_anchor_sha256, operation.thread_anchor_sha256)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.PREVIEW_BINDING);
   }
+  if (!isFreshTimestamp(asset.preview_observed_at, nowMs)) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW_OBSERVATION);
+  }
 
   if (context.status !== 'fresh_exact_central_mission_context') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CONTEXT_STATUS);
   if (!isFreshTimestamp(context.checked_at, nowMs)) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CONTEXT_FRESHNESS);
@@ -513,6 +999,9 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
   }
   if (!isOpaqueId(context.mission_id)
     || !sameCleanString(context.mission_id, context.expected_mission_id)
+    || !sameCleanString(context.mission_id, operation.mission_id)
+    || !sameCleanString(context.operation_id, operation.operation_id)
+    || !sameCleanString(context.approval_packet_id, operation.approval_packet_id)
     || context.mission_status !== 'active') {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.MISSION_CONTEXT);
   }
@@ -548,7 +1037,51 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM);
   }
 
-  const neutralClaim = effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED
+  const effectClaimOperationBindingMatches = sameCleanString(
+    effectClaim.operation_id,
+    operation.operation_id,
+  )
+    && sameCleanString(effectClaim.approval_packet_id, operation.approval_packet_id)
+    && sameCleanString(effectClaim.mission_id, operation.mission_id)
+    && sameSha256(effectClaim.candidate_anchor_sha256, operation.candidate_anchor_sha256)
+    && sameSha256(effectClaim.thread_anchor_sha256, operation.thread_anchor_sha256)
+    && sameSha256(effectClaim.owner_anchor_sha256, operation.owner_anchor_sha256)
+    && sameCleanString(effectClaim.approved_audio_asset_id, operation.approved_audio_asset_id)
+    && sameSha256(
+      effectClaim.approved_audio_asset_sha256,
+      operation.approved_audio_asset_sha256,
+    )
+    && sameSha256(effectClaim.canonical_operation_sha256, computedCanonicalOperationSha256);
+
+  const executionOperationBindingMatches = sameCleanString(
+    execution.operation_id,
+    operation.operation_id,
+  )
+    && sameCleanString(execution.approval_packet_id, operation.approval_packet_id)
+    && sameCleanString(execution.mission_id, operation.mission_id)
+    && sameSha256(execution.canonical_operation_sha256, computedCanonicalOperationSha256);
+  if (!executionOperationBindingMatches) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EXECUTION_BINDING);
+  }
+
+  const confirmationOperationBindingMatches = sameCleanString(
+    confirmation.operation_id,
+    operation.operation_id,
+  )
+    && sameCleanString(confirmation.approval_packet_id, operation.approval_packet_id)
+    && sameCleanString(confirmation.mission_id, operation.mission_id)
+    && sameSha256(confirmation.canonical_operation_sha256, computedCanonicalOperationSha256)
+    && sameSha256(confirmation.candidate_anchor_sha256, operation.candidate_anchor_sha256)
+    && sameSha256(confirmation.thread_anchor_sha256, operation.thread_anchor_sha256)
+    && sameSha256(
+      confirmation.approved_audio_asset_sha256,
+      operation.approved_audio_asset_sha256,
+    );
+  if (!confirmationOperationBindingMatches) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING);
+  }
+
+  const neutralEffectClaimLifecycle = effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED
     && effectClaim.claim_result === WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED
     && effectClaim.claim_token_status === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED
     && effectClaim.atomic === false
@@ -556,29 +1089,125 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     && effectClaim.claimed_at == null
     && effectClaim.claim_owner_id == null
     && effectClaim.claim_token_id == null
-    && effectClaim.registry_revision == null;
+    && effectClaim.registry_revision == null
+    && effectClaim.attempt_id == null;
+  const neutralExecutionLifecycle = execution.send_attempt_count === 0
+    && execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED
+    && execution.send_claim === WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED
+    && execution.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT
+    && execution.claim_owner_id == null
+    && execution.claim_token_id == null
+    && execution.claim_registry_revision == null
+    && execution.attempt_id == null
+    && execution.claim_token_consumed_at == null
+    && execution.attempted_at == null;
+  const neutralConfirmationLifecycle = confirmation.confirmation_marker
+      === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+    && confirmation.claim_owner_id == null
+    && confirmation.claim_token_id == null
+    && confirmation.claim_registry_revision == null
+    && confirmation.attempt_id == null
+    && confirmation.bound_to_current_operation === false
+    && confirmation.checked_at == null;
+  const lifecycleNeutralExact = inputShapeValid
+    && neutralEffectClaimLifecycle
+    && neutralExecutionLifecycle
+    && neutralConfirmationLifecycle;
 
-  const claimBindingMatches = effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+  const explicitNonNeutral = (section, field, neutralValue) => Object.prototype
+    .hasOwnProperty.call(section, field)
+    && section[field] != null
+    && section[field] !== neutralValue;
+  const durableLifecycleEvidence = explicitNonNeutral(
+    effectClaim,
+    'status',
+    WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED,
+  )
+    || effectClaim.atomic === true
+    || effectClaim.permanent === true
+    || effectClaim.claimed_at != null
+    || effectClaim.claim_owner_id != null
+    || effectClaim.claim_token_id != null
+    || effectClaim.registry_revision != null
+    || effectClaim.attempt_id != null
+    || (Number.isFinite(execution.send_attempt_count) && execution.send_attempt_count > 0)
+    || explicitNonNeutral(
+      execution,
+      'attempt_state',
+      WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED,
+    )
+    || explicitNonNeutral(
+      execution,
+      'send_claim',
+      WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED,
+    )
+    || explicitNonNeutral(
+      execution,
+      'retry_disposition',
+      WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT,
+    )
+    || execution.claim_owner_id != null
+    || execution.claim_token_id != null
+    || execution.claim_registry_revision != null
+    || execution.attempt_id != null
+    || execution.claim_token_consumed_at != null
+    || execution.attempted_at != null
+    || explicitNonNeutral(
+      confirmation,
+      'confirmation_marker',
+      WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+    )
+    || confirmation.claim_owner_id != null
+    || confirmation.claim_token_id != null
+    || confirmation.claim_registry_revision != null
+    || confirmation.attempt_id != null
+    || confirmation.bound_to_current_operation === true
+    || confirmation.checked_at != null;
+
+  const neutralClaim = effectClaimOperationBindingMatches
+    && neutralEffectClaimLifecycle;
+
+  const claimBindingMatches = effectClaimOperationBindingMatches
+    && effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
     && effectClaim.atomic === true
     && effectClaim.permanent === true
     && isOpaqueId(effectClaim.claim_owner_id)
     && isOpaqueId(effectClaim.claim_token_id)
     && isPositiveInteger(effectClaim.registry_revision)
-    && sameCleanString(effectClaim.operation_id, operation.operation_id)
-    && sameCleanString(effectClaim.approval_packet_id, operation.approval_packet_id)
-    && sameCleanString(effectClaim.mission_id, context.mission_id)
-    && sameSha256(effectClaim.candidate_anchor_sha256, operation.candidate_anchor_sha256)
-    && sameSha256(effectClaim.thread_anchor_sha256, operation.thread_anchor_sha256)
-    && sameSha256(effectClaim.owner_anchor_sha256, operation.owner_anchor_sha256)
-    && sameCleanString(effectClaim.approved_audio_asset_id, asset.approved_audio_asset_id)
-    && sameSha256(effectClaim.approved_audio_asset_sha256, asset.approved_audio_asset_sha256);
+    && isOpaqueId(effectClaim.attempt_id);
 
   const claimOwnedByExecution = claimBindingMatches
+    && executionOperationBindingMatches
     && sameCleanString(execution.claim_owner_id, effectClaim.claim_owner_id)
     && sameCleanString(execution.claim_token_id, effectClaim.claim_token_id)
-    && execution.claim_registry_revision === effectClaim.registry_revision;
+    && execution.claim_registry_revision === effectClaim.registry_revision
+    && sameCleanString(execution.attempt_id, effectClaim.attempt_id);
+  if (effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+    && !claimOwnedByExecution) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EXECUTION_BINDING);
+  }
 
-  const preclaimState = neutralClaim
+  const confirmationClaimBindingMatches = confirmationOperationBindingMatches
+    && sameCleanString(confirmation.claim_owner_id, effectClaim.claim_owner_id)
+    && sameCleanString(confirmation.claim_token_id, effectClaim.claim_token_id)
+    && confirmation.claim_registry_revision === effectClaim.registry_revision
+    && sameCleanString(confirmation.attempt_id, effectClaim.attempt_id);
+  if (effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+    && !confirmationClaimBindingMatches) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING);
+  }
+
+  const neutralConfirmationClaimBinding = confirmationOperationBindingMatches
+    && confirmation.claim_owner_id == null
+    && confirmation.claim_token_id == null
+    && confirmation.claim_registry_revision == null
+    && confirmation.attempt_id == null;
+
+  const preclaimState = inputShapeValid
+    && canonicalOperationValid
+    && lifecycleNeutralExact
+    && neutralClaim
+    && executionOperationBindingMatches
     && execution.send_attempt_count === 0
     && execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED
     && execution.send_claim === WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED
@@ -586,66 +1215,115 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     && execution.claim_owner_id == null
     && execution.claim_token_id == null
     && execution.claim_registry_revision == null
+    && execution.attempt_id == null
+    && execution.claim_token_consumed_at == null
     && execution.attempted_at == null
+    && neutralConfirmationClaimBinding
     && confirmation.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
     && confirmation.bound_to_current_operation === false
     && confirmation.checked_at == null;
 
-  const sendReadyState = claimOwnedByExecution
+  const sendReadyState = inputShapeValid
+    && canonicalOperationValid
+    && claimOwnedByExecution
+    && confirmationClaimBindingMatches
     && effectClaim.claim_result === WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION
-    && effectClaim.claim_token_status === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.FRESH_UNCONSUMED_CURRENT_INVOCATION
+    && effectClaim.claim_token_status
+      === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.FRESH_UNCONSUMED_CURRENT_INVOCATION
     && isFreshTimestamp(effectClaim.claimed_at, nowMs)
     && execution.send_attempt_count === 0
     && execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPT_COMMITTED
     && execution.send_claim === WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED
     && execution.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT
+    && execution.claim_token_consumed_at == null
     && execution.attempted_at == null
     && confirmation.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
     && confirmation.bound_to_current_operation === false
     && confirmation.checked_at == null;
 
   const claimAtMs = parseTimestamp(effectClaim.claimed_at);
+  const tokenConsumedAtMs = parseTimestamp(execution.claim_token_consumed_at);
   const attemptedAtMs = parseTimestamp(execution.attempted_at);
   const confirmationAtMs = parseTimestamp(confirmation.checked_at);
-  const afterAttemptState = claimBindingMatches
+  const requiredObservationAtMs = [
+    approval.checked_at,
+    surface.observed_at,
+    follower.observed_at,
+    binding.observed_at,
+    eligibility.observed_at,
+    asset.preview_observed_at,
+    context.checked_at,
+    dedupe.checked_at,
+  ].map(parseTimestamp);
+  const claimFollowsRequiredObservations = claimAtMs !== null
+    && requiredObservationAtMs.every((timestampMs) => timestampMs !== null)
+    && requiredObservationAtMs.every((timestampMs) => claimAtMs >= timestampMs);
+  const tokenConsumptionSequenceValid = claimAtMs !== null
+    && tokenConsumedAtMs !== null
+    && attemptedAtMs !== null
+    && tokenConsumedAtMs >= claimAtMs
+    && tokenConsumedAtMs <= attemptedAtMs
+    && attemptedAtMs <= nowMs + WELCOME_AUDIO_FUTURE_CLOCK_TOLERANCE_MS;
+
+  const afterAttemptState = inputShapeValid
+    && canonicalOperationValid
+    && claimOwnedByExecution
+    && confirmationClaimBindingMatches
+    && effectClaim.claim_result === WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION
     && effectClaim.claim_token_status === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED
+    && claimFollowsRequiredObservations
     && execution.send_attempt_count === 1
     && execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPTED_TERMINAL
     && execution.retry_disposition === WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT
-    && attemptedAtMs !== null
-    && claimAtMs !== null
-    && attemptedAtMs >= claimAtMs
-    && attemptedAtMs <= nowMs + WELCOME_AUDIO_FUTURE_CLOCK_TOLERANCE_MS;
+    && tokenConsumptionSequenceValid;
 
-  const terminalSignal = effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
-    || execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPT_COMMITTED
-    || execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPTED_TERMINAL
-    || (Number.isInteger(execution.send_attempt_count) && execution.send_attempt_count > 0)
+  const nonCurrentClaimOutcome = inputShapeValid && (
+    [
+      WELCOME_AUDIO_CLAIM_RESULT.PREEXISTING_OR_REPLAYED,
+      WELCOME_AUDIO_CLAIM_RESULT.STALE,
+      WELCOME_AUDIO_CLAIM_RESULT.MISMATCH,
+    ].includes(effectClaim.claim_result)
+    || [
+      WELCOME_AUDIO_CLAIM_TOKEN_STATUS.STALE,
+      WELCOME_AUDIO_CLAIM_TOKEN_STATUS.MISMATCH,
+    ].includes(effectClaim.claim_token_status)
+  );
+
+  const terminalSignal = inputShapeValid
+    ? !lifecycleNeutralExact
+    : durableLifecycleEvidence;
+  const publicTerminalSignal = effectClaim.status
+      === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
+    || (CLAIM_RESULTS.has(effectClaim.claim_result)
+      && effectClaim.claim_result !== WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED)
+    || (CLAIM_TOKEN_STATUSES.has(effectClaim.claim_token_status)
+      && effectClaim.claim_token_status !== WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED)
+    || execution.send_attempt_count === 1
+    || (ATTEMPT_STATES.has(execution.attempt_state)
+      && execution.attempt_state !== WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED)
     || (SEND_CLAIMS.has(execution.send_claim)
-      && execution.send_claim !== WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED);
+      && execution.send_claim !== WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED)
+    || STRONG_CONFIRMATION_MARKERS.has(confirmation.confirmation_marker);
 
-  if (!preclaimState && !terminalSignal) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ATTEMPT_STATE);
-  if (terminalSignal && !claimBindingMatches) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_BINDING);
+  if (!preclaimState && !terminalSignal) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ATTEMPT_STATE);
+  }
+  if (terminalSignal && !claimBindingMatches) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_BINDING);
+  }
   if (effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT) {
-    const contextAtMs = parseTimestamp(context.checked_at);
-    const approvalAtMs = parseTimestamp(approval.checked_at);
-    const dedupeAtMs = parseTimestamp(dedupe.checked_at);
     if (!isFreshTimestamp(effectClaim.claimed_at, nowMs)) {
       addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_FRESHNESS);
     }
-    if (claimAtMs === null
-      || contextAtMs === null
-      || approvalAtMs === null
-      || dedupeAtMs === null
-      || claimAtMs < contextAtMs
-      || claimAtMs < approvalAtMs
-      || claimAtMs < dedupeAtMs) {
+    if (!claimFollowsRequiredObservations) {
       addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_SEQUENCE);
     }
   }
-  if (!sendReadyState
-    && effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
-    && execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPT_COMMITTED) {
+  if (nonCurrentClaimOutcome
+    || (!sendReadyState
+      && !afterAttemptState
+      && effectClaim.status
+        === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY);
   }
   if (effectClaim.status === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
@@ -653,18 +1331,26 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_OWNER);
   }
 
+  const tokenConsumptionExpected = effectClaim.claim_token_status
+      === WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED
+    || execution.claim_token_consumed_at != null
+    || execution.attempt_state === WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPTED_TERMINAL
+    || execution.send_attempt_count === 1
+    || execution.send_claim !== WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED;
+  if (tokenConsumptionExpected && !tokenConsumptionSequenceValid) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CLAIM_TOKEN_CONSUMPTION);
+  }
+
   const strongConfirmation = STRONG_CONFIRMATION_MARKERS.has(confirmation.confirmation_marker);
   const confirmationBound = strongConfirmation
-    && sameCleanString(confirmation.operation_id, operation.operation_id)
-    && sameSha256(confirmation.candidate_anchor_sha256, operation.candidate_anchor_sha256)
-    && sameSha256(confirmation.thread_anchor_sha256, operation.thread_anchor_sha256)
-    && sameSha256(confirmation.approved_audio_asset_sha256, asset.approved_audio_asset_sha256)
+    && confirmationClaimBindingMatches
     && confirmation.bound_to_current_operation === true
     && confirmationAtMs !== null
     && attemptedAtMs !== null
     && confirmationAtMs >= attemptedAtMs
     && confirmationAtMs <= nowMs + WELCOME_AUDIO_FUTURE_CLOCK_TOLERANCE_MS;
   const unknownConfirmation = confirmation.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+    && confirmationClaimBindingMatches
     && execution.send_claim === WELCOME_AUDIO_SEND_CLAIM.ATTEMPTED_UNCONFIRMED
     && confirmation.bound_to_current_operation === false
     && confirmationAtMs !== null
@@ -696,6 +1382,11 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     && !unknownConfirmation) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_TIMESTAMP);
   }
+  if (terminalSignal
+    && !(sendReadyState && reasons.length === 0)
+    && execution.retry_disposition !== WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.RETRY_DISPOSITION);
+  }
 
   let phase = WELCOME_AUDIO_GUARD_PHASE.BLOCKED;
   let decision = WELCOME_AUDIO_GUARD_DECISION.BLOCKED;
@@ -717,10 +1408,14 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     if (afterAttemptState
       && strongConfirmation
       && confirmationBound
-      && execution.send_claim === WELCOME_AUDIO_SEND_CLAIM.CONFIRMED_SENT) {
+      && execution.send_claim === WELCOME_AUDIO_SEND_CLAIM.CONFIRMED_SENT
+      && reasons.every((reason) => CONFIRMED_TERMINAL_COMPATIBLE_BLOCKERS.has(reason))) {
       decision = WELCOME_AUDIO_GUARD_DECISION.CONFIRMED_TERMINAL;
     } else {
       decision = WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL;
+      if (!publicTerminalSignal) {
+        addReason(reasons, WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE);
+      }
       if (!reasons.includes(WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY)) {
         addReason(reasons, WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT);
       }
@@ -733,6 +1428,7 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
     state_valid: decision !== WELCOME_AUDIO_GUARD_DECISION.BLOCKED
       && (claimAllowed || sendReady || reasons.every((reason) => [
         WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE,
         WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT,
         WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
       ].includes(reason))),
@@ -749,7 +1445,10 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
 
   if (validateReceipt && input?.receipt !== undefined) {
     const receiptValidation = validateWelcomeAudioRedactedReceipt(input.receipt);
-    const expectedReceipt = buildWelcomeAudioRedactedReceipt(input, { nowMs });
+    const expectedReceipt = buildWelcomeAudioRedactedReceipt(input, {
+      nowMs,
+      expectedCanonicalOperationSha256,
+    });
     const structurallyEqual = receiptValidation.ok
       && REDACTED_RECEIPT_FIELDS.every((field) => JSON.stringify(input.receipt[field])
         === JSON.stringify(expectedReceipt[field]));
@@ -783,8 +1482,16 @@ const evaluateWelcomeAudioOperation = (input, { nowMs = Date.now(), validateRece
   return result;
 };
 
-const buildWelcomeAudioRedactedReceipt = (input, { nowMs = Date.now() } = {}) => {
-  const result = evaluateWelcomeAudioOperation(input, { nowMs, validateReceipt: false });
+const buildWelcomeAudioRedactedReceipt = (
+  input,
+  { nowMs = Date.now(), expectedCanonicalOperationSha256 = null } = {},
+) => {
+  const result = evaluateWelcomeAudioOperation(input, {
+    nowMs,
+    validateReceipt: false,
+    expectedCanonicalOperationSha256,
+  });
+  const blockedLifecycle = result.decision === WELCOME_AUDIO_GUARD_DECISION.BLOCKED;
   return {
     receipt_schema_version: WELCOME_AUDIO_REDACTED_RECEIPT_SCHEMA_VERSION,
     guard_contract_version: WELCOME_AUDIO_OPERATION_GUARD_CONTRACT_VERSION,
@@ -799,7 +1506,9 @@ const buildWelcomeAudioRedactedReceipt = (input, { nowMs = Date.now() } = {}) =>
     terminal: result.terminal,
     expected_send_count: safeAllowedInteger(input?.operation?.expected_send_count, new Set([1])),
     attempt_budget: safeAllowedInteger(input?.execution?.attempt_budget, new Set([1])),
-    send_attempt_count: safeAllowedInteger(input?.execution?.send_attempt_count, new Set([0, 1])),
+    send_attempt_count: blockedLifecycle
+      ? 0
+      : safeAllowedInteger(input?.execution?.send_attempt_count, new Set([0, 1])),
     surface: safeEnum(input?.execution_surface?.surface, new Set([WELCOME_AUDIO_SURFACE.STATUS])),
     surface_detail: safeEnum(input?.execution_surface?.surface_detail, new Set([WELCOME_AUDIO_SURFACE.DETAIL])),
     source_recency: safeEnum(input?.follower_evidence?.source_recency, SOURCE_RECENCIES),
@@ -812,13 +1521,29 @@ const buildWelcomeAudioRedactedReceipt = (input, { nowMs = Date.now() } = {}) =>
     asset_preview_binding: safeEnum(input?.asset?.asset_preview_binding, ASSET_PREVIEW_BINDINGS),
     context_status: safeEnum(input?.context?.status, new Set(['fresh_exact_central_mission_context'])),
     dedupe_status: safeEnum(input?.dedupe?.status, new Set(['clear_no_prior_welcome_or_attempt'])),
-    effect_claim: safeEnum(input?.effect_claim?.status, EFFECT_CLAIMS),
-    claim_result: safeEnum(input?.effect_claim?.claim_result, CLAIM_RESULTS),
-    claim_token_status: safeEnum(input?.effect_claim?.claim_token_status, CLAIM_TOKEN_STATUSES),
-    attempt_state: safeEnum(input?.execution?.attempt_state, ATTEMPT_STATES),
-    send_claim: safeEnum(input?.execution?.send_claim, SEND_CLAIMS),
-    confirmation_marker: safeEnum(input?.confirmation?.confirmation_marker, CONFIRMATION_MARKERS),
-    retry_disposition: safeEnum(input?.execution?.retry_disposition, RETRY_DISPOSITIONS),
+    effect_claim: blockedLifecycle
+      ? WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED
+      : safeEnum(input?.effect_claim?.status, EFFECT_CLAIMS),
+    claim_result: blockedLifecycle
+      ? WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED
+      : safeEnum(input?.effect_claim?.claim_result, CLAIM_RESULTS),
+    claim_token_status: blockedLifecycle
+      ? WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED
+      : safeEnum(input?.effect_claim?.claim_token_status, CLAIM_TOKEN_STATUSES),
+    attempt_state: blockedLifecycle
+      ? WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED
+      : safeEnum(input?.execution?.attempt_state, ATTEMPT_STATES),
+    send_claim: blockedLifecycle
+      ? WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED
+      : safeEnum(input?.execution?.send_claim, SEND_CLAIMS),
+    confirmation_marker: blockedLifecycle
+      ? WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+      : safeEnum(input?.confirmation?.confirmation_marker, CONFIRMATION_MARKERS),
+    retry_disposition: result.terminal
+      ? WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT
+      : blockedLifecycle
+        ? WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT
+        : safeEnum(input?.execution?.retry_disposition, RETRY_DISPOSITIONS),
     blocker_codes: [...result.blockers],
   };
 };
@@ -835,6 +1560,7 @@ export {
   WELCOME_AUDIO_ATTEMPT_BUDGET,
   WELCOME_AUDIO_ATTEMPT_STATE,
   WELCOME_AUDIO_AUDIO_CAPABILITY,
+  WELCOME_AUDIO_CANONICAL_OPERATION_PROJECTION_VERSION,
   WELCOME_AUDIO_CLAIM_RESULT,
   WELCOME_AUDIO_CLAIM_TOKEN_STATUS,
   WELCOME_AUDIO_CONFIRMATION_MARKER,
@@ -855,6 +1581,7 @@ export {
   WELCOME_AUDIO_TIME_ZONE,
   bogotaCalendarDayNumber,
   buildInstagramWelcomeAudioRedactedReceipt,
+  buildWelcomeAudioCanonicalOperationDigest,
   buildWelcomeAudioRedactedReceipt,
   classifyRecentFollowerBucket,
   validateInstagramWelcomeAudioOperation,

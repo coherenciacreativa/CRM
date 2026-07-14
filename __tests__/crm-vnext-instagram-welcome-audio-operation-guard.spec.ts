@@ -20,9 +20,10 @@ import {
   WELCOME_AUDIO_SOURCE_BINDING,
   WELCOME_AUDIO_SOURCE_RECENCY,
   WELCOME_AUDIO_SURFACE,
-  buildWelcomeAudioRedactedReceipt,
+  buildWelcomeAudioCanonicalOperationDigest,
+  buildWelcomeAudioRedactedReceipt as buildWelcomeAudioRedactedReceiptRaw,
   classifyRecentFollowerBucket,
-  validateWelcomeAudioOperation,
+  validateWelcomeAudioOperation as validateWelcomeAudioOperationRaw,
   validateWelcomeAudioRedactedReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs";
 
@@ -39,26 +40,75 @@ const ASSET_ID = "welcome_audio_asset_001";
 const MISSION_ID = "crm_core_welcome_audio_mission_001";
 const CLAIM_OWNER_ID = "claim_owner_current_001";
 const CLAIM_TOKEN_ID = "claim_token_current_001";
+const ATTEMPT_ID = "send_attempt_current_001";
 const SOURCE_MAX_AGE_MS = 4 * 60 * 60 * 1000;
+const TRUSTED_CANONICAL_OPERATION_DIGESTS = new WeakMap<object, string>();
 
-const preclaimOperation = () => ({
+const bindCanonicalOperationDigest = (input: Record<string, any>) => {
+  const digest = buildWelcomeAudioCanonicalOperationDigest(input);
+  input.canonical_operation_sha256 = digest;
+  for (const section of [
+    "operation",
+    "approval",
+    "context",
+    "effect_claim",
+    "execution",
+    "confirmation",
+  ]) input[section].canonical_operation_sha256 = digest;
+  return input;
+};
+
+const trustedValidationOptions = (
+  input: Record<string, any>,
+  options: Record<string, any> = {},
+) => ({
+  expectedCanonicalOperationSha256:
+    TRUSTED_CANONICAL_OPERATION_DIGESTS.get(input) ?? null,
+  ...options,
+});
+
+const validateWelcomeAudioOperation = (
+  input: Record<string, any>,
+  options: Record<string, any> = {},
+) => validateWelcomeAudioOperationRaw(input, trustedValidationOptions(input, options));
+
+const buildWelcomeAudioRedactedReceipt = (
+  input: Record<string, any>,
+  options: Record<string, any> = {},
+) => buildWelcomeAudioRedactedReceiptRaw(input, trustedValidationOptions(input, options));
+
+const withReceipt = (input: Record<string, any>, receipt: Record<string, any>) => {
+  const attached = { ...input, receipt };
+  const trustedDigest = TRUSTED_CANONICAL_OPERATION_DIGESTS.get(input);
+  if (trustedDigest) TRUSTED_CANONICAL_OPERATION_DIGESTS.set(attached, trustedDigest);
+  return attached;
+};
+
+const preclaimOperation = () => {
+  const input = {
   adapter_version: WELCOME_AUDIO_ADAPTER_VERSION,
   contract_version: WELCOME_AUDIO_OPERATION_GUARD_CONTRACT_VERSION,
+  canonical_operation_sha256: "0".repeat(64),
   operation: {
     operation_id: OPERATION_ID,
     approval_packet_id: APPROVAL_PACKET_ID,
+    mission_id: MISSION_ID,
     source_event_anchor_sha256: SOURCE_SHA,
     profile_anchor_sha256: PROFILE_SHA,
     candidate_anchor_sha256: CANDIDATE_SHA,
     thread_anchor_sha256: THREAD_SHA,
     owner_anchor_sha256: OWNER_SHA,
+    approved_audio_asset_id: ASSET_ID,
+    approved_audio_asset_sha256: ASSET_SHA,
     expected_send_count: 1,
+    canonical_operation_sha256: "0".repeat(64),
   },
   approval: {
     status: "approved_exact_single_send",
     checked_at: "2026-07-14T15:56:00.000Z",
     operation_id: OPERATION_ID,
     approval_packet_id: APPROVAL_PACKET_ID,
+    mission_id: MISSION_ID,
     source_event_anchor_sha256: SOURCE_SHA,
     profile_anchor_sha256: PROFILE_SHA,
     candidate_anchor_sha256: CANDIDATE_SHA,
@@ -68,6 +118,7 @@ const preclaimOperation = () => ({
     approved_audio_asset_sha256: ASSET_SHA,
     source_recency_max_age_ms: SOURCE_MAX_AGE_MS,
     expected_send_count: 1,
+    canonical_operation_sha256: "0".repeat(64),
   },
   execution_surface: {
     surface: WELCOME_AUDIO_SURFACE.STATUS,
@@ -79,6 +130,7 @@ const preclaimOperation = () => ({
     private_browsing: false,
     chrome_upload_attempted: false,
     in_app_browser_upload_attempted: false,
+    observed_at: "2026-07-14T15:58:10.000Z",
   },
   follower_evidence: {
     source_recency: WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT,
@@ -98,6 +150,7 @@ const preclaimOperation = () => ({
     candidate_anchor_sha256: CANDIDATE_SHA,
     thread_anchor_sha256: THREAD_SHA,
     owner_anchor_sha256: OWNER_SHA,
+    observed_at: "2026-07-14T15:58:20.000Z",
   },
   eligibility: {
     business_eligibility: "eligible_confirmed_recent_follower",
@@ -105,6 +158,7 @@ const preclaimOperation = () => ({
     composer_capability: WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE,
     attachment_capability: WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE,
     text_fallback: "forbidden",
+    observed_at: "2026-07-14T15:58:30.000Z",
   },
   asset: {
     approved_audio_asset_id: ASSET_ID,
@@ -114,6 +168,7 @@ const preclaimOperation = () => ({
     preview_audio_asset_id: ASSET_ID,
     preview_audio_asset_sha256: ASSET_SHA,
     preview_thread_anchor_sha256: THREAD_SHA,
+    preview_observed_at: "2026-07-14T15:58:40.000Z",
   },
   context: {
     status: "fresh_exact_central_mission_context",
@@ -123,6 +178,9 @@ const preclaimOperation = () => ({
     mission_id: MISSION_ID,
     expected_mission_id: MISSION_ID,
     mission_status: "active",
+    operation_id: OPERATION_ID,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    canonical_operation_sha256: "0".repeat(64),
   },
   dedupe: {
     status: "clear_no_prior_welcome_or_attempt",
@@ -147,6 +205,16 @@ const preclaimOperation = () => ({
     claim_owner_id: null,
     claim_token_id: null,
     registry_revision: null,
+    attempt_id: null,
+    operation_id: OPERATION_ID,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    mission_id: MISSION_ID,
+    candidate_anchor_sha256: CANDIDATE_SHA,
+    thread_anchor_sha256: THREAD_SHA,
+    owner_anchor_sha256: OWNER_SHA,
+    approved_audio_asset_id: ASSET_ID,
+    approved_audio_asset_sha256: ASSET_SHA,
+    canonical_operation_sha256: "0".repeat(64),
   },
   execution: {
     attempt_budget: 1,
@@ -155,21 +223,41 @@ const preclaimOperation = () => ({
     send_claim: WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED,
     retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT,
     retry_requested: false,
+    operation_id: OPERATION_ID,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    mission_id: MISSION_ID,
+    canonical_operation_sha256: "0".repeat(64),
     claim_owner_id: null,
     claim_token_id: null,
     claim_registry_revision: null,
+    attempt_id: null,
+    claim_token_consumed_at: null,
     attempted_at: null,
   },
   confirmation: {
     confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
-    operation_id: null,
-    candidate_anchor_sha256: null,
-    thread_anchor_sha256: null,
-    approved_audio_asset_sha256: null,
+    operation_id: OPERATION_ID,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    mission_id: MISSION_ID,
+    canonical_operation_sha256: "0".repeat(64),
+    candidate_anchor_sha256: CANDIDATE_SHA,
+    thread_anchor_sha256: THREAD_SHA,
+    approved_audio_asset_sha256: ASSET_SHA,
+    claim_owner_id: null,
+    claim_token_id: null,
+    claim_registry_revision: null,
+    attempt_id: null,
     bound_to_current_operation: false,
     checked_at: null,
   },
-});
+  };
+  const boundInput = bindCanonicalOperationDigest(input);
+  TRUSTED_CANONICAL_OPERATION_DIGESTS.set(
+    boundInput,
+    boundInput.canonical_operation_sha256,
+  );
+  return boundInput;
+};
 
 const sendReadyOperation = () => {
   const input = preclaimOperation();
@@ -183,6 +271,7 @@ const sendReadyOperation = () => {
     claim_owner_id: CLAIM_OWNER_ID,
     claim_token_id: CLAIM_TOKEN_ID,
     registry_revision: 1,
+    attempt_id: ATTEMPT_ID,
     operation_id: OPERATION_ID,
     approval_packet_id: APPROVAL_PACKET_ID,
     mission_id: MISSION_ID,
@@ -191,6 +280,7 @@ const sendReadyOperation = () => {
     owner_anchor_sha256: OWNER_SHA,
     approved_audio_asset_id: ASSET_ID,
     approved_audio_asset_sha256: ASSET_SHA,
+    canonical_operation_sha256: input.canonical_operation_sha256,
   };
   input.execution = {
     ...input.execution,
@@ -198,6 +288,14 @@ const sendReadyOperation = () => {
     claim_owner_id: CLAIM_OWNER_ID,
     claim_token_id: CLAIM_TOKEN_ID,
     claim_registry_revision: 1,
+    attempt_id: ATTEMPT_ID,
+  };
+  input.confirmation = {
+    ...input.confirmation,
+    claim_owner_id: CLAIM_OWNER_ID,
+    claim_token_id: CLAIM_TOKEN_ID,
+    claim_registry_revision: 1,
+    attempt_id: ATTEMPT_ID,
   };
   return input;
 };
@@ -213,14 +311,22 @@ const confirmedOperation = (
     attempt_state: WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPTED_TERMINAL,
     send_claim: WELCOME_AUDIO_SEND_CLAIM.CONFIRMED_SENT,
     retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+    claim_token_consumed_at: "2026-07-14T15:59:20.000Z",
     attempted_at: "2026-07-14T15:59:30.000Z",
   };
   input.confirmation = {
     confirmation_marker: marker,
     operation_id: OPERATION_ID,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    mission_id: MISSION_ID,
+    canonical_operation_sha256: input.canonical_operation_sha256,
     candidate_anchor_sha256: CANDIDATE_SHA,
     thread_anchor_sha256: THREAD_SHA,
     approved_audio_asset_sha256: ASSET_SHA,
+    claim_owner_id: CLAIM_OWNER_ID,
+    claim_token_id: CLAIM_TOKEN_ID,
+    claim_registry_revision: 1,
+    attempt_id: ATTEMPT_ID,
     bound_to_current_operation: true,
     checked_at: "2026-07-14T15:59:31.000Z",
   };
@@ -281,18 +387,303 @@ describe("Instagram welcome-audio operation guard", () => {
       send_allowed: false,
       decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
     });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE);
+  });
+
+  test("rejects extra root fields instead of accepting a packet superset", () => {
+    const input = preclaimOperation() as Record<string, unknown>;
+    input.unexpected_root_field = "must_not_be_ignored";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: false,
+      state_valid: false,
+      terminal: false,
+      claim_allowed: false,
+      send_ready: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE);
+  });
+
+  test.each([
+    "operation",
+    "approval",
+    "execution_surface",
+    "follower_evidence",
+    "binding",
+    "eligibility",
+    "asset",
+    "context",
+    "dedupe",
+    "effect_claim",
+    "execution",
+    "confirmation",
+  ])("rejects extra fields in the %s section", (section) => {
+    const input = preclaimOperation();
+    const sections = input as unknown as Record<string, Record<string, unknown>>;
+    sections[section].unexpected_nested_field = "must_not_be_ignored";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: false,
+      state_valid: false,
+      terminal: false,
+      claim_allowed: false,
+      send_ready: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE);
+  });
+
+  test.each([
+    "attempt_budget",
+    "send_attempt_count",
+    "attempt_state",
+    "send_claim",
+    "retry_disposition",
+    "retry_requested",
+    "operation_id",
+    "approval_packet_id",
+    "mission_id",
+    "canonical_operation_sha256",
+    "claim_owner_id",
+    "claim_token_id",
+    "claim_registry_revision",
+    "attempt_id",
+    "claim_token_consumed_at",
+    "attempted_at",
+  ])("rejects a packet missing execution.%s", (field) => {
+    const input = preclaimOperation();
+    delete (input.execution as unknown as Record<string, unknown>)[field];
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: false,
+      state_valid: false,
+      terminal: false,
+      claim_allowed: false,
+      send_ready: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE);
+  });
+
+  test("rejects reuse of an otherwise consistent approval in another mission", () => {
+    const input = preclaimOperation();
+    const substitutedMissionId = "crm_core_welcome_audio_mission_002";
+    input.operation.mission_id = substitutedMissionId;
+    input.context.mission_id = substitutedMissionId;
+    input.context.expected_mission_id = substitutedMissionId;
+    input.dedupe.mission_id = substitutedMissionId;
+    input.effect_claim.mission_id = substitutedMissionId;
+    input.execution.mission_id = substitutedMissionId;
+    input.confirmation.mission_id = substitutedMissionId;
+    bindCanonicalOperationDigest(input);
+
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: false,
+      claim_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.APPROVAL);
+  });
+
+  test("rejects approval-packet substitution even when every plain identifier agrees", () => {
+    const input = preclaimOperation();
+    const substitutedPacketId = "welcome_audio_approval_substituted_002";
+    for (const section of [
+      "operation",
+      "approval",
+      "context",
+      "dedupe",
+      "effect_claim",
+      "execution",
+      "confirmation",
+    ]) {
+      const sections = input as unknown as Record<string, Record<string, unknown>>;
+      sections[section].approval_packet_id = substitutedPacketId;
+    }
+
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: false,
+      claim_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION);
+  });
+
+  test("rejects a coherently recomputed mission and approval against the trusted prior digest", () => {
+    const input = preclaimOperation();
+    const trustedDigest = input.canonical_operation_sha256;
+    const substitutedMissionId = "crm_core_welcome_audio_mission_002";
+    const substitutedPacketId = "welcome_audio_approval_substituted_002";
+    const sections = input as unknown as Record<string, Record<string, unknown>>;
+
+    for (const section of [
+      "operation",
+      "approval",
+      "context",
+      "dedupe",
+      "effect_claim",
+      "execution",
+      "confirmation",
+    ]) {
+      sections[section].approval_packet_id = substitutedPacketId;
+      sections[section].mission_id = substitutedMissionId;
+    }
+    input.context.expected_mission_id = substitutedMissionId;
+    bindCanonicalOperationDigest(input);
+    expect(input.canonical_operation_sha256).not.toBe(trustedDigest);
+
+    const options = {
+      nowMs: NOW_MS,
+      expectedCanonicalOperationSha256: trustedDigest,
+    };
+    const result = validateWelcomeAudioOperation(input, options);
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: false,
+      claim_allowed: false,
+      send_ready: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION);
+
+    const receipt = buildWelcomeAudioRedactedReceipt(input, options);
+    expect(receipt.blocker_codes).toContain(WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION);
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
+  });
+
+  test.each([
+    ["omitted", undefined],
+    ["null", null],
+    ["malformed", "not-a-sha256"],
+  ])("fails closed when the trusted external canonical digest is %s", (_label, digest) => {
+    const input = preclaimOperation();
+    const options = digest === undefined
+      ? { nowMs: NOW_MS }
+      : { nowMs: NOW_MS, expectedCanonicalOperationSha256: digest };
+
+    const result = validateWelcomeAudioOperationRaw(input, options);
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: false,
+      claim_allowed: false,
+      send_ready: false,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION);
+
+    const receipt = buildWelcomeAudioRedactedReceiptRaw(input, options);
+    expect(receipt.blocker_codes).toContain(WELCOME_AUDIO_GUARD_REASON.CANONICAL_OPERATION);
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
   });
 
   test("does not infer a durable attempt from claim enums alone", () => {
-    const result = validateWelcomeAudioOperation({
+    const input = {
       effect_claim: {
         claim_result: WELCOME_AUDIO_CLAIM_RESULT.STALE,
         claim_token_status: WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED,
       },
-    }, { nowMs: NOW_MS });
+    };
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
     expect(result.terminal).toBe(false);
     expect(result.decision).toBe(WELCOME_AUDIO_GUARD_DECISION.BLOCKED);
+
+    const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
+    expect(receipt).toMatchObject({
+      phase: WELCOME_AUDIO_GUARD_PHASE.BLOCKED,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+      effect_claim: WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED,
+      claim_result: WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED,
+      claim_token_status: WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED,
+      attempt_state: WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED,
+      send_claim: WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT,
+    });
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
   });
+
+  test.each([
+    ["attempted_at only", "execution", "attempted_at", "2026-07-14T15:59:30.000Z", true],
+    [
+      "claim_token_consumed_at only",
+      "execution",
+      "claim_token_consumed_at",
+      "2026-07-14T15:59:20.000Z",
+      true,
+    ],
+    ["send_attempt_count above budget", "execution", "send_attempt_count", 2, true],
+    ["claimed_at only", "effect_claim", "claimed_at", "2026-07-14T15:59:00.000Z", true],
+    ["atomic claim flag only", "effect_claim", "atomic", true, true],
+    ["claim owner only", "effect_claim", "claim_owner_id", CLAIM_OWNER_ID, true],
+    ["claim token only", "effect_claim", "claim_token_id", CLAIM_TOKEN_ID, true],
+    ["claim registry revision only", "effect_claim", "registry_revision", 1, true],
+    ["claim attempt ID only", "effect_claim", "attempt_id", ATTEMPT_ID, true],
+    [
+      "non-neutral token status only",
+      "effect_claim",
+      "claim_token_status",
+      WELCOME_AUDIO_CLAIM_TOKEN_STATUS.FRESH_UNCONSUMED_CURRENT_INVOCATION,
+      false,
+    ],
+    [
+      "non-neutral claim result only",
+      "effect_claim",
+      "claim_result",
+      WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION,
+      false,
+    ],
+    [
+      "strong confirmation only",
+      "confirmation",
+      "confirmation_marker",
+      WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER,
+      false,
+    ],
+    [
+      "terminal retry disposition only",
+      "execution",
+      "retry_disposition",
+      WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      true,
+    ],
+  ])(
+    "makes an exact-shape packet with %s unknown-terminal",
+    (_label, section, field, value, requiresTerminalEvidence) => {
+      const input = preclaimOperation();
+      const sections = input as unknown as Record<string, Record<string, unknown>>;
+      sections[section][field] = value;
+
+      const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+      expect(result).toMatchObject({
+        ok: false,
+        phase: WELCOME_AUDIO_GUARD_PHASE.TERMINAL,
+        claim_allowed: false,
+        send_ready: false,
+        send_allowed: false,
+        terminal: true,
+        decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      });
+      expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY);
+      expect(result.blockers.includes(WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE))
+        .toBe(requiresTerminalEvidence);
+
+      const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
+      expect(receipt.blocker_codes).toContain(WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY);
+      expect(receipt.blocker_codes.includes(WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE))
+        .toBe(requiresTerminalEvidence);
+      expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
+    },
+  );
 
   test("makes any post-claim precondition failure terminal rather than reopenable", () => {
     const input = sendReadyOperation();
@@ -327,6 +718,28 @@ describe("Instagram welcome-audio operation guard", () => {
     ]));
   });
 
+  test.each([
+    ["not-started claim result", "claim_result", WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED],
+    ["stale claim result", "claim_result", WELCOME_AUDIO_CLAIM_RESULT.STALE],
+    ["mismatched claim result", "claim_result", WELCOME_AUDIO_CLAIM_RESULT.MISMATCH],
+    ["not-issued token", "claim_token_status", WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED],
+    ["stale token", "claim_token_status", WELCOME_AUDIO_CLAIM_TOKEN_STATUS.STALE],
+    ["mismatched token", "claim_token_status", WELCOME_AUDIO_CLAIM_TOKEN_STATUS.MISMATCH],
+  ])("makes the isolated non-current outcome %s terminal", (_label, field, value) => {
+    const input = sendReadyOperation();
+    Object.assign(input.effect_claim, { [field]: value });
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+  });
+
   test("makes a crash after durable commit terminal for a later invocation", () => {
     const input = sendReadyOperation();
     input.effect_claim.claim_result = WELCOME_AUDIO_CLAIM_RESULT.PREEXISTING_OR_REPLAYED;
@@ -337,6 +750,75 @@ describe("Instagram welcome-audio operation guard", () => {
     expect(result.blockers).toEqual(expect.arrayContaining([
       WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_OWNER,
       WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+    ]));
+  });
+
+  test.each([
+    ["owner", "claim_owner_id", "mismatched_claim_owner_002"],
+    ["token", "claim_token_id", "mismatched_claim_token_002"],
+    ["registry revision", "claim_registry_revision", 2],
+  ])("makes an execution/claim %s mismatch terminal", (_label, field, value) => {
+    const input = sendReadyOperation();
+    Object.assign(input.execution, { [field]: value });
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_OWNER,
+      WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+  });
+
+  test("makes an execution/claim attempt mismatch terminal", () => {
+    const input = sendReadyOperation();
+    input.execution.attempt_id = "mismatched_send_attempt_002";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.EXECUTION_BINDING,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+  });
+
+  test.each([
+    ["owner", "claim_owner_id", "mismatched_claim_owner_002"],
+    ["token", "claim_token_id", "mismatched_claim_token_002"],
+    ["registry revision", "claim_registry_revision", 2],
+  ])("rejects a terminal confirmation with a mismatched claim %s", (_label, field, value) => {
+    const input = confirmedOperation();
+    Object.assign(input.confirmation, { [field]: value });
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+  });
+
+  test("rejects confirmation evidence bound to another attempt", () => {
+    const input = confirmedOperation();
+    input.confirmation.attempt_id = "mismatched_send_attempt_002";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
     ]));
   });
 
@@ -361,10 +843,17 @@ describe("Instagram welcome-audio operation guard", () => {
     input.execution.send_claim = WELCOME_AUDIO_SEND_CLAIM.ATTEMPTED_UNCONFIRMED;
     input.confirmation = {
       confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
-      operation_id: null,
-      candidate_anchor_sha256: null,
-      thread_anchor_sha256: null,
-      approved_audio_asset_sha256: null,
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      canonical_operation_sha256: input.canonical_operation_sha256,
+      candidate_anchor_sha256: CANDIDATE_SHA,
+      thread_anchor_sha256: THREAD_SHA,
+      approved_audio_asset_sha256: ASSET_SHA,
+      claim_owner_id: CLAIM_OWNER_ID,
+      claim_token_id: CLAIM_TOKEN_ID,
+      claim_registry_revision: 1,
+      attempt_id: ATTEMPT_ID,
       bound_to_current_operation: false,
       checked_at: "2026-07-14T15:59:31.000Z",
     };
@@ -400,6 +889,40 @@ describe("Instagram welcome-audio operation guard", () => {
     expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_SEQUENCE);
   });
 
+  test.each([
+    ["missing", null],
+    ["before the claim", "2026-07-14T15:58:59.000Z"],
+    ["after the attempt", "2026-07-14T15:59:31.000Z"],
+  ])("rejects a %s consumed-token timestamp", (_label, consumedAt) => {
+    const input = confirmedOperation();
+    input.execution.claim_token_consumed_at = consumedAt;
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.CLAIM_TOKEN_CONSUMPTION,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+  });
+
+  test("rejects a consumption timestamp while the token is still unconsumed", () => {
+    const input = sendReadyOperation();
+    input.execution.claim_token_consumed_at = "2026-07-14T15:59:10.000Z";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toEqual(expect.arrayContaining([
+      WELCOME_AUDIO_GUARD_REASON.CLAIM_TOKEN_CONSUMPTION,
+      WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+    ]));
+  });
+
   test("binds the complete source-profile-candidate-thread-owner chain", () => {
     const input = preclaimOperation();
     input.binding.profile_anchor_sha256 = "7".repeat(64);
@@ -432,6 +955,47 @@ describe("Instagram welcome-audio operation guard", () => {
     input.follower_evidence.source_recency_max_age_ms = 60 * 60 * 1000;
     const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
     expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.SOURCE_MAX_AGE);
+  });
+
+  test.each([
+    ["surface", "execution_surface", "observed_at", WELCOME_AUDIO_GUARD_REASON.SURFACE_OBSERVATION],
+    ["binding", "binding", "observed_at", WELCOME_AUDIO_GUARD_REASON.BINDING_OBSERVATION],
+    ["eligibility", "eligibility", "observed_at", WELCOME_AUDIO_GUARD_REASON.ELIGIBILITY_OBSERVATION],
+    ["asset preview", "asset", "preview_observed_at", WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW_OBSERVATION],
+  ])("rejects stale %s dynamic evidence", (_label, section, field, reason) => {
+    const input = preclaimOperation();
+    const sections = input as unknown as Record<string, Record<string, unknown>>;
+    sections[section][field] = "2026-07-14T15:54:00.000Z";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: false,
+      terminal: false,
+      claim_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(result.blockers).toContain(reason);
+  });
+
+  test.each([
+    ["approval", "approval", "checked_at"],
+    ["surface", "execution_surface", "observed_at"],
+    ["recent follower", "follower_evidence", "observed_at"],
+    ["binding", "binding", "observed_at"],
+    ["eligibility", "eligibility", "observed_at"],
+    ["asset preview", "asset", "preview_observed_at"],
+    ["mission context", "context", "checked_at"],
+    ["dedupe", "dedupe", "checked_at"],
+  ])("rejects a durable claim earlier than the %s observation", (_label, section, field) => {
+    const input = sendReadyOperation();
+    const sections = input as unknown as Record<string, Record<string, unknown>>;
+    sections[section][field] = "2026-07-14T15:59:01.000Z";
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      terminal: true,
+      send_allowed: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+    });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_SEQUENCE);
   });
 
   test.each([
@@ -491,8 +1055,11 @@ describe("Instagram welcome-audio operation guard", () => {
       OPERATION_ID,
       APPROVAL_PACKET_ID,
       ASSET_ID,
+      MISSION_ID,
       CLAIM_OWNER_ID,
       CLAIM_TOKEN_ID,
+      ATTEMPT_ID,
+      input.canonical_operation_sha256,
     ]) expect(serialized).not.toContain(privateValue);
   });
 
@@ -524,12 +1091,149 @@ describe("Instagram welcome-audio operation guard", () => {
     });
   });
 
+  test.each([
+    ["phase/decision", { decision: WELCOME_AUDIO_GUARD_DECISION.READY }],
+    ["claim/readiness", { send_ready: true }],
+    ["readiness/consumer", { one_shot_consumer_required: true }],
+    ["send authority", { send_allowed: true }],
+    ["phase/terminality", { terminal: true }],
+    ["phase/effect claim", { effect_claim: WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT }],
+    ["phase/attempt state", { attempt_state: WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPT_COMMITTED }],
+    ["success/blockers", { blocker_codes: [WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY] }],
+  ])("rejects a structurally valid receipt with contradictory %s fields", (_label, patch) => {
+    const receipt = buildWelcomeAudioRedactedReceipt(preclaimOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({ ...receipt, ...patch });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
+  test("rejects coordinated terminal decision tampering into a non-terminal phase", () => {
+    const receipt = buildWelcomeAudioRedactedReceipt(confirmedOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({
+      ...receipt,
+      phase: WELCOME_AUDIO_GUARD_PHASE.SEND_READY,
+      terminal: false,
+    });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
+  test.each([
+    WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+    WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT,
+    WELCOME_AUDIO_GUARD_REASON.EXECUTION_BINDING,
+    WELCOME_AUDIO_GUARD_REASON.CLAIM_TOKEN_CONSUMPTION,
+    WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_BINDING,
+    WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_SEQUENCE,
+  ])("rejects a confirmed receipt with incompatible blocker %s", (blocker) => {
+    const receipt = buildWelcomeAudioRedactedReceipt(confirmedOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({
+      ...receipt,
+      blocker_codes: [...receipt.blocker_codes, blocker],
+    });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
+  test("rejects a forged unknown-terminal receipt with a neutral public tuple", () => {
+    const receipt = buildWelcomeAudioRedactedReceipt(preclaimOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({
+      ...receipt,
+      phase: WELCOME_AUDIO_GUARD_PHASE.TERMINAL,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      claim_allowed: false,
+      terminal: true,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [
+        WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+      ],
+    });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
+  test("does not treat derived retry policy as standalone terminal evidence", () => {
+    const receipt = buildWelcomeAudioRedactedReceipt(preclaimOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({
+      ...receipt,
+      phase: WELCOME_AUDIO_GUARD_PHASE.TERMINAL,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      claim_allowed: false,
+      terminal: true,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [
+        WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+      ],
+    });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
+  test("rejects TERMINAL_EVIDENCE when the receipt already has a public terminal signal", () => {
+    const receipt = buildWelcomeAudioRedactedReceipt(confirmedOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({
+      ...receipt,
+      decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      send_claim: WELCOME_AUDIO_SEND_CLAIM.ATTEMPTED_UNCONFIRMED,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      blocker_codes: [
+        WELCOME_AUDIO_GUARD_REASON.CONFIRMATION_INSUFFICIENT,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_EVIDENCE,
+        WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
+      ],
+    });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
+  test.each([
+    ["permanent effect claim", { effect_claim: WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT }],
+    ["current claim result", { claim_result: WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION }],
+    ["consumed claim token", { claim_token_status: WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED }],
+    ["committed attempt", { attempt_state: WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPT_COMMITTED }],
+    ["positive attempt count", { send_attempt_count: 1 }],
+    ["attempted send claim", { send_claim: WELCOME_AUDIO_SEND_CLAIM.ATTEMPTED_UNCONFIRMED }],
+    [
+      "strong confirmation",
+      { confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER },
+    ],
+    ["terminal retry disposition", { retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT }],
+  ])("rejects a blocked receipt carrying terminal signal %s", (_label, patch) => {
+    const receipt = buildWelcomeAudioRedactedReceipt(preclaimOperation(), { nowMs: NOW_MS });
+    const result = validateWelcomeAudioRedactedReceipt({
+      ...receipt,
+      ...patch,
+      phase: WELCOME_AUDIO_GUARD_PHASE.BLOCKED,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+      claim_allowed: false,
+      blocker_codes: [WELCOME_AUDIO_GUARD_REASON.ATTEMPT_STATE],
+    });
+    expect(result).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_SEMANTICS,
+    });
+  });
+
   test("compares a valid receipt structurally, independent of key order", () => {
     const input = sendReadyOperation();
     const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
     const reordered = Object.fromEntries(Object.entries(receipt).reverse());
     expect(validateWelcomeAudioRedactedReceipt(reordered).ok).toBe(true);
-    const result = validateWelcomeAudioOperation({ ...input, receipt: reordered }, { nowMs: NOW_MS });
+    const result = validateWelcomeAudioOperation(withReceipt(input, reordered), { nowMs: NOW_MS });
     expect(result.send_ready).toBe(true);
     expect(result.send_allowed).toBe(false);
     expect(result.one_shot_consumer_required).toBe(true);
@@ -539,7 +1243,7 @@ describe("Instagram welcome-audio operation guard", () => {
     const input = confirmedOperation();
     const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
     const result = validateWelcomeAudioOperation(
-      { ...input, receipt: { ...receipt, decision: "made_up" } },
+      withReceipt(input, { ...receipt, decision: "made_up" }),
       { nowMs: NOW_MS },
     );
     expect(result.terminal).toBe(true);
@@ -552,7 +1256,7 @@ describe("Instagram welcome-audio operation guard", () => {
     const input = sendReadyOperation();
     const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
     const result = validateWelcomeAudioOperation(
-      { ...input, receipt: { ...receipt, decision: "made_up" } },
+      withReceipt(input, { ...receipt, decision: "made_up" }),
       { nowMs: NOW_MS },
     );
     expect(result.terminal).toBe(true);

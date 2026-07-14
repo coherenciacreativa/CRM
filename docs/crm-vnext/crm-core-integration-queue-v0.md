@@ -1911,8 +1911,10 @@ No lane outputs in review at creation.
 - `source_workstream`: `welcome-audio-send-boundary`
 - `source_branch`:
   `codex/crm-core-welcome-audio-safari-action-adapter-v1-hardening`
-- `status`: `lane_validated_artifact_review_pending_no_live`
-- `commits`: one exact source-branch lane commit; Git history is authoritative
+- `status`:
+  `round2_implementation_reruns_and_independent_review_green_ca_delta_re_review_pending_no_live`
+- `commits`: Git history is authoritative for the final corrected source-branch
+  HEAD; do not infer a one-commit lane after the correction cycle
 - `files_changed_allowlist`:
   - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
   - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
@@ -1934,33 +1936,55 @@ No lane outputs in review at creation.
   - exact source-to-profile-to-thread binding and follows-owner verification;
   - business eligibility separated from audio capability;
   - exact approved asset plus attachment preview;
+  - strict root and nested input allowlists with no unknown or missing fields;
+  - one immutable canonical-operation digest, identical at the root and across
+    operation, approval, mission context, claim, execution, and confirmation;
+  - mandatory owner-only external `expectedCanonicalOperationSha256` for
+    validator and receipt-builder calls;
+  - fresh timestamped approval, surface, follower, binding, eligibility,
+    asset-preview, context, and dedupe observations, all no later than the
+    permanent claim;
   - atomic permanent pre-send claim and one Send action;
+  - strict current claim owner/token/revision/attempt lineage and ordered token
+    consumption at or after the claim and at or before the attempt;
   - explicit confirmation-evidence enum;
+  - every non-current claim/token outcome terminal unknown/no-retry;
+  - `TERMINAL_EVIDENCE` only when private terminal evidence disappears from the
+    redacted public tuple; confirmed blockers limited to aging reasons plus
+    `TERMINAL_NO_RETRY`; blocked results carry no terminal signal;
   - duplicate suppression and terminal attempted-or-unknown no-retry state;
-  - owner-only private evidence and redacted public receipt.
+  - owner-only private evidence and a redacted receipt with strict cross-field
+    semantic coherence.
 - `tests_or_checks`:
-  - syntax and focused operation-guard suite `32/32` green;
+  - fresh round-2 focused operation-guard suite `136/136` green;
   - neighboring central regressions `69/69` green;
-  - adversarial negatives for stale, missing, incompatible, ambiguous,
-    unsupported, duplicate, retried, and unconfirmed states green;
-  - private-reference redaction and exact 31-field receipt-schema checks green;
-  - exact allowlist, `git diff --check`, and no-live-effect review green;
-  - independent guard and documentation reviews green;
-  - full repository suite `1457/1458`; the sole failure is an untouched Launch
-    OS approval-queue test outside this lane and its allowlist;
-  - fresh Chief Architect artifact review still required before central
-    integration.
+  - adversarial coverage green for extra root/nested fields,
+    missing execution fields, mission/approval/packet substitution, observation
+    freshness, claim-after-observations, non-current claim/token terminality,
+    owner/token/revision mismatch, ordered claim/consume/attempt/confirmation,
+    exact attempt confirmation, trusted external digest anchoring, terminal
+    public/private evidence semantics, and receipt cross-field coherence;
+  - exact 31-field receipt allowlist plus cross-field semantic coherence must
+    pass and is green;
+  - syntax, exact allowlist, `git diff --check`, redaction, and no-live-effect
+    checks are green;
+  - full repository suite `1561/1562`; the sole failure remains the untouched
+    `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` / newer replacement
+    set outside this lane;
+  - final independent re-review is green; Chief Architect delta re-review is
+    required before central integration.
 - `private_artifacts_touched`: owner-only consultant reply and redacted receipt
   only; never integrated
 - `source_actions_executed`: none
 - `central_files_requested`: true, limited to the exact allowlist
 - `conflicts_expected`: central coordination files require one locked
   integration after lane review
-- `decision_needed`: none for lane construction; future pilot requires a new
-  mission contract
-- `integration_recommendation`: use Git history to identify the exact validated
-  lane commit, return an exact artifact packet for fresh Chief Architect review,
-  then integrate once under the central lock; do not execute live
+- `decision_needed`: none for the no-live correction; future pilot still
+  requires a new mission contract
+- `integration_recommendation`: use Git history to identify the final corrected
+  HEAD, return the exact round-2 delta packet for Chief Architect re-review,
+  and integrate once under the central lock only after that review is green;
+  do not execute live
 
 ## Rejected / Needs Rework
 

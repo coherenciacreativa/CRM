@@ -59,16 +59,18 @@ coordinates, and screenshot-coordinate navigation are out of scope.
 ## Exact Operation Contract
 
 The table below is the public enum summary, not the complete serialized guard
-packet. The canonical nested packet is defined by
-`scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs` and includes the
+packet. The canonical root and nested allowlists are defined by
+`scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs` and include the
 contract and adapter versions; operation, approval, surface, follower, binding,
 eligibility, asset, context, dedupe, effect-claim, execution, confirmation, and
-optional receipt sections. Missing nested fields, unknown values, and any
-non-canonical positive claim fail closed.
+optional receipt sections. Every required root and nested key must be present,
+and every extra root or nested key fails closed with `INPUT_SHAPE`. The optional
+`receipt` is the only permitted root-key variation.
 
 | Field | Allowed values | Required value before the attempt |
 | --- | --- | --- |
 | `adapter_version` | `instagram_welcome_audio_safari_action_adapter_v1` | exact value |
+| `canonical_operation_sha256` | SHA-256 from `buildWelcomeAudioCanonicalOperationDigest(input)` | exact identical digest at every binding surface and equal to the trusted external expected anchor |
 | `surface` | `safari_instagram_web_dm` | exact value |
 | `surface_detail` | `safari_standard_isolated_native_picker` | exact value |
 | `source_recency` | `exact_recent`, `stale`, `unknown` | `exact_recent` |
@@ -86,9 +88,10 @@ non-canonical positive claim fail closed.
 | `receipt_visibility` | `private_detail_and_redacted_summary` | exact value |
 
 The permanent pre-send `effect_claim` is distinct from the post-send
-`send_claim`. Any of the three strong current-operation markers permits
-`confirmed_sent`; only `none` maps to `attempted_unconfirmed`. The pure guard
-does not write either claim.
+`send_claim`. Any of the three strong current-operation markers may permit
+`confirmed_sent` only with the strict current claim/token/revision/attempt
+lineage defined below; only `none` maps to `attempted_unconfirmed`. The pure
+guard does not write either claim.
 
 ### Canonical Nested Packet Field Map
 
@@ -97,20 +100,26 @@ The guard's nested input sections are the durable field contract:
 ```yaml
 adapter_version: public version enum
 contract_version: public guard-contract enum
+canonical_operation_sha256: private canonical-operation digest
 operation:
   operation_id: private opaque
   approval_packet_id: private opaque
+  mission_id: private opaque
   source_event_anchor_sha256: private
   profile_anchor_sha256: private
   candidate_anchor_sha256: private
   thread_anchor_sha256: private
   owner_anchor_sha256: private
+  approved_audio_asset_id: private opaque
+  approved_audio_asset_sha256: private
   expected_send_count: 1
+  canonical_operation_sha256: exact root digest
 approval:
   status: approved_exact_single_send
   checked_at: private timestamp
   operation_id: private opaque
   approval_packet_id: private opaque
+  mission_id: private opaque
   source_event_anchor_sha256: private
   profile_anchor_sha256: private
   candidate_anchor_sha256: private
@@ -120,6 +129,7 @@ approval:
   approved_audio_asset_sha256: private
   source_recency_max_age_ms: mission-bound positive integer
   expected_send_count: 1
+  canonical_operation_sha256: exact root digest
 execution_surface:
   surface: safari_instagram_web_dm
   surface_detail: safari_standard_isolated_native_picker
@@ -130,6 +140,7 @@ execution_surface:
   private_browsing: false
   chrome_upload_attempted: false
   in_app_browser_upload_attempted: false
+  observed_at: private fresh observation timestamp
 follower_evidence:
   source_recency: exact_recent|stale|unknown
   observed_at: private timestamp
@@ -147,12 +158,14 @@ binding:
   candidate_anchor_sha256: private
   thread_anchor_sha256: private
   owner_anchor_sha256: private
+  observed_at: private fresh observation timestamp
 eligibility:
   business_eligibility: eligible_confirmed_recent_follower
   audio_capability: public audio-capability enum
   composer_capability: public audio-capability enum
   attachment_capability: public audio-capability enum
   text_fallback: forbidden
+  observed_at: private fresh observation timestamp
 asset:
   approved_audio_asset_id: private opaque
   approved_audio_asset_sha256: private
@@ -161,6 +174,7 @@ asset:
   preview_audio_asset_id: private opaque
   preview_audio_asset_sha256: private
   preview_thread_anchor_sha256: private
+  preview_observed_at: private fresh observation timestamp
 context:
   status: fresh_exact_central_mission_context
   checked_at: private timestamp
@@ -169,6 +183,9 @@ context:
   mission_id: private opaque
   expected_mission_id: private opaque
   mission_status: active
+  operation_id: private opaque
+  approval_packet_id: private opaque
+  canonical_operation_sha256: exact root digest
 dedupe:
   status: clear_no_prior_welcome_or_attempt
   already_welcomed_status: not_found
@@ -191,6 +208,7 @@ effect_claim:
   claim_owner_id: private opaque or null
   claim_token_id: private opaque or null
   registry_revision: positive integer or null
+  attempt_id: private opaque or null
   operation_id: private opaque
   approval_packet_id: private opaque
   mission_id: private opaque
@@ -199,6 +217,7 @@ effect_claim:
   owner_anchor_sha256: private
   approved_audio_asset_id: private opaque
   approved_audio_asset_sha256: private
+  canonical_operation_sha256: exact root digest
 execution:
   attempt_budget: 1
   send_attempt_count: 0|1
@@ -206,22 +225,57 @@ execution:
   send_claim: public send-claim enum
   retry_disposition: public retry enum
   retry_requested: false
+  operation_id: private opaque
+  approval_packet_id: private opaque
+  mission_id: private opaque
+  canonical_operation_sha256: exact root digest
   claim_owner_id: private opaque or null
   claim_token_id: private opaque or null
   claim_registry_revision: positive integer or null
+  attempt_id: private opaque or null
+  claim_token_consumed_at: private timestamp or null
   attempted_at: private timestamp or null
 confirmation:
   confirmation_marker: public confirmation enum
-  operation_id: private opaque or null
-  candidate_anchor_sha256: private or null
-  thread_anchor_sha256: private or null
-  approved_audio_asset_sha256: private or null
+  operation_id: private opaque
+  approval_packet_id: private opaque
+  mission_id: private opaque
+  canonical_operation_sha256: exact root digest
+  candidate_anchor_sha256: private
+  thread_anchor_sha256: private
+  approved_audio_asset_sha256: private
+  claim_owner_id: private opaque or null
+  claim_token_id: private opaque or null
+  claim_registry_revision: positive integer or null
+  attempt_id: private opaque or null
   bound_to_current_operation: boolean
   checked_at: private timestamp or null
 receipt: optional exact redacted receipt
 ```
 
-Private values never enter tracked documentation or the redacted receipt.
+Private values never enter tracked documentation or the redacted receipt. The
+root digest and the copies in `operation`, `approval`, `context`, `effect_claim`,
+`execution`, and `confirmation` must be byte-identical. In this schema,
+`context` carries the mission binding and `operation` carries the packet
+binding; no parallel `mission` or `packet` root objects may be invented.
+In `confirmation`, operation, approval-packet, mission, canonical digest,
+candidate, thread, and asset bindings are always populated, including preclaim.
+Only claim owner, token, registry revision, and attempt ID are nullable before
+the claim; the lifecycle `checked_at` remains null until confirmation is
+observed.
+
+Self-consistency is insufficient. The owner-only caller must supply a trusted
+external `expectedCanonicalOperationSha256` in the options for all operation
+validation and receipt building:
+
+```text
+validateWelcomeAudioOperation(input, { expectedCanonicalOperationSha256 })
+buildWelcomeAudioRedactedReceipt(input, { expectedCanonicalOperationSha256 })
+```
+
+The option must come from the independently approved owner-only mission/packet
+boundary, never from any digest field inside `input`. Missing, malformed, or
+mismatched expected anchors fail with `CANONICAL_OPERATION`.
 
 ## Future Mission Binding
 
@@ -230,6 +284,11 @@ No invocation is valid without a new future mission that explicitly binds:
 - its mission ID and version;
 - this exact adapter ID and the v1 surface matrix;
 - one private stable operation key;
+- one strict root/nested input shape;
+- one immutable canonical-operation projection and digest built only through
+  `buildWelcomeAudioCanonicalOperationDigest(input)`;
+- one independently trusted owner-only `expectedCanonicalOperationSha256`
+  supplied to validator and receipt-builder calls;
 - one exact approved recent source observation;
 - a mission-defined maximum source-binding age;
 - one exact private recipient/thread binding;
@@ -237,7 +296,7 @@ No invocation is valid without a new future mission that explicitly binds:
 - a total attempt budget of one;
 - one permanent pre-send effect claim;
 - one owner-only atomic claim-writer contract, current-invocation claim owner,
-  claim token, and monotonically bound registry revision;
+  claim token, attempt ID, and monotonically bound registry revision;
 - one separately integrated one-shot executor that atomically consumes the
   ready token before actuating the UI effect;
 - the permanent no-retry rule;
@@ -268,6 +327,13 @@ the immediate pre-attempt check:
 6. already-welcomed, prior-attempt, and dedupe evidence is negative and fresh;
 7. the binding remains within the mission-defined maximum age.
 
+The dynamic observations are independently fresh: `execution_surface.observed_at`,
+`follower_evidence.observed_at`, `binding.observed_at`,
+`eligibility.observed_at`, and `asset.preview_observed_at`. Approval, central
+context, and dedupe retain their own fresh `checked_at` fields. A permanent
+claim is valid only when `claimed_at` is at or after every one of those
+observations/checks.
+
 If any item is stale, missing, mismatched, or ambiguous, stop before an attempt.
 Do not search unrelated profiles or DMs to repair the binding.
 
@@ -278,8 +344,9 @@ thread, the native audio attachment control is visible, enabled, and can open
 the native picker without a forbidden fallback.
 
 Historical Safari success does not satisfy this gate. The capability must be
-observed again for the exact future operation. `missing`, `disabled`, or
-`ambiguous` blocks the operation before any send attempt.
+observed again for the exact future operation and timestamped in
+`eligibility.observed_at`. `missing`, `disabled`, `ambiguous`, or stale evidence
+blocks the operation before any send attempt.
 
 ## Exact Asset And Preview Gate
 
@@ -289,6 +356,7 @@ observed again for the exact future operation. `missing`, `disabled`, or
 - the original approved asset selected through the native picker;
 - a private integrity binding that matches the mission packet;
 - one visible ready-state preview in the exact bound DM thread;
+- a fresh `asset.preview_observed_at` recorded no later than the claim;
 - no conversion, rename, temporary copy, or alternate asset;
 - no text or other attachment added to the send.
 
@@ -305,28 +373,32 @@ Phase A: pre-claim eligibility
 Phase B: current-invocation send readiness
   authorized external CAS writer wins once and durably writes
   permanently_claimed_before_attempt + attempt_committed
+  + exact canonical-operation digest matched to trusted external anchor
+  + exact attempt ID
   + fresh current claim owner/token/revision
   -> mandatory fresh guard read
   -> ready_for_one_send_attempt; send_ready=true; send_allowed=false
   -> separately integrated one-shot executor consumes token once
+  -> records claim_token_consumed_at before attempted_at
 
 Phase C: permanent terminal state
   attempted_terminal + confirmed_sent
   attempted_terminal + attempted_unconfirmed
-  pre-existing/replayed/stale/consumed attempt_committed claim
+  every non-current/replayed/stale/mismatched claim or token
 ```
 
 The operation guard is a pure validator: it never persists or atomically
 promotes state. Immediately before the send action, an authorized caller must
 use an owner-only durable compare-and-swap claim writer. Only a claim won by the
 current invocation, with its exact opaque owner, token, and registry revision
-fresh and unconsumed, may pass the mandatory post-write guard evaluation.
+fresh and unconsumed, its exact attempt ID, and its identical immutable
+canonical-operation digest may pass the mandatory post-write guard evaluation.
 
 A pre-existing, replayed, stale, mismatched, or consumed permanent claim, or an
 `attempt_committed` state not proven fresh for the current invocation, is
-terminal and blocks re-entry. A crash after the durable claim but before or
-during the click therefore produces no retry. The pre-send claim is never a
-claim that the send succeeded.
+terminal unknown/no-retry and blocks re-entry, even if later UI evidence looks
+strong. A crash after the durable claim but before or during the click therefore
+produces no retry. The pre-send claim is never a claim that the send succeeded.
 
 Because the guard is pure, evaluating the same immutable fresh snapshot twice
 can repeat only the readiness result. It cannot mint or consume a one-shot
@@ -348,6 +420,15 @@ authorized caller consumes the one-time claim token and records:
 - uncertainty, UI failure, process death, or missing confirmation cannot reopen
   the attempt.
 
+The ordering is strict and inclusive. `approval.checked_at`,
+`execution_surface.observed_at`, `follower_evidence.observed_at`,
+`binding.observed_at`, `eligibility.observed_at`,
+`asset.preview_observed_at`, `context.checked_at`, and `dedupe.checked_at` must
+all be no later than `effect_claim.claimed_at`.
+`claim_token_consumed_at` must be at or after the current `claimed_at` and at or
+before `attempted_at`; confirmation `checked_at` must be at or after that exact
+attempt.
+
 There is no second click, resend, retrigger, alternate browser, in-app retry,
 manual completion, or hybrid fallback after the attempt boundary.
 
@@ -365,7 +446,12 @@ explicit enum:
 
 `confirmed_sent` is forbidden for historical bubbles or markers, a preview, a
 generic toast, a thread-order change, or evidence that cannot be attributed to
-the current operation. A missing confirmation is terminal and must never
+the current operation. A strong marker permits `confirmed_sent` only when the
+claim is the fresh current-invocation claim, its token is consumed, and the
+operation/approval/mission digest, owner, token, registry revision, attempt ID,
+attempt state, count, and timestamps all cohere across claim, execution, and
+confirmation. Any non-current claim/token/revision or lineage mismatch produces
+terminal unknown/no-retry. A missing confirmation is terminal and must never
 trigger a retry.
 
 ## Private Evidence And Redacted Receipt
@@ -413,9 +499,33 @@ blocker_codes:
 
 The builder emits every required field and replaces invalid or unknown input
 with fixed non-private `invalid_or_unknown` or `null`; it never copies an
-arbitrary input string. The standalone validator requires the exact key set,
-exact types, and exact enums. This list must change in the same commit whenever
-the guard's exported `REDACTED_RECEIPT_FIELDS` changes.
+arbitrary input string. When the operation decision is `blocked_fail_closed`,
+the builder emits the fixed neutral lifecycle tuple so malformed isolated claim
+enums cannot make a blocked receipt contradict its own classification. The
+standalone validator requires the exact key set,
+exact types, exact enums, and cross-field semantic coherence. It rejects
+impossible phase/decision/claim/readiness/terminal combinations with
+`RECEIPT_SEMANTICS`. This list must change in the same commit whenever the
+guard's exported `REDACTED_RECEIPT_FIELDS` changes. The private canonical digest
+never becomes a receipt field.
+
+Receipt terminal semantics are exact:
+
+- `confirmed_sent_terminal_no_retry` accepts only the strict confirmed tuple;
+  its blockers are limited to `TERMINAL_NO_RETRY` plus the internal aging-only
+  allowlist (`APPROVAL_FRESHNESS`, `SURFACE_OBSERVATION`, `SOURCE_MAX_AGE`,
+  `SOURCE_CALENDAR_WINDOW`, `SOURCE_BUCKET`, `BINDING_OBSERVATION`,
+  `ELIGIBILITY_OBSERVATION`, `ASSET_PREVIEW_OBSERVATION`, `CONTEXT_FRESHNESS`,
+  `DEDUPE_FRESHNESS`, and `EFFECT_CLAIM_FRESHNESS`);
+- `attempted_or_unknown_terminal_no_retry` requires a public terminal signal or
+  `TERMINAL_EVIDENCE`, plus `TERMINAL_NO_RETRY` and the corresponding unknown
+  evidence reason;
+- `TERMINAL_EVIDENCE` is emitted only when private terminal evidence exists but
+  disappears from the redacted public tuple;
+- `retry_disposition` is derived terminal policy, not independent evidence; a
+  forbidden-retry value alone cannot validate a terminal receipt;
+- `blocked_fail_closed` requires no public terminal signal and no terminal-only
+  blocker or permanently forbidden retry disposition.
 
 No raw identity, handle, profile or thread reference, URL, message text, asset
 path, asset contents, private digest, screenshot, cookie, credential, or source
@@ -427,6 +537,11 @@ Stop before an attempt when any required positive gate is absent, the CEO's
 visible desktop would be disrupted, Safari is not dedicated and isolated, auth
 or permissions are ambiguous, a private boundary cannot be preserved, or a
 forbidden surface/fallback would be required.
+
+Also stop on `INPUT_SHAPE`, `CANONICAL_OPERATION`, `SURFACE_OBSERVATION`,
+`BINDING_OBSERVATION`, `ELIGIBILITY_OBSERVATION`,
+`ASSET_PREVIEW_OBSERVATION`, `EXECUTION_BINDING`,
+`CLAIM_TOKEN_CONSUMPTION`, `TERMINAL_EVIDENCE`, or `RECEIPT_SEMANTICS`.
 
 Stop terminally after an attempt, regardless of confirmation quality. Record
 the claim and marker once; do not repair by sending again.
@@ -451,5 +566,7 @@ the claim and marker once; do not repair by sending again.
 This docs-only adapter is complete when its enums align with the operation
 guard and surface matrix, the private-reference regression remains green, and
 review confirms that no file or live effect outside the approved hardening
-allowlist changed. Operational readiness requires separate integration and a
+allowlist changed. Round-2 implementation, reruns, and final independent
+re-review are green; Chief Architect delta re-review remains pending before central
+integration. Operational readiness still requires separate integration and a
 new future mission with explicit authority.

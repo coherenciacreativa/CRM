@@ -89,6 +89,9 @@ guard are integrated and must bind at least:
 
 ```yaml
 adapter_version: instagram_welcome_audio_safari_action_adapter_v1
+input_shape: exact_root_and_nested_allowlists
+canonical_operation_sha256: required_identical_private_digest
+expectedCanonicalOperationSha256: required_trusted_owner_only_external_anchor
 surface: safari_instagram_web_dm
 surface_detail: safari_standard_isolated_native_picker
 source_recency_required: exact_recent
@@ -99,8 +102,13 @@ composer_capability_required: present_and_usable
 attachment_capability_required: present_and_usable
 text_fallback: forbidden
 asset_preview_binding_required: exact_asset_and_preview_match
+required_observation_timestamp_count: 8
+dynamic_observation_timestamps: all_required_fresh
+claim_after_all_required_observations: true
 attempt_budget_per_operation: 1
 effect_claim_required: permanently_claimed_before_attempt
+current_claim_owner_token_revision_attempt_required: true
+claim_token_consumed_before_attempt: true
 pure_guard_send_allowed: false
 one_shot_token_consumer_required: separately_integrated_and_tested
 retry_after_attempt: forbidden_permanently
@@ -110,7 +118,15 @@ receipt_visibility: private_detail_and_redacted_summary
 The mission must define its own recent-binding maximum age, exact scope, effect
 cap, duration, source/private boundaries, stable operation key, dedupe inputs,
 stop rules, evidence destinations, and action-time confirmation requirements.
-It must receive fresh explicit authority; this closeout cannot grant it.
+It must use `buildWelcomeAudioCanonicalOperationDigest(input)` and preserve that
+exact digest at the root and in operation, approval, mission context, claim,
+execution, and confirmation. It must also timestamp the approval, surface,
+follower, binding, eligibility, asset-preview, context, and dedupe observations
+no later than the claim. It must
+pass an independently approved owner-only
+`expectedCanonicalOperationSha256` to validator and receipt-builder
+calls; that expected anchor may never be sourced from `input`. It must receive
+fresh explicit authority; this closeout cannot grant it.
 
 ## Confirmation Contract For The Future Mission
 
@@ -125,6 +141,18 @@ strong marker attributable to the current operation is one of:
 `confirmation_marker: none` maps to `send_claim: attempted_unconfirmed`. Every
 post-attempt outcome is terminal and permanently non-retryable.
 
+A strong marker alone never establishes success. `confirmed_sent` additionally
+requires the fresh current claim, consumed current token, matching owner/token,
+registry revision and attempt ID, the identical canonical-operation digest, and
+the valid observation/claim/consumption/attempt/confirmation order. Any
+non-current or mismatched lineage is terminal unknown/no-retry.
+
+Confirmed terminal permits only the strict confirmed tuple with aging-only
+blockers plus `TERMINAL_NO_RETRY`. Unknown terminal requires a public terminal
+signal or `TERMINAL_EVIDENCE`; the latter is reserved for private terminal
+evidence that disappears from the redacted tuple. Blocked means no terminal
+signal and no terminal-only blocker.
+
 ## Receipt And Privacy Boundary
 
 This tracked closeout contains no raw identity, handle, profile/thread
@@ -135,12 +163,19 @@ Any future private reconciliation must remain owner-only and may report to
 tracked documentation only a redacted pass/fail status, count, enum, or opaque
 operation status. A raw private reference is never a durable repo field.
 
+Future redacted receipt validation must enforce strict cross-field semantic
+coherence as well as its exact allowlist, types, and enums. The private
+canonical-operation digest and canonical bytes must never be added to the
+redacted receipt.
+
 ## Reopening Rule
 
 This pilot cannot be reopened. If CRM Core later needs a limited operational
 pilot, it must be a new versioned mission with a new mission ID, a new approval
 receipt, fresh source and asset bindings, and explicit reference to the
-integrated v1 adapter, matrix, and operation guard.
+integrated corrected v1 adapter, matrix, and operation guard. The corrected
+round-2 implementation, reruns, and final independent re-review are green, but
+Chief Architect delta re-review must pass before central integration.
 
 ## Completion Boundary
 

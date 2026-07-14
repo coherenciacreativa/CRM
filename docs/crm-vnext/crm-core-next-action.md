@@ -6013,7 +6013,8 @@ routing and completion pointer.
 
 - `next_action_id`:
   `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026-07-14`
-- `status`: `lane_validated_artifact_review_pending_no_live`
+- `status`:
+  `round2_implementation_reruns_and_independent_review_green_ca_delta_re_review_pending_no_live`
 - `created_at`: `2026-07-14`
 - `objective`: Build and verify the missing deterministic Welcome Audio action
   rail from the current canonical CRM Core state, without performing any live
@@ -6039,10 +6040,28 @@ routing and completion pointer.
   - Private follows-owner verification.
   - Separate business eligibility from actual audio attachment capability.
   - Exact approved asset and attachment preview before any future send.
+  - Exact root and nested input allowlists; extra or missing fields fail closed.
+  - One immutable `canonical_operation_sha256`, built by the canonical helper
+    and identical across operation, approval, mission context, effect claim,
+    execution, and confirmation.
+  - Mandatory independently trusted owner-only
+    `expectedCanonicalOperationSha256` for validator and
+    receipt-builder calls; never source it from `input`.
+  - Fresh timestamped approval, surface, follower, binding, eligibility,
+    asset-preview, context, and dedupe observations, all no later than the
+    permanent claim.
   - One permanent pre-send claim, one Send action, and explicit confirmation
     evidence tied to the current operation.
-  - Duplicate, attempted, ambiguous, or unknown outcomes are terminal no-retry.
-  - Only owner-only private evidence and redacted receipts.
+  - Strict current claim owner/token/revision/attempt lineage, with token
+    consumption recorded at or after the claim and at or before the attempt.
+  - Every non-current claim/token or other non-neutral claim/attempt lifecycle
+    outcome is terminal unknown/no-retry. Missing, ambiguous, or unknown
+    preclaim evidence with an otherwise neutral lifecycle remains blocked.
+  - Confirmed terminal accepts only aging blockers plus `TERMINAL_NO_RETRY`;
+    unknown terminal requires a public terminal signal or `TERMINAL_EVIDENCE`;
+    blocked results have no terminal signal or terminal-only blocker.
+  - Only owner-only private evidence and redacted receipts with cross-field
+    semantic coherence.
 - `forbidden_scope`:
   - No Instagram, Safari, Chrome upload, in-app upload, DM, audio, MailerLite,
     Gmail, campaign, CRM write, proxy, or other live effect.
@@ -6051,21 +6070,26 @@ routing and completion pointer.
   - No claim that the prior Safari result proves production reliability.
 - `completion_definition`:
   - Exact allowlist only.
-  - Focused and adversarial tests green.
+  - Round-2 focused, adversarial, neighboring, and full-suite evidence recorded.
   - Redaction regression green.
-  - Independent review green.
-  - One lane commit and push recorded by source-branch Git history.
-  - Fresh Chief Architect artifact review before central integration.
+  - Final independent guard/documentation re-review green.
+  - Final corrected source-branch HEAD recorded by Git history.
+  - Chief Architect round-2 delta re-review green before central
+    integration.
 - `validation_evidence`:
-  - Operation-guard suite `32/32` green.
+  - Focused operation-guard suite `136/136` green.
   - Neighboring central regressions `69/69` green.
-  - Exact eleven-file allowlist, redaction regression, receipt-schema match,
-    and `git diff --check` green.
-  - Independent guard and documentation reviews green.
-  - Full repository suite `1457/1458`; the sole failure is an untouched Launch
-    OS approval-queue test outside this lane and its allowlist.
-- `next_external_gate`: Fresh Chief Architect artifact review, followed by the
-  central integration lock. Git history is authoritative for the exact lane
-  commit; this record grants no live authority.
+  - Full repository suite `1561/1562`; the sole failure remains the untouched
+    `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts` / newer replacement
+    set outside this lane.
+  - Syntax, exact eleven-file allowlist, redaction, receipt schema/semantics,
+    and `git diff --check` are green.
+  - Final independent re-review is green; Chief Architect delta re-review is
+    pending.
+- `next_external_gate`: Submit the round-2 delta artifact packet for Chief
+  Architect re-review. The central integration lock follows only after that
+  review is green. Git history is
+  authoritative for the final corrected HEAD; this record grants no live
+  authority.
 - `recommended_default`:
-  `submit_validated_artifact_packet_then_integrate_once_under_central_lock_no_live`
+  `submit_round2_delta_for_ca_re_review_no_live`

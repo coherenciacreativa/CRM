@@ -1063,12 +1063,14 @@
 ## Welcome Audio Safari Action Rail v1 Hardening Lane
 
 - `checkpoint_date`: `2026-07-14`
-- `status`: `lane_validated_artifact_review_pending_no_live`
+- `status`:
+  `round2_implementation_reruns_and_independent_review_green_ca_delta_re_review_pending_no_live`
 - `canonical_target`: canonical Chief Architect project and standing portfolio
   chat confirmed through static and dynamic private-registry gates
-- `chief_architect_verdict`: task packet authorized the bounded build; the
-  validated source-branch commit now requires fresh artifact review before
-  central integration
+- `chief_architect_verdict`: artifact review and threat-model delta returned two
+  bounded mechanical correction rounds. Round-2 implementation, reruns, and
+  final independent re-review are green; Chief Architect delta re-review remains
+  required before central integration.
 - `causal_refinement`:
   - starting from the adjacent CRM repository contributed to missed project
     context;
@@ -1088,6 +1090,13 @@
   - Safari action adapter v1;
   - surface capability matrix v1;
   - deterministic local operation guard and adversarial tests;
+  - strict root/nested allowlists, immutable canonical-operation digest, fresh
+    observation timestamps before claim, current owner/token/revision/attempt
+    lineage, terminal non-current claims, and receipt semantic coherence;
+  - mandatory trusted external `expectedCanonicalOperationSha256`, exact
+    confirmation nullability, confirmed aging-only blocker allowlist,
+    `TERMINAL_EVIDENCE` only for redacted-away private terminal evidence, and
+    blocked states with no terminal signals;
   - narrow historical-result redaction repair;
   - pilot closeout and synchronized central coordination records.
 - `closed_gates`:
@@ -1099,11 +1108,14 @@
 - `documentation_continuity_rule`: Git-tracked next-action, board, queue,
   workstream, protocol, test, and closeout artifacts are the durable memory;
   chat history is not an execution dependency.
-- `validation_evidence`: operation-guard suite `32/32`, neighboring central
-  regressions `69/69`, exact allowlist and diff checks, receipt and redaction
-  checks, and both independent reviews are green. Full repository suite is
-  `1457/1458`; the sole failure is an untouched Launch OS approval-queue test
-  outside this lane and its allowlist.
-- `next_gate`: Git history supplies the exact lane commit; send the exact
-  artifact packet for fresh Chief Architect review, then use the central
-  integration lock. No live authority exists.
+- `validation_evidence`: round-2 focused operation-guard `136/136`, neighboring
+  central regressions `69/69`, and full repository `1561/1562`. The sole failure
+  remains the untouched `crm-vnext-mailerlite-launch-os-approval-queue.spec.ts`
+  / newer replacement set outside this lane. Syntax, exact allowlist,
+  `git diff --check`, redaction, receipt schema, and receipt semantic checks are
+  green. Final independent re-review is green; Chief Architect delta re-review
+  is pending.
+- `next_gate`: use Git history for the final corrected source-branch HEAD,
+  and send the exact round-2 delta packet for Chief Architect re-review. Use the
+  central integration lock only after that review is green. No live authority
+  exists.
