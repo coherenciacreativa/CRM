@@ -2,7 +2,7 @@
 
 - `contract_version`: `crm_core_instagram_welcome_audio_one_shot_executor_v1`
 - `execution_mode`: `synthetic_no_effect_proof_only`
-- `status`: `canonical_lane_validation_green_no_live`
+- `status`: `shared_store_refactor_focused_and_full_green_external_review_pending_no_live`
 - `live_authority`: `false`
 - `send_allowed`: `false`
 - `future_mission_required`: `true`
@@ -11,7 +11,11 @@
 
 This contract closes one narrow technical gap left intentionally open by the
 integrated Welcome Audio operation guard: serialization and durable one-shot
-consumption of an already-authoritative `READY` operation.
+consumption of an already-authoritative `READY` operation. In the current lane,
+its filesystem mechanics are factored into the shared owner-only one-shot store
+used by the new claim writer and deterministic Safari operational rail. The
+executor keeps its original public contract, decisions, receipt, synthetic-only
+mode, and executor-specific record namespace.
 
 The v1 executor proves only that one attempt budget can cross the durable
 boundary once. It does not prove delivery, does not operate Instagram, and
@@ -57,9 +61,13 @@ The function accepts only:
 
 No private value appears in the public receipt.
 
-## Synthetic Registry Boundary
+## Shared Store Boundary
 
-The registry is temporary, local, owner-only and proof-only.
+The executor now consumes the shared primitives defined by
+`crm_core_instagram_welcome_audio_one_shot_store_v1`. The registry remains
+temporary, local, owner-only and proof-only. Reuse of the shared store module
+does not merge executor records with the operational-rail namespace and does
+not create a live registry.
 
 - directory mode must be `0700`;
 - record mode must be `0600`;
@@ -87,6 +95,22 @@ for:
 - per-operation serialization mutex.
 
 These filenames are private local implementation details.
+
+The shared store refactor must preserve the existing executor behavior exactly:
+stable READY re-read, non-reclaiming mutex, synced pending evidence, exclusive
+non-replace terminal publication, evidence dominance, replay closure, and the
+fixed 15-field public receipt. The refactor required the focused and integrated
+proof to be rerun against the current lane. That focused
+rerun and the post-hardening owner-only captured full suite are now recorded
+green for this lane below; external review remains pending.
+
+The shared store also distinguishes incomplete READY publication as
+`READY_PARTIAL`. In this existing boundary-A executor, partial READY evidence is
+terminal-unknown/no-retry; it is never repaired or reclaimed into another
+consumption attempt. The combined claim-writer rail applies the narrower
+in-flight rule documented in `instagram-welcome-audio-operational-rail-v1.md`:
+held mutex means `BUSY`, while a partial surviving the serialized recheck means
+`UNKNOWN` and permanent no-retry.
 
 ## Authoritative READY Gate
 
@@ -184,6 +208,33 @@ of three fixed fault enums:
 
 The fault enums never invoke an external effect.
 
+## Relationship To The Combined Operational Rail
+
+The new combined no-effect contract is documented in
+`instagram-welcome-audio-operational-rail-v1.md`. It adds a claim writer, an
+opaque same-process one-use capability, a deterministic Safari-branded port,
+an operational executor, and a same-process composite.
+
+The capability exposes no raw peek or inspect API. Its verification bridge
+returns only `fresh`, `consumed`, or `invalid`; its consumption bridge returns
+only `consumed_now`, `already_consumed`, or `invalid`. Neither bridge returns
+store, digest, lineage, or record metadata.
+
+This existing executor is not silently promoted into that operational
+executor. It remains the boundary-A consumer of an already-authoritative READY
+record and exposes no capability issuer or actuator. Its shared store module is
+the common mechanical substrate only.
+
+For the combined rail, ordering is separately enforced as:
+
+```text
+claim issuance -> READY -> pending terminal evidence
+  -> opaque capability consumption -> at most one deterministic actuation
+  -> terminal evidence -> permanent no-retry
+```
+
+Every live/browser/source gate remains false.
+
 ## Public Receipt
 
 The receipt has exactly these 15 fields:
@@ -265,7 +316,7 @@ The lane is not green until tests cover:
   actuator capability from the productive module;
 - all five public decisions.
 
-Validation record for this lane:
+Historical validation record before the shared-store refactor:
 
 - executor-focused suite: `45/45` green;
 - integrated guard plus executor: `202/202` green;
@@ -275,17 +326,42 @@ Validation record for this lane:
   green with no remaining findings;
 - Node syntax and `git diff --check`: green.
 
+Current shared-store refactor validation is `45/45` green, and the combined
+guard plus one-shot, claim-writer, and operational-executor focused total is
+`241/241` green, including a `5/5` targeted crash/concurrency/invalid-port
+subset. The
+fresh post-hardening owner-only captured full repository suite was completed:
+`239/240` files and `1666/1667` tests,
+with the sole failure the exact unchanged out-of-lane MailerLite approval-queue
+baseline. Independent external review remains pending. The historical counts
+above were not reused as proof of the new rail; the focused and full results
+were rerun against the current lane.
+
+The combined executor's crash receipt does not infer actuation from promotion
+state. It fixes the modeled after-boundary result before promotion, performs one
+read-only evidence reinspection after a promotion fault, and lets terminal
+evidence dominate pending evidence. Pending-only and terminal-plus-pending tests
+both close permanently with no second actuation.
+
 ## Completion Boundary
 
-Green tests prove only the local one-shot serialization boundary.
+Green tests prove only the local one-shot serialization boundary. The current
+shared-store refactor and combined rail must first receive their own fresh
+validation and review.
 
 They do not make the system production-ready and do not authorize a send. A
 future live path still requires:
 
-- central integration of this executor;
-- a separately reviewed claim-issuance boundary;
+- central integration of the current no-effect operational-rail lane after its
+  validation and review;
+- a separately reviewed live claim-issuance boundary; the deterministic claim
+  writer in the operational-rail lane is not a live issuer;
 - an explicitly written and freshly approved mission contract;
 - fresh private evidence, exact identity binding, asset binding and dedupe;
-- an approved browser-bound adapter that invokes an exact effect only after the
-  durable boundary;
+- an approved real browser-bound adapter that invokes an exact effect only
+  after durable pending terminal evidence; the deterministic Safari-branded
+  port is not a browser driver;
 - strong post-send confirmation and permanent no-retry handling.
+
+Only after those gates are integrated may a newly written mission plus fresh
+explicit CEO approval authorize a one-recipient, one-audio, one-attempt canary.

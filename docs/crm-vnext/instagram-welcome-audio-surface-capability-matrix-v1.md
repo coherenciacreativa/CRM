@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Surface Capability Matrix v1
 
 Date: 2026-07-14
-Status: `guard_centrally_integrated_executor_lane_validated_no_live`
+Status: `operational_rail_focused_241_full_1666_of_1667_external_review_pending_no_live`
 Matrix ID: `instagram_welcome_audio_surface_capability_matrix_v1`
 
 ## Purpose
@@ -12,6 +12,11 @@ not a live capability probe.
 
 The historical one-send result and Safari upload-route v0 are design evidence
 only. They are not production proof, current health evidence, or live authority.
+
+The deterministic Safari-branded port in
+`instagram-welcome-audio-operational-rail-v1.md` is mechanical evidence only.
+It does not probe any row in this matrix and does not establish that Safari or
+Instagram is currently usable.
 
 ## Canonical Decision
 
@@ -262,7 +267,7 @@ The same digest must also equal the trusted external
 digest copies consistently still fails when it differs from that owner-only
 anchor.
 
-The executor publication order is immutable:
+The existing synthetic executor publication order is immutable:
 
 ```text
 authoritative READY
@@ -275,8 +280,41 @@ authoritative READY
 No stale lock, dead owner, pending record, malformed record, timeout, callback
 failure, process death, or missing receipt may be reclaimed into another
 attempt. Pending, final, partial, or coexisting terminal evidence always blocks
-replay. The synthetic v1 implementation invokes no callback at all; future
-actuation remains a separate mission-bound contract.
+replay.
+
+The combined deterministic no-effect rail extends this proof without opening a
+live surface:
+
+```text
+authoritative PRECLAIM
+  -> shared owner-only claim writer publishes READY
+  -> opaque same-process capability
+  -> operational executor publishes pending attempted-terminal evidence
+  -> capability consumed
+  -> at most one branded deterministic Safari-port invocation
+  -> final terminal evidence
+  -> permanent no-retry
+```
+
+The branded port is not a callback supplied by a caller and is not a browser
+driver. It is created only by the operational-rail module, lives in private
+module state, accepts only deterministic no-effect scenarios, and fixes browser,
+network, and external-effect use to false. A fabricated lookalike is rejected.
+
+The capability has no raw peek/inspect export. Binding verification exposes only
+`fresh`, `consumed`, or `invalid`, and consumption exposes only `consumed_now`,
+`already_consumed`, or `invalid`; no root, digest, claim lineage, or record
+metadata is returned.
+
+An incomplete READY publication is `READY_PARTIAL`. While its publisher still
+holds the mutex, a contender returns `BUSY`. If the partial remains after the
+current invocation wins serialization and rechecks the store, it becomes
+`UNKNOWN` with permanent no-retry. The partial is never repaired or reclaimed.
+
+After a modeled after-boundary failure, the result is fixed before terminal
+promotion. One read-only evidence reinspection classifies pending-only as
+unknown and terminal-plus-pending as terminal by dominance. Both are permanent
+no-retry, and replay performs no second modeled actuation.
 
 After the attempt, one of these current-operation markers is selected:
 
@@ -319,6 +357,7 @@ neutral enums.
 | First controlled Safari send result v0 | `historical_single_send_design_evidence` | Choosing Safari and native picker for the adapter design | Production readiness, repeatability, current capability, live authorization |
 | Safari upload-route hardening protocol v0 | `historical_no_run_design_evidence` | Fail-closed isolation, picker, and fallback rules | Current route health or an executable mission |
 | Synthetic one-shot executor adversarial suite v1 | `mechanical_serialization_evidence_only` | Durable one-consumer, crash, replay, privacy, and no-retry mechanics | Current Safari health, Instagram delivery, live authority, or production readiness |
+| Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_focused_and_full_green_review_pending` | Focused `241/241`, including targeted crash/concurrency/invalid-port `5/5`; full `239/240` files and `1666/1667` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
 | Fresh future operation observation | `operation_scoped_evidence` | The exact enum values for that operation | Another operation, another surface, or standing automation |
 
 ## Receipt Boundary
@@ -336,27 +375,36 @@ in an impossible combination fail with `RECEIPT_SEMANTICS`.
 
 ## No-Run Boundary
 
-This matrix and the synthetic executor lane do not open Safari or Instagram,
+This matrix and the operational-rail lane do not open Safari or Instagram,
 inspect a DM, probe an upload control, select an asset, send audio or text,
 activate automation, touch MailerLite or the legacy proxy, launch or alter a
 campaign, or mutate CRM/source state. Only temporary owner-only synthetic
-fixtures and fixed deterministic no-effect fault enums are permitted. Browser,
-UI, network, private operational data, arbitrary callbacks and live registries
-remain forbidden.
+fixtures, the shared no-effect store, opaque same-process capabilities, and
+fixed deterministic no-effect scenarios are permitted. Browser, UI, network,
+private operational data, arbitrary callbacks and live registries remain
+forbidden.
 
 ## Future Mission Requirement
 
-The closed limited operational pilot cannot authorize this matrix. A new future
-mission must explicitly bind the v1 adapter, this matrix, the operation guard,
+The closed limited operational pilot cannot authorize this matrix. The combined
+deterministic rail must first pass validation, independent review, formal
+artifact review, and central integration; none of those steps grants live
+authority. A new future mission must then explicitly bind the v1 adapter, this
+matrix, the operation guard,
 one exact recent source, one exact asset, one attempt, the permanent pre-send
 claim, strict root/nested allowlists, immutable canonical-operation digest,
 trusted external `expectedCanonicalOperationSha256`, fresh timestamped
 observations sealed into the complete dynamic preclaim snapshot, exact
 immutable `confirmation_max_delay_ms: 300000` in operation/approval/context,
 current claim/token/revision/attempt lineage, exact terminal semantics,
-terminal no-retry, and private/redacted evidence boundaries. The corrected
-guard and its prior adapter/matrix chain are already centrally integrated,
-readiness-only and no-live. The separate synthetic executor's focused
-adversarial proof and independent reviews are green; lane commit/push, formal
-artifact review and central integration remain separate. None of those steps
-removes the need for a new future mission.
+terminal no-retry, a live owner-only claim issuer, a separately reviewed real
+browser-bound Safari actuator, and private/redacted evidence boundaries. The
+corrected guard, adapter/matrix chain, and synthetic boundary-A executor are
+already centrally integrated, readiness-only and no-live. The current combined
+rail has focused integrated validation `241/241` green. The fresh
+post-hardening owner-only captured full suite is `239/240` files and `1666/1667`
+tests, with the sole failure the exact unchanged out-of-lane MailerLite
+approval-queue baseline. Independent review remains pending.
+After its eventual integration, a newly
+written mission plus fresh explicit CEO approval is still required for the
+exact one-recipient, one-audio, one-attempt canary.
