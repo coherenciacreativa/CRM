@@ -1169,3 +1169,32 @@
   missing. Only after those are separately reviewed and integrated may a new
   mission be written and freshly approved before any live use. Central
   integration alone grants no live authority.
+
+## Real New-Follower Welcome E2E Proof Mission Contract v0
+
+- `checkpoint_date`: `2026-07-15`
+- `mission_id`:
+  `crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15`
+- `status`: `chief_architect_contract_drafted_execution_not_approved_no_live`
+- `contract_artifact`:
+  `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
+- `expected_base_commit`:
+  `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `execution_explicitly_approved`: false
+- `source_actions_executed`: 0
+- `live_effects_executed`: 0
+- `runtime_gates`:
+  - fresh exact CEO approval bound to this contract;
+  - exact branch/base and clean central plus mission contexts;
+  - live owner-only claim emitter, global dedupe, and exact caps;
+  - real browser-bound Safari actuator with verifiable provenance and timing;
+  - fresh approved source, exact audio asset, and exact private bindings;
+  - post-source newness/recentness, exact identity/thread, and no prior
+    welcome/audio/claim;
+  - conditional exact-email MailerLite zero-effect preflight and one guarded
+    direct POST with exactly two approved groups and add-only semantics.
+- `terminal_rule`: failed pre-effect gate stops; any attempted, uncertain,
+  timed-out, or unknown effect is terminal with no retry.
+- `next_decision`: CEO approve, modify, decline, or pause the exact contract.
+- `integration_disposition`: planning-only contract; no source access, send,
+  MailerLite mutation, campaign action, or other live authority.
