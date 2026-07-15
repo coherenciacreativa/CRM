@@ -6153,15 +6153,18 @@ routing and completion pointer.
 - `updated_at`: `2026-07-15`
 - `mission_contract`:
   `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
-- `expected_base_commit`:
+- `drafting_baseline_commit`:
   `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `runtime_execution_base`: fresh canonical post-integration SHA recorded in
+  and bound by the later owner-only execution approval
 - `execution_explicitly_approved`: false
 - `live_effects_executed`: 0
 - `objective`: Obtain one explicit CEO approve, modify, decline, or pause
   decision on the exact planning contract. Do not open the source or attempt an
   effect until that approval and every runtime gate are green.
 - `runtime_gates`:
-  - exact branch and base commit, clean central context, and fresh mission lane;
+  - exact branch and fresh canonical post-integration HEAD equal to remote,
+    recorded in the owner-only approval; clean central context and fresh mission lane;
   - fresh owner-only CEO approval bound to the exact mission and contract version;
   - live owner-only claim emitter, global dedupe, and candidate/audio/MailerLite caps;
   - real browser-bound Safari actuator with verifiable provenance and timing;

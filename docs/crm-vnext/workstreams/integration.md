@@ -1178,14 +1178,17 @@
 - `status`: `chief_architect_contract_drafted_execution_not_approved_no_live`
 - `contract_artifact`:
   `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
-- `expected_base_commit`:
+- `drafting_baseline_commit`:
   `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `runtime_execution_base`: fresh canonical post-integration SHA recorded in
+  and bound by the later owner-only execution approval
 - `execution_explicitly_approved`: false
 - `source_actions_executed`: 0
 - `live_effects_executed`: 0
 - `runtime_gates`:
   - fresh exact CEO approval bound to this contract;
-  - exact branch/base and clean central plus mission contexts;
+  - exact branch and fresh post-integration canonical HEAD equal to remote,
+    recorded in the owner-only approval; clean central plus mission contexts;
   - live owner-only claim emitter, global dedupe, and exact caps;
   - real browser-bound Safari actuator with verifiable provenance and timing;
   - fresh approved source, exact audio asset, and exact private bindings;

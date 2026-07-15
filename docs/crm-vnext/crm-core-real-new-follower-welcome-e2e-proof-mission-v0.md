@@ -4,7 +4,9 @@ Date prepared: 2026-07-15
 Mission ID: `crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15`
 Mode: `proof`
 Status: `drafted_by_chief_architect_execution_not_approved`
-Expected base commit: `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+Drafting baseline commit: `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+Runtime execution base: fresh canonical post-integration SHA, owner-only and
+bound in the later explicit execution approval
 
 ## Mission Operator Contract Schema
 
@@ -88,7 +90,13 @@ forbidden_scope:
 source_private_boundaries:
   authoritative_repo: "<crm_core_authoritative_repo_path>"
   target_branch: codex/crm-core-reentry
-  expected_base_commit: 2fcdf302baf550dcb2bd7e5028b73f471a6486a8
+  expected_base_commit: "<fresh_canonical_post_integration_SHA_bound_in_owner_only_execution_approval>"
+  drafting_baseline_commit: 2fcdf302baf550dcb2bd7e5028b73f471a6486a8
+  execution_base_binding:
+    - "resolver HEAD canónico y su remote inmediatamente antes de la aprobación de ejecución"
+    - "registrar el SHA exacto post-integration en el approval record owner-only"
+    - "exigir que branch, HEAD, remote y contexto limpio sigan coincidiendo antes de abrir la fuente y antes de cada efecto"
+    - "nunca reutilizar drafting_baseline_commit como autoridad runtime por el solo hecho de aparecer en este contrato"
   approved_live_sources:
     - "<approved_recent_followers_source_private>"
     - "<exact_instagram_thread_private>"
@@ -180,7 +188,8 @@ atomicity_freshness_requirements:
   candidate_recentness_max_hours: 24
   candidate_selection_rule: "primer registro por orden de la fuente que pruebe newness, recentness, identidad exacta, hilo exacto, ausencia de bienvenida/audio previo y ausencia de claim; si ninguno califica, closeout no_candidate"
   pre_source_fail_closed_gate:
-    - "HEAD exacto=2fcdf302baf550dcb2bd7e5028b73f471a6486a8; branch exacta; contexto central limpio; mission branch fresca"
+    - "HEAD canónico post-integration exacto=SHA ligado en el approval record owner-only; remote idéntico; branch exacta; contexto central limpio; mission branch fresca"
+    - "drafting_baseline_commit=2fcdf302baf550dcb2bd7e5028b73f471a6486a8 es evidencia histórica de redacción y no autoridad runtime"
     - "aprobación owner-only nueva coincide con el contrato exacto; execution_explicitly_approved solo puede ser true en el paquete futuro de ejecución"
     - "claim emitter owner-only live, dedupe global y caps de candidato/audio/MailerLite inequívocamente green"
     - "actuador Safari browser-bound con provenance y timing comprobables inequívocamente green"
