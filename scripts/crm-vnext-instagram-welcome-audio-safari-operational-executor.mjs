@@ -46,6 +46,12 @@ const WELCOME_AUDIO_SAFARI_OPERATIONAL_EXECUTION_MODE = 'deterministic_no_effect
 
 const WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO = Object.freeze({
   STRONG_CONFIRMED: 'strong_exact_confirmation',
+  DELAYED_WITHIN_WINDOW: 'strong_exact_confirmation_delayed_within_window',
+  DELAYED_AT_WINDOW_LIMIT: 'strong_exact_confirmation_at_five_minute_limit',
+  COMPOSITE_REJECT_AFTER_CLAIM: 'composite_reject_after_claim',
+  COMPOSITE_REJECT_AFTER_PENDING: 'composite_reject_after_pending',
+  COMPOSITE_REJECT_AFTER_TERMINAL: 'composite_reject_after_terminal',
+  AUTHORITY_REVOCATION_WINDOW: 'authority_revocation_after_pending_test_window',
   NONE: 'none_or_ambiguous_confirmation',
   LATE: 'late_confirmation',
   MISMATCHED: 'mismatched_confirmation',
@@ -144,8 +150,33 @@ const createWelcomeAudioSafariActuatorPort = ({
   ACTUATOR_PORT_STATE.set(port, {
     deterministic_scenario,
     invocation_count: 0,
+    operation_authority_state: null,
   });
   return port;
+};
+
+const registerWelcomeAudioSafariOperationAuthorityState = ({ port, authorityState }) => {
+  const state = ACTUATOR_PORT_STATE.get(port);
+  if (
+    !state
+    || state.operation_authority_state !== null
+    || !authorityState
+    || typeof authorityState !== 'object'
+    || authorityState.port !== port
+    || authorityState.phase !== 'fresh'
+  ) throw new TypeError(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+  state.operation_authority_state = authorityState;
+};
+
+const consumeReservedWelcomeAudioSafariOperationAuthorityForActuation = (port) => {
+  const state = ACTUATOR_PORT_STATE.get(port);
+  if (!state) return false;
+  const authorityState = state.operation_authority_state;
+  if (authorityState === null) return true;
+  if (authorityState.phase !== 'reserved') return false;
+  authorityState.phase = 'consumed';
+  authorityState.consumed_by = 'executor';
+  return true;
 };
 
 const invokeBrandedSafariActuator = ({ port, attemptedAtMs }) => {
@@ -184,11 +215,18 @@ const invokeBrandedSafariActuator = ({ port, attemptedAtMs }) => {
     ? 2
     : 1;
   const strong = scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.STRONG_CONFIRMED
+    || scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DELAYED_WITHIN_WINDOW
+    || scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DELAYED_AT_WINDOW_LIMIT
+    || scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.COMPOSITE_REJECT_AFTER_TERMINAL
     || scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.LATE
     || scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.MISMATCHED;
   const confirmationDelay = scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.LATE
     ? 300001
-    : 1000;
+    : scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DELAYED_WITHIN_WINDOW
+      ? 61000
+      : scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DELAYED_AT_WINDOW_LIMIT
+        ? 300000
+        : 1000;
   return Object.freeze({
     result_schema_version: WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
     bound_to_current_operation:
@@ -789,6 +827,23 @@ const executeWelcomeAudioSafariAttempt = async ({
     if (consumeStatus !== WELCOME_AUDIO_PRIVATE_CLAIM_CONSUME_STATUS.CONSUMED_NOW) {
       throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.CAPABILITY_INVALID);
     }
+    if (
+      ACTUATOR_PORT_STATE.get(branded_safari_actuator_port)?.deterministic_scenario
+        === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.COMPOSITE_REJECT_AFTER_PENDING
+    ) {
+      throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+    }
+    if (
+      ACTUATOR_PORT_STATE.get(branded_safari_actuator_port)?.deterministic_scenario
+        === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.AUTHORITY_REVOCATION_WINDOW
+    ) {
+      await new Promise((resolvePromise) => setTimeout(resolvePromise, 100));
+    }
+    if (!consumeReservedWelcomeAudioSafariOperationAuthorityForActuation(
+      branded_safari_actuator_port,
+    )) {
+      throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+    }
 
     try {
       actuatorResult = invokeBrandedSafariActuator({
@@ -823,10 +878,18 @@ const executeWelcomeAudioSafariAttempt = async ({
       throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
     }
     const finalTerminal = applyActuatorResult({ attemptedTerminal, actuatorResult });
+    const actuatorAttemptedAtMs = Date.parse(actuatorResult.attempted_at);
+    const actuatorConfirmationAtMs = Date.parse(actuatorResult.confirmation_checked_at);
+    const confirmationWithinWindow = Number.isFinite(actuatorAttemptedAtMs)
+      && Number.isFinite(actuatorConfirmationAtMs)
+      && actuatorConfirmationAtMs >= actuatorAttemptedAtMs
+      && actuatorConfirmationAtMs - actuatorAttemptedAtMs <= 300000;
     const finalGuard = validateTerminal({
       terminal: finalTerminal,
       expectedDigest: expected_canonical_operation_sha256,
-      nowMs: Math.max(now_ms, Date.parse(actuatorResult.confirmation_checked_at)),
+      nowMs: confirmationWithinWindow
+        ? Math.max(now_ms, actuatorConfirmationAtMs)
+        : now_ms,
     });
     const finalRecord = terminalRecord({
       terminal: finalTerminal,
@@ -929,6 +992,13 @@ const runWelcomeAudioOperationalRailOnce = async ({
       operational_receipt: null,
     });
   }
+  const deterministicScenario = ACTUATOR_PORT_STATE.get(
+    branded_safari_actuator_port,
+  )?.deterministic_scenario;
+  if (
+    deterministicScenario
+      === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.COMPOSITE_REJECT_AFTER_CLAIM
+  ) throw new Error('deterministic_composite_receipt_loss_after_claim');
   const operational = await executeWelcomeAudioSafariAttempt({
     registry_root,
     private_claim_capability: claim.private_claim_capability,
@@ -936,6 +1006,12 @@ const runWelcomeAudioOperationalRailOnce = async ({
     branded_safari_actuator_port,
     now_ms,
   });
+  if ([
+    WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.COMPOSITE_REJECT_AFTER_PENDING,
+    WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.COMPOSITE_REJECT_AFTER_TERMINAL,
+  ].includes(deterministicScenario)) {
+    throw new Error('deterministic_composite_receipt_loss_after_terminal');
+  }
   return Object.freeze({
     claim_receipt: claim.redacted_receipt,
     operational_receipt: operational,
@@ -955,6 +1031,7 @@ export {
   WELCOME_AUDIO_SAFARI_OPERATIONAL_TERMINAL_RECORD_SCHEMA_VERSION,
   createWelcomeAudioSafariActuatorPort,
   executeWelcomeAudioSafariAttempt,
+  registerWelcomeAudioSafariOperationAuthorityState,
   runWelcomeAudioOperationalRailOnce,
   validateWelcomeAudioSafariOperationalReceipt,
 };

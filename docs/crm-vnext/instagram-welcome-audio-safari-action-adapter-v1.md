@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
 Date: 2026-07-14
-Status: `operational_rail_focused_244_full_1669_of_1670_external_review_pending_no_live`
+Status: `operational_rail_centrally_integrated_async_bridge_independent_review_green_artifact_review_pending_no_live`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -19,6 +19,26 @@ The combined deterministic no-effect rail in
 `instagram-welcome-audio-operational-rail-v1.md` now models claim issuance and
 Safari-shaped actuation behind this adapter. That model has no browser handle
 and is not current surface-health evidence or live authority.
+
+The current
+`crm_core_welcome_audio_async_browser_session_bridge_v1` lane adds only
+deterministic simulated asynchronous orchestration. It demonstrates synthetic
+preparation followed by authoritative durable PRECLAIM, the existing READY and
+opaque capability, durable pending evidence, capability consumption, one
+modeled Send, one modeled confirmation, and permanent terminal/no-retry. It
+does not drive this adapter or any real surface. A modeled
+`send_control_actuation_count=1` is never a real message.
+
+For this lane, all of the following remain explicitly false:
+
+```text
+browser_used = false
+network_used = false
+external_effect_invoked = false
+production_ready = false
+send_allowed = false
+live_authority = false
+```
 
 ## Authority And Evidence Boundary
 
@@ -444,9 +464,10 @@ non-retryable. READY alone is never executable authority.
 ### Deterministic No-Effect Operational Rail Boundary
 
 The centrally integrated executor remains
-`synthetic_no_effect_proof_only`. The current operational-rail lane adds a
-deterministic claim writer, an opaque same-process one-use capability, and a
-Safari-branded deterministic port/executor/composite. They reuse shared
+`synthetic_no_effect_proof_only`. The centrally integrated operational rail
+includes a deterministic claim writer, an opaque same-process one-use
+capability, and a Safari-branded deterministic port/executor/composite. They
+reuse shared
 owner-only temporary-store mechanics and enforce this order:
 
 ```text
@@ -471,7 +492,14 @@ crash/concurrency/invalid-port subset. A fresh
 post-hardening full-suite owner-only captured rerun is also complete: `239/240`
 files and `1669/1670` tests, with the sole failure
 the exact unchanged out-of-lane MailerLite approval-queue baseline. Independent
-delta review and the final external verdict remain pending.
+delta review, the final external verdict, commit, push, and central integration
+are complete for that inherited operational rail. These results do not validate
+the async bridge. Fresh bridge-lane validation is separately green: bridge-only
+focused `44/44`; combined bridge-plus-inherited focused `276/276`, including
+async session bridge `25/25` and operational executor `19/19`;
+bridge-targeted adversarial `13/13`; and full repository `240/241` files and
+`1701/1702` tests with only the exact unchanged out-of-lane Launch OS
+approval-queue baseline failing.
 
 For an after-boundary modeled failure, the no-effect executor fixes the modeled
 result before terminal promotion. If promotion fails, it performs one read-only
@@ -489,9 +517,11 @@ keeps boundary and actuation counts at zero and cannot mint or consume a second
 capability effect. Count `2` remains receipt-invalid.
 
 A real browser-bound executor/actuator remains a separate reviewed boundary.
-It cannot be inferred from the branded no-effect port and cannot be used until
-the no-effect rail is validated, reviewed, and centrally integrated, then a new
-future mission explicitly authorizes the exact canary effect path.
+It cannot be inferred from the branded no-effect port or the async bridge. Even
+though the no-effect rail is validated, reviewed, and centrally integrated, a
+separately reviewed owner-only live claim issuer, real browser-bound Safari
+actuator, and new future mission with fresh explicit CEO approval are still
+required before the exact canary effect path can exist.
 
 The send-control actuation is the effect boundary. The claim was already
 durably committed before this boundary. Immediately at the boundary, the
@@ -650,25 +680,27 @@ the claim and marker once; do not repair by sending again.
   scoring action;
 - no live private artifact or persisted operational receipt creation;
 - no automation activation;
-- no central integration or future live-mission authorization; lane commit and
-  push are allowed only after the required no-live validation and review;
+- no claim that bridge central integration or any future live-mission
+  authorization already exists; bridge lane commit and push are allowed only
+  after the required no-live validation and review;
 - no live one-shot executor, real browser-bound actuator, or effect callback;
-  only the shared-store refactor, deterministic no-effect claim writer,
-  opaque capability, and branded no-effect port/executor/composite are allowed;
+  only the centrally integrated no-effect dependencies and the deterministic
+  simulated bridge port/session inside the exact lane allowlist are allowed;
 - no reuse of the closed pilot as live authority.
 
 ## Completion Boundary
 
-The corrected guard, adapter/matrix chain, and synthetic boundary-A executor
-are centrally integrated, readiness-only and no-live. The current lane adds the
-combined deterministic operational rail under
-`instagram-welcome-audio-operational-rail-v1.md`; its focused integrated
-validation is `244/244` green and the owner-only captured full repository result
-is `239/240` files and `1669/1670` tests, with only the unchanged out-of-lane
-baseline failing. Independent delta review, final review, lane commit/push,
-formal artifact review, and central integration remain pending and separate
-gates. Even after
-integration, operational readiness still
+The corrected guard, adapter/matrix chain, synthetic boundary-A executor, and
+combined deterministic operational rail are centrally integrated,
+readiness-only and no-live. The inherited rail's focused validation is
+`244/244` green, its targeted adversarial subset is `7/7`, and the owner-only
+captured full repository result is `239/240` files and `1669/1670` tests, with
+only the unchanged out-of-lane baseline failing. The current async bridge lane
+has fresh green validation: bridge-only focused `44/44`, combined
+bridge-plus-inherited focused `276/276`, bridge-targeted adversarial `13/13`,
+and full repository `240/241` files and `1701/1702` tests with only the
+unchanged out-of-lane baseline failing.
+Regardless of later bridge review and integration, operational readiness still
 requires a live owner-only claim issuer, a real browser-bound Safari actuator,
 and a newly written mission with fresh explicit CEO approval for the exact
 one-recipient, one-audio, one-attempt canary.
