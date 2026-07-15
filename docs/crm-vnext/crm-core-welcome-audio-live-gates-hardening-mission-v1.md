@@ -17,9 +17,12 @@ observable_success:
   - live_owner_only_claim_issuer_implemented_and_tested=true
   - mission_wide_exact_identity_dedupe_and_max_three_claim_cap_tested=true
   - sealed_manifest_max_eight_order_interval_and_digest_validator_tested=true
+  - durable_manifest_cursor_enforces_order_and_max_eight=true
   - exact_audio_regular_file_no_symlink_and_sha256_validator_tested=true
   - safari_computer_use_live_host_seam_implemented_and_fake_driver_tested=true
   - fresh_state_before_each_action_and_one_send_max_enforced=true
+  - stage_one_confirmation_required_before_claim_slots_two_or_three=true
+  - bound_thread_observation_state_enforces_max_three_reads_and_72_hours=true
   - strong_confirmation_only_and_compose_reset_rejected=true
   - independent_adversarial_review=green_to_self_integrate
   - central_integration_count=1
@@ -108,9 +111,11 @@ central_integration_plan:
     - scripts/crm-vnext-instagram-welcome-audio-live-claim-issuer.mjs
     - scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs
     - scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs
+    - scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs
     - __tests__/crm-vnext-instagram-welcome-audio-live-claim-issuer.spec.ts
     - __tests__/crm-vnext-instagram-welcome-audio-live-preflight.spec.ts
     - __tests__/crm-vnext-instagram-welcome-audio-safari-live-host.spec.ts
+    - __tests__/crm-vnext-instagram-welcome-audio-operation-guard.spec.ts
     - docs/crm-vnext/instagram-welcome-audio-live-claim-issuer-v1.md
     - docs/crm-vnext/instagram-welcome-audio-safari-live-host-v1.md
     - docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md
@@ -123,7 +128,9 @@ central_integration_plan:
     - node_syntax
     - focused_claim_preflight_and_host_tests
     - inherited_welcome_audio_guard_and_operational_rail_tests
+    - sealed_backlog_source_class_and_provenance_binding_tests
     - concurrency_crash_replay_and_cap_adversarial_tests
+    - ordered_cursor_stage_unlock_and_bound_observer_state_tests
     - exact_file_allowlist
     - git_diff_check
     - privacy_and_redaction_scan
