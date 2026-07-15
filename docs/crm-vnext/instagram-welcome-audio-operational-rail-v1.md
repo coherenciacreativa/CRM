@@ -2,12 +2,13 @@
 
 - `contract_version`: `crm_core_instagram_welcome_audio_operational_rail_v1`
 - `execution_mode`: `deterministic_no_effect_test`
-- `status`: `focused_244_full_1669_of_1670_known_baseline_external_review_pending_no_live`
+- `status`: `operational_rail_centrally_integrated_async_bridge_independent_review_green_artifact_review_pending_no_live`
 - `production_ready`: `false`
 - `send_allowed`: `false`
 - `live_authority`: `false`
 - `browser_used`: `false`
 - `network_used`: `false`
+- `external_effect_invoked`: `false`
 - `future_mission_required`: `true`
 
 ## Purpose
@@ -25,6 +26,61 @@ The joined rail is a deterministic no-effect proof only. It does not open
 Safari, Instagram, a DM, a native picker, or any private source. It does not
 upload or send anything. The Safari branding fixes the future surface contract;
 it is not a browser driver or evidence that the live surface is healthy.
+
+## Current Async Browser Session Bridge Lane
+
+The current no-live boundary is:
+
+```text
+crm_core_welcome_audio_async_browser_session_bridge_v1
+```
+
+It adds deterministic simulated asynchronous orchestration around the already
+centrally integrated operational rail. It demonstrates only this mechanical
+order:
+
+```text
+synthetic preparation
+  -> authoritative durable PRECLAIM
+  -> existing READY plus opaque same-process capability
+  -> existing pending evidence durable
+  -> capability consumption
+  -> one modeled Send
+  -> one modeled confirmation
+  -> permanent terminal evidence and no-retry
+```
+
+The bridge does not add or claim a real actuator. Its
+`send_control_actuation_count=1` is a modeled test event only and is never a
+real message. For the bridge and every receipt produced by this lane:
+
+```text
+browser_used = false
+network_used = false
+external_effect_invoked = false
+production_ready = false
+send_allowed = false
+live_authority = false
+```
+
+The integrated rail's `244/244` focused, `7/7` targeted adversarial, and
+`1669/1670` full-suite known-baseline results validate only the inherited
+dependency. Fresh bridge-lane validation is now reported separately:
+
+```text
+bridge_focused_validation = bridge_focused_green
+bridge_only_focused_total = 44/44
+bridge_plus_inherited_focused_total = 276/276
+async_session_bridge_component = 25/25
+operational_executor_component = 19/19
+bridge_targeted_adversarial_validation = bridge_adversarial_green_13/13
+bridge_full_validation = full_known_baseline_unchanged_240/241_files_1701/1702_tests
+```
+
+The sole full-suite failure remains the exact unchanged out-of-lane Launch OS
+approval-queue baseline. None of these counts is evidence of a browser, real
+actuator, Safari or Instagram use, picker access, audio delivery, surface
+health, live issuer, or authorized canary.
 
 ## Combined Boundary
 
@@ -442,7 +498,7 @@ authoritative and permanent no-retry.
 
 ## Validation Record
 
-Current focused integrated validation is green:
+Inherited operational-rail focused validation remains green:
 
 - operation guard: `157/157`;
 - shared-store-refactored synthetic one-shot executor: `45/45`;
@@ -451,18 +507,24 @@ Current focused integrated validation is green:
 - combined four-file focused total: `244/244`;
 - targeted adversarial crash/concurrency/invalid-port subset: `7/7`.
 
-The fresh post-hardening owner-only captured full repository suite is green for
-the lane:
+The post-hardening owner-only captured full repository suite remains inherited
+evidence for the integrated operational rail:
 
 - files: `239/240`;
 - tests: `1669/1670`;
 - sole failure: the exact unchanged out-of-lane MailerLite approval-queue
   baseline.
 
-Focused validation, the captured full-suite result, and `git diff --check` are
-green for this lane. The independent delta review, final security/scope verdict,
-formal Chief Architect artifact review, commit, push, and central integration
-remain pending later gates.
+Focused validation, the captured full-suite result, `git diff --check`, review,
+commit, push, and central integration are complete for the inherited
+operational rail. Fresh bridge-lane validation is also green: bridge-only
+focused `44/44`; combined bridge-plus-inherited focused `276/276`, including
+async session bridge `25/25` and operational executor `19/19`;
+bridge-targeted adversarial `13/13`; and full repository `240/241` files and
+`1701/1702` tests with only the exact unchanged out-of-lane Launch OS
+approval-queue baseline failing. Independent code/adversarial and documentation
+reviews are green. Formal artifact review and central integration of the exact
+bridge allowlist remain pending no-live gates.
 
 ### Redacted Validation Incident
 
@@ -491,15 +553,16 @@ rail.
 - no MailerLite, campaign, legacy proxy, CRM, card, Fact Store, ledger, scoring,
   automation, or source mutation;
 - no private operational artifact or live receipt creation;
-- no commit, push, artifact review, or central integration from this document;
+- no claim that bridge review, commit, push, or central integration is already
+  complete before fresh bridge-specific evidence exists;
 - no reuse of the closed pilot or historical send as authority;
 - no production readiness, send authority, or live authority.
 
 ## Future Canary Boundary
 
-Even after this deterministic rail passes review and is centrally integrated,
-no send is authorized. A future one-recipient, one-audio, one-attempt canary
-requires all of the following as later, separate gates:
+The deterministic rail is centrally integrated and the simulated async bridge
+still grants no send authority. A future one-recipient, one-audio, one-attempt
+canary requires all of the following as later, separate gates:
 
 1. a newly written mission contract bound to the exact integrated commit;
 2. fresh explicit CEO approval for that exact canary effect;

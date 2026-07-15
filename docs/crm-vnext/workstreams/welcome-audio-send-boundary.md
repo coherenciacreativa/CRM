@@ -1,54 +1,51 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-welcome-audio-operational-rail-v1`
-- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio-operational-rail-v1`
+- `branch`: `codex/crm-core-welcome-audio-async-browser-session-bridge-v1`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio-async-browser-session-bridge-v1`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
-- `codex_worker`: Welcome Audio combined operational-rail no-effect lane
-- `status`: `operational_rail_centrally_integrated_no_live`
-- `objective`: Preserve the centrally integrated combined deterministic
-  no-effect rail from an authoritative PRECLAIM through owner-only claim
-  issuance, opaque same-process capability consumption,
-  pending-before-actuation ordering, at-most-one Safari-branded deterministic
-  actuation, terminal evidence, and permanent no-retry.
+- `codex_worker`: Welcome Audio async browser session bridge no-effect lane
+- `status`: `async_browser_session_bridge_independent_review_green_artifact_review_pending_no_live`
+- `objective`: Implement
+  `crm_core_welcome_audio_async_browser_session_bridge_v1` as deterministic
+  simulated asynchronous orchestration only: synthetic preparation,
+  authoritative durable PRECLAIM, existing READY and opaque capability,
+  durable pending evidence, capability consumption, one modeled Send, one
+  modeled confirmation, and permanent terminal/no-retry.
 - `why_now`: The guard, canonical Safari adapter, synthetic no-effect
   boundary-A executor, shared claim issuer, and contract-shaped operational
   executor are centrally integrated for deterministic no-effect proof. Every
   live/browser/source gate remains closed. A live owner-only claim issuer, real
-  browser-bound Safari actuator, and new approved canary mission remain later
-  gates.
+  browser-bound Safari actuator, and a new mission with fresh explicit CEO
+  approval remain later gates.
 - `allowed_files`:
-  - `scripts/crm-vnext-instagram-welcome-audio-one-shot-store.mjs`
-  - `scripts/crm-vnext-instagram-welcome-audio-claim-writer.mjs`
-  - `scripts/crm-vnext-instagram-welcome-audio-one-shot-executor.mjs`
-  - `__tests__/crm-vnext-instagram-welcome-audio-one-shot-executor.spec.ts`
+  - `scripts/crm-vnext-instagram-welcome-audio-safari-operation-port.mjs`
+  - `scripts/crm-vnext-instagram-welcome-audio-operation-session.mjs`
+  - `__tests__/crm-vnext-instagram-welcome-audio-operation-session.spec.ts`
   - `scripts/crm-vnext-instagram-welcome-audio-safari-operational-executor.mjs`
-  - `__tests__/crm-vnext-instagram-welcome-audio-claim-writer.spec.ts`
   - `__tests__/crm-vnext-instagram-welcome-audio-safari-operational-executor.spec.ts`
   - `docs/crm-vnext/instagram-welcome-audio-operational-rail-v1.md`
-  - `docs/crm-vnext/instagram-welcome-audio-one-shot-executor-v1.md`
   - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
   - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
   - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
 - `forbidden_files`:
-  - every file outside the exact twelve-file allowlist above
-  - the integrated operation guard and its existing test file, which are
-    read-only dependencies
-  - central next-action, board, queue and integration records before formal
-    central integration
+  - every file outside the exact nine-file allowlist above
+  - the integrated operation guard, shared store, claim writer, synthetic
+    one-shot executor, and their tests, which are read-only dependencies
+  - central next-action, board, queue and integration records
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
-  - shared owner-only one-shot store primitives
-  - deterministic no-effect claim issuance
-  - opaque same-process one-use capability
-  - deterministic no-effect Safari-branded port, executor, and composite
-  - synthetic no-effect one-shot consumer refactor onto the shared store
+  - deterministic simulated asynchronous session orchestration
+  - a simulated Safari-shaped operation port with no browser handle
+  - synthetic preparation before authoritative PRECLAIM publication
+  - reuse of the integrated READY, opaque capability, durable pending,
+    capability-consumption, terminal and permanent no-retry mechanics
+  - exactly one modeled Send and one modeled confirmation
   - owner-only temporary fixtures
-  - durable mutex, pending evidence and terminal tombstone mechanics
-  - focused concurrency, crash, replay, filesystem and receipt tests
-  - narrow operational-rail, executor, adapter, matrix and workstream docs
+  - focused ordering, replay, failure and receipt tests
+  - narrow operational-rail, adapter, matrix and workstream docs
 - `forbidden_scope`:
   - sending audio
   - opening DMs
@@ -62,14 +59,39 @@
   identities or message content.
 - `current_tasks`:
   - current task: implement
-    `crm_core_instagram_welcome_audio_operational_rail_v1` only in
-    `deterministic_no_effect_test` mode
-  - Chief Architect selected one combined no-live mission; no CEO decision is
-    required for implementation, validation, review, lane commit/push, or one
-    later central integration within the exact reviewed allowlist
-  - shared store: one owner-only temporary store contract supplies stable reads,
-    non-reclaiming mutex, exclusive durable publication, evidence inspection,
-    and terminal promotion to both claim writer and executors
+    `crm_core_welcome_audio_async_browser_session_bridge_v1` only as
+    deterministic simulated asynchronous orchestration with every live gate
+    closed
+  - exact demonstrated order: synthetic preparation -> authoritative durable
+    PRECLAIM -> existing READY/opaque capability -> existing pending durable ->
+    capability consumption -> one modeled Send -> one modeled confirmation ->
+    permanent terminal/no-retry
+  - `send_control_actuation_count=1` is modeled only and never a real message
+  - explicit lane truth: `browser_used=false`, `network_used=false`,
+    `external_effect_invoked=false`, `production_ready=false`,
+    `send_allowed=false`, and `live_authority=false`
+  - inherited integrated dependency evidence: focused `244/244`, targeted
+    adversarial `7/7`, and full `1669/1670` with the sole exact unchanged
+    out-of-lane baseline; these counts do not validate the new bridge
+  - bridge-specific focused validation:
+    `bridge_focused_green`; bridge-only focused `44/44`; combined
+    bridge-plus-inherited focused `276/276`, including async session bridge
+    `25/25` and operational executor `19/19`
+  - bridge-specific adversarial validation:
+    `bridge_adversarial_green`; bridge-targeted adversarial `13/13`
+  - bridge-specific full-suite validation:
+    `full_known_baseline_unchanged`; `240/241` files and `1701/1702` tests,
+    with the sole failure the exact unchanged out-of-lane Launch OS
+    approval-queue baseline
+  - no claim is permitted for a real actuator, browser, Safari, Instagram,
+    picker, audio delivery, surface health, live issuer, or authorized canary
+  - current lane stop: lane commit/push, formal artifact review, then separate
+    central integration of the exact nine-file allowlist; independent
+    code/adversarial and documentation reviews are green
+  - inherited operational rail: one owner-only temporary store contract
+    supplies stable reads, non-reclaiming mutex, exclusive durable publication,
+    evidence inspection, and terminal promotion to both claim writer and
+    executors
   - claim writer: authoritative PRECLAIM is re-read under serialization,
     promoted once to READY, and returned only with an opaque nonserializable
     same-process capability plus a fixed 12-field redacted receipt
@@ -114,8 +136,9 @@
     later owner-only captured full-run logs contained the same existing fixture
     output, remained private, and were deleted after sanitized aggregate
     extraction; the test-output privacy incident remains open and out of lane
-  - lane stop: focused/adversarial proof, independent review, lane commit/push,
-    formal artifact review, then stop before separate central integration
+  - historical operational-rail lane stop: focused/adversarial proof,
+    independent review, lane commit/push, formal artifact review, then separate
+    central integration; all of those inherited rail gates are complete
   - completed docs-only immediate canonical Safari action-adapter v1 design
   - artifact:
     `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
@@ -146,9 +169,9 @@
   - a repeated pure READY snapshot is readiness-only: `send_ready: true`,
     `send_allowed: false`; the synthetic one-shot token consumer is now
     centrally integrated for no-effect proof only; deterministic claim issuance
-    and a Safari-branded no-effect executor are now in this validation-pending
-    lane, while a live claim issuer and real browser-bound actuator remain
-    required before any live mission
+    and a Safari-branded no-effect executor are also centrally integrated
+    dependencies, while a live claim issuer and real browser-bound actuator
+    remain required before any live mission
   - canonical surface: `safari_instagram_web_dm`
   - canonical surface detail: `safari_standard_isolated_native_picker`
   - exact positive pre-attempt gates: `exact_recent`,
@@ -297,16 +320,20 @@
 - `latest_commit`: supplied by Git history for this exact lane; no hash is
   duplicated inside the commit that creates it
 - `latest_receipt`: no live or persisted operational receipt; deterministic
-  test receipts remain ephemeral. Focused validation is `244/244` green and the
-  owner-only captured full result is `239/240` files and `1669/1670` tests, with
-  only the unchanged out-of-lane baseline failing
-- `blockers`: the combined no-effect rail is focused- and full-validation-green
-  and centrally integrated. A live owner-only claim issuer, real browser-bound
-  Safari actuator, and newly written mission with fresh explicit CEO approval
-  remain separate later gates.
-- `latest_execution_note`: this exact twelve-file no-effect lane creates no
-  browser, source, send, MailerLite, legacy proxy, campaign, CRM, automation,
-  network, private operational artifact, or external effect.
+  test receipts remain ephemeral. The inherited rail's focused `244/244`,
+  targeted adversarial `7/7`, and full `1669/1670` known-baseline evidence does
+  not validate the new bridge. Fresh bridge-lane validation is separately
+  green: bridge-only focused `44/44`, combined bridge-plus-inherited focused
+  `276/276`, bridge-targeted adversarial `13/13`, and full `240/241` files plus
+  `1701/1702` tests with only the exact unchanged out-of-lane baseline failing.
+- `blockers`: formal artifact review and central integration are not yet
+  complete. After those no-live gates, a
+  live owner-only claim issuer, real browser-bound Safari actuator, and newly
+  written mission with fresh explicit CEO approval remain separate later
+  gates.
+- `latest_execution_note`: this exact nine-file simulated bridge lane creates
+  no browser, source, send, MailerLite, legacy proxy, campaign, CRM,
+  automation, network, private operational artifact, or external effect.
 - `safari_action_adapter_v1_status`:
   `operational_rail_centrally_integrated_no_live`
 - `surface_capability_matrix_v1_status`:
@@ -324,6 +351,9 @@
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
 - `one_shot_executor_status`:
   `shared_store_refactor_centrally_integrated_no_live`
 - `one_shot_executor_historical_integrated_status`:
@@ -339,6 +369,18 @@
 - `operational_rail_execution_mode`: `deterministic_no_effect_test`
 - `operational_rail_validation_status`:
   `focused_244_of_244_targeted_7_of_7_full_1669_of_1670_known_baseline_centrally_integrated`
+- `async_browser_session_bridge_status`:
+  `independent_review_green_artifact_review_pending_no_live`
+- `async_browser_session_bridge_execution_mode`:
+  `deterministic_simulated_async_orchestration_only`
+- `async_browser_session_bridge_focused_validation`:
+  `bridge_focused_green_44_of_44_bridge_only`
+- `async_browser_session_bridge_plus_inherited_focused_validation`:
+  `276_of_276_combined_25_of_25_session_bridge_19_of_19_operational_executor`
+- `async_browser_session_bridge_adversarial_validation`:
+  `bridge_adversarial_green_13_of_13`
+- `async_browser_session_bridge_full_validation`:
+  `full_known_baseline_unchanged_240_of_241_files_1701_of_1702_tests`
 - `test_output_privacy_incident_status`:
   `open_out_of_lane_redacted_no_production_or_private_data_accessed`
 - `integration_effects`: centrally integrated for deterministic no-effect proof;
@@ -360,40 +402,33 @@
 - `permanent_no_retry_after_attempt`: true
 - `retry_disposition_after_attempt`:
   `retry_forbidden_permanently_after_attempt`
-- `next_recommended_step`: design and separately review the live owner-only
-  claim issuer and real browser-bound Safari actuator while every live gate
-  remains closed.
-- `next_approval_needed`: no CEO decision is needed for this docs
-  reconciliation. Any future live use requires a separately reviewed live claim
-  issuer and real browser-bound Safari actuator, and finally a newly written
-  mission plus fresh explicit CEO approval for the exact canary.
-- `proposed_integration_note`: Welcome Audio would gain one immediate canonical
-  Safari end-to-end action adapter, one explicit surface/capability matrix, a
-  strict root/nested input contract, one immutable canonical-operation digest,
-  a trusted external owner-only expected digest that freezes the complete
-  dynamic preclaim snapshot, fresh observations before claim, exact immutable
-  `confirmation_max_delay_ms: 300000` in operation/approval/context, current
-  owner/token/revision/attempt lineage, exact confirmed/unknown/blocked terminal
-  semantics, a permanent pre-send effect claim distinct from post-send
-  confirmation, cross-field receipt semantics, a single-attempt terminal
-  no-retry rule, and a closeout that prevents reuse of the old pilot.
-  The prior controlled send and v0 protocol remain design evidence only. The
-  guard/adapter chain and boundary-A executor are centrally integrated. The
-  operational rail adds a shared owner-only one-shot store, deterministic claim
-  writer, opaque same-process one-use capability, and Safari-branded
-  deterministic port/executor/composite. It is centrally integrated and requires
-  claim -> READY -> synced
-  pending terminal evidence -> capability consumption -> at most one
-  deterministic actuation -> final terminal evidence -> permanent no-retry.
-  READY partial publication is busy only while its mutex is held and otherwise
-  becomes unknown/no-retry. The public capability bridge returns fixed status
-  enums only, and receipts validate blocker-specific semantic tuples. The
-  canonical pre-boundary zero tuple keeps boundary and actuation counts at zero,
-  consumes the current capability, closes durably with no pending residue and
-  permanent no-retry under `ACTUATION_COUNT`, and cannot create a second
-  capability effect on replay; count `2` is invalid. The port has no browser or
-  external effect. No live effect is authorized; a
-  live owner-only claim issuer, real browser-bound Safari actuator, and then a
-  newly written mission with fresh explicit CEO approval remain future gates.
+- `next_recommended_step`: commit and push the exact reviewed lane, then
+  complete formal artifact review and separate central integration of the
+  exact nine-file allowlist while every
+  live gate remains closed.
+- `next_approval_needed`: no CEO decision is needed for this deterministic
+  no-live bridge implementation, validation, review, or exact-allowlist central
+  integration. Any future live use still requires a separately reviewed live
+  owner-only claim issuer and real browser-bound Safari actuator, then a newly
+  written mission plus fresh explicit CEO approval for the exact canary.
+- `proposed_integration_note`: Welcome Audio would gain one deterministic
+  simulated async session bridge around the centrally integrated operational
+  rail. The bridge proves only synthetic preparation -> authoritative durable
+  PRECLAIM -> existing READY/opaque capability -> durable pending -> capability
+  consumption -> one modeled Send -> one modeled confirmation -> permanent
+  terminal/no-retry. Its modeled actuation count of one is never a real
+  message. It adds no surface and creates no browser, Safari, Instagram,
+  picker, audio delivery, current surface-health, live issuer, live authority,
+  or canary authority. The inherited `244/244`, `7/7`, and `1669/1670`
+  known-baseline evidence validates only the integrated dependency. Fresh
+  bridge-lane validation is separately green: bridge-only focused `44/44`,
+  combined bridge-plus-inherited focused `276/276`, bridge-targeted adversarial
+  `13/13`, and full `240/241` files plus `1701/1702` tests with only the exact
+  unchanged out-of-lane baseline failing.
+  Even after integration, `browser_used=false`, `network_used=false`,
+  `external_effect_invoked=false`, `production_ready=false`,
+  `send_allowed=false`, and `live_authority=false`; the live claim issuer, real
+  browser-bound Safari actuator, new mission, and fresh explicit CEO approval
+  remain separate future gates.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.

@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Surface Capability Matrix v1
 
 Date: 2026-07-14
-Status: `operational_rail_focused_244_full_1669_of_1670_external_review_pending_no_live`
+Status: `operational_rail_centrally_integrated_async_bridge_independent_review_green_artifact_review_pending_no_live`
 Matrix ID: `instagram_welcome_audio_surface_capability_matrix_v1`
 
 ## Purpose
@@ -17,6 +17,22 @@ The deterministic Safari-branded port in
 `instagram-welcome-audio-operational-rail-v1.md` is mechanical evidence only.
 It does not probe any row in this matrix and does not establish that Safari or
 Instagram is currently usable.
+
+The current
+`crm_core_welcome_audio_async_browser_session_bridge_v1` is likewise
+mechanical ordering evidence only. It adds no surface and changes no row in the
+surface matrix. Its one modeled Send and one modeled confirmation are simulated
+test events, not a browser action, Safari action, Instagram delivery, picker
+operation, audio delivery, or surface-health probe.
+
+```text
+browser_used = false
+network_used = false
+external_effect_invoked = false
+production_ready = false
+send_allowed = false
+live_authority = false
+```
 
 ## Canonical Decision
 
@@ -365,7 +381,8 @@ neutral enums.
 | First controlled Safari send result v0 | `historical_single_send_design_evidence` | Choosing Safari and native picker for the adapter design | Production readiness, repeatability, current capability, live authorization |
 | Safari upload-route hardening protocol v0 | `historical_no_run_design_evidence` | Fail-closed isolation, picker, and fallback rules | Current route health or an executable mission |
 | Synthetic one-shot executor adversarial suite v1 | `mechanical_serialization_evidence_only` | Durable one-consumer, crash, replay, privacy, and no-retry mechanics | Current Safari health, Instagram delivery, live authority, or production readiness |
-| Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_focused_and_full_green_review_pending` | Focused `244/244`, including targeted adversarial crash/concurrency/invalid-port `7/7`; full `239/240` files and `1669/1670` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
+| Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_centrally_integrated_no_live` | Focused `244/244`, including targeted adversarial crash/concurrency/invalid-port `7/7`; full `239/240` files and `1669/1670` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
+| Async browser session bridge v1 | `mechanical_async_ordering_evidence_independent_review_green_artifact_review_pending` | The simulated order only: synthetic preparation, authoritative durable PRECLAIM, existing READY/capability, durable pending, capability consumption, one modeled Send, one modeled confirmation, permanent terminal/no-retry. Bridge-only focused `44/44`; combined bridge-plus-inherited focused `276/276`, including async session bridge `25/25` and operational executor `19/19`; bridge-targeted adversarial `13/13`; full `240/241` files and `1701/1702` tests with only the exact unchanged out-of-lane baseline failing | A new surface, real actuator, browser or Safari use, Instagram or picker access, audio delivery, surface health, live issuer, canary authority, or production readiness |
 | Fresh future operation observation | `operation_scoped_evidence` | The exact enum values for that operation | Another operation, another surface, or standing automation |
 
 ## Receipt Boundary
@@ -395,9 +412,11 @@ forbidden.
 ## Future Mission Requirement
 
 The closed limited operational pilot cannot authorize this matrix. The combined
-deterministic rail must first pass validation, independent review, formal
-artifact review, and central integration; none of those steps grants live
-authority. A new future mission must then explicitly bind the v1 adapter, this
+deterministic rail has passed validation, review, and central integration, but
+none of those steps grants live authority. The current async bridge has fresh
+green no-live validation and independent review; formal artifact review and
+central integration remain pending and also grant no live authority. A new future mission
+must then explicitly bind the v1 adapter, this
 matrix, the operation guard,
 one exact recent source, one exact asset, one attempt, the permanent pre-send
 claim, strict root/nested allowlists, immutable canonical-operation digest,
@@ -408,12 +427,15 @@ current claim/token/revision/attempt lineage, exact terminal semantics,
 terminal no-retry, a live owner-only claim issuer, a separately reviewed real
 browser-bound Safari actuator, and private/redacted evidence boundaries. The
 corrected guard, adapter/matrix chain, and synthetic boundary-A executor are
-already centrally integrated, readiness-only and no-live. The current combined
-rail has focused integrated validation `244/244` green. The fresh
+already centrally integrated, readiness-only and no-live. The combined rail has
+focused integrated validation `244/244` green. The fresh
 post-hardening owner-only captured full suite is `239/240` files and `1669/1670`
 tests, with the sole failure the exact unchanged out-of-lane MailerLite
-approval-queue baseline. Independent delta review and final review remain
-pending.
-After its eventual integration, a newly
-written mission plus fresh explicit CEO approval is still required for the
+approval-queue baseline. Those inherited results do not validate the bridge;
+fresh bridge-lane evidence is the separately reported bridge-only focused
+`44/44`, combined bridge-plus-inherited focused `276/276`, targeted adversarial
+`13/13`, and full `240/241` files plus `1701/1702` tests with only the exact
+unchanged out-of-lane baseline failing.
+After any later bridge integration, a newly written mission plus fresh explicit
+CEO approval is still required for the
 exact one-recipient, one-audio, one-attempt canary.

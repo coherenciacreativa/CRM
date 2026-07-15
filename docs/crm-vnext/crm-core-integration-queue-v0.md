@@ -1999,17 +1999,32 @@ No lane outputs in review at creation.
   invalid-port subset `7/7` green; full repository suite `1669/1670`, with the
   sole failure the unchanged out-of-lane MailerLite Launch OS approval-queue
   baseline.
+- `async_browser_session_bridge_centrally_integrated`: true
+- `async_browser_session_bridge_mode`: `deterministic_simulated_no_effect`
+- `validation_evidence_after_async_browser_session_bridge_integration`:
+  bridge-only focused `44/44` green; five-file focused `276/276` green;
+  targeted adversarial `13/13` green; full repository suite `1701/1702`, with
+  the sole failure the unchanged out-of-lane MailerLite Launch OS
+  approval-queue baseline.
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
 - `integration_effects`: no live, source, private, browser, Instagram,
   MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
-- `integration_recommendation`: preserve the integrated action rail and
-  synthetic executor plus deterministic no-effect operational rail while
-  keeping all live gates closed. A live owner-only claim issuer and real
-  browser-bound Safari actuator remain prerequisites. Only after those are
-  separately reviewed and integrated may a newly written and freshly approved
-  future mission authorize any send; do not execute live.
+- `privacy_process_note`: redacted non-blocking local trace disposition; use
+  exact boolean checks and no broad UI or snapshot extraction in future relay
+  validation.
+- `integration_recommendation`: preserve the integrated action rail, synthetic
+  executor, deterministic no-effect operational rail, and deterministic
+  simulated async browser-session bridge while keeping all live gates closed.
+  The active next action is a no-live technical slice before any mission. A
+  live owner-only claim issuer and real browser-bound Safari actuator remain
+  prerequisites. Only after those are separately reviewed and integrated may a
+  newly written and freshly approved future mission authorize any send; do not
+  execute live.
 
 ## Rejected / Needs Rework
 

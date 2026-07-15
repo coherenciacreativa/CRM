@@ -6113,12 +6113,26 @@ routing and completion pointer.
   invalid-port subset `7/7` green; full repository suite `1669/1670`, with the
   sole failure the unchanged out-of-lane MailerLite Launch OS approval-queue
   baseline.
+- `async_browser_session_bridge_centrally_integrated`: true
+- `async_browser_session_bridge_mode`: `deterministic_simulated_no_effect`
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `validation_evidence_after_async_browser_session_bridge_integration`:
+  bridge-only focused `44/44` green; five-file focused `276/276` green;
+  targeted adversarial `13/13` green; full repository suite `1701/1702`, with
+  the sole failure the unchanged out-of-lane MailerLite Launch OS
+  approval-queue baseline.
 - `integration_effects`: no live, source, private, browser, Instagram,
   MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
-- `next_external_gate`: A live owner-only claim issuer and a real browser-bound
-  Safari actuator remain missing. Only after those are separately reviewed and
-  integrated may a newly written mission with fresh CEO approval authorize any
-  send. Git history is authoritative for the central merge and source chain;
-  this action grants no live authority.
+- `privacy_process_note`: redacted non-blocking local trace disposition; future
+  relay validation uses exact boolean checks and no broad UI or snapshot
+  extraction.
+- `next_external_gate`: no-live next technical slice before any mission; a live
+  owner-only claim issuer and a real browser-bound Safari actuator remain
+  missing. Only after those are separately reviewed and integrated may a newly
+  written mission with fresh CEO approval authorize any send. Git history is
+  authoritative for the central merge and source chain; this action grants no
+  live authority.
 - `recommended_default`:
-  `preserve_integrated_readiness_keep_all_live_gates_closed`
+  `preserve_integrated_readiness_and_async_bridge_keep_all_live_gates_closed`

@@ -184,4 +184,34 @@ describe("Instagram welcome-audio Safari operational executor surface", () => {
     expect(source).not.toMatch(/(?:playwright|puppeteer|webdriver|selenium)/i);
     expect(source).not.toMatch(/process\.argv|import\.meta\.main/);
   });
+
+  test("keeps the literal genuine-port guard and pending-before-consume-before-modeled-actuation order", async () => {
+    const source = await readFile(MODULE_PATH, "utf8");
+    const pendingIndex = source.indexOf("filePath: paths.pending");
+    const consumeIndex = source.indexOf(
+      "const consumeStatus = consumeCapability();",
+      pendingIndex,
+    );
+    const authorityConsumeIndex = source.indexOf(
+      "consumeReservedWelcomeAudioSafariOperationAuthorityForActuation(",
+      consumeIndex,
+    );
+    const actuationIndex = source.indexOf(
+      "actuatorResult = invokeBrandedSafariActuator",
+      authorityConsumeIndex,
+    );
+    const terminalIndex = source.indexOf(
+      "await publishWelcomeAudioOneShotTerminalFromPending",
+      actuationIndex,
+    );
+
+    expect(source).toContain(
+      "if (!ACTUATOR_PORT_STATE.has(branded_safari_actuator_port)) {",
+    );
+    expect(pendingIndex).toBeGreaterThan(-1);
+    expect(consumeIndex).toBeGreaterThan(pendingIndex);
+    expect(authorityConsumeIndex).toBeGreaterThan(consumeIndex);
+    expect(actuationIndex).toBeGreaterThan(authorityConsumeIndex);
+    expect(terminalIndex).toBeGreaterThan(actuationIndex);
+  });
 });
