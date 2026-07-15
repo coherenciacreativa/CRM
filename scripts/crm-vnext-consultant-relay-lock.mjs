@@ -10,12 +10,15 @@ const DEFAULT_LOCK_DIR = `${APPROVED_PRODUCTION_LOCK_ROOT}/.relay-lock`;
 const DEFAULT_TARGET_REGISTRY_PATH = '/Users/alejandrogomez/Documents/CRM-Core-Private-Artifacts/consultant-relay/consultant-target-registry-v0.json';
 const DEFAULT_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH = '/Users/alejandrogomez/Documents/CRM-Core-Reports/chief-architect-bootstrap/crm_core_chief_architect_project_bootstrap_v1_2026-07-11.json';
 const DEFAULT_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH = '/Users/alejandrogomez/Documents/CRM-Core-Reports/chief-architect-bootstrap/crm_core_chief_architect_route_rebind_v1_2026-07-13.json';
+const DEFAULT_CHIEF_ARCHITECT_MISSION_ROUTE_RECEIPT_DIR = '/Users/alejandrogomez/Documents/CRM-Core-Reports/chief-architect-mission-routes';
 const LEGACY_CRM_WORKSPACE_ROOT = '/Users/alejandrogomez/CRM';
 const TARGET_HOSTS = ['chatgpt.com', 'chat.openai.com'];
 const RAW_TARGET_URL_PATTERN = new RegExp(`(?:https?://)?(?:${TARGET_HOSTS.map((host) => host.replaceAll('.', '\\.')).join('|')})/(?:[^\\s/?#]+/)*c/`, 'i');
 const CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME = 'CRM Core — Chief Architect';
 const CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL = '00 — North Star & Portfolio';
-const CHIEF_ARCHITECT_CONSULTANT_IDS = new Set(['chief-architect-integration']);
+const CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID = 'chief-architect-integration';
+const CHIEF_ARCHITECT_MISSION_TARGET_ID_PATTERN = /^chief-architect-mission-contract-(\d{4}-\d{2}-\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const CHIEF_ARCHITECT_MISSION_CHAT_LABEL_PATTERN = /^Mission — [^\r\n@]{3,120} — (\d{4}-\d{2}-\d{2})$/u;
 const CHIEF_ARCHITECT_BOOTSTRAP_NOT_BEFORE = Date.parse('2026-07-11T00:00:00.000Z');
 const CHIEF_ARCHITECT_UI_OBSERVATION_MAX_AGE_MS = 10 * 60 * 1000;
 const CHIEF_ARCHITECT_BOOTSTRAP_SPEC_PATH = 'docs/crm-vnext/crm-core-chief-architect-project-bootstrap-v1.md';
@@ -135,11 +138,39 @@ const chiefArchitectBootstrapReceiptPath = () => {
   return DEFAULT_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH;
 };
 
-const chiefArchitectRouteReceiptPath = () => {
+const chiefArchitectRouteReceiptPath = (targetId) => {
   if (process.env.NODE_ENV === 'test' && process.env.CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH) {
     return path.resolve(process.env.CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH);
   }
+  if (targetId !== CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
+    return path.join(DEFAULT_CHIEF_ARCHITECT_MISSION_ROUTE_RECEIPT_DIR, `${targetId}.json`);
+  }
   return DEFAULT_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH;
+};
+
+const chiefArchitectTargetKind = (targetId) => {
+  if (targetId === CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) return 'standing';
+  return CHIEF_ARCHITECT_MISSION_TARGET_ID_PATTERN.test(targetId) ? 'mission' : null;
+};
+
+const assertChiefArchitectTargetLabel = (targetId, chatLabel) => {
+  const targetKind = chiefArchitectTargetKind(targetId);
+  if (!targetKind) throw new Error('chief_architect_target_id_not_allowed');
+
+  if (targetKind === 'standing') {
+    if (chatLabel !== CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL) {
+      throw new Error('chief_architect_target_chat_label_not_allowed');
+    }
+    return targetKind;
+  }
+
+  const targetDate = targetId.match(CHIEF_ARCHITECT_MISSION_TARGET_ID_PATTERN)?.[1];
+  const labelDate = chatLabel.match(CHIEF_ARCHITECT_MISSION_CHAT_LABEL_PATTERN)?.[1];
+  if (!targetDate || !labelDate || targetDate !== labelDate) {
+    throw new Error('chief_architect_mission_chat_label_not_allowed');
+  }
+  assertMetadataValueSafe('target_chat_label', chatLabel);
+  return targetKind;
 };
 
 const canonicalInstructionsHash = async () => {
@@ -194,25 +225,93 @@ const readJson = async (filePath, errorCode) => {
   }
 };
 
-const assertOwnerOnly = async (filePath) => {
+const assertOwnerOnlyPath = async (filePath, errorPrefix) => {
   let fileStats;
   let directoryStats;
   try {
     fileStats = await stat(filePath);
     directoryStats = await stat(path.dirname(filePath));
   } catch {
-    throw new Error('chief_architect_registry_missing');
+    throw new Error(`${errorPrefix}_missing`);
   }
 
   if (!fileStats.isFile() || (fileStats.mode & 0o077) !== 0) {
-    throw new Error('chief_architect_registry_not_owner_only');
+    throw new Error(`${errorPrefix}_not_owner_only`);
   }
   if (!directoryStats.isDirectory() || (directoryStats.mode & 0o077) !== 0) {
-    throw new Error('chief_architect_registry_directory_not_owner_only');
+    throw new Error(`${errorPrefix}_directory_not_owner_only`);
   }
 };
 
-const assertFreshUiObservation = (flags) => {
+const assertOwnerOnly = async (filePath) => assertOwnerOnlyPath(filePath, 'chief_architect_registry');
+
+const assertCanonicalStandingTarget = async (target) => {
+  if (!target) throw new Error('chief_architect_standing_target_missing');
+  if (target.target_id !== CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
+    throw new Error('chief_architect_standing_target_id_mismatch');
+  }
+  if (target.expected_consultant_id !== CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
+    throw new Error('chief_architect_standing_consultant_id_mismatch');
+  }
+  if (target.target_kind && target.target_kind !== 'standing') {
+    throw new Error('chief_architect_standing_target_kind_mismatch');
+  }
+  assertChiefArchitectTargetLabel(
+    CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID,
+    target.target_chat_label,
+  );
+  if (target.target_url_secret !== true) throw new Error('chief_architect_standing_target_url_not_secret');
+  if (target.canonical_project_name !== CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME) {
+    throw new Error('chief_architect_standing_project_mismatch');
+  }
+  if (target.project_only_memory !== true) throw new Error('chief_architect_standing_project_only_missing');
+  if (target.private_unshared !== true) throw new Error('chief_architect_standing_private_unshared_missing');
+  if (target.legacy_project_used !== false) throw new Error('chief_architect_standing_legacy_route_rejected');
+  if (target.bootstrap_receipt_green !== true) throw new Error('chief_architect_standing_bootstrap_receipt_not_green');
+  if (target.sources_count !== 13) throw new Error('chief_architect_standing_source_count_mismatch');
+  if (target.required_chats_verified !== true) throw new Error('chief_architect_standing_required_chats_not_verified');
+
+  const bindingVerifiedAt = Date.parse(target.project_binding_verified_at);
+  if (!Number.isFinite(bindingVerifiedAt) || bindingVerifiedAt < CHIEF_ARCHITECT_BOOTSTRAP_NOT_BEFORE) {
+    throw new Error('chief_architect_standing_project_binding_stale');
+  }
+  const parsedTarget = parseCanonicalProjectTarget(target.target_url);
+  if (parsedTarget.projectRouteHash !== target.canonical_project_route_sha256) {
+    throw new Error('chief_architect_standing_project_route_fingerprint_mismatch');
+  }
+  if (parsedTarget.chatRouteHash !== target.canonical_chat_route_sha256) {
+    throw new Error('chief_architect_standing_chat_route_fingerprint_mismatch');
+  }
+  if (target.project_instructions_sha256 !== await canonicalInstructionsHash()) {
+    throw new Error('chief_architect_standing_instructions_fingerprint_mismatch');
+  }
+  return target;
+};
+
+const assertMissionRouteReceipt = async (target) => {
+  const receiptPath = chiefArchitectRouteReceiptPath(target.target_id);
+  await assertOwnerOnlyPath(receiptPath, 'chief_architect_mission_route_receipt');
+  const receipt = await readJson(receiptPath, 'chief_architect_mission_route_receipt_unreadable');
+  const valid = receipt.schema_version === 'crm_core_chief_architect_mission_route_registration_receipt_v1'
+    && receipt.target_id === target.target_id
+    && receipt.target_kind === 'mission'
+    && receipt.canonical_project_name === CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME
+    && receipt.canonical_project_route_sha256 === target.canonical_project_route_sha256
+    && receipt.canonical_chat_route_sha256 === target.canonical_chat_route_sha256
+    && receipt.project_binding_verified_at === target.project_binding_verified_at
+    && receipt.target_registry_rebound === true
+    && receipt.project_only_memory === true
+    && receipt.private_unshared === true
+    && receipt.instructions_match === true
+    && receipt.sources_count === 13
+    && receipt.required_chats_verified === true
+    && receipt.legacy_project_used === false
+    && receipt.registry_owner_only === true
+    && receipt.raw_target_url_printed === false;
+  if (!valid) throw new Error('chief_architect_mission_route_receipt_mismatch');
+};
+
+const assertFreshUiObservation = (flags, expectedChatLabel) => {
   if (requiredFlag(flags, 'observed-project-name') !== CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME) {
     throw new Error('chief_architect_observed_project_mismatch');
   }
@@ -228,7 +327,7 @@ const assertFreshUiObservation = (flags) => {
   if (!trueFlag(flags, 'observed-chat-project-bound')) {
     throw new Error('chief_architect_chat_project_binding_not_observed');
   }
-  if (requiredFlag(flags, 'observed-chat-label') !== CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL) {
+  if (requiredFlag(flags, 'observed-chat-label') !== expectedChatLabel) {
     throw new Error('chief_architect_observed_chat_mismatch');
   }
 
@@ -250,20 +349,33 @@ const assertFreshUiObservation = (flags) => {
 
 const chiefArchitectRoutePreflight = async (flags) => {
   const consultantId = requiredFlag(flags, 'consultant-id');
-  if (!CHIEF_ARCHITECT_CONSULTANT_IDS.has(consultantId)) return null;
+  const targetKind = chiefArchitectTargetKind(consultantId);
+  if (!targetKind) return null;
 
   const criticalSection = requiredFlag(flags, 'critical-section');
   const requiresUiObservation = criticalSection !== 'direct_target_open';
-  const uiObservation = requiresUiObservation ? assertFreshUiObservation(flags) : null;
   const registryPath = targetRegistryPath();
   await assertOwnerOnly(registryPath);
   const registry = await readJson(registryPath, 'chief_architect_registry_unreadable');
   const target = registryTarget(registry, consultantId);
   if (!target) throw new Error('chief_architect_target_missing');
   if (target.expected_consultant_id !== consultantId) throw new Error('chief_architect_consultant_id_mismatch');
-  if (target.target_chat_label !== CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL) {
-    throw new Error('chief_architect_registry_chat_mismatch');
+  assertChiefArchitectTargetLabel(consultantId, target.target_chat_label);
+  if ((targetKind === 'mission' && target.target_kind !== 'mission')
+      || (target.target_kind && target.target_kind !== targetKind)) {
+    throw new Error('chief_architect_target_kind_mismatch');
   }
+  if (targetKind === 'mission') {
+    const standingTarget = registryTarget(registry, CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID);
+    await assertCanonicalStandingTarget(standingTarget);
+    if (target.canonical_project_route_sha256 !== standingTarget.canonical_project_route_sha256) {
+      throw new Error('chief_architect_mission_project_route_mismatch');
+    }
+    await assertMissionRouteReceipt(target);
+  }
+  const uiObservation = requiresUiObservation
+    ? assertFreshUiObservation(flags, target.target_chat_label)
+    : null;
   if (target.target_url_secret !== true) throw new Error('chief_architect_target_url_not_secret');
   if (target.canonical_project_name !== CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME) {
     throw new Error('chief_architect_registry_project_mismatch');
@@ -700,15 +812,11 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
     throw new Error('chief_architect_target_url_must_use_stdin');
   }
   const targetId = requiredFlag(flags, 'target-id');
-  if (!CHIEF_ARCHITECT_CONSULTANT_IDS.has(targetId)) {
-    throw new Error('chief_architect_target_id_not_allowed');
-  }
+  const targetChatLabel = requiredFlag(flags, 'target-chat-label');
+  const targetKind = assertChiefArchitectTargetLabel(targetId, targetChatLabel);
   await assertRegistryUpdateLockOwner(lockDir, flags, targetId);
-  if (requiredFlag(flags, 'target-chat-label') !== CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL) {
-    throw new Error('chief_architect_target_chat_label_not_allowed');
-  }
 
-  assertFreshUiObservation(flags);
+  assertFreshUiObservation(flags, targetChatLabel);
   if (!trueFlag(flags, 'observed-required-chats')) {
     throw new Error('chief_architect_required_chats_not_observed');
   }
@@ -718,7 +826,7 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
   await validateBootstrapReceipt();
 
   const targetUrl = (await readStdin()).trim();
-  const uiObservation = assertFreshUiObservation(flags);
+  const uiObservation = assertFreshUiObservation(flags, targetChatLabel);
   const observedAt = uiObservation.observedAt;
   const parsedTarget = parseCanonicalProjectTarget(targetUrl);
   if (uiObservation.projectRouteHash !== parsedTarget.projectRouteHash) {
@@ -732,6 +840,13 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
   const registry = await readJson(registryPath, 'chief_architect_registry_unreadable');
   if (!registry.targets || typeof registry.targets !== 'object' || Array.isArray(registry.targets)) {
     throw new Error('chief_architect_registry_shape_invalid');
+  }
+  if (targetKind === 'mission') {
+    const standingTarget = registryTarget(registry, CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID);
+    await assertCanonicalStandingTarget(standingTarget);
+    if (parsedTarget.projectRouteHash !== standingTarget.canonical_project_route_sha256) {
+      throw new Error('chief_architect_mission_project_route_mismatch');
+    }
   }
 
   const existing = registry.targets[targetId] && typeof registry.targets[targetId] === 'object'
@@ -747,7 +862,8 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
         ...existing,
         target_id: targetId,
         expected_consultant_id: targetId,
-        target_chat_label: requiredFlag(flags, 'target-chat-label'),
+        target_kind: targetKind,
+        target_chat_label: targetChatLabel,
         target_url: targetUrl,
         target_url_secret: true,
         canonical_project_name: CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME,
@@ -766,22 +882,25 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
         last_handshake_status: 'pending_canonical_handshake',
         last_confirmed_at: null,
         last_confirmed_packet_id: null,
-        source: 'canonical_chief_architect_project_rebind_v1',
+        source: targetKind === 'standing'
+          ? 'canonical_chief_architect_project_rebind_v1'
+          : 'canonical_chief_architect_mission_target_registration_v1',
         updated_at: verifiedAt,
         raw_target_url_printed: false,
       },
     },
   };
 
-  await writeJsonAtomically(registryPath, updatedRegistry, 0o600);
-  if (registryPath === DEFAULT_TARGET_REGISTRY_PATH) {
-    await chmod(path.dirname(path.dirname(registryPath)), 0o700);
-  }
-
   const routeReceipt = {
-    schema_version: 'crm_core_chief_architect_route_rebind_receipt_v1',
+    schema_version: targetKind === 'standing'
+      ? 'crm_core_chief_architect_route_rebind_receipt_v1'
+      : 'crm_core_chief_architect_mission_route_registration_receipt_v1',
     target_id: targetId,
+    target_kind: targetKind,
     canonical_project_name: CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME,
+    canonical_project_route_sha256: parsedTarget.projectRouteHash,
+    canonical_chat_route_sha256: parsedTarget.chatRouteHash,
+    project_binding_verified_at: verifiedAt,
     target_registry_rebound: true,
     project_only_memory: true,
     private_unshared: true,
@@ -801,11 +920,22 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
     },
     raw_target_url_printed: false,
   };
-  await writeJsonAtomically(chiefArchitectRouteReceiptPath(), routeReceipt, 0o600);
+  const routeReceiptPath = chiefArchitectRouteReceiptPath(targetId);
+  if (targetKind === 'mission') {
+    await writeJsonAtomically(routeReceiptPath, routeReceipt, 0o600);
+  }
+  await writeJsonAtomically(registryPath, updatedRegistry, 0o600);
+  if (registryPath === DEFAULT_TARGET_REGISTRY_PATH) {
+    await chmod(path.dirname(path.dirname(registryPath)), 0o700);
+  }
+  if (targetKind === 'standing') {
+    await writeJsonAtomically(routeReceiptPath, routeReceipt, 0o600);
+  }
 
   printJson({
     ok: true,
     target_id: targetId,
+    target_kind: targetKind,
     canonical_project_match: true,
     target_registry_rebound: true,
     registry_owner_only: true,
