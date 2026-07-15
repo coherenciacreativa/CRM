@@ -45,6 +45,8 @@ import {
   validateWelcomeAudioClaimReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-claim-writer.mjs";
 import {
+  WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
+  WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_TIMEOUT_MS,
   WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO,
   WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER,
   WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION,
@@ -52,9 +54,12 @@ import {
   validateWelcomeAudioSafariOperationalReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-safari-operational-executor.mjs";
 import {
+  WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS,
   WELCOME_AUDIO_SAFARI_OPERATION_AUTHORITY_STATUS,
   consumeWelcomeAudioSafariOperationAuthority,
   createWelcomeAudioSafariOperationPort,
+  getWelcomeAudioSafariDeferredActuatorRendezvousStatus,
+  resolveWelcomeAudioSafariDeferredActuatorRendezvous,
 } from "../scripts/crm-vnext-instagram-welcome-audio-safari-operation-port.mjs";
 import {
   WELCOME_AUDIO_OPERATION_SESSION_BLOCKER,
@@ -357,11 +362,66 @@ const runPrepared = async ({
   now_ms: NOW_MS,
 });
 
+const deferredActuatorResult = (overrides: Record<string, any> = {}) => Object.freeze({
+  result_schema_version: WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
+  bound_to_current_operation: true,
+  effect_boundary_entered: true,
+  send_control_actuation_count: 1,
+  attempted_at: new Date(NOW_MS).toISOString(),
+  confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER,
+  confirmation_checked_at: new Date(NOW_MS + 1000).toISOString(),
+  ...overrides,
+});
+
+const rendezvousStatus = (prepared: ReturnType<typeof preparedPort>) =>
+  getWelcomeAudioSafariDeferredActuatorRendezvousStatus({
+    deferred_actuator_rendezvous_authority:
+      prepared.deferred_actuator_rendezvous_authority,
+    branded_safari_actuator_port: prepared.branded_safari_actuator_port,
+  });
+
+const resolvePreparedRendezvous = ({
+  prepared,
+  operation,
+  currentBinding = bindingFor(operation),
+  actuatorResult = deferredActuatorResult(),
+}: {
+  prepared: ReturnType<typeof preparedPort>;
+  operation: Record<string, any>;
+  currentBinding?: Record<string, any>;
+  actuatorResult?: Record<string, any>;
+}) => resolveWelcomeAudioSafariDeferredActuatorRendezvous({
+  deferred_actuator_rendezvous_authority:
+    prepared.deferred_actuator_rendezvous_authority,
+  branded_safari_actuator_port: prepared.branded_safari_actuator_port,
+  current_binding: currentBinding,
+  actuator_result: actuatorResult,
+});
+
+const waitForRendezvousStatus = async (
+  prepared: ReturnType<typeof preparedPort>,
+  expectedStatus: string,
+) => {
+  const deadline = Date.now() + 2000;
+  while (Date.now() < deadline) {
+    const status = rendezvousStatus(prepared);
+    if (status === expectedStatus) return status;
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 2));
+  }
+  throw new Error("rendezvous_status_timeout");
+};
+
 describe("Instagram welcome-audio deterministic operation session bridge", () => {
   test("returns the exact genuine executor-branded port plus a frozen opaque one-use authority", () => {
     const operation = preclaimOperation();
     const prepared = preparedPort(operation);
 
+    expect(Object.isFrozen(prepared)).toBe(true);
+    expect(Object.keys(prepared).sort()).toEqual([
+      "branded_safari_actuator_port",
+      "deferred_actuator_rendezvous_authority",
+      "prepared_session_authority",
+    ]);
     expect(prepared.branded_safari_actuator_port).toEqual({
       surface: WELCOME_AUDIO_SURFACE.STATUS,
       surface_detail: WELCOME_AUDIO_SURFACE.DETAIL,
@@ -369,10 +429,18 @@ describe("Instagram welcome-audio deterministic operation session bridge", () =>
     });
     expect(Object.isFrozen(prepared.branded_safari_actuator_port)).toBe(true);
     expect(Object.isFrozen(prepared.prepared_session_authority)).toBe(true);
+    expect(Object.isFrozen(prepared.deferred_actuator_rendezvous_authority)).toBe(true);
     expect(() => JSON.stringify(prepared.prepared_session_authority))
       .toThrow("prepared_session_authority_not_serializable");
+    expect(() => JSON.stringify(prepared.deferred_actuator_rendezvous_authority))
+      .toThrow("deferred_actuator_rendezvous_authority_not_serializable");
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.FRESH);
     expect("invoke" in prepared.branded_safari_actuator_port).toBe(false);
     expect("driver" in prepared.branded_safari_actuator_port).toBe(false);
+    expect("callback" in prepared.branded_safari_actuator_port).toBe(false);
+    expect("browser_handle" in prepared.branded_safari_actuator_port).toBe(false);
+    expect("payload" in prepared.branded_safari_actuator_port).toBe(false);
     expect(() => createWelcomeAudioSafariOperationPort({
       execution_mode: WELCOME_AUDIO_SAFARI_OPERATIONAL_EXECUTION_MODE,
       deterministic_scenario: WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.STRONG_CONFIRMED,
@@ -426,6 +494,475 @@ describe("Instagram welcome-audio deterministic operation session bridge", () =>
     expect(entries.filter((entry) => entry.startsWith("ready-")).length).toBe(1);
     expect(entries.filter((entry) => entry.startsWith("pending-")).length).toBe(0);
     expect(entries.filter((entry) => entry.startsWith("terminal-")).length).toBe(1);
+  });
+
+  test("arms only after durable PENDING and both authorities are consumed, then accepts one async resolution", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const sessionPromise = runPrepared({
+      root,
+      operation,
+      prepared,
+      deterministicScenario: WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    });
+
+    await waitForRendezvousStatus(
+      prepared,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ARMED,
+    );
+    const entriesWhileArmed = await readdir(root);
+    expect(entriesWhileArmed.filter((entry) => entry.startsWith("preclaim-"))).toHaveLength(1);
+    expect(entriesWhileArmed.filter((entry) => entry.startsWith("ready-"))).toHaveLength(1);
+    expect(entriesWhileArmed.filter((entry) => entry.startsWith("pending-"))).toHaveLength(1);
+    expect(entriesWhileArmed.filter((entry) => entry.startsWith("terminal-"))).toHaveLength(0);
+    expect(consumeWelcomeAudioSafariOperationAuthority({
+      prepared_session_authority: prepared.prepared_session_authority,
+      branded_safari_actuator_port: prepared.branded_safari_actuator_port,
+    })).toBe(WELCOME_AUDIO_SAFARI_OPERATION_AUTHORITY_STATUS.ALREADY_USED);
+
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESOLVED_NOW);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESOLVED);
+    const session = await sessionPromise;
+
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.CONSUMED);
+    expect(session.session_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_OPERATION_SESSION_DECISION.COMPLETED,
+      authority_consumed_by_current_invocation: true,
+      preclaim_record_published: true,
+      effect_boundary_entered: true,
+      modeled_send_control_actuation_count: 1,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      production_ready: false,
+      send_allowed: false,
+      live_authority: false,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [],
+    });
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.CONFIRMED,
+      terminal_record_present: true,
+      pending_record_present: false,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      production_ready: false,
+    });
+    expect(validateWelcomeAudioOperationSessionReceipt(session.session_receipt))
+      .toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioSafariOperationalReceipt(session.operational_receipt))
+      .toEqual({ ok: true, reason: null });
+  });
+
+  test("validates, binds, and stores one frozen data-only result snapshot without re-reading the caller object", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const sessionPromise = runPrepared({ root, operation, prepared });
+    await waitForRendezvousStatus(
+      prepared,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ARMED,
+    );
+    const mutableResult = { ...deferredActuatorResult() };
+
+    expect(resolvePreparedRendezvous({
+      prepared,
+      operation,
+      actuatorResult: mutableResult,
+    })).toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESOLVED_NOW);
+    mutableResult.bound_to_current_operation = false;
+    mutableResult.send_control_actuation_count = 0;
+    mutableResult.confirmation_marker = WELCOME_AUDIO_CONFIRMATION_MARKER.NONE;
+
+    const session = await sessionPromise;
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.CONFIRMED,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+      confirmation_marker:
+        WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER,
+      blocker_codes: [],
+    });
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.CONSUMED);
+  });
+
+  test("normalizes a fractional now_ms to the exact ISO invocation timestamp before rendezvous comparison", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const fractionalNowMs = NOW_MS + 0.75;
+    const sessionPromise = runWelcomeAudioOperationSessionOnce({
+      registry_root: root,
+      registry_policy: WELCOME_AUDIO_ONE_SHOT_STORE_POLICY.DETERMINISTIC_NO_EFFECT_TEST,
+      canonical_operation: operation,
+      current_binding: bindingFor(operation),
+      prepared_session_authority: prepared.prepared_session_authority,
+      branded_safari_actuator_port: prepared.branded_safari_actuator_port,
+      now_ms: fractionalNowMs,
+    });
+    await waitForRendezvousStatus(
+      prepared,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ARMED,
+    );
+    const attemptedAt = new Date(fractionalNowMs).toISOString();
+
+    expect(resolvePreparedRendezvous({
+      prepared,
+      operation,
+      actuatorResult: deferredActuatorResult({
+        attempted_at: attemptedAt,
+        confirmation_checked_at: new Date(Date.parse(attemptedAt) + 1000).toISOString(),
+      }),
+    })).toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESOLVED_NOW);
+    const session = await sessionPromise;
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.CONFIRMED,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+      blocker_codes: [],
+    });
+  });
+
+  test("rejects forged and cross-port rendezvous authorities without changing either genuine authority", () => {
+    const operation = preclaimOperation();
+    const first = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const second = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    expect(resolveWelcomeAudioSafariDeferredActuatorRendezvous({
+      deferred_actuator_rendezvous_authority: Object.freeze({ marker: Symbol() }),
+      branded_safari_actuator_port: first.branded_safari_actuator_port,
+      current_binding: bindingFor(operation),
+      actuator_result: deferredActuatorResult(),
+    })).toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.INVALID);
+    expect(resolveWelcomeAudioSafariDeferredActuatorRendezvous({
+      deferred_actuator_rendezvous_authority: first.deferred_actuator_rendezvous_authority,
+      branded_safari_actuator_port: second.branded_safari_actuator_port,
+      current_binding: bindingFor(operation),
+      actuator_result: deferredActuatorResult(),
+    })).toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.INVALID);
+    expect(rendezvousStatus(first))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.FRESH);
+    expect(rendezvousStatus(second))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.FRESH);
+  });
+
+  test("serializes concurrent rendezvous resolution and rejects every reuse", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const sessionPromise = runPrepared({ root, operation, prepared });
+    await waitForRendezvousStatus(
+      prepared,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ARMED,
+    );
+
+    const statuses = await Promise.all([
+      Promise.resolve().then(() => resolvePreparedRendezvous({ prepared, operation })),
+      Promise.resolve().then(() => resolvePreparedRendezvous({ prepared, operation })),
+    ]);
+    expect(statuses.sort()).toEqual([
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ALREADY_USED,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESOLVED_NOW,
+    ].sort());
+    const session = await sessionPromise;
+    expect(session.session_receipt.modeled_send_control_actuation_count).toBe(1);
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ALREADY_USED);
+  });
+
+  test("poisons an early resolution and later fails closed after PENDING with zero modeled actuation", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.EARLY);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.REJECTED);
+
+    const session = await runPrepared({ root, operation, prepared });
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      terminal_record_present: true,
+      effect_boundary_entered: false,
+      send_control_actuation_count: 0,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID],
+    });
+    expect(session.session_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_OPERATION_SESSION_DECISION.COMPLETED,
+      modeled_send_control_actuation_count: 0,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      send_allowed: false,
+      live_authority: false,
+    });
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ALREADY_USED);
+  });
+
+  test.each([
+    [
+      "binding drift",
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.BINDING_DRIFT,
+      (operation: Record<string, any>) => ({
+        currentBinding: { ...bindingFor(operation), session_revision: 2 },
+        actuatorResult: deferredActuatorResult(),
+      }),
+    ],
+    [
+      "missing result field",
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESULT_INVALID,
+      (operation: Record<string, any>) => {
+        const { confirmation_checked_at: _removed, ...invalid } = deferredActuatorResult();
+        return { currentBinding: bindingFor(operation), actuatorResult: invalid };
+      },
+    ],
+    [
+      "duplicate modeled actuation",
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESULT_INVALID,
+      (operation: Record<string, any>) => ({
+        currentBinding: bindingFor(operation),
+        actuatorResult: deferredActuatorResult({ send_control_actuation_count: 2 }),
+      }),
+    ],
+    [
+      "invocation timestamp mismatch",
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESULT_MISMATCHED,
+      (operation: Record<string, any>) => ({
+        currentBinding: bindingFor(operation),
+        actuatorResult: deferredActuatorResult({
+          attempted_at: new Date(NOW_MS + 1).toISOString(),
+        }),
+      }),
+    ],
+  ])("records post-ARMED %s conservatively as one unknown no-retry boundary", async (
+    _label,
+    expectedStatus,
+    buildResolution,
+  ) => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const sessionPromise = runPrepared({ root, operation, prepared });
+    await waitForRendezvousStatus(
+      prepared,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ARMED,
+    );
+    const resolution = buildResolution(operation);
+    expect(resolvePreparedRendezvous({
+      prepared,
+      operation,
+      currentBinding: resolution.currentBinding,
+      actuatorResult: resolution.actuatorResult,
+    })).toBe(expectedStatus);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.REJECTED);
+
+    const session = await sessionPromise;
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      terminal_record_present: true,
+      pending_record_present: false,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.CONFIRMATION_INVALID],
+    });
+    expect(session.session_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_OPERATION_SESSION_DECISION.COMPLETED,
+      effect_boundary_entered: true,
+      modeled_send_control_actuation_count: 1,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      send_allowed: false,
+      live_authority: false,
+    });
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ALREADY_USED);
+    expect(validateWelcomeAudioSafariOperationalReceipt(session.operational_receipt))
+      .toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioOperationSessionReceipt(session.session_receipt))
+      .toEqual({ ok: true, reason: null });
+  });
+
+  test.each([
+    [
+      "accessor-bearing result",
+      () => {
+        let getterReads = 0;
+        const actuatorResult = { ...deferredActuatorResult() };
+        Object.defineProperty(actuatorResult, "confirmation_marker", {
+          enumerable: true,
+          configurable: true,
+          get: () => {
+            getterReads += 1;
+            return WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER;
+          },
+        });
+        return { actuatorResult, getterReads: () => getterReads };
+      },
+    ],
+    [
+      "Proxy result",
+      () => {
+        let trapReads = 0;
+        const actuatorResult = new Proxy(deferredActuatorResult(), {
+          get: () => {
+            trapReads += 1;
+            throw new Error("proxy_get_trap_must_not_run");
+          },
+          getOwnPropertyDescriptor: () => {
+            trapReads += 1;
+            throw new Error("proxy_descriptor_trap_must_not_run");
+          },
+          getPrototypeOf: () => {
+            trapReads += 1;
+            throw new Error("proxy_prototype_trap_must_not_run");
+          },
+          ownKeys: () => {
+            trapReads += 1;
+            throw new Error("proxy_own_keys_trap_must_not_run");
+          },
+        });
+        return { actuatorResult, getterReads: () => trapReads };
+      },
+    ],
+    [
+      "non-plain result",
+      () => ({
+        actuatorResult: Object.assign(
+          Object.create({ inherited_state: "forbidden" }),
+          deferredActuatorResult(),
+        ),
+        getterReads: () => 0,
+      }),
+    ],
+  ])("rejects a %s without observation, re-read, or rearm", async (_label, buildEnvelope) => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    const sessionPromise = runPrepared({ root, operation, prepared });
+    await waitForRendezvousStatus(
+      prepared,
+      WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ARMED,
+    );
+    const envelope = buildEnvelope();
+
+    expect(resolvePreparedRendezvous({
+      prepared,
+      operation,
+      actuatorResult: envelope.actuatorResult,
+    })).toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.RESULT_INVALID);
+    expect(envelope.getterReads()).toBe(0);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.REJECTED);
+
+    const session = await sessionPromise;
+    expect(envelope.getterReads()).toBe(0);
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.CONFIRMATION_INVALID],
+    });
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ALREADY_USED);
+    expect(validateWelcomeAudioSafariOperationalReceipt(session.operational_receipt))
+      .toEqual({ ok: true, reason: null });
+  });
+
+  test("times out an absent result to terminal unknown and rejects every late resolution without rearming", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS,
+    );
+    expect(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_TIMEOUT_MS).toBeGreaterThan(0);
+    const session = await runPrepared({ root, operation, prepared });
+
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.TIMED_OUT);
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      pending_record_present: false,
+      terminal_record_present: true,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      production_ready: false,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.CONFIRMATION_INVALID],
+    });
+    expect(session.session_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_OPERATION_SESSION_DECISION.COMPLETED,
+      effect_boundary_entered: true,
+      modeled_send_control_actuation_count: 1,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      send_allowed: false,
+      live_authority: false,
+    });
+    expect(validateWelcomeAudioSafariOperationalReceipt(session.operational_receipt))
+      .toEqual({ ok: true, reason: null });
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.LATE);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.TIMED_OUT);
+
+    const replay = await runPrepared({ root, operation, prepared });
+    expect(replay.session_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_OPERATION_SESSION_BLOCKER.AUTHORITY_USED,
+    ]);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.TIMED_OUT);
   });
 
   test("rejects forged, cross-operation, reused, and binding-drift authorities before PRECLAIM", async () => {
@@ -933,6 +1470,8 @@ describe("Instagram welcome-audio deterministic operation session bridge", () =>
           reason: WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.INPUT_INVALID,
         }
         : { ok: true, reason: null });
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.CONSUMED);
 
     const replay = await runPrepared({
       root,
@@ -945,6 +1484,35 @@ describe("Instagram welcome-audio deterministic operation session bridge", () =>
       modeled_send_control_actuation_count: 0,
       blocker_codes: [WELCOME_AUDIO_OPERATION_SESSION_BLOCKER.AUTHORITY_USED],
     });
+  });
+
+  test("consumes a THROW_AFTER_BOUNDARY rendezvous and rejects every later resolution", async () => {
+    const root = await makeRoot();
+    const operation = preclaimOperation();
+    const prepared = preparedPort(
+      operation,
+      WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.THROW_AFTER_BOUNDARY,
+    );
+    const session = await runPrepared({
+      root,
+      operation,
+      prepared,
+      deterministicScenario: WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.THROW_AFTER_BOUNDARY,
+    });
+
+    expect(session.operational_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_FAILED],
+    });
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.CONSUMED);
+    expect(resolvePreparedRendezvous({ prepared, operation }))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.ALREADY_USED);
+    expect(rendezvousStatus(prepared))
+      .toBe(WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_STATUS.CONSUMED);
   });
 
   test("never includes a private sentinel in any of the three receipt layers", async () => {
@@ -981,6 +1549,15 @@ describe("Instagram welcome-audio deterministic operation session bridge", () =>
   test("source order is PRECLAIM publication before the composite and has no browser, network, shell, callback, or picker dependency", async () => {
     const sessionSource = await readFile(SESSION_MODULE_PATH, "utf8");
     const portSource = await readFile(PORT_MODULE_PATH, "utf8");
+    const sessionImports = [...sessionSource.matchAll(/from\s+['"]([^'"]+)['"]/g)]
+      .map((match) => match[1]);
+    expect(sessionImports.sort()).toEqual([
+      "./crm-vnext-instagram-welcome-audio-claim-writer.mjs",
+      "./crm-vnext-instagram-welcome-audio-one-shot-store.mjs",
+      "./crm-vnext-instagram-welcome-audio-operation-guard.mjs",
+      "./crm-vnext-instagram-welcome-audio-safari-operation-port.mjs",
+      "./crm-vnext-instagram-welcome-audio-safari-operational-executor.mjs",
+    ].sort());
     expect(sessionSource.indexOf("await writeWelcomeAudioOneShotExclusiveDurable"))
       .toBeLessThan(sessionSource.indexOf("await runWelcomeAudioOperationalRailOnce"));
     for (const source of [sessionSource, portSource]) {
@@ -990,5 +1567,6 @@ describe("Instagram welcome-audio deterministic operation session bridge", () =>
       expect(source).not.toMatch(/process\.argv|import\.meta\.main/);
       expect(source).not.toMatch(/file[_ -]?picker|browser[_ -]?handle/i);
     }
+    expect(portSource).not.toMatch(/\b(?:callback|browser_handle|payload)\b/);
   });
 });

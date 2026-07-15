@@ -6123,16 +6123,22 @@ routing and completion pointer.
   targeted adversarial `13/13` green; full repository suite `1701/1702`, with
   the sole failure the unchanged out-of-lane MailerLite Launch OS
   approval-queue baseline.
+- `deferred_actuator_rendezvous_centrally_integrated`: true
+- `deferred_actuator_rendezvous_mode`: `deterministic_same_process_no_effect`
+- `validation_evidence_after_deferred_actuator_rendezvous_integration`:
+  five-file focused `292/292` green; full repository suite `1717/1718`, with
+  the sole failure the unchanged historical out-of-lane approval-queue
+  baseline.
 - `integration_effects`: no live, source, private, browser, Instagram,
   MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
 - `privacy_process_note`: redacted non-blocking local trace disposition; future
   relay validation uses exact boolean checks and no broad UI or snapshot
   extraction.
-- `next_external_gate`: no-live next technical slice before any mission; a live
-  owner-only claim issuer and a real browser-bound Safari actuator remain
+- `next_external_gate`: no-live next technical slice before any mission; the
+  live owner-only claim issuer and real browser-bound Safari actuator remain
   missing. Only after those are separately reviewed and integrated may a newly
   written mission with fresh CEO approval authorize any send. Git history is
   authoritative for the central merge and source chain; this action grants no
   live authority.
 - `recommended_default`:
-  `preserve_integrated_readiness_and_async_bridge_keep_all_live_gates_closed`
+  `preserve_integrated_readiness_async_bridge_and_deferred_rendezvous_keep_all_live_gates_closed`

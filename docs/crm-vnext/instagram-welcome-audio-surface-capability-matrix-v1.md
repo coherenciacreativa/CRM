@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Surface Capability Matrix v1
 
 Date: 2026-07-14
-Status: `operational_rail_centrally_integrated_async_bridge_independent_review_green_artifact_review_pending_no_live`
+Status: `operational_rail_async_bridge_and_deferred_rendezvous_centrally_integrated_no_live`
 Matrix ID: `instagram_welcome_audio_surface_capability_matrix_v1`
 
 ## Purpose
@@ -33,6 +33,25 @@ production_ready = false
 send_allowed = false
 live_authority = false
 ```
+
+The async bridge is now centrally integrated. The current deferred-rendezvous
+delta adds no matrix row and probes no surface. It only provides a frozen,
+opaque, nonserializable same-process authority paired to one deterministic port
+and exact binding. Arming occurs only after durable `PENDING` plus claim and
+session-authority consumption; one valid resolution may close the modeled
+attempt. Forged, crossed, reused, concurrent-losing, early, drifted,
+    mismatched, invalid, late, timed-out, and absent outcomes fail closed. Early or
+    pre-arm rejection is false/count `0`; every terminal failure of the genuine
+    rendezvous after `ARMED` (binding drift, invalid result, mismatch, timeout,
+    or absence) is recorded conservatively as true/count `1`, terminal
+    unknown/no-retry. Results must be
+plain data-only records; Proxy, accessor-bearing, and non-plain inputs are
+rejected without observation, and one frozen own-descriptor snapshot is used
+for validation, comparison, and storage. The public port exposes no invocation
+    method, driver, callback, browser handle, or payload. Independent review is
+    green; formal artifact review and integration of this delta remain pending;
+    it is not evidence that any browser can attach or
+send.
 
 ## Canonical Decision
 
@@ -382,7 +401,8 @@ neutral enums.
 | Safari upload-route hardening protocol v0 | `historical_no_run_design_evidence` | Fail-closed isolation, picker, and fallback rules | Current route health or an executable mission |
 | Synthetic one-shot executor adversarial suite v1 | `mechanical_serialization_evidence_only` | Durable one-consumer, crash, replay, privacy, and no-retry mechanics | Current Safari health, Instagram delivery, live authority, or production readiness |
 | Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_centrally_integrated_no_live` | Focused `244/244`, including targeted adversarial crash/concurrency/invalid-port `7/7`; full `239/240` files and `1669/1670` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
-| Async browser session bridge v1 | `mechanical_async_ordering_evidence_independent_review_green_artifact_review_pending` | The simulated order only: synthetic preparation, authoritative durable PRECLAIM, existing READY/capability, durable pending, capability consumption, one modeled Send, one modeled confirmation, permanent terminal/no-retry. Bridge-only focused `44/44`; combined bridge-plus-inherited focused `276/276`, including async session bridge `25/25` and operational executor `19/19`; bridge-targeted adversarial `13/13`; full `240/241` files and `1701/1702` tests with only the exact unchanged out-of-lane baseline failing | A new surface, real actuator, browser or Safari use, Instagram or picker access, audio delivery, surface health, live issuer, canary authority, or production readiness |
+| Async browser session bridge v1 | `mechanical_async_ordering_evidence_centrally_integrated_no_live` | The simulated order only: synthetic preparation, authoritative durable PRECLAIM, existing READY/capability, durable pending, capability consumption, one modeled Send, one modeled confirmation, permanent terminal/no-retry. Bridge-only focused `44/44`; combined bridge-plus-inherited focused `276/276`, including async session bridge `25/25` and operational executor `19/19`; bridge-targeted adversarial `13/13`; full `240/241` files and `1701/1702` tests with only the exact unchanged out-of-lane baseline failing | A new surface, real actuator, browser or Safari use, Instagram or picker access, audio delivery, surface health, live issuer, canary authority, or production readiness |
+| Deferred actuator rendezvous v1 | `same_process_result_rendezvous_centrally_integrated_no_live` | Opaque exact-port/exact-binding authority, arm-after-pending-and-authority-consumption ordering, exactly one asynchronous deterministic result, early false/count `0`, terminal genuine post-armed uncertainty conservative true/count `1`, data-only snapshot without getter/Proxy observation, and fail-closed timeout/reuse/forgery/drift/mismatch handling; current five-file focused `292/292`, including session `40/40` and operational executor `20/20`; full `240/241` files and `1717/1718` tests with the exact unchanged historical out-of-lane baseline; independent review, formal artifact review, and central integration green | A host browser, attachment capability, Instagram delivery, live surface health, effect authority, production readiness, or live authority |
 | Fresh future operation observation | `operation_scoped_evidence` | The exact enum values for that operation | Another operation, another surface, or standing automation |
 
 ## Receipt Boundary
@@ -413,10 +433,12 @@ forbidden.
 
 The closed limited operational pilot cannot authorize this matrix. The combined
 deterministic rail has passed validation, review, and central integration, but
-none of those steps grants live authority. The current async bridge has fresh
-green no-live validation and independent review; formal artifact review and
-central integration remain pending and also grant no live authority. A new future mission
-must then explicitly bind the v1 adapter, this
+none of those steps grants live authority. The async bridge has fresh green
+no-live validation, completed review, and completed central integration; those
+steps grant no live authority. The current deferred-rendezvous delta has green
+independent review, remains formal-artifact-review/integration pending, and also
+grants no live authority. A new future
+mission must then explicitly bind the v1 adapter, this
 matrix, the operation guard,
 one exact recent source, one exact asset, one attempt, the permanent pre-send
 claim, strict root/nested allowlists, immutable canonical-operation digest,
@@ -436,6 +458,9 @@ fresh bridge-lane evidence is the separately reported bridge-only focused
 `44/44`, combined bridge-plus-inherited focused `276/276`, targeted adversarial
 `13/13`, and full `240/241` files plus `1701/1702` tests with only the exact
 unchanged out-of-lane baseline failing.
-After any later bridge integration, a newly written mission plus fresh explicit
-CEO approval is still required for the
+Current rendezvous evidence is focused `292/292`, including operation session
+`40/40` and operational executor `20/20`, plus full `240/241` files and
+`1717/1718` tests with the exact unchanged historical out-of-lane baseline.
+After any later rendezvous integration, a newly written mission plus fresh
+explicit CEO approval is still required for the
 exact one-recipient, one-audio, one-attempt canary.

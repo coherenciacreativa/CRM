@@ -2006,6 +2006,12 @@ No lane outputs in review at creation.
   targeted adversarial `13/13` green; full repository suite `1701/1702`, with
   the sole failure the unchanged out-of-lane MailerLite Launch OS
   approval-queue baseline.
+- `deferred_actuator_rendezvous_centrally_integrated`: true
+- `deferred_actuator_rendezvous_mode`: `deterministic_same_process_no_effect`
+- `validation_evidence_after_deferred_actuator_rendezvous_integration`:
+  five-file focused `292/292` green; full repository suite `1717/1718`, with
+  the sole failure the unchanged historical out-of-lane approval-queue
+  baseline.
 - `browser_used`: false
 - `network_used`: false
 - `external_effect_invoked`: false
@@ -2018,13 +2024,13 @@ No lane outputs in review at creation.
   exact boolean checks and no broad UI or snapshot extraction in future relay
   validation.
 - `integration_recommendation`: preserve the integrated action rail, synthetic
-  executor, deterministic no-effect operational rail, and deterministic
-  simulated async browser-session bridge while keeping all live gates closed.
-  The active next action is a no-live technical slice before any mission. A
-  live owner-only claim issuer and real browser-bound Safari actuator remain
-  prerequisites. Only after those are separately reviewed and integrated may a
-  newly written and freshly approved future mission authorize any send; do not
-  execute live.
+  executor, deterministic no-effect operational rail, deterministic simulated
+  async browser-session bridge, and deterministic same-process deferred
+  rendezvous while keeping all live gates closed. The active next action is a
+  no-live technical slice before any mission. A live owner-only claim issuer
+  and real browser-bound Safari actuator remain prerequisites. Only after those
+  are separately reviewed and integrated may a newly written and freshly
+  approved future mission authorize any send; do not execute live.
 
 ## Rejected / Needs Rework
 
