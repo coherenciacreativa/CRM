@@ -169,7 +169,7 @@ sealed-backlog source class are the only permitted root-key variations.
 | `source_binding` | `exact_recent_source_bound`, `exact_sealed_backlog_member_bound`, `mismatch`, `ambiguous`, `missing` | exact value matching the approved source class |
 | `source_provenance` | absent for `exact_recent`; exact six-field sealed provenance for backlog | exact sealed manifest, interval, position, count, class, and source-event binding when backlog is used |
 | `audio_capability` | `present_and_usable`, `missing`, `disabled`, `ambiguous` | `present_and_usable` |
-| `asset_preview_binding` | `exact_asset_and_preview_match`, `asset_mismatch`, `preview_mismatch`, `preview_unavailable` | `exact_asset_and_preview_match` |
+| `asset_preview_binding` | `approved_asset_file_bound_before_upload`, `exact_asset_and_preview_match`, `asset_mismatch`, `preview_mismatch`, `preview_unavailable` | `approved_asset_file_bound_before_upload` for the sealed-backlog preclaim; `exact_asset_and_preview_match` only after the claimed upload or on the legacy recent-source design |
 | `attempt_budget` | integer | `1` |
 | `effect_claim` | `unclaimed`, `permanently_claimed_before_attempt` | `unclaimed` for pre-claim eligibility; permanent only after the atomic writer wins |
 | `claim_result` | `not_started`, `fresh_atomic_claim_won_current_invocation`, `preexisting_or_replayed`, `stale`, `mismatch` | `not_started` before CAS; only `fresh_atomic_claim_won_current_invocation` can become send-ready |
@@ -272,7 +272,7 @@ asset:
   approved_audio_asset_id: private opaque
   approved_audio_asset_sha256: private
   asset_preview_binding: public asset-preview enum
-  preview_status: verified_on_exact_bound_thread
+  preview_status: approved_file_validated_before_upload|verified_on_exact_bound_thread
   preview_audio_asset_id: private opaque
   preview_audio_asset_sha256: private
   preview_thread_anchor_sha256: private
@@ -488,13 +488,25 @@ blocks the operation before any send attempt.
 
 ## Exact Asset And Preview Gate
 
+For the sealed-backlog live runtime, preclaim evidence is deliberately
+`asset_preview_binding: approved_asset_file_bound_before_upload` with
+`preview_status: approved_file_validated_before_upload`. It proves the exact
+regular owner-only file and its approved digest while asserting that no audio
+bytes have been uploaded. The global claim and durable `PENDING` must be
+published before the native picker selects that file. After upload, the host
+requires a fresh `exact_asset_and_preview_match` observation before it may
+actuate Send. The pure guard must never turn the pre-upload value into a
+post-claim send-ready decision.
+
 `asset_preview_binding: exact_asset_and_preview_match` requires:
 
 - the mission-approved asset label;
 - the original approved asset selected through the native picker;
 - a private integrity binding that matches the mission packet;
 - one visible ready-state preview in the exact bound DM thread;
-- a fresh `asset.preview_observed_at` recorded no later than the claim;
+- a fresh `asset.preview_observed_at`; for the sealed-backlog host this occurs
+  after claim/PENDING and before Send, while the historical recent-source
+  design recorded it before claim;
 - no conversion, rename, temporary copy, or alternate asset;
 - no text or other attachment added to the send.
 

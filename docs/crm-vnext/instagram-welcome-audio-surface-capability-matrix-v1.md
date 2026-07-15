@@ -148,6 +148,7 @@ audio_capability:
   - disabled
   - ambiguous
 asset_preview_binding:
+  - approved_asset_file_bound_before_upload
   - exact_asset_and_preview_match
   - asset_mismatch
   - preview_mismatch
@@ -220,7 +221,9 @@ audio_capability: present_and_usable
 composer_capability: present_and_usable
 attachment_capability: present_and_usable
 text_fallback: forbidden
-asset_preview_binding: exact_asset_and_preview_match
+asset_preview_binding:
+  exact_recent: exact_asset_and_preview_match
+  sealed_paused_campaign_backlog: approved_asset_file_bound_before_upload
 attempt_budget: 1
 effect_claim: unclaimed
 attempt_state: not_attempted
@@ -347,13 +350,21 @@ capability are separate gates. `audio_capability: present_and_usable` never
 substitutes for a visible usable composer or attachment control. Text fallback
 remains forbidden.
 
+`approved_asset_file_bound_before_upload` is the only valid sealed-backlog
+preclaim value. It means the exact owner-only regular file and approved digest
+were freshly validated, but no audio bytes have been uploaded. It can authorize
+the durable claim/PENDING transition only; it can never make the operation
+send-ready.
+
 `exact_asset_and_preview_match` means the mission-approved original audio asset
 and private integrity binding match, and the exact bound thread displays one
 ready-state audio preview before send. A generic attachment indicator is not
 enough.
 
-The preview observation is timestamped in `asset.preview_observed_at`, must be
-fresh, and must precede the permanent claim.
+The observation is timestamped in `asset.preview_observed_at` and must be
+fresh. For the sealed-backlog runtime the pre-upload file observation precedes
+the permanent claim; the actual thread preview is observed only after durable
+claim/PENDING and upload, immediately before Send.
 
 The preview must contain audio only. Adding text, another attachment, a
 conversion, a renamed or temporary copy, or a second upload changes the action
