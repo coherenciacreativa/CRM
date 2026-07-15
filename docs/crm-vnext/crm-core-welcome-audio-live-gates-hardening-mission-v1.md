@@ -19,14 +19,16 @@ observable_success:
   - sealed_manifest_max_eight_order_interval_and_digest_validator_tested=true
   - durable_manifest_cursor_enforces_order_and_max_eight=true
   - exact_audio_regular_file_no_symlink_and_sha256_validator_tested=true
-  - safari_computer_use_live_host_seam_implemented_and_fake_driver_tested=true
+  - safari_computer_use_live_host_seam_implemented_no_live_effect_and_fake_driver_tested=true
   - fresh_state_before_each_action_and_one_send_max_enforced=true
   - stage_one_confirmation_required_before_claim_slots_two_or_three=true
   - bound_thread_observation_state_enforces_max_three_reads_and_72_hours=true
   - strong_confirmation_only_and_compose_reset_rejected=true
   - independent_adversarial_review=green_to_self_integrate
   - central_integration_count=1
-  - browser_used=false
+  - instagram_browser_used=false
+  - neutral_local_safari_binding_used=<false_or_true_after_review>
+  - network_used=false
   - private_artifacts_read=0
   - live_source_reads=0
   - external_effects=0
@@ -37,7 +39,7 @@ approval_gate:
   approved_targets_and_stop_rules:
     - user_approved_the_four_iteration_no_live_technical_phase_after_the_gap_explanation
     - repo_changes_tests_commits_review_and_one_central_integration_only
-    - no_instagram_no_real_safari_no_private_backlog_no_audio_send_no_mailerlite_no_campaign
+    - no_instagram_no_live_safari_source_no_private_backlog_no_audio_send_no_mailerlite_no_campaign
 approved_effects:
   repo_reads:
     - /Users/alejandrogomez/CRM-core_and_exact_new_worktrees_at_baseline_502b0bc
@@ -61,6 +63,7 @@ forbidden_scope:
   - Chrome_hybrid_text_fallback_follow_back_or_other_outreach
   - CRM_or_legacy_repo_reads_or_writes
   - production_ready_send_allowed_or_live_authority_claim_before_integrated_review_and_later_exact_canary_approval
+  - treating_a_neutral_local_Safari_binding_as_Instagram_surface_readiness
 source_private_boundaries:
   source_of_truth: /Users/alejandrogomez/CRM-core branch codex/crm-core-reentry at 502b0bc9cc3f5fa901a3377173d1dcf5bca7c8ab
   private_inputs: none
@@ -112,12 +115,15 @@ central_integration_plan:
     - scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs
     - scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs
     - scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs
+    - scripts/crm-vnext-instagram-welcome-audio-one-shot-store.mjs
     - __tests__/crm-vnext-instagram-welcome-audio-live-claim-issuer.spec.ts
     - __tests__/crm-vnext-instagram-welcome-audio-live-preflight.spec.ts
     - __tests__/crm-vnext-instagram-welcome-audio-safari-live-host.spec.ts
     - __tests__/crm-vnext-instagram-welcome-audio-operation-guard.spec.ts
     - docs/crm-vnext/instagram-welcome-audio-live-claim-issuer-v1.md
     - docs/crm-vnext/instagram-welcome-audio-safari-live-host-v1.md
+    - docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md
+    - docs/crm-vnext/instagram-welcome-audio-operational-rail-v1.md
     - docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md
     - docs/crm-vnext/crm-core-next-action.md
     - docs/crm-vnext/crm-core-workstream-board-v0.md
@@ -131,6 +137,7 @@ central_integration_plan:
     - sealed_backlog_source_class_and_provenance_binding_tests
     - concurrency_crash_replay_and_cap_adversarial_tests
     - ordered_cursor_stage_unlock_and_bound_observer_state_tests
+    - upload_boundary_separate_from_send_boundary_tests
     - exact_file_allowlist
     - git_diff_check
     - privacy_and_redaction_scan
@@ -153,8 +160,12 @@ final_ceo_brief_fields:
 
 ## Execution boundary
 
-This mission may make and integrate the exact repository changes above. It may
-not inspect a real follower, open Instagram, read a private backlog, attach an
-audio, call MailerLite, or touch campaign state. The first real canary remains
-behind a later owner-only approval bound to the final integrated commit and the
-sealed private inputs.
+This mission may make and integrate the exact repository changes above. After
+code and independent review it may optionally prove only the Computer Use to
+standard Safari binding on a local neutral page with no network and no private
+data. It may not inspect a real follower, open Instagram, read a private
+backlog, attach an audio, call MailerLite, or touch campaign state. The first
+real canary remains behind a later owner-only approval bound to the final
+integrated commit and the sealed private inputs. A neutral Safari proof is not
+Instagram surface validation, production readiness, send authority, or live
+authority.
