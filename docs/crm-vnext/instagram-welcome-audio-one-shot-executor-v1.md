@@ -328,12 +328,12 @@ Historical validation record before the shared-store refactor:
 
 Current shared-store refactor validation is `45/45` green, and the combined
 guard plus one-shot, claim-writer, and operational-executor focused total is
-`241/241` green, including a `5/5` targeted crash/concurrency/invalid-port
-subset. The
+`244/244` green, including a `7/7` targeted adversarial
+crash/concurrency/invalid-port subset. The
 fresh post-hardening owner-only captured full repository suite was completed:
-`239/240` files and `1666/1667` tests,
+`239/240` files and `1669/1670` tests,
 with the sole failure the exact unchanged out-of-lane MailerLite approval-queue
-baseline. Independent external review remains pending. The historical counts
+baseline. Independent delta review and final external verdict remain pending. The historical counts
 above were not reused as proof of the new rail; the focused and full results
 were rerun against the current lane.
 
@@ -342,6 +342,16 @@ state. It fixes the modeled after-boundary result before promotion, performs one
 read-only evidence reinspection after a promotion fault, and lets terminal
 evidence dominate pending evidence. Pending-only and terminal-plus-pending tests
 both close permanently with no second actuation.
+
+The combined rail also has one canonical pre-boundary zero-actuation terminal
+case. Invoking its branded deterministic port does not itself enter the effect
+boundary. The case is valid only with `effect_boundary_entered=false`, derived
+boundary-entry count `0`, `send_control_actuation_count=0`, the current
+capability durably consumed, final terminal evidence present, pending evidence
+absent after completion, permanent no-retry, and the `ACTUATION_COUNT` blocker.
+Replay keeps both boundary and actuation counts at zero and cannot mint or
+consume a second capability effect. An actuation count of `2` remains an
+invalid receipt rather than a second terminal shape.
 
 ## Completion Boundary
 

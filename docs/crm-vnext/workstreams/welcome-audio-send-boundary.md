@@ -5,7 +5,7 @@
 - `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio-operational-rail-v1`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
 - `codex_worker`: Welcome Audio combined operational-rail no-effect lane
-- `status`: `combined_operational_rail_focused_241_full_1666_of_1667_review_pending_no_live`
+- `status`: `combined_operational_rail_focused_244_full_1669_of_1670_review_pending_no_live`
 - `objective`: Prove one combined deterministic no-effect rail from an
   authoritative PRECLAIM through owner-only claim issuance, opaque same-process
   capability consumption, pending-before-actuation ordering, at-most-one
@@ -93,13 +93,20 @@
   - crash truth: the modeled after-boundary result is fixed before promotion;
     one read-only evidence reinspection derives pending-only versus
     terminal-plus-pending by terminal dominance, and replay never actuates again
-  - validation status: focused integrated `241/241` green across guard `157`,
-    shared-store-refactored one-shot executor `45`, claim writer `28`, and
-    operational executor/composite `11`; fresh post-hardening owner-only
-    captured full suite `239/240` files and `1666/1667` tests, with the sole
+  - pre-boundary zero truth: branded-port invocation alone is not boundary
+    entry; the validator accepts only `effect_boundary_entered=false`, derived
+    boundary-entry count `0`, `send_control_actuation_count=0`, current
+    capability consumed, terminal evidence present, pending evidence absent
+    after completion, permanent no-retry, and blocker `ACTUATION_COUNT`; replay
+    keeps both counts at zero and cannot mint or consume a second capability
+    effect; count `2` remains receipt-invalid
+  - validation status: focused integrated `244/244` green across guard `157`,
+    shared-store-refactored one-shot executor `45`, claim writer `30`, and
+    operational executor/composite `12`; fresh post-hardening owner-only
+    captured full suite `239/240` files and `1669/1670` tests, with the sole
     failure the exact unchanged out-of-lane MailerLite approval-queue baseline;
-    targeted crash/concurrency/invalid-port subset `5/5`; external reviews
-    remain pending
+    targeted adversarial crash/concurrency/invalid-port subset `7/7`;
+    independent delta review and final reviews remain pending
   - redacted validation incident: one uncaptured pre-existing full-suite fixture
     emitted a synthetic test-recipient value to internal stdout; no production
     or private follower, token, credential, or live payload was accessed, and
@@ -289,12 +296,12 @@
 - `latest_commit`: supplied by Git history for this exact lane; no hash is
   duplicated inside the commit that creates it
 - `latest_receipt`: no live or persisted operational receipt; deterministic
-  test receipts remain ephemeral. Focused validation is `241/241` green and the
-  owner-only captured full result is `239/240` files and `1666/1667` tests, with
+  test receipts remain ephemeral. Focused validation is `244/244` green and the
+  owner-only captured full result is `239/240` files and `1669/1670` tests, with
   only the unchanged out-of-lane baseline failing
 - `blockers`: the combined no-effect rail is focused- and full-validation-green
-  for its lane but still needs the independent final verdict, commit/push,
-  artifact review, and central integration. A live
+  for its lane but still needs the independent delta review, final verdict,
+  commit/push, artifact review, and central integration. A live
   owner-only claim issuer, real browser-bound Safari actuator, and newly written
   mission with fresh explicit CEO approval remain separate later gates.
 - `latest_execution_note`: this exact twelve-file no-effect lane creates no
@@ -324,14 +331,14 @@
 - `shared_one_shot_store_status`:
   `focused_and_full_green_ready_partial_hardened_review_pending_no_live`
 - `claim_writer_status`:
-  `deterministic_no_effect_focused_28_and_full_green_review_pending`
+  `deterministic_no_effect_focused_30_and_full_green_review_pending`
 - `private_claim_capability_status`:
   `fixed_status_bridge_no_raw_introspection_focused_green_review_pending`
 - `safari_operational_executor_status`:
-  `deterministic_branded_port_executor_composite_focused_11_green_review_pending`
+  `deterministic_branded_port_executor_composite_focused_12_green_review_pending`
 - `operational_rail_execution_mode`: `deterministic_no_effect_test`
 - `operational_rail_validation_status`:
-  `focused_241_of_241_targeted_5_of_5_full_1666_of_1667_known_baseline_review_pending`
+  `focused_244_of_244_targeted_7_of_7_full_1669_of_1670_known_baseline_review_pending`
 - `test_output_privacy_incident_status`:
   `open_out_of_lane_redacted_no_production_or_private_data_accessed`
 - `integration_effects`: not integrated; no live, source, private, browser,
@@ -379,8 +386,12 @@
   deterministic actuation -> final terminal evidence -> permanent no-retry.
   READY partial publication is busy only while its mutex is held and otherwise
   becomes unknown/no-retry. The public capability bridge returns fixed status
-  enums only, and receipts validate blocker-specific semantic tuples. The port
-  has no browser or external effect. No live effect is authorized; a
+  enums only, and receipts validate blocker-specific semantic tuples. The
+  canonical pre-boundary zero tuple keeps boundary and actuation counts at zero,
+  consumes the current capability, closes durably with no pending residue and
+  permanent no-retry under `ACTUATION_COUNT`, and cannot create a second
+  capability effect on replay; count `2` is invalid. The port has no browser or
+  external effect. No live effect is authorized; a
   live owner-only claim issuer, real browser-bound Safari actuator, and then a
   newly written mission with fresh explicit CEO approval remain future gates.
 - `closeout_format`: use template in

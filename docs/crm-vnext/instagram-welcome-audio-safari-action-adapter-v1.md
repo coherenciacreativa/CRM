@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
 Date: 2026-07-14
-Status: `operational_rail_focused_241_full_1666_of_1667_external_review_pending_no_live`
+Status: `operational_rail_focused_244_full_1669_of_1670_external_review_pending_no_live`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -466,18 +466,27 @@ raw peek/inspect export: verification returns only `fresh`, `consumed`, or
 Incomplete READY publication is explicit. `READY_PARTIAL` under a held mutex is
 `BUSY`; if it survives the current invocation's under-mutex recheck, it is
 `UNKNOWN` and permanently non-retryable. Current focused integrated validation
-is `241/241` green, including a `5/5` targeted
+is `244/244` green, including a `7/7` targeted adversarial
 crash/concurrency/invalid-port subset. A fresh
 post-hardening full-suite owner-only captured rerun is also complete: `239/240`
-files and `1666/1667` tests, with the sole failure
+files and `1669/1670` tests, with the sole failure
 the exact unchanged out-of-lane MailerLite approval-queue baseline. Independent
-external review remains pending.
+delta review and the final external verdict remain pending.
 
 For an after-boundary modeled failure, the no-effect executor fixes the modeled
 result before terminal promotion. If promotion fails, it performs one read-only
 evidence reinspection: terminal dominates terminal-plus-pending; pending-only
 remains unknown. Both are permanent no-retry, and replay performs no second
 modeled actuation.
+
+For the separate canonical pre-boundary zero-actuation fixture, invoking the
+branded port is not effect-boundary entry. Its validator admits only the
+fail-closed terminal tuple with `effect_boundary_entered=false`, derived
+boundary-entry count `0`, `send_control_actuation_count=0`, the current
+capability consumed, durable terminal evidence present, pending evidence absent
+after completion, permanent no-retry, and blocker `ACTUATION_COUNT`. Replay
+keeps boundary and actuation counts at zero and cannot mint or consume a second
+capability effect. Count `2` remains receipt-invalid.
 
 A real browser-bound executor/actuator remains a separate reviewed boundary.
 It cannot be inferred from the branded no-effect port and cannot be used until
@@ -654,10 +663,11 @@ The corrected guard, adapter/matrix chain, and synthetic boundary-A executor
 are centrally integrated, readiness-only and no-live. The current lane adds the
 combined deterministic operational rail under
 `instagram-welcome-audio-operational-rail-v1.md`; its focused integrated
-validation is `241/241` green and the owner-only captured full repository result
-is `239/240` files and `1666/1667` tests, with only the unchanged out-of-lane
-baseline failing. Independent review, lane commit/push, formal artifact review,
-and central integration remain pending and separate gates. Even after
+validation is `244/244` green and the owner-only captured full repository result
+is `239/240` files and `1669/1670` tests, with only the unchanged out-of-lane
+baseline failing. Independent delta review, final review, lane commit/push,
+formal artifact review, and central integration remain pending and separate
+gates. Even after
 integration, operational readiness still
 requires a live owner-only claim issuer, a real browser-bound Safari actuator,
 and a newly written mission with fresh explicit CEO approval for the exact

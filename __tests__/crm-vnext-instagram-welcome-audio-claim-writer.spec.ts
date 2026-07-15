@@ -1105,6 +1105,153 @@ describe("Instagram welcome-audio durable claim writer", () => {
     expect(replay.send_control_actuation_count).toBe(0);
   });
 
+  test("terminalizes deterministic zero actuation with a validator-passing fail-closed receipt", async () => {
+    const fixture = await makeFixture();
+    const claim = await issue(fixture);
+    const port = createWelcomeAudioSafariActuatorPort({
+      execution_mode: WELCOME_AUDIO_SAFARI_OPERATIONAL_EXECUTION_MODE,
+      deterministic_scenario: WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.ZERO_ACTUATION,
+    });
+    const paths = buildWelcomeAudioOneShotStorePaths({
+      registryRoot: fixture.root,
+      expectedCanonicalOperationSha256: fixture.expectedDigest,
+    });
+
+    const result = await executeWelcomeAudioSafariAttempt({
+      registry_root: fixture.root,
+      private_claim_capability: claim.private_claim_capability,
+      expected_canonical_operation_sha256: fixture.expectedDigest,
+      branded_safari_actuator_port: port,
+      now_ms: NOW_MS,
+    });
+
+    expect(result).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      ready_guard_decision: WELCOME_AUDIO_GUARD_DECISION.READY,
+      terminal_guard_decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      claim_consumed_by_current_invocation: true,
+      pending_record_present: false,
+      terminal_record_present: true,
+      effect_boundary_entered: false,
+      send_control_actuation_count: 0,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      production_ready: false,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATION_COUNT],
+    });
+    const boundaryEntryCount = Number(result.effect_boundary_entered);
+    expect(boundaryEntryCount).toBe(0);
+    expect(validateWelcomeAudioSafariOperationalReceipt(result))
+      .toEqual({ ok: true, reason: null });
+
+    const terminalRecord = JSON.parse(await readFile(paths.terminal, "utf8"));
+    expect(terminalRecord).toMatchObject({
+      terminal_guard_decision: WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL,
+      actuator_result: {
+        bound_to_current_operation: true,
+        effect_boundary_entered: false,
+        send_control_actuation_count: 0,
+        confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      },
+      terminal_snapshot: {
+        effect_claim: {
+          claim_token_status: WELCOME_AUDIO_CLAIM_TOKEN_STATUS.CONSUMED,
+        },
+        execution: {
+          send_attempt_count: 1,
+          attempt_state: WELCOME_AUDIO_ATTEMPT_STATE.ATTEMPTED_TERMINAL,
+          send_claim: WELCOME_AUDIO_SEND_CLAIM.ATTEMPTED_UNCONFIRMED,
+          retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+        },
+      },
+    });
+    await expect(lstat(paths.pending)).rejects.toMatchObject({ code: "ENOENT" });
+
+    for (const impossible of [
+      { ...result, terminal_record_present: false },
+      { ...result, claim_consumed_by_current_invocation: false },
+      { ...result, terminal_guard_decision: null },
+      { ...result, effect_boundary_entered: true },
+      { ...result, send_control_actuation_count: 2 },
+    ]) {
+      expect(validateWelcomeAudioSafariOperationalReceipt(impossible)).toEqual({
+        ok: false,
+        reason: WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.INPUT_INVALID,
+      });
+    }
+  });
+
+  test("replays a zero-actuation terminal without later actuation or a second capability effect", async () => {
+    const fixture = await makeFixture();
+    const claim = await issue(fixture);
+    const zeroPort = createWelcomeAudioSafariActuatorPort({
+      execution_mode: WELCOME_AUDIO_SAFARI_OPERATIONAL_EXECUTION_MODE,
+      deterministic_scenario: WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.ZERO_ACTUATION,
+    });
+    const first = await executeWelcomeAudioSafariAttempt({
+      registry_root: fixture.root,
+      private_claim_capability: claim.private_claim_capability,
+      expected_canonical_operation_sha256: fixture.expectedDigest,
+      branded_safari_actuator_port: zeroPort,
+      now_ms: NOW_MS,
+    });
+    expect(first).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.UNKNOWN,
+      claim_consumed_by_current_invocation: true,
+      terminal_record_present: true,
+      effect_boundary_entered: false,
+      send_control_actuation_count: 0,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATION_COUNT],
+    });
+
+    const strongPort = createWelcomeAudioSafariActuatorPort({
+      execution_mode: WELCOME_AUDIO_SAFARI_OPERATIONAL_EXECUTION_MODE,
+      deterministic_scenario: WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.STRONG_CONFIRMED,
+    });
+    const replay = await executeWelcomeAudioSafariAttempt({
+      registry_root: fixture.root,
+      private_claim_capability: claim.private_claim_capability,
+      expected_canonical_operation_sha256: fixture.expectedDigest,
+      branded_safari_actuator_port: strongPort,
+      now_ms: NOW_MS,
+    });
+    expect(replay).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.REPLAYED,
+      claim_consumed_by_current_invocation: false,
+      terminal_record_present: true,
+      effect_boundary_entered: false,
+      send_control_actuation_count: 0,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.FORBIDDEN_AFTER_ATTEMPT,
+    });
+    expect(validateWelcomeAudioSafariOperationalReceipt(replay))
+      .toEqual({ ok: true, reason: null });
+
+    const repeatedClaim = await issue(fixture);
+    expect(repeatedClaim.private_claim_capability).toBeNull();
+    expect(repeatedClaim.redacted_receipt.claim_created_by_current_invocation).toBe(false);
+
+    const independentFixture = await makeFixture();
+    const independentClaim = await issue(independentFixture);
+    const independentResult = await executeWelcomeAudioSafariAttempt({
+      registry_root: independentFixture.root,
+      private_claim_capability: independentClaim.private_claim_capability,
+      expected_canonical_operation_sha256: independentFixture.expectedDigest,
+      branded_safari_actuator_port: strongPort,
+      now_ms: NOW_MS,
+    });
+    expect(independentResult).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION.CONFIRMED,
+      claim_consumed_by_current_invocation: true,
+      effect_boundary_entered: true,
+      send_control_actuation_count: 1,
+    });
+    expect(validateWelcomeAudioSafariOperationalReceipt(independentResult))
+      .toEqual({ ok: true, reason: null });
+  });
+
   test.each([
     ["pending-only promotion failure", false, true, false],
     ["terminal-plus-pending partial publication", true, false, true],
@@ -1202,6 +1349,14 @@ describe("Instagram welcome-audio durable claim writer", () => {
       .toEqual(scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.MULTIPLE_ACTUATIONS
         ? { ok: false, reason: WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.INPUT_INVALID }
         : { ok: true, reason: null });
+    if (scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.MULTIPLE_ACTUATIONS) {
+      expect(result.operational_receipt).toMatchObject({
+        terminal_record_present: true,
+        effect_boundary_entered: true,
+        send_control_actuation_count: 2,
+        blocker_codes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATION_COUNT],
+      });
+    }
 
     const replay = await runWelcomeAudioOperationalRailOnce({
       registry_root: fixture.root,

@@ -49,6 +49,7 @@ const WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO = Object.freeze({
   NONE: 'none_or_ambiguous_confirmation',
   LATE: 'late_confirmation',
   MISMATCHED: 'mismatched_confirmation',
+  ZERO_ACTUATION: 'zero_send_control_actuations',
   THROW_AFTER_BOUNDARY: 'throw_after_effect_boundary',
   MULTIPLE_ACTUATIONS: 'multiple_send_control_actuations',
 });
@@ -168,6 +169,17 @@ const invokeBrandedSafariActuator = ({ port, attemptedAtMs }) => {
     error.code = 'CRM_CORE_DETERMINISTIC_ACTUATOR_FAILURE';
     throw error;
   }
+  if (scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.ZERO_ACTUATION) {
+    return Object.freeze({
+      result_schema_version: WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
+      bound_to_current_operation: true,
+      effect_boundary_entered: false,
+      send_control_actuation_count: 0,
+      attempted_at: new Date(attemptedAtMs).toISOString(),
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      confirmation_checked_at: new Date(attemptedAtMs).toISOString(),
+    });
+  }
   const count = scenario === WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.MULTIPLE_ACTUATIONS
     ? 2
     : 1;
@@ -196,9 +208,19 @@ const isValidActuatorResult = (result) => exactObjectKeys(
   WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_FIELDS,
 ) && result.result_schema_version === WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION
   && typeof result.bound_to_current_operation === 'boolean'
-  && result.effect_boundary_entered === true
+  && typeof result.effect_boundary_entered === 'boolean'
   && Number.isInteger(result.send_control_actuation_count)
   && result.send_control_actuation_count >= 0
+  && (
+    (
+      result.effect_boundary_entered === false
+      && result.send_control_actuation_count === 0
+    )
+    || (
+      result.effect_boundary_entered === true
+      && result.send_control_actuation_count >= 1
+    )
+  )
   && typeof result.attempted_at === 'string'
   && typeof result.confirmation_checked_at === 'string'
   && Object.values(WELCOME_AUDIO_CONFIRMATION_MARKER).includes(result.confirmation_marker);
@@ -438,6 +460,14 @@ const validateWelcomeAudioSafariOperationalReceipt = (value) => {
         && value.terminal_record_present === true
         && value.effect_boundary_entered === true
         && value.send_control_actuation_count === 1,
+      [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATION_COUNT]:
+        value.ready_guard_decision === WELCOME_AUDIO_GUARD_DECISION.READY
+        && value.terminal_guard_decision === WELCOME_AUDIO_GUARD_DECISION.UNKNOWN_TERMINAL
+        && value.claim_consumed_by_current_invocation === true
+        && value.pending_record_present === false
+        && value.terminal_record_present === true
+        && value.effect_boundary_entered === false
+        && value.send_control_actuation_count === 0,
       [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.TERMINAL_INVALID]:
         value.ready_guard_decision === WELCOME_AUDIO_GUARD_DECISION.READY
         && value.terminal_guard_decision === null

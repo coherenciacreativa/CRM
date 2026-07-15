@@ -2,7 +2,7 @@
 
 - `contract_version`: `crm_core_instagram_welcome_audio_operational_rail_v1`
 - `execution_mode`: `deterministic_no_effect_test`
-- `status`: `focused_241_full_1666_of_1667_known_baseline_external_review_pending_no_live`
+- `status`: `focused_244_full_1669_of_1670_known_baseline_external_review_pending_no_live`
 - `production_ready`: `false`
 - `send_allowed`: `false`
 - `live_authority`: `false`
@@ -251,10 +251,35 @@ confirmation_checked_at
 
 Deterministic scenarios cover a strong current confirmation, no or ambiguous
 confirmation, late confirmation, mismatched confirmation, failure immediately
-after the modeled effect boundary, and an invalid multiple-actuation result.
-These are proof fixtures, not live outcomes. Every receipt still fixes
+after the modeled effect boundary, a canonical pre-boundary zero-actuation
+result, and an invalid multiple-actuation result. These are proof fixtures, not
+live outcomes. Every receipt still fixes
 `external_effect_invoked=false`, `browser_used=false`, and
 `network_used=false`.
+
+The canonical pre-boundary zero result means that the branded deterministic
+port was invoked but never modeled the Send control being actuated. Port
+invocation alone is not effect-boundary entry. Its terminal receipt must carry
+this exact fail-closed tuple:
+
+```text
+effect_boundary_entered = false
+derived_effect_boundary_entry_count = 0
+send_control_actuation_count = 0
+claim_consumed_by_current_invocation = true
+current_capability_status = consumed
+terminal_record_present = true
+pending_record_present = false
+retry_disposition = retry_forbidden_permanently_after_attempt
+blocker_codes = [ACTUATION_COUNT]
+```
+
+`derived_effect_boundary_entry_count` documents the semantic derivation and is
+not an additional public receipt field. Durable terminal evidence is required
+before the pending record is removed. The operational receipt validator passes
+the zero-actuation case only for the complete tuple above; weakening or mixing
+any member fails closed. An actuation count of `2`, or any other multiple count,
+remains receipt-invalid and is never normalized into this valid terminal case.
 
 ## Operational Executor API
 
@@ -309,10 +334,12 @@ The operational executor enforces this sequence:
 11. publish final terminal evidence exclusively and durably;
 12. return one redacted terminal receipt.
 
-The only successful accepted actuation count is exactly `1`. A port exception,
-zero/multiple or malformed actuation evidence, missing/late/mismatched
-confirmation, or publication uncertainty is terminal unknown/no-retry. No
-second invocation is permitted to repair it.
+The only successful accepted actuation count is exactly `1`. Count `0` is not
+success and is accepted only as the exact durable pre-boundary terminal
+`ACTUATION_COUNT` tuple above. Count `2` or any other multiple/malformed count
+is receipt-invalid. A port exception, missing/late/mismatched confirmation, or
+publication uncertainty is terminal unknown/no-retry. No second invocation is
+permitted to repair any of these outcomes.
 
 ## Operational Receipt
 
@@ -361,6 +388,9 @@ Receipt semantics are fail-closed:
 - replay with a capability already consumed by an earlier invocation reports
   `claim_consumed_by_current_invocation=false` while remaining permanently
   non-retryable;
+- the valid zero-actuation `ACTUATION_COUNT` tuple leaves the current capability
+  durably consumed, terminal evidence present, pending evidence absent, and
+  retry permanently forbidden;
 - the validator rejects a decision, evidence, capability-consumption, actuation,
   confirmation, retry, or blocker tuple that does not match its exact semantic
   shape, including blocker-specific fail-closed requirements.
@@ -404,29 +434,35 @@ The adversarial crash/concurrency subset covers both states and replay. The
 second invocation reports zero boundary entry and zero actuation, so the two
 invocations together can never exceed the single modeled actuation.
 
+For the pre-boundary zero-actuation terminal case, replay also reports zero
+boundary entry and zero Send-control actuations. It cannot mint a new
+capability, consume a second capability effect, invoke a second modeled Send,
+or alter the already-consumed status. The original terminal evidence remains
+authoritative and permanent no-retry.
+
 ## Validation Record
 
 Current focused integrated validation is green:
 
 - operation guard: `157/157`;
 - shared-store-refactored synthetic one-shot executor: `45/45`;
-- claim writer: `28/28`;
-- deterministic Safari operational executor/composite: `11/11`;
-- combined four-file focused total: `241/241`;
-- targeted crash/concurrency/invalid-port subset: `5/5`.
+- claim writer: `30/30`;
+- deterministic Safari operational executor/composite: `12/12`;
+- combined four-file focused total: `244/244`;
+- targeted adversarial crash/concurrency/invalid-port subset: `7/7`.
 
 The fresh post-hardening owner-only captured full repository suite is green for
 the lane:
 
 - files: `239/240`;
-- tests: `1666/1667`;
+- tests: `1669/1670`;
 - sole failure: the exact unchanged out-of-lane MailerLite approval-queue
   baseline.
 
 Focused validation, the captured full-suite result, and `git diff --check` are
-green for this lane. The independent final security/scope verdict, formal Chief
-Architect artifact review, commit, push, and central integration remain pending
-later gates.
+green for this lane. The independent delta review, final security/scope verdict,
+formal Chief Architect artifact review, commit, push, and central integration
+remain pending later gates.
 
 ### Redacted Validation Incident
 

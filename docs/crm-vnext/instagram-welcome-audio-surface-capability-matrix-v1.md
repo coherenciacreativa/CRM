@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Surface Capability Matrix v1
 
 Date: 2026-07-14
-Status: `operational_rail_focused_241_full_1666_of_1667_external_review_pending_no_live`
+Status: `operational_rail_focused_244_full_1669_of_1670_external_review_pending_no_live`
 Matrix ID: `instagram_welcome_audio_surface_capability_matrix_v1`
 
 ## Purpose
@@ -316,6 +316,14 @@ promotion. One read-only evidence reinspection classifies pending-only as
 unknown and terminal-plus-pending as terminal by dominance. Both are permanent
 no-retry, and replay performs no second modeled actuation.
 
+The canonical pre-boundary zero-actuation case is distinct: branded-port
+invocation alone does not enter the effect boundary. The receipt validator
+accepts only `effect_boundary_entered=false`, derived boundary-entry count `0`,
+`send_control_actuation_count=0`, current capability consumed, durable terminal
+evidence present, pending evidence absent after completion, permanent no-retry,
+and blocker `ACTUATION_COUNT`. Replay keeps both counts at zero and cannot mint
+or consume a second capability effect. Count `2` is receipt-invalid.
+
 After the attempt, one of these current-operation markers is selected:
 
 | Marker | Post-send claim |
@@ -357,7 +365,7 @@ neutral enums.
 | First controlled Safari send result v0 | `historical_single_send_design_evidence` | Choosing Safari and native picker for the adapter design | Production readiness, repeatability, current capability, live authorization |
 | Safari upload-route hardening protocol v0 | `historical_no_run_design_evidence` | Fail-closed isolation, picker, and fallback rules | Current route health or an executable mission |
 | Synthetic one-shot executor adversarial suite v1 | `mechanical_serialization_evidence_only` | Durable one-consumer, crash, replay, privacy, and no-retry mechanics | Current Safari health, Instagram delivery, live authority, or production readiness |
-| Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_focused_and_full_green_review_pending` | Focused `241/241`, including targeted crash/concurrency/invalid-port `5/5`; full `239/240` files and `1666/1667` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
+| Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_focused_and_full_green_review_pending` | Focused `244/244`, including targeted adversarial crash/concurrency/invalid-port `7/7`; full `239/240` files and `1669/1670` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
 | Fresh future operation observation | `operation_scoped_evidence` | The exact enum values for that operation | Another operation, another surface, or standing automation |
 
 ## Receipt Boundary
@@ -401,10 +409,11 @@ terminal no-retry, a live owner-only claim issuer, a separately reviewed real
 browser-bound Safari actuator, and private/redacted evidence boundaries. The
 corrected guard, adapter/matrix chain, and synthetic boundary-A executor are
 already centrally integrated, readiness-only and no-live. The current combined
-rail has focused integrated validation `241/241` green. The fresh
-post-hardening owner-only captured full suite is `239/240` files and `1666/1667`
+rail has focused integrated validation `244/244` green. The fresh
+post-hardening owner-only captured full suite is `239/240` files and `1669/1670`
 tests, with the sole failure the exact unchanged out-of-lane MailerLite
-approval-queue baseline. Independent review remains pending.
+approval-queue baseline. Independent delta review and final review remain
+pending.
 After its eventual integration, a newly
 written mission plus fresh explicit CEO approval is still required for the
 exact one-recipient, one-audio, one-attempt canary.
