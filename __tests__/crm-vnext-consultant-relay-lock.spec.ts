@@ -18,9 +18,17 @@ const unsafeEmailValue = 'unsafe-lock@example.test';
 const fakeOwnerTokenHash = `sha256:${'a'.repeat(64)}`;
 const canonicalChiefArchitectProjectName = 'CRM Core — Chief Architect';
 const canonicalChiefArchitectConsultantId = 'chief-architect-integration';
+const missionChiefArchitectConsultantId = 'chief-architect-mission-contract-2026-07-15-real-e2e-proof';
+const missionChiefArchitectChatLabel = 'Mission — Real New Follower Welcome Proof — 2026-07-15';
 const canonicalProjectRouteToken = `g-p-${'a'.repeat(32)}`;
 const canonicalProjectRouteHash = `sha256:${createHash('sha256').update(canonicalProjectRouteToken).digest('hex')}`;
 const canonicalChatRouteHash = `sha256:${createHash('sha256').update('synthetic-private-target').digest('hex')}`;
+const missionChatRouteToken = 'synthetic-private-mission-target';
+const missionChatRouteHash = `sha256:${createHash('sha256').update(missionChatRouteToken).digest('hex')}`;
+const missionProjectRawTargetUrlSample = ['https://chatgpt.com', 'g', `g-p-${'a'.repeat(32)}-crm-core-chief-architect`, 'c', missionChatRouteToken].join('/');
+const differentProjectRouteToken = `g-p-${'b'.repeat(32)}`;
+const differentProjectRouteHash = `sha256:${createHash('sha256').update(differentProjectRouteToken).digest('hex')}`;
+const differentProjectMissionRawTargetUrlSample = ['https://chatgpt.com', 'g', `${differentProjectRouteToken}-crm-core-chief-architect`, 'c', missionChatRouteToken].join('/');
 
 const makeTmpRoot = async () => {
   const root = await mkdtemp(join(tmpdir(), 'crm-core-relay-lock-'));
@@ -158,7 +166,11 @@ const createBootstrapReceipt = async () => {
   return file;
 };
 
-const registryUpdateAcquireArgs = (lockDir: string, ttlMs = '300000') => baseAcquireArgs(lockDir, [
+const registryUpdateAcquireArgs = (
+  lockDir: string,
+  ttlMs = '300000',
+  targetId = canonicalChiefArchitectConsultantId,
+) => baseAcquireArgs(lockDir, [
   '--owner-id',
   'chief-architect-route-rebind',
   '--consultant-id',
@@ -172,7 +184,7 @@ const registryUpdateAcquireArgs = (lockDir: string, ttlMs = '300000') => baseAcq
   '--critical-section',
   'target_registry_update',
   '--target-id',
-  canonicalChiefArchitectConsultantId,
+  targetId,
   '--ttl-ms',
   ttlMs,
 ]);
@@ -977,6 +989,7 @@ describe('crm-vnext Consultant Relay Lock utility', () => {
       '--owner-token',
       dynamic.json.owner_token,
     ], registryEnv);
+
   });
 
   test('chief architect target registration rejects a stale registry-update lock without URL leakage', async () => {
@@ -1040,6 +1053,290 @@ describe('crm-vnext Consultant Relay Lock utility', () => {
 
     expect(failure.json.error).toBe('target_registry_update_packet_id_mismatch');
     expect(JSON.stringify(failure.json)).not.toContain(projectRawTargetUrlPatternLabel);
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
+  });
+
+  test('mission target registration preserves standing target and passes its own dynamic preflight', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const routeReceiptRoot = await makeTmpRoot();
+    const routeReceiptPath = join(routeReceiptRoot, 'mission-route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const registryBefore = JSON.parse(await readFile(registryPath, 'utf8'));
+    const standingBefore = registryBefore.targets[canonicalChiefArchitectConsultantId];
+    const holder = await runCli(
+      registryUpdateAcquireArgs(lockDir, '300000', missionChiefArchitectConsultantId),
+      registryEnv,
+    );
+    const registered = await runCliWithInput(
+      registryUpdateCommandArgs(lockDir, [
+        '--target-id',
+        missionChiefArchitectConsultantId,
+        '--target-chat-label',
+        missionChiefArchitectChatLabel,
+        '--observed-chat-label',
+        missionChiefArchitectChatLabel,
+        '--observed-chat-route-sha256',
+        missionChatRouteHash,
+      ]),
+      missionProjectRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+    const registryAfter = JSON.parse(await readFile(registryPath, 'utf8'));
+    const missionTarget = registryAfter.targets[missionChiefArchitectConsultantId];
+    const routeReceipt = JSON.parse(await readFile(routeReceiptPath, 'utf8'));
+
+    expect(registered.json).toMatchObject({
+      ok: true,
+      target_id: missionChiefArchitectConsultantId,
+      target_kind: 'mission',
+      target_registry_rebound: true,
+      raw_target_url_printed: false,
+    });
+    expect(registryAfter.targets[canonicalChiefArchitectConsultantId]).toEqual(standingBefore);
+    expect(missionTarget).toMatchObject({
+      target_id: missionChiefArchitectConsultantId,
+      expected_consultant_id: missionChiefArchitectConsultantId,
+      target_kind: 'mission',
+      target_chat_label: missionChiefArchitectChatLabel,
+      canonical_project_route_sha256: canonicalProjectRouteHash,
+      canonical_chat_route_sha256: missionChatRouteHash,
+      project_only_memory: true,
+      private_unshared: true,
+      legacy_project_used: false,
+    });
+    expect(routeReceipt).toMatchObject({
+      schema_version: 'crm_core_chief_architect_mission_route_registration_receipt_v1',
+      target_id: missionChiefArchitectConsultantId,
+      target_kind: 'mission',
+      raw_target_url_printed: false,
+    });
+
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
+
+    const dynamic = await runCli(baseChiefArchitectAcquireArgs(lockDir, [
+      '--owner-id',
+      missionChiefArchitectConsultantId,
+      '--consultant-id',
+      missionChiefArchitectConsultantId,
+      '--observed-chat-label',
+      missionChiefArchitectChatLabel,
+      '--observed-chat-route-sha256',
+      missionChatRouteHash,
+    ]), registryEnv);
+    expect(dynamic.json).toMatchObject({
+      ok: true,
+      consultant_id: missionChiefArchitectConsultantId,
+      chief_architect_route_preflight_passed: true,
+      canonical_project_match: true,
+      ui_observation_fresh: true,
+    });
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      dynamic.json.owner_token,
+    ], registryEnv);
+
+    const corruptedRegistry = structuredClone(registryAfter);
+    corruptedRegistry.targets[canonicalChiefArchitectConsultantId].canonical_project_route_sha256 = `sha256:${'0'.repeat(64)}`;
+    await writeFile(registryPath, `${JSON.stringify(corruptedRegistry, null, 2)}\n`, { mode: 0o600 });
+    const corruptStandingFailure = await runCliFail(baseAcquireArgs(lockDir, [
+      '--owner-id',
+      missionChiefArchitectConsultantId,
+      '--consultant-id',
+      missionChiefArchitectConsultantId,
+      '--critical-section',
+      'direct_target_open',
+    ]), registryEnv);
+    expect(corruptStandingFailure.json).toMatchObject({
+      ok: false,
+      error: 'chief_architect_standing_project_route_fingerprint_mismatch',
+      raw_target_url_printed: false,
+    });
+
+    await writeFile(registryPath, `${JSON.stringify(registryAfter, null, 2)}\n`, { mode: 0o600 });
+    await rm(routeReceiptPath);
+    const missingReceiptFailure = await runCliFail(baseAcquireArgs(lockDir, [
+      '--owner-id',
+      missionChiefArchitectConsultantId,
+      '--consultant-id',
+      missionChiefArchitectConsultantId,
+      '--critical-section',
+      'direct_target_open',
+    ]), registryEnv);
+    expect(missingReceiptFailure.json).toMatchObject({
+      ok: false,
+      error: 'chief_architect_mission_route_receipt_missing',
+      raw_target_url_printed: false,
+    });
+  });
+
+  test('mission target registration rejects a label whose date does not match the target id', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const routeReceiptRoot = await makeTmpRoot();
+    const routeReceiptPath = join(routeReceiptRoot, 'mission-route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const holder = await runCli(
+      registryUpdateAcquireArgs(lockDir, '300000', missionChiefArchitectConsultantId),
+      registryEnv,
+    );
+    const failure = await runCliWithInputFail(
+      registryUpdateCommandArgs(lockDir, [
+        '--target-id',
+        missionChiefArchitectConsultantId,
+        '--target-chat-label',
+        'Mission — Real New Follower Welcome Proof — 2026-07-16',
+        '--observed-chat-label',
+        'Mission — Real New Follower Welcome Proof — 2026-07-16',
+        '--observed-chat-route-sha256',
+        missionChatRouteHash,
+      ]),
+      missionProjectRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+
+    expect(failure.json).toMatchObject({
+      ok: false,
+      error: 'chief_architect_mission_chat_label_not_allowed',
+      raw_target_url_printed: false,
+    });
+    await expect(stat(routeReceiptPath)).rejects.toMatchObject({ code: 'ENOENT' });
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
+  });
+
+  test('mission target registration rejects a different project route and preserves the standing registry', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const routeReceiptRoot = await makeTmpRoot();
+    const routeReceiptPath = join(routeReceiptRoot, 'mission-route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const registryBefore = await readFile(registryPath, 'utf8');
+    const holder = await runCli(
+      registryUpdateAcquireArgs(lockDir, '300000', missionChiefArchitectConsultantId),
+      registryEnv,
+    );
+    const failure = await runCliWithInputFail(
+      registryUpdateCommandArgs(lockDir, [
+        '--target-id',
+        missionChiefArchitectConsultantId,
+        '--target-chat-label',
+        missionChiefArchitectChatLabel,
+        '--observed-chat-label',
+        missionChiefArchitectChatLabel,
+        '--observed-project-route-sha256',
+        differentProjectRouteHash,
+        '--observed-chat-route-sha256',
+        missionChatRouteHash,
+      ]),
+      differentProjectMissionRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+
+    expect(failure.json).toMatchObject({
+      ok: false,
+      error: 'chief_architect_mission_project_route_mismatch',
+      raw_target_url_printed: false,
+    });
+    expect(await readFile(registryPath, 'utf8')).toBe(registryBefore);
+    await expect(stat(routeReceiptPath)).rejects.toMatchObject({ code: 'ENOENT' });
+    await runCli([
+      script,
+      'release',
+      '--lock-dir',
+      lockDir,
+      '--owner-token',
+      holder.json.owner_token,
+    ], registryEnv);
+  });
+
+  test('mission receipt write failure leaves the private registry unchanged', async () => {
+    const lockDir = await lockDirFor();
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const blockedReceiptRoot = await makeTmpRoot();
+    const blockedParent = join(blockedReceiptRoot, 'not-a-directory');
+    await writeFile(blockedParent, 'blocked', { mode: 0o600 });
+    const routeReceiptPath = join(blockedParent, 'mission-route-receipt.json');
+    const registryEnv = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+    };
+    const registryBefore = await readFile(registryPath, 'utf8');
+    const holder = await runCli(
+      registryUpdateAcquireArgs(lockDir, '300000', missionChiefArchitectConsultantId),
+      registryEnv,
+    );
+    const failure = await runCliWithInputFail(
+      registryUpdateCommandArgs(lockDir, [
+        '--target-id',
+        missionChiefArchitectConsultantId,
+        '--target-chat-label',
+        missionChiefArchitectChatLabel,
+        '--observed-chat-label',
+        missionChiefArchitectChatLabel,
+        '--observed-chat-route-sha256',
+        missionChatRouteHash,
+      ]),
+      missionProjectRawTargetUrlSample,
+      {
+        ...registryEnv,
+        CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+      },
+    );
+
+    expect(failure.json.ok).toBe(false);
+    expect(failure.json.raw_target_url_printed).toBe(false);
+    expect(await readFile(registryPath, 'utf8')).toBe(registryBefore);
     await runCli([
       script,
       'release',

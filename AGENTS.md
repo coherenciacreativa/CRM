@@ -17,6 +17,10 @@ first protocol, not as a remembered preference:
    The registered standing target is `00 — North Star & Portfolio`. Never use
    a Chief Architect chat inside `CRM build`, another project, or another chat
    without an explicit re-registration.
+   An explicitly approved mission chat must use a separate
+   `chief-architect-mission-contract-YYYY-MM-DD-<slug>` registry target. It may
+   never replace or mutate the standing `chief-architect-integration` entry,
+   and its project-route fingerprint must match the standing target.
 3. For `direct_target_open`, acquire
    `scripts/crm-vnext-consultant-relay-lock.mjs` through its static private
    registry preflight, then confirm the visible exact project and chat while
