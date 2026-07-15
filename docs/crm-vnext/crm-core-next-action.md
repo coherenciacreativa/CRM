@@ -6148,35 +6148,52 @@ routing and completion pointer.
 - `next_action_id`:
   `crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15`
 - `status`:
-  `chief_architect_contract_drafted_execution_not_approved_no_live`
+  `chief_architect_amended_backlog_canary_contract_execution_not_approved_no_live`
 - `created_at`: `2026-07-15`
 - `updated_at`: `2026-07-15`
 - `mission_contract`:
   `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
+- `contract_version`: `v0_1_paused_campaign_backlog_staged_canary_2026_07_15`
 - `drafting_baseline_commit`:
   `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `amendment_baseline_commit`:
+  `44bff5a61eff7c8d7eae78aed0d7584c4e1cc12d`
 - `runtime_execution_base`: fresh canonical post-integration SHA recorded in
   and bound by the later owner-only execution approval
 - `execution_explicitly_approved`: false
 - `live_effects_executed`: 0
-- `objective`: Obtain one explicit CEO approve, modify, decline, or pause
-  decision on the exact planning contract. Do not open the source or attempt an
-  effect until that approval and every runtime gate are green.
+- `objective`: Preserve the paused campaign while preparing one later,
+  separately approved staged canary over the sealed campaign backlog. Inspect
+  at most eight ordered records, admit at most three eligible messageable
+  identities, prove one audio first, and expand sequentially to at most three
+  total only after explicit success evidence. Do not open the source or attempt
+  any effect until the later approval and every runtime gate are green.
+- `proof_windows`: Audio delivery proof is independent of reply or email. Each
+  successfully sent bound thread may enter `awaiting_optional_reply` for at
+  most 72 hours; the aggregate cohort closes no later than 168 hours after the
+  mission starts.
+- `future_daily_capacity`: approximately 12 new followers per 24 hours is
+  planning-only and not authorized by this contract. Campaign reactivation is
+  a separate CEO decision and remains outside CRM Core authority.
 - `runtime_gates`:
   - exact branch and fresh canonical post-integration HEAD equal to remote,
     recorded in the owner-only approval; clean central context and fresh mission lane;
   - fresh owner-only CEO approval bound to the exact mission and contract version;
-  - live owner-only claim emitter, global dedupe, and candidate/audio/MailerLite caps;
+  - sealed paused-campaign backlog interval and deterministic source order;
+  - live owner-only claim emitter, global dedupe, and inspection/identity/audio/MailerLite caps;
   - real browser-bound Safari actuator with verifiable provenance and timing;
   - fresh approved source, exact audio asset, and exact private bindings;
-  - after source access, proven newness/recentness, exact identity/thread binding,
-    and absence of prior welcome, audio, or claim;
+  - after source access, exact backlog-interval membership, current follows-owner
+    signal, exact identity/thread binding, message and attachment controls, and
+    absence of prior welcome, audio, or claim; non-messageable records are
+    ineligible zero-effect outcomes and never receive text fallback;
   - conditional MailerLite path only for a voluntarily supplied exact email,
     preserved byte-for-byte, after zero-effect preflight, using one direct POST
     with exactly two approved groups and add-only semantics.
 - `stop_rule`: Any failed gate stops before effect; any attempted, uncertain,
   timed-out, or unknown effect is terminal with no retry.
-- `decision_needed`: Explicit CEO approval, modification, decline, or pause of
-  this exact contract.
+- `decision_needed`: After central integration, one explicit owner-only CEO
+  approval, modification, decline, or pause of this exact amended contract.
+  Campaign reactivation remains a later, separate decision.
 - `recommended_default`:
-  `await_explicit_ceo_decision_keep_all_live_gates_closed`
+  `integrate_amended_planning_contract_then_await_fresh_execution_approval_keep_campaign_paused`
