@@ -124,6 +124,7 @@ central_integration_plan:
     - docs/crm-vnext/instagram-welcome-audio-safari-live-host-v1.md
     - docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md
     - docs/crm-vnext/instagram-welcome-audio-operational-rail-v1.md
+    - docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md
     - docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md
     - docs/crm-vnext/crm-core-next-action.md
     - docs/crm-vnext/crm-core-workstream-board-v0.md
