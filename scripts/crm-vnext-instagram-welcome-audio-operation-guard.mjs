@@ -38,15 +38,26 @@ const WELCOME_AUDIO_SURFACE = Object.freeze({
 
 const WELCOME_AUDIO_SOURCE_RECENCY = Object.freeze({
   EXACT_RECENT: 'exact_recent',
+  SEALED_PAUSED_CAMPAIGN_BACKLOG: 'sealed_paused_campaign_backlog',
   STALE: 'stale',
   UNKNOWN: 'unknown',
 });
 
 const WELCOME_AUDIO_SOURCE_BINDING = Object.freeze({
   EXACT: 'exact_recent_source_bound',
+  EXACT_SEALED_BACKLOG: 'exact_sealed_backlog_member_bound',
   MISMATCH: 'mismatch',
   AMBIGUOUS: 'ambiguous',
   MISSING: 'missing',
+});
+
+const WELCOME_AUDIO_SOURCE_CLASS = Object.freeze({
+  SEALED_PAUSED_CAMPAIGN_BACKLOG_MEMBER: 'sealed_paused_campaign_backlog_member',
+});
+
+const WELCOME_AUDIO_BUSINESS_ELIGIBILITY = Object.freeze({
+  RECENT_FOLLOWER: 'eligible_confirmed_recent_follower',
+  SEALED_BACKLOG_FOLLOWER: 'eligible_confirmed_sealed_campaign_backlog_follower',
 });
 
 const WELCOME_AUDIO_AUDIO_CAPABILITY = Object.freeze({
@@ -146,6 +157,9 @@ const WELCOME_AUDIO_GUARD_REASON = Object.freeze({
   SOURCE_MAX_AGE: 'blocked_follower_evidence_exceeds_mission_bound_max_age',
   SOURCE_CALENDAR_WINDOW: 'blocked_follower_not_today_or_previous_calendar_day_bogota',
   SOURCE_BUCKET: 'blocked_follower_time_bucket_mismatch',
+  SOURCE_PROVENANCE: 'blocked_sealed_backlog_provenance_missing_or_invalid',
+  SOURCE_MANIFEST_BINDING: 'blocked_sealed_backlog_manifest_or_interval_binding_mismatch',
+  SOURCE_MANIFEST_POSITION: 'blocked_sealed_backlog_manifest_position_invalid',
   SOURCE_BINDING: 'blocked_source_profile_thread_binding_not_exact',
   SOURCE_TO_PROFILE: 'blocked_source_to_profile_binding_not_exact',
   PROFILE_TO_THREAD: 'blocked_profile_to_thread_binding_not_exact',
@@ -210,6 +224,7 @@ const STRONG_CONFIRMATION_MARKERS = new Set([
 const enumSet = (values) => new Set(Object.values(values));
 const SOURCE_RECENCIES = enumSet(WELCOME_AUDIO_SOURCE_RECENCY);
 const SOURCE_BINDINGS = enumSet(WELCOME_AUDIO_SOURCE_BINDING);
+const BUSINESS_ELIGIBILITIES = enumSet(WELCOME_AUDIO_BUSINESS_ELIGIBILITY);
 const AUDIO_CAPABILITIES = enumSet(WELCOME_AUDIO_AUDIO_CAPABILITY);
 const ASSET_PREVIEW_BINDINGS = enumSet(WELCOME_AUDIO_ASSET_PREVIEW_BINDING);
 const ATTEMPT_STATES = enumSet(WELCOME_AUDIO_ATTEMPT_STATE);
@@ -457,6 +472,15 @@ const WELCOME_AUDIO_INPUT_SECTION_FIELDS = Object.freeze({
   ]),
 });
 
+const WELCOME_AUDIO_SOURCE_PROVENANCE_FIELDS = Object.freeze([
+  'source_class',
+  'manifest_digest_sha256',
+  'campaign_interval_digest_sha256',
+  'manifest_record_index',
+  'manifest_record_count',
+  'source_event_anchor_sha256',
+]);
+
 const cleanString = (value) => {
   if (typeof value !== 'string') return null;
   const cleaned = value.replace(/\s+/g, ' ').trim();
@@ -527,12 +551,20 @@ const exactObjectKeys = (value, expected) => {
 };
 
 const validateWelcomeAudioInputShape = (input) => {
+  const sourceProvenancePresent = input?.source_provenance !== undefined;
+  const baseRootFields = sourceProvenancePresent
+    ? [...WELCOME_AUDIO_INPUT_ROOT_FIELDS, 'source_provenance']
+    : WELCOME_AUDIO_INPUT_ROOT_FIELDS;
   const rootFields = input?.receipt === undefined
-    ? WELCOME_AUDIO_INPUT_ROOT_FIELDS
-    : [...WELCOME_AUDIO_INPUT_ROOT_FIELDS, 'receipt'];
+    ? baseRootFields
+    : [...baseRootFields, 'receipt'];
   if (!exactObjectKeys(input, rootFields)) return false;
   return Object.entries(WELCOME_AUDIO_INPUT_SECTION_FIELDS)
-    .every(([section, fields]) => exactObjectKeys(input[section], fields));
+    .every(([section, fields]) => exactObjectKeys(input[section], fields))
+    && (!sourceProvenancePresent || exactObjectKeys(
+      input.source_provenance,
+      WELCOME_AUDIO_SOURCE_PROVENANCE_FIELDS,
+    ));
 };
 
 const canonicalOperationProjection = (input) => ({
@@ -590,6 +622,18 @@ const canonicalOperationProjection = (input) => ({
     source_recency_max_age_ms: input?.follower_evidence?.source_recency_max_age_ms ?? null,
     source_event_anchor_sha256: input?.follower_evidence?.source_event_anchor_sha256 ?? null,
   },
+  ...(input?.source_provenance === undefined ? {} : {
+    source_provenance: {
+      source_class: input?.source_provenance?.source_class ?? null,
+      manifest_digest_sha256: input?.source_provenance?.manifest_digest_sha256 ?? null,
+      campaign_interval_digest_sha256:
+        input?.source_provenance?.campaign_interval_digest_sha256 ?? null,
+      manifest_record_index: input?.source_provenance?.manifest_record_index ?? null,
+      manifest_record_count: input?.source_provenance?.manifest_record_count ?? null,
+      source_event_anchor_sha256:
+        input?.source_provenance?.source_event_anchor_sha256 ?? null,
+    },
+  }),
   binding: {
     source_binding: input?.binding?.source_binding ?? null,
     source_to_profile: input?.binding?.source_to_profile ?? null,
@@ -728,14 +772,22 @@ const validateReceiptSemantics = (receipt) => {
     && receipt.terminal === (receipt.phase === WELCOME_AUDIO_GUARD_PHASE.TERMINAL);
   if (!commonValid) return false;
 
+  const exactSourceEvidence = (
+    receipt.source_recency === WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT
+      && receipt.source_binding === WELCOME_AUDIO_SOURCE_BINDING.EXACT
+      && receipt.business_eligibility === WELCOME_AUDIO_BUSINESS_ELIGIBILITY.RECENT_FOLLOWER
+  ) || (
+    receipt.source_recency === WELCOME_AUDIO_SOURCE_RECENCY.SEALED_PAUSED_CAMPAIGN_BACKLOG
+      && receipt.source_binding === WELCOME_AUDIO_SOURCE_BINDING.EXACT_SEALED_BACKLOG
+      && receipt.business_eligibility
+        === WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER
+  );
   const exactPreAttemptEvidence = receipt.expected_send_count === 1
     && receipt.attempt_budget === 1
     && receipt.send_attempt_count === 0
     && receipt.surface === WELCOME_AUDIO_SURFACE.STATUS
     && receipt.surface_detail === WELCOME_AUDIO_SURFACE.DETAIL
-    && receipt.source_recency === WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT
-    && receipt.source_binding === WELCOME_AUDIO_SOURCE_BINDING.EXACT
-    && receipt.business_eligibility === 'eligible_confirmed_recent_follower'
+    && exactSourceEvidence
     && receipt.audio_capability === WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE
     && receipt.asset_preview_binding === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT
     && receipt.context_status === 'fresh_exact_central_mission_context'
@@ -868,7 +920,7 @@ const validateReceiptShape = (receipt) => {
     && receiptEnum(receipt.surface_detail, new Set([WELCOME_AUDIO_SURFACE.DETAIL]))
     && receiptEnum(receipt.source_recency, SOURCE_RECENCIES)
     && receiptEnum(receipt.source_binding, SOURCE_BINDINGS)
-    && receiptEnum(receipt.business_eligibility, new Set(['eligible_confirmed_recent_follower']))
+    && receiptEnum(receipt.business_eligibility, BUSINESS_ELIGIBILITIES)
     && receiptEnum(receipt.audio_capability, AUDIO_CAPABILITIES)
     && receiptEnum(receipt.asset_preview_binding, ASSET_PREVIEW_BINDINGS)
     && receiptEnum(receipt.context_status, new Set(['fresh_exact_central_mission_context']))
@@ -904,6 +956,7 @@ const evaluateWelcomeAudioOperation = (
   const approval = input?.approval ?? {};
   const surface = input?.execution_surface ?? {};
   const follower = input?.follower_evidence ?? {};
+  const sourceProvenance = input?.source_provenance ?? null;
   const binding = input?.binding ?? {};
   const eligibility = input?.eligibility ?? {};
   const asset = input?.asset ?? {};
@@ -1003,7 +1056,10 @@ const evaluateWelcomeAudioOperation = (
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SURFACE_OBSERVATION);
   }
 
-  if (follower.source_recency !== WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT) {
+  const sealedBacklogSource = follower.source_recency
+    === WELCOME_AUDIO_SOURCE_RECENCY.SEALED_PAUSED_CAMPAIGN_BACKLOG;
+  const exactRecentSource = follower.source_recency === WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT;
+  if (!exactRecentSource && !sealedBacklogSource) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_RECENCY);
   }
   const observedAtMs = parseTimestamp(follower.observed_at);
@@ -1012,18 +1068,59 @@ const evaluateWelcomeAudioOperation = (
   }
   const sourceMaxAgeValid = isPositiveInteger(follower.source_recency_max_age_ms)
     && follower.source_recency_max_age_ms === approval.source_recency_max_age_ms;
-  if (!sourceMaxAgeValid
-    || observedAtMs === null
-    || nowMs - observedAtMs > follower.source_recency_max_age_ms) {
+  if (!sourceMaxAgeValid) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_MAX_AGE);
   }
-  const actualBucket = classifyRecentFollowerBucket(follower.observed_at, nowMs);
-  if (!['today', 'previous_calendar_day'].includes(actualBucket)) {
-    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_CALENDAR_WINDOW);
+  if (exactRecentSource) {
+    if (observedAtMs === null
+      || nowMs - observedAtMs > follower.source_recency_max_age_ms) {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_MAX_AGE);
+    }
+    const actualBucket = classifyRecentFollowerBucket(follower.observed_at, nowMs);
+    if (!['today', 'previous_calendar_day'].includes(actualBucket)) {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_CALENDAR_WINDOW);
+    }
+    if (follower.time_bucket !== actualBucket) {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_BUCKET);
+    }
+  } else if (sealedBacklogSource) {
+    if (follower.time_bucket !== 'sealed_campaign_interval') {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_BUCKET);
+    }
+    const sourceProvenanceValid = sourceProvenance !== null
+      && sourceProvenance.source_class
+        === WELCOME_AUDIO_SOURCE_CLASS.SEALED_PAUSED_CAMPAIGN_BACKLOG_MEMBER
+      && isSha256(sourceProvenance.manifest_digest_sha256)
+      && isSha256(sourceProvenance.campaign_interval_digest_sha256)
+      && isSha256(sourceProvenance.source_event_anchor_sha256);
+    if (!sourceProvenanceValid) {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_PROVENANCE);
+    }
+    if (!Number.isInteger(sourceProvenance?.manifest_record_index)
+      || !Number.isInteger(sourceProvenance?.manifest_record_count)
+      || sourceProvenance.manifest_record_count < 1
+      || sourceProvenance.manifest_record_count > 8
+      || sourceProvenance.manifest_record_index < 0
+      || sourceProvenance.manifest_record_index >= sourceProvenance.manifest_record_count) {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_MANIFEST_POSITION);
+    }
+    if (!sameSha256(
+      sourceProvenance?.source_event_anchor_sha256,
+      operation.source_event_anchor_sha256,
+    )) {
+      addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_MANIFEST_BINDING);
+    }
   }
-  if (follower.time_bucket !== actualBucket) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_BUCKET);
+  if (!sealedBacklogSource && sourceProvenance !== null) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_PROVENANCE);
+  }
 
-  if (binding.source_binding !== WELCOME_AUDIO_SOURCE_BINDING.EXACT) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_BINDING);
+  const expectedSourceBinding = sealedBacklogSource
+    ? WELCOME_AUDIO_SOURCE_BINDING.EXACT_SEALED_BACKLOG
+    : WELCOME_AUDIO_SOURCE_BINDING.EXACT;
+  if (binding.source_binding !== expectedSourceBinding) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_BINDING);
+  }
   if (binding.source_to_profile !== 'exact') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_TO_PROFILE);
   if (binding.profile_to_thread !== 'exact') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.PROFILE_TO_THREAD);
   if (binding.follows_owner !== 'confirmed') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.FOLLOWS_OWNER);
@@ -1049,7 +1146,10 @@ const evaluateWelcomeAudioOperation = (
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.BINDING_OBSERVATION);
   }
 
-  if (eligibility.business_eligibility !== 'eligible_confirmed_recent_follower') {
+  const expectedBusinessEligibility = sealedBacklogSource
+    ? WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER
+    : WELCOME_AUDIO_BUSINESS_ELIGIBILITY.RECENT_FOLLOWER;
+  if (eligibility.business_eligibility !== expectedBusinessEligibility) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.BUSINESS_ELIGIBILITY);
   }
   if (eligibility.audio_capability !== WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE) {
@@ -1623,7 +1723,7 @@ const buildWelcomeAudioRedactedReceipt = (
     source_binding: safeEnum(input?.binding?.source_binding, SOURCE_BINDINGS),
     business_eligibility: safeEnum(
       input?.eligibility?.business_eligibility,
-      new Set(['eligible_confirmed_recent_follower']),
+      BUSINESS_ELIGIBILITIES,
     ),
     audio_capability: safeEnum(input?.eligibility?.audio_capability, AUDIO_CAPABILITIES),
     asset_preview_binding: safeEnum(input?.asset?.asset_preview_binding, ASSET_PREVIEW_BINDINGS),
@@ -1685,7 +1785,9 @@ export {
   WELCOME_AUDIO_RETRY_DISPOSITION,
   WELCOME_AUDIO_SEND_CLAIM,
   WELCOME_AUDIO_SOURCE_BINDING,
+  WELCOME_AUDIO_SOURCE_CLASS,
   WELCOME_AUDIO_SOURCE_RECENCY,
+  WELCOME_AUDIO_BUSINESS_ELIGIBILITY,
   WELCOME_AUDIO_SURFACE,
   WELCOME_AUDIO_TIME_ZONE,
   bogotaCalendarDayNumber,
