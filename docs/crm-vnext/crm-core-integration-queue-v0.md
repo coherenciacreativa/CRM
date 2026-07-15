@@ -2032,26 +2032,66 @@ No lane outputs in review at creation.
   are separately reviewed and integrated may a newly written and freshly
   approved future mission authorize any send; do not execute live.
 
+## crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15
+
+- `source_workstream`: `integration`, `controlled-welcome-flow`,
+  `welcome-audio-send-boundary`, and conditional `mailerlite-onboarding`
+- `source_branch`:
+  `codex/crm-core-real-new-follower-welcome-e2e-proof-2026-07-15`
+- `status`: `chief_architect_contract_drafted_execution_not_approved_no_live`
+- `drafting_baseline_commit`:
+  `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `runtime_execution_base`: fresh canonical post-integration SHA recorded in
+  and bound by the later owner-only execution approval
+- `commits`: pending reviewed source and central integration commits; Git history
+  will be authoritative
+- `files_changed`:
+  - `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Chief Architect drafted one compact planning-only contract for a
+  single real new-follower E2E proof. Execution remains unapproved and zero live
+  effects occurred.
+- `tests_or_checks`: exact contract schema and approval state checked; drafting
+  baseline separated from runtime authority; zero-effect state recorded; diff,
+  redaction, allowlist, and formal review required before central integration
+- `private_artifacts_touched`: owner-only Chief Architect relay artifacts outside
+  the repository only; none integrated
+- `source_actions_executed`: none; `live_effects_executed=0`
+- `central_files_requested`: true, limited to the exact allowlist
+- `conflicts_expected`: none from the exact drafting baseline
+- `runtime_gates`: fresh exact CEO approval bound to fresh post-integration
+  canonical HEAD equal to remote; clean exact context; live owner-only
+  claim emitter with dedupe/caps; real browser-bound Safari actuator with
+  provenance/timing; fresh approved source, asset, and private bindings;
+  post-source newness/identity/thread/prior-effect checks; conditional exact-email
+  MailerLite zero-effect preflight and one direct two-group POST
+- `decision_needed`: explicit CEO approval, modification, decline, or pause;
+  approval alone does not bypass any runtime gate
+- `integration_recommendation`: integrate only as a planning contract and keep
+  every source and live-effect gate closed
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
 
 ## CEO Decision Required
 
-No CEO decision is required to finish, validate, commit, and push the current
-no-live Welcome Audio hardening lane. Mission Contract
-`crm_core_limited_operational_pilot_hardening_v1_2026-07-13` is closed,
-superseded, and supplies no current source, message, MailerLite, CRM, or
-campaign authority.
+Mission Contract
+`crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15` has been drafted
+by the Chief Architect from historical drafting baseline
+`2fcdf302baf550dcb2bd7e5028b73f471a6486a8`. It is planning-only:
+`execution_explicitly_approved=false`, and zero live effects occurred.
 
-Central integration of the action rail, synthetic one-shot executor, and
-deterministic no-effect operational rail grants no live authority. Any live use
-requires a live owner-only claim issuer, a real browser-bound Safari actuator,
-a newly written mission contract, and fresh explicit approval plus its complete
-private gates. The legacy proxy remains out of scope. No lane result or
-integration receipt may be reused as permission to activate
-`mailerlite-onboarding`, `instagram-api-readiness`, or
-`welcome-audio-send-boundary`.
+The next decision is one explicit CEO approval, modification, decline, or pause
+of that exact contract. Approval alone does not open the source: a fresh
+post-integration canonical HEAD equal to remote must be recorded in and bound
+by the owner-only approval; clean exact context, live claim emitter with dedupe/caps,
+real browser-bound Safari actuator with provenance/timing, fresh source/asset/
+private bindings, post-source exact candidate checks, and any conditional
+MailerLite gates must all be green. Otherwise stop before effect.
 
 ## Queue Item Template
 

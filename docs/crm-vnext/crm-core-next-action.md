@@ -6009,7 +6009,7 @@ routing and completion pointer.
   `crm-core-limited-operational-pilot-v1-closeout-v0.md`; the pilot remains
   closed, supplies no authority, and cannot be resumed.
 
-## Active Next Action
+## Completed Next Action
 
 - `next_action_id`:
   `crm_core_welcome_audio_safari_action_adapter_v1_hardening_2026-07-14`
@@ -6142,3 +6142,41 @@ routing and completion pointer.
   live authority.
 - `recommended_default`:
   `preserve_integrated_readiness_async_bridge_and_deferred_rendezvous_keep_all_live_gates_closed`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15`
+- `status`:
+  `chief_architect_contract_drafted_execution_not_approved_no_live`
+- `created_at`: `2026-07-15`
+- `updated_at`: `2026-07-15`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
+- `drafting_baseline_commit`:
+  `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `runtime_execution_base`: fresh canonical post-integration SHA recorded in
+  and bound by the later owner-only execution approval
+- `execution_explicitly_approved`: false
+- `live_effects_executed`: 0
+- `objective`: Obtain one explicit CEO approve, modify, decline, or pause
+  decision on the exact planning contract. Do not open the source or attempt an
+  effect until that approval and every runtime gate are green.
+- `runtime_gates`:
+  - exact branch and fresh canonical post-integration HEAD equal to remote,
+    recorded in the owner-only approval; clean central context and fresh mission lane;
+  - fresh owner-only CEO approval bound to the exact mission and contract version;
+  - live owner-only claim emitter, global dedupe, and candidate/audio/MailerLite caps;
+  - real browser-bound Safari actuator with verifiable provenance and timing;
+  - fresh approved source, exact audio asset, and exact private bindings;
+  - after source access, proven newness/recentness, exact identity/thread binding,
+    and absence of prior welcome, audio, or claim;
+  - conditional MailerLite path only for a voluntarily supplied exact email,
+    preserved byte-for-byte, after zero-effect preflight, using one direct POST
+    with exactly two approved groups and add-only semantics.
+- `stop_rule`: Any failed gate stops before effect; any attempted, uncertain,
+  timed-out, or unknown effect is terminal with no retry.
+- `decision_needed`: Explicit CEO approval, modification, decline, or pause of
+  this exact contract.
+- `recommended_default`:
+  `await_explicit_ceo_decision_keep_all_live_gates_closed`
