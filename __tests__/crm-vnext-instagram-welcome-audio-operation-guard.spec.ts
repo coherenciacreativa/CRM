@@ -267,8 +267,7 @@ const preclaimOperation = () => {
   return boundInput;
 };
 
-const sendReadyOperation = () => {
-  const input = preclaimOperation();
+const sendReadyOperation = (input = preclaimOperation()) => {
   input.effect_claim = {
     status: WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT,
     claim_result: WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION,
@@ -357,6 +356,11 @@ const sealedBacklogPreclaimOperation = () => {
     ...input.eligibility,
     business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER,
   };
+  input.asset = {
+    ...input.asset,
+    asset_preview_binding: WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE,
+    preview_status: "approved_file_validated_before_upload",
+  };
   input.source_provenance = {
     source_class: WELCOME_AUDIO_SOURCE_CLASS.SEALED_PAUSED_CAMPAIGN_BACKLOG_MEMBER,
     manifest_digest_sha256: MANIFEST_SHA,
@@ -412,6 +416,24 @@ describe("Instagram welcome-audio operation guard", () => {
       expect(buildWelcomeAudioCanonicalOperationDigest(changed))
         .not.toBe(baseline.canonical_operation_sha256);
     }
+  });
+
+  test("rejects pre-upload asset evidence for the legacy recent-follower route", () => {
+    const input = preclaimOperation();
+    input.asset.asset_preview_binding = WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE;
+    input.asset.preview_status = "approved_file_validated_before_upload";
+    bindCanonicalOperationDigest(input);
+    TRUSTED_CANONICAL_OPERATION_DIGESTS.set(input, input.canonical_operation_sha256);
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({ ok: false, claim_allowed: false, send_allowed: false });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW);
+  });
+
+  test("does not treat sealed pre-upload evidence as a post-claim send-ready state", () => {
+    const ready = sendReadyOperation(sealedBacklogPreclaimOperation());
+    const result = validateWelcomeAudioOperation(ready, { nowMs: NOW_MS });
+    expect(result).toMatchObject({ ok: false, send_ready: false, send_allowed: false });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW);
   });
 
   test.each([

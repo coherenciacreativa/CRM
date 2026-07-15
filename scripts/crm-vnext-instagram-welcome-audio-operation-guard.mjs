@@ -69,6 +69,7 @@ const WELCOME_AUDIO_AUDIO_CAPABILITY = Object.freeze({
 
 const WELCOME_AUDIO_ASSET_PREVIEW_BINDING = Object.freeze({
   EXACT: 'exact_asset_and_preview_match',
+  PREUPLOAD_APPROVED_FILE: 'approved_asset_file_bound_before_upload',
   ASSET_MISMATCH: 'asset_mismatch',
   PREVIEW_MISMATCH: 'preview_mismatch',
   PREVIEW_UNAVAILABLE: 'preview_unavailable',
@@ -782,6 +783,11 @@ const validateReceiptSemantics = (receipt) => {
       && receipt.business_eligibility
         === WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER
   );
+  const claimAssetEvidence = receipt.source_recency
+      === WELCOME_AUDIO_SOURCE_RECENCY.SEALED_PAUSED_CAMPAIGN_BACKLOG
+    ? receipt.asset_preview_binding
+      === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE
+    : receipt.asset_preview_binding === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT;
   const exactPreAttemptEvidence = receipt.expected_send_count === 1
     && receipt.attempt_budget === 1
     && receipt.send_attempt_count === 0
@@ -789,7 +795,7 @@ const validateReceiptSemantics = (receipt) => {
     && receipt.surface_detail === WELCOME_AUDIO_SURFACE.DETAIL
     && exactSourceEvidence
     && receipt.audio_capability === WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE
-    && receipt.asset_preview_binding === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT
+    && claimAssetEvidence
     && receipt.context_status === 'fresh_exact_central_mission_context'
     && receipt.dedupe_status === 'clear_no_prior_welcome_or_attempt';
 
@@ -807,6 +813,7 @@ const validateReceiptSemantics = (receipt) => {
 
   if (receipt.decision === WELCOME_AUDIO_GUARD_DECISION.READY) {
     return exactPreAttemptEvidence
+      && receipt.asset_preview_binding === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT
       && receipt.effect_claim === WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT
       && receipt.claim_result === WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION
       && receipt.claim_token_status
@@ -1175,10 +1182,18 @@ const evaluateWelcomeAudioOperation = (
     || !sameSha256(asset.approved_audio_asset_sha256, operation.approved_audio_asset_sha256)) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ASSET_APPROVAL);
   }
-  if (asset.asset_preview_binding !== WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT) {
+  const exactAssetPreview = asset.asset_preview_binding
+    === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.EXACT;
+  const sealedPreuploadAsset = sealedBacklogSource
+    && asset.asset_preview_binding
+      === WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE;
+  if (!exactAssetPreview && !sealedPreuploadAsset) {
     addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW);
   }
-  if (asset.preview_status !== 'verified_on_exact_bound_thread'
+  const expectedPreviewStatus = sealedPreuploadAsset
+    ? 'approved_file_validated_before_upload'
+    : 'verified_on_exact_bound_thread';
+  if (asset.preview_status !== expectedPreviewStatus
     || !sameCleanString(asset.preview_audio_asset_id, asset.approved_audio_asset_id)
     || !sameSha256(asset.preview_audio_asset_sha256, asset.approved_audio_asset_sha256)
     || !sameSha256(asset.preview_thread_anchor_sha256, operation.thread_anchor_sha256)) {
@@ -1438,6 +1453,9 @@ const evaluateWelcomeAudioOperation = (
     && confirmation.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
     && confirmation.bound_to_current_operation === false
     && confirmation.checked_at == null;
+  if (sealedPreuploadAsset && !preclaimState) {
+    addReason(reasons, WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW);
+  }
 
   const claimAtMs = parseTimestamp(effectClaim.claimed_at);
   const tokenConsumedAtMs = parseTimestamp(execution.claim_token_consumed_at);
