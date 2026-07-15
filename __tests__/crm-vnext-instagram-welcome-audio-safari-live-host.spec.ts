@@ -1,0 +1,1460 @@
+import { createHash } from "node:crypto";
+import {
+  chmod,
+  link,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+
+import { afterEach, describe, expect, test } from "vitest";
+
+import {
+  WELCOME_AUDIO_CAMPAIGN_INTERVAL_SCHEMA_VERSION,
+  WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
+  WELCOME_AUDIO_LIVE_AUTHORITY_SCHEMA_VERSION,
+  WELCOME_AUDIO_SEALED_MANIFEST_SCHEMA_VERSION,
+  computeWelcomeAudioCampaignIntervalSha256,
+  computeWelcomeAudioExactIdentityAnchorSha256,
+  computeWelcomeAudioSealedManifestSha256,
+  createSyntheticWelcomeAudioLiveAuthorityCapability,
+  validateWelcomeAudioLiveOperationContext,
+} from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
+import {
+  WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION,
+  WELCOME_AUDIO_LIVE_STORE_MODE,
+  claimNextWelcomeAudioLiveManifestInspection,
+  createSyntheticWelcomeAudioLiveClaimStoreCapability,
+  enterWelcomeAudioLiveAttemptBoundary,
+  issueWelcomeAudioLiveClaim,
+  recordWelcomeAudioLiveInspectionResult,
+} from "../scripts/crm-vnext-instagram-welcome-audio-live-claim-issuer.mjs";
+import {
+  WELCOME_AUDIO_ADAPTER_VERSION,
+  WELCOME_AUDIO_ASSET_PREVIEW_BINDING,
+  WELCOME_AUDIO_ATTEMPT_STATE,
+  WELCOME_AUDIO_AUDIO_CAPABILITY,
+  WELCOME_AUDIO_BUSINESS_ELIGIBILITY,
+  WELCOME_AUDIO_CLAIM_RESULT,
+  WELCOME_AUDIO_CLAIM_TOKEN_STATUS,
+  WELCOME_AUDIO_CONFIRMATION_MARKER,
+  WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+  WELCOME_AUDIO_EFFECT_CLAIM,
+  WELCOME_AUDIO_OPERATION_GUARD_CONTRACT_VERSION,
+  WELCOME_AUDIO_RETRY_DISPOSITION,
+  WELCOME_AUDIO_SEND_CLAIM,
+  WELCOME_AUDIO_SOURCE_BINDING,
+  WELCOME_AUDIO_SOURCE_CLASS,
+  WELCOME_AUDIO_SOURCE_RECENCY,
+  WELCOME_AUDIO_SURFACE,
+  buildWelcomeAudioCanonicalOperationDigest,
+} from "../scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs";
+import {
+  SAFARI_APP_ID,
+  WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS,
+  WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER,
+  WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION,
+  WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE,
+  WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO,
+  WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO,
+  WELCOME_AUDIO_SAFARI_VISUAL_CONFIRMATION_STATUS,
+  consumeWelcomeAudioSafariAttemptEvidenceCapabilityOnce,
+  consumeWelcomeAudioSafariVisualConfirmationCapabilityOnce,
+  createSyntheticWelcomeAudioSafariLiveHostCapabilityForTest,
+  createSyntheticSafariDriverForTest,
+  executeWelcomeAudioSafariLivePostPending,
+  inspectInstalledComputerUseRuntimeBindingForTest,
+  inspectSyntheticLiveSafariStateForTest,
+  inspectSyntheticSafariDriverForTest,
+  prepareWelcomeAudioSafariLiveTarget,
+  validateWelcomeAudioSafariLiveHostReceipt,
+} from "../scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs";
+
+const cleanupPaths: string[] = [];
+const MISSION_ID = "synthetic_live_claim_mission";
+const CONTRACT_VERSION = "synthetic_live_contract_v1";
+const OPERATION_ID = "synthetic_live_operation_001";
+const APPROVAL_PACKET_ID = "synthetic_live_approval_001";
+const CENTRAL_HEAD = "a".repeat(40);
+const THREAD_SHA = "b".repeat(64);
+const OWNER_SHA = "c".repeat(64);
+const PROFILE_SHA = "d".repeat(64);
+const SOURCE_SHA = "e".repeat(64);
+const ASSET_ID = "synthetic_welcome_audio_asset_001";
+const MISSION_CONTRACT_SHA = "9".repeat(64);
+const APPROVAL_BINDING_SHA = "7".repeat(64);
+const CONTEXT_NOW_MS = Date.parse("2026-07-14T16:00:00.000Z");
+const PENDING_AT_MS = CONTEXT_NOW_MS + 1_000;
+const ENTRY_AT_MS = CONTEXT_NOW_MS + 1_100;
+const PREUPLOAD_AT_MS = CONTEXT_NOW_MS + 1_200;
+const ATTEMPTED_AT_MS = CONTEXT_NOW_MS + 1_500;
+const CONFIRMATION_AT_MS = CONTEXT_NOW_MS + 2_000;
+const ATTEMPT_NONCE = "4".repeat(64);
+const MODULE_PATH = resolve(
+  process.cwd(),
+  "scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs",
+);
+
+afterEach(async () => {
+  await Promise.all(cleanupPaths.splice(0).map((path) => rm(path, {
+    recursive: true,
+    force: true,
+  })));
+});
+
+const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
+
+const manifestFixture = () => {
+  const campaignInterval = {
+    schema_version: WELCOME_AUDIO_CAMPAIGN_INTERVAL_SCHEMA_VERSION,
+    start_at: "2026-07-13T12:00:00.000Z",
+    end_at: "2026-07-14T12:00:00.000Z",
+  };
+  const campaignIntervalSha256 = computeWelcomeAudioCampaignIntervalSha256(campaignInterval);
+  const exactTarget = "Synthetic.Target+1@Example.COM";
+  const manifest = {
+    schema_version: WELCOME_AUDIO_SEALED_MANIFEST_SCHEMA_VERSION,
+    identity_anchor_schema_version: WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
+    mission_id: MISSION_ID,
+    contract_version: CONTRACT_VERSION,
+    campaign_interval_sha256: campaignIntervalSha256,
+    ordered_records: [{
+      ordinal: 1,
+      identity_anchor_sha256: computeWelcomeAudioExactIdentityAnchorSha256(exactTarget),
+      followed_at: "2026-07-13T13:00:00.000Z",
+      campaign_interval_sha256: campaignIntervalSha256,
+    }],
+  };
+  return {
+    campaignInterval,
+    campaignIntervalSha256,
+    exactTarget,
+    manifest,
+    manifestSha256: computeWelcomeAudioSealedManifestSha256(manifest),
+  };
+};
+
+const createSyntheticAsset = async () => {
+  const root = await realpath(await mkdtemp(join(
+    tmpdir(),
+    "crm-core-live-host-approved-audio-test-",
+  )));
+  cleanupPaths.push(root);
+  const assetPath = join(root, "synthetic-approved-audio.m4a");
+  const bytes = Buffer.from("synthetic approved audio fixture only", "utf8");
+  await writeFile(assetPath, bytes, { mode: 0o600 });
+  return { assetPath, audioSha256: sha256(bytes) };
+};
+
+const createAuthority = async ({
+  fixture,
+  assetPath,
+  audioSha256,
+}: {
+  fixture: ReturnType<typeof manifestFixture>;
+  assetPath: string;
+  audioSha256: string;
+}) => {
+  const root = await realpath(await mkdtemp(join(
+    tmpdir(),
+    "crm-core-welcome-audio-live-authority-test-",
+  )));
+  cleanupPaths.push(root);
+  await chmod(root, 0o700);
+  const approval = {
+    schema_version: WELCOME_AUDIO_LIVE_AUTHORITY_SCHEMA_VERSION,
+    status: "approved_for_bounded_live_canary",
+    mission_id: MISSION_ID,
+    contract_version: CONTRACT_VERSION,
+    mission_contract_sha256: MISSION_CONTRACT_SHA,
+    active_next_action_id: "synthetic_welcome_audio_canary",
+    active_next_action_sha256: "8".repeat(64),
+    central_repo_head: CENTRAL_HEAD,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    manifest_sha256: fixture.manifestSha256,
+    campaign_interval_sha256: fixture.campaignIntervalSha256,
+    approved_audio_asset_path: assetPath,
+    approved_audio_asset_sha256: audioSha256,
+    inspection_cap: 8,
+    mission_claim_cap: 3,
+    per_candidate_send_cap: 1,
+    stage_1_confirmation_required: true,
+    execution_browser: "safari",
+    text_fallback: "forbidden",
+    campaign_effect_allowed: false,
+    approved_at: "2026-07-14T15:55:00.000Z",
+    expires_at: "2026-07-14T17:00:00.000Z",
+    operation_bindings: [{
+      manifest_ordinal: 1,
+      operation_id: OPERATION_ID,
+      exact_target_utf8: fixture.exactTarget,
+      identity_anchor_sha256: fixture.manifest.ordered_records[0].identity_anchor_sha256,
+      thread_anchor_sha256: THREAD_SHA,
+      owner_anchor_sha256: OWNER_SHA,
+    }],
+  };
+  await Promise.all([
+    writeFile(join(root, "execution-approval-v1.json"), `${JSON.stringify(approval)}\n`, {
+      mode: 0o600,
+    }),
+    writeFile(
+      join(root, "sealed-backlog-manifest-v1.json"),
+      `${JSON.stringify(fixture.manifest)}\n`,
+      { mode: 0o600 },
+    ),
+    writeFile(
+      join(root, "campaign-interval-v1.json"),
+      `${JSON.stringify(fixture.campaignInterval)}\n`,
+      { mode: 0o600 },
+    ),
+  ]);
+  return createSyntheticWelcomeAudioLiveAuthorityCapability({
+    authority_root: root,
+    now_ms: CONTEXT_NOW_MS,
+  });
+};
+
+const bindCanonicalDigest = (input: Record<string, any>) => {
+  const digest = buildWelcomeAudioCanonicalOperationDigest(input);
+  input.canonical_operation_sha256 = digest;
+  for (const section of [
+    "operation",
+    "approval",
+    "context",
+    "effect_claim",
+    "execution",
+    "confirmation",
+  ]) input[section].canonical_operation_sha256 = digest;
+  return input;
+};
+
+const operationFixture = ({
+  fixture,
+  audioSha256,
+}: {
+  fixture: ReturnType<typeof manifestFixture>;
+  audioSha256: string;
+}) => {
+  const identitySha = fixture.manifest.ordered_records[0].identity_anchor_sha256;
+  return bindCanonicalDigest({
+    adapter_version: WELCOME_AUDIO_ADAPTER_VERSION,
+    contract_version: WELCOME_AUDIO_OPERATION_GUARD_CONTRACT_VERSION,
+    canonical_operation_sha256: "0".repeat(64),
+    operation: {
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      source_event_anchor_sha256: SOURCE_SHA,
+      profile_anchor_sha256: PROFILE_SHA,
+      candidate_anchor_sha256: identitySha,
+      thread_anchor_sha256: THREAD_SHA,
+      owner_anchor_sha256: OWNER_SHA,
+      approved_audio_asset_id: ASSET_ID,
+      approved_audio_asset_sha256: audioSha256,
+      expected_send_count: 1,
+      confirmation_max_delay_ms: WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+      canonical_operation_sha256: "0".repeat(64),
+    },
+    approval: {
+      status: "approved_exact_single_send",
+      checked_at: "2026-07-14T15:56:00.000Z",
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      source_event_anchor_sha256: SOURCE_SHA,
+      profile_anchor_sha256: PROFILE_SHA,
+      candidate_anchor_sha256: identitySha,
+      thread_anchor_sha256: THREAD_SHA,
+      owner_anchor_sha256: OWNER_SHA,
+      approved_audio_asset_id: ASSET_ID,
+      approved_audio_asset_sha256: audioSha256,
+      source_recency_max_age_ms: 14 * 24 * 60 * 60 * 1000,
+      expected_send_count: 1,
+      confirmation_max_delay_ms: WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+      canonical_operation_sha256: "0".repeat(64),
+    },
+    execution_surface: {
+      surface: WELCOME_AUDIO_SURFACE.STATUS,
+      surface_detail: WELCOME_AUDIO_SURFACE.DETAIL,
+      browser: WELCOME_AUDIO_SURFACE.BROWSER,
+      browser_mode: WELCOME_AUDIO_SURFACE.MODE,
+      isolation: WELCOME_AUDIO_SURFACE.ISOLATION,
+      upload_route: WELCOME_AUDIO_SURFACE.UPLOAD_ROUTE,
+      private_browsing: false,
+      chrome_upload_attempted: false,
+      in_app_browser_upload_attempted: false,
+      observed_at: "2026-07-14T15:58:10.000Z",
+    },
+    follower_evidence: {
+      source_recency: WELCOME_AUDIO_SOURCE_RECENCY.SEALED_PAUSED_CAMPAIGN_BACKLOG,
+      observed_at: fixture.manifest.ordered_records[0].followed_at,
+      time_bucket: "sealed_campaign_interval",
+      source_recency_max_age_ms: 14 * 24 * 60 * 60 * 1000,
+      source_event_anchor_sha256: SOURCE_SHA,
+    },
+    binding: {
+      source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_SEALED_BACKLOG,
+      source_to_profile: "exact",
+      profile_to_thread: "exact",
+      follows_owner: "confirmed",
+      ambiguity: "clear",
+      source_event_anchor_sha256: SOURCE_SHA,
+      profile_anchor_sha256: PROFILE_SHA,
+      candidate_anchor_sha256: identitySha,
+      thread_anchor_sha256: THREAD_SHA,
+      owner_anchor_sha256: OWNER_SHA,
+      observed_at: "2026-07-14T15:58:20.000Z",
+    },
+    eligibility: {
+      business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER,
+      audio_capability: WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE,
+      composer_capability: WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE,
+      attachment_capability: WELCOME_AUDIO_AUDIO_CAPABILITY.PRESENT_AND_USABLE,
+      text_fallback: "forbidden",
+      observed_at: "2026-07-14T15:58:30.000Z",
+    },
+    asset: {
+      approved_audio_asset_id: ASSET_ID,
+      approved_audio_asset_sha256: audioSha256,
+      asset_preview_binding: WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE,
+      preview_status: "approved_file_validated_before_upload",
+      preview_audio_asset_id: ASSET_ID,
+      preview_audio_asset_sha256: audioSha256,
+      preview_thread_anchor_sha256: THREAD_SHA,
+      preview_observed_at: "2026-07-14T15:58:40.000Z",
+    },
+    context: {
+      status: "fresh_exact_central_mission_context",
+      checked_at: "2026-07-14T15:57:00.000Z",
+      central_repo_head: CENTRAL_HEAD,
+      expected_central_repo_head: CENTRAL_HEAD,
+      mission_id: MISSION_ID,
+      expected_mission_id: MISSION_ID,
+      mission_status: "active",
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      confirmation_max_delay_ms: WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+      canonical_operation_sha256: "0".repeat(64),
+    },
+    dedupe: {
+      status: "clear_no_prior_welcome_or_attempt",
+      already_welcomed_status: "not_found",
+      send_history_status: "no_prior_attempt",
+      checked_at: "2026-07-14T15:58:00.000Z",
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      candidate_anchor_sha256: identitySha,
+      thread_anchor_sha256: THREAD_SHA,
+      owner_anchor_sha256: OWNER_SHA,
+      approved_audio_asset_sha256: audioSha256,
+    },
+    effect_claim: {
+      status: WELCOME_AUDIO_EFFECT_CLAIM.UNCLAIMED,
+      claim_result: WELCOME_AUDIO_CLAIM_RESULT.NOT_STARTED,
+      claim_token_status: WELCOME_AUDIO_CLAIM_TOKEN_STATUS.NOT_ISSUED,
+      atomic: false,
+      permanent: false,
+      claimed_at: null,
+      claim_owner_id: null,
+      claim_token_id: null,
+      registry_revision: null,
+      attempt_id: null,
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      candidate_anchor_sha256: identitySha,
+      thread_anchor_sha256: THREAD_SHA,
+      owner_anchor_sha256: OWNER_SHA,
+      approved_audio_asset_id: ASSET_ID,
+      approved_audio_asset_sha256: audioSha256,
+      canonical_operation_sha256: "0".repeat(64),
+    },
+    execution: {
+      attempt_budget: 1,
+      send_attempt_count: 0,
+      attempt_state: WELCOME_AUDIO_ATTEMPT_STATE.NOT_ATTEMPTED,
+      send_claim: WELCOME_AUDIO_SEND_CLAIM.NOT_ATTEMPTED,
+      retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT,
+      retry_requested: false,
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      canonical_operation_sha256: "0".repeat(64),
+      claim_owner_id: null,
+      claim_token_id: null,
+      claim_registry_revision: null,
+      attempt_id: null,
+      claim_token_consumed_at: null,
+      attempted_at: null,
+    },
+    confirmation: {
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      operation_id: OPERATION_ID,
+      approval_packet_id: APPROVAL_PACKET_ID,
+      mission_id: MISSION_ID,
+      canonical_operation_sha256: "0".repeat(64),
+      candidate_anchor_sha256: identitySha,
+      thread_anchor_sha256: THREAD_SHA,
+      approved_audio_asset_sha256: audioSha256,
+      claim_owner_id: null,
+      claim_token_id: null,
+      claim_registry_revision: null,
+      attempt_id: null,
+      bound_to_current_operation: false,
+      checked_at: null,
+    },
+    source_provenance: {
+      source_class: WELCOME_AUDIO_SOURCE_CLASS.SEALED_PAUSED_CAMPAIGN_BACKLOG_MEMBER,
+      manifest_digest_sha256: fixture.manifestSha256,
+      campaign_interval_digest_sha256: fixture.campaignIntervalSha256,
+      manifest_record_index: 0,
+      manifest_record_count: 1,
+      source_event_anchor_sha256: SOURCE_SHA,
+    },
+  });
+};
+
+type Scenario = typeof WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO[keyof typeof WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO];
+
+const createHarness = async ({
+  scenario = WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.CONFIRMED_NEW_AUDIO_BUBBLE,
+  exactTargetOverride,
+  threadShaOverride,
+}: {
+  scenario?: Scenario;
+  exactTargetOverride?: string;
+  threadShaOverride?: string;
+} = {}) => {
+  const fixture = manifestFixture();
+  const asset = await createSyntheticAsset();
+  const authority = await createAuthority({ fixture, ...asset });
+  const operationSnapshot = operationFixture({ fixture, audioSha256: asset.audioSha256 });
+  const operation = await validateWelcomeAudioLiveOperationContext({
+    operation_snapshot: operationSnapshot,
+    private_authority_capability: authority.private_authority_capability,
+    private_audio_asset_capability: authority.private_audio_asset_capability,
+    expected_canonical_operation_sha256: operationSnapshot.canonical_operation_sha256,
+    expected_mission_id: MISSION_ID,
+    expected_contract_version: CONTRACT_VERSION,
+    expected_mission_contract_sha256: MISSION_CONTRACT_SHA,
+    expected_approval_packet_id: APPROVAL_PACKET_ID,
+    expected_operation_id: OPERATION_ID,
+    expected_central_repo_head: CENTRAL_HEAD,
+    expected_manifest_sha256: fixture.manifestSha256,
+    expected_campaign_interval_sha256: fixture.campaignIntervalSha256,
+    expected_identity_anchor_sha256: fixture.manifest.ordered_records[0].identity_anchor_sha256,
+    expected_thread_anchor_sha256: THREAD_SHA,
+    expected_owner_anchor_sha256: OWNER_SHA,
+    expected_audio_sha256: asset.audioSha256,
+    expected_manifest_ordinal: 1,
+    private_manifest_capability: authority.private_manifest_capability,
+    now_ms: CONTEXT_NOW_MS,
+  });
+  expect(operation.private_target_binding_capability).not.toBeNull();
+  const claimRoot = await realpath(await mkdtemp(join(
+    tmpdir(),
+    "crm-core-welcome-audio-live-claim-store-test-",
+  )));
+  cleanupPaths.push(claimRoot);
+  await chmod(claimRoot, 0o700);
+  const storeCapability = await createSyntheticWelcomeAudioLiveClaimStoreCapability({
+    store_root: claimRoot,
+  });
+  const driver = createSyntheticSafariDriverForTest({ scenario });
+  const host = createSyntheticWelcomeAudioSafariLiveHostCapabilityForTest({
+    driver,
+    private_audio_asset_capability: authority.private_audio_asset_capability,
+    pending_store_root: claimRoot,
+  });
+  const identitySha = fixture.manifest.ordered_records[0].identity_anchor_sha256;
+  const prepared = await prepareWelcomeAudioSafariLiveTarget({
+    private_live_host_capability: host,
+    private_target_binding_capability: operation.private_target_binding_capability,
+    exact_target: exactTargetOverride ?? fixture.exactTarget,
+    expected_mission_id: MISSION_ID,
+    expected_operation_id: OPERATION_ID,
+    expected_identity_anchor_sha256: identitySha,
+    expected_thread_anchor_sha256: threadShaOverride ?? THREAD_SHA,
+    expected_audio_sha256: asset.audioSha256,
+    now_ms: CONTEXT_NOW_MS,
+  });
+  return {
+    ...asset,
+    fixture,
+    authority,
+    operation,
+    operationSnapshot,
+    claimRoot,
+    storeCapability,
+    driver,
+    identitySha,
+    prepared,
+  };
+};
+
+const pendingPaths = (item: Awaited<ReturnType<typeof createHarness>>) => {
+  const identityFingerprint = sha256(`identity:${item.identitySha}`);
+  return {
+    pending: join(item.claimRoot, `pending-${identityFingerprint}.json`),
+    terminal: join(item.claimRoot, `terminal-${identityFingerprint}.json`),
+  };
+};
+
+const pendingRecord = (
+  item: Awaited<ReturnType<typeof createHarness>>,
+  overrides: Record<string, unknown> = {},
+) => ({
+  record_schema_version: "crm_core_instagram_welcome_audio_live_pending_attempt_v1",
+  mission_id: MISSION_ID,
+  contract_version: CONTRACT_VERSION,
+  mission_contract_sha256: MISSION_CONTRACT_SHA,
+  approval_packet_id: APPROVAL_PACKET_ID,
+  operation_id: OPERATION_ID,
+  central_repo_head: CENTRAL_HEAD,
+  canonical_operation_sha256: item.operationSnapshot.canonical_operation_sha256,
+  approval_binding_sha256: APPROVAL_BINDING_SHA,
+  identity_anchor_sha256: item.identitySha,
+  identity_anchor_schema_version: WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
+  thread_anchor_sha256: THREAD_SHA,
+  owner_anchor_sha256: OWNER_SHA,
+  manifest_sha256: item.fixture.manifestSha256,
+  campaign_interval_sha256: item.fixture.campaignIntervalSha256,
+  audio_asset_sha256: item.audioSha256,
+  manifest_ordinal: 1,
+  claim_nonce: "1".repeat(64),
+  owner_pid: process.pid,
+  owner_nonce: "2".repeat(64),
+  entered_at: new Date(PENDING_AT_MS).toISOString(),
+  boundary_status: "pending_durable_before_attachment_upload",
+  attachment_upload_entered: false,
+  send_control_actuation_count: 0,
+  attempt_nonce: ATTEMPT_NONCE,
+  ...overrides,
+});
+
+const writePending = async (
+  item: Awaited<ReturnType<typeof createHarness>>,
+  overrides: Record<string, unknown> = {},
+) => {
+  const { pending } = pendingPaths(item);
+  await writeFile(pending, `${JSON.stringify(pendingRecord(item, overrides))}\n`, {
+    mode: 0o600,
+  });
+  return pending;
+};
+
+const armPendingWithRealIssuer = async (
+  item: Awaited<ReturnType<typeof createHarness>>,
+) => {
+  const inspectionClaim = await claimNextWelcomeAudioLiveManifestInspection({
+    private_store_capability: item.storeCapability,
+    mission_id: MISSION_ID,
+    contract_version: CONTRACT_VERSION,
+    identity_anchor_sha256: item.identitySha,
+    manifest_ordinal: 1,
+    expected_manifest_sha256: item.fixture.manifestSha256,
+    expected_campaign_interval_sha256: item.fixture.campaignIntervalSha256,
+    private_manifest_capability: item.authority.private_manifest_capability,
+    now_ms: CONTEXT_NOW_MS + 10,
+  });
+  expect(inspectionClaim.private_capability).not.toBeNull();
+  const recorded = await recordWelcomeAudioLiveInspectionResult({
+    private_inspection_capability: inspectionClaim.private_capability,
+    classification: WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION.ELIGIBLE,
+    now_ms: CONTEXT_NOW_MS + 11,
+  });
+  expect(recorded.private_capability).toBeNull();
+  const claimed = await issueWelcomeAudioLiveClaim({
+    private_store_capability: item.storeCapability,
+    private_operation_context_capability: item.operation.private_capability,
+    private_authority_capability: item.authority.private_authority_capability,
+    mission_id: MISSION_ID,
+    contract_version: CONTRACT_VERSION,
+    expected_mission_contract_sha256: MISSION_CONTRACT_SHA,
+    expected_approval_packet_id: APPROVAL_PACKET_ID,
+    expected_operation_id: OPERATION_ID,
+    expected_central_repo_head: CENTRAL_HEAD,
+    expected_canonical_operation_sha256: item.operationSnapshot.canonical_operation_sha256,
+    identity_anchor_sha256: item.identitySha,
+    expected_thread_anchor_sha256: THREAD_SHA,
+    expected_owner_anchor_sha256: OWNER_SHA,
+    manifest_ordinal: 1,
+    expected_manifest_sha256: item.fixture.manifestSha256,
+    expected_campaign_interval_sha256: item.fixture.campaignIntervalSha256,
+    expected_audio_sha256: item.audioSha256,
+    private_manifest_capability: item.authority.private_manifest_capability,
+    private_audio_asset_capability: item.authority.private_audio_asset_capability,
+    approved_audio_asset_path: item.assetPath,
+    now_ms: CONTEXT_NOW_MS + 100,
+  });
+  expect(claimed.private_claim_capability).not.toBeNull();
+  const armed = await enterWelcomeAudioLiveAttemptBoundary({
+    private_claim_capability: claimed.private_claim_capability,
+    mission_id: MISSION_ID,
+    contract_version: CONTRACT_VERSION,
+    mission_contract_sha256: MISSION_CONTRACT_SHA,
+    approval_packet_id: APPROVAL_PACKET_ID,
+    operation_id: OPERATION_ID,
+    central_repo_head: CENTRAL_HEAD,
+    canonical_operation_sha256: item.operationSnapshot.canonical_operation_sha256,
+    identity_anchor_sha256: item.identitySha,
+    thread_anchor_sha256: THREAD_SHA,
+    owner_anchor_sha256: OWNER_SHA,
+    manifest_sha256: item.fixture.manifestSha256,
+    campaign_interval_sha256: item.fixture.campaignIntervalSha256,
+    audio_asset_sha256: item.audioSha256,
+    manifest_ordinal: 1,
+    required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+    private_audio_asset_capability: item.authority.private_audio_asset_capability,
+    approved_audio_asset_path: item.assetPath,
+    entered_at_ms: PENDING_AT_MS,
+  });
+  expect(armed.private_actuation_capability).not.toBeNull();
+  expect(armed.private_host_pending_capability).not.toBeNull();
+  return armed;
+};
+
+const validExecuteEnvelope = (
+  item: Awaited<ReturnType<typeof createHarness>>,
+  overrides: Record<string, unknown> = {},
+) => ({
+  private_prepared_permit: item.prepared.private_prepared_permit,
+  private_host_pending_capability: null,
+  approved_audio_asset_path: item.assetPath,
+  expected_thread_anchor_sha256: THREAD_SHA,
+  synthetic_entry_now_ms: ENTRY_AT_MS,
+  synthetic_preupload_now_ms: PREUPLOAD_AT_MS,
+  synthetic_attempted_at_ms: ATTEMPTED_AT_MS,
+  synthetic_confirmation_now_ms: CONFIRMATION_AT_MS,
+  ...overrides,
+});
+
+const execute = (
+  item: Awaited<ReturnType<typeof createHarness>>,
+  overrides: Record<string, unknown> = {},
+) => executeWelcomeAudioSafariLivePostPending(validExecuteEnvelope(item, overrides));
+
+const consumeAttempt = (
+  capability: unknown,
+  overrides: Record<string, unknown> = {},
+) => consumeWelcomeAudioSafariAttemptEvidenceCapabilityOnce({
+  private_attempt_evidence_capability: capability,
+  expected_operation_id: OPERATION_ID,
+  expected_thread_anchor_sha256: THREAD_SHA,
+  ...overrides,
+});
+
+const expectUnknownAttempt = (
+  result: Awaited<ReturnType<typeof executeWelcomeAudioSafariLivePostPending>>,
+  status: string,
+) => {
+  expect(result.private_attempt_evidence_capability).not.toBeNull();
+  expect(result.private_visual_confirmation_capability).toBeNull();
+  expect(result.redacted_receipt).toMatchObject({
+    decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+    attempt_evidence_capability_issued: true,
+    visual_confirmation_capability_issued: false,
+    retry_forbidden_permanently: true,
+  });
+  expect(consumeAttempt(result.private_attempt_evidence_capability)).toBe(status);
+};
+
+const executeArmed = async (
+  item: Awaited<ReturnType<typeof createHarness>>,
+  overrides: Record<string, unknown> = {},
+) => {
+  const armed = await armPendingWithRealIssuer(item);
+  return {
+    armed,
+    result: await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      ...overrides,
+    }),
+  };
+};
+
+const consumeVisual = (
+  result: Awaited<ReturnType<typeof executeWelcomeAudioSafariLivePostPending>>,
+  overrides: Record<string, unknown> = {},
+) => consumeWelcomeAudioSafariVisualConfirmationCapabilityOnce({
+  private_visual_confirmation_capability: result.private_visual_confirmation_capability,
+  private_attempt_evidence_capability: result.private_attempt_evidence_capability,
+  expected_operation_id: OPERATION_ID,
+  expected_thread_anchor_sha256: THREAD_SHA,
+  synthetic_now_ms: CONFIRMATION_AT_MS,
+  ...overrides,
+});
+
+describe("Safari live-host prepare boundary", () => {
+  test("consumes the exact target binding and opens only the native chooser", async () => {
+    const item = await createHarness();
+
+    expect(item.prepared.private_prepared_permit).not.toBeNull();
+    expect(item.prepared.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.PREPARED,
+      host_capability_consumed: true,
+      target_binding_capability_consumed: true,
+      source_thread_bound: true,
+      native_chooser_opened: true,
+      fixed_ui_action_count: 1,
+      pending_record_validation_count: 0,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      external_effect_possible: false,
+      blocker_codes: [],
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual({
+      stage: "chooser",
+      action_count: 1,
+      state_read_count: 2,
+    });
+    expect(validateWelcomeAudioSafariLiveHostReceipt(item.prepared.redacted_receipt))
+      .toEqual({ ok: true, reason: null });
+  });
+
+  test.each([
+    ["wrong target", { exactTargetOverride: "Different.Target@Example.COM" }],
+    ["wrong thread", { threadShaOverride: "f".repeat(64) }],
+  ])("blocks %s before any UI action", async (_label, overrides) => {
+    const item = await createHarness(overrides);
+
+    expect(item.prepared.private_prepared_permit).toBeNull();
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(0);
+    expect(item.prepared.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.TARGET_BINDING_INVALID,
+    ]);
+  });
+
+  test("blocks an exact-capability target on a mismatched synthetic thread", async () => {
+    const item = await createHarness({
+      scenario: WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.THREAD_MISMATCH,
+    });
+
+    expect(item.prepared.private_prepared_permit).toBeNull();
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(0);
+    expect(item.prepared.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SOURCE_THREAD_INVALID,
+    ]);
+  });
+
+  test.each([
+    ["case-variant target", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.TARGET_CASE_VARIANT],
+    [
+      "target outside thread semantics",
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.TARGET_OUTSIDE_THREAD_SEMANTICS,
+    ],
+  ])("blocks %s with zero UI actions", async (_label, scenario) => {
+    const item = await createHarness({ scenario });
+
+    expect(item.prepared.private_prepared_permit).toBeNull();
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(0);
+    expect(item.prepared.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SOURCE_THREAD_INVALID,
+    ]);
+  });
+
+  test.each([
+    ["a pre-existing outgoing audio", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.PRIOR_AUDIO_PRESENT,
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PRIOR_AUDIO_PRESENT_OR_UNKNOWN],
+    ["draft text", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.DRAFT_TEXT_PRESENT,
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.COMPOSER_NOT_EMPTY],
+  ])("blocks %s before opening the chooser", async (_label, scenario, blocker) => {
+    const item = await createHarness({ scenario });
+
+    expect(item.prepared.private_prepared_permit).toBeNull();
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(0);
+    expect(item.prepared.redacted_receipt.blocker_codes).toEqual([blocker]);
+  });
+});
+
+describe("durable PENDING boundary", () => {
+  test("direct execute without durable exact PENDING performs zero execute UI", async () => {
+    const item = await createHarness();
+    const before = inspectSyntheticSafariDriverForTest({ driver: item.driver });
+    const result = await execute(item);
+    const after = inspectSyntheticSafariDriverForTest({ driver: item.driver });
+
+    expect(before?.action_count).toBe(1);
+    expect(after?.action_count).toBe(before?.action_count);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+      pending_record_validation_count: 0,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      retry_forbidden_permanently: true,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PENDING_INVALID],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_NO_UPLOAD_0_SEND,
+    );
+  });
+
+  test.each([
+    ["stale handcrafted record", { entered_at: new Date(CONTEXT_NOW_MS - 1).toISOString() }],
+    ["restart PID mismatch", { owner_pid: process.pid + 1 }],
+    ["binding tamper", { audio_asset_sha256: "f".repeat(64) }],
+  ])("%s cannot cross the upload boundary", async (_label, recordOverrides) => {
+    const item = await createHarness();
+    await writePending(item, recordOverrides);
+    const result = await execute(item);
+
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(1);
+    expect(result.redacted_receipt.attachment_upload_entered).toBe(false);
+    expect(result.redacted_receipt.send_control_actuation_count).toBe(0);
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_NO_UPLOAD_0_SEND,
+    );
+  });
+
+  test("valid PENDING is validated twice and rechecked immediately before path typing", async () => {
+    const item = await createHarness();
+    const { result } = await executeArmed(item);
+
+    expect(result.redacted_receipt).toMatchObject({
+      pending_record_validation_count: 2,
+      pending_revalidated_immediately_before_upload: true,
+      asset_path_capability_validated_before_upload: true,
+      attachment_upload_entered: true,
+    });
+    const source = await readFile(MODULE_PATH, "utf8");
+    const secondRead = source.indexOf("const revalidatedPending = await readStablePending");
+    const enterUpload = source.indexOf("attachmentUploadEntered = true", secondRead);
+    const typePath = source.indexOf("action: 'type_private_audio_path'", enterUpload);
+    expect(secondRead).toBeGreaterThan(0);
+    expect(enterUpload).toBeGreaterThan(secondRead);
+    expect(typePath).toBeGreaterThan(enterUpload);
+  });
+
+  test("an exact path mismatch performs no upload or send", async () => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      approved_audio_asset_path: join(item.claimRoot, "different-audio.m4a"),
+    });
+
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toMatchObject({
+      stage: "go_to_folder",
+      action_count: 2,
+    });
+    expect(result.redacted_receipt).toMatchObject({
+      pending_record_validation_count: 1,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.ASSET_PATH_BINDING_INVALID],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_NO_UPLOAD_0_SEND,
+    );
+  });
+
+  test("a valid permit with a wrong execute-thread binding returns unknown evidence, not a throw", async () => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      expected_thread_anchor_sha256: "f".repeat(64),
+    });
+
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(1);
+    expect(result.redacted_receipt).toMatchObject({
+      pending_record_validation_count: 0,
+      attachment_upload_entered: false,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_NO_UPLOAD_0_SEND,
+    );
+  });
+
+  test("entry may be fresh while the exact five-minute preupload boundary fails closed", async () => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      synthetic_entry_now_ms: PENDING_AT_MS + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS - 1,
+      synthetic_preupload_now_ms: PENDING_AT_MS + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+      synthetic_attempted_at_ms: PENDING_AT_MS + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+      synthetic_confirmation_now_ms: PENDING_AT_MS + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+    });
+
+    expect(result.redacted_receipt).toMatchObject({
+      pending_record_validation_count: 1,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PENDING_INVALID],
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toMatchObject({
+      stage: "go_to_folder",
+      action_count: 2,
+    });
+  });
+
+  test("a host-pending capability mismatch is one-use and burns the mismatched capability", async () => {
+    const first = await createHarness();
+    const second = await createHarness();
+    const firstArmed = await armPendingWithRealIssuer(first);
+    const secondArmed = await armPendingWithRealIssuer(second);
+
+    const mismatched = await execute(first, {
+      private_host_pending_capability: secondArmed.private_host_pending_capability,
+    });
+    expect(mismatched.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PENDING_INVALID,
+    ]);
+    expect(inspectSyntheticSafariDriverForTest({ driver: first.driver })?.action_count).toBe(1);
+
+    const burned = await execute(second, {
+      private_host_pending_capability: secondArmed.private_host_pending_capability,
+    });
+    expect(burned.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PENDING_INVALID,
+    ]);
+    expect(inspectSyntheticSafariDriverForTest({ driver: second.driver })?.action_count).toBe(1);
+    expect(firstArmed.private_host_pending_capability).not.toBeNull();
+  });
+
+  test.each([
+    ["mode 0644", async (item: Awaited<ReturnType<typeof createHarness>>) => {
+      await chmod(pendingPaths(item).pending, 0o644);
+    }],
+    ["hard-link count 2", async (item: Awaited<ReturnType<typeof createHarness>>) => {
+      await link(pendingPaths(item).pending, join(item.claimRoot, "pending-hard-link.json"));
+    }],
+    ["missing record", async (item: Awaited<ReturnType<typeof createHarness>>) => {
+      await unlink(pendingPaths(item).pending);
+    }],
+    ["temporary evidence", async (item: Awaited<ReturnType<typeof createHarness>>) => {
+      await writeFile(join(item.claimRoot, ".pending-incomplete.json"), "{}\n", { mode: 0o600 });
+    }],
+    ["terminal evidence", async (item: Awaited<ReturnType<typeof createHarness>>) => {
+      await writeFile(pendingPaths(item).terminal, "{}\n", { mode: 0o600 });
+    }],
+  ])("rejects %s before upload", async (_label, mutate) => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    await mutate(item);
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+    });
+
+    expect(result.redacted_receipt).toMatchObject({
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(1);
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_NO_UPLOAD_0_SEND,
+    );
+  });
+
+  test.each([
+    ["owner nonce", { owner_nonce: "f".repeat(64) }],
+    ["attempt nonce", { attempt_nonce: "e".repeat(64) }],
+    ["full binding", { mission_contract_sha256: "d".repeat(64) }],
+  ])("rejects %s tamper against the issuer capability", async (_label, overrides) => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const path = pendingPaths(item).pending;
+    const record = JSON.parse(await readFile(path, "utf8"));
+    await writeFile(path, `${JSON.stringify({ ...record, ...overrides })}\n`, { mode: 0o600 });
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+    });
+
+    expect(result.redacted_receipt).toMatchObject({
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(1);
+  });
+});
+
+describe("post-PENDING attempt and visual evidence", () => {
+  test("an upload with no exact preview is terminal unknown with zero send", async () => {
+    const item = await createHarness({
+      scenario: WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.UPLOAD_UNKNOWN,
+    });
+    const { result } = await executeArmed(item);
+
+    expect(result.private_visual_confirmation_capability).toBeNull();
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+      attachment_upload_entered: true,
+      asset_preview_verified: false,
+      send_control_actuation_count: 0,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PREVIEW_INVALID],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_UPLOAD_0_SEND,
+    );
+  });
+
+  test.each([
+    ["sent marker only", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.SENT_MARKER_ONLY],
+    ["compose reset only", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.COMPOSE_RESET_ONLY],
+  ])("%s never counts as confirmation", async (_label, scenario) => {
+    const item = await createHarness({ scenario });
+    const { result } = await executeArmed(item);
+
+    expect(result.private_visual_confirmation_capability).toBeNull();
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      new_outgoing_audio_bubble_delta: 0,
+      sent_marker_only_accepted: false,
+      compose_reset_accepted: false,
+      attachment_upload_entered: true,
+      send_control_actuation_count: 1,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.CONFIRMATION_UNKNOWN],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_UPLOAD_1_SEND,
+    );
+  });
+
+  test("a same-thread fresh +1 outgoing audio bubble yields one-use evidence", async () => {
+    const item = await createHarness();
+    const { result } = await executeArmed(item);
+
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.VISUAL_EVIDENCE_READY,
+      pending_record_validation_count: 2,
+      attachment_upload_entered: true,
+      asset_preview_verified: true,
+      send_control_actuation_count: 1,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER,
+      new_outgoing_audio_bubble_delta: 1,
+      visual_confirmation_capability_issued: true,
+      blocker_codes: [],
+    });
+    expect(consumeAttempt(result.private_attempt_evidence_capability))
+      .toBe(WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.CONFIRMED_UPLOAD_1_SEND_1);
+    expect(consumeAttempt(result.private_attempt_evidence_capability))
+      .toBe(WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.INVALID);
+
+    expect(consumeVisual(result))
+      .toBe(WELCOME_AUDIO_SAFARI_VISUAL_CONFIRMATION_STATUS.VALID);
+    expect(consumeVisual(result))
+      .toBe(WELCOME_AUDIO_SAFARI_VISUAL_CONFIRMATION_STATUS.INVALID);
+    expect(validateWelcomeAudioSafariLiveHostReceipt(result.redacted_receipt))
+      .toEqual({ ok: true, reason: null });
+
+    const serialized = JSON.stringify(result.redacted_receipt);
+    for (const privateValue of [
+      item.fixture.exactTarget,
+      item.assetPath,
+      item.identitySha,
+      THREAD_SHA,
+    ]) expect(serialized).not.toContain(privateValue);
+  });
+
+  test("a wrong attempt consume burns the attempt and makes associated visual evidence invalid", async () => {
+    const item = await createHarness();
+    const { result } = await executeArmed(item);
+
+    expect(consumeAttempt(result.private_attempt_evidence_capability, {
+      expected_operation_id: "wrong-operation",
+    })).toBe(WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.INVALID);
+    expect(consumeVisual(result))
+      .toBe(WELCOME_AUDIO_SAFARI_VISUAL_CONFIRMATION_STATUS.INVALID);
+  });
+
+  test.each([
+    ["draft appears", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.DRAFT_TEXT_BEFORE_SEND,
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.COMPOSER_NOT_EMPTY],
+    ["second attachment appears", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.SECOND_ATTACHMENT_PREVIEW,
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PREVIEW_INVALID],
+    ["concurrent audio appears", WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.PRIOR_AUDIO_BEFORE_SEND,
+      WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PREVIEW_INVALID],
+  ])("%s before Send is unknown with no Send actuation", async (_label, scenario, blocker) => {
+    const item = await createHarness({ scenario });
+    const { result } = await executeArmed(item);
+
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+      attachment_upload_entered: true,
+      send_control_actuation_count: 0,
+      blocker_codes: [blocker],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_UPLOAD_0_SEND,
+    );
+  });
+
+  test("a Send action throw is terminal UNKNOWN with exactly one attempted Send", async () => {
+    const item = await createHarness({
+      scenario: WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO.SEND_ACTION_THROWS,
+    });
+    const { result } = await executeArmed(item);
+
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+      attachment_upload_entered: true,
+      send_control_actuation_count: 1,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SEND_ACTUATION_UNKNOWN],
+    });
+    expectUnknownAttempt(
+      result,
+      WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_UPLOAD_1_SEND,
+    );
+  });
+
+  test("malformed execute input after a valid prepared permit returns UNKNOWN evidence", async () => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      synthetic_entry_now_ms: Number.NaN,
+    });
+
+    expect(result.private_attempt_evidence_capability).not.toBeNull();
+    expect(result.private_visual_confirmation_capability).toBeNull();
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID],
+    });
+  });
+
+  test("invalid non-Proxy envelopes burn a located permit without invoking accessors", async () => {
+    const mutations: Array<[
+      string,
+      (base: Record<PropertyKey, unknown>, accessorReads: { count: number }) => object,
+    ]> = [
+      ["extra field", (base) => ({ ...base, extra_field: true })],
+      ["missing field", (base) => {
+        Reflect.deleteProperty(base, "synthetic_confirmation_now_ms");
+        return base;
+      }],
+      ["symbol field", (base) => {
+        base[Symbol("extra")] = true;
+        return base;
+      }],
+      ["null prototype", (base) => Object.assign(Object.create(null), base)],
+      ["class instance", (base) => {
+        class InvalidEnvelope {}
+        return Object.assign(new InvalidEnvelope(), base);
+      }],
+      ["throwing getter", (base, accessorReads) => {
+        Object.defineProperty(base, "approved_audio_asset_path", {
+          get() {
+            accessorReads.count += 1;
+            throw new Error("must_not_run");
+          },
+          configurable: true,
+          enumerable: true,
+        });
+        return base;
+      }],
+      ["setter-only field", (base, accessorReads) => {
+        Object.defineProperty(base, "expected_thread_anchor_sha256", {
+          set() {
+            accessorReads.count += 1;
+          },
+          configurable: true,
+          enumerable: true,
+        });
+        return base;
+      }],
+    ];
+
+    for (const [label, mutate] of mutations) {
+      const item = await createHarness();
+      const armed = await armPendingWithRealIssuer(item);
+      const accessorReads = { count: 0 };
+      const envelope = mutate(validExecuteEnvelope(item, {
+        private_host_pending_capability: armed.private_host_pending_capability,
+      }), accessorReads);
+      const before = inspectSyntheticSafariDriverForTest({ driver: item.driver });
+      const result = await executeWelcomeAudioSafariLivePostPending(envelope);
+
+      expect(accessorReads.count, label).toBe(0);
+      expect(result.redacted_receipt.decision, label)
+        .toBe(WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.ATTEMPT_UNKNOWN);
+      expect(result.redacted_receipt.blocker_codes, label)
+        .toEqual([WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID]);
+      expect(consumeAttempt(result.private_attempt_evidence_capability), label)
+        .toBe(WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS.UNKNOWN_NO_UPLOAD_0_SEND);
+      expect(inspectSyntheticSafariDriverForTest({ driver: item.driver }), label).toEqual(before);
+
+      const retry = await execute(item, {
+        private_host_pending_capability: armed.private_host_pending_capability,
+      });
+      expect(retry.private_attempt_evidence_capability, label).toBeNull();
+      expect(retry.redacted_receipt).toMatchObject({
+        decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.BLOCKED,
+        blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PERMIT_INVALID],
+      });
+    }
+  });
+
+  test("whole-envelope Proxy and revoked Proxy trigger no traps and do not burn the permit", async () => {
+    for (const revoked of [false, true]) {
+      const item = await createHarness();
+      const armed = await armPendingWithRealIssuer(item);
+      const envelope = validExecuteEnvelope(item, {
+        private_host_pending_capability: armed.private_host_pending_capability,
+      });
+      let trapCount = 0;
+      const revocable = Proxy.revocable(envelope, {
+        ownKeys() {
+          trapCount += 1;
+          throw new Error("must_not_run");
+        },
+        getOwnPropertyDescriptor() {
+          trapCount += 1;
+          throw new Error("must_not_run");
+        },
+        get() {
+          trapCount += 1;
+          throw new Error("must_not_run");
+        },
+      });
+      if (revoked) revocable.revoke();
+
+      const rejected = await executeWelcomeAudioSafariLivePostPending(revocable.proxy);
+      expect(trapCount).toBe(0);
+      expect(rejected.private_attempt_evidence_capability).toBeNull();
+      expect(rejected.redacted_receipt).toMatchObject({
+        decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.BLOCKED,
+        blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID],
+      });
+
+      const normal = await executeWelcomeAudioSafariLivePostPending(envelope);
+      expect(normal.private_visual_confirmation_capability).not.toBeNull();
+      expect(normal.redacted_receipt.decision)
+        .toBe(WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.VISUAL_EVIDENCE_READY);
+    }
+  });
+
+  test("a permit accessor is never invoked and therefore cannot burn the real permit", async () => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const envelope = validExecuteEnvelope(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+    });
+    let accessorReads = 0;
+    Object.defineProperty(envelope, "private_prepared_permit", {
+      get() {
+        accessorReads += 1;
+        throw new Error("must_not_run");
+      },
+      configurable: true,
+      enumerable: true,
+    });
+
+    const rejected = await executeWelcomeAudioSafariLivePostPending(envelope);
+    expect(accessorReads).toBe(0);
+    expect(rejected.private_attempt_evidence_capability).toBeNull();
+    expect(rejected.redacted_receipt.blocker_codes)
+      .toEqual([WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID]);
+
+    const normal = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+    });
+    expect(normal.private_visual_confirmation_capability).not.toBeNull();
+  });
+
+  test("opaque capabilities cannot be serialized", async () => {
+    const item = await createHarness();
+    const armed = await armPendingWithRealIssuer(item);
+    const result = await execute(item, {
+      private_host_pending_capability: armed.private_host_pending_capability,
+    });
+
+    for (const capability of [
+      item.prepared.private_prepared_permit,
+      armed.private_host_pending_capability,
+      result.private_attempt_evidence_capability,
+      result.private_visual_confirmation_capability,
+    ]) expect(() => JSON.stringify(capability)).toThrow(/not_serializable/u);
+  });
+});
+
+describe("strict Safari semantic parser", () => {
+  const parsed = (scenario: string) => inspectSyntheticLiveSafariStateForTest({
+    scenario,
+    exact_target: "Synthetic.Target+1@Example.COM",
+    approved_audio_asset_path: "/synthetic/private/approved-audio.m4a",
+  });
+
+  test.each([
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.EXACT_ACTIVE_THREAD, true],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.TARGET_SIDEBAR_ONLY, false],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.TARGET_CASE_VARIANT, false],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.AMBIGUOUS_DUPLICATE_THREAD, false],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.ROLELESS_THREAD_DECOY, false],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.MALFORMED_DEDENT_REINDENT, false],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.DUPLICATE_ACTIVE_ROOT, false],
+    [WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.TARGET_SUBSTRING_DECOY, false],
+  ])("binds only exact unique active thread semantics: %s", (scenario, expected) => {
+    expect(parsed(scenario)?.exact_thread_bound).toBe(expected);
+  });
+
+  test("does not accept a filename outside the one exact attachment preview", () => {
+    expect(parsed(
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.FILENAME_OUTSIDE_PREVIEW,
+    )?.exact_asset_preview_visible).toBe(false);
+    expect(parsed(
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.EXACT_ATTACHMENT_PREVIEW,
+    )?.exact_asset_preview_visible).toBe(true);
+  });
+
+  test("counts only an outgoing audio bubble scoped to the exact active thread", () => {
+    for (const scenario of [
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.UNRELATED_OUTGOING_BUBBLE,
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.DEDENTED_OUTGOING_BUBBLE,
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.MALFORMED_DEDENT_REINDENT,
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.STATIC_TEXT_OUTGOING_VOICE,
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.INCOMING_VOICE_BUBBLE,
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.OUTGOING_TEXT_BUBBLE,
+    ]) expect(parsed(scenario)?.outgoing_audio_bubble_count, scenario).toBe(0);
+    for (const scenario of [
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.EXACT_THREAD_OUTGOING_BUBBLE,
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.LIST_ITEM_OUTGOING_VOICE,
+    ]) expect(parsed(scenario)?.outgoing_audio_bubble_count, scenario).toBe(1);
+  });
+
+  test("ignores composer and attachment controls outside the exact active root", () => {
+    expect(parsed(
+      WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.CONTROLS_OUTSIDE_ACTIVE_ROOT,
+    )).toMatchObject({
+      exact_thread_bound: true,
+      message_input_visible: false,
+      message_composer_empty: false,
+      attachment_control_index: null,
+      exact_asset_preview_visible: false,
+      attachment_preview_count: 0,
+      send_control_index: null,
+    });
+  });
+
+  test.each([
+    WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.DUPLICATE_SCOPED_CONTROLS_SAME_INDEX,
+    WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO.DUPLICATE_SCOPED_CONTROLS_UNINDEXED,
+  ])("fails closed on ambiguous scoped controls: %s", (scenario) => {
+    expect(parsed(scenario)).toMatchObject({
+      exact_thread_bound: true,
+      attachment_control_index: null,
+      send_control_index: null,
+    });
+  });
+});
+
+describe("driver and source confinement", () => {
+  test("exports no live driver or host mint and rejects a caller-supplied four-method fake", async () => {
+    const namespace = await import(
+      "../scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs"
+    );
+    const fakeDriver = Object.freeze({
+      get_app_state: () => null,
+      click: () => null,
+      press_key: () => null,
+      type_text: () => null,
+    });
+
+    expect("createSkySafariDriver" in namespace).toBe(false);
+    expect("createWelcomeAudioSafariLiveHostCapability" in namespace).toBe(false);
+    expect("createInstalledComputerUseSafariLiveHostCapability" in namespace).toBe(false);
+    expect(() => createSyntheticWelcomeAudioSafariLiveHostCapabilityForTest({
+      driver: fakeDriver,
+      private_audio_asset_capability: Object.freeze({}),
+      pending_store_root: "/synthetic/not-used",
+    })).toThrow(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID);
+  });
+
+  test("accepts only exact frozen installed-runtime identity and rejects a wrapper fake", () => {
+    const runtimeSymbol = Symbol.for("openai.computer-use.runtime");
+    const originalRuntime = Object.getOwnPropertyDescriptor(globalThis, runtimeSymbol);
+    const originalSky = Object.getOwnPropertyDescriptor(globalThis, "sky");
+    const method = () => null;
+    const exactRuntime = Object.freeze({
+      get_app_state: method,
+      click: method,
+      press_key: method,
+      type_text: method,
+    });
+    try {
+      Object.defineProperty(globalThis, runtimeSymbol, {
+        value: exactRuntime,
+        writable: true,
+        configurable: true,
+      });
+      Object.defineProperty(globalThis, "sky", {
+        value: exactRuntime,
+        writable: true,
+        configurable: true,
+      });
+      expect(inspectInstalledComputerUseRuntimeBindingForTest()).toBe(true);
+
+      Object.defineProperty(globalThis, runtimeSymbol, {
+        value: Object.freeze({ sky: exactRuntime }),
+        writable: true,
+        configurable: true,
+      });
+      expect(inspectInstalledComputerUseRuntimeBindingForTest()).toBe(false);
+    } finally {
+      if (originalRuntime) Object.defineProperty(globalThis, runtimeSymbol, originalRuntime);
+      else Reflect.deleteProperty(globalThis, runtimeSymbol);
+      if (originalSky) Object.defineProperty(globalThis, "sky", originalSky);
+      else Reflect.deleteProperty(globalThis, "sky");
+    }
+  });
+
+  test("hardcodes Safari, exposes no generic callback surface, and contains no network path", async () => {
+    const source = await readFile(MODULE_PATH, "utf8");
+
+    expect(SAFARI_APP_ID).toBe("com.apple.Safari");
+    expect(source).toContain("const SAFARI_APP_ID = 'com.apple.Safari'");
+    expect(source).not.toMatch(/from\s+['"]@oai\/sky['"]/u);
+    expect(source).not.toMatch(/\b(?:fetch|XMLHttpRequest|axios|https?\.request)\s*\(/u);
+    expect(source).not.toMatch(/\b(?:callback|execute_command|raw_action|coordinates?)\b/iu);
+    expect(source).not.toMatch(/\b(?:x|y)\s*:/u);
+    expect(source).toMatch(/get_app_state\(\{ app: SAFARI_APP_ID,/u);
+    expect(source).toMatch(/\.click\(\{ app: SAFARI_APP_ID, element_index:/u);
+    expect(source).toMatch(/\.press_key\(\{ app: SAFARI_APP_ID, key:/u);
+    expect(source).toMatch(/\.type_text\(\{ app: SAFARI_APP_ID, text:/u);
+  });
+
+  test("confirmed receipt is coherent, secret-free, and the driver performs one Send only", async () => {
+    const item = await createHarness();
+    const { result } = await executeArmed(item);
+    const audit = inspectSyntheticSafariDriverForTest({ driver: item.driver });
+
+    expect(audit).toEqual({ stage: "after_send", action_count: 6, state_read_count: 9 });
+    expect(result.redacted_receipt.send_control_actuation_count).toBe(1);
+    expect(validateWelcomeAudioSafariLiveHostReceipt(result.redacted_receipt))
+      .toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioSafariLiveHostReceipt({
+      ...result.redacted_receipt,
+      send_control_actuation_count: 0,
+    })).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID,
+    });
+    const serialized = JSON.stringify(result.redacted_receipt);
+    for (const privateValue of [
+      item.fixture.exactTarget,
+      item.assetPath,
+      item.identitySha,
+      THREAD_SHA,
+      OPERATION_ID,
+    ]) expect(serialized).not.toContain(privateValue);
+  });
+});
