@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
-Date: 2026-07-14
-Status: `operational_rail_async_bridge_and_deferred_rendezvous_centrally_integrated_no_live`
+Date: 2026-07-15
+Status: `live_gates_hardening_contract_updated_repo_only_no_live`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -29,8 +29,9 @@ modeled Send, one modeled confirmation, and permanent terminal/no-retry. It
 does not drive this adapter or any real surface. A modeled
 `send_control_actuation_count=1` is never a real message.
 
-That async bridge is now centrally integrated. The current delta adds only a
-deterministic same-process deferred rendezvous for a future host result. Its
+That async bridge and its deferred rendezvous are centrally integrated
+historical no-effect evidence. The rendezvous adds only a deterministic
+same-process seam for a future host result. Its
 authority is opaque, frozen, nonserializable, and exact-port/exact-binding
 paired. It may arm only inside the executor after durable `PENDING` and after
 both claim and session authority have been consumed. It accepts one resolution;
@@ -45,10 +46,56 @@ method, driver, callback, browser handle, or payload. This is not a browser
 integration, surface-health check, upload, or send. Independent delta review,
 formal artifact review, and central integration are complete.
 
-For this lane, all of the following remain explicitly false:
+## Separate Sibling Live Runtime v1
+
+The live-gates hardening mission defines a separate sibling runtime. It does
+not convert the deterministic rail, bridge, port, or rendezvous into a live or
+dual-mode component. The sibling runtime composes a live preflight, an
+owner-only global claim issuer, durable owner-only attempt state, and a
+Safari/Computer Use host behind nonserializable one-use capabilities.
+
+Its mandatory effect ordering is:
 
 ```text
-browser_used = false
+fresh live preflight
+  -> durable global exact-identity claim and mission cap reservation
+  -> durable PENDING before any audio-byte upload
+  -> one-shot native-picker upload boundary
+  -> at most one Send-control actuation
+  -> durable TERMINAL confirmation-or-unknown state
+  -> permanent no-retry
+```
+
+Audio-byte upload and Send are separate external-effect boundaries. Neither is
+permitted unless the same current invocation has already published the global
+claim and durable `PENDING`. Any exception, timeout, process death, ambiguous
+state, or missing strong current-operation confirmation after either boundary
+closes the operation terminally and cannot authorize another upload or Send.
+
+This documentation update precedes the final source merge and review. Its
+implementation and fake-driver result must be filled from actual integration
+evidence, never inferred here:
+
+```text
+technical_live_runtime_implemented = <set_after_source_merge_and_final_review>
+validation_scope = fake_driver_only
+fake_driver_green = <set_after_final_fake_driver_run>
+neutral_safari_binding_green = not_run
+instagram_surface_validated = false
+instagram_auth_validated = false
+instagram_upload_validated = false
+instagram_send_validated = false
+production_ready = false
+send_allowed = false
+live_authority = false
+real_canary_requires_fresh_approval = true
+```
+
+For this repo-only hardening mission, all of the following remain explicitly
+false:
+
+```text
+instagram_browser_used = false
 network_used = false
 external_effect_invoked = false
 production_ready = false
@@ -72,8 +119,10 @@ contract but do not authorize its execution.
 For every future Welcome Audio operation, this adapter and
 `instagram-welcome-audio-surface-capability-matrix-v1.md` supersede the v0 route
 as the binding action design. The old limited operational pilot is closed by
-`crm-core-limited-operational-pilot-v1-closeout-v0.md`. A newly approved future
-mission is required before any live effect.
+`crm-core-limited-operational-pilot-v1-closeout-v0.md`. A staged canary contract
+now exists, but it remains execution-unapproved. A fresh exact
+owner approval bound to the final integrated commit and sealed private inputs
+is required before any live effect.
 
 ## Canonical Surface
 
@@ -106,7 +155,8 @@ contract and adapter versions; operation, approval, surface, follower, binding,
 eligibility, asset, context, dedupe, effect-claim, execution, confirmation, and
 optional receipt sections. Every required root and nested key must be present,
 and every extra root or nested key fails closed with `INPUT_SHAPE`. The optional
-`receipt` is the only permitted root-key variation.
+`receipt` and the exact six-field `source_provenance` required only for the
+sealed-backlog source class are the only permitted root-key variations.
 
 | Field | Allowed values | Required value before the attempt |
 | --- | --- | --- |
@@ -115,8 +165,9 @@ and every extra root or nested key fails closed with `INPUT_SHAPE`. The optional
 | `confirmation_max_delay_ms` | integer | exact immutable value `300000` in `operation`, `approval`, and `context` |
 | `surface` | `safari_instagram_web_dm` | exact value |
 | `surface_detail` | `safari_standard_isolated_native_picker` | exact value |
-| `source_recency` | `exact_recent`, `stale`, `unknown` | `exact_recent` |
-| `source_binding` | `exact_recent_source_bound`, `mismatch`, `ambiguous`, `missing` | `exact_recent_source_bound` |
+| `source_recency` | `exact_recent`, `sealed_paused_campaign_backlog`, `stale`, `unknown` | `exact_recent` for a fresh-source mission or `sealed_paused_campaign_backlog` for the approved backlog class |
+| `source_binding` | `exact_recent_source_bound`, `exact_sealed_backlog_member_bound`, `mismatch`, `ambiguous`, `missing` | exact value matching the approved source class |
+| `source_provenance` | absent for `exact_recent`; exact six-field sealed provenance for backlog | exact sealed manifest, interval, position, count, class, and source-event binding when backlog is used |
 | `audio_capability` | `present_and_usable`, `missing`, `disabled`, `ambiguous` | `present_and_usable` |
 | `asset_preview_binding` | `exact_asset_and_preview_match`, `asset_mismatch`, `preview_mismatch`, `preview_unavailable` | `exact_asset_and_preview_match` |
 | `attempt_budget` | integer | `1` |
@@ -186,13 +237,20 @@ execution_surface:
   in_app_browser_upload_attempted: false
   observed_at: private fresh observation timestamp
 follower_evidence:
-  source_recency: exact_recent|stale|unknown
+  source_recency: exact_recent|sealed_paused_campaign_backlog|stale|unknown
   observed_at: private timestamp
-  time_bucket: today|previous_calendar_day|stale
+  time_bucket: today|previous_calendar_day|sealed_campaign_interval|stale
   source_recency_max_age_ms: exact approval-bound value
   source_event_anchor_sha256: private
+source_provenance: # present only for sealed_paused_campaign_backlog
+  source_class: sealed_paused_campaign_backlog_member
+  manifest_digest_sha256: private
+  campaign_interval_digest_sha256: private
+  manifest_record_index: zero-based integer
+  manifest_record_count: integer from 1 through 8
+  source_event_anchor_sha256: exact operation source-event anchor
 binding:
-  source_binding: exact_recent_source_bound|mismatch|ambiguous|missing
+  source_binding: exact_recent_source_bound|exact_sealed_backlog_member_bound|mismatch|ambiguous|missing
   source_to_profile: exact
   profile_to_thread: exact
   follows_owner: confirmed
@@ -204,7 +262,7 @@ binding:
   owner_anchor_sha256: private
   observed_at: private fresh observation timestamp
 eligibility:
-  business_eligibility: eligible_confirmed_recent_follower
+  business_eligibility: eligible_confirmed_recent_follower|eligible_confirmed_sealed_campaign_backlog_follower
   audio_capability: public audio-capability enum
   composer_capability: public audio-capability enum
   attachment_capability: public audio-capability enum
@@ -333,9 +391,10 @@ are excluded from the projection. Mutating or backdating any preclaim section
 after the digest is approved changes the canonical bytes and fails the trusted
 external anchor.
 
-## Future Mission Binding
+## Mission And Fresh Approval Binding
 
-No invocation is valid without a new future mission that explicitly binds:
+No invocation is valid without an execution-approved mission that explicitly
+binds:
 
 - its mission ID and version;
 - this exact adapter ID and the v1 surface matrix;
@@ -368,20 +427,31 @@ No invocation is valid without a new future mission that explicitly binds:
 The adapter does not inherit authorization, capacity, recipients, timing, or
 effect allowances from the closed pilot or from any historical result.
 
-## Exact Recent Source Binding
+## Exact Approved Source Binding
 
 `source_recency: exact_recent` is true only when a fresh observation falls
-inside the maximum age defined by the future mission and is in the current or
+inside the maximum age defined by the approved mission and is in the current or
 previous `America/Bogota` calendar day. The mission-bound maximum age is an
 absolute duration and may be stricter than that two-day calendar envelope.
 This adapter does not invent or inherit a stale duration.
 
-`source_binding: exact_recent_source_bound` requires all of the following at
-the immediate pre-attempt check:
+`source_recency: sealed_paused_campaign_backlog` is a distinct approved source
+class. It requires `time_bucket: sealed_campaign_interval` and the exact
+`source_provenance` object shown above. The manifest record count must be from
+one through eight, the zero-based record index must be inside that count, and
+the provenance source-event anchor must equal the operation source-event
+anchor. The private manifest and campaign-interval digests, position, count,
+and source class are sealed into the canonical operation digest. Provenance is
+forbidden on an `exact_recent` operation.
+
+`source_binding: exact_recent_source_bound` or
+`exact_sealed_backlog_member_bound`, whichever matches the approved source
+class, requires all of the following at the immediate pre-attempt check:
 
 1. the fresh source observation resolves to exactly one private stable identity;
-2. its time bucket is exactly `today` or `previous_calendar_day` in
-   `America/Bogota` and agrees with the observed timestamp;
+2. its time bucket matches its source class: `today` or
+   `previous_calendar_day` for `exact_recent`, or
+   `sealed_campaign_interval` plus exact sealed provenance for backlog;
 3. the source event, opened profile, private stable candidate, owner account,
    and Instagram Web DM thread anchors all match the operation and approval;
 4. the profile visibly and unambiguously confirms that it follows the owner;
@@ -532,12 +602,13 @@ after completion, permanent no-retry, and blocker `ACTUATION_COUNT`. Replay
 keeps boundary and actuation counts at zero and cannot mint or consume a second
 capability effect. Count `2` remains receipt-invalid.
 
-A real browser-bound executor/actuator remains a separate reviewed boundary.
-It cannot be inferred from the branded no-effect port or the async bridge. Even
-though the no-effect rail is validated, reviewed, and centrally integrated, a
-separately reviewed owner-only live claim issuer, real browser-bound Safari
-actuator, and new future mission with fresh explicit CEO approval are still
-required before the exact canary effect path can exist.
+A real browser-bound executor/actuator remains a separate boundary from the
+branded no-effect port and async bridge. The sibling live runtime may satisfy
+that technical boundary only after its source, tests, and independent review
+are actually integrated. That technical result still cannot validate the
+Instagram surface, authentication, upload, or Send path. The existing canary
+contract remains behind fresh exact owner approval bound to the final
+integrated commit and sealed private inputs.
 
 The send-control actuation is the effect boundary. The claim was already
 durably committed before this boundary. Immediately at the boundary, the
@@ -696,12 +767,10 @@ the claim and marker once; do not repair by sending again.
   scoring action;
 - no live private artifact or persisted operational receipt creation;
 - no automation activation;
-- no claim that current deferred-rendezvous central integration or any future
-  live-mission authorization already exists; delta commit and push are allowed
-  only after required no-live validation and review;
-- no live one-shot executor, real browser-bound actuator, or effect callback;
-  only the centrally integrated no-effect dependencies and the deterministic
-  simulated bridge port/session inside the exact lane allowlist are allowed;
+- no claim that a technical live host constitutes Instagram surface,
+  authentication, upload, Send, production, or live-authority validation;
+- no invocation of the sibling live runtime against Safari or Instagram; only
+  fake-driver validation is in scope and the neutral Safari proof is `not_run`;
 - no reuse of the closed pilot as live authority.
 
 ## Completion Boundary
@@ -716,12 +785,11 @@ bridge has fresh green validation: bridge-only focused `44/44`, combined
 bridge-plus-inherited focused `276/276`, bridge-targeted adversarial `13/13`,
 and full repository `240/241` files and `1701/1702` tests with only the
 unchanged out-of-lane baseline failing.
-The current deferred-rendezvous delta is focused green `292/292`, including
-operation session `40/40` and operational executor `20/20`; its full-suite
-result is `240/241` files and `1717/1718` tests with the exact unchanged
-historical out-of-lane baseline. Independent review is green. The async bridge
-review and central integration are complete, but operational readiness still
-requires this deferred-rendezvous delta to finish formal artifact review and
-central integration, then a live owner-only claim issuer, a real
-browser-bound Safari actuator, and a newly written mission with fresh explicit
-CEO approval for the exact one-recipient, one-audio, one-attempt canary.
+The deferred-rendezvous validation and central integration are historical
+no-effect evidence only. The sibling live runtime is documented separately and
+must use actual source-merge, fake-driver, and independent-review evidence
+where the placeholders above appear. The neutral Safari proof is `not_run`;
+Instagram surface, authentication, upload, and Send remain unvalidated.
+`production_ready`, `send_allowed`, and `live_authority` remain `false`. The
+real sealed-backlog canary still requires fresh exact approval bound to the
+final integrated commit and sealed private inputs.
