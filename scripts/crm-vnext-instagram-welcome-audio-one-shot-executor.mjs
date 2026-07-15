@@ -1,22 +1,8 @@
-import { createHash, randomBytes } from 'node:crypto';
-import { constants as FS_CONSTANTS } from 'node:fs';
 import {
-  link,
   lstat,
-  mkdir,
-  open,
-  readdir,
-  realpath,
-  rmdir,
-  unlink,
 } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import {
-  basename,
-  dirname,
   isAbsolute,
-  join,
-  relative,
   resolve,
   sep,
 } from 'node:path';
@@ -31,6 +17,21 @@ import {
   WELCOME_AUDIO_SEND_CLAIM,
   validateWelcomeAudioOperation,
 } from './crm-vnext-instagram-welcome-audio-operation-guard.mjs';
+import {
+  WELCOME_AUDIO_ONE_SHOT_STORE_ERROR,
+  WELCOME_AUDIO_ONE_SHOT_STORE_EVIDENCE,
+  WELCOME_AUDIO_ONE_SHOT_STORE_POLICY,
+  acquireWelcomeAudioOneShotStoreMutex,
+  assertSameWelcomeAudioOneShotRecord,
+  assertWelcomeAudioOneShotStoreRoot,
+  buildWelcomeAudioOneShotStorePaths,
+  inspectWelcomeAudioOneShotStoreEvidence,
+  promoteWelcomeAudioOneShotPendingToTerminal,
+  readWelcomeAudioOneShotRecordStable,
+  releaseWelcomeAudioOneShotStoreMutex,
+  stableJsonBytes,
+  writeWelcomeAudioOneShotExclusiveDurable,
+} from './crm-vnext-instagram-welcome-audio-one-shot-store.mjs';
 
 const WELCOME_AUDIO_ONE_SHOT_EXECUTOR_CONTRACT_VERSION =
   'crm_core_instagram_welcome_audio_one_shot_executor_v1';
@@ -102,7 +103,6 @@ const TERMINAL_RECORD_FIELDS = Object.freeze([
   'terminal_guard_decision',
   'terminal_snapshot',
 ]);
-const MAX_READY_RECORD_BYTES = 256 * 1024;
 
 class SyntheticFaultError extends Error {
   constructor(faultPoint) {
@@ -130,9 +130,6 @@ const isSha256 = (value) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(v
 const hasExactPermissionBits = (metadata, expected) =>
   (metadata.mode & 0o7777) === expected;
 
-const sha256 = (value) => createHash('sha256').update(value).digest('hex');
-
-const stableJsonBytes = (value) => Buffer.from(`${JSON.stringify(value)}\n`, 'utf8');
 
 const publicReceipt = ({
   decision,
@@ -285,179 +282,54 @@ const assertExecutorInput = ({
   ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.INPUT_INVALID);
 };
 
-const isInside = (candidate, parent) => {
-  const suffix = relative(parent, candidate);
-  return suffix !== '' && suffix !== '..' && !suffix.startsWith(`..${sep}`) && !isAbsolute(suffix);
-};
-
 const assertSyntheticRegistry = async (registryDir, expectedIdentity = null) => {
-  const unresolvedRegistryPath = resolve(registryDir);
-  const unresolvedTempRoot = resolve(tmpdir());
-  const tempRoot = await realpath(tmpdir());
-  const directUnderUnresolvedTemp = isInside(unresolvedRegistryPath, unresolvedTempRoot)
-    && dirname(unresolvedRegistryPath) === unresolvedTempRoot;
-  const directUnderCanonicalTemp = isInside(unresolvedRegistryPath, tempRoot)
-    && dirname(unresolvedRegistryPath) === tempRoot;
-  if (
-    !directUnderUnresolvedTemp
-    && !directUnderCanonicalTemp
-  ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-  const unresolvedMetadata = await lstat(unresolvedRegistryPath);
-  if (
-    !unresolvedMetadata.isDirectory()
-    || unresolvedMetadata.isSymbolicLink()
-    || !hasExactPermissionBits(unresolvedMetadata, 0o700)
-    || (typeof process.getuid === 'function' && unresolvedMetadata.uid !== process.getuid())
-  ) {
+  try {
+    return await assertWelcomeAudioOneShotStoreRoot({
+      registryRoot: registryDir,
+      policy: WELCOME_AUDIO_ONE_SHOT_STORE_POLICY.DETERMINISTIC_NO_EFFECT_TEST,
+      expectedIdentity,
+    });
+  } catch {
     throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
   }
-  const registryPath = await realpath(unresolvedRegistryPath);
-  const metadata = await lstat(registryPath);
-  if (
-    !isInside(registryPath, tempRoot)
-    || dirname(registryPath) !== tempRoot
-    || registryPath !== join(tempRoot, basename(unresolvedRegistryPath))
-    || !metadata.isDirectory()
-    || metadata.isSymbolicLink()
-    || !hasExactPermissionBits(metadata, 0o700)
-    || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
-    || metadata.dev !== unresolvedMetadata.dev
-    || metadata.ino !== unresolvedMetadata.ino
-    || metadata.uid !== unresolvedMetadata.uid
-    || metadata.mode !== unresolvedMetadata.mode
-    || (expectedIdentity && (
-      metadata.dev !== expectedIdentity.dev
-      || metadata.ino !== expectedIdentity.ino
-      || metadata.uid !== expectedIdentity.uid
-    ))
-  ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-  return { path: registryPath, dev: metadata.dev, ino: metadata.ino, uid: metadata.uid };
 };
 
 const buildWelcomeAudioOneShotSyntheticRegistryPaths = ({
   registryDir,
   expectedCanonicalOperationSha256,
 }) => {
-  const registrySegments = typeof registryDir === 'string' ? registryDir.split(sep) : [];
-  if (
-    !isAbsolute(registryDir)
-    || registryDir !== resolve(registryDir)
-    || registrySegments.some((segment) => segment === '.' || segment === '..')
-    || !isSha256(expectedCanonicalOperationSha256)
-  ) {
-    throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.INPUT_INVALID);
-  }
-  const fingerprint = sha256(
-    `${WELCOME_AUDIO_ONE_SHOT_EXECUTOR_CONTRACT_VERSION}:${expectedCanonicalOperationSha256}`,
-  );
-  const root = resolve(registryDir);
-  return Object.freeze({
-    root,
-    ready: join(root, `ready-${fingerprint}.json`),
-    pending: join(root, `pending-${fingerprint}.json`),
-    terminal: join(root, `terminal-${fingerprint}.json`),
-    mutex: join(root, `mutex-${fingerprint}.lock`),
-    pendingTempPrefix: `.pending-${fingerprint}.json.tmp-`,
-    terminalTempPrefix: `.terminal-${fingerprint}.json.tmp-`,
-  });
-};
-
-const syncDirectory = async (directoryPath, expectedIdentity = null) => {
-  let handle;
   try {
-    handle = await open(directoryPath, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW);
-    const metadata = await handle.stat();
-    if (
-      !metadata.isDirectory()
-      || !hasExactPermissionBits(metadata, 0o700)
-      || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
-      || (expectedIdentity && (
-        metadata.dev !== expectedIdentity.dev
-        || metadata.ino !== expectedIdentity.ino
-        || metadata.uid !== expectedIdentity.uid
-      ))
-    ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-    await handle.sync();
-  } catch (error) {
-    if (error?.code === 'ELOOP') throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-    throw error;
-  } finally {
-    await handle?.close();
+    return buildWelcomeAudioOneShotStorePaths({
+      registryRoot: registryDir,
+      expectedCanonicalOperationSha256,
+      namespace: WELCOME_AUDIO_ONE_SHOT_EXECUTOR_CONTRACT_VERSION,
+    });
+  } catch {
+    throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.INPUT_INVALID);
   }
 };
 
 const readReadyRecordStable = async (filePath) => {
-  let handle;
   try {
-    handle = await open(filePath, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW);
-    const before = await handle.stat();
-    if (
-      !before.isFile()
-      || !hasExactPermissionBits(before, 0o600)
-      || before.nlink !== 1
-      || (typeof process.getuid === 'function' && before.uid !== process.getuid())
-      || before.size < 2
-      || before.size > MAX_READY_RECORD_BYTES
-    ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_INVALID);
-    const bytes = await handle.readFile();
-    const after = await handle.stat();
-    if (
-      !after.isFile()
-      || !hasExactPermissionBits(after, 0o600)
-      || after.nlink !== 1
-      || (typeof process.getuid === 'function' && after.uid !== process.getuid())
-      || before.dev !== after.dev
-      || before.ino !== after.ino
-      || before.size !== after.size
-      || before.mtimeMs !== after.mtimeMs
-      || before.ctimeMs !== after.ctimeMs
-      || before.mode !== after.mode
-      || before.nlink !== after.nlink
-      || before.uid !== after.uid
-      || bytes.length !== after.size
-    ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_CHANGED);
-    let snapshot;
-    try {
-      snapshot = JSON.parse(bytes.toString('utf8'));
-    } catch {
-      throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_INVALID);
-    }
-    return {
-      snapshot,
-      digest: sha256(bytes),
-      metadata: {
-        dev: after.dev,
-        ino: after.ino,
-        size: after.size,
-        mtimeMs: after.mtimeMs,
-        ctimeMs: after.ctimeMs,
-        mode: after.mode,
-        nlink: after.nlink,
-        uid: after.uid,
-      },
-    };
+    const registryIdentity = await assertSyntheticRegistry(resolve(filePath, '..'));
+    return await readWelcomeAudioOneShotRecordStable({
+      filePath,
+      registryIdentity,
+    });
   } catch (error) {
-    if (error?.code === 'ELOOP' || error?.code === 'ENOENT') {
-      throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_INVALID);
+    if (error?.message === WELCOME_AUDIO_ONE_SHOT_STORE_ERROR.RECORD_CHANGED) {
+      throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_CHANGED);
     }
-    throw error;
-  } finally {
-    await handle?.close();
+    throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_INVALID);
   }
 };
 
 const assertSameReadyRecord = (before, after) => {
-  if (
-    before.digest !== after.digest
-    || before.metadata.dev !== after.metadata.dev
-    || before.metadata.ino !== after.metadata.ino
-    || before.metadata.size !== after.metadata.size
-    || before.metadata.mtimeMs !== after.metadata.mtimeMs
-    || before.metadata.ctimeMs !== after.metadata.ctimeMs
-    || before.metadata.mode !== after.metadata.mode
-    || before.metadata.nlink !== after.metadata.nlink
-    || before.metadata.uid !== after.metadata.uid
-  ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_CHANGED);
+  try {
+    assertSameWelcomeAudioOneShotRecord(before, after);
+  } catch {
+    throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.READY_CHANGED);
+  }
 };
 
 const validateAuthoritativeReady = ({
@@ -575,105 +447,57 @@ const writeExclusiveDurable = async ({
   existsReason,
   registryIdentity,
 }) => {
-  const temporaryPath = join(
-    dirname(filePath),
-    `.${basename(filePath)}.tmp-${process.pid}-${randomBytes(8).toString('hex')}`,
-  );
-  let handle;
   try {
-    await assertSyntheticRegistry(dirname(filePath), registryIdentity);
-    handle = await open(
-      temporaryPath,
-      FS_CONSTANTS.O_WRONLY
-        | FS_CONSTANTS.O_CREAT
-        | FS_CONSTANTS.O_EXCL
-        | FS_CONSTANTS.O_NOFOLLOW,
-      0o600,
-    );
-    await handle.writeFile(bytes);
-    await handle.sync();
-    await handle.close();
-    handle = null;
-    await assertSyntheticRegistry(dirname(filePath), registryIdentity);
-    await link(temporaryPath, filePath);
-    await assertSyntheticRegistry(dirname(filePath), registryIdentity);
-    await unlink(temporaryPath);
-    await syncDirectory(dirname(filePath), registryIdentity);
-    const metadata = await lstat(filePath);
-    if (
-      !metadata.isFile()
-      || metadata.isSymbolicLink()
-      || metadata.nlink !== 1
-      || !hasExactPermissionBits(metadata, 0o600)
-      || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
-    ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-    return metadata;
+    return await writeWelcomeAudioOneShotExclusiveDurable({
+      filePath,
+      value: JSON.parse(bytes.toString('utf8')),
+      registryIdentity,
+      existsReason,
+    });
   } catch (error) {
-    if (error?.code === 'EEXIST') throw new Error(existsReason);
-    throw error;
-  } finally {
-    await handle?.close();
-    try {
-      await assertSyntheticRegistry(dirname(filePath), registryIdentity);
-      await unlink(temporaryPath);
-      await assertSyntheticRegistry(dirname(filePath), registryIdentity);
-    } catch {
-      // Identity drift or a missing temp file must leave cleanup fail-closed.
+    if (error?.message === existsReason) throw error;
+    if (error?.message === WELCOME_AUDIO_ONE_SHOT_STORE_ERROR.EVIDENCE_PREEXISTING) {
+      throw new Error(existsReason);
     }
+    if (error?.message === WELCOME_AUDIO_ONE_SHOT_STORE_ERROR.RECORD_INVALID) {
+      throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
+    }
+    throw error;
   }
 };
 
 const inspectTerminalEvidence = async ({ paths, registryIdentity }) => {
-  await assertSyntheticRegistry(paths.root, registryIdentity);
-  const entries = await readdir(paths.root);
-  if (entries.includes(basename(paths.terminal))) return 'terminal';
+  const evidence = await inspectWelcomeAudioOneShotStoreEvidence({
+    paths,
+    registryIdentity,
+  });
+  if (evidence === WELCOME_AUDIO_ONE_SHOT_STORE_EVIDENCE.TERMINAL) return 'terminal';
   if (
-    entries.includes(basename(paths.pending))
-    || entries.some((entry) => entry.startsWith(paths.pendingTempPrefix))
-    || entries.some((entry) => entry.startsWith(paths.terminalTempPrefix))
+    evidence === WELCOME_AUDIO_ONE_SHOT_STORE_EVIDENCE.UNKNOWN
+    || evidence === WELCOME_AUDIO_ONE_SHOT_STORE_EVIDENCE.READY_PARTIAL
   ) return 'unknown';
   return null;
 };
 
 const acquireMutex = async ({ paths, registryIdentity }) => {
   try {
-    await assertSyntheticRegistry(paths.root, registryIdentity);
-    await mkdir(paths.mutex, { mode: 0o700 });
-    await syncDirectory(paths.root, registryIdentity);
-    const metadata = await lstat(paths.mutex);
-    if (
-      !metadata.isDirectory()
-      || metadata.isSymbolicLink()
-      || !hasExactPermissionBits(metadata, 0o700)
-      || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
-    ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-    await assertSyntheticRegistry(paths.root, registryIdentity);
-    return {
-      dev: metadata.dev,
-      ino: metadata.ino,
-      uid: metadata.uid,
-      mode: metadata.mode,
-    };
+    return await acquireWelcomeAudioOneShotStoreMutex({ paths, registryIdentity });
   } catch (error) {
-    if (error?.code === 'EEXIST') return false;
-    throw error;
+    if (error?.message === WELCOME_AUDIO_ONE_SHOT_STORE_ERROR.MUTEX_BUSY) return false;
+    throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
   }
 };
 
 const releaseMutex = async ({ paths, registryIdentity, mutexIdentity }) => {
-  await assertSyntheticRegistry(paths.root, registryIdentity);
-  const metadata = await lstat(paths.mutex);
-  if (
-    !metadata.isDirectory()
-    || metadata.isSymbolicLink()
-    || !hasExactPermissionBits(metadata, 0o700)
-    || metadata.dev !== mutexIdentity.dev
-    || metadata.ino !== mutexIdentity.ino
-    || metadata.uid !== mutexIdentity.uid
-    || metadata.mode !== mutexIdentity.mode
-  ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
-  await rmdir(paths.mutex);
-  await syncDirectory(paths.root, registryIdentity);
+  try {
+    await releaseWelcomeAudioOneShotStoreMutex({
+      paths,
+      registryIdentity,
+      mutexIdentity,
+    });
+  } catch {
+    throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.REGISTRY_INVALID);
+  }
 };
 
 const receiptForEvidence = (evidence) => evidence === 'terminal'
@@ -808,25 +632,21 @@ const executeWelcomeAudioOneShotSynthetic = async ({
       throw new SyntheticFaultError(faultPoint);
     }
 
-    await assertSyntheticRegistry(paths.root, registryIdentity);
     try {
-      await link(paths.pending, paths.terminal);
+      await promoteWelcomeAudioOneShotPendingToTerminal({
+        paths,
+        registryIdentity,
+      });
     } catch (error) {
-      if (error?.code === 'EEXIST') {
+      if (error?.message === WELCOME_AUDIO_ONE_SHOT_STORE_ERROR.EVIDENCE_PREEXISTING) {
         throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.TERMINAL_PREEXISTING);
       }
       throw error;
     }
-    await assertSyntheticRegistry(paths.root, registryIdentity);
-    await syncDirectory(paths.root, registryIdentity);
     if (faultPoint === WELCOME_AUDIO_ONE_SHOT_FAULT_POINT.AFTER_TERMINAL_PUBLISH) {
       preserveMutex = true;
       throw new SyntheticFaultError(faultPoint);
     }
-
-    await assertSyntheticRegistry(paths.root, registryIdentity);
-    await unlink(paths.pending);
-    await syncDirectory(paths.root, registryIdentity);
     const terminalMetadata = await lstat(paths.terminal);
     if (
       !terminalMetadata.isFile()
@@ -835,7 +655,6 @@ const executeWelcomeAudioOneShotSynthetic = async ({
       || !hasExactPermissionBits(terminalMetadata, 0o600)
       || (typeof process.getuid === 'function' && terminalMetadata.uid !== process.getuid())
     ) throw new Error(WELCOME_AUDIO_ONE_SHOT_BLOCKER.TERMINAL_AMBIGUOUS);
-    await assertSyntheticRegistry(paths.root, registryIdentity);
     return publicReceipt({
       decision: WELCOME_AUDIO_ONE_SHOT_DECISION.CONSUMED_ONCE,
       inputGuardDecision: lockedGuard.decision,

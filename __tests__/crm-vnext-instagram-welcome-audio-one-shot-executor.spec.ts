@@ -85,6 +85,10 @@ const GUARD_MODULE_PATH = resolve(
   process.cwd(),
   "scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs",
 );
+const STORE_MODULE_PATH = resolve(
+  process.cwd(),
+  "scripts/crm-vnext-instagram-welcome-audio-one-shot-store.mjs",
+);
 const cleanupPaths: string[] = [];
 
 afterEach(async () => {
@@ -426,6 +430,7 @@ const loadInstrumentedExecutor = async ({
     expectedCanonicalOperationSha256,
   });
   const wrapperPath = join(registryDir, `synthetic-fs-wrapper-${injectionMode}.mjs`);
+  const storeModulePath = join(registryDir, `synthetic-store-${injectionMode}.mjs`);
   const modulePath = join(registryDir, `synthetic-executor-${injectionMode}.mjs`);
   const registryBackupPath = `${canonicalRegistryDir}.swapped`;
   cleanupPaths.push(registryBackupPath);
@@ -487,15 +492,23 @@ const loadInstrumentedExecutor = async ({
   ].join("\n");
   await writeFile(wrapperPath, `${wrapperSource}\n`, { flag: "wx", mode: 0o600 });
 
+  const storeSource = await readFile(STORE_MODULE_PATH, "utf8");
+  const instrumentedStoreSource = storeSource.replace(
+    "from 'node:fs/promises';",
+    `from '${pathToFileURL(wrapperPath).href}';`,
+  );
+  expect(instrumentedStoreSource).not.toBe(storeSource);
+  await writeFile(storeModulePath, instrumentedStoreSource, { flag: "wx", mode: 0o600 });
+
   const executorSource = await readFile(EXECUTOR_MODULE_PATH, "utf8");
   const instrumentedSource = executorSource
     .replace(
-      "from 'node:fs/promises';",
-      `from '${pathToFileURL(wrapperPath).href}';`,
-    )
-    .replace(
       "from './crm-vnext-instagram-welcome-audio-operation-guard.mjs';",
       `from '${pathToFileURL(GUARD_MODULE_PATH).href}';`,
+    )
+    .replace(
+      "from './crm-vnext-instagram-welcome-audio-one-shot-store.mjs';",
+      `from '${pathToFileURL(storeModulePath).href}';`,
     );
   expect(instrumentedSource).not.toBe(executorSource);
   await writeFile(modulePath, instrumentedSource, { flag: "wx", mode: 0o600 });
@@ -1182,12 +1195,10 @@ describe("Instagram welcome-audio one-shot synthetic executor", () => {
     const importedModules = [...source.matchAll(/from\s+["']([^"']+)["']/g)]
       .map((match) => match[1]);
     expect(importedModules).toEqual([
-      "node:crypto",
-      "node:fs",
       "node:fs/promises",
-      "node:os",
       "node:path",
       "./crm-vnext-instagram-welcome-audio-operation-guard.mjs",
+      "./crm-vnext-instagram-welcome-audio-one-shot-store.mjs",
     ]);
     expect(source.startsWith("#!")).toBe(false);
     expect(source).not.toMatch(/process\.argv|node:child_process|\bspawn\s*\(|\bexecFile\s*\(/);

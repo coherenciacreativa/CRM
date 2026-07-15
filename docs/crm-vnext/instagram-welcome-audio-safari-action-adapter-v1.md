@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
 Date: 2026-07-14
-Status: `guard_centrally_integrated_executor_lane_validated_no_live`
+Status: `operational_rail_focused_244_full_1669_of_1670_external_review_pending_no_live`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -14,6 +14,11 @@ one exact approved audio send.
 This document creates no mission and grants no live authority. There is no
 active send, upload, source read, browser action, MailerLite action, campaign,
 CRM write, receipt, or private artifact created by this hardening task.
+
+The combined deterministic no-effect rail in
+`instagram-welcome-audio-operational-rail-v1.md` now models claim issuance and
+Safari-shaped actuation behind this adapter. That model has no browser handle
+and is not current surface-health evidence or live authority.
 
 ## Authority And Evidence Boundary
 
@@ -311,10 +316,11 @@ No invocation is valid without a new future mission that explicitly binds:
 - one exact approved audio asset label and private integrity binding;
 - a total attempt budget of one;
 - one permanent pre-send effect claim;
-- one owner-only atomic claim-writer contract, current-invocation claim owner,
-  claim token, attempt ID, and monotonically bound registry revision;
-- one separately integrated one-shot executor that atomically consumes the
-  ready token before actuating the UI effect;
+- one owner-only live atomic claim-writer contract, current-invocation claim
+  owner, claim token, attempt ID, and monotonically bound registry revision;
+- one separately integrated live browser-bound executor that atomically
+  consumes the ready token only after durable pending terminal evidence and
+  before actuating the UI effect;
 - the exact executor contract in
   `instagram-welcome-audio-one-shot-executor-v1.md`;
 - the permanent no-retry rule;
@@ -435,18 +441,57 @@ lineage. It re-reads under serialization, consumes durably once, and makes any
 pending, final, partial, malformed, or replayed terminal evidence permanently
 non-retryable. READY alone is never executable authority.
 
-### Synthetic No-Effect Executor Boundary
+### Deterministic No-Effect Operational Rail Boundary
 
-The first executor implementation is
-`synthetic_no_effect_proof_only`. It proves serialization, durable publication,
-crash dominance, replay closure, and terminal guard revalidation against
-temporary owner-only fixtures. It has no browser, UI, network, upload, send,
-actuator callback, operational CLI, or live registry access. It keeps
-`send_allowed: false` and creates no mission or live authority.
+The centrally integrated executor remains
+`synthetic_no_effect_proof_only`. The current operational-rail lane adds a
+deterministic claim writer, an opaque same-process one-use capability, and a
+Safari-branded deterministic port/executor/composite. They reuse shared
+owner-only temporary-store mechanics and enforce this order:
 
-A later browser-bound executor remains a separate reviewed boundary. It may
-not exist until this synthetic proof is centrally integrated and a new future
-mission explicitly authorizes the exact effect path.
+```text
+claim -> READY -> synced pending attempted-terminal evidence
+  -> capability consumption -> at most one deterministic port invocation
+  -> exclusive terminal evidence -> permanent no-retry
+```
+
+The port is only a branded contract object held in module-private state. It has
+no browser, UI, network, upload, send, arbitrary callback, operational CLI, or
+live registry access. Every rail receipt fixes external effect, browser, and
+network use to false and production readiness to false. The capability has no
+raw peek/inspect export: verification returns only `fresh`, `consumed`, or
+`invalid`, and consumption returns only `consumed_now`, `already_consumed`, or
+`invalid`, never store, digest, lineage, or metadata.
+
+Incomplete READY publication is explicit. `READY_PARTIAL` under a held mutex is
+`BUSY`; if it survives the current invocation's under-mutex recheck, it is
+`UNKNOWN` and permanently non-retryable. Current focused integrated validation
+is `244/244` green, including a `7/7` targeted adversarial
+crash/concurrency/invalid-port subset. A fresh
+post-hardening full-suite owner-only captured rerun is also complete: `239/240`
+files and `1669/1670` tests, with the sole failure
+the exact unchanged out-of-lane MailerLite approval-queue baseline. Independent
+delta review and the final external verdict remain pending.
+
+For an after-boundary modeled failure, the no-effect executor fixes the modeled
+result before terminal promotion. If promotion fails, it performs one read-only
+evidence reinspection: terminal dominates terminal-plus-pending; pending-only
+remains unknown. Both are permanent no-retry, and replay performs no second
+modeled actuation.
+
+For the separate canonical pre-boundary zero-actuation fixture, invoking the
+branded port is not effect-boundary entry. Its validator admits only the
+fail-closed terminal tuple with `effect_boundary_entered=false`, derived
+boundary-entry count `0`, `send_control_actuation_count=0`, the current
+capability consumed, durable terminal evidence present, pending evidence absent
+after completion, permanent no-retry, and blocker `ACTUATION_COUNT`. Replay
+keeps boundary and actuation counts at zero and cannot mint or consume a second
+capability effect. Count `2` remains receipt-invalid.
+
+A real browser-bound executor/actuator remains a separate reviewed boundary.
+It cannot be inferred from the branded no-effect port and cannot be used until
+the no-effect rail is validated, reviewed, and centrally integrated, then a new
+future mission explicitly authorizes the exact canary effect path.
 
 The send-control actuation is the effect boundary. The claim was already
 durably committed before this boundary. Immediately at the boundary, the
@@ -603,22 +648,27 @@ the claim and marker once; do not repair by sending again.
 - no in-app, Chrome, text, or hybrid route;
 - no MailerLite, campaign, legacy proxy, CRM, card, Fact Store, ledger, or
   scoring action;
-- no private artifact or operational receipt creation;
+- no live private artifact or persisted operational receipt creation;
 - no automation activation;
 - no central integration or future live-mission authorization; lane commit and
   push are allowed only after the required no-live validation and review;
-- no live one-shot executor, browser-bound actuator, or effect callback; the
-  only allowed implementation is the synthetic no-effect consumer proof;
+- no live one-shot executor, real browser-bound actuator, or effect callback;
+  only the shared-store refactor, deterministic no-effect claim writer,
+  opaque capability, and branded no-effect port/executor/composite are allowed;
 - no reuse of the closed pilot as live authority.
 
 ## Completion Boundary
 
-The corrected guard and its prior eleven-file adapter/matrix chain are already
-centrally integrated, readiness-only and no-live. The current lane adds the
-separate synthetic one-shot executor proof under
-`instagram-welcome-audio-one-shot-executor-v1.md`. Its focused adversarial
-validation and independent reviews are green; lane commit/push, formal artifact
-review and central integration remain separate gates. Even after that
-integration, operational readiness still requires claim issuance, a
-browser-bound adapter, and a newly written and freshly approved future mission
-with explicit live authority.
+The corrected guard, adapter/matrix chain, and synthetic boundary-A executor
+are centrally integrated, readiness-only and no-live. The current lane adds the
+combined deterministic operational rail under
+`instagram-welcome-audio-operational-rail-v1.md`; its focused integrated
+validation is `244/244` green and the owner-only captured full repository result
+is `239/240` files and `1669/1670` tests, with only the unchanged out-of-lane
+baseline failing. Independent delta review, final review, lane commit/push,
+formal artifact review, and central integration remain pending and separate
+gates. Even after
+integration, operational readiness still
+requires a live owner-only claim issuer, a real browser-bound Safari actuator,
+and a newly written mission with fresh explicit CEO approval for the exact
+one-recipient, one-audio, one-attempt canary.
