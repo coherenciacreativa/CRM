@@ -1992,15 +1992,23 @@ No lane outputs in review at creation.
   green; integrated guard plus executor `202/202` green; full repository suite
   `1627/1628`, with the sole failure the unchanged out-of-lane MailerLite
   Launch OS approval-queue baseline.
+- `operational_rail_centrally_integrated`: true
+- `operational_rail_mode`: `deterministic_no_effect_test`
+- `validation_evidence_after_operational_rail_integration`: inherited targeted
+  operational rail `244/244` green; targeted adversarial crash/concurrency/
+  invalid-port subset `7/7` green; full repository suite `1669/1670`, with the
+  sole failure the unchanged out-of-lane MailerLite Launch OS approval-queue
+  baseline.
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
 - `integration_effects`: no live, source, private, browser, Instagram,
   MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
 - `integration_recommendation`: preserve the integrated action rail and
-  synthetic executor while keeping all live gates closed. Claim issuance and a
-  separately reviewed browser-bound executor/actuator remain prerequisites.
-  Only after those are integrated may a newly written and freshly approved
+  synthetic executor plus deterministic no-effect operational rail while
+  keeping all live gates closed. A live owner-only claim issuer and real
+  browser-bound Safari actuator remain prerequisites. Only after those are
+  separately reviewed and integrated may a newly written and freshly approved
   future mission authorize any send; do not execute live.
 
 ## Rejected / Needs Rework
@@ -2015,12 +2023,13 @@ no-live Welcome Audio hardening lane. Mission Contract
 superseded, and supplies no current source, message, MailerLite, CRM, or
 campaign authority.
 
-Central integration of the action rail and synthetic one-shot executor grants
-no live authority. Any live use requires claim issuance, a separately reviewed
-browser-bound executor/actuator, a newly written mission contract, and fresh
-explicit approval plus its complete private gates. The legacy proxy remains out
-of scope. No lane result or integration receipt may be reused as permission to
-activate `mailerlite-onboarding`, `instagram-api-readiness`, or
+Central integration of the action rail, synthetic one-shot executor, and
+deterministic no-effect operational rail grants no live authority. Any live use
+requires a live owner-only claim issuer, a real browser-bound Safari actuator,
+a newly written mission contract, and fresh explicit approval plus its complete
+private gates. The legacy proxy remains out of scope. No lane result or
+integration receipt may be reused as permission to activate
+`mailerlite-onboarding`, `instagram-api-readiness`, or
 `welcome-audio-send-boundary`.
 
 ## Queue Item Template

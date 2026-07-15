@@ -556,8 +556,8 @@
 - The prior v2 final-check receipt cannot be reused because it lacks
   machine-readable consistency/freshness fields.
 - Next step is one fresh final idempotency/suppression check v3, not mutation.
-- Safari upload hardening temporary branch remains ready but was not integrated
-  in this run.
+- Historical Safari upload hardening temporary branch remained ready but was
+  not integrated in this historical MailerLite run.
 - `latest_commit`: pending final check receipt/freshness contract fix
   integration commit; source lane commit
   `82cecedfce8381b5686fdf0bcca3b2a32b28fde9`
@@ -613,8 +613,8 @@
 - The prior v3 final-check receipt cannot be reused because it lacks
   machine-readable `receipt_contract_check=passed`.
 - Next step is one fresh final idempotency/suppression check v4, not mutation.
-- Safari upload hardening temporary branch remains ready but was not integrated
-  in this run.
+- Historical Safari upload hardening temporary branch remained ready but was
+  not integrated in this historical MailerLite run.
 - `latest_commit`: pending receipt contract alignment fix integration commit;
   source lane commit `74be0f8aba6c0600107a9f223ad174c6b03e34bc`
 - `latest_receipt`: source result doc integrated at
@@ -674,8 +674,8 @@
 - Preflight-only mode is implemented and mock-tested.
 - Next step is one fresh final idempotency/suppression check v5, not mutation.
 - After v5, run mutation guard preflight-only before exact mutation execution.
-- Safari upload hardening temporary branch remains ready but was not integrated
-  in this run.
+- Historical Safari upload hardening temporary branch remained ready but was
+  not integrated in this historical MailerLite run.
 
 ## MailerLite Group Reference Repair, Final Check v6, And Preflight-Only Validation Closeout
 
@@ -714,8 +714,8 @@
 - Approval template mode is available or verified.
 - Next step is one atomic final-check/preflight/mutation run using the
   guard-emitted canonical phrase, not a hand-written phrase.
-- Safari upload hardening temporary branch remains ready but was not integrated
-  in this run.
+- Historical Safari upload hardening temporary branch remained ready but was
+  not integrated in this historical MailerLite run.
 
 ## MailerLite Exact Mutation Route Fix And Result Closeout
 
@@ -1133,12 +1133,19 @@
   green; integrated guard plus executor `202/202` green; full repository suite
   `1627/1628`, with the sole failure the unchanged out-of-lane MailerLite
   Launch OS approval-queue baseline.
+- `operational_rail_centrally_integrated`: true
+- `operational_rail_mode`: `deterministic_no_effect_test`
+- `validation_evidence_after_operational_rail_integration`: inherited targeted
+  operational rail `244/244` green; targeted adversarial crash/concurrency/
+  invalid-port subset `7/7` green; full repository suite `1669/1670`, with the
+  sole failure the unchanged out-of-lane MailerLite Launch OS approval-queue
+  baseline.
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
 - `integration_effects`: no live, source, private, browser, Instagram,
   MailerLite, campaign, proxy, CRM/source, or legacy-repo effect occurred.
-- `next_gate`: Claim issuance and a separately reviewed browser-bound
-  executor/actuator remain missing. Only after those are integrated may a new
-  mission be written and freshly approved before any live use. Central
-  integration alone grants no live authority.
+- `next_gate`: A live owner-only claim issuer and real browser-bound Safari
+  actuator remain missing. Only after those are separately reviewed and
+  integrated may a new mission be written and freshly approved before any live
+  use. Central integration alone grants no live authority.
