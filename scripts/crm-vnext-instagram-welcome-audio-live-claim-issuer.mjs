@@ -133,6 +133,38 @@ const WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS = Object.freeze({
   INVALID: 'invalid',
 });
 
+const WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS = Object.freeze({
+  VALID: 'valid_host_pending_capability_consumed',
+  INVALID: 'invalid_host_pending_capability',
+});
+
+const WELCOME_AUDIO_LIVE_HOST_PENDING_EVIDENCE_FIELDS = Object.freeze([
+  'store_identity',
+  'pending_path',
+  'pending_digest',
+  'pending_metadata',
+  'pending_snapshot',
+]);
+
+const WELCOME_AUDIO_LIVE_HOST_PENDING_STORE_IDENTITY_FIELDS = Object.freeze([
+  'path',
+  'dev',
+  'ino',
+  'uid',
+  'mode',
+]);
+
+const WELCOME_AUDIO_LIVE_HOST_PENDING_METADATA_FIELDS = Object.freeze([
+  'dev',
+  'ino',
+  'uid',
+  'mode',
+  'nlink',
+  'size',
+  'mtimeMs',
+  'ctimeMs',
+]);
+
 const WELCOME_AUDIO_LIVE_CLAIM_RECEIPT_FIELDS = Object.freeze([
   'receipt_schema_version',
   'claim_issuer_contract_version',
@@ -330,6 +362,7 @@ const CLAIM_CAPABILITY_STATE = new WeakMap();
 const INSPECTION_CAPABILITY_STATE = new WeakMap();
 const STORE_CAPABILITY_STATE = new WeakMap();
 const ACTUATION_CAPABILITY_STATE = new WeakMap();
+const HOST_PENDING_CAPABILITY_STATE = new WeakMap();
 const RECEIPT_DECISIONS = new Set(Object.values(WELCOME_AUDIO_LIVE_CLAIM_DECISION));
 const RECEIPT_BLOCKERS = new Set(Object.values(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER));
 const INSPECTION_CLASSIFICATIONS = new Set(Object.values(WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION));
@@ -1647,6 +1680,7 @@ const blockedAttemptResult = ({
   claimConsumed = false,
 }) => ({
   private_actuation_capability: null,
+  private_host_pending_capability: null,
   private_terminal_capability: null,
   redacted_receipt: buildAttemptReceipt({
     decision,
@@ -2670,8 +2704,22 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
           },
           'crm_core_welcome_audio_private_actuation_capability',
         );
+        const hostPendingCapability = createOneUseCapability(
+          HOST_PENDING_CAPABILITY_STATE,
+          {
+            store_identity: storeIdentity,
+            store_mode: claimState.store_mode,
+            pending_path: paths.pending,
+            pending_digest: published.digest,
+            pending_metadata: published.metadata,
+            pending,
+            attempt_nonce: pending.attempt_nonce,
+          },
+          'crm_core_welcome_audio_private_host_pending_capability',
+        );
         result = {
           private_actuation_capability: actuationCapability,
+          private_host_pending_capability: hostPendingCapability,
           private_terminal_capability: null,
           redacted_receipt: buildAttemptReceipt({
             decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.ARMED,
@@ -2721,6 +2769,90 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
     }
   }
   return result;
+};
+
+const consumeWelcomeAudioLiveHostPendingCapabilityOnce = async ({
+  private_host_pending_capability,
+  required_store_mode,
+  independently_read_pending_evidence,
+  expected_mission_id,
+  expected_operation_id,
+  expected_identity_anchor_sha256,
+  expected_thread_anchor_sha256,
+  expected_audio_sha256,
+}) => {
+  const state = HOST_PENDING_CAPABILITY_STATE.get(private_host_pending_capability);
+  if (!state || state.consumed) {
+    return WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID;
+  }
+  state.consumed = true;
+  try {
+    const evidence = independently_read_pending_evidence;
+    if (
+      !Object.values(WELCOME_AUDIO_LIVE_STORE_MODE).includes(required_store_mode)
+      || state.store_mode !== required_store_mode
+      || !exactObjectKeys(evidence, WELCOME_AUDIO_LIVE_HOST_PENDING_EVIDENCE_FIELDS)
+      || !exactObjectKeys(
+        evidence.store_identity,
+        WELCOME_AUDIO_LIVE_HOST_PENDING_STORE_IDENTITY_FIELDS,
+      )
+      || !exactObjectKeys(
+        evidence.pending_metadata,
+        WELCOME_AUDIO_LIVE_HOST_PENDING_METADATA_FIELDS,
+      )
+      || !isOpaqueId(expected_mission_id)
+      || !isOpaqueId(expected_operation_id)
+      || !isSha256(expected_identity_anchor_sha256)
+      || !isSha256(expected_thread_anchor_sha256)
+      || !isSha256(expected_audio_sha256)
+      || typeof evidence.pending_path !== 'string'
+      || !isSha256(evidence.pending_digest)
+    ) return WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID;
+
+    validatePendingRecord({
+      record: evidence.pending_snapshot,
+      expectedMissionId: expected_mission_id,
+    });
+    if (
+      evidence.store_identity.path !== state.store_identity.path
+      || evidence.store_identity.dev !== state.store_identity.dev
+      || evidence.store_identity.ino !== state.store_identity.ino
+      || evidence.store_identity.uid !== state.store_identity.uid
+      || evidence.store_identity.mode !== state.store_identity.mode
+      || evidence.pending_path !== state.pending_path
+      || evidence.pending_digest !== state.pending_digest
+      || !sameMetadata(evidence.pending_metadata, state.pending_metadata)
+      || canonicalSha256(evidence.pending_snapshot) !== canonicalSha256(state.pending)
+      || evidence.pending_snapshot.attempt_nonce !== state.attempt_nonce
+      || evidence.pending_snapshot.mission_id !== expected_mission_id
+      || evidence.pending_snapshot.operation_id !== expected_operation_id
+      || evidence.pending_snapshot.identity_anchor_sha256 !== expected_identity_anchor_sha256
+      || evidence.pending_snapshot.thread_anchor_sha256 !== expected_thread_anchor_sha256
+      || evidence.pending_snapshot.audio_asset_sha256 !== expected_audio_sha256
+    ) return WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID;
+
+    await assertWelcomeAudioLiveClaimStoreRoot({
+      store_root: state.store_identity.path,
+      expected_identity: state.store_identity,
+    });
+    const loaded = await readStableClaimRecord({
+      filePath: state.pending_path,
+      storeIdentity: state.store_identity,
+    });
+    validatePendingRecord({ record: loaded.snapshot, expectedMissionId: expected_mission_id });
+    if (
+      loaded.digest !== state.pending_digest
+      || loaded.digest !== evidence.pending_digest
+      || !sameMetadata(loaded.metadata, state.pending_metadata)
+      || !sameMetadata(loaded.metadata, evidence.pending_metadata)
+      || canonicalSha256(loaded.snapshot) !== canonicalSha256(state.pending)
+      || canonicalSha256(loaded.snapshot) !== canonicalSha256(evidence.pending_snapshot)
+      || loaded.snapshot.attempt_nonce !== state.attempt_nonce
+    ) return WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID;
+    return WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.VALID;
+  } catch {
+    return WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID;
+  }
 };
 
 const finalizeWelcomeAudioLiveAttemptAsUnknown = async ({
@@ -3267,6 +3399,7 @@ export {
   WELCOME_AUDIO_LIVE_CLAIM_RECORD_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_INSPECTION_CAP,
   WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION,
+  WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS,
   WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP,
   WELCOME_AUDIO_LIVE_PENDING_RECORD_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_STATE_DECISION,
@@ -3276,6 +3409,7 @@ export {
   claimNextWelcomeAudioLiveManifestInspection,
   createSyntheticWelcomeAudioLiveClaimStoreCapability,
   cancelWelcomeAudioLiveReservationZeroEffect,
+  consumeWelcomeAudioLiveHostPendingCapabilityOnce,
   enterWelcomeAudioLiveAttemptBoundary,
   finalizeWelcomeAudioLiveAttemptAsUnknown,
   issueWelcomeAudioLiveClaim,

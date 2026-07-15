@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
+import { constants as FS_CONSTANTS } from "node:fs";
 import {
   chmod,
   link,
   lstat,
   mkdir,
   mkdtemp,
+  open,
   readFile,
   readdir,
   realpath,
@@ -55,11 +57,13 @@ import {
   WELCOME_AUDIO_LIVE_CLAIM_BLOCKER,
   WELCOME_AUDIO_LIVE_CLAIM_DECISION,
   WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION,
+  WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS,
   WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP,
   WELCOME_AUDIO_LIVE_STATE_DECISION,
   WELCOME_AUDIO_LIVE_STORE_MODE,
   cancelWelcomeAudioLiveReservationZeroEffect,
   claimNextWelcomeAudioLiveManifestInspection,
+  consumeWelcomeAudioLiveHostPendingCapabilityOnce,
   createSyntheticWelcomeAudioLiveClaimStoreCapability,
   enterWelcomeAudioLiveAttemptBoundary,
   finalizeWelcomeAudioLiveAttemptAsUnknown,
@@ -581,6 +585,74 @@ const claimBinding = (fixture: Fixture, ordinal: number, capability: unknown) =>
   };
 };
 
+const independentlyReadPendingEvidence = async (fixture: Fixture) => {
+  const storeMetadata = await lstat(fixture.storeRoot);
+  const pendingName = (await readdir(fixture.storeRoot)).find(
+    (name) => name.startsWith("pending-") && name.endsWith(".json"),
+  );
+  if (!pendingName) throw new Error("pending fixture missing");
+  const pendingPath = join(fixture.storeRoot, pendingName);
+  const handle = await open(
+    pendingPath,
+    FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW,
+  );
+  try {
+    const before = await handle.stat();
+    const bytes = await handle.readFile();
+    const after = await handle.stat();
+    const pathAfter = await lstat(pendingPath);
+    for (const field of ["dev", "ino", "uid", "mode", "nlink", "size", "mtimeMs", "ctimeMs"] as const) {
+      if (before[field] !== after[field] || after[field] !== pathAfter[field]) {
+        throw new Error("pending fixture unstable");
+      }
+    }
+    return {
+      store_identity: {
+        path: fixture.storeRoot,
+        dev: storeMetadata.dev,
+        ino: storeMetadata.ino,
+        uid: storeMetadata.uid,
+        mode: storeMetadata.mode,
+      },
+      pending_path: pendingPath,
+      pending_digest: sha256(bytes),
+      pending_metadata: {
+        dev: after.dev,
+        ino: after.ino,
+        uid: after.uid,
+        mode: after.mode,
+        nlink: after.nlink,
+        size: after.size,
+        mtimeMs: after.mtimeMs,
+        ctimeMs: after.ctimeMs,
+      },
+      pending_snapshot: JSON.parse(bytes.toString("utf8")),
+    };
+  } finally {
+    await handle.close();
+  }
+};
+
+const hostPendingBinding = (
+  fixture: Fixture,
+  ordinal: number,
+  capability: unknown,
+  evidence: Awaited<ReturnType<typeof independentlyReadPendingEvidence>>,
+) => {
+  const operation = fixture.operations[ordinal - 1];
+  return {
+    private_host_pending_capability: capability,
+    required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+    independently_read_pending_evidence: evidence,
+    expected_mission_id: fixture.missionId,
+    expected_operation_id: operation.operationId,
+    expected_identity_anchor_sha256:
+      fixture.manifest.ordered_records[ordinal - 1].identity_anchor_sha256,
+    expected_thread_anchor_sha256: operation.threadSha,
+    expected_audio_sha256: fixture.audioSha256,
+  };
+};
+
 const refreshOperationContext = async (
   fixture: Fixture,
   ordinal: number,
@@ -760,6 +832,136 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
     })).redacted_receipt.blocker_codes).toEqual([
       WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
     ]);
+  });
+
+  test("mints separate opaque host and actuation capabilities over the same durable PENDING", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    const armed = await enterWelcomeAudioLiveAttemptBoundary({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      entered_at_ms: NOW_MS + 111,
+    });
+    expect(armed.private_host_pending_capability).not.toBeNull();
+    expect(armed.private_actuation_capability).not.toBeNull();
+    expect(() => JSON.stringify(armed.private_host_pending_capability))
+      .toThrow("private_live_state_capability_not_serializable");
+    const evidence = await independentlyReadPendingEvidence(fixture);
+    const binding = hostPendingBinding(
+      fixture,
+      1,
+      armed.private_host_pending_capability,
+      evidence,
+    );
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce({
+      ...binding,
+      private_host_pending_capability: evidence.pending_snapshot,
+    })).toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+    const consumed = await consumeWelcomeAudioLiveHostPendingCapabilityOnce(binding);
+    expect(consumed).toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.VALID);
+    expect(JSON.stringify(consumed)).toBe('"valid_host_pending_capability_consumed"');
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce(binding))
+      .toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+
+    const finalized = await finalizeWelcomeAudioLiveAttemptAsUnknown({
+      private_actuation_capability: armed.private_actuation_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      outcome: WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN,
+      attachment_upload_entered: true,
+      send_control_actuation_count: 1,
+      attempted_at_ms: NOW_MS + 112,
+      finalized_at_ms: NOW_MS + 113,
+    });
+    expect(finalized.redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN);
+  });
+
+  test.each([
+    ["store inode", (evidence: Record<string, any>) => {
+      evidence.store_identity.ino += 1;
+    }],
+    ["pending path", (evidence: Record<string, any>) => {
+      evidence.pending_path = `${evidence.pending_path}.forged`;
+    }],
+    ["pending digest", (evidence: Record<string, any>) => {
+      evidence.pending_digest = "f".repeat(64);
+    }],
+    ["pending inode", (evidence: Record<string, any>) => {
+      evidence.pending_metadata.ino += 1;
+    }],
+    ["pending metadata", (evidence: Record<string, any>) => {
+      evidence.pending_metadata.size += 1;
+    }],
+    ["pending binding field", (evidence: Record<string, any>) => {
+      evidence.pending_snapshot.operation_id = "forged_operation";
+    }],
+    ["attempt nonce", (evidence: Record<string, any>) => {
+      evidence.pending_snapshot.attempt_nonce = "f".repeat(64);
+    }],
+  ])("burns the host capability fail-closed on wrong %s without consuming actuation", async (
+    _label,
+    mutate,
+  ) => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    const armed = await enterWelcomeAudioLiveAttemptBoundary({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      entered_at_ms: NOW_MS + 111,
+    });
+    const evidence = await independentlyReadPendingEvidence(fixture);
+    const forgedEvidence = structuredClone(evidence) as Record<string, any>;
+    mutate(forgedEvidence);
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce({
+      ...hostPendingBinding(
+        fixture,
+        1,
+        armed.private_host_pending_capability,
+        evidence,
+      ),
+      independently_read_pending_evidence: forgedEvidence,
+    })).toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce(hostPendingBinding(
+      fixture,
+      1,
+      armed.private_host_pending_capability,
+      evidence,
+    ))).toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+
+    const finalized = await finalizeWelcomeAudioLiveAttemptAsUnknown({
+      private_actuation_capability: armed.private_actuation_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      outcome: WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      attempted_at_ms: NOW_MS + 112,
+      finalized_at_ms: NOW_MS + 113,
+    });
+    expect(finalized.redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN);
+  });
+
+  test("burns host attestation on a wrong independently prepared permit binding", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    const armed = await enterWelcomeAudioLiveAttemptBoundary({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      entered_at_ms: NOW_MS + 111,
+    });
+    const evidence = await independentlyReadPendingEvidence(fixture);
+    const binding = hostPendingBinding(
+      fixture,
+      1,
+      armed.private_host_pending_capability,
+      evidence,
+    );
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce({
+      ...binding,
+      expected_audio_sha256: "f".repeat(64),
+    })).toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce(binding))
+      .toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
   });
 
   test("rejects impossible terminal evidence where send actuation precedes upload", async () => {
