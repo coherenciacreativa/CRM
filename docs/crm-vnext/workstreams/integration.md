@@ -1170,16 +1170,19 @@
   mission be written and freshly approved before any live use. Central
   integration alone grants no live authority.
 
-## Real New-Follower Welcome E2E Proof Mission Contract v0
+## Real New-Follower Welcome E2E Proof Mission Contract v0.1
 
 - `checkpoint_date`: `2026-07-15`
 - `mission_id`:
   `crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15`
-- `status`: `chief_architect_contract_drafted_execution_not_approved_no_live`
+- `status`: `chief_architect_amended_backlog_canary_contract_execution_not_approved_no_live`
 - `contract_artifact`:
   `docs/crm-vnext/crm-core-real-new-follower-welcome-e2e-proof-mission-v0.md`
+- `contract_version`: `v0_1_paused_campaign_backlog_staged_canary_2026_07_15`
 - `drafting_baseline_commit`:
   `2fcdf302baf550dcb2bd7e5028b73f471a6486a8`
+- `amendment_baseline_commit`:
+  `44bff5a61eff7c8d7eae78aed0d7584c4e1cc12d`
 - `runtime_execution_base`: fresh canonical post-integration SHA recorded in
   and bound by the later owner-only execution approval
 - `execution_explicitly_approved`: false
@@ -1189,15 +1192,33 @@
   - fresh exact CEO approval bound to this contract;
   - exact branch and fresh post-integration canonical HEAD equal to remote,
     recorded in the owner-only approval; clean central plus mission contexts;
-  - live owner-only claim emitter, global dedupe, and exact caps;
+  - sealed paused-campaign backlog interval and deterministic source order;
+  - live owner-only claim emitter, global dedupe, and exact inspection,
+    identity, audio, observation, and MailerLite caps;
   - real browser-bound Safari actuator with verifiable provenance and timing;
   - fresh approved source, exact audio asset, and exact private bindings;
-  - post-source newness/recentness, exact identity/thread, and no prior
-    welcome/audio/claim;
+  - post-source interval membership, follows-owner signal, exact
+    identity/thread, usable message and attachment controls, and no prior
+    welcome/audio/claim; a non-messageable record is ineligible with zero
+    effect and receives no text fallback;
   - conditional exact-email MailerLite zero-effect preflight and one guarded
-    direct POST with exactly two approved groups and add-only semantics.
+    direct POST per eligible identity with exactly two approved groups and
+    add-only semantics, within the global cap.
+- `staged_canary`: Inspect at most eight ordered backlog records. Stage 1 may
+  attempt exactly one eligible messageable identity. Only explicit sent-audio
+  evidence unlocks sequential Stage 2 expansion to at most three total
+  identities and attempts.
+- `observation_model`: Audio proof is independent of reply or email. A bound
+  thread may remain `awaiting_optional_reply` for at most 72 hours, and the
+  aggregate cohort closes no later than 168 hours after mission start. Any
+  exact email is handled only if voluntarily supplied.
+- `campaign_and_capacity`: Campaign is CEO-reported paused and outside CRM Core
+  authority. Approximately 12 new followers per 24 hours is planning-only;
+  reactivation and capacity graduation require a later separate CEO decision.
 - `terminal_rule`: failed pre-effect gate stops; any attempted, uncertain,
   timed-out, or unknown effect is terminal with no retry.
-- `next_decision`: CEO approve, modify, decline, or pause the exact contract.
+- `next_decision`: After central integration, CEO approve, modify, decline, or
+  pause the exact amended contract; decide on campaign reactivation separately
+  only after a green canary.
 - `integration_disposition`: planning-only contract; no source access, send,
   MailerLite mutation, campaign action, or other live authority.
