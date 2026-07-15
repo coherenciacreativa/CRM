@@ -2,7 +2,7 @@
 
 - `contract_version`: `crm_core_instagram_welcome_audio_operational_rail_v1`
 - `execution_mode`: `deterministic_no_effect_test`
-- `status`: `operational_rail_centrally_integrated_async_bridge_independent_review_green_artifact_review_pending_no_live`
+- `status`: `operational_rail_and_async_bridge_centrally_integrated_deferred_rendezvous_independent_review_green_artifact_review_pending_no_live`
 - `production_ready`: `false`
 - `send_allowed`: `false`
 - `live_authority`: `false`
@@ -27,9 +27,9 @@ Safari, Instagram, a DM, a native picker, or any private source. It does not
 upload or send anything. The Safari branding fixes the future surface contract;
 it is not a browser driver or evidence that the live surface is healthy.
 
-## Current Async Browser Session Bridge Lane
+## Centrally Integrated Async Browser Session Bridge
 
-The current no-live boundary is:
+The integrated no-live bridge boundary is:
 
 ```text
 crm_core_welcome_audio_async_browser_session_bridge_v1
@@ -81,6 +81,50 @@ The sole full-suite failure remains the exact unchanged out-of-lane Launch OS
 approval-queue baseline. None of these counts is evidence of a browser, real
 actuator, Safari or Instagram use, picker access, audio delivery, surface
 health, live issuer, or authorized canary.
+
+## Deferred Actuator Rendezvous v1 (Current Lane)
+
+The current no-live delta adds a same-process deferred rendezvous between the
+integrated operation session and its deterministic actuator result. The
+rendezvous authority is separate from the public port, opaque, frozen,
+nonserializable, and paired privately to the exact port and operation binding.
+The public port remains frozen and unchanged: it exposes no `invoke`, driver,
+callback, browser handle, or payload.
+
+The executor alone may arm the rendezvous, and only after durable `PENDING`,
+claim-capability consumption, and prepared-session-authority consumption. One
+valid resolution is accepted. Forged, cross-port, reused, concurrent-losing,
+early, binding-drifted, invocation-mismatched, invalid, late, or absent results
+fail closed. Early or otherwise pre-arm rejection remains the only rendezvous
+path reported as `effect_boundary_entered=false` and count `0`. Once `ARMED`,
+binding drift, an accessor-bearing/non-plain/Proxy or otherwise invalid result,
+an invocation mismatch, timeout, or absence is recorded conservatively as
+`effect_boundary_entered=true`, count `1`, terminal unknown, and permanent
+no-retry. The input result is accepted only as one frozen data-only snapshot
+built from own descriptors without invoking getters; that exact snapshot is
+validated, compared, and stored without re-reading the caller object. An absent
+result reaches a bounded deterministic timeout and never arms or accepts a
+second resolution.
+
+This is a seam for a future separately reviewed host; it is not a host-browser
+implementation or a browser test. Current focused validation is `292/292`
+across the five Welcome Audio files, including operation session `40/40` and
+operational executor `20/20`. The prior centrally integrated bridge evidence
+remains `44/44`, `276/276`, targeted `13/13`, and full known baseline
+`1701/1702`. Current rendezvous full-suite validation is `240/241` files and
+`1717/1718` tests with the same exact unchanged historical out-of-lane baseline.
+Independent code, adversarial, and documentation reviews are green; formal
+artifact review, commit, push, and central integration of this rendezvous delta
+remain pending. All receipts still fix:
+
+```text
+browser_used = false
+network_used = false
+external_effect_invoked = false
+production_ready = false
+send_allowed = false
+live_authority = false
+```
 
 ## Combined Boundary
 
@@ -523,19 +567,21 @@ async session bridge `25/25` and operational executor `19/19`;
 bridge-targeted adversarial `13/13`; and full repository `240/241` files and
 `1701/1702` tests with only the exact unchanged out-of-lane Launch OS
 approval-queue baseline failing. Independent code/adversarial and documentation
-reviews are green. Formal artifact review and central integration of the exact
-bridge allowlist remain pending no-live gates.
+reviews, formal artifact review, commit, push, and central integration of the
+exact bridge allowlist are complete. Those completed no-live gates grant no
+send authority. The deferred rendezvous delta described above has completed
+independent review and is the current artifact-review-pending lane.
 
 ### Redacted Validation Incident
 
-One pre-existing full-suite fixture was run before output capture was enforced
-and emitted an email-shaped synthetic test-recipient value to internal stdout.
-Later owner-only captured full-run logs still contained that existing fixture
-output; the logs stayed private and were deleted after sanitized aggregate
-extraction. No production or private follower, token, credential, or live
-payload was accessed or emitted. The test-output privacy incident remains open
-and out of lane; this document neither quotes nor authorizes inspection or
-reproduction of the value.
+A pre-existing full-suite fixture emitted a controlled test-recipient identifier
+to local tool output before private output capture was enforced. Repetition
+stopped immediately, and an owner-only redacted incident receipt was recorded
+outside the repository. No production or private follower, token, credential,
+live payload, network call, or external effect was involved. Future broad-run
+output must be captured privately and reduced to aggregate counts only. Any
+fixture replacement remains a separate out-of-lane follow-up; this document
+neither quotes nor authorizes inspection or reproduction of the value.
 
 The previously integrated synthetic one-shot executor proof retains its own
 historical validation record. That record does not validate this new combined
@@ -553,15 +599,17 @@ rail.
 - no MailerLite, campaign, legacy proxy, CRM, card, Fact Store, ledger, scoring,
   automation, or source mutation;
 - no private operational artifact or live receipt creation;
-- no claim that bridge review, commit, push, or central integration is already
-  complete before fresh bridge-specific evidence exists;
+- no claim that the current deferred rendezvous formal artifact review, commit,
+  push, or central integration is complete before those gates actually close;
 - no reuse of the closed pilot or historical send as authority;
 - no production readiness, send authority, or live authority.
 
 ## Future Canary Boundary
 
-The deterministic rail is centrally integrated and the simulated async bridge
-still grants no send authority. A future one-recipient, one-audio, one-attempt
+The deterministic rail and simulated async bridge are centrally integrated;
+the independently reviewed, artifact-review-pending rendezvous delta also
+grants no send authority. A future
+one-recipient, one-audio, one-attempt
 canary requires all of the following as later, separate gates:
 
 1. a newly written mission contract bound to the exact integrated commit;

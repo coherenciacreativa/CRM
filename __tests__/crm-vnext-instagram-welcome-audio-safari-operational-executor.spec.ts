@@ -185,7 +185,7 @@ describe("Instagram welcome-audio Safari operational executor surface", () => {
     expect(source).not.toMatch(/process\.argv|import\.meta\.main/);
   });
 
-  test("keeps the literal genuine-port guard and pending-before-consume-before-modeled-actuation order", async () => {
+  test("keeps the literal genuine-port guard and pending-before-consume-before-rendezvous order", async () => {
     const source = await readFile(MODULE_PATH, "utf8");
     const pendingIndex = source.indexOf("filePath: paths.pending");
     const consumeIndex = source.indexOf(
@@ -196,13 +196,21 @@ describe("Instagram welcome-audio Safari operational executor surface", () => {
       "consumeReservedWelcomeAudioSafariOperationAuthorityForActuation(",
       consumeIndex,
     );
+    const rendezvousArmIndex = source.indexOf(
+      "const deferredRendezvousState = armWelcomeAudioSafariDeferredActuatorRendezvous(",
+      authorityConsumeIndex,
+    );
     const actuationIndex = source.indexOf(
       "actuatorResult = invokeBrandedSafariActuator",
-      authorityConsumeIndex,
+      rendezvousArmIndex,
+    );
+    const rendezvousWaitIndex = source.indexOf(
+      "consumeWelcomeAudioSafariDeferredActuatorRendezvousResult(",
+      rendezvousArmIndex,
     );
     const terminalIndex = source.indexOf(
       "await publishWelcomeAudioOneShotTerminalFromPending",
-      actuationIndex,
+      rendezvousWaitIndex,
     );
 
     expect(source).toContain(
@@ -211,7 +219,9 @@ describe("Instagram welcome-audio Safari operational executor surface", () => {
     expect(pendingIndex).toBeGreaterThan(-1);
     expect(consumeIndex).toBeGreaterThan(pendingIndex);
     expect(authorityConsumeIndex).toBeGreaterThan(consumeIndex);
-    expect(actuationIndex).toBeGreaterThan(authorityConsumeIndex);
-    expect(terminalIndex).toBeGreaterThan(actuationIndex);
+    expect(rendezvousArmIndex).toBeGreaterThan(authorityConsumeIndex);
+    expect(actuationIndex).toBeGreaterThan(rendezvousArmIndex);
+    expect(rendezvousWaitIndex).toBeGreaterThan(rendezvousArmIndex);
+    expect(terminalIndex).toBeGreaterThan(rendezvousWaitIndex);
   });
 });

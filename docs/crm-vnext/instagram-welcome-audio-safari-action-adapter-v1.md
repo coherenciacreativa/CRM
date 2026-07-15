@@ -1,7 +1,7 @@
 # Instagram Welcome Audio Safari Action Adapter v1
 
 Date: 2026-07-14
-Status: `operational_rail_centrally_integrated_async_bridge_independent_review_green_artifact_review_pending_no_live`
+Status: `operational_rail_and_async_bridge_centrally_integrated_deferred_rendezvous_independent_review_green_artifact_review_pending_no_live`
 Adapter ID: `instagram_welcome_audio_safari_action_adapter_v1`
 
 ## Decision
@@ -28,6 +28,22 @@ opaque capability, durable pending evidence, capability consumption, one
 modeled Send, one modeled confirmation, and permanent terminal/no-retry. It
 does not drive this adapter or any real surface. A modeled
 `send_control_actuation_count=1` is never a real message.
+
+That async bridge is now centrally integrated. The current delta adds only a
+deterministic same-process deferred rendezvous for a future host result. Its
+authority is opaque, frozen, nonserializable, and exact-port/exact-binding
+paired. It may arm only inside the executor after durable `PENDING` and after
+both claim and session authority have been consumed. It accepts one resolution;
+all forged, crossed, reused, concurrent-losing, early, drifted, mismatched,
+invalid, late, timed-out, or absent outcomes fail closed. Only early/pre-arm
+rejection reports false/count `0`. After `ARMED`, drift, invalid/non-plain/
+accessor/Proxy input, mismatch, timeout, and absence conservatively report
+true/count `1`, terminal unknown, and no-retry. A valid result becomes one
+frozen data-only own-descriptor snapshot; getters are never invoked and the
+caller object is never re-read. The public port still exposes no invocation
+method, driver, callback, browser handle, or payload. This is not a browser
+integration, surface-health check, upload, or send. Independent delta review is
+green; formal artifact review and central integration remain pending.
 
 For this lane, all of the following remain explicitly false:
 
@@ -680,9 +696,9 @@ the claim and marker once; do not repair by sending again.
   scoring action;
 - no live private artifact or persisted operational receipt creation;
 - no automation activation;
-- no claim that bridge central integration or any future live-mission
-  authorization already exists; bridge lane commit and push are allowed only
-  after the required no-live validation and review;
+- no claim that current deferred-rendezvous central integration or any future
+  live-mission authorization already exists; delta commit and push are allowed
+  only after required no-live validation and review;
 - no live one-shot executor, real browser-bound actuator, or effect callback;
   only the centrally integrated no-effect dependencies and the deterministic
   simulated bridge port/session inside the exact lane allowlist are allowed;
@@ -695,12 +711,17 @@ combined deterministic operational rail are centrally integrated,
 readiness-only and no-live. The inherited rail's focused validation is
 `244/244` green, its targeted adversarial subset is `7/7`, and the owner-only
 captured full repository result is `239/240` files and `1669/1670` tests, with
-only the unchanged out-of-lane baseline failing. The current async bridge lane
-has fresh green validation: bridge-only focused `44/44`, combined
+only the unchanged out-of-lane baseline failing. The centrally integrated async
+bridge has fresh green validation: bridge-only focused `44/44`, combined
 bridge-plus-inherited focused `276/276`, bridge-targeted adversarial `13/13`,
 and full repository `240/241` files and `1701/1702` tests with only the
 unchanged out-of-lane baseline failing.
-Regardless of later bridge review and integration, operational readiness still
-requires a live owner-only claim issuer, a real browser-bound Safari actuator,
-and a newly written mission with fresh explicit CEO approval for the exact
-one-recipient, one-audio, one-attempt canary.
+The current deferred-rendezvous delta is focused green `292/292`, including
+operation session `40/40` and operational executor `20/20`; its full-suite
+result is `240/241` files and `1717/1718` tests with the exact unchanged
+historical out-of-lane baseline. Independent review is green. The async bridge
+review and central integration are complete, but operational readiness still
+requires this deferred-rendezvous delta to finish formal artifact review and
+central integration, then a live owner-only claim issuer, a real
+browser-bound Safari actuator, and a newly written mission with fresh explicit
+CEO approval for the exact one-recipient, one-audio, one-attempt canary.

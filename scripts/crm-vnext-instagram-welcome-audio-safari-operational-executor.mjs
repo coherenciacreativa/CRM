@@ -43,6 +43,7 @@ const WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION =
 const WELCOME_AUDIO_SAFARI_OPERATIONAL_TERMINAL_RECORD_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_safari_operational_terminal_record_v1';
 const WELCOME_AUDIO_SAFARI_OPERATIONAL_EXECUTION_MODE = 'deterministic_no_effect_test';
+const WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_TIMEOUT_MS = 100;
 
 const WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO = Object.freeze({
   STRONG_CONFIRMED: 'strong_exact_confirmation',
@@ -58,6 +59,7 @@ const WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO = Object.freeze({
   ZERO_ACTUATION: 'zero_send_control_actuations',
   THROW_AFTER_BOUNDARY: 'throw_after_effect_boundary',
   MULTIPLE_ACTUATIONS: 'multiple_send_control_actuations',
+  DEFERRED_RENDEZVOUS: 'deferred_rendezvous_external_resolution',
 });
 
 const WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION = Object.freeze({
@@ -151,8 +153,86 @@ const createWelcomeAudioSafariActuatorPort = ({
     deterministic_scenario,
     invocation_count: 0,
     operation_authority_state: null,
+    deferred_rendezvous_state: null,
   });
   return port;
+};
+
+const registerWelcomeAudioSafariDeferredActuatorRendezvousState = ({
+  port,
+  rendezvousState,
+}) => {
+  const state = ACTUATOR_PORT_STATE.get(port);
+  if (
+    !state
+    || state.deferred_rendezvous_state !== null
+    || !rendezvousState
+    || typeof rendezvousState !== 'object'
+    || rendezvousState.port !== port
+    || rendezvousState.phase !== 'fresh'
+  ) throw new TypeError(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+  state.deferred_rendezvous_state = rendezvousState;
+};
+
+const armWelcomeAudioSafariDeferredActuatorRendezvous = ({ port, attemptedAtMs }) => {
+  const portState = ACTUATOR_PORT_STATE.get(port);
+  if (!portState) return false;
+  const rendezvousState = portState.deferred_rendezvous_state;
+  if (rendezvousState === null) return null;
+  if (rendezvousState.phase !== 'fresh') return false;
+  rendezvousState.phase = 'armed';
+  rendezvousState.armed_at_ms = Date.parse(new Date(attemptedAtMs).toISOString());
+  rendezvousState.result_promise = new Promise((resolvePromise) => {
+    const timeout = setTimeout(() => {
+      if (rendezvousState.phase !== 'armed') return;
+      rendezvousState.phase = 'timed_out';
+      rendezvousState.resolve_waiter = null;
+      resolvePromise(null);
+    }, WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_TIMEOUT_MS);
+    rendezvousState.resolve_waiter = (value) => {
+      clearTimeout(timeout);
+      rendezvousState.resolve_waiter = null;
+      resolvePromise(value);
+    };
+  });
+  return rendezvousState;
+};
+
+const settleWelcomeAudioSafariDeferredActuatorRendezvousForDeterministicModel = ({
+  rendezvousState,
+  actuatorResult,
+}) => {
+  if (rendezvousState?.phase !== 'armed' || typeof rendezvousState.resolve_waiter !== 'function') {
+    return false;
+  }
+  rendezvousState.phase = 'resolved';
+  rendezvousState.result = actuatorResult;
+  rendezvousState.resolve_waiter(actuatorResult);
+  return true;
+};
+
+const conservativePostArmActuatorResult = (attemptedAtMs) => Object.freeze({
+  result_schema_version: WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
+  bound_to_current_operation: false,
+  effect_boundary_entered: true,
+  send_control_actuation_count: 1,
+  attempted_at: new Date(attemptedAtMs).toISOString(),
+  confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+  confirmation_checked_at: new Date(attemptedAtMs).toISOString(),
+});
+
+const consumeWelcomeAudioSafariDeferredActuatorRendezvousResult = async (rendezvousState) => {
+  if (!rendezvousState?.result_promise) return null;
+  const result = await rendezvousState.result_promise;
+  if (result === null) {
+    return Number.isFinite(rendezvousState.armed_at_ms)
+        && ['rejected', 'timed_out'].includes(rendezvousState.phase)
+      ? conservativePostArmActuatorResult(rendezvousState.armed_at_ms)
+      : null;
+  }
+  if (rendezvousState.phase !== 'resolved') return null;
+  rendezvousState.phase = 'consumed';
+  return result;
 };
 
 const registerWelcomeAudioSafariOperationAuthorityState = ({ port, authorityState }) => {
@@ -844,22 +924,52 @@ const executeWelcomeAudioSafariAttempt = async ({
     )) {
       throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
     }
+    const deferredRendezvousState = armWelcomeAudioSafariDeferredActuatorRendezvous({
+      port: branded_safari_actuator_port,
+      attemptedAtMs: now_ms,
+    });
+    if (deferredRendezvousState === false) {
+      throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+    }
 
-    try {
-      actuatorResult = invokeBrandedSafariActuator({
-        port: branded_safari_actuator_port,
-        attemptedAtMs: now_ms,
-      });
-    } catch {
-      actuatorResult = Object.freeze({
-        result_schema_version: WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
-        bound_to_current_operation: false,
-        effect_boundary_entered: true,
-        send_control_actuation_count: 1,
-        attempted_at: new Date(now_ms).toISOString(),
-        confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
-        confirmation_checked_at: new Date(now_ms).toISOString(),
-      });
+    const deterministicScenario = ACTUATOR_PORT_STATE.get(
+      branded_safari_actuator_port,
+    )?.deterministic_scenario;
+    let modeledActuatorResult = null;
+    let modeledActuatorFailure = false;
+    if (deferredRendezvousState === null) {
+      try {
+        actuatorResult = invokeBrandedSafariActuator({
+          port: branded_safari_actuator_port,
+          attemptedAtMs: now_ms,
+        });
+        modeledActuatorResult = actuatorResult;
+      } catch {
+        modeledActuatorFailure = true;
+      }
+    } else if (
+      deterministicScenario !== WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO.DEFERRED_RENDEZVOUS
+    ) {
+      try {
+        modeledActuatorResult = invokeBrandedSafariActuator({
+          port: branded_safari_actuator_port,
+          attemptedAtMs: now_ms,
+        });
+      } catch {
+        modeledActuatorFailure = true;
+      }
+    }
+    if (modeledActuatorFailure) {
+      actuatorResult = conservativePostArmActuatorResult(now_ms);
+      if (deferredRendezvousState !== null) {
+        if (!settleWelcomeAudioSafariDeferredActuatorRendezvousForDeterministicModel({
+          rendezvousState: deferredRendezvousState,
+          actuatorResult,
+        })) throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+        await consumeWelcomeAudioSafariDeferredActuatorRendezvousResult(
+          deferredRendezvousState,
+        );
+      }
       await promoteWelcomeAudioOneShotPendingToTerminal({ paths, registryIdentity });
       terminalPublished = true;
       pendingPublished = false;
@@ -872,6 +982,23 @@ const executeWelcomeAudioSafariAttempt = async ({
         actuatorResult,
         blockerCodes: [WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_FAILED],
       });
+    }
+    if (deferredRendezvousState === null) {
+      actuatorResult = modeledActuatorResult;
+    } else {
+      if (
+        modeledActuatorResult !== null
+        && !settleWelcomeAudioSafariDeferredActuatorRendezvousForDeterministicModel({
+          rendezvousState: deferredRendezvousState,
+          actuatorResult: modeledActuatorResult,
+        })
+      ) throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
+      actuatorResult = await consumeWelcomeAudioSafariDeferredActuatorRendezvousResult(
+        deferredRendezvousState,
+      );
+    }
+    if (actuatorResult === null) {
+      throw new Error(WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER.ACTUATOR_INVALID);
     }
 
     if (!isValidActuatorResult(actuatorResult)) {
@@ -1021,6 +1148,7 @@ const runWelcomeAudioOperationalRailOnce = async ({
 export {
   WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_FIELDS,
   WELCOME_AUDIO_SAFARI_ACTUATOR_RESULT_SCHEMA_VERSION,
+  WELCOME_AUDIO_SAFARI_DEFERRED_RENDEZVOUS_TIMEOUT_MS,
   WELCOME_AUDIO_SAFARI_DETERMINISTIC_SCENARIO,
   WELCOME_AUDIO_SAFARI_OPERATIONAL_BLOCKER,
   WELCOME_AUDIO_SAFARI_OPERATIONAL_DECISION,
@@ -1031,6 +1159,7 @@ export {
   WELCOME_AUDIO_SAFARI_OPERATIONAL_TERMINAL_RECORD_SCHEMA_VERSION,
   createWelcomeAudioSafariActuatorPort,
   executeWelcomeAudioSafariAttempt,
+  registerWelcomeAudioSafariDeferredActuatorRendezvousState,
   registerWelcomeAudioSafariOperationAuthorityState,
   runWelcomeAudioOperationalRailOnce,
   validateWelcomeAudioSafariOperationalReceipt,

@@ -1,20 +1,20 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-welcome-audio-async-browser-session-bridge-v1`
-- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio-async-browser-session-bridge-v1`
+- `branch`: `codex/crm-core-welcome-audio-deferred-actuator-rendezvous-v1`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio-deferred-actuator-rendezvous-v1`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
-- `codex_worker`: Welcome Audio async browser session bridge no-effect lane
-- `status`: `async_browser_session_bridge_independent_review_green_artifact_review_pending_no_live`
-- `objective`: Implement
-  `crm_core_welcome_audio_async_browser_session_bridge_v1` as deterministic
-  simulated asynchronous orchestration only: synthetic preparation,
-  authoritative durable PRECLAIM, existing READY and opaque capability,
-  durable pending evidence, capability consumption, one modeled Send, one
-  modeled confirmation, and permanent terminal/no-retry.
+- `codex_worker`: Welcome Audio deferred actuator rendezvous no-effect lane
+- `status`: `async_bridge_centrally_integrated_deferred_rendezvous_independent_review_green_artifact_review_pending_no_live`
+- `objective`: Implement a deterministic same-process deferred actuator
+  rendezvous around the centrally integrated async bridge. The rendezvous is
+  opaque, one-use, exact-port/exact-binding paired, armed only after durable
+  pending plus claim/session-authority consumption, and terminally fail closed
+  on every invalid, absent, ambiguous, or late result.
 - `why_now`: The guard, canonical Safari adapter, synthetic no-effect
   boundary-A executor, shared claim issuer, and contract-shaped operational
-  executor are centrally integrated for deterministic no-effect proof. Every
+  executor and async session bridge are centrally integrated for deterministic
+  no-effect proof. Every
   live/browser/source gate remains closed. A live owner-only claim issuer, real
   browser-bound Safari actuator, and a new mission with fresh explicit CEO
   approval remain later gates.
@@ -29,7 +29,8 @@
   - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
   - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
 - `forbidden_files`:
-  - every file outside the exact nine-file allowlist above
+  - every file outside the exact lane allowlist above; the current delta changes
+    exactly eight files and leaves `operation-session.mjs` read-only
   - the integrated operation guard, shared store, claim writer, synthetic
     one-shot executor, and their tests, which are read-only dependencies
   - central next-action, board, queue and integration records
@@ -39,6 +40,16 @@
 - `allowed_scope`:
   - deterministic simulated asynchronous session orchestration
   - a simulated Safari-shaped operation port with no browser handle
+  - one opaque frozen nonserializable deferred-rendezvous authority separate
+    from the unchanged public port
+  - one asynchronous deterministic result after durable pending and both
+    authority consumptions, or terminal timeout/unknown with no retry
+  - early/pre-arm failure remains false/count `0`; every terminal failure of
+    the genuine rendezvous after `ARMED` (binding drift, invalid result,
+    mismatch, timeout, or absence) is conservatively true/count `1`, terminal
+    unknown, and permanent no-retry
+  - exactly one frozen data-only result snapshot from own descriptors; Proxy,
+    accessors, and non-plain objects are rejected without invoking getters
   - synthetic preparation before authoritative PRECLAIM publication
   - reuse of the integrated READY, opaque capability, durable pending,
     capability-consumption, terminal and permanent no-retry mechanics
@@ -58,10 +69,10 @@
 - `redacted_receipt_policy`: Receipts may include counts and status only; no
   identities or message content.
 - `current_tasks`:
-  - current task: implement
-    `crm_core_welcome_audio_async_browser_session_bridge_v1` only as
-    deterministic simulated asynchronous orchestration with every live gate
-    closed
+  - prior async bridge status: centrally integrated, deterministic no-effect,
+    and still no-live
+  - current task: implement only the deferred actuator rendezvous seam with
+    every live gate closed; this is not a host-browser implementation
   - exact demonstrated order: synthetic preparation -> authoritative durable
     PRECLAIM -> existing READY/opaque capability -> existing pending durable ->
     capability consumption -> one modeled Send -> one modeled confirmation ->
@@ -72,7 +83,7 @@
     `send_allowed=false`, and `live_authority=false`
   - inherited integrated dependency evidence: focused `244/244`, targeted
     adversarial `7/7`, and full `1669/1670` with the sole exact unchanged
-    out-of-lane baseline; these counts do not validate the new bridge
+    out-of-lane baseline; these counts do not validate the current rendezvous
   - bridge-specific focused validation:
     `bridge_focused_green`; bridge-only focused `44/44`; combined
     bridge-plus-inherited focused `276/276`, including async session bridge
@@ -85,9 +96,15 @@
     approval-queue baseline
   - no claim is permitted for a real actuator, browser, Safari, Instagram,
     picker, audio delivery, surface health, live issuer, or authorized canary
-  - current lane stop: lane commit/push, formal artifact review, then separate
-    central integration of the exact nine-file allowlist; independent
-    code/adversarial and documentation reviews are green
+  - current rendezvous validation: five-file focused `292/292`, including
+    operation session `40/40` and operational executor `20/20`; syntax green
+  - current rendezvous full-suite validation: `240/241` files and `1717/1718`
+    tests, with the sole failure the exact unchanged historical out-of-lane
+    Launch OS approval-queue baseline
+  - independent code, adversarial, and documentation reviews of the current
+    rendezvous delta are green with no P0-P2 findings pending
+  - current lane stop: formal artifact review, commit/push, and separate central
+    integration of the exact allowlist
   - inherited operational rail: one owner-only temporary store contract
     supplies stable reads, non-reclaiming mutex, exclusive durable publication,
     evidence inspection, and terminal promotion to both claim writer and
@@ -130,12 +147,13 @@
     failure the exact unchanged out-of-lane MailerLite approval-queue baseline;
     targeted adversarial crash/concurrency/invalid-port subset `7/7`;
     independent delta review and final Chief Architect review are green
-  - redacted validation incident: one uncaptured pre-existing full-suite fixture
-    emitted a synthetic test-recipient value to internal stdout; no production
-    or private follower, token, credential, or live payload was accessed, and
-    later owner-only captured full-run logs contained the same existing fixture
-    output, remained private, and were deleted after sanitized aggregate
-    extraction; the test-output privacy incident remains open and out of lane
+  - redacted validation incident: a pre-existing full-suite fixture emitted a
+    controlled test-recipient identifier to local tool output; no production or
+    private follower, token, credential, live payload, network call, or external
+    effect was involved. Repetition stopped immediately, an owner-only redacted
+    incident receipt was recorded outside the repository, and future broad-run
+    output must be captured privately and reduced to aggregate counts only. Any
+    fixture replacement remains a separate out-of-lane follow-up
   - historical operational-rail lane stop: focused/adversarial proof,
     independent review, lane commit/push, formal artifact review, then separate
     central integration; all of those inherited rail gates are complete
@@ -322,17 +340,22 @@
 - `latest_receipt`: no live or persisted operational receipt; deterministic
   test receipts remain ephemeral. The inherited rail's focused `244/244`,
   targeted adversarial `7/7`, and full `1669/1670` known-baseline evidence does
-  not validate the new bridge. Fresh bridge-lane validation is separately
+  not validate the current rendezvous. Bridge-lane validation is separately
   green: bridge-only focused `44/44`, combined bridge-plus-inherited focused
   `276/276`, bridge-targeted adversarial `13/13`, and full `240/241` files plus
   `1701/1702` tests with only the exact unchanged out-of-lane baseline failing.
-- `blockers`: formal artifact review and central integration are not yet
-  complete. After those no-live gates, a
+  The current rendezvous delta is focused green `292/292`; its full-suite result
+  is `240/241` files and `1717/1718` tests with the same exact unchanged
+  historical out-of-lane baseline; independent code, adversarial, and
+  documentation reviews are green.
+- `blockers`: async-bridge formal artifact review and central integration are
+  complete. Deferred-rendezvous formal artifact review, commit/push, and central
+  integration are not yet complete. After those no-live gates, a
   live owner-only claim issuer, real browser-bound Safari actuator, and newly
   written mission with fresh explicit CEO approval remain separate later
   gates.
-- `latest_execution_note`: this exact nine-file simulated bridge lane creates
-  no browser, source, send, MailerLite, legacy proxy, campaign, CRM,
+- `latest_execution_note`: this exact eight-file deferred-rendezvous delta
+  creates no browser, source, send, MailerLite, legacy proxy, campaign, CRM,
   automation, network, private operational artifact, or external effect.
 - `safari_action_adapter_v1_status`:
   `operational_rail_centrally_integrated_no_live`
@@ -370,7 +393,7 @@
 - `operational_rail_validation_status`:
   `focused_244_of_244_targeted_7_of_7_full_1669_of_1670_known_baseline_centrally_integrated`
 - `async_browser_session_bridge_status`:
-  `independent_review_green_artifact_review_pending_no_live`
+  `centrally_integrated_no_live`
 - `async_browser_session_bridge_execution_mode`:
   `deterministic_simulated_async_orchestration_only`
 - `async_browser_session_bridge_focused_validation`:
@@ -381,8 +404,14 @@
   `bridge_adversarial_green_13_of_13`
 - `async_browser_session_bridge_full_validation`:
   `full_known_baseline_unchanged_240_of_241_files_1701_of_1702_tests`
+- `deferred_actuator_rendezvous_status`:
+  `focused_292_of_292_full_1717_of_1718_known_baseline_independent_review_green_artifact_review_pending_no_live`
+- `deferred_actuator_rendezvous_contract`:
+  `opaque_frozen_nonserializable_same_process_exact_port_and_binding_one_resolution`
+- `deferred_actuator_rendezvous_public_port_status`:
+  `unchanged_frozen_no_invoke_driver_callback_browser_handle_or_payload`
 - `test_output_privacy_incident_status`:
-  `open_out_of_lane_redacted_no_production_or_private_data_accessed`
+  `contained_owner_only_redacted_receipt_recorded_fixture_remediation_out_of_lane`
 - `integration_effects`: centrally integrated for deterministic no-effect proof;
   no live, source, private, browser, Instagram, MailerLite, campaign, proxy,
   CRM/source, or legacy-repo effect occurred in the lane or central
@@ -402,29 +431,32 @@
 - `permanent_no_retry_after_attempt`: true
 - `retry_disposition_after_attempt`:
   `retry_forbidden_permanently_after_attempt`
-- `next_recommended_step`: commit and push the exact reviewed lane, then
-  complete formal artifact review and separate central integration of the
-  exact nine-file allowlist while every
-  live gate remains closed.
+- `next_recommended_step`: complete formal artifact review of the exact
+  independently reviewed rendezvous delta, then commit/push and separate
+  central integration while every live gate remains closed.
 - `next_approval_needed`: no CEO decision is needed for this deterministic
-  no-live bridge implementation, validation, review, or exact-allowlist central
+  no-live rendezvous implementation, validation, review, or exact-allowlist central
   integration. Any future live use still requires a separately reviewed live
   owner-only claim issuer and real browser-bound Safari actuator, then a newly
   written mission plus fresh explicit CEO approval for the exact canary.
 - `proposed_integration_note`: Welcome Audio would gain one deterministic
-  simulated async session bridge around the centrally integrated operational
-  rail. The bridge proves only synthetic preparation -> authoritative durable
-  PRECLAIM -> existing READY/opaque capability -> durable pending -> capability
-  consumption -> one modeled Send -> one modeled confirmation -> permanent
-  terminal/no-retry. Its modeled actuation count of one is never a real
-  message. It adds no surface and creates no browser, Safari, Instagram,
-  picker, audio delivery, current surface-health, live issuer, live authority,
-  or canary authority. The inherited `244/244`, `7/7`, and `1669/1670`
-  known-baseline evidence validates only the integrated dependency. Fresh
-  bridge-lane validation is separately green: bridge-only focused `44/44`,
-  combined bridge-plus-inherited focused `276/276`, bridge-targeted adversarial
-  `13/13`, and full `240/241` files plus `1701/1702` tests with only the exact
-  unchanged out-of-lane baseline failing.
+  same-process deferred result rendezvous around the centrally integrated async
+  session bridge. The public port stays unchanged and non-invocable; a separate
+  opaque one-use authority arms only after durable pending and both authority
+  consumptions. One valid asynchronous modeled result may resolve it; forgery,
+  cross-port use, reuse, concurrency loss, early resolution, binding drift,
+  mismatched/invalid data, timeout, absence, or lateness closes terminal
+  unknown/no-retry. Early/pre-arm rejection is false/count `0`; every terminal
+  failure of the genuine rendezvous after `ARMED` (binding drift, invalid
+  result, mismatch, timeout, or absence) is conservatively true/count `1`. The
+  resolver snapshots one
+  plain data-only envelope from own descriptors and rejects Proxy, accessors,
+  or non-plain objects without observation. It adds no host browser or surface and creates no Safari,
+  Instagram, picker, audio delivery, current surface-health, live issuer, live
+  authority, or canary authority. Current focused validation is `292/292`, the
+  current full suite is `1717/1718` with the exact unchanged historical
+  out-of-lane baseline, and independent review is green; formal artifact review
+  and integration remain pending.
   Even after integration, `browser_used=false`, `network_used=false`,
   `external_effect_invoked=false`, `production_ready=false`,
   `send_allowed=false`, and `live_authority=false`; the live claim issuer, real
