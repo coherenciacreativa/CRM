@@ -6146,7 +6146,7 @@ routing and completion pointer.
 - `recommended_default`:
   `preserve_integrated_readiness_async_bridge_and_deferred_rendezvous_keep_all_live_gates_closed`
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15`
@@ -6245,3 +6245,58 @@ routing and completion pointer.
   canary as part of this integration closeout.
 - `recommended_default`:
   `publish_central_integration_then_prepare_fresh_canary_approval_keep_all_live_gates_closed`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
+- `status`:
+  `builder_review_green_centrally_integrated_source_capture_next_no_effect`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-sealed-backlog-manifest-bootstrap-no-effect-mission-v1.md`
+- `builder_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-authority-bundle-builder-v1.md`
+- `approved_baseline`:
+  `c2fb4dc32de26be8f7f8cb2f4e1a39c19deb8c75`
+- `source_branch`:
+  `codex/crm-core-sealed-backlog-manifest-bootstrap-v1-20260716`
+- `objective`: Implement and validate the minimum private authority-bundle
+  builder, obtain a green independent review, and allow at most one serialized
+  central integration before a later bounded no-effect capture phase stages an
+  exact historical backlog. The staging bundle cannot authorize a canary or
+  publish live execution approval.
+- `private_schema_labels`:
+  - `crm-core-welcome-audio-authority-bootstrap-input-v1`
+  - `crm-core-welcome-audio-authority-bootstrap-staging-v1`
+- `source_commit`: `c61374d3d50209ac9dd967355751d7c6cece9c47`
+- `current_phase`: Builder implementation, `498/498` compatibility validation,
+  independent `green_to_self_integrate`, and the single central integration are
+  complete. Safari source capture has not started; no record has been read or
+  staged and all external-effect counts remain zero at integration time.
+- `later_bounded_source_scope`: After the builder and integration gates are
+  green, the approved mission may read at most eight historical backlog records
+  in Safari and only the matching profiles and bound threads needed to prove
+  exact identity, source time, backlog interval, owner account, and thread
+  bindings.
+- `fail_closed_source_rule`: If any identity, exact timestamp, interval
+  membership, owner account, thread, campaign provenance, or asset binding
+  requires inference or remains ambiguous, stop without publishing the final
+  staging bundle.
+- `forbidden_scope`: attachment control, native picker, upload preview, Send,
+  text, follow-back, likes, comments, reactions, MailerLite, CRM, campaign or
+  Ads surfaces, proxy, Chrome or in-app browser, unrelated profiles/threads,
+  private values in tracked files or redacted receipts, and publication of any
+  live execution approval.
+- `integration_gate`: satisfied under the central lock with the exact nine-file
+  allowlist. This opens only the separately approved bounded Safari read-only
+  capture phase and does not authorize a later canary.
+- `live_flags`: `production_ready=false`, `send_allowed=false`,
+  `live_authority=false`.
+- `completion_definition`: Exact builder and tests green; independent review
+  green; one allowlisted central integration complete; later bounded capture
+  either publishes one exact owner-only no-live staging bundle or fails closed
+  without it; all external-effect counts remain zero.
+- `recommended_default`:
+  `run_bounded_safari_read_only_bootstrap_or_fail_closed_keep_every_live_effect_closed`
