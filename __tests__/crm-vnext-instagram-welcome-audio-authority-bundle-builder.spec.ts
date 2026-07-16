@@ -33,11 +33,6 @@ import {
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_CAPTURE_SCHEMA_VERSION,
-  WelcomeAudioAuthorityBootstrapBlocked,
-  canonicalBytes,
-  deriveOwnerAnchorSha256,
-  deriveSourceEventAnchorSha256,
-  deriveThreadAnchorSha256,
   prepareSyntheticWelcomeAudioAuthorityBootstrapStaging,
   validateWelcomeAudioAuthorityBootstrapReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-authority-bundle-builder.mjs";
@@ -62,6 +57,40 @@ afterEach(async () => {
 });
 
 const sha256 = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+const canonicalize = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.keys(value).sort().map((key) => [
+        key,
+        canonicalize((value as Record<string, unknown>)[key]),
+      ]),
+    );
+  }
+  return value;
+};
+const canonicalBytes = (value: unknown) => Buffer.from(
+  `${JSON.stringify(canonicalize(value))}\n`,
+  "utf8",
+);
+const referenceAnchor = (domain: string, exactUtf8: string) => {
+  const bytes = Buffer.from(exactUtf8, "utf8");
+  const size = Buffer.allocUnsafe(4);
+  size.writeUInt32BE(bytes.length, 0);
+  return sha256(Buffer.concat([Buffer.from(domain, "utf8"), size, bytes]));
+};
+const deriveThreadAnchorSha256 = (value: string) => referenceAnchor(
+  "crm-core:instagram:bound-thread-reference-utf8:v1\0",
+  value,
+);
+const deriveOwnerAnchorSha256 = (value: string) => referenceAnchor(
+  "crm-core:instagram:owner-account-reference-utf8:v1\0",
+  value,
+);
+const deriveSourceEventAnchorSha256 = (value: string) => referenceAnchor(
+  "crm-core:instagram:source-event-reference-utf8:v1\0",
+  value,
+);
 const json = async (path: string) => JSON.parse(await readFile(path, "utf8"));
 
 type Fixture = Awaited<ReturnType<typeof createFixture>>;
@@ -178,11 +207,12 @@ const expectBlocked = async (
     await promise;
     throw new Error("expected bootstrap to be blocked");
   } catch (error) {
-    expect(error).toBeInstanceOf(WelcomeAudioAuthorityBootstrapBlocked);
-    const blocked = error as WelcomeAudioAuthorityBootstrapBlocked & {
+    expect(error).toBeInstanceOf(Error);
+    const blocked = error as Error & {
       code: string;
       redacted_receipt: Record<string, unknown>;
     };
+    expect(blocked.name).toBe("WelcomeAudioAuthorityBootstrapBlocked");
     expect(blocked.code).toBe(code);
     expect(blocked.message).toBe(code);
     expect("cause" in blocked).toBe(false);
@@ -668,11 +698,12 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
       await prepareSyntheticWelcomeAudioAuthorityBootstrapStaging(hostileOptions as never);
       throw new Error("expected hostile options to be blocked");
     } catch (error) {
-      expect(error).toBeInstanceOf(WelcomeAudioAuthorityBootstrapBlocked);
-      const blocked = error as WelcomeAudioAuthorityBootstrapBlocked & {
+      expect(error).toBeInstanceOf(Error);
+      const blocked = error as Error & {
         code: string;
         redacted_receipt: Record<string, unknown>;
       };
+      expect(blocked.name).toBe("WelcomeAudioAuthorityBootstrapBlocked");
       expect(blocked.code).toBe(
         WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.UNEXPECTED_LOCAL_FAILURE,
       );
@@ -737,6 +768,46 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
     );
   });
 
+  test("receipt validation is total for hostile getters, proxies, and revoked proxies", async () => {
+    const safeInvalid = {
+      ok: false,
+      reason: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_SCHEMA_INVALID,
+    };
+    const privateMarker = "synthetic-private-receipt-marker";
+    const hostileOwnKeys = new Proxy({}, {
+      ownKeys() {
+        throw new Error(privateMarker);
+      },
+    });
+    expect(validateWelcomeAudioAuthorityBootstrapReceipt(hostileOwnKeys)).toEqual(safeInvalid);
+
+    const fixture = await createFixture(1);
+    const validReceipt = (await run(fixture)).redacted_receipt;
+    const hostileGetter = { ...validReceipt } as Record<string, unknown>;
+    Object.defineProperty(hostileGetter, "decision", {
+      enumerable: true,
+      get() {
+        throw new Error(privateMarker);
+      },
+    });
+    expect(validateWelcomeAudioAuthorityBootstrapReceipt(hostileGetter)).toEqual(safeInvalid);
+
+    const blockerCodesProxy = {
+      ...validReceipt,
+      blocker_codes: new Proxy([], {
+        get(_target, property) {
+          if (property === "some") throw new Error(privateMarker);
+          return Reflect.get(_target, property);
+        },
+      }),
+    };
+    expect(validateWelcomeAudioAuthorityBootstrapReceipt(blockerCodesProxy)).toEqual(safeInvalid);
+
+    const revocable = Proxy.revocable({}, {});
+    revocable.revoke();
+    expect(validateWelcomeAudioAuthorityBootstrapReceipt(revocable.proxy)).toEqual(safeInvalid);
+  });
+
   test("module import has zero filesystem side effects", async () => {
     const fixture = await createFixture(1);
     const before = (await readdir(fixture.root)).sort();
@@ -746,7 +817,44 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
     ));
     moduleUrl.searchParams.set("import_side_effect_test", String(Date.now()));
     const imported = await import(moduleUrl.href);
-    expect(typeof imported.prepareFixedWelcomeAudioAuthorityBootstrapStaging).toBe("function");
+    expect(Object.keys(imported).sort()).toEqual([
+      "ASSET_SELECTION_FIELDS",
+      "AUTHORIZATION_FIELDS",
+      "BOOTSTRAP_INPUT_FILE_NAMES",
+      "BOOTSTRAP_STAGING_FILE_NAMES",
+      "CAMPAIGN_EVIDENCE_FIELDS",
+      "FIXED_BOOTSTRAP_INPUT_ROOT",
+      "FIXED_BOOTSTRAP_STAGING_ROOT",
+      "FIXED_LIVE_AUTHORITY_ROOT",
+      "FORBIDDEN_LIVE_FILE_NAME",
+      "SOURCE_CAPTURE_FIELDS",
+      "SOURCE_RECORD_FIELDS",
+      "SYNTHETIC_TEST_ROOT_PREFIX",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_ASSET_SELECTION_SCHEMA_VERSION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_AUTHORIZATION_SCHEMA_VERSION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_CONTRACT_VERSION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_EXECUTION_MODE",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MISSION_ID",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_OPERATION_BINDINGS_SCHEMA_VERSION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_SCHEMA_VERSION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_CAPTURE_SCHEMA_VERSION",
+      "WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS",
+      "prepareFixedWelcomeAudioAuthorityBootstrapStaging",
+      "prepareSyntheticWelcomeAudioAuthorityBootstrapStaging",
+      "validateWelcomeAudioAuthorityBootstrapReceipt",
+    ].sort());
+    expect(Object.entries(imported)
+      .filter(([, value]) => typeof value === "function")
+      .map(([name]) => name)
+      .sort()).toEqual([
+      "prepareFixedWelcomeAudioAuthorityBootstrapStaging",
+      "prepareSyntheticWelcomeAudioAuthorityBootstrapStaging",
+      "validateWelcomeAudioAuthorityBootstrapReceipt",
+    ]);
     expect((await readdir(fixture.root)).sort()).toEqual(before);
     await expect(lstat(join(fixture.root, "staging"))).rejects.toMatchObject({ code: "ENOENT" });
   });

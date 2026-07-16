@@ -868,50 +868,55 @@ const verifyPublishedFile = async ({ rootIdentity, fileName, expectedBytes }) =>
 };
 
 const validateWelcomeAudioAuthorityBootstrapReceipt = (receipt) => {
-  if (!exactObjectKeys(receipt, WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS)) {
-    return { ok: false, reason: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_SCHEMA_INVALID };
-  }
-  const validDecision = Object.values(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION)
-    .includes(receipt.decision);
-  const staged = receipt.decision === WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION.STAGED;
-  const blockerCodes = new Set(Object.values(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER));
-  if (
-    receipt.receipt_schema_version
-      !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_SCHEMA_VERSION
-    || receipt.builder_contract_version !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_CONTRACT_VERSION
-    || receipt.redaction_status
-      !== 'aggregate_allowlist_only_no_paths_ids_anchors_digests_or_private_values'
-    || receipt.execution_mode !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_EXECUTION_MODE
-    || !validDecision
-    || !Number.isSafeInteger(receipt.records_seen_count)
-    || receipt.records_seen_count < 0
-    || !Number.isSafeInteger(receipt.records_staged_count)
-    || receipt.records_staged_count < 0
-    || receipt.records_staged_count > WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS
-    || receipt.record_cap !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS
-    || [
-      'input_files_verified',
-      'campaign_evidence_exact',
-      'identity_evidence_exact',
-      'thread_evidence_exact',
-      'owner_evidence_exact',
-      'absolute_time_evidence_exact',
-      'audio_regular_single_link_verified',
-      'audio_digest_verified',
-      'atomic_publication_verified',
-    ].some((field) => receipt[field] !== staged)
-    || receipt.records_staged_count !== (staged ? receipt.records_seen_count : 0)
-    || receipt.execution_approval_published !== false
-    || receipt.live_authority_root_touched !== false
-    || receipt.external_effect_invoked !== false
-    || !Array.isArray(receipt.blocker_codes)
-    || receipt.blocker_codes.some((code) => !blockerCodes.has(code))
-    || receipt.blocker_codes.length !== (staged ? 0 : 1)
-  ) return {
+  const invalid = () => ({
     ok: false,
     reason: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_SCHEMA_INVALID,
-  };
-  return { ok: true, reason: null };
+  });
+  try {
+    if (!exactObjectKeys(receipt, WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS)) {
+      return invalid();
+    }
+    const validDecision = Object.values(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION)
+      .includes(receipt.decision);
+    const staged = receipt.decision === WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION.STAGED;
+    const blockerCodes = new Set(Object.values(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER));
+    if (
+      receipt.receipt_schema_version
+        !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_SCHEMA_VERSION
+      || receipt.builder_contract_version !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_CONTRACT_VERSION
+      || receipt.redaction_status
+        !== 'aggregate_allowlist_only_no_paths_ids_anchors_digests_or_private_values'
+      || receipt.execution_mode !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_EXECUTION_MODE
+      || !validDecision
+      || !Number.isSafeInteger(receipt.records_seen_count)
+      || receipt.records_seen_count < 0
+      || !Number.isSafeInteger(receipt.records_staged_count)
+      || receipt.records_staged_count < 0
+      || receipt.records_staged_count > WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS
+      || receipt.record_cap !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS
+      || [
+        'input_files_verified',
+        'campaign_evidence_exact',
+        'identity_evidence_exact',
+        'thread_evidence_exact',
+        'owner_evidence_exact',
+        'absolute_time_evidence_exact',
+        'audio_regular_single_link_verified',
+        'audio_digest_verified',
+        'atomic_publication_verified',
+      ].some((field) => receipt[field] !== staged)
+      || receipt.records_staged_count !== (staged ? receipt.records_seen_count : 0)
+      || receipt.execution_approval_published !== false
+      || receipt.live_authority_root_touched !== false
+      || receipt.external_effect_invoked !== false
+      || !Array.isArray(receipt.blocker_codes)
+      || receipt.blocker_codes.some((code) => !blockerCodes.has(code))
+      || receipt.blocker_codes.length !== (staged ? 0 : 1)
+    ) return invalid();
+    return { ok: true, reason: null };
+  } catch {
+    return invalid();
+  }
 };
 
 const buildPrivateBundle = ({ authorization, sourceCapture, validatedCapture, assetSelection, stagingRoot }) => {
@@ -1338,11 +1343,6 @@ export {
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_SCHEMA_VERSION,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_CAPTURE_SCHEMA_VERSION,
-  WelcomeAudioAuthorityBootstrapBlocked,
-  canonicalBytes,
-  deriveOwnerAnchorSha256,
-  deriveSourceEventAnchorSha256,
-  deriveThreadAnchorSha256,
   prepareFixedWelcomeAudioAuthorityBootstrapStaging,
   prepareSyntheticWelcomeAudioAuthorityBootstrapStaging,
   validateWelcomeAudioAuthorityBootstrapReceipt,
