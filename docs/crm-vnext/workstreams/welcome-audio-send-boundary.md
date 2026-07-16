@@ -1,34 +1,34 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-sealed-backlog-manifest-bootstrap-v1-20260716`
+- `branch`: `codex/crm-core-welcome-audio-source-capability-gate-v1-20260716`
 - `worktree_path`:
-  `/Users/alejandrogomez/CRM-core-sealed-backlog-manifest-bootstrap-v1`
+  `/Users/alejandrogomez/CRM-core-welcome-audio-source-capability-gate-v1`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
 - `codex_worker`: Central Integration Worker
 - `status`:
-  `authority_bundle_builder_approved_in_progress_capture_staging_only_no_effect`
-- `objective`: Implement and validate only the owner-only authority-bundle
-  builder and protected asset-copy boundary needed to stage an exact historical
-  backlog without creating live send authority.
-- `why_now`: The technical send rail is already centrally integrated, but the
-  canary remains fail-closed because its exact backlog, identity/thread/owner/
-  time bindings, and protected approved audio are not yet available as one
-  validated owner-only staging bundle. This mission fills only that no-effect
-  preparation gap.
+  `source_capability_gate_proof_approved_in_progress_repo_only_no_source_authority`
+- `objective`: Implement and prove only a pure deterministic gate that
+  classifies caller-supplied synthetic source evidence without acquiring source
+  data or creating live authority.
+- `why_now`: The bounded sealed-backlog bootstrap reached an authenticated
+  Notifications surface but completed fail-closed because it exposed zero
+  accessible and verifiable follower rows. A repo-only capability gate is the
+  next narrow seam for making that blocker deterministic without reopening the
+  source.
 - `allowed_files`:
-  - exact nine-file allowlist recorded in
-    `docs/crm-vnext/crm-core-sealed-backlog-manifest-bootstrap-no-effect-mission-v1.md`
+  - exact six-file allowlist recorded in
+    `docs/crm-vnext/crm-core-welcome-audio-source-capability-gate-proof-mission-v1.md`
 - `forbidden_files`:
-  - every file outside the exact nine-file mission allowlist
+  - every file outside the exact six-file mission allowlist
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
-  - exact builder implementation, deterministic tests, documentation, review,
-    and one gated central integration in the approved nine-file allowlist
-  - after prior gates are green, owner-only capture staging from at most eight
-    bounded Safari records with no attachment, upload, or send
+  - exact pure gate implementation, deterministic synthetic tests,
+    documentation, independent review, and one gated central integration in the
+    approved six-file allowlist
+  - no source or private-artifact phase is included in this mission
 - `historical_rendezvous_allowed_scope`:
   - deterministic simulated asynchronous session orchestration
   - a simulated Safari-shaped operation port with no browser handle
@@ -50,6 +50,8 @@
   - focused ordering, replay, failure and receipt tests
   - narrow operational-rail, adapter, matrix and workstream docs
 - `forbidden_scope`:
+  - Safari, Instagram, Computer Use, OCR, screenshots, source execution, or
+    private-artifact access
   - sending audio
   - invoking attachment control, picker, upload preview, or Send
   - text, follow-back, likes, comments, reactions, or other outreach
@@ -59,18 +61,19 @@
   - live execution approval publication
   - candidate queue generation
   - CRM/source writes
-- `private_artifact_policy`: The repo-only builder phase does not inspect
-  private contents. The later approved capture phase may read only its exact
-  owner-only bootstrap inputs and publish only the owner-only staging bundle;
-  never print, paste, or commit private contents.
-- `redacted_receipt_policy`: Receipts may include counts and status only; no
-  identities or message content.
+- `private_artifact_policy`: This mission does not inspect, create, update, or
+  publish private artifacts. Synthetic test fixtures must contain no private
+  values or source anchors.
+- `redacted_receipt_policy`: Receipts may include counts, stable status/blocker
+  codes, and branch-safe aggregate booleans only; no identities, timestamps,
+  references, private values, or message content. A no-row receipt must not
+  claim campaign, record-time, UTF-8, identity, thread, owner, or source-event
+  evidence.
 - `current_tasks`:
-  - complete the fresh post-integration rerun and reconcile its aggregate result
-  - preserve the validated formal Chief Architect verdict and one-integration
-    record without duplicating the central commit SHA in this document
-  - prepare, but do not execute, a fresh canary approval packet bound to the
-    resulting canonical SHA
+  - implement the pure three-decision source-capability gate
+  - prove every decision and fail-closed edge with synthetic data-only tests
+  - obtain independent adversarial review and integrate once only if every
+    repo-only gate is green
 - `historical_rendezvous_tasks`:
   - prior async bridge status: centrally integrated, deterministic no-effect,
     and still no-live
@@ -541,13 +544,15 @@
   manifest of at most eight records, identity/thread/owner/time bindings,
   protected copied audio, and aggregate redacted receipt. The output is staging
   only, never a live execution approval.
-- `current_truth`: Builder, deterministic checks, independent review, and the
-  single central integration are green. Safari reads, record staging, and
-  private publication outcomes are not yet recorded.
-- `later_capture_scope`: After the builder and prior gates are green, Safari may
-  read at most eight approved historical backlog records and only each matching
-  profile and bound thread required for exact evidence. No unrelated browsing
-  is permitted.
+- `historical_truth_at_integration_checkpoint`: Builder, deterministic checks,
+  independent review, and the single central integration were green. Safari
+  reads, record staging, and private publication outcomes had not yet been
+  recorded at that checkpoint. This field is superseded by the fail-closed
+  bootstrap result below.
+- `historical_later_capture_scope_superseded`: At that checkpoint, the approved
+  later phase allowed Safari to read at most eight historical backlog records
+  and only the matching evidence. That bounded phase has since run and
+  completed fail-closed. This field grants no current source action.
 - `fail_closed_rule`: Missing, relative, approximate, inferred, ambiguous, or
   conflicting identity, source time, interval, campaign provenance, owner,
   thread, or asset evidence produces no final bundle.
@@ -571,6 +576,64 @@
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
-- `next_gate`: Run only the already approved bounded Safari read-only bootstrap
-  and fail closed on the first ambiguous or inferred binding. Do not mark
-  source capture complete without direct evidence; it authorizes no later send.
+- `historical_next_gate_superseded`: At that checkpoint, the next gate was the
+  already approved bounded Safari read-only bootstrap. That gate has since run
+  and completed fail-closed as recorded below; it is not a current instruction
+  and it authorizes no new source action.
+
+## Sealed Backlog Bootstrap Fail-Closed Result
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
+- `central_commit`:
+  `adbdbfcceaab296af03d44afd1e64a9513105f1a`
+- `status`:
+  `completed_fail_closed_no_accessible_verifiable_rows_zero_effect`
+- `authenticated_instagram_notifications_surface_reached`: true
+- `accessible_verifiable_follower_rows`: 0
+- `profiles_opened`: 0
+- `threads_opened`: 0
+- `records_sealed`: 0
+- `external_effects`: 0
+- `source_truth`: The bounded source surface exposed zero accessible and
+  verifiable follower rows. This is a capability blocker and must never be
+  interpreted as zero followers.
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+
+## Source Capability Gate Proof Checkpoint
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_welcome_audio_source_capability_gate_proof_v1_20260716`
+- `mode`: `proof`
+- `approved_baseline`:
+  `adbdbfcceaab296af03d44afd1e64a9513105f1a`
+- `status`: `approved_in_progress_repo_only_synthetic_no_source_authority`
+- `decision_vocabulary`:
+  - `source_capable`
+  - `blocked_no_accessible_rows`
+  - `blocked_ambiguous_or_inferred`
+- `truth_boundary`: The gate classifies only synthetic evidence already
+  supplied by its caller. It cannot open a source, make rows accessible, create
+  candidates, stage bundles, or make a canary ready.
+- `no_row_truth_boundary`: The no-accessible-rows decision requires only an
+  exact fresh loaded/authenticated Notifications surface, `not_exposed`, zero
+  records, null campaign and owner reference, explicit no-row ordering and
+  owner-not-observed sentinels, and an empty record array. It claims no campaign
+  interval, record time, identity, thread, owner, or source-event evidence. Any
+  substituted sentinel, nonempty record set, or private value blocks ambiguous.
+- `source_execution`: false
+- `canary_ready`: false
+- `live_authority`: false
+- `external_effects`: 0
+- `review_gate`: Independent adversarial review must be green with no unresolved
+  P0-P2 finding before integration.
+- `integration_gate`: At most one central integration under the established
+  lock after implementation, focused and compatibility tests, exact six-file
+  allowlist, privacy, false-live-flag, and independent-review checks are green.
+- `next_gate`: Finish only the repo synthetic implementation and review. Do not
+  open Safari, Instagram, any private artifact, or any source execution as part
+  of this mission.

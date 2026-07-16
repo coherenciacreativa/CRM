@@ -6246,7 +6246,7 @@ routing and completion pointer.
 - `recommended_default`:
   `publish_central_integration_then_prepare_fresh_canary_approval_keep_all_live_gates_closed`
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
@@ -6300,3 +6300,67 @@ routing and completion pointer.
   without it; all external-effect counts remain zero.
 - `recommended_default`:
   `run_bounded_safari_read_only_bootstrap_or_fail_closed_keep_every_live_effect_closed`
+
+## Sealed Backlog Bootstrap Result
+
+- `mission_id`:
+  `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
+- `status`:
+  `completed_fail_closed_no_accessible_verifiable_rows_zero_effect`
+- `central_commit`:
+  `adbdbfcceaab296af03d44afd1e64a9513105f1a`
+- `authenticated_instagram_notifications_surface_reached`: true
+- `accessible_verifiable_follower_rows`: 0
+- `profiles_opened`: 0
+- `threads_opened`: 0
+- `records_sealed`: 0
+- `external_effects`: 0
+- `interpretation`: The bounded source surface exposed zero accessible and
+  verifiable follower rows. This is not evidence of zero followers.
+- `live_flags`: `production_ready=false`, `send_allowed=false`,
+  `live_authority=false`.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_source_capability_gate_proof_v1_20260716`
+- `status`: `approved_in_progress_repo_only_synthetic_no_source_authority`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `approved_baseline`:
+  `adbdbfcceaab296af03d44afd1e64a9513105f1a`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-source-capability-gate-proof-mission-v1.md`
+- `gate_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-source-capability-gate-v1.md`
+- `objective`: Implement and prove one pure deterministic gate that classifies
+  caller-supplied synthetic source evidence as `source_capable`,
+  `blocked_no_accessible_rows`, or `blocked_ambiguous_or_inferred`.
+- `allowed_scope`: Exact six-file repo-only implementation, synthetic tests,
+  documentation, independent adversarial review, and at most one locked central
+  integration if every gate is green.
+- `forbidden_scope`: Safari, Chrome, Instagram, Computer Use, OCR, private
+  artifacts, source execution, candidates, bundles, sends, MailerLite, CRM,
+  campaign, Ads, proxy, network, external effects, and every file outside the
+  exact allowlist.
+- `truth_boundary`: This gate describes whether supplied evidence is
+  capability-complete. It does not make rows accessible, acquire evidence,
+  create a candidate, or make a canary ready.
+- `no_row_truth_boundary`: `blocked_no_accessible_rows` requires an exact fresh
+  loaded/authenticated surface, `not_exposed`, zero records, and explicit
+  no-row sentinels: null campaign and owner reference, explicit no-row ordering
+  and owner-not-observed evidence, and an empty record array. It claims no
+  campaign interval, record time, identity, thread, owner, or source-event
+  evidence; any substituted sentinel, nonempty record set, or private claim
+  blocks ambiguous.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `live_authority=false`.
+- `integration_gate`: Independent adversarial review plus exact allowlist,
+  privacy, test, and central-lock checks must all be green before the optional
+  single integration.
+- `completion_definition`: Pure three-decision gate and deterministic tests are
+  green; independent review is green; exact six-file scope is preserved; zero
+  source or external effects occur; and at most one central integration is
+  completed if every prior gate passes.
+- `recommended_default`:
+  `finish_repo_only_source_capability_gate_review_then_integrate_once_if_green_keep_source_execution_closed`
