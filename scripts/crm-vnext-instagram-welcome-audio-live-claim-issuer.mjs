@@ -6,6 +6,7 @@ import {
   open,
   readdir,
   realpath,
+  rename,
   unlink,
 } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
@@ -17,6 +18,7 @@ import {
   resolve,
   sep,
 } from 'node:path';
+import { types as nodeUtilTypes } from 'node:util';
 
 import {
   WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
@@ -27,11 +29,15 @@ import {
   verifyApprovedWelcomeAudioAssetCapabilityPathBinding,
   verifySealedWelcomeAudioManifestCapability,
 } from './crm-vnext-instagram-welcome-audio-live-preflight.mjs';
+import {
+  WELCOME_AUDIO_CONFIRMATION_MARKER,
+  WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+} from './crm-vnext-instagram-welcome-audio-operation-guard.mjs';
 
 const WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION =
-  'crm_core_instagram_welcome_audio_live_claim_issuer_v1';
+  'crm_core_instagram_welcome_audio_live_claim_issuer_v2';
 const WELCOME_AUDIO_LIVE_CLAIM_RECORD_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_live_claim_record_v1';
+  'crm_core_instagram_welcome_audio_live_claim_record_v2';
 const WELCOME_AUDIO_LIVE_INSPECTION_RECORD_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_live_inspection_record_v1';
 const WELCOME_AUDIO_LIVE_INSPECTION_RESULT_SCHEMA_VERSION =
@@ -39,11 +45,15 @@ const WELCOME_AUDIO_LIVE_INSPECTION_RESULT_SCHEMA_VERSION =
 const WELCOME_AUDIO_LIVE_STATE_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_live_state_receipt_v1';
 const WELCOME_AUDIO_LIVE_PENDING_RECORD_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_live_pending_attempt_v1';
+  'crm_core_instagram_welcome_audio_live_pending_attempt_v2';
 const WELCOME_AUDIO_LIVE_TERMINAL_RECORD_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_live_terminal_attempt_v1';
+  'crm_core_instagram_welcome_audio_live_terminal_attempt_v2';
+const WELCOME_AUDIO_LIVE_OBSERVATION_RECORD_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_live_reply_observation_claim_v1';
+const WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_live_reply_observation_receipt_v1';
 const WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_live_attempt_receipt_v1';
+  'crm_core_instagram_welcome_audio_live_attempt_receipt_v2';
 const WELCOME_AUDIO_LIVE_CLAIM_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_live_claim_receipt_v1';
 const WELCOME_AUDIO_LIVE_CLAIM_EXECUTION_MODE =
@@ -52,6 +62,9 @@ const WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP = 3;
 const WELCOME_AUDIO_LIVE_INSPECTION_CAP = 8;
 const WELCOME_AUDIO_LIVE_RESERVATION_TTL_MS = 5 * 60 * 1000;
 const WELCOME_AUDIO_LIVE_INSPECTION_CAPABILITY_TTL_MS = 5 * 60 * 1000;
+const WELCOME_AUDIO_LIVE_OBSERVATION_WINDOW_MS = 72 * 60 * 60 * 1000;
+const WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP = 3;
+const WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP = 9;
 const MAX_CLAIM_RECORD_BYTES = 32 * 1024;
 const fatalUtf8Decoder = new TextDecoder('utf-8', { fatal: true });
 const FIXED_LIVE_STORE_ROOT = resolve(
@@ -97,14 +110,19 @@ const WELCOME_AUDIO_LIVE_CLAIM_BLOCKER = Object.freeze({
   RESERVATION_ACTIVE: 'blocked_live_reservation_owner_active',
   RESERVATION_CANCEL_INVALID: 'blocked_live_reservation_cancel_invalid',
   RESERVATION_RECOVERY_INVALID: 'blocked_live_reservation_recovery_invalid',
+  MISSION_SLOT_BLOCKED: 'blocked_live_mission_slot_not_sequentially_confirmed',
+  OBSERVATION_INVALID: 'blocked_live_reply_observation_invalid',
+  OBSERVATION_CAP_REACHED: 'blocked_live_reply_observation_cap_reached',
 });
 
 const WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME = Object.freeze({
+  CONFIRMED: 'confirmed_exact_thread_new_audio_terminal_no_retry',
   UNKNOWN: 'attempted_or_unknown_terminal_no_retry',
 });
 
 const WELCOME_AUDIO_LIVE_ATTEMPT_DECISION = Object.freeze({
   ARMED: 'pending_durable_before_attachment_upload',
+  FINALIZED_CONFIRMED: 'terminal_confirmed_durable_no_retry',
   FINALIZED_UNKNOWN: 'terminal_unknown_durable_no_retry',
   BLOCKED: 'attempt_boundary_blocked',
   UNKNOWN_TERMINAL: 'attempt_boundary_unknown_terminal',
@@ -136,6 +154,46 @@ const WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS = Object.freeze({
 const WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS = Object.freeze({
   VALID: 'valid_host_pending_capability_consumed',
   INVALID: 'invalid_host_pending_capability',
+});
+
+const WELCOME_AUDIO_LIVE_OBSERVATION_DECISION = Object.freeze({
+  CLAIMED: 'reply_observation_claim_durable_before_thread_read',
+  BLOCKED: 'reply_observation_claim_blocked',
+});
+
+const WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS = Object.freeze({
+  VALID: 'valid_reply_observation_capability_consumed',
+  INVALID: 'invalid_reply_observation_capability',
+});
+
+const WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST = Object.freeze({
+  IMPORT_FAILURE: 'synthetic_dynamic_import_failure',
+  MODULE_IDENTITY_FAILURE: 'synthetic_module_identity_failure',
+  VERIFIER_FAILURE: 'synthetic_verifier_failure',
+  CRASH_AFTER_TERMINAL_PUBLISH: 'synthetic_crash_after_terminal_publish',
+  REPLACE_PENDING_AFTER_TERMINAL_PUBLISH:
+    'synthetic_replace_pending_after_terminal_publish',
+});
+
+const WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST = Object.freeze({
+  REPLACE_CLAIM_AFTER_CANCELLATION_PUBLISH:
+    'synthetic_replace_claim_after_cancellation_publish',
+});
+
+const WELCOME_AUDIO_LIVE_ATTEMPT_BOUNDARY_SCENARIO_FOR_TEST = Object.freeze({
+  FORCE_PRE_PENDING_REVALIDATION_FAILURE:
+    'synthetic_force_pre_pending_revalidation_failure',
+});
+
+const WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST = Object.freeze({
+  REPLACE_FIXED_MUTEX_BEFORE_RELEASE:
+    'synthetic_replace_fixed_mutex_before_release',
+  REPLACE_FIXED_MUTEX_DURING_DEAD_OWNER_RECOVERY:
+    'synthetic_replace_fixed_mutex_during_dead_owner_recovery',
+  PUBLISH_NEW_FIXED_MUTEX_AFTER_RELEASE_RENAME:
+    'synthetic_publish_new_fixed_mutex_after_release_rename',
+  PUBLISH_NEW_FIXED_MUTEX_AFTER_DEAD_OWNER_RECOVERY_RENAME:
+    'synthetic_publish_new_fixed_mutex_after_dead_owner_recovery_rename',
 });
 
 const WELCOME_AUDIO_LIVE_HOST_PENDING_EVIDENCE_FIELDS = Object.freeze([
@@ -207,6 +265,7 @@ const WELCOME_AUDIO_LIVE_CLAIM_RECORD_FIELDS = Object.freeze([
   'campaign_interval_sha256',
   'audio_asset_sha256',
   'manifest_ordinal',
+  'mission_slot',
   'claimed_at',
   'claim_status',
   'retry_disposition',
@@ -217,7 +276,7 @@ const WELCOME_AUDIO_LIVE_CLAIM_RECORD_FIELDS = Object.freeze([
 ]);
 
 const WELCOME_AUDIO_LIVE_RESERVATION_CANCELLATION_RECORD_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_live_reservation_cancellation_v1';
+  'crm_core_instagram_welcome_audio_live_reservation_cancellation_v2';
 const WELCOME_AUDIO_LIVE_RESERVATION_CANCELLATION_RECORD_FIELDS = Object.freeze([
   'record_schema_version',
   'mission_id',
@@ -226,6 +285,7 @@ const WELCOME_AUDIO_LIVE_RESERVATION_CANCELLATION_RECORD_FIELDS = Object.freeze(
   'identity_anchor_schema_version',
   'identity_anchor_sha256',
   'manifest_ordinal',
+  'mission_slot',
   'claim_nonce',
   'owner_pid',
   'owner_nonce',
@@ -297,6 +357,7 @@ const WELCOME_AUDIO_LIVE_PENDING_RECORD_FIELDS = Object.freeze([
   'campaign_interval_sha256',
   'audio_asset_sha256',
   'manifest_ordinal',
+  'mission_slot',
   'claim_nonce',
   'owner_pid',
   'owner_nonce',
@@ -325,6 +386,7 @@ const WELCOME_AUDIO_LIVE_TERMINAL_RECORD_FIELDS = Object.freeze([
   'campaign_interval_sha256',
   'audio_asset_sha256',
   'manifest_ordinal',
+  'mission_slot',
   'claim_nonce',
   'owner_pid',
   'owner_nonce',
@@ -335,7 +397,51 @@ const WELCOME_AUDIO_LIVE_TERMINAL_RECORD_FIELDS = Object.freeze([
   'outcome',
   'attachment_upload_entered',
   'send_control_actuation_count',
+  'confirmation_marker',
+  'confirmation_observed_at',
+  'new_outgoing_audio_bubble_delta',
+  'observation_window_expires_at',
   'retry_disposition',
+]);
+
+const WELCOME_AUDIO_LIVE_OBSERVATION_RECORD_FIELDS = Object.freeze([
+  'record_schema_version',
+  'claim_issuer_contract_version',
+  'mission_id',
+  'contract_version',
+  'mission_contract_sha256',
+  'operation_id',
+  'identity_anchor_schema_version',
+  'identity_anchor_sha256',
+  'thread_anchor_sha256',
+  'attempt_nonce',
+  'manifest_ordinal',
+  'mission_slot',
+  'thread_observation_ordinal',
+  'mission_observation_ordinal',
+  'confirmed_terminal_sha256',
+  'confirmed_terminal_finalized_at',
+  'window_expires_at',
+  'claimed_at',
+  'claim_status',
+  'claim_nonce',
+]);
+
+const WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_FIELDS = Object.freeze([
+  'receipt_schema_version',
+  'claim_issuer_contract_version',
+  'redaction_status',
+  'execution_mode',
+  'decision',
+  'thread_observation_count',
+  'thread_observation_cap',
+  'mission_observation_count',
+  'mission_observation_cap',
+  'private_capability_issued',
+  'source_read_allowed',
+  'send_allowed',
+  'external_effect_invoked',
+  'blocker_codes',
 ]);
 
 const WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_FIELDS = Object.freeze([
@@ -350,6 +456,7 @@ const WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_FIELDS = Object.freeze([
   'send_control_actuation_count',
   'private_actuation_capability_issued',
   'claim_capability_consumed',
+  'zero_effect_reservation_cancelled',
   'send_allowed',
   'external_effect_invoked',
   'browser_used',
@@ -363,11 +470,18 @@ const INSPECTION_CAPABILITY_STATE = new WeakMap();
 const STORE_CAPABILITY_STATE = new WeakMap();
 const ACTUATION_CAPABILITY_STATE = new WeakMap();
 const HOST_PENDING_CAPABILITY_STATE = new WeakMap();
+const OBSERVATION_CAPABILITY_STATE = new WeakMap();
+const CANCELLATION_CLEANUP_TEST_SCENARIO_BY_CLAIM_NONCE = new Map();
+const MUTEX_TEST_SCENARIO_BY_STORE_PATH = new Map();
 const RECEIPT_DECISIONS = new Set(Object.values(WELCOME_AUDIO_LIVE_CLAIM_DECISION));
 const RECEIPT_BLOCKERS = new Set(Object.values(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER));
 const INSPECTION_CLASSIFICATIONS = new Set(Object.values(WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION));
 const STATE_DECISIONS = new Set(Object.values(WELCOME_AUDIO_LIVE_STATE_DECISION));
 const ATTEMPT_DECISIONS = new Set(Object.values(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION));
+const STRONG_CONFIRMATION_MARKERS = new Set([
+  WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITH_SENT_MARKER,
+  WELCOME_AUDIO_CONFIRMATION_MARKER.NEW_AUDIO_BUBBLE_WITHOUT_SENT_MARKER,
+]);
 
 const exactObjectKeys = (value, expected) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -375,6 +489,39 @@ const exactObjectKeys = (value, expected) => {
   const wanted = [...expected].sort();
   return actual.length === wanted.length
     && actual.every((key, index) => key === wanted[index]);
+};
+
+const inspectExactDataEnvelope = (value, expectedFields) => {
+  try {
+    if (
+      value === null
+      || typeof value !== 'object'
+      || nodeUtilTypes.isProxy(value)
+    ) return Object.freeze({ valid: false, values: Object.freeze({}) });
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const ownKeys = Reflect.ownKeys(descriptors);
+    const exact = Object.getPrototypeOf(value) === Object.prototype
+      && ownKeys.length === expectedFields.length
+      && ownKeys.every((key) => typeof key === 'string' && expectedFields.includes(key));
+    const values = Object.create(null);
+    let dataOnly = exact;
+    for (const field of expectedFields) {
+      const descriptor = descriptors[field];
+      if (
+        !descriptor
+        || !Object.hasOwn(descriptor, 'value')
+        || descriptor.get !== undefined
+        || descriptor.set !== undefined
+      ) {
+        dataOnly = false;
+      } else {
+        values[field] = descriptor.value;
+      }
+    }
+    return Object.freeze({ valid: dataOnly, values: Object.freeze(values) });
+  } catch {
+    return Object.freeze({ valid: false, values: Object.freeze({}) });
+  }
 };
 
 const isSha256 = (value) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
@@ -408,6 +555,17 @@ const sameMetadata = (actual, expected) => actual.dev === expected.dev
   && actual.size === expected.size
   && actual.mtimeMs === expected.mtimeMs
   && actual.ctimeMs === expected.ctimeMs;
+
+// A same-directory rename preserves the inode and file contents, but may legitimately
+// advance ctime. Cleanup therefore compares only the stable identity/content metadata
+// that must survive the quarantine rename; the quarantined path is still stable-read.
+const sameMetadataAcrossRename = (actual, expected) => actual.dev === expected.dev
+  && actual.ino === expected.ino
+  && actual.uid === expected.uid
+  && actual.mode === expected.mode
+  && actual.nlink === expected.nlink
+  && actual.size === expected.size
+  && actual.mtimeMs === expected.mtimeMs;
 
 const assertAbsoluteCleanPath = (value) => {
   const segments = typeof value === 'string' ? value.split(sep) : [];
@@ -495,6 +653,85 @@ const createSyntheticWelcomeAudioLiveClaimStoreCapability = async ({ store_root 
   return createStoreCapability(storeIdentity, WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY);
 };
 
+const verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest = async (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    'private_store_capability',
+    'synthetic_store_root',
+  ]);
+  if (!envelope.valid || typeof envelope.values.synthetic_store_root !== 'string') {
+    return false;
+  }
+  try {
+    const resolved = await resolveWelcomeAudioLiveClaimStoreCapability(
+      envelope.values.private_store_capability,
+    );
+    const canonicalRoot = await realpath(envelope.values.synthetic_store_root);
+    return resolved.mode === WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+      && resolved.storeIdentity.path === canonicalRoot
+      ? true
+      : false;
+  } catch {
+    return false;
+  }
+};
+
+const configureWelcomeAudioLiveCancellationCleanupScenarioForTest = (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    'private_claim_capability',
+    'scenario',
+  ]);
+  const state = CLAIM_CAPABILITY_STATE.get(envelope.values.private_claim_capability);
+  if (
+    !envelope.valid
+    || !state
+    || state.consumed
+    || state.store_mode !== WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+    || !Object.values(WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST).includes(
+      envelope.values.scenario,
+    )
+  ) return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.INVALID;
+  CANCELLATION_CLEANUP_TEST_SCENARIO_BY_CLAIM_NONCE.set(
+    state.claim_nonce,
+    envelope.values.scenario,
+  );
+  return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.FRESH;
+};
+
+const configureWelcomeAudioLiveAttemptBoundaryScenarioForTest = (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    'private_claim_capability',
+    'scenario',
+  ]);
+  const state = CLAIM_CAPABILITY_STATE.get(envelope.values.private_claim_capability);
+  if (
+    !envelope.valid
+    || !state
+    || state.consumed
+    || state.store_mode !== WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+    || !Object.values(WELCOME_AUDIO_LIVE_ATTEMPT_BOUNDARY_SCENARIO_FOR_TEST).includes(
+      envelope.values.scenario,
+    )
+  ) return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.INVALID;
+  state.synthetic_attempt_boundary_scenario = envelope.values.scenario;
+  return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.FRESH;
+};
+
+const configureWelcomeAudioLiveMutexScenarioForTest = (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    'private_store_capability',
+    'scenario',
+  ]);
+  const state = STORE_CAPABILITY_STATE.get(envelope.values.private_store_capability);
+  if (
+    !envelope.valid
+    || !state
+    || state.mode !== WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+    || !Object.values(WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST).includes(envelope.values.scenario)
+  ) return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.INVALID;
+  MUTEX_TEST_SCENARIO_BY_STORE_PATH.set(state.storeIdentity.path, envelope.values.scenario);
+  return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.FRESH;
+};
+
 const resolveWelcomeAudioLiveClaimStoreCapability = async (capability) => {
   const state = STORE_CAPABILITY_STATE.get(capability);
   if (!state) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID);
@@ -526,6 +763,7 @@ const syncStoreDirectory = async (storeIdentity) => {
 
 const missionFingerprint = (missionId) => sha256(`mission:${missionId}`);
 const identityFingerprint = (identityAnchorSha256) => sha256(`identity:${identityAnchorSha256}`);
+const threadFingerprint = (threadAnchorSha256) => sha256(`thread:${threadAnchorSha256}`);
 
 const buildStorePaths = ({ storeIdentity, missionId, identityAnchorSha256 }) => {
   const mission = missionFingerprint(missionId);
@@ -536,6 +774,7 @@ const buildStorePaths = ({ storeIdentity, missionId, identityAnchorSha256 }) => 
     mutex: join(storeIdentity.path, 'mutex-global-ledger.lock'),
     mutexTemporaryPrefix: '.mutex-owner-',
     mutexRecoveryPrefix: '.mutex-recovery-',
+    mutexQuarantinePrefix: '.mutex-quarantine-',
     claim: join(storeIdentity.path, `claim-${identity}.json`),
     claimPrefix: 'claim-',
     temporaryPrefix: '.claim-',
@@ -561,6 +800,12 @@ const buildStorePaths = ({ storeIdentity, missionId, identityAnchorSha256 }) => 
     ),
     inspectionResultPrefix: `inspection-result-${mission}-`,
     inspectionResultTemporaryPrefix: `.inspection-result-${mission}-`,
+    observation: ({ threadAnchorSha256, threadOrdinal }) => join(
+      storeIdentity.path,
+      `observation-${mission}-${threadFingerprint(threadAnchorSha256)}-${String(threadOrdinal).padStart(2, '0')}.json`,
+    ),
+    observationPrefix: `observation-${mission}-`,
+    observationTemporaryPrefix: `.observation-${mission}-`,
   });
 };
 
@@ -722,6 +967,92 @@ const publishMissionMutex = async ({ storeIdentity, paths }) => {
   }
 };
 
+const publishSyntheticFixedMutexForTest = async ({ storeIdentity, paths }) => {
+  let handle;
+  try {
+    handle = await open(
+      paths.mutex,
+      FS_CONSTANTS.O_WRONLY
+        | FS_CONSTANTS.O_CREAT
+        | FS_CONSTANTS.O_EXCL
+        | FS_CONSTANTS.O_NOFOLLOW,
+      0o600,
+    );
+    await handle.writeFile(stableJsonBytes({
+      owner_pid: process.pid,
+      owner_nonce: randomBytes(32).toString('hex'),
+    }));
+    await handle.sync();
+  } finally {
+    await handle?.close();
+  }
+  await syncStoreDirectory(storeIdentity);
+};
+
+const replaceFixedMutexBeforeQuarantineForTest = async ({ storeIdentity, paths }) => {
+  const displacedPath = join(
+    storeIdentity.path,
+    `${paths.mutexTemporaryPrefix}${process.pid}-displaced-${randomBytes(16).toString('hex')}.json`,
+  );
+  await rename(paths.mutex, displacedPath);
+  await syncStoreDirectory(storeIdentity);
+  await publishSyntheticFixedMutexForTest({ storeIdentity, paths });
+};
+
+const quarantineAndDeleteExactMutex = async ({
+  storeIdentity,
+  paths,
+  expectedMutex,
+  requireDefinitelyDead,
+}) => {
+  const quarantinePath = join(
+    storeIdentity.path,
+    `${paths.mutexQuarantinePrefix}${process.pid}-${randomBytes(16).toString('hex')}.json`,
+  );
+  try {
+    await rename(paths.mutex, quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    const afterRenameScenario = MUTEX_TEST_SCENARIO_BY_STORE_PATH.get(storeIdentity.path);
+    if (
+      (!requireDefinitelyDead && afterRenameScenario
+        === WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST
+          .PUBLISH_NEW_FIXED_MUTEX_AFTER_RELEASE_RENAME)
+      || (requireDefinitelyDead && afterRenameScenario
+        === WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST
+          .PUBLISH_NEW_FIXED_MUTEX_AFTER_DEAD_OWNER_RECOVERY_RENAME)
+    ) {
+      MUTEX_TEST_SCENARIO_BY_STORE_PATH.delete(storeIdentity.path);
+      await publishSyntheticFixedMutexForTest({ storeIdentity, paths });
+    }
+    const entries = await readdir(storeIdentity.path);
+    if (
+      entries.some((entry) => (
+        entry.startsWith(paths.mutexQuarantinePrefix)
+        && entry !== basename(quarantinePath)
+      ))
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID);
+    const quarantined = await readMutexOwner({
+      storeIdentity,
+      filePath: quarantinePath,
+      expectedNlink: expectedMutex.metadata.nlink,
+    });
+    if (
+      !quarantined
+      || quarantined.digest !== expectedMutex.digest
+      || !sameMetadataAcrossRename(quarantined.metadata, expectedMutex.metadata)
+      || quarantined.owner.owner_pid !== expectedMutex.owner.owner_pid
+      || quarantined.owner.owner_nonce !== expectedMutex.owner.owner_nonce
+      || (requireDefinitelyDead
+        && !processOwnerIsDefinitelyDead(quarantined.owner.owner_pid))
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID);
+    await unlink(quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    return true;
+  } catch {
+    throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID);
+  }
+};
+
 const recoverDefinitelyDeadMissionMutex = async ({ storeIdentity, paths }) => {
   const loadedBefore = await readMutexOwner({
     storeIdentity,
@@ -730,64 +1061,28 @@ const recoverDefinitelyDeadMissionMutex = async ({ storeIdentity, paths }) => {
   if (!loadedBefore || !processOwnerIsDefinitelyDead(loadedBefore.owner.owner_pid)) {
     return false;
   }
-  const tombstonePath = join(
-    storeIdentity.path,
-    `${paths.mutexRecoveryPrefix}${process.pid}-${randomBytes(32).toString('hex')}.json`,
-  );
-  let tombstoneCreated = false;
   try {
-    await link(paths.mutex, tombstonePath);
-    tombstoneCreated = true;
-    const [fixedFirst, tombstoneFirst] = await Promise.all([
-      readMutexOwner({ storeIdentity, filePath: paths.mutex }),
-      readMutexOwner({ storeIdentity, filePath: tombstonePath }),
-    ]);
-    if (
-      !fixedFirst
-      || !tombstoneFirst
-      || fixedFirst.digest !== loadedBefore.digest
-      || tombstoneFirst.digest !== loadedBefore.digest
-      || fixedFirst.metadata.dev !== loadedBefore.metadata.dev
-      || fixedFirst.metadata.ino !== loadedBefore.metadata.ino
-      || tombstoneFirst.metadata.dev !== loadedBefore.metadata.dev
-      || tombstoneFirst.metadata.ino !== loadedBefore.metadata.ino
-      || fixedFirst.owner.owner_pid !== loadedBefore.owner.owner_pid
-      || fixedFirst.owner.owner_nonce !== loadedBefore.owner.owner_nonce
-      || !processOwnerIsDefinitelyDead(fixedFirst.owner.owner_pid)
-    ) return false;
-    const [fixedFinal, tombstoneFinal] = await Promise.all([
-      readMutexOwner({ storeIdentity, filePath: paths.mutex }),
-      readMutexOwner({ storeIdentity, filePath: tombstonePath }),
-    ]);
-    if (
-      !fixedFinal
-      || !tombstoneFinal
-      || !sameMetadata(fixedFinal.metadata, fixedFirst.metadata)
-      || !sameMetadata(tombstoneFinal.metadata, tombstoneFirst.metadata)
-      || fixedFinal.digest !== fixedFirst.digest
-      || tombstoneFinal.digest !== tombstoneFirst.digest
-      || fixedFinal.metadata.dev !== tombstoneFinal.metadata.dev
-      || fixedFinal.metadata.ino !== tombstoneFinal.metadata.ino
-      || !processOwnerIsDefinitelyDead(fixedFinal.owner.owner_pid)
-    ) return false;
-    await unlink(paths.mutex);
-    await syncStoreDirectory(storeIdentity);
+    if (MUTEX_TEST_SCENARIO_BY_STORE_PATH.get(storeIdentity.path)
+      === WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST
+        .REPLACE_FIXED_MUTEX_DURING_DEAD_OWNER_RECOVERY) {
+      MUTEX_TEST_SCENARIO_BY_STORE_PATH.delete(storeIdentity.path);
+      await replaceFixedMutexBeforeQuarantineForTest({ storeIdentity, paths });
+    }
+    await quarantineAndDeleteExactMutex({
+      storeIdentity,
+      paths,
+      expectedMutex: loadedBefore,
+      requireDefinitelyDead: true,
+    });
     return true;
   } catch {
     return false;
-  } finally {
-    if (tombstoneCreated) {
-      try {
-        await unlink(tombstonePath);
-        await syncStoreDirectory(storeIdentity);
-      } catch {
-        // A crash artifact is non-blocking; it never occupies the fixed mutex path.
-      }
-    }
   }
 };
 
 const acquireMissionMutex = async ({ storeIdentity, paths }) => {
+  const entries = await readdir(storeIdentity.path);
+  if (entries.some((entry) => entry.startsWith(paths.mutexQuarantinePrefix))) return null;
   try {
     return await publishMissionMutex({ storeIdentity, paths });
   } catch (error) {
@@ -822,8 +1117,17 @@ const releaseMissionMutex = async ({ storeIdentity, paths, mutexIdentity }) => {
     || loaded.owner.owner_pid !== mutexIdentity.owner_pid
     || loaded.owner.owner_nonce !== mutexIdentity.owner_nonce
   ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID);
-  await unlink(paths.mutex);
-  await syncStoreDirectory(storeIdentity);
+  if (MUTEX_TEST_SCENARIO_BY_STORE_PATH.get(storeIdentity.path)
+    === WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST.REPLACE_FIXED_MUTEX_BEFORE_RELEASE) {
+    MUTEX_TEST_SCENARIO_BY_STORE_PATH.delete(storeIdentity.path);
+    await replaceFixedMutexBeforeQuarantineForTest({ storeIdentity, paths });
+  }
+  await quarantineAndDeleteExactMutex({
+    storeIdentity,
+    paths,
+    expectedMutex: loaded,
+    requireDefinitelyDead: false,
+  });
 };
 
 const readStableClaimRecord = async ({
@@ -913,6 +1217,9 @@ const validateClaimRecord = ({ record, expectedMissionId = null }) => {
     || !Number.isInteger(record.manifest_ordinal)
     || record.manifest_ordinal < 1
     || record.manifest_ordinal > 8
+    || !Number.isInteger(record.mission_slot)
+    || record.mission_slot < 1
+    || record.mission_slot > WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP
     || !isExactIsoTimestamp(record.claimed_at)
     || !isExactIsoTimestamp(record.reservation_expires_at)
     || Date.parse(record.reservation_expires_at) - Date.parse(record.claimed_at)
@@ -942,6 +1249,9 @@ const validateReservationCancellationRecord = ({ record }) => {
     || !Number.isInteger(record.manifest_ordinal)
     || record.manifest_ordinal < 1
     || record.manifest_ordinal > WELCOME_AUDIO_LIVE_INSPECTION_CAP
+    || !Number.isInteger(record.mission_slot)
+    || record.mission_slot < 1
+    || record.mission_slot > WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP
     || !/^[a-f0-9]{64}$/.test(record.claim_nonce)
     || !Number.isInteger(record.owner_pid)
     || record.owner_pid < 1
@@ -1024,6 +1334,9 @@ const validatePendingRecord = ({ record, expectedMissionId = null }) => {
     || !Number.isInteger(record.manifest_ordinal)
     || record.manifest_ordinal < 1
     || record.manifest_ordinal > WELCOME_AUDIO_LIVE_INSPECTION_CAP
+    || !Number.isInteger(record.mission_slot)
+    || record.mission_slot < 1
+    || record.mission_slot > WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP
     || !/^[a-f0-9]{64}$/.test(record.claim_nonce)
     || !Number.isInteger(record.owner_pid)
     || record.owner_pid < 1
@@ -1049,11 +1362,40 @@ const validateTerminalRecord = ({ record, expectedMissionId = null }) => {
     && isExactIsoTimestamp(record?.finalized_at)
     && Date.parse(record.attempted_at) >= Date.parse(record.entered_at)
     && Date.parse(record.finalized_at) >= Date.parse(record.attempted_at);
-  const outcomeValid = record?.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN
+  const confirmed = record?.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED;
+  const unknown = record?.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN;
+  const confirmedObservedAt = confirmed && isExactIsoTimestamp(record.confirmation_observed_at)
+    ? Date.parse(record.confirmation_observed_at)
+    : NaN;
+  const confirmedWindowExpiresAt = confirmed
+    && isExactIsoTimestamp(record.observation_window_expires_at)
+    ? Date.parse(record.observation_window_expires_at)
+    : NaN;
+  const outcomeValid = (
+    confirmed
+    && record.attachment_upload_entered === true
+    && record.send_control_actuation_count === 1
+    && STRONG_CONFIRMATION_MARKERS.has(record.confirmation_marker)
+    && record.new_outgoing_audio_bubble_delta === 1
+    && Number.isFinite(confirmedObservedAt)
+    && confirmedObservedAt >= Date.parse(record.attempted_at)
+    && confirmedObservedAt - Date.parse(record.attempted_at)
+      < WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS
+    && Date.parse(record.finalized_at) >= confirmedObservedAt
+    && Number.isFinite(confirmedWindowExpiresAt)
+    && confirmedWindowExpiresAt - confirmedObservedAt
+      === WELCOME_AUDIO_LIVE_OBSERVATION_WINDOW_MS
+  ) || (
+    unknown
     && attemptEvidenceIsCoherent({
-      uploadEntered: record.attachment_upload_entered,
-      actuationCount: record.send_control_actuation_count,
-    });
+      uploadEntered: record?.attachment_upload_entered,
+      actuationCount: record?.send_control_actuation_count,
+    })
+    && record.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+    && record.confirmation_observed_at === null
+    && record.new_outgoing_audio_bubble_delta === 0
+    && record.observation_window_expires_at === null
+  );
   if (
     !exactObjectKeys(record, WELCOME_AUDIO_LIVE_TERMINAL_RECORD_FIELDS)
     || record.record_schema_version !== WELCOME_AUDIO_LIVE_TERMINAL_RECORD_SCHEMA_VERSION
@@ -1077,6 +1419,9 @@ const validateTerminalRecord = ({ record, expectedMissionId = null }) => {
     || !Number.isInteger(record.manifest_ordinal)
     || record.manifest_ordinal < 1
     || record.manifest_ordinal > WELCOME_AUDIO_LIVE_INSPECTION_CAP
+    || !Number.isInteger(record.mission_slot)
+    || record.mission_slot < 1
+    || record.mission_slot > WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP
     || !/^[a-f0-9]{64}$/.test(record.claim_nonce)
     || !Number.isInteger(record.owner_pid)
     || record.owner_pid < 1
@@ -1087,6 +1432,257 @@ const validateTerminalRecord = ({ record, expectedMissionId = null }) => {
     || record.retry_disposition !== 'terminal_no_retry'
   ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN);
   return true;
+};
+
+const validateObservationRecord = ({ record, expectedMissionId = null }) => {
+  if (
+    !exactObjectKeys(record, WELCOME_AUDIO_LIVE_OBSERVATION_RECORD_FIELDS)
+    || record.record_schema_version !== WELCOME_AUDIO_LIVE_OBSERVATION_RECORD_SCHEMA_VERSION
+    || record.claim_issuer_contract_version !== WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION
+    || !isOpaqueId(record.mission_id)
+    || (expectedMissionId !== null && record.mission_id !== expectedMissionId)
+    || !isOpaqueId(record.contract_version)
+    || !isSha256(record.mission_contract_sha256)
+    || !isOpaqueId(record.operation_id)
+    || record.identity_anchor_schema_version
+      !== WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION
+    || !isSha256(record.identity_anchor_sha256)
+    || !isSha256(record.thread_anchor_sha256)
+    || !/^[a-f0-9]{64}$/.test(record.attempt_nonce)
+    || !Number.isInteger(record.manifest_ordinal)
+    || record.manifest_ordinal < 1
+    || record.manifest_ordinal > WELCOME_AUDIO_LIVE_INSPECTION_CAP
+    || !Number.isInteger(record.mission_slot)
+    || record.mission_slot < 1
+    || record.mission_slot > WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP
+    || !Number.isInteger(record.thread_observation_ordinal)
+    || record.thread_observation_ordinal < 1
+    || record.thread_observation_ordinal > WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP
+    || !Number.isInteger(record.mission_observation_ordinal)
+    || record.mission_observation_ordinal < 1
+    || record.mission_observation_ordinal > WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP
+    || !isSha256(record.confirmed_terminal_sha256)
+    || !isExactIsoTimestamp(record.confirmed_terminal_finalized_at)
+    || !isExactIsoTimestamp(record.window_expires_at)
+    || !isExactIsoTimestamp(record.claimed_at)
+    || Date.parse(record.claimed_at) < Date.parse(record.confirmed_terminal_finalized_at)
+    || Date.parse(record.claimed_at) >= Date.parse(record.window_expires_at)
+    || record.claim_status !== 'permanent_append_only_claim_before_reply_thread_read'
+    || !/^[a-f0-9]{64}$/.test(record.claim_nonce)
+  ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+  return true;
+};
+
+const TERMINAL_PENDING_BINDING_FIELDS = Object.freeze([
+  'mission_id',
+  'contract_version',
+  'mission_contract_sha256',
+  'approval_packet_id',
+  'operation_id',
+  'central_repo_head',
+  'canonical_operation_sha256',
+  'approval_binding_sha256',
+  'identity_anchor_sha256',
+  'identity_anchor_schema_version',
+  'thread_anchor_sha256',
+  'owner_anchor_sha256',
+  'manifest_sha256',
+  'campaign_interval_sha256',
+  'audio_asset_sha256',
+  'manifest_ordinal',
+  'mission_slot',
+  'claim_nonce',
+  'owner_pid',
+  'owner_nonce',
+  'attempt_nonce',
+  'entered_at',
+]);
+
+const terminalMatchesPending = ({ terminal, pending }) => (
+  TERMINAL_PENDING_BINDING_FIELDS.every(
+    (field) => JSON.stringify(terminal[field]) === JSON.stringify(pending[field]),
+  )
+);
+
+const terminalMatchesClaim = ({ terminal, claim }) => (
+  [
+    'mission_id',
+    'contract_version',
+    'mission_contract_sha256',
+    'approval_packet_id',
+    'operation_id',
+    'central_repo_head',
+    'canonical_operation_sha256',
+    'approval_binding_sha256',
+    'identity_anchor_sha256',
+    'identity_anchor_schema_version',
+    'thread_anchor_sha256',
+    'owner_anchor_sha256',
+    'manifest_sha256',
+    'campaign_interval_sha256',
+    'audio_asset_sha256',
+    'manifest_ordinal',
+    'mission_slot',
+    'claim_nonce',
+    'owner_pid',
+    'owner_nonce',
+  ].every((field) => JSON.stringify(terminal[field]) === JSON.stringify(claim[field]))
+);
+
+const quarantineAndDeleteExactPendingAfterTerminal = async ({
+  storeIdentity,
+  paths,
+  expectedPending,
+  expectedTerminal,
+  expectedMissionId,
+  blocker,
+}) => {
+  const quarantinePath = join(
+    storeIdentity.path,
+    `${paths.pendingTemporaryPrefix}cleanup-${process.pid}-${randomBytes(16).toString('hex')}.json`,
+  );
+  try {
+    await rename(paths.pending, quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    const entries = await readdir(storeIdentity.path);
+    if (
+      entries.includes(basename(paths.pending))
+      || entries.some((entry) => (
+        entry.startsWith(paths.pendingTemporaryPrefix)
+        && entry !== basename(quarantinePath)
+      ))
+      || entries.some((entry) => entry.startsWith(paths.terminalTemporaryPrefix))
+    ) throw new Error(blocker);
+    const [quarantined, currentTerminal] = await Promise.all([
+      readStableClaimRecord({ filePath: quarantinePath, storeIdentity }),
+      readStableClaimRecord({ filePath: paths.terminal, storeIdentity }),
+    ]);
+    validatePendingRecord({
+      record: quarantined.snapshot,
+      expectedMissionId,
+    });
+    validateTerminalRecord({
+      record: currentTerminal.snapshot,
+      expectedMissionId,
+    });
+    if (
+      quarantined.digest !== expectedPending.digest
+      || !sameMetadataAcrossRename(quarantined.metadata, expectedPending.metadata)
+      || canonicalSha256(quarantined.snapshot) !== canonicalSha256(expectedPending.snapshot)
+      || currentTerminal.digest !== expectedTerminal.digest
+      || !sameMetadata(currentTerminal.metadata, expectedTerminal.metadata)
+      || canonicalSha256(currentTerminal.snapshot) !== canonicalSha256(expectedTerminal.snapshot)
+      || !terminalMatchesPending({
+        terminal: currentTerminal.snapshot,
+        pending: quarantined.snapshot,
+      })
+    ) throw new Error(blocker);
+    await unlink(quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    return true;
+  } catch {
+    throw new Error(blocker);
+  }
+};
+
+const replacePendingAfterTerminalPublishForTest = async ({
+  storeIdentity,
+  paths,
+  pending,
+}) => {
+  const displacedPath = join(
+    storeIdentity.path,
+    `${paths.pendingTemporaryPrefix}displaced-${process.pid}-${randomBytes(16).toString('hex')}.json`,
+  );
+  await rename(paths.pending, displacedPath);
+  await syncStoreDirectory(storeIdentity);
+  const replacement = Object.freeze({
+    ...pending,
+    owner_nonce: pending.owner_nonce === 'f'.repeat(64) ? 'e'.repeat(64) : 'f'.repeat(64),
+  });
+  validatePendingRecord({ record: replacement, expectedMissionId: pending.mission_id });
+  await writeExclusiveDurable({
+    filePath: paths.pending,
+    value: replacement,
+    storeIdentity,
+    temporaryPrefix: paths.pendingTemporaryPrefix,
+  });
+  return true;
+};
+
+const reconcileTerminalPendingCleanupOnly = async ({
+  storeIdentity,
+  paths,
+  missionId,
+}) => {
+  const entries = await readdir(storeIdentity.path);
+  if (entries.some((entry) => entry.startsWith(paths.pendingTemporaryPrefix)
+    || entry.startsWith(paths.terminalTemporaryPrefix))) {
+    throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+  }
+  const terminalPresent = entries.includes(basename(paths.terminal));
+  const pendingPresent = entries.includes(basename(paths.pending));
+  if (!terminalPresent) return null;
+  const terminalLoaded = await readStableClaimRecord({
+    filePath: paths.terminal,
+    storeIdentity,
+  });
+  validateTerminalRecord({ record: terminalLoaded.snapshot, expectedMissionId: missionId });
+  if (pendingPresent) {
+    const pendingLoaded = await readStableClaimRecord({
+      filePath: paths.pending,
+      storeIdentity,
+    });
+    validatePendingRecord({ record: pendingLoaded.snapshot, expectedMissionId: missionId });
+    if (
+      !terminalMatchesPending({
+        terminal: terminalLoaded.snapshot,
+        pending: pendingLoaded.snapshot,
+      })
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+    await quarantineAndDeleteExactPendingAfterTerminal({
+      storeIdentity,
+      paths,
+      expectedPending: pendingLoaded,
+      expectedTerminal: terminalLoaded,
+      expectedMissionId: missionId,
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN,
+    });
+  }
+  return terminalLoaded;
+};
+
+const inspectSequentialMissionSlots = async ({ storeIdentity, missionId, claims }) => {
+  const entries = await readdir(storeIdentity.path);
+  if (entries.some((entry) => entry.startsWith('.pending-')
+    || entry.startsWith('.terminal-'))) {
+    throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+  }
+  const ordered = [...claims].sort(
+    (left, right) => left.snapshot.mission_slot - right.snapshot.mission_slot,
+  );
+  for (let index = 0; index < ordered.length; index += 1) {
+    const claim = ordered[index].snapshot;
+    if (claim.mission_slot !== index + 1) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+    }
+    const paths = buildStorePaths({
+      storeIdentity,
+      missionId,
+      identityAnchorSha256: claim.identity_anchor_sha256,
+    });
+    const terminalLoaded = await reconcileTerminalPendingCleanupOnly({
+      storeIdentity,
+      paths,
+      missionId,
+    });
+    if (
+      !terminalLoaded
+      || !terminalMatchesClaim({ terminal: terminalLoaded.snapshot, claim })
+      || terminalLoaded.snapshot.outcome !== WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED
+    ) return Object.freeze({ allowed: false, next_slot: null });
+  }
+  return Object.freeze({ allowed: true, next_slot: ordered.length + 1 });
 };
 
 const discoverIrreversibleAttemptEvidence = async ({
@@ -1236,6 +1832,9 @@ const inspectMissionState = async ({ storeIdentity, missionId }) => {
 };
 
 const inspectMissionClaims = async ({ storeIdentity, paths, missionId }) => {
+  if (!await reconcileSingleGlobalReservationCancellationTemporary({ storeIdentity })) {
+    throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+  }
   const entries = await readdir(storeIdentity.path);
   if (entries.some((entry) => entry.startsWith(paths.temporaryPrefix)
     || entry.startsWith('.reservation-cancel-'))) {
@@ -1292,6 +1891,57 @@ const inspectMissionClaims = async ({ storeIdentity, paths, missionId }) => {
     seenIdentitiesGlobal,
     cancellationByClaimNonce,
   });
+};
+
+const assertNoOrphanDurableAttemptBoundaries = async ({ storeIdentity, claims }) => {
+  const entries = await readdir(storeIdentity.path);
+  const boundaryNames = entries.filter((entry) => (
+    entry.startsWith('pending-') || entry.startsWith('terminal-')
+  ));
+  const expected = new Map();
+  for (const loaded of claims) {
+    const claim = loaded.snapshot;
+    const claimPaths = buildStorePaths({
+      storeIdentity,
+      missionId: claim.mission_id,
+      identityAnchorSha256: claim.identity_anchor_sha256,
+    });
+    expected.set(basename(claimPaths.pending), { kind: 'pending', claim, path: claimPaths.pending });
+    expected.set(basename(claimPaths.terminal), {
+      kind: 'terminal',
+      claim,
+      path: claimPaths.terminal,
+    });
+  }
+  const loadedByClaim = new Map();
+  for (const name of boundaryNames) {
+    if (!/^(?:pending|terminal)-[a-f0-9]{64}\.json$/u.test(name) || !expected.has(name)) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+    }
+    const binding = expected.get(name);
+    const loaded = await readStableClaimRecord({
+      filePath: binding.path,
+      storeIdentity,
+    });
+    if (binding.kind === 'pending') {
+      validatePendingRecord({ record: loaded.snapshot, expectedMissionId: binding.claim.mission_id });
+    } else {
+      validateTerminalRecord({ record: loaded.snapshot, expectedMissionId: binding.claim.mission_id });
+    }
+    if (!terminalMatchesClaim({ terminal: loaded.snapshot, claim: binding.claim })) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+    }
+    const prior = loadedByClaim.get(binding.claim.claim_nonce) ?? {};
+    prior[binding.kind] = loaded.snapshot;
+    loadedByClaim.set(binding.claim.claim_nonce, prior);
+  }
+  for (const pair of loadedByClaim.values()) {
+    if (pair.pending && pair.terminal && !terminalMatchesPending({
+      terminal: pair.terminal,
+      pending: pair.pending,
+    })) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+  }
+  return true;
 };
 
 const writeExclusiveDurable = async ({
@@ -1381,9 +2031,14 @@ const reconcileLinkedPublicationTemporary = async ({
   storeIdentity,
   finalPath,
   temporaryPath,
+  temporaryPrefix,
   validator,
   expectedMissionId = null,
 }) => {
+  const quarantinePath = join(
+    storeIdentity.path,
+    `${temporaryPrefix}reconcile-${process.pid}-${randomBytes(16).toString('hex')}.json`,
+  );
   try {
     const [temporary, final] = await Promise.all([
       readStableClaimRecord({
@@ -1406,11 +2061,53 @@ const reconcileLinkedPublicationTemporary = async ({
       || temporary.metadata.nlink !== 2
       || final.metadata.nlink !== 2
     ) return false;
-    await unlink(temporaryPath);
+    await rename(temporaryPath, quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    const entries = await readdir(storeIdentity.path);
+    if (
+      entries.includes(basename(temporaryPath))
+      || entries.some((entry) => (
+        entry.startsWith(temporaryPrefix)
+        && entry !== basename(quarantinePath)
+      ))
+    ) return false;
+    const [quarantined, currentFinal] = await Promise.all([
+      readStableClaimRecord({
+        filePath: quarantinePath,
+        storeIdentity,
+        expectedNlink: 2,
+      }),
+      readStableClaimRecord({
+        filePath: finalPath,
+        storeIdentity,
+        expectedNlink: 2,
+      }),
+    ]);
+    validator({ record: quarantined.snapshot, expectedMissionId });
+    validator({ record: currentFinal.snapshot, expectedMissionId });
+    if (
+      quarantined.digest !== temporary.digest
+      || currentFinal.digest !== final.digest
+      || !sameMetadataAcrossRename(quarantined.metadata, temporary.metadata)
+      || !sameMetadataAcrossRename(currentFinal.metadata, final.metadata)
+      || canonicalSha256(quarantined.snapshot) !== canonicalSha256(temporary.snapshot)
+      || canonicalSha256(currentFinal.snapshot) !== canonicalSha256(final.snapshot)
+      || quarantined.metadata.dev !== currentFinal.metadata.dev
+      || quarantined.metadata.ino !== currentFinal.metadata.ino
+    ) return false;
+    await unlink(quarantinePath);
     await syncStoreDirectory(storeIdentity);
     const reconciled = await readStableClaimRecord({ filePath: finalPath, storeIdentity });
     validator({ record: reconciled.snapshot, expectedMissionId });
-    return reconciled.digest === final.digest;
+    return reconciled.digest === final.digest
+      && reconciled.metadata.dev === final.metadata.dev
+      && reconciled.metadata.ino === final.metadata.ino
+      && reconciled.metadata.uid === final.metadata.uid
+      && reconciled.metadata.mode === final.metadata.mode
+      && reconciled.metadata.nlink === 1
+      && reconciled.metadata.size === final.metadata.size
+      && reconciled.metadata.mtimeMs === final.metadata.mtimeMs
+      && canonicalSha256(reconciled.snapshot) === canonicalSha256(final.snapshot);
   } catch {
     return false;
   }
@@ -1430,6 +2127,7 @@ const reconcileSingleLinkedTemporaryByPrefix = async ({
     storeIdentity,
     finalPath,
     temporaryPath: join(storeIdentity.path, temporaryNames[0]),
+    temporaryPrefix,
     validator,
     expectedMissionId,
   });
@@ -1461,8 +2159,41 @@ const reconcileSingleGlobalClaimTemporary = async ({ storeIdentity }) => {
     storeIdentity,
     finalPath: claimPaths.claim,
     temporaryPath,
+    temporaryPrefix: claimPaths.temporaryPrefix,
     validator: validateClaimRecord,
     expectedMissionId: temporary.snapshot.mission_id,
+  });
+};
+
+const reconcileSingleGlobalReservationCancellationTemporary = async ({ storeIdentity }) => {
+  const entries = await readdir(storeIdentity.path);
+  const temporaryNames = entries.filter((entry) => entry.startsWith('.reservation-cancel-'));
+  if (temporaryNames.length === 0) return true;
+  if (temporaryNames.length !== 1) return false;
+  const temporaryPath = join(storeIdentity.path, temporaryNames[0]);
+  let temporary;
+  try {
+    temporary = await readStableClaimRecord({
+      filePath: temporaryPath,
+      storeIdentity,
+      expectedNlink: 2,
+    });
+    validateReservationCancellationRecord({ record: temporary.snapshot });
+  } catch {
+    return false;
+  }
+  const identity = identityFingerprint(temporary.snapshot.identity_anchor_sha256);
+  const finalPath = join(
+    storeIdentity.path,
+    `reservation-cancel-${identity}-${temporary.snapshot.claim_nonce}.json`,
+  );
+  if (!entries.includes(basename(finalPath))) return false;
+  return reconcileLinkedPublicationTemporary({
+    storeIdentity,
+    finalPath,
+    temporaryPath,
+    temporaryPrefix: `.reservation-cancel-${identity}-`,
+    validator: validateReservationCancellationRecord,
   });
 };
 
@@ -1485,12 +2216,96 @@ const reservationCancellationMatchesClaim = ({ cancellation, claim }) =>
     && cancellation.identity_anchor_schema_version === claim.identity_anchor_schema_version
     && cancellation.identity_anchor_sha256 === claim.identity_anchor_sha256
     && cancellation.manifest_ordinal === claim.manifest_ordinal
+    && cancellation.mission_slot === claim.mission_slot
     && cancellation.claim_nonce === claim.claim_nonce
     && cancellation.owner_pid === claim.owner_pid
     && cancellation.owner_nonce === claim.owner_nonce
     && cancellation.attachment_upload_entered === false
     && cancellation.send_control_actuation_count === 0
     && cancellation.network_effect_entered === false;
+
+const quarantineAndDeleteExactClaimAfterCancellation = async ({
+  storeIdentity,
+  paths,
+  expectedClaim,
+  expectedCancellation,
+  blocker,
+}) => {
+  const quarantinePath = join(
+    storeIdentity.path,
+    `${paths.temporaryPrefix}cleanup-${process.pid}-${randomBytes(16).toString('hex')}.json`,
+  );
+  try {
+    await rename(paths.claim, quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    const entries = await readdir(storeIdentity.path);
+    if (
+      entries.includes(basename(paths.claim))
+      || entries.includes(basename(paths.pending))
+      || entries.includes(basename(paths.terminal))
+      || entries.some((entry) => (
+        entry.startsWith(paths.temporaryPrefix)
+        && entry !== basename(quarantinePath)
+      ))
+      || entries.some((entry) => entry.startsWith(paths.pendingTemporaryPrefix))
+      || entries.some((entry) => entry.startsWith(paths.terminalTemporaryPrefix))
+    ) throw new Error(blocker);
+    const [quarantinedClaim, currentCancellation] = await Promise.all([
+      readStableClaimRecord({ filePath: quarantinePath, storeIdentity }),
+      readStableClaimRecord({
+        filePath: paths.reservationCancellation(expectedClaim.snapshot.claim_nonce),
+        storeIdentity,
+      }),
+    ]);
+    validateClaimRecord({
+      record: quarantinedClaim.snapshot,
+      expectedMissionId: expectedClaim.snapshot.mission_id,
+    });
+    validateReservationCancellationRecord({ record: currentCancellation.snapshot });
+    if (
+      quarantinedClaim.digest !== expectedClaim.digest
+      || !sameMetadataAcrossRename(quarantinedClaim.metadata, expectedClaim.metadata)
+      || canonicalSha256(quarantinedClaim.snapshot) !== canonicalSha256(expectedClaim.snapshot)
+      || currentCancellation.digest !== expectedCancellation.digest
+      || !sameMetadata(currentCancellation.metadata, expectedCancellation.metadata)
+      || canonicalSha256(currentCancellation.snapshot)
+        !== canonicalSha256(expectedCancellation.snapshot)
+      || !reservationCancellationMatchesClaim({
+        cancellation: currentCancellation.snapshot,
+        claim: quarantinedClaim.snapshot,
+      })
+    ) throw new Error(blocker);
+    await unlink(quarantinePath);
+    await syncStoreDirectory(storeIdentity);
+    return true;
+  } catch {
+    throw new Error(blocker);
+  }
+};
+
+const replaceClaimBeforeCancellationCleanupForTest = async ({
+  storeIdentity,
+  paths,
+  claim,
+}) => {
+  const displacedPath = join(
+    storeIdentity.path,
+    `${paths.temporaryPrefix}displaced-${process.pid}-${randomBytes(16).toString('hex')}.json`,
+  );
+  await rename(paths.claim, displacedPath);
+  await syncStoreDirectory(storeIdentity);
+  const replacement = Object.freeze({
+    ...claim,
+    owner_nonce: claim.owner_nonce === 'f'.repeat(64) ? 'e'.repeat(64) : 'f'.repeat(64),
+  });
+  validateClaimRecord({ record: replacement, expectedMissionId: claim.mission_id });
+  await writeExclusiveDurable({
+    filePath: paths.claim,
+    value: replacement,
+    storeIdentity,
+    temporaryPrefix: paths.temporaryPrefix,
+  });
+};
 
 const publishReservationCancellation = async ({
   storeIdentity,
@@ -1508,6 +2323,7 @@ const publishReservationCancellation = async ({
     identity_anchor_schema_version: claim.identity_anchor_schema_version,
     identity_anchor_sha256: claim.identity_anchor_sha256,
     manifest_ordinal: claim.manifest_ordinal,
+    mission_slot: claim.mission_slot,
     claim_nonce: claim.claim_nonce,
     owner_pid: claim.owner_pid,
     owner_nonce: claim.owner_nonce,
@@ -1531,6 +2347,9 @@ const publishReservationCancellation = async ({
     if (error?.message !== WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_PUBLICATION_UNKNOWN) {
       throw error;
     }
+    if (!await reconcileSingleGlobalReservationCancellationTemporary({ storeIdentity })) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_CANCEL_INVALID);
+    }
     const existing = await readStableClaimRecord({ filePath: cancellationPath, storeIdentity });
     validateReservationCancellationRecord({ record: existing.snapshot });
     if (!reservationCancellationMatchesClaim({ cancellation: existing.snapshot, claim })
@@ -1541,16 +2360,22 @@ const publishReservationCancellation = async ({
   if (!reservationCancellationMatchesClaim({ cancellation: published.snapshot, claim })) {
     throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_CANCEL_INVALID);
   }
-  const currentClaim = await readStableClaimRecord({
-    filePath: paths.claim,
+  const cleanupScenario = CANCELLATION_CLEANUP_TEST_SCENARIO_BY_CLAIM_NONCE.get(
+    claim.claim_nonce,
+  );
+  CANCELLATION_CLEANUP_TEST_SCENARIO_BY_CLAIM_NONCE.delete(claim.claim_nonce);
+  if (cleanupScenario
+    === WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST
+      .REPLACE_CLAIM_AFTER_CANCELLATION_PUBLISH) {
+    await replaceClaimBeforeCancellationCleanupForTest({ storeIdentity, paths, claim });
+  }
+  await quarantineAndDeleteExactClaimAfterCancellation({
     storeIdentity,
+    paths,
+    expectedClaim: claimLoaded,
+    expectedCancellation: published,
+    blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_CANCEL_INVALID,
   });
-  if (
-    currentClaim.digest !== claimLoaded.digest
-    || !sameMetadata(currentClaim.metadata, claimLoaded.metadata)
-  ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_CANCEL_INVALID);
-  await unlink(paths.claim);
-  await syncStoreDirectory(storeIdentity);
 };
 
 const buildReceipt = ({
@@ -1563,6 +2388,37 @@ const buildReceipt = ({
   const duplicate = decision === WELCOME_AUDIO_LIVE_CLAIM_DECISION.DUPLICATE;
   const permanent = duplicate
     || decision === WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL;
+  const blocker = blockerCodes.length === 1 ? blockerCodes[0] : null;
+  const durableClaimOrTerminalState = decision === WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL
+    ? 'unknown'
+    : created
+      || duplicate
+      || decision === WELCOME_AUDIO_LIVE_CLAIM_DECISION.CAP_REACHED
+      || blocker === WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_ACTIVE
+      || blocker === WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_SLOT_BLOCKED
+      || (Number.isInteger(missionClaimCount) && missionClaimCount > 0)
+      ? 'present'
+      : cancelled
+        || missionClaimCount === 0
+        ? 'absent'
+        : 'unknown';
+  const retryDisposition = permanent
+    ? 'forbidden_after_claim_or_unknown'
+    : created
+      ? 'retry_only_after_explicit_zero_effect_cancel_or_dead_owner'
+      : cancelled
+        ? 'fresh_reservation_allowed'
+        : decision === WELCOME_AUDIO_LIVE_CLAIM_DECISION.CAP_REACHED
+          ? 'blocked_mission_cap_no_new_claim'
+          : blocker === WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_ACTIVE
+            ? 'retry_only_after_existing_reservation_zero_effect_cancel_or_dead_owner'
+            : blocker === WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_SLOT_BLOCKED
+              ? 'blocked_until_prior_slot_has_durable_confirmed_terminal'
+              : durableClaimOrTerminalState === 'present'
+                ? 'before_effect_no_current_claim_durable_ledger_present'
+                : durableClaimOrTerminalState === 'absent'
+                  ? 'before_effect_no_claim'
+                  : 'before_effect_claim_state_not_proven';
   return Object.freeze({
     receipt_schema_version: WELCOME_AUDIO_LIVE_CLAIM_RECEIPT_SCHEMA_VERSION,
     claim_issuer_contract_version: WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION,
@@ -1582,14 +2438,7 @@ const buildReceipt = ({
     external_effect_invoked: false,
     browser_used: false,
     network_used: false,
-    retry_disposition: permanent
-      || decision === WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL
-      ? 'forbidden_after_claim_or_unknown'
-      : created
-        ? 'retry_only_after_explicit_zero_effect_cancel_or_dead_owner'
-        : cancelled
-          ? 'fresh_reservation_allowed'
-          : 'before_effect_no_claim',
+    retry_disposition: retryDisposition,
     blocker_codes: Object.freeze([...blockerCodes]),
   });
 };
@@ -1644,10 +2493,14 @@ const buildAttemptReceipt = ({
   pendingPresent = undefined,
   terminalPresent = undefined,
   claimConsumed = undefined,
+  zeroEffectReservationCancelled = false,
   blockerCodes = [],
 }) => {
   const armed = decision === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.ARMED;
-  const finalized = decision === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN;
+  const finalized = [
+    WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED,
+    WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+  ].includes(decision);
   return Object.freeze({
     receipt_schema_version: WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_SCHEMA_VERSION,
     claim_issuer_contract_version: WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION,
@@ -1660,11 +2513,14 @@ const buildAttemptReceipt = ({
     send_control_actuation_count: actuationCount,
     private_actuation_capability_issued: armed,
     claim_capability_consumed: claimConsumed ?? (armed || finalized),
+    zero_effect_reservation_cancelled: zeroEffectReservationCancelled,
     send_allowed: false,
     external_effect_invoked: false,
     browser_used: false,
     network_used: false,
-    retry_disposition: armed || finalized
+    retry_disposition: zeroEffectReservationCancelled
+      ? 'fresh_reservation_allowed_after_proven_zero_effect_cancel'
+      : armed || finalized
       || decision === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL
       ? 'terminal_no_retry'
       : 'before_attempt_no_boundary',
@@ -1678,15 +2534,18 @@ const blockedAttemptResult = ({
   pendingPresent = false,
   terminalPresent = false,
   claimConsumed = false,
+  zeroEffectReservationCancelled = false,
+  privateTerminalCapability = null,
 }) => ({
   private_actuation_capability: null,
   private_host_pending_capability: null,
-  private_terminal_capability: null,
+  private_terminal_capability: privateTerminalCapability,
   redacted_receipt: buildAttemptReceipt({
     decision,
     pendingPresent,
     terminalPresent,
     claimConsumed,
+    zeroEffectReservationCancelled,
     blockerCodes: [blocker],
   }),
 });
@@ -2072,6 +2931,10 @@ const issueWelcomeAudioLiveClaim = async ({
     });
     await reconcileSingleGlobalClaimTemporary({ storeIdentity });
     let before = await inspectMissionClaims({ storeIdentity, paths, missionId: mission_id });
+    await assertNoOrphanDurableAttemptBoundaries({
+      storeIdentity,
+      claims: before.allRecords,
+    });
     for (const loadedClaim of before.allRecords) {
       const claim = loadedClaim.snapshot;
       const claimPaths = buildStorePaths({
@@ -2084,21 +2947,19 @@ const issueWelcomeAudioLiveClaim = async ({
         || entriesBefore.includes(basename(claimPaths.terminal))
         || entriesBefore.some((entry) => entry.startsWith(claimPaths.pendingTemporaryPrefix))
         || entriesBefore.some((entry) => entry.startsWith(claimPaths.terminalTemporaryPrefix));
-      const cancellation = before.cancellationByClaimNonce.get(claim.claim_nonce)?.snapshot;
+      const cancellationLoaded = before.cancellationByClaimNonce.get(claim.claim_nonce);
+      const cancellation = cancellationLoaded?.snapshot;
       if (cancellation && !reservationCancellationMatchesClaim({ cancellation, claim })) {
         throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
       }
       if (cancellation && !irreversibleBoundaryPresent) {
-        const current = await readStableClaimRecord({
-          filePath: claimPaths.claim,
+        await quarantineAndDeleteExactClaimAfterCancellation({
           storeIdentity,
+          paths: claimPaths,
+          expectedClaim: loadedClaim,
+          expectedCancellation: cancellationLoaded,
+          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN,
         });
-        if (
-          current.digest !== loadedClaim.digest
-          || !sameMetadata(current.metadata, loadedClaim.metadata)
-        ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
-        await unlink(claimPaths.claim);
-        await syncStoreDirectory(storeIdentity);
       } else if (
         !irreversibleBoundaryPresent
         && processOwnerIsDefinitelyDead(claim.owner_pid)
@@ -2113,6 +2974,15 @@ const issueWelcomeAudioLiveClaim = async ({
       }
     }
     before = await inspectMissionClaims({ storeIdentity, paths, missionId: mission_id });
+    await assertNoOrphanDurableAttemptBoundaries({
+      storeIdentity,
+      claims: before.allRecords,
+    });
+    const missionSlots = await inspectSequentialMissionSlots({
+      storeIdentity,
+      missionId: mission_id,
+      claims: before.records,
+    });
     const missionState = await inspectMissionState({ storeIdentity, missionId: mission_id });
     const inspectionResult = missionState.resultByOrdinal.get(manifest_ordinal)?.snapshot;
     const earliestUnclaimedEligible = missionState.inspectionResults
@@ -2137,6 +3007,12 @@ const issueWelcomeAudioLiveClaim = async ({
       pendingResult = blockedResult({
         decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CAP_REACHED,
         blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_CAP_REACHED,
+        missionClaimCount: before.records.length,
+      });
+    } else if (!missionSlots.allowed || missionSlots.next_slot > WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP) {
+      pendingResult = blockedResult({
+        decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.BLOCKED,
+        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_SLOT_BLOCKED,
         missionClaimCount: before.records.length,
       });
     } else if (!inspectionResult) {
@@ -2215,6 +3091,7 @@ const issueWelcomeAudioLiveClaim = async ({
       campaign_interval_sha256: expected_campaign_interval_sha256,
       audio_asset_sha256: expected_audio_sha256,
       manifest_ordinal,
+      mission_slot: missionSlots.next_slot,
       claimed_at: new Date(effectiveNow).toISOString(),
       claim_status: 'pre_effect_reservation',
       retry_disposition: 'retry_only_after_explicit_zero_effect_cancel_or_dead_owner',
@@ -2266,6 +3143,7 @@ const issueWelcomeAudioLiveClaim = async ({
       campaign_interval_sha256: expected_campaign_interval_sha256,
       audio_asset_sha256: expected_audio_sha256,
       manifest_ordinal,
+      mission_slot: published.snapshot.mission_slot,
       claim_nonce: published.snapshot.claim_nonce,
       owner_pid: published.snapshot.owner_pid,
       owner_nonce: published.snapshot.owner_nonce,
@@ -2559,6 +3437,29 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
   let result = null;
   let pendingPublished = false;
   let pendingPublicationAttempted = false;
+  let terminalCapability = null;
+  const mintTerminalCapabilityFromStablePending = async () => {
+    if (terminalCapability) return terminalCapability;
+    const loaded = await readStableClaimRecord({ filePath: paths.pending, storeIdentity });
+    validatePendingRecord({ record: loaded.snapshot, expectedMissionId: claimState.mission_id });
+    if (!terminalMatchesClaim({ terminal: loaded.snapshot, claim: claimState })) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID);
+    }
+    terminalCapability = createOneUseCapability(
+      ACTUATION_CAPABILITY_STATE,
+      {
+        store_identity: storeIdentity,
+        store_mode: claimState.store_mode,
+        pending_path: paths.pending,
+        pending_digest: loaded.digest,
+        pending_metadata: loaded.metadata,
+        pending: loaded.snapshot,
+        synthetic_terminal_verifier_scenario: null,
+      },
+      'crm_core_welcome_audio_private_terminal_capability',
+    );
+    return terminalCapability;
+  };
   try {
     mutexIdentity = await acquireMissionMutex({ storeIdentity, paths });
     if (!mutexIdentity) return blockedAttemptResult({
@@ -2579,6 +3480,9 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
       validator: validateTerminalRecord,
       expectedMissionId: claimState.mission_id,
     });
+    if (!await reconcileSingleGlobalReservationCancellationTemporary({ storeIdentity })) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+    }
     const entries = await readdir(storeIdentity.path);
     if (entries.includes(basename(paths.terminal))) {
       claimState.consumed = true;
@@ -2598,6 +3502,13 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         paths,
         missionId: claimState.mission_id,
       });
+      if (evidence.pendingPresent && !evidence.terminalPresent) {
+        try {
+          await mintTerminalCapabilityFromStablePending();
+        } catch {
+          terminalCapability = null;
+        }
+      }
       claimState.consumed = true;
       result = blockedAttemptResult({
         decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
@@ -2605,6 +3516,7 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         pendingPresent: evidence.pendingPresent,
         terminalPresent: evidence.terminalPresent,
         claimConsumed: true,
+        privateTerminalCapability: terminalCapability,
       });
     } else {
       const loadedClaim = await readStableClaimRecord({
@@ -2615,6 +3527,31 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         loadedClaim.digest !== claimState.claim_digest
         || !sameMetadata(loadedClaim.metadata, claimState.claim_metadata)
       ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID);
+      const cancellationPath = paths.reservationCancellation(claimState.claim_nonce);
+      if ((await readdir(storeIdentity.path)).includes(basename(cancellationPath))) {
+        const cancellationLoaded = await readStableClaimRecord({
+          filePath: cancellationPath,
+          storeIdentity,
+        });
+        validateReservationCancellationRecord({ record: cancellationLoaded.snapshot });
+        if (!reservationCancellationMatchesClaim({
+          cancellation: cancellationLoaded.snapshot,
+          claim: loadedClaim.snapshot,
+        })) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN);
+        await quarantineAndDeleteExactClaimAfterCancellation({
+          storeIdentity,
+          paths,
+          expectedClaim: loadedClaim,
+          expectedCancellation: cancellationLoaded,
+          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN,
+        });
+        claimState.consumed = true;
+        result = blockedAttemptResult({
+          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID,
+          claimConsumed: true,
+          zeroEffectReservationCancelled: true,
+        });
+      } else {
       const assetStatus = await verifyApprovedWelcomeAudioAssetCapabilityPathBinding({
         private_audio_asset_capability,
         asset_path: approved_audio_asset_path,
@@ -2628,8 +3565,13 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         private_authority_capability: claimState.private_authority_capability,
         now_ms: effectiveNow,
       });
+      const forcePrePendingRevalidationFailure = claimState.synthetic_attempt_boundary_scenario
+        === WELCOME_AUDIO_LIVE_ATTEMPT_BOUNDARY_SCENARIO_FOR_TEST
+          .FORCE_PRE_PENDING_REVALIDATION_FAILURE;
+      claimState.synthetic_attempt_boundary_scenario = null;
       if (
-        authorityStatus !== WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID
+        forcePrePendingRevalidationFailure
+        || authorityStatus !== WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID
         || assetStatus !== WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID
         || !Number.isFinite(effectiveNow)
         || effectiveNow < 0
@@ -2648,6 +3590,7 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         result = blockedAttemptResult({
           blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID,
           claimConsumed: true,
+          zeroEffectReservationCancelled: true,
         });
       } else {
         const pending = Object.freeze({
@@ -2668,6 +3611,7 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         campaign_interval_sha256: claimState.campaign_interval_sha256,
         audio_asset_sha256: claimState.audio_asset_sha256,
         manifest_ordinal: claimState.manifest_ordinal,
+        mission_slot: claimState.mission_slot,
         claim_nonce: claimState.claim_nonce,
         owner_pid: claimState.owner_pid,
         owner_nonce: claimState.owner_nonce,
@@ -2692,18 +3636,7 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
           expectedMissionId: claimState.mission_id,
         });
         claimState.consumed = true;
-        const actuationCapability = createOneUseCapability(
-          ACTUATION_CAPABILITY_STATE,
-          {
-            store_identity: storeIdentity,
-            store_mode: claimState.store_mode,
-            pending_path: paths.pending,
-            pending_digest: published.digest,
-            pending_metadata: published.metadata,
-            pending,
-          },
-          'crm_core_welcome_audio_private_actuation_capability',
-        );
+        terminalCapability = await mintTerminalCapabilityFromStablePending();
         const hostPendingCapability = createOneUseCapability(
           HOST_PENDING_CAPABILITY_STATE,
           {
@@ -2718,13 +3651,14 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
           'crm_core_welcome_audio_private_host_pending_capability',
         );
         result = {
-          private_actuation_capability: actuationCapability,
+          private_actuation_capability: terminalCapability,
           private_host_pending_capability: hostPendingCapability,
-          private_terminal_capability: null,
+          private_terminal_capability: terminalCapability,
           redacted_receipt: buildAttemptReceipt({
             decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.ARMED,
           }),
         };
+      }
       }
     }
   } catch (error) {
@@ -2733,8 +3667,21 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
       paths,
       missionId: claimState.mission_id,
     });
-    const irreversible = pendingPublicationAttempted || evidence.anyBoundaryEvidence;
+    const prePendingStateUnknown = [
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN,
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_CANCEL_INVALID,
+    ].includes(error?.message);
+    const irreversible = pendingPublicationAttempted
+      || evidence.anyBoundaryEvidence
+      || prePendingStateUnknown;
     if (irreversible) claimState.consumed = true;
+    if (evidence.pendingPresent && !evidence.terminalPresent && !terminalCapability) {
+      try {
+        await mintTerminalCapabilityFromStablePending();
+      } catch {
+        terminalCapability = null;
+      }
+    }
     result = blockedAttemptResult({
       decision: irreversible || pendingPublished
         ? WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL
@@ -2745,6 +3692,7 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
       pendingPresent: evidence.pendingPresent,
       terminalPresent: evidence.terminalPresent,
       claimConsumed: irreversible,
+      privateTerminalCapability: terminalCapability,
     });
   } finally {
     if (mutexIdentity) {
@@ -2758,12 +3706,20 @@ const enterWelcomeAudioLiveAttemptBoundary = async ({
         });
         const irreversible = pendingPublicationAttempted || evidence.anyBoundaryEvidence;
         if (irreversible) claimState.consumed = true;
+        if (evidence.pendingPresent && !evidence.terminalPresent && !terminalCapability) {
+          try {
+            await mintTerminalCapabilityFromStablePending();
+          } catch {
+            terminalCapability = null;
+          }
+        }
         result = blockedAttemptResult({
           decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
           blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID,
           pendingPresent: evidence.pendingPresent,
           terminalPresent: evidence.terminalPresent,
           claimConsumed: irreversible,
+          privateTerminalCapability: terminalCapability,
         });
       }
     }
@@ -2855,6 +3811,344 @@ const consumeWelcomeAudioLiveHostPendingCapabilityOnce = async ({
   }
 };
 
+const TERMINAL_EVIDENCE_FIELDS = Object.freeze([
+  'outcome',
+  'attachment_upload_entered',
+  'send_control_actuation_count',
+  'attempted_at_ms',
+  'confirmation_marker',
+  'confirmation_observed_at_ms',
+  'new_outgoing_audio_bubble_delta',
+]);
+
+const unknownTerminalEvidence = ({ attemptedAtMs, uploadEntered = null, actuationCount = null }) => (
+  Object.freeze({
+    outcome: WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN,
+    attachment_upload_entered: uploadEntered,
+    send_control_actuation_count: actuationCount,
+    attempted_at_ms: attemptedAtMs,
+    confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+    confirmation_observed_at_ms: null,
+    new_outgoing_audio_bubble_delta: 0,
+  })
+);
+
+const terminalEvidenceShapeValid = (evidence) => {
+  if (!exactObjectKeys(evidence, TERMINAL_EVIDENCE_FIELDS)) return false;
+  if (!Number.isFinite(evidence.attempted_at_ms)) return false;
+  if (evidence.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED) {
+    return evidence.attachment_upload_entered === true
+      && evidence.send_control_actuation_count === 1
+      && STRONG_CONFIRMATION_MARKERS.has(evidence.confirmation_marker)
+      && Number.isFinite(evidence.confirmation_observed_at_ms)
+      && evidence.confirmation_observed_at_ms >= evidence.attempted_at_ms
+      && evidence.confirmation_observed_at_ms - evidence.attempted_at_ms
+        < WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS
+      && evidence.new_outgoing_audio_bubble_delta === 1;
+  }
+  return evidence.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN
+    && attemptEvidenceIsCoherent({
+      uploadEntered: evidence.attachment_upload_entered,
+      actuationCount: evidence.send_control_actuation_count,
+    })
+    && evidence.confirmation_marker === WELCOME_AUDIO_CONFIRMATION_MARKER.NONE
+    && evidence.confirmation_observed_at_ms === null
+    && evidence.new_outgoing_audio_bubble_delta === 0;
+};
+
+const publishWelcomeAudioLiveTerminal = async ({ state, evidence, finalizedAtMs }) => {
+  const pending = state.pending;
+  const storeIdentity = state.store_identity;
+  const paths = buildStorePaths({
+    storeIdentity,
+    missionId: pending.mission_id,
+    identityAnchorSha256: pending.identity_anchor_sha256,
+  });
+  let mutexIdentity = null;
+  let result = null;
+  let terminalPublished = false;
+  let terminalPublicationAttempted = false;
+  state.consumed = true;
+  try {
+    mutexIdentity = await acquireMissionMutex({ storeIdentity, paths });
+    if (!mutexIdentity) return blockedAttemptResult({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION,
+      pendingPresent: true,
+      claimConsumed: true,
+    });
+    const entries = await readdir(storeIdentity.path);
+    if (entries.some((entry) => entry.startsWith(paths.pendingTemporaryPrefix)
+      || entry.startsWith(paths.terminalTemporaryPrefix))) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN);
+    }
+    if (entries.includes(basename(paths.terminal))) {
+      const reconciled = await reconcileTerminalPendingCleanupOnly({
+        storeIdentity,
+        paths,
+        missionId: pending.mission_id,
+      });
+      if (reconciled && terminalMatchesPending({
+        terminal: reconciled.snapshot,
+        pending,
+      })) {
+        const confirmed = reconciled.snapshot.outcome
+          === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED;
+        return {
+          private_actuation_capability: null,
+          private_terminal_capability: null,
+          redacted_receipt: buildAttemptReceipt({
+            decision: confirmed
+              ? WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED
+              : WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+            uploadEntered: reconciled.snapshot.attachment_upload_entered,
+            actuationCount: reconciled.snapshot.send_control_actuation_count,
+          }),
+        };
+      }
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.TERMINAL_PREEXISTING);
+    }
+    const loadedPending = await readStableClaimRecord({
+      filePath: state.pending_path,
+      storeIdentity,
+    });
+    validatePendingRecord({ record: loadedPending.snapshot, expectedMissionId: pending.mission_id });
+    if (
+      loadedPending.digest !== state.pending_digest
+      || !sameMetadata(loadedPending.metadata, state.pending_metadata)
+      || canonicalSha256(loadedPending.snapshot) !== canonicalSha256(pending)
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN);
+    const confirmed = evidence.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED;
+    const observedAt = confirmed ? evidence.confirmation_observed_at_ms : null;
+    const terminal = Object.freeze({
+      record_schema_version: WELCOME_AUDIO_LIVE_TERMINAL_RECORD_SCHEMA_VERSION,
+      mission_id: pending.mission_id,
+      contract_version: pending.contract_version,
+      mission_contract_sha256: pending.mission_contract_sha256,
+      approval_packet_id: pending.approval_packet_id,
+      operation_id: pending.operation_id,
+      central_repo_head: pending.central_repo_head,
+      canonical_operation_sha256: pending.canonical_operation_sha256,
+      approval_binding_sha256: pending.approval_binding_sha256,
+      identity_anchor_sha256: pending.identity_anchor_sha256,
+      identity_anchor_schema_version: pending.identity_anchor_schema_version,
+      thread_anchor_sha256: pending.thread_anchor_sha256,
+      owner_anchor_sha256: pending.owner_anchor_sha256,
+      manifest_sha256: pending.manifest_sha256,
+      campaign_interval_sha256: pending.campaign_interval_sha256,
+      audio_asset_sha256: pending.audio_asset_sha256,
+      manifest_ordinal: pending.manifest_ordinal,
+      mission_slot: pending.mission_slot,
+      claim_nonce: pending.claim_nonce,
+      owner_pid: pending.owner_pid,
+      owner_nonce: pending.owner_nonce,
+      attempt_nonce: pending.attempt_nonce,
+      entered_at: pending.entered_at,
+      attempted_at: new Date(evidence.attempted_at_ms).toISOString(),
+      finalized_at: new Date(finalizedAtMs).toISOString(),
+      outcome: evidence.outcome,
+      attachment_upload_entered: evidence.attachment_upload_entered,
+      send_control_actuation_count: evidence.send_control_actuation_count,
+      confirmation_marker: evidence.confirmation_marker,
+      confirmation_observed_at: confirmed ? new Date(observedAt).toISOString() : null,
+      new_outgoing_audio_bubble_delta: evidence.new_outgoing_audio_bubble_delta,
+      observation_window_expires_at: confirmed
+        ? new Date(observedAt + WELCOME_AUDIO_LIVE_OBSERVATION_WINDOW_MS).toISOString()
+        : null,
+      retry_disposition: 'terminal_no_retry',
+    });
+    validateTerminalRecord({ record: terminal, expectedMissionId: pending.mission_id });
+    terminalPublicationAttempted = true;
+    await writeExclusiveDurable({
+      filePath: paths.terminal,
+      value: terminal,
+      storeIdentity,
+      temporaryPrefix: paths.terminalTemporaryPrefix,
+    });
+    terminalPublished = true;
+    const published = await readStableClaimRecord({ filePath: paths.terminal, storeIdentity });
+    validateTerminalRecord({ record: published.snapshot, expectedMissionId: pending.mission_id });
+    if (
+      canonicalSha256(published.snapshot) !== canonicalSha256(terminal)
+      || published.digest !== sha256(stableJsonBytes(terminal))
+    ) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN);
+    }
+    if (state.synthetic_terminal_verifier_scenario
+      === WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST
+        .REPLACE_PENDING_AFTER_TERMINAL_PUBLISH) {
+      await replacePendingAfterTerminalPublishForTest({
+        storeIdentity,
+        paths,
+        pending,
+      });
+    }
+    if (state.synthetic_terminal_verifier_scenario
+      === WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST.CRASH_AFTER_TERMINAL_PUBLISH) {
+      result = blockedAttemptResult({
+        decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
+        pendingPresent: true,
+        terminalPresent: true,
+        claimConsumed: true,
+      });
+    } else {
+      await quarantineAndDeleteExactPendingAfterTerminal({
+        storeIdentity,
+        paths,
+        expectedPending: loadedPending,
+        expectedTerminal: published,
+        expectedMissionId: pending.mission_id,
+        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
+      });
+      result = {
+        private_actuation_capability: null,
+        private_terminal_capability: null,
+        redacted_receipt: buildAttemptReceipt({
+          decision: confirmed
+            ? WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED
+            : WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+          uploadEntered: evidence.attachment_upload_entered,
+          actuationCount: evidence.send_control_actuation_count,
+        }),
+      };
+    }
+  } catch (error) {
+    const irreversible = await discoverIrreversibleAttemptEvidence({
+      storeIdentity,
+      paths,
+      missionId: pending.mission_id,
+    });
+    result = blockedAttemptResult({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+      blocker: RECEIPT_BLOCKERS.has(error?.message)
+        ? error.message
+        : WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
+      pendingPresent: irreversible.pendingPresent,
+      terminalPresent: irreversible.terminalPresent,
+      claimConsumed: terminalPublicationAttempted
+        || terminalPublished
+        || irreversible.anyBoundaryEvidence,
+    });
+  } finally {
+    if (mutexIdentity) {
+      try {
+        await releaseMissionMutex({ storeIdentity, paths, mutexIdentity });
+      } catch {
+        result = blockedAttemptResult({
+          decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
+          pendingPresent: true,
+          terminalPresent: terminalPublished,
+          claimConsumed: true,
+        });
+      }
+    }
+  }
+  return result;
+};
+
+const configureWelcomeAudioLiveTerminalVerifierScenarioForTest = (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    'private_terminal_capability',
+    'scenario',
+  ]);
+  const input = envelope.values;
+  const state = ACTUATION_CAPABILITY_STATE.get(input.private_terminal_capability);
+  if (
+    !envelope.valid
+    || !state
+    || state.consumed
+    || state.terminal_bridge_consumed
+    || state.store_mode !== WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+    || !Object.values(WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST).includes(input.scenario)
+  ) return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.INVALID;
+  state.synthetic_terminal_verifier_scenario = input.scenario;
+  return WELCOME_AUDIO_LIVE_CLAIM_CAPABILITY_STATUS.FRESH;
+};
+
+const finalizeWelcomeAudioLiveAttempt = async (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    'private_terminal_capability',
+    'required_store_mode',
+    'private_attempt_evidence_capability',
+    'private_visual_confirmation_capability',
+    'synthetic_now_ms',
+  ]);
+  const input = envelope.values;
+  const state = ACTUATION_CAPABILITY_STATE.get(input.private_terminal_capability);
+  if (
+    !state
+    || state.consumed
+    || state.terminal_bridge_consumed
+  ) return blockedAttemptResult({
+    blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
+  });
+  state.terminal_bridge_consumed = true;
+  const enteredAtMs = Date.parse(state.pending.entered_at);
+  const effectiveNow = state.store_mode === WELCOME_AUDIO_LIVE_STORE_MODE.FIXED_LIVE_OWNER_ONLY
+    ? Date.now()
+    : input.synthetic_now_ms;
+  const safeFinalizedAt = Number.isFinite(effectiveNow) && effectiveNow >= enteredAtMs
+    ? effectiveNow
+    : enteredAtMs;
+  let evidence = unknownTerminalEvidence({ attemptedAtMs: safeFinalizedAt });
+  try {
+    const live = state.store_mode === WELCOME_AUDIO_LIVE_STORE_MODE.FIXED_LIVE_OWNER_ONLY;
+    const synthetic = state.store_mode === WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY;
+    if (
+      !envelope.valid
+      || !Object.values(WELCOME_AUDIO_LIVE_STORE_MODE).includes(input.required_store_mode)
+      || state.store_mode !== input.required_store_mode
+      || (live && input.synthetic_now_ms !== null)
+      || (synthetic && !Number.isFinite(input.synthetic_now_ms))
+    ) throw new Error('terminal_envelope_invalid');
+    if (state.synthetic_terminal_verifier_scenario
+      === WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST.IMPORT_FAILURE) {
+      throw new Error('synthetic_import_failure');
+    }
+    const hostModule = await import(
+      new URL('./crm-vnext-instagram-welcome-audio-safari-live-host.mjs', import.meta.url).href
+    );
+    if (
+      state.synthetic_terminal_verifier_scenario
+        === WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST.MODULE_IDENTITY_FAILURE
+      || hostModule.WELCOME_AUDIO_SAFARI_LIVE_HOST_CONTRACT_VERSION
+        !== 'crm_core_instagram_welcome_audio_safari_live_host_v2'
+      || typeof hostModule.verifyAndConsumeWelcomeAudioSafariTerminalEvidenceOnce !== 'function'
+    ) throw new Error('host_module_identity_invalid');
+    if (state.synthetic_terminal_verifier_scenario
+      === WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST.VERIFIER_FAILURE) {
+      throw new Error('synthetic_verifier_failure');
+    }
+    const verified = await hostModule.verifyAndConsumeWelcomeAudioSafariTerminalEvidenceOnce({
+      private_attempt_evidence_capability: input.private_attempt_evidence_capability,
+      private_visual_confirmation_capability: input.private_visual_confirmation_capability,
+      expected_operation_id: state.pending.operation_id,
+      expected_thread_anchor_sha256: state.pending.thread_anchor_sha256,
+      expected_attempt_nonce: state.pending.attempt_nonce,
+      synthetic_now_ms: state.store_mode === WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+        ? safeFinalizedAt
+        : null,
+    });
+    if (
+      !terminalEvidenceShapeValid(verified)
+      || verified.attempted_at_ms < enteredAtMs
+      || (verified.confirmation_observed_at_ms !== null
+        && verified.confirmation_observed_at_ms < enteredAtMs)
+    ) throw new Error('host_terminal_evidence_invalid');
+    evidence = verified;
+  } catch {
+    evidence = unknownTerminalEvidence({ attemptedAtMs: safeFinalizedAt });
+  }
+  const finalizedAtMs = Math.max(
+    safeFinalizedAt,
+    evidence.attempted_at_ms,
+    evidence.confirmation_observed_at_ms ?? 0,
+  );
+  return publishWelcomeAudioLiveTerminal({ state, evidence, finalizedAtMs });
+};
+
 const finalizeWelcomeAudioLiveAttemptAsUnknown = async ({
   private_actuation_capability,
   required_store_mode,
@@ -2873,178 +4167,37 @@ const finalizeWelcomeAudioLiveAttemptAsUnknown = async ({
     === WELCOME_AUDIO_LIVE_STORE_MODE.FIXED_LIVE_OWNER_ONLY
     ? effectiveFinalizedAt
     : attempted_at_ms;
-  const unknownShape = outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN
-    && attemptEvidenceIsCoherent({
-      uploadEntered: attachment_upload_entered,
-      actuationCount: send_control_actuation_count,
-    });
   if (
     !state
     || state.consumed
+    || state.terminal_bridge_consumed
     || !Object.values(WELCOME_AUDIO_LIVE_STORE_MODE).includes(required_store_mode)
     || state.store_mode !== required_store_mode
-    || !unknownShape
+    || outcome !== WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN
+    || !attemptEvidenceIsCoherent({
+      uploadEntered: attachment_upload_entered,
+      actuationCount: send_control_actuation_count,
+    })
     || !Number.isFinite(effectiveAttemptedAt)
     || !Number.isFinite(effectiveFinalizedAt)
     || effectiveAttemptedAt < Date.parse(state?.pending?.entered_at ?? '')
     || effectiveFinalizedAt < effectiveAttemptedAt
-  ) return blockedAttemptResult({ blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN });
-
-  const pending = state.pending;
-  const storeIdentity = state.store_identity;
-  const paths = buildStorePaths({
-    storeIdentity,
-    missionId: pending.mission_id,
-    identityAnchorSha256: pending.identity_anchor_sha256,
+  ) return blockedAttemptResult({
+    blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
   });
-  let mutexIdentity = null;
-  let result = null;
-  let terminalPublished = false;
-  let terminalPublicationAttempted = false;
-  try {
-    mutexIdentity = await acquireMissionMutex({ storeIdentity, paths });
-    if (!mutexIdentity) return blockedAttemptResult({
-      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
-      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION,
-    });
-    await reconcileSingleLinkedTemporaryByPrefix({
-      storeIdentity,
-      finalPath: paths.pending,
-      temporaryPrefix: paths.pendingTemporaryPrefix,
-      validator: validatePendingRecord,
-      expectedMissionId: pending.mission_id,
-    });
-    await reconcileSingleLinkedTemporaryByPrefix({
-      storeIdentity,
-      finalPath: paths.terminal,
-      temporaryPrefix: paths.terminalTemporaryPrefix,
-      validator: validateTerminalRecord,
-      expectedMissionId: pending.mission_id,
-    });
-    const entries = await readdir(storeIdentity.path);
-    if (
-      entries.includes(basename(paths.terminal))
-      || entries.some((entry) => entry.startsWith(paths.terminalTemporaryPrefix))
-    ) {
-      const evidence = await discoverIrreversibleAttemptEvidence({
-        storeIdentity,
-        paths,
-        missionId: pending.mission_id,
-      });
-      state.consumed = true;
-      result = blockedAttemptResult({
-        decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
-        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.TERMINAL_PREEXISTING,
-        pendingPresent: evidence.pendingPresent,
-        terminalPresent: evidence.terminalPresent,
-        claimConsumed: true,
-      });
-    } else {
-      const loadedPending = await readStableClaimRecord({
-        filePath: state.pending_path,
-        storeIdentity,
-      });
-      if (
-        loadedPending.digest !== state.pending_digest
-        || !sameMetadata(loadedPending.metadata, state.pending_metadata)
-      ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN);
-      const terminal = Object.freeze({
-        record_schema_version: WELCOME_AUDIO_LIVE_TERMINAL_RECORD_SCHEMA_VERSION,
-        mission_id: pending.mission_id,
-        contract_version: pending.contract_version,
-        mission_contract_sha256: pending.mission_contract_sha256,
-        approval_packet_id: pending.approval_packet_id,
-        operation_id: pending.operation_id,
-        central_repo_head: pending.central_repo_head,
-        canonical_operation_sha256: pending.canonical_operation_sha256,
-        approval_binding_sha256: pending.approval_binding_sha256,
-        identity_anchor_sha256: pending.identity_anchor_sha256,
-        identity_anchor_schema_version: pending.identity_anchor_schema_version,
-        thread_anchor_sha256: pending.thread_anchor_sha256,
-        owner_anchor_sha256: pending.owner_anchor_sha256,
-        manifest_sha256: pending.manifest_sha256,
-        campaign_interval_sha256: pending.campaign_interval_sha256,
-        audio_asset_sha256: pending.audio_asset_sha256,
-        manifest_ordinal: pending.manifest_ordinal,
-        claim_nonce: pending.claim_nonce,
-        owner_pid: pending.owner_pid,
-        owner_nonce: pending.owner_nonce,
-        attempt_nonce: pending.attempt_nonce,
-        entered_at: pending.entered_at,
-        attempted_at: new Date(effectiveAttemptedAt).toISOString(),
-        finalized_at: new Date(effectiveFinalizedAt).toISOString(),
-        outcome,
-        attachment_upload_entered,
-        send_control_actuation_count,
-        retry_disposition: 'terminal_no_retry',
-      });
-      validateTerminalRecord({ record: terminal, expectedMissionId: pending.mission_id });
-      terminalPublicationAttempted = true;
-      await writeExclusiveDurable({
-        filePath: paths.terminal,
-        value: terminal,
-        storeIdentity,
-        temporaryPrefix: paths.terminalTemporaryPrefix,
-      });
-      terminalPublished = true;
-      const published = await readStableClaimRecord({ filePath: paths.terminal, storeIdentity });
-      validateTerminalRecord({ record: published.snapshot, expectedMissionId: pending.mission_id });
-      await unlink(paths.pending);
-      await syncStoreDirectory(storeIdentity);
-      state.consumed = true;
-      result = {
-        private_actuation_capability: null,
-        private_terminal_capability: null,
-        redacted_receipt: buildAttemptReceipt({
-          decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
-          uploadEntered: attachment_upload_entered,
-          actuationCount: send_control_actuation_count,
-        }),
-      };
-    }
-  } catch (error) {
-    const evidence = await discoverIrreversibleAttemptEvidence({
-      storeIdentity,
-      paths,
-      missionId: pending.mission_id,
-    });
-    state.consumed = true;
-    result = blockedAttemptResult({
-      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
-      blocker: RECEIPT_BLOCKERS.has(error?.message)
-        ? error.message
-        : WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
-      pendingPresent: evidence.pendingPresent,
-      terminalPresent: evidence.terminalPresent,
-      claimConsumed: terminalPublicationAttempted
-        || terminalPublished
-        || evidence.anyBoundaryEvidence,
-    });
-  } finally {
-    if (mutexIdentity) {
-      try {
-        await releaseMissionMutex({ storeIdentity, paths, mutexIdentity });
-      } catch {
-        const evidence = await discoverIrreversibleAttemptEvidence({
-          storeIdentity,
-          paths,
-          missionId: pending.mission_id,
-        });
-        state.consumed = true;
-        result = blockedAttemptResult({
-          decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
-          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_FINALIZATION_UNKNOWN,
-          pendingPresent: evidence.pendingPresent,
-          terminalPresent: evidence.terminalPresent,
-          claimConsumed: true,
-        });
-      }
-    }
-  }
-  return result;
+  state.terminal_bridge_consumed = true;
+  return publishWelcomeAudioLiveTerminal({
+    state,
+    evidence: unknownTerminalEvidence({
+      attemptedAtMs: effectiveAttemptedAt,
+      uploadEntered: attachment_upload_entered,
+      actuationCount: send_control_actuation_count,
+    }),
+    finalizedAtMs: effectiveFinalizedAt,
+  });
 };
 
-const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
+const recoverWelcomeAudioLivePendingAttemptAfterOwnerExitInternal = async ({
   private_store_capability,
   required_store_mode,
   mission_id,
@@ -3053,7 +4206,7 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
   identity_anchor_sha256,
   manifest_ordinal,
   now_ms,
-}) => {
+}, syntheticReplacePendingAfterTerminalPublish = false) => {
   if (
     !Object.values(WELCOME_AUDIO_LIVE_STORE_MODE).includes(required_store_mode)
     || !isOpaqueId(mission_id)
@@ -3078,6 +4231,12 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
   if (storeMode !== required_store_mode) return blockedAttemptResult({
     blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
   });
+  if (syntheticReplacePendingAfterTerminalPublish && storeMode
+    !== WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY) {
+    return blockedAttemptResult({
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+    });
+  }
   const effectiveNow = effectiveNowForStore({ storeMode, nowMs: now_ms });
   if (!Number.isFinite(effectiveNow) || effectiveNow < 0) return blockedAttemptResult({
     blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
@@ -3097,25 +4256,78 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
       decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
       blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION,
     });
-    await reconcileSingleLinkedTemporaryByPrefix({
-      storeIdentity,
-      finalPath: paths.pending,
-      temporaryPrefix: paths.pendingTemporaryPrefix,
-      validator: validatePendingRecord,
-      expectedMissionId: mission_id,
-    });
-    await reconcileSingleLinkedTemporaryByPrefix({
-      storeIdentity,
-      finalPath: paths.terminal,
-      temporaryPrefix: paths.terminalTemporaryPrefix,
-      validator: validateTerminalRecord,
-      expectedMissionId: mission_id,
-    });
     const entries = await readdir(storeIdentity.path);
-    if (
-      entries.includes(basename(paths.terminal))
-      || entries.some((entry) => entry.startsWith(paths.terminalTemporaryPrefix))
-    ) {
+    if (entries.some((entry) => entry.startsWith(paths.pendingTemporaryPrefix)
+      || entry.startsWith(paths.terminalTemporaryPrefix))) {
+      return blockedAttemptResult({
+        decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+        claimConsumed: true,
+      });
+    }
+    if (entries.includes(basename(paths.terminal))) {
+      const pendingPresentBefore = entries.includes(basename(paths.pending));
+      const terminalBefore = await readStableClaimRecord({
+        filePath: paths.terminal,
+        storeIdentity,
+      });
+      validateTerminalRecord({ record: terminalBefore.snapshot, expectedMissionId: mission_id });
+      if (
+        terminalBefore.snapshot.contract_version !== contract_version
+        || terminalBefore.snapshot.mission_contract_sha256 !== mission_contract_sha256
+        || terminalBefore.snapshot.identity_anchor_sha256 !== identity_anchor_sha256
+        || terminalBefore.snapshot.manifest_ordinal !== manifest_ordinal
+      ) return blockedAttemptResult({
+        decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+        pendingPresent: pendingPresentBefore,
+        terminalPresent: true,
+        claimConsumed: true,
+      });
+      if (pendingPresentBefore) {
+        const pendingBefore = await readStableClaimRecord({
+          filePath: paths.pending,
+          storeIdentity,
+        });
+        validatePendingRecord({ record: pendingBefore.snapshot, expectedMissionId: mission_id });
+        if (
+          !terminalMatchesPending({
+            terminal: terminalBefore.snapshot,
+            pending: pendingBefore.snapshot,
+          })
+          || pendingBefore.snapshot.contract_version !== contract_version
+          || pendingBefore.snapshot.mission_contract_sha256 !== mission_contract_sha256
+          || pendingBefore.snapshot.identity_anchor_sha256 !== identity_anchor_sha256
+          || pendingBefore.snapshot.manifest_ordinal !== manifest_ordinal
+        ) return blockedAttemptResult({
+          decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+          pendingPresent: true,
+          terminalPresent: true,
+          claimConsumed: true,
+        });
+      }
+      const reconciled = await reconcileTerminalPendingCleanupOnly({
+        storeIdentity,
+        paths,
+        missionId: mission_id,
+      });
+      if (pendingPresentBefore && reconciled) {
+        const confirmed = reconciled.snapshot.outcome
+          === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED;
+        return {
+          private_actuation_capability: null,
+          private_host_pending_capability: null,
+          private_terminal_capability: null,
+          redacted_receipt: buildAttemptReceipt({
+            decision: confirmed
+              ? WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED
+              : WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+            uploadEntered: reconciled.snapshot.attachment_upload_entered,
+            actuationCount: reconciled.snapshot.send_control_actuation_count,
+          }),
+        };
+      }
       const evidence = await discoverIrreversibleAttemptEvidence({
         storeIdentity,
         paths,
@@ -3179,6 +4391,7 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
       campaign_interval_sha256: pending.campaign_interval_sha256,
       audio_asset_sha256: pending.audio_asset_sha256,
       manifest_ordinal: pending.manifest_ordinal,
+      mission_slot: pending.mission_slot,
       claim_nonce: pending.claim_nonce,
       owner_pid: pending.owner_pid,
       owner_nonce: pending.owner_nonce,
@@ -3189,6 +4402,10 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
       outcome: WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN,
       attachment_upload_entered: null,
       send_control_actuation_count: null,
+      confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
+      confirmation_observed_at: null,
+      new_outgoing_audio_bubble_delta: 0,
+      observation_window_expires_at: null,
       retry_disposition: 'terminal_no_retry',
     });
     validateTerminalRecord({ record: terminal, expectedMissionId: mission_id });
@@ -3202,8 +4419,27 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
     terminalPublished = true;
     const published = await readStableClaimRecord({ filePath: paths.terminal, storeIdentity });
     validateTerminalRecord({ record: published.snapshot, expectedMissionId: mission_id });
-    await unlink(paths.pending);
-    await syncStoreDirectory(storeIdentity);
+    if (
+      canonicalSha256(published.snapshot) !== canonicalSha256(terminal)
+      || published.digest !== sha256(stableJsonBytes(terminal))
+    ) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID);
+    }
+    if (syntheticReplacePendingAfterTerminalPublish) {
+      await replacePendingAfterTerminalPublishForTest({
+        storeIdentity,
+        paths,
+        pending,
+      });
+    }
+    await quarantineAndDeleteExactPendingAfterTerminal({
+      storeIdentity,
+      paths,
+      expectedPending: pendingLoaded,
+      expectedTerminal: published,
+      expectedMissionId: mission_id,
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+    });
     result = {
       private_actuation_capability: null,
       private_terminal_capability: null,
@@ -3251,6 +4487,521 @@ const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async ({
     }
   }
   return result;
+};
+
+const PENDING_RECOVERY_INPUT_FIELDS = Object.freeze([
+  'private_store_capability',
+  'required_store_mode',
+  'mission_id',
+  'contract_version',
+  'mission_contract_sha256',
+  'identity_anchor_sha256',
+  'manifest_ordinal',
+  'now_ms',
+]);
+
+const recoverWelcomeAudioLivePendingAttemptAfterOwnerExit = async (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, PENDING_RECOVERY_INPUT_FIELDS);
+  if (!envelope.valid) return blockedAttemptResult({
+    blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+  });
+  return recoverWelcomeAudioLivePendingAttemptAfterOwnerExitInternal(envelope.values, false);
+};
+
+const recoverWelcomeAudioLivePendingAttemptAfterOwnerExitWithSyntheticPendingReplacementForTest =
+  async (parameters = {}) => {
+    const envelope = inspectExactDataEnvelope(parameters, [
+      ...PENDING_RECOVERY_INPUT_FIELDS,
+      'replace_pending_after_terminal_publish',
+    ]);
+    if (!envelope.valid || envelope.values.replace_pending_after_terminal_publish !== true) {
+      return blockedAttemptResult({
+        blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_RECOVERY_INVALID,
+      });
+    }
+    const binding = Object.fromEntries(
+      PENDING_RECOVERY_INPUT_FIELDS.map((field) => [field, envelope.values[field]]),
+    );
+    return recoverWelcomeAudioLivePendingAttemptAfterOwnerExitInternal(binding, true);
+  };
+
+const buildObservationReceipt = ({
+  decision,
+  threadObservationCount = 0,
+  missionObservationCount = 0,
+  blockerCodes = [],
+}) => Object.freeze({
+  receipt_schema_version: WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_SCHEMA_VERSION,
+  claim_issuer_contract_version: WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION,
+  redaction_status: 'aggregate_only_no_paths_identities_anchors_digests_times_or_private_values',
+  execution_mode: WELCOME_AUDIO_LIVE_CLAIM_EXECUTION_MODE,
+  decision,
+  thread_observation_count: threadObservationCount,
+  thread_observation_cap: WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP,
+  mission_observation_count: missionObservationCount,
+  mission_observation_cap: WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP,
+  private_capability_issued: decision === WELCOME_AUDIO_LIVE_OBSERVATION_DECISION.CLAIMED,
+  source_read_allowed: false,
+  send_allowed: false,
+  external_effect_invoked: false,
+  blocker_codes: Object.freeze([...new Set(blockerCodes)]),
+});
+
+const blockedObservationResult = ({
+  blocker,
+  threadObservationCount = 0,
+  missionObservationCount = 0,
+}) => Object.freeze({
+  private_observation_capability: null,
+  redacted_receipt: buildObservationReceipt({
+    decision: WELCOME_AUDIO_LIVE_OBSERVATION_DECISION.BLOCKED,
+    threadObservationCount,
+    missionObservationCount,
+    blockerCodes: [blocker],
+  }),
+});
+
+const inspectObservationClaims = async ({ storeIdentity, missionId }) => {
+  const paths = buildStorePaths({
+    storeIdentity,
+    missionId,
+    identityAnchorSha256: '0'.repeat(64),
+  });
+  let entries = await readdir(storeIdentity.path);
+  const temporaryNames = entries.filter(
+    (entry) => entry.startsWith(paths.observationTemporaryPrefix),
+  );
+  if (temporaryNames.length > 0) {
+    if (temporaryNames.length !== 1) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    }
+    const temporaryName = temporaryNames[0];
+    if (!new RegExp(
+      `^\\.observation-${paths.mission}-[0-9]+-[a-f0-9]{32}\\.json$`,
+      'u',
+    ).test(temporaryName)) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    }
+    let temporary;
+    try {
+      temporary = await readStableClaimRecord({
+        filePath: join(storeIdentity.path, temporaryName),
+        storeIdentity,
+        expectedNlink: 2,
+      });
+      validateObservationRecord({ record: temporary.snapshot, expectedMissionId: missionId });
+    } catch {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    }
+    const finalPath = paths.observation({
+      threadAnchorSha256: temporary.snapshot.thread_anchor_sha256,
+      threadOrdinal: temporary.snapshot.thread_observation_ordinal,
+    });
+    if (
+      !entries.includes(basename(finalPath))
+      || await reconcileLinkedPublicationTemporary({
+        storeIdentity,
+        finalPath,
+        temporaryPath: join(storeIdentity.path, temporaryName),
+        temporaryPrefix: paths.observationTemporaryPrefix,
+        validator: validateObservationRecord,
+        expectedMissionId: missionId,
+      }) !== true
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    entries = await readdir(storeIdentity.path);
+    if (entries.some((entry) => entry.startsWith(paths.observationTemporaryPrefix))) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    }
+  }
+  const names = entries.filter((entry) => entry.startsWith(paths.observationPrefix));
+  const records = [];
+  const missionOrdinals = new Set();
+  const threadOrdinals = new Map();
+  for (const name of names) {
+    if (!/^observation-[a-f0-9]{64}-[a-f0-9]{64}-[0-9]{2}\.json$/.test(name)) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    }
+    const loaded = await readStableClaimRecord({
+      filePath: join(storeIdentity.path, name),
+      storeIdentity,
+    });
+    validateObservationRecord({ record: loaded.snapshot, expectedMissionId: missionId });
+    const recordPaths = buildStorePaths({
+      storeIdentity,
+      missionId,
+      identityAnchorSha256: loaded.snapshot.identity_anchor_sha256,
+    });
+    const [claimLoaded, terminalLoaded] = await Promise.all([
+      readStableClaimRecord({ filePath: recordPaths.claim, storeIdentity }),
+      readStableClaimRecord({ filePath: recordPaths.terminal, storeIdentity }),
+    ]);
+    validateClaimRecord({ record: claimLoaded.snapshot, expectedMissionId: missionId });
+    validateTerminalRecord({ record: terminalLoaded.snapshot, expectedMissionId: missionId });
+    if (
+      terminalLoaded.snapshot.outcome !== WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED
+      || !terminalMatchesClaim({ terminal: terminalLoaded.snapshot, claim: claimLoaded.snapshot })
+      || terminalLoaded.digest !== loaded.snapshot.confirmed_terminal_sha256
+      || terminalLoaded.snapshot.contract_version !== loaded.snapshot.contract_version
+      || terminalLoaded.snapshot.mission_contract_sha256
+        !== loaded.snapshot.mission_contract_sha256
+      || terminalLoaded.snapshot.operation_id !== loaded.snapshot.operation_id
+      || terminalLoaded.snapshot.identity_anchor_sha256
+        !== loaded.snapshot.identity_anchor_sha256
+      || terminalLoaded.snapshot.thread_anchor_sha256 !== loaded.snapshot.thread_anchor_sha256
+      || terminalLoaded.snapshot.attempt_nonce !== loaded.snapshot.attempt_nonce
+      || terminalLoaded.snapshot.manifest_ordinal !== loaded.snapshot.manifest_ordinal
+      || terminalLoaded.snapshot.mission_slot !== loaded.snapshot.mission_slot
+      || terminalLoaded.snapshot.finalized_at !== loaded.snapshot.confirmed_terminal_finalized_at
+      || terminalLoaded.snapshot.observation_window_expires_at
+        !== loaded.snapshot.window_expires_at
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    const expectedName = basename(paths.observation({
+      threadAnchorSha256: loaded.snapshot.thread_anchor_sha256,
+      threadOrdinal: loaded.snapshot.thread_observation_ordinal,
+    }));
+    const threadKey = loaded.snapshot.thread_anchor_sha256;
+    const seenForThread = threadOrdinals.get(threadKey) ?? new Set();
+    if (
+      name !== expectedName
+      || missionOrdinals.has(loaded.snapshot.mission_observation_ordinal)
+      || seenForThread.has(loaded.snapshot.thread_observation_ordinal)
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    missionOrdinals.add(loaded.snapshot.mission_observation_ordinal);
+    seenForThread.add(loaded.snapshot.thread_observation_ordinal);
+    threadOrdinals.set(threadKey, seenForThread);
+    records.push(loaded);
+  }
+  records.sort(
+    (left, right) => left.snapshot.mission_observation_ordinal
+      - right.snapshot.mission_observation_ordinal,
+  );
+  if (
+    records.length > WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP
+    || records.some((loaded, index) => loaded.snapshot.mission_observation_ordinal !== index + 1)
+    || [...threadOrdinals.values()].some((ordinals) => (
+      ordinals.size > WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP
+      || [...ordinals].sort((a, b) => a - b).some((ordinal, index) => ordinal !== index + 1)
+    ))
+  ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+  return Object.freeze({ records: Object.freeze(records), threadOrdinals });
+};
+
+const OBSERVATION_CLAIM_INPUT_FIELDS = Object.freeze([
+  'private_store_capability',
+  'required_store_mode',
+  'mission_id',
+  'contract_version',
+  'mission_contract_sha256',
+  'operation_id',
+  'identity_anchor_sha256',
+  'thread_anchor_sha256',
+  'attempt_nonce',
+  'now_ms',
+]);
+
+const claimWelcomeAudioLiveReplyObservationInternal = async (parameters, crashAfterPublish) => {
+  const envelope = inspectExactDataEnvelope(parameters, OBSERVATION_CLAIM_INPUT_FIELDS);
+  const {
+    private_store_capability,
+    required_store_mode,
+    mission_id,
+    contract_version,
+    mission_contract_sha256,
+    operation_id,
+    identity_anchor_sha256,
+    thread_anchor_sha256,
+    attempt_nonce,
+    now_ms,
+  } = envelope.values;
+  if (
+    !envelope.valid
+    || !Object.values(WELCOME_AUDIO_LIVE_STORE_MODE).includes(required_store_mode)
+    || !isOpaqueId(mission_id)
+    || !isOpaqueId(contract_version)
+    || !isSha256(mission_contract_sha256)
+    || !isOpaqueId(operation_id)
+    || !isSha256(identity_anchor_sha256)
+    || !isSha256(thread_anchor_sha256)
+    || !/^[a-f0-9]{64}$/.test(attempt_nonce)
+  ) return blockedObservationResult({ blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID });
+  let storeIdentity;
+  let storeMode;
+  try {
+    ({ storeIdentity, mode: storeMode } = await resolveWelcomeAudioLiveClaimStoreCapability(
+      private_store_capability,
+    ));
+  } catch {
+    return blockedObservationResult({ blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID });
+  }
+  if (storeMode !== required_store_mode || (crashAfterPublish && storeMode
+    !== WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY)) {
+    return blockedObservationResult({ blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID });
+  }
+  const effectiveNow = effectiveNowForStore({ storeMode, nowMs: now_ms });
+  if (!Number.isFinite(effectiveNow) || effectiveNow < 0) {
+    return blockedObservationResult({ blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID });
+  }
+  const paths = buildStorePaths({
+    storeIdentity,
+    missionId: mission_id,
+    identityAnchorSha256: identity_anchor_sha256,
+  });
+  let mutexIdentity = null;
+  let result = null;
+  try {
+    mutexIdentity = await acquireMissionMutex({ storeIdentity, paths });
+    if (!mutexIdentity) return blockedObservationResult({
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION,
+    });
+    const observations = await inspectObservationClaims({ storeIdentity, missionId: mission_id });
+    const threadCount = observations.threadOrdinals.get(thread_anchor_sha256)?.size ?? 0;
+    const missionCount = observations.records.length;
+    if (
+      threadCount >= WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP
+      || missionCount >= WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP
+    ) return blockedObservationResult({
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_CAP_REACHED,
+      threadObservationCount: threadCount,
+      missionObservationCount: missionCount,
+    });
+    const entries = await readdir(storeIdentity.path);
+    if (
+      entries.includes(basename(paths.pending))
+      || entries.some((entry) => entry.startsWith(paths.pendingTemporaryPrefix)
+        || entry.startsWith(paths.terminalTemporaryPrefix))
+      || !entries.includes(basename(paths.terminal))
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    const terminalLoaded = await readStableClaimRecord({
+      filePath: paths.terminal,
+      storeIdentity,
+    });
+    const claimLoaded = await readStableClaimRecord({
+      filePath: paths.claim,
+      storeIdentity,
+    });
+    const terminal = terminalLoaded.snapshot;
+    validateClaimRecord({ record: claimLoaded.snapshot, expectedMissionId: mission_id });
+    validateTerminalRecord({ record: terminal, expectedMissionId: mission_id });
+    if (
+      terminal.outcome !== WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED
+      || !terminalMatchesClaim({ terminal, claim: claimLoaded.snapshot })
+      || terminal.contract_version !== contract_version
+      || terminal.mission_contract_sha256 !== mission_contract_sha256
+      || terminal.operation_id !== operation_id
+      || terminal.identity_anchor_sha256 !== identity_anchor_sha256
+      || terminal.thread_anchor_sha256 !== thread_anchor_sha256
+      || terminal.attempt_nonce !== attempt_nonce
+      || effectiveNow < Date.parse(terminal.finalized_at)
+      || effectiveNow >= Date.parse(terminal.observation_window_expires_at)
+    ) throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    const observation = Object.freeze({
+      record_schema_version: WELCOME_AUDIO_LIVE_OBSERVATION_RECORD_SCHEMA_VERSION,
+      claim_issuer_contract_version: WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION,
+      mission_id,
+      contract_version,
+      mission_contract_sha256,
+      operation_id,
+      identity_anchor_schema_version: terminal.identity_anchor_schema_version,
+      identity_anchor_sha256,
+      thread_anchor_sha256,
+      attempt_nonce,
+      manifest_ordinal: terminal.manifest_ordinal,
+      mission_slot: terminal.mission_slot,
+      thread_observation_ordinal: threadCount + 1,
+      mission_observation_ordinal: missionCount + 1,
+      confirmed_terminal_sha256: terminalLoaded.digest,
+      confirmed_terminal_finalized_at: terminal.finalized_at,
+      window_expires_at: terminal.observation_window_expires_at,
+      claimed_at: new Date(effectiveNow).toISOString(),
+      claim_status: 'permanent_append_only_claim_before_reply_thread_read',
+      claim_nonce: randomBytes(32).toString('hex'),
+    });
+    validateObservationRecord({ record: observation, expectedMissionId: mission_id });
+    const observationPath = paths.observation({
+      threadAnchorSha256: thread_anchor_sha256,
+      threadOrdinal: observation.thread_observation_ordinal,
+    });
+    await writeExclusiveDurable({
+      filePath: observationPath,
+      value: observation,
+      storeIdentity,
+      temporaryPrefix: paths.observationTemporaryPrefix,
+    });
+    const published = await readStableClaimRecord({ filePath: observationPath, storeIdentity });
+    validateObservationRecord({ record: published.snapshot, expectedMissionId: mission_id });
+    if (canonicalSha256(published.snapshot) !== canonicalSha256(observation)) {
+      throw new Error(WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID);
+    }
+    if (crashAfterPublish) return blockedObservationResult({
+      blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID,
+      threadObservationCount: threadCount + 1,
+      missionObservationCount: missionCount + 1,
+    });
+    const capability = createOneUseCapability(
+      OBSERVATION_CAPABILITY_STATE,
+      {
+        store_identity: storeIdentity,
+        store_mode: storeMode,
+        observation_path: observationPath,
+        observation_digest: published.digest,
+        observation_metadata: published.metadata,
+        observation,
+      },
+      'crm_core_welcome_audio_private_reply_observation_capability',
+    );
+    result = Object.freeze({
+      private_observation_capability: capability,
+      redacted_receipt: buildObservationReceipt({
+        decision: WELCOME_AUDIO_LIVE_OBSERVATION_DECISION.CLAIMED,
+        threadObservationCount: threadCount + 1,
+        missionObservationCount: missionCount + 1,
+      }),
+    });
+  } catch (error) {
+    result = blockedObservationResult({
+      blocker: RECEIPT_BLOCKERS.has(error?.message)
+        ? error.message
+        : WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID,
+    });
+  } finally {
+    if (mutexIdentity) {
+      try {
+        await releaseMissionMutex({ storeIdentity, paths, mutexIdentity });
+      } catch {
+        result = blockedObservationResult({
+          blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID,
+        });
+      }
+    }
+  }
+  return result;
+};
+
+const claimWelcomeAudioLiveReplyObservation = async (parameters) => (
+  claimWelcomeAudioLiveReplyObservationInternal(parameters, false)
+);
+
+const claimWelcomeAudioLiveReplyObservationForTest = async (parameters) => {
+  const envelope = inspectExactDataEnvelope(parameters, [
+    ...OBSERVATION_CLAIM_INPUT_FIELDS,
+    'crash_after_publish',
+  ]);
+  if (!envelope.valid || envelope.values.crash_after_publish !== true) {
+    return blockedObservationResult({ blocker: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID });
+  }
+  const binding = Object.fromEntries(
+    OBSERVATION_CLAIM_INPUT_FIELDS.map((field) => [field, envelope.values[field]]),
+  );
+  return claimWelcomeAudioLiveReplyObservationInternal(binding, true);
+};
+
+const OBSERVATION_CONSUME_INPUT_FIELDS = Object.freeze([
+  'private_observation_capability',
+  'required_store_mode',
+  'expected_mission_id',
+  'expected_operation_id',
+  'expected_identity_anchor_sha256',
+  'expected_thread_anchor_sha256',
+  'expected_attempt_nonce',
+  'expected_mission_slot',
+  'now_ms',
+]);
+
+const consumeWelcomeAudioLiveReplyObservationCapabilityOnce = async (parameters = {}) => {
+  const envelope = inspectExactDataEnvelope(parameters, OBSERVATION_CONSUME_INPUT_FIELDS);
+  const input = envelope.values;
+  const state = OBSERVATION_CAPABILITY_STATE.get(input.private_observation_capability);
+  if (!state || state.consumed) return WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS.INVALID;
+  state.consumed = true;
+  try {
+    const live = state.store_mode === WELCOME_AUDIO_LIVE_STORE_MODE.FIXED_LIVE_OWNER_ONLY;
+    const synthetic = state.store_mode
+      === WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY;
+    const effectiveNow = live ? Date.now() : input.now_ms;
+    const claimedAt = Date.parse(state.observation.claimed_at);
+    const windowExpiresAt = Date.parse(state.observation.window_expires_at);
+    if (
+      !envelope.valid
+      || state.store_mode !== input.required_store_mode
+      || state.observation.mission_id !== input.expected_mission_id
+      || state.observation.operation_id !== input.expected_operation_id
+      || state.observation.identity_anchor_sha256 !== input.expected_identity_anchor_sha256
+      || state.observation.thread_anchor_sha256 !== input.expected_thread_anchor_sha256
+      || state.observation.attempt_nonce !== input.expected_attempt_nonce
+      || state.observation.mission_slot !== input.expected_mission_slot
+      || !((live && input.now_ms === null) || (synthetic && Number.isFinite(input.now_ms)))
+      || !Number.isFinite(effectiveNow)
+      || effectiveNow < claimedAt
+      || effectiveNow - claimedAt >= WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS
+      || effectiveNow >= windowExpiresAt
+    ) return WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS.INVALID;
+    await assertWelcomeAudioLiveClaimStoreRoot({
+      store_root: state.store_identity.path,
+      expected_identity: state.store_identity,
+    });
+    const loaded = await readStableClaimRecord({
+      filePath: state.observation_path,
+      storeIdentity: state.store_identity,
+    });
+    validateObservationRecord({
+      record: loaded.snapshot,
+      expectedMissionId: input.expected_mission_id,
+    });
+    const terminalPaths = buildStorePaths({
+      storeIdentity: state.store_identity,
+      missionId: input.expected_mission_id,
+      identityAnchorSha256: input.expected_identity_anchor_sha256,
+    });
+    const terminal = await readStableClaimRecord({
+      filePath: terminalPaths.terminal,
+      storeIdentity: state.store_identity,
+    });
+    validateTerminalRecord({
+      record: terminal.snapshot,
+      expectedMissionId: input.expected_mission_id,
+    });
+    return loaded.digest === state.observation_digest
+      && sameMetadata(loaded.metadata, state.observation_metadata)
+      && canonicalSha256(loaded.snapshot) === canonicalSha256(state.observation)
+      && terminal.digest === state.observation.confirmed_terminal_sha256
+      && terminal.snapshot.outcome === WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.CONFIRMED
+      ? WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS.VALID
+      : WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS.INVALID;
+  } catch {
+    return WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS.INVALID;
+  }
+};
+
+const validateWelcomeAudioLiveObservationReceipt = (receipt) => {
+  if (!exactObjectKeys(receipt, WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_FIELDS)) {
+    return { ok: false, reason: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID };
+  }
+  const claimed = receipt.decision === WELCOME_AUDIO_LIVE_OBSERVATION_DECISION.CLAIMED;
+  const valid = receipt.receipt_schema_version
+      === WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_SCHEMA_VERSION
+    && receipt.claim_issuer_contract_version === WELCOME_AUDIO_LIVE_CLAIM_ISSUER_CONTRACT_VERSION
+    && receipt.redaction_status
+      === 'aggregate_only_no_paths_identities_anchors_digests_times_or_private_values'
+    && receipt.execution_mode === WELCOME_AUDIO_LIVE_CLAIM_EXECUTION_MODE
+    && Object.values(WELCOME_AUDIO_LIVE_OBSERVATION_DECISION).includes(receipt.decision)
+    && Number.isInteger(receipt.thread_observation_count)
+    && receipt.thread_observation_count >= 0
+    && receipt.thread_observation_count <= WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP
+    && receipt.thread_observation_cap === WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP
+    && Number.isInteger(receipt.mission_observation_count)
+    && receipt.mission_observation_count >= 0
+    && receipt.mission_observation_count <= WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP
+    && receipt.mission_observation_cap === WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP
+    && receipt.private_capability_issued === claimed
+    && receipt.source_read_allowed === false
+    && receipt.send_allowed === false
+    && receipt.external_effect_invoked === false
+    && Array.isArray(receipt.blocker_codes)
+    && receipt.blocker_codes.every((code) => RECEIPT_BLOCKERS.has(code))
+    && receipt.blocker_codes.length === (claimed ? 0 : 1);
+  return valid
+    ? { ok: true, reason: null }
+    : { ok: false, reason: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.OBSERVATION_INVALID };
 };
 
 const validateWelcomeAudioLiveClaimReceipt = (receipt) => {
@@ -3337,8 +5088,12 @@ const validateWelcomeAudioLiveAttemptReceipt = (receipt) => {
   if (!exactObjectKeys(receipt, WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_FIELDS)) {
     return { ok: false, reason: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INPUT_INVALID };
   }
-  const finalizedUnknown = receipt.decision
-    === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN;
+  const finalized = [
+    WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED,
+    WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+  ].includes(receipt.decision);
+  const finalizedConfirmed = receipt.decision
+    === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED;
   const blocked = [
     WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED,
     WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
@@ -3359,6 +5114,7 @@ const validateWelcomeAudioLiveAttemptReceipt = (receipt) => {
     })
     || typeof receipt.private_actuation_capability_issued !== 'boolean'
     || typeof receipt.claim_capability_consumed !== 'boolean'
+    || typeof receipt.zero_effect_reservation_cancelled !== 'boolean'
     || receipt.send_allowed !== false
     || receipt.external_effect_invoked !== false
     || receipt.browser_used !== false
@@ -3367,7 +5123,21 @@ const validateWelcomeAudioLiveAttemptReceipt = (receipt) => {
     || receipt.blocker_codes.some((code) => !RECEIPT_BLOCKERS.has(code))
     || new Set(receipt.blocker_codes).size !== receipt.blocker_codes.length
     || receipt.blocker_codes.length !== (blocked ? 1 : 0)
-    || (finalizedUnknown && receipt.terminal_record_present !== true)
+    || (finalized && receipt.terminal_record_present !== true)
+    || (finalizedConfirmed && (
+      receipt.attachment_upload_entered !== true
+      || receipt.send_control_actuation_count !== 1
+    ))
+    || (receipt.zero_effect_reservation_cancelled && (
+      receipt.decision !== WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED
+      || receipt.pending_record_present !== false
+      || receipt.terminal_record_present !== false
+      || receipt.attachment_upload_entered !== false
+      || receipt.send_control_actuation_count !== 0
+      || receipt.claim_capability_consumed !== true
+      || receipt.blocker_codes.length !== 1
+      || receipt.blocker_codes[0] !== WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID
+    ))
   ) return { ok: false, reason: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INPUT_INVALID };
   const expected = buildAttemptReceipt({
     decision: receipt.decision,
@@ -3376,6 +5146,7 @@ const validateWelcomeAudioLiveAttemptReceipt = (receipt) => {
     pendingPresent: receipt.pending_record_present,
     terminalPresent: receipt.terminal_record_present,
     claimConsumed: receipt.claim_capability_consumed,
+    zeroEffectReservationCancelled: receipt.zero_effect_reservation_cancelled,
     blockerCodes: receipt.blocker_codes,
   });
   return WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_FIELDS.every(
@@ -3385,11 +5156,16 @@ const validateWelcomeAudioLiveAttemptReceipt = (receipt) => {
     : { ok: false, reason: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INPUT_INVALID };
 };
 
+const finalizeWelcomeAudioSyntheticAttemptAsUnknownForTest =
+  finalizeWelcomeAudioLiveAttemptAsUnknown;
+
 export {
   WELCOME_AUDIO_LIVE_ATTEMPT_DECISION,
+  WELCOME_AUDIO_LIVE_ATTEMPT_BOUNDARY_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME,
   WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_FIELDS,
   WELCOME_AUDIO_LIVE_ATTEMPT_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_LIVE_CLAIM_BLOCKER,
   WELCOME_AUDIO_LIVE_CLAIM_DECISION,
   WELCOME_AUDIO_LIVE_CLAIM_EXECUTION_MODE,
@@ -3401,22 +5177,42 @@ export {
   WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION,
   WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS,
   WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP,
+  WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST,
+  WELCOME_AUDIO_LIVE_OBSERVATION_CAPABILITY_STATUS,
+  WELCOME_AUDIO_LIVE_OBSERVATION_DECISION,
+  WELCOME_AUDIO_LIVE_OBSERVATION_MISSION_CAP,
+  WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_FIELDS,
+  WELCOME_AUDIO_LIVE_OBSERVATION_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_LIVE_OBSERVATION_THREAD_CAP,
+  WELCOME_AUDIO_LIVE_OBSERVATION_WINDOW_MS,
   WELCOME_AUDIO_LIVE_PENDING_RECORD_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_STATE_DECISION,
   WELCOME_AUDIO_LIVE_STATE_RECEIPT_FIELDS,
   WELCOME_AUDIO_LIVE_STORE_MODE,
   WELCOME_AUDIO_LIVE_TERMINAL_RECORD_SCHEMA_VERSION,
+  WELCOME_AUDIO_LIVE_TERMINAL_VERIFIER_SCENARIO_FOR_TEST,
+  claimWelcomeAudioLiveReplyObservation,
+  claimWelcomeAudioLiveReplyObservationForTest,
   claimNextWelcomeAudioLiveManifestInspection,
+  configureWelcomeAudioLiveTerminalVerifierScenarioForTest,
+  configureWelcomeAudioLiveAttemptBoundaryScenarioForTest,
+  configureWelcomeAudioLiveCancellationCleanupScenarioForTest,
+  configureWelcomeAudioLiveMutexScenarioForTest,
   createSyntheticWelcomeAudioLiveClaimStoreCapability,
   cancelWelcomeAudioLiveReservationZeroEffect,
   consumeWelcomeAudioLiveHostPendingCapabilityOnce,
+  consumeWelcomeAudioLiveReplyObservationCapabilityOnce,
   enterWelcomeAudioLiveAttemptBoundary,
-  finalizeWelcomeAudioLiveAttemptAsUnknown,
+  finalizeWelcomeAudioLiveAttempt,
+  finalizeWelcomeAudioSyntheticAttemptAsUnknownForTest,
   issueWelcomeAudioLiveClaim,
   openFixedWelcomeAudioLiveClaimStore,
   recoverWelcomeAudioLivePendingAttemptAfterOwnerExit,
+  recoverWelcomeAudioLivePendingAttemptAfterOwnerExitWithSyntheticPendingReplacementForTest,
   recordWelcomeAudioLiveInspectionResult,
   validateWelcomeAudioLiveClaimReceipt,
   validateWelcomeAudioLiveAttemptReceipt,
+  validateWelcomeAudioLiveObservationReceipt,
   validateWelcomeAudioLiveStateReceipt,
+  verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest,
 };

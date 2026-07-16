@@ -54,21 +54,26 @@ import {
 import {
   WELCOME_AUDIO_LIVE_ATTEMPT_DECISION,
   WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME,
+  WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_LIVE_CLAIM_BLOCKER,
   WELCOME_AUDIO_LIVE_CLAIM_DECISION,
   WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION,
   WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS,
   WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP,
+  WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_LIVE_STATE_DECISION,
   WELCOME_AUDIO_LIVE_STORE_MODE,
   cancelWelcomeAudioLiveReservationZeroEffect,
   claimNextWelcomeAudioLiveManifestInspection,
   consumeWelcomeAudioLiveHostPendingCapabilityOnce,
   createSyntheticWelcomeAudioLiveClaimStoreCapability,
+  configureWelcomeAudioLiveCancellationCleanupScenarioForTest,
+  configureWelcomeAudioLiveMutexScenarioForTest,
   enterWelcomeAudioLiveAttemptBoundary,
-  finalizeWelcomeAudioLiveAttemptAsUnknown,
+  finalizeWelcomeAudioSyntheticAttemptAsUnknownForTest as finalizeWelcomeAudioLiveAttemptAsUnknown,
   issueWelcomeAudioLiveClaim,
   recoverWelcomeAudioLivePendingAttemptAfterOwnerExit,
+  recoverWelcomeAudioLivePendingAttemptAfterOwnerExitWithSyntheticPendingReplacementForTest,
   recordWelcomeAudioLiveInspectionResult,
   validateWelcomeAudioLiveAttemptReceipt,
   validateWelcomeAudioLiveClaimReceipt,
@@ -752,6 +757,10 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
     await inspection(fixture, 1);
     const claimed = await issue(fixture, 1);
     expect(claimed.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED);
+    expect(claimed.redacted_receipt).toMatchObject({
+      permanent_no_retry_claim_present: false,
+      retry_disposition: "retry_only_after_explicit_zero_effect_cancel_or_dead_owner",
+    });
     expect(validateWelcomeAudioLiveClaimReceipt(claimed.redacted_receipt))
       .toEqual({ ok: true, reason: null });
     const cancelled = await cancelWelcomeAudioLiveReservationZeroEffect({
@@ -760,6 +769,10 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
     });
     expect(cancelled.redacted_receipt.decision)
       .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.CANCELLED);
+    expect(cancelled.redacted_receipt).toMatchObject({
+      permanent_no_retry_claim_present: false,
+      retry_disposition: "fresh_reservation_allowed",
+    });
     expect(validateWelcomeAudioLiveClaimReceipt(cancelled.redacted_receipt))
       .toEqual({ ok: true, reason: null });
     expect((await readdir(fixture.storeRoot)).filter((name) => name.startsWith("claim-")))
@@ -770,20 +783,154 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
       .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED);
   });
 
-  test("caps one mission at three reservations", async () => {
+  test("retains substituted claim evidence and never reports cancellation success", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    expect(configureWelcomeAudioLiveCancellationCleanupScenarioForTest({
+      private_claim_capability: claimed.private_claim_capability,
+      scenario: WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST
+        .REPLACE_CLAIM_AFTER_CANCELLATION_PUBLISH,
+    })).toBe("fresh");
+    const cancelled = await cancelWelcomeAudioLiveReservationZeroEffect({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      cancelled_at_ms: NOW_MS + 101,
+    });
+    expect(cancelled.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_CANCEL_INVALID],
+    });
+    const retained = (await readdir(fixture.storeRoot)).filter(
+      (name) => name.startsWith(".claim-"),
+    );
+    expect(retained.length).toBeGreaterThanOrEqual(2);
+    for (const name of retained) {
+      expect((await lstat(join(fixture.storeRoot, name))).mode & 0o7777).toBe(0o600);
+    }
+    await refreshOperationContext(fixture, 1);
+    expect((await issue(fixture, 1, { now_ms: NOW_MS + 102 })).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL);
+  });
+
+  test("reconciles exactly one linked cancellation publication and rejects ambiguity", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    await cancelWelcomeAudioLiveReservationZeroEffect({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      cancelled_at_ms: NOW_MS + 101,
+    });
+    const cancellationName = (await readdir(fixture.storeRoot)).find(
+      (name) => name.startsWith("reservation-cancel-"),
+    )!;
+    const identity = /^reservation-cancel-([a-f0-9]{64})-/u.exec(cancellationName)![1];
+    const linkedTemporary = join(
+      fixture.storeRoot,
+      `.reservation-cancel-${identity}-${process.pid}-${"a".repeat(32)}.json`,
+    );
+    await link(join(fixture.storeRoot, cancellationName), linkedTemporary);
+    await refreshOperationContext(fixture, 1);
+    expect((await issue(fixture, 1, { now_ms: NOW_MS + 102 })).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED);
+    await expect(lstat(linkedTemporary)).rejects.toThrow();
+    expect((await lstat(join(fixture.storeRoot, cancellationName))).nlink).toBe(1);
+
+    const ambiguous = await setup({ count: 1 });
+    await inspection(ambiguous, 1);
+    const ambiguousClaim = await issue(ambiguous, 1);
+    await cancelWelcomeAudioLiveReservationZeroEffect({
+      ...claimBinding(ambiguous, 1, ambiguousClaim.private_claim_capability),
+      cancelled_at_ms: NOW_MS + 101,
+    });
+    const ambiguousCancellation = (await readdir(ambiguous.storeRoot)).find(
+      (name) => name.startsWith("reservation-cancel-"),
+    )!;
+    const ambiguousIdentity = /^reservation-cancel-([a-f0-9]{64})-/u
+      .exec(ambiguousCancellation)![1];
+    for (const suffix of ["b", "c"]) {
+      await link(
+        join(ambiguous.storeRoot, ambiguousCancellation),
+        join(
+          ambiguous.storeRoot,
+          `.reservation-cancel-${ambiguousIdentity}-${process.pid}-${suffix.repeat(32)}.json`,
+        ),
+      );
+    }
+    await refreshOperationContext(ambiguous, 1);
+    expect((await issue(ambiguous, 1, { now_ms: NOW_MS + 102 })).redacted_receipt)
+      .toMatchObject({
+        decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL,
+        blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_EVIDENCE_UNKNOWN],
+      });
+    expect((await readdir(ambiguous.storeRoot)).filter(
+      (name) => name.startsWith(".reservation-cancel-"),
+    )).toHaveLength(2);
+  });
+
+  test("a durable zero-effect cancellation prevents PENDING and permits fresh slot reuse", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    const claimName = (await readdir(fixture.storeRoot)).find(
+      (name) => name.startsWith("claim-"),
+    )!;
+    const claim = JSON.parse(await readFile(join(fixture.storeRoot, claimName), "utf8"));
+    const cancellation = {
+      record_schema_version: "crm_core_instagram_welcome_audio_live_reservation_cancellation_v2",
+      mission_id: claim.mission_id,
+      contract_version: claim.contract_version,
+      mission_contract_sha256: claim.mission_contract_sha256,
+      identity_anchor_schema_version: claim.identity_anchor_schema_version,
+      identity_anchor_sha256: claim.identity_anchor_sha256,
+      manifest_ordinal: claim.manifest_ordinal,
+      mission_slot: claim.mission_slot,
+      claim_nonce: claim.claim_nonce,
+      owner_pid: claim.owner_pid,
+      owner_nonce: claim.owner_nonce,
+      cancelled_at: new Date(NOW_MS + 101).toISOString(),
+      cancellation_reason: "explicit_zero_effect_cancel",
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      network_effect_entered: false,
+      retry_disposition: "eligible_for_fresh_reservation",
+    };
+    const cancellationPath = join(
+      fixture.storeRoot,
+      `reservation-cancel-${sha256(`identity:${claim.identity_anchor_sha256}`)}-${claim.claim_nonce}.json`,
+    );
+    await writeFile(cancellationPath, `${JSON.stringify(cancellation)}\n`, { mode: 0o600 });
+    const blocked = await enterWelcomeAudioLiveAttemptBoundary({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      entered_at_ms: NOW_MS + 102,
+    });
+    expect(blocked.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED,
+      zero_effect_reservation_cancelled: true,
+      pending_record_present: false,
+      terminal_record_present: false,
+    });
+    expect((await readdir(fixture.storeRoot)).some((name) => name.startsWith("pending-")))
+      .toBe(false);
+    await refreshOperationContext(fixture, 1);
+    expect((await issue(fixture, 1, { now_ms: NOW_MS + 103 })).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED);
+  });
+
+  test("blocks the next mission slot until the prior slot has a durable CONFIRMED terminal", async () => {
     const fixture = await setup({ count: 4 });
     for (let ordinal = 1; ordinal <= 4; ordinal += 1) await inspection(fixture, ordinal);
-    for (let ordinal = 1; ordinal <= 3; ordinal += 1) {
-      expect((await issue(fixture, ordinal)).redacted_receipt).toMatchObject({
-        decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED,
-        mission_claim_count: ordinal,
-      });
-    }
-    expect((await issue(fixture, 4)).redacted_receipt).toMatchObject({
-      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CAP_REACHED,
-      mission_claim_count: WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP,
-      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_CAP_REACHED],
+    expect((await issue(fixture, 1)).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED,
+      mission_claim_count: 1,
     });
+    expect((await issue(fixture, 2)).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.BLOCKED,
+      mission_claim_count: 1,
+      permanent_no_retry_claim_present: false,
+      retry_disposition: "blocked_until_prior_slot_has_durable_confirmed_terminal",
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_SLOT_BLOCKED],
+    });
+    expect(WELCOME_AUDIO_LIVE_MISSION_CLAIM_CAP).toBe(3);
   });
 
   test("persists PENDING before actuation and permits only UNKNOWN terminal finalization", async () => {
@@ -1065,6 +1212,8 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
       decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED,
       pending_record_present: false,
       claim_capability_consumed: true,
+      zero_effect_reservation_cancelled: true,
+      retry_disposition: "fresh_reservation_allowed_after_proven_zero_effect_cancel",
       blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID],
     });
     expect((await readdir(fixture.storeRoot)).filter(
@@ -1114,6 +1263,81 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
       attachment_upload_entered: null,
       send_control_actuation_count: null,
     });
+    expect((await readdir(fixture.storeRoot)).some((name) => name.startsWith(".pending-")))
+      .toBe(false);
+  });
+
+  test("dead-owner claim cleanup retains a substituted claim and blocks reopening", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    expect(configureWelcomeAudioLiveCancellationCleanupScenarioForTest({
+      private_claim_capability: claimed.private_claim_capability,
+      scenario: WELCOME_AUDIO_LIVE_CANCELLATION_CLEANUP_SCENARIO_FOR_TEST
+        .REPLACE_CLAIM_AFTER_CANCELLATION_PUBLISH,
+    })).toBe("fresh");
+    const claimName = (await readdir(fixture.storeRoot)).find(
+      (name) => name.startsWith("claim-"),
+    )!;
+    const claimPath = join(fixture.storeRoot, claimName);
+    const deadClaim = JSON.parse(await readFile(claimPath, "utf8"));
+    deadClaim.owner_pid = 2_147_483_647;
+    await writeFile(claimPath, `${JSON.stringify(deadClaim)}\n`, { mode: 0o600 });
+    await refreshOperationContext(fixture, 1);
+    expect((await issue(fixture, 1, { now_ms: NOW_MS + 102 })).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL);
+    const retained = (await readdir(fixture.storeRoot)).filter(
+      (name) => name.startsWith(".claim-"),
+    );
+    expect(retained.length).toBeGreaterThanOrEqual(2);
+    for (const name of retained) {
+      expect((await lstat(join(fixture.storeRoot, name))).mode & 0o7777).toBe(0o600);
+    }
+    await refreshOperationContext(fixture, 1);
+    expect((await issue(fixture, 1, { now_ms: NOW_MS + 103 })).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL);
+  });
+
+  test("recovery never deletes a substituted PENDING or reports an incoherent terminal", async () => {
+    const fixture = await setup({ count: 1 });
+    await inspection(fixture, 1);
+    const claimed = await issue(fixture, 1);
+    await enterWelcomeAudioLiveAttemptBoundary({
+      ...claimBinding(fixture, 1, claimed.private_claim_capability),
+      entered_at_ms: NOW_MS + 111,
+    });
+    const pendingName = (await readdir(fixture.storeRoot)).find(
+      (name) => name.startsWith("pending-") && name.endsWith(".json"),
+    )!;
+    const pendingPath = join(fixture.storeRoot, pendingName);
+    const pending = JSON.parse(await readFile(pendingPath, "utf8"));
+    pending.owner_pid = 2_147_483_647;
+    await writeFile(pendingPath, `${JSON.stringify(pending)}\n`, { mode: 0o600 });
+    const recovered = await recoverWelcomeAudioLivePendingAttemptAfterOwnerExitWithSyntheticPendingReplacementForTest({
+      private_store_capability: fixture.storeCapability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      mission_contract_sha256: MISSION_CONTRACT_SHA,
+      identity_anchor_sha256: fixture.manifest.ordered_records[0].identity_anchor_sha256,
+      manifest_ordinal: 1,
+      now_ms: NOW_MS + 120,
+      replace_pending_after_terminal_publish: true,
+    });
+    expect(recovered.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+      terminal_record_present: true,
+    });
+    const retained = (await readdir(fixture.storeRoot)).filter(
+      (name) => name.startsWith(".pending-") || name.startsWith("pending-"),
+    );
+    expect(retained.length).toBeGreaterThanOrEqual(2);
+    for (const name of retained) {
+      expect((await lstat(join(fixture.storeRoot, name))).mode & 0o7777).toBe(0o600);
+    }
+    await refreshOperationContext(fixture, 1);
+    expect((await issue(fixture, 1, { now_ms: NOW_MS + 121 })).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL);
   });
 
   test("dedupes an exact identity globally once PENDING is durable", async () => {
@@ -1167,6 +1391,121 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
     expect((await lstat(ownerTemporary)).isFile()).toBe(true);
     expect((await inspection(recoveredFixture, 2)).redacted_receipt.decision)
       .toBe(WELCOME_AUDIO_LIVE_STATE_DECISION.INSPECTION_RECORDED);
+  });
+
+  test("release quarantines a substituted fixed mutex and blocks every later caller", async () => {
+    const fixture = await setup({ count: 1 });
+    expect(configureWelcomeAudioLiveMutexScenarioForTest({
+      private_store_capability: fixture.storeCapability,
+      scenario: WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST.REPLACE_FIXED_MUTEX_BEFORE_RELEASE,
+    })).toBe("fresh");
+    expect((await inspection(fixture, 1)).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.CLAIM_PUBLICATION_UNKNOWN],
+    });
+    const quarantine = (await readdir(fixture.storeRoot)).filter(
+      (name) => name.startsWith(".mutex-quarantine-"),
+    );
+    expect(quarantine).toHaveLength(1);
+    expect((await lstat(join(fixture.storeRoot, quarantine[0]))).mode & 0o7777).toBe(0o600);
+    expect((await inspection(fixture, 1)).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION],
+    });
+  });
+
+  test("dead-owner recovery quarantines a substituted fixed mutex without deleting it", async () => {
+    const fixture = await setup({ count: 1 });
+    const lockPath = join(fixture.storeRoot, "mutex-global-ledger.lock");
+    await writeFile(lockPath, `${JSON.stringify({
+      owner_pid: 2_147_483_647,
+      owner_nonce: "f".repeat(64),
+    })}\n`, { mode: 0o600 });
+    expect(configureWelcomeAudioLiveMutexScenarioForTest({
+      private_store_capability: fixture.storeCapability,
+      scenario: WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST
+        .REPLACE_FIXED_MUTEX_DURING_DEAD_OWNER_RECOVERY,
+    })).toBe("fresh");
+    expect((await inspection(fixture, 1)).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION],
+    });
+    const quarantine = (await readdir(fixture.storeRoot)).filter(
+      (name) => name.startsWith(".mutex-quarantine-"),
+    );
+    expect(quarantine).toHaveLength(1);
+    expect((await lstat(join(fixture.storeRoot, quarantine[0]))).mode & 0o7777).toBe(0o600);
+    expect((await inspection(fixture, 1)).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL);
+  });
+
+  test("a legitimate next mutex owner survives an old-owner release quarantine", async () => {
+    const fixture = await setup({ count: 1 });
+    expect(configureWelcomeAudioLiveMutexScenarioForTest({
+      private_store_capability: fixture.storeCapability,
+      scenario: WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST
+        .PUBLISH_NEW_FIXED_MUTEX_AFTER_RELEASE_RENAME,
+    })).toBe("fresh");
+    const inspectionInput = {
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      identity_anchor_sha256: fixture.manifest.ordered_records[0].identity_anchor_sha256,
+      manifest_ordinal: 1,
+      expected_manifest_sha256: fixture.manifestSha256,
+      expected_campaign_interval_sha256: fixture.campaignIntervalSha256,
+      private_manifest_capability: fixture.manifestCapability,
+      now_ms: NOW_MS + 10,
+    };
+    const first = (await claimNextWelcomeAudioLiveManifestInspection(
+      inspectionInput,
+    )).redacted_receipt;
+    expect(first).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_STATE_DECISION.INSPECTION_CLAIMED,
+      blocker_codes: [],
+    });
+    const lockPath = join(fixture.storeRoot, "mutex-global-ledger.lock");
+    const before = await lstat(lockPath);
+    const bytes = await readFile(lockPath);
+    expect((await readdir(fixture.storeRoot)).some(
+      (name) => name.startsWith(".mutex-quarantine-"),
+    )).toBe(false);
+    expect((await claimNextWelcomeAudioLiveManifestInspection({
+      ...inspectionInput,
+      now_ms: NOW_MS + 11,
+    })).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION],
+    });
+    expect((await lstat(lockPath)).ino).toBe(before.ino);
+    expect(await readFile(lockPath)).toEqual(bytes);
+  });
+
+  test("a legitimate next mutex owner survives dead-owner recovery quarantine", async () => {
+    const fixture = await setup({ count: 1 });
+    const lockPath = join(fixture.storeRoot, "mutex-global-ledger.lock");
+    await writeFile(lockPath, `${JSON.stringify({
+      owner_pid: 2_147_483_647,
+      owner_nonce: "e".repeat(64),
+    })}\n`, { mode: 0o600 });
+    expect(configureWelcomeAudioLiveMutexScenarioForTest({
+      private_store_capability: fixture.storeCapability,
+      scenario: WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST
+        .PUBLISH_NEW_FIXED_MUTEX_AFTER_DEAD_OWNER_RECOVERY_RENAME,
+    })).toBe("fresh");
+    expect((await inspection(fixture, 1)).redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.SERIALIZATION_COLLISION],
+    });
+    const before = await lstat(lockPath);
+    const bytes = await readFile(lockPath);
+    expect((await readdir(fixture.storeRoot)).some(
+      (name) => name.startsWith(".mutex-quarantine-"),
+    )).toBe(false);
+    expect((await inspection(fixture, 1)).redacted_receipt.decision)
+      .toBe(WELCOME_AUDIO_LIVE_STATE_DECISION.UNKNOWN_TERMINAL);
+    expect((await lstat(lockPath)).ino).toBe(before.ino);
+    expect(await readFile(lockPath)).toEqual(bytes);
   });
 
   test("ignores nonblocking crash temporaries when no fixed lock was published", async () => {
@@ -1223,8 +1562,19 @@ describe("Instagram welcome-audio live reservation and PENDING boundary", () => 
     const claimName = (await readdir(fixture.storeRoot)).find((name) => name.startsWith("claim-"));
     const linkedTemporary = join(fixture.storeRoot, `.claim-${process.pid}-verified.json`);
     await link(join(fixture.storeRoot, claimName!), linkedTemporary);
-    expect((await issue(fixture, 2)).redacted_receipt.decision)
-      .toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED);
+    await refreshOperationContext(fixture, 1);
+    const active = (await issue(fixture, 1)).redacted_receipt;
+    expect(active).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.BLOCKED,
+      permanent_no_retry_claim_present: false,
+      retry_disposition:
+        "retry_only_after_existing_reservation_zero_effect_cancel_or_dead_owner",
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.RESERVATION_ACTIVE],
+    });
+    expect(validateWelcomeAudioLiveClaimReceipt({
+      ...active,
+      retry_disposition: "before_effect_no_claim",
+    })).toEqual({ ok: false, reason: WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INPUT_INVALID });
     await expect(lstat(linkedTemporary)).rejects.toThrow();
 
     const ambiguous = await setup({ count: 1 });

@@ -1,167 +1,149 @@
-# Instagram welcome-audio Safari live host v1
+# Instagram welcome-audio Safari live host
 
-Status: implementation rail for an owner-only, one-shot Safari actuation. This
-module is not a source reader, candidate selector, campaign controller, or
-MailerLite client.
+Status: integrated host/issuer contract v2. The filename remains `v1` because
+it is the mission allowlisted documentation path. Only the schema families
+explicitly coordinated below were bumped to v2.
 
-## Purpose
+## Public boundary
 
-The live host is the low-level owner of only the final, already-bound Instagram
-DM attachment and Send sequence. It consumes opaque same-process trust
-capabilities from preflight and independently reads the fixed owner-only claim
-store to prove the exact durable `PENDING` record before any upload-capable
-picker action. It never creates, edits, replaces, or finalizes claim records.
-There is no exported live driver mint or raw live-host constructor in this
-slice. The final composite live entrypoint belongs in this same Safari host module; it
-orders the claim issuer's trust and durable-state transitions around the host's
-private preparation and post-`PENDING` actuation closures. Stage C must expose
-that composite as the only live entrypoint and prune the raw low-level effect
-exports. The host never accepts generic command arrays, callbacks, arbitrary
-selectors, coordinates, URLs, or scripts.
+`runWelcomeAudioSafariLiveCompositeOnce` is the sole public live effectful
+entrypoint. It accepts the already-approved opaque preflight capabilities and
+private exact bindings, then owns the whole one-shot sequence from claim
+issuance through durable terminal publication. It does not accept a claim,
+PENDING record, host capability, Computer Use client, driver, clock, callback,
+URL, selector, coordinate, command list, or caller-selected verifier.
 
-The deterministic deferred rendezvous remains an optional no-live oracle. Its
-100 ms window is never used as a live transport, claim, upload, or Send
-authority.
+The raw prepare, post-PENDING execute, driver mint, host mint, and evidence
+consumer functions are private. Synthetic-only wrappers end in `ForTest` and
+cannot select live mode. The only other unsuffixed cross-module function is the
+narrow one-use terminal-evidence verifier consumed by the claim issuer through
+the canonical dynamic import.
 
-## Fixed order
+## Exact order
 
-1. The composite caller validates the opaque operation context against the
-   exact mission, approval, central commit, canonical operation, candidate,
-   owner, thread, manifest, campaign interval, and approved audio binding.
-2. The host requires an opaque branded Safari driver. No caller may supply Sky,
-   a driver object, live branding, or a live execution mode. The internal Stage
-   C binder reads only the canonically bootstrapped Computer Use client from
-   both `globalThis[Symbol.for('openai.computer-use.runtime')]` and
-   `globalThis.sky`; both global properties must be data descriptors, their
-   values must be the same frozen non-Proxy object, and each required method
-   must be an own data-descriptor function. The binder and live host mint are
-   private to this module. The only exported host factory is explicitly
-   synthetic and test-only.
-3. Consume an opaque one-use target-binding capability that binds the raw
-   private target to the exact candidate and thread anchors. Only then acquire
-   fresh Safari state and require one standard, non-private, isolated Instagram
-   DM surface with that exact target, message composer, and one attachment
-   control. Live parsing preserves accessibility indentation and parent-child
-   structure. Binding requires exactly one role-bearing active/current/selected
-   conversation container whose label binds the exact target, exactly one
-   exact case-sensitive target heading below it, and exactly one role-bearing
-   message-history container below it. The composer, attachment control,
-   preview, and Send control must all be descendants of that same active thread
-   subtree. Outgoing audio counts only role-bearing message/bubble descendants
-   of that exact history subtree; the bubble need not repeat the private target.
-   A sidebar row, static text, case variant, dedented sibling, malformed
-   hierarchy, unrelated page-text occurrence, or ambiguity fails closed. The
-   composer must be explicitly empty, no prior outgoing audio may be present,
-   and no attachment preview may already exist. A raw target string or visual
-   match alone is never authority.
-4. Open the native attachment chooser and reacquire fresh state. Preparation
-   stops here. It does not type a path, select a file, upload bytes, or expose a
-   Send permit outside the current process.
-5. The composite caller revalidates the exact durable claim binding and
-   publishes/fsyncs the durable `PENDING` attempt. Only then may it call the
-   host's post-`PENDING` execution entrypoint. The host independently opens the
-   exact identity-derived record with no-follow semantics and verifies its
-   exact schema and mission, operation, identity, thread, audio, owner-process,
-   attempt-nonce, freshness, permission, link, inode, and device bindings. It
-   also consumes the separate opaque host-`PENDING` capability minted by the
-   claim issuer and matches the independent full snapshot, bytes, metadata,
-   store identity, and path against the issuer's hidden state. The actuation
-   capability remains untouched for Stage C terminal finalization. The host
-   rejects any fabricated record, terminal record, or temporary sibling.
-   The post-`PENDING` input envelope is descriptor-inspected without invoking
-   accessors. Whole-envelope Proxies, including revoked Proxies, are rejected
-   before any trap. For any non-Proxy envelope where the valid prepared permit
-   is safely located as an own data descriptor, the permit is burned before
-   later shape or value validation; every later failure returns opaque UNKNOWN
-   attempt evidence and permanently forbids retry.
-6. Immediately before picker selection, the host validates the raw private
-   audio path directly against the opaque approved-asset capability, then
-   reopens and revalidates the same `PENDING` bytes and metadata. A filename,
-   caller-supplied hash, stale record, or process-restart artifact is not
-   sufficient.
-7. Mark the opaque attempt evidence as upload-entered before the first picker
-   action that can select or upload the approved file. Reacquire fresh state
-   before every fixed keyboard or click action. The host does not mutate the
-   durable record; the composite publishes the terminal accounting afterward.
-   Live attempt time is captured internally at this boundary and is never
-   supplied by the caller; only the synthetic test mode accepts an injected
-   clock value.
-8. Require exactly one total attachment preview, bind it to the exact approved
-   basename in the same explicit preview node, reprove an empty composer and an
-   unchanged zero-audio baseline, and require one composer-bound Send control.
-   Set the opaque attempt evidence to one Send actuation before clicking Send
-   exactly once.
-9. Reacquire fresh state. Mint one opaque, one-use attempt-evidence capability
-   for every post-`PENDING` outcome, including no-upload, upload-unknown, and
-   Send-unknown. Additionally mint one opaque visual-confirmation evidence
-   capability only when the exact bound thread has a new outgoing audio bubble
-   attributable to this current attempt inside the explicit exact-thread history
-   scope compared with its zero pre-upload baseline.
-   The evidence is bound to the thread, durable attempt nonce, bubble delta,
-   and confirmation time. A Sent/Seen marker by itself, a compose reset,
-   absence of an error, timeout, mismatch, or ambiguous UI cannot mint it.
-10. Return those opaque capabilities to the composite caller; public receipt
-    booleans are never authority. The composite consumes the attempt evidence
-    and finalizes/fsyncs one terminal outcome. `CONFIRMED` additionally requires
-    consuming that exact visual-confirmation capability. Any upload-entered,
-    attempted, timed-out, mismatched, or unknown result is permanent no-retry.
-    A confirmed outcome is also terminal and cannot be replayed.
+1. Revalidate the operation context, contextual authority, sealed manifest,
+   exact identity/thread/owner bindings, exact approved audio capability, clean
+   integrated commit, and eligible ordered inspection.
+2. Issue the next durable claim itself. Mission slots are `1..3`; slot `N` is
+   possible only after every earlier slot has a valid durable `CONFIRMED`
+   terminal. Active claims, PENDING, temporary evidence, `UNKNOWN`, corruption,
+   or a gap block the next slot.
+3. Capture the installed Computer Use runtime through the private binder and
+   prepare the exact bound Instagram thread. Preparation may open the native
+   chooser only. It may not type the path, select/upload bytes, or actuate Send.
+4. Only a valid preparation receipt that proves chooser-only, no preview, no
+   upload, zero Send, and zero external effect permits a zero-effect claim
+   cancellation. A thrown or invalid preparation result leaves the durable
+   claim fail-closed and no-retry; it is never inferred to be cancelled.
+5. Publish, fsync, and reread the exact v2 `PENDING` record. After the boundary
+   is invoked, thrown, malformed, consumed, or ambiguous results are treated as
+   post-boundary `UNKNOWN`, never as a cancellable zero-effect result. If the
+   issuer can recover the private terminal capability, it publishes durable
+   `UNKNOWN` immediately.
+   If the issuer itself proves and durably publishes a pre-PENDING zero-effect
+   cancellation during final authority/asset/freshness revalidation, the
+   attempt receipt carries that explicit fact. Only that proof lets the
+   composite report cancellation and a reusable slot; it never infers
+   cancellation from missing PENDING evidence.
+6. The host consumes the one-use host-PENDING capability, independently opens
+   the exact identity-derived file with no-follow semantics, and checks the
+   complete lineage, mission slot, attempt nonce, bytes, metadata, inode,
+   device, owner, mode, link count, and strict freshness. Reads use fatal UTF-8
+   decoding and compare the open handle with a fresh path `lstat`.
+7. Immediately before upload, repeat the full PENDING read and exact approved
+   asset-path capability check. Any difference is permanent no-retry.
+8. Mark upload-entered before the first file-selection action. Reacquire fresh
+   Safari state before every fixed action. Require exactly one attachment
+   preview, an empty composer, an unchanged zero-audio baseline, and exactly one
+   Send control in the exact active thread subtree.
+9. Mark one Send actuation before clicking Send exactly once. No resend or
+   ambiguous retry exists.
+10. `CONFIRMED` requires a same-attempt, same-thread, strict-under-five-minute
+    `+1` outgoing audio bubble with an approved strong marker. Sent/Seen alone,
+    compose reset, no error, timeout, or equality at five minutes is not
+    confirmation.
+11. The claim issuer consumes the opaque attempt and visual capabilities,
+    dynamically verifies them through this exact v2 module, publishes/fsyncs/
+    rereads one v2 terminal, then atomically quarantines, revalidates, and
+    removes only the exact PENDING inode. Substitution or residual ambiguity is
+    retained and reported fail-closed. All other outcomes are durable `UNKNOWN`
+    and permanent no-retry.
 
-## Computer Use boundary
+## Installed Computer Use binder
 
-The unexported installed-runtime binder stores the validated Computer Use
-client only behind a private `WeakMap`. Every call hardcodes the application
-identifier `com.apple.Safari`. The driver exposes no methods or serializable
-state. The host allows only these internal stages:
+The binder reads the two global property descriptors exactly once:
 
-- read a fresh full Safari state;
-- activate the single exact attachment control;
-- open the native Go-to-folder sheet;
-- type the sealed private audio path;
-- resolve and choose that file;
-- activate the single exact Send control.
+- `globalThis[Symbol.for('openai.computer-use.runtime')]`
+- `globalThis.sky`
 
-No stage accepts a caller-selected key, element index, callback, action name,
-coordinate, URL, or private payload. Element indices are derived again from
-the immediately preceding fresh accessibility state and are never reused.
+Both must be own data descriptors whose values are the same frozen non-Proxy
+object. `get_app_state`, `click`, `press_key`, and `type_text` must be own data
+descriptor functions. The binder captures that exact object and bound method
+references in private WeakMap state and never rereads either global between
+validation and use. All calls hardcode `com.apple.Safari`.
 
-This repository-level binding is operational confinement, not a retroactive
-cryptographic plugin brand. It assumes the canonical Computer Use bootstrap
-has installed the frozen client in a trusted process before Stage C is invoked.
-The plugin currently installs replaceable globals, so a hostile actor already
-controlling that process could preseed a lookalike. Stronger provenance would
-require a plugin-owned private registry or verifier. Within this repository,
-parameter injection and public live factories are eliminated rather than
-misrepresented as cryptographic provenance.
+The live path exposes no runtime object, driver, host capability, element
+index, or generic action surface. Test inspectors return only booleans or
+redacted deterministic state and restore any temporary test-only globals.
 
-## Privacy and receipts
+## Exact thread semantics
 
-The target, audio path, operation identifiers, anchors, screenshots,
-accessibility text, element indices, and claim capabilities remain private and
-same-process. Public receipts contain only fixed enums, booleans, bounded
-counts, and redacted blocker codes. The receipts never include hashes, paths,
-identities, thread references, raw UI state, payloads, or provider responses.
+The active/current/selected conversation root must be unique and bind the
+private target exactly and case-sensitively. The target heading, message
+history, empty composer, attachment control, preview, Send control, and outgoing
+audio bubble must all be descendants of that same role-bearing root. Sidebar
+rows, static text, lexical substrings, case variants, dedented siblings,
+duplicate roots, controls outside the subtree, incoming voice, outgoing text,
+and ambiguous controls fail closed.
 
-## Tests and live boundary
+Fresh accessibility state is required before every UI action. Private visual
+state, OCR, paths, targets, screenshots, anchors, and element indices are never
+returned or persisted in public receipts.
 
-Unit tests use only `createSyntheticSafariDriverForTest` and
-`createSyntheticWelcomeAudioSafariLiveHostCapabilityForTest` with enumerated
-scenarios and the claim issuer's temporary owner-only synthetic store. The
-boolean-only `inspectInstalledComputerUseRuntimeBindingForTest` exposes no
-runtime, driver, capability, or live mint. Every
-positive upload/Send path enters the real issuer boundary and consumes its
-separate host-`PENDING` capability; a handcrafted JSON record appears only in
-explicit rejection tests. The matrix covers exact five-minute preupload
-expiry, metadata and full-binding tamper, capability burn/replay, Proxy and
-accessor no-throw envelopes, hierarchical active-thread parsing and lexical
-decoys, duplicate roots, exact-target substring rejection, roleless/static,
-incoming, outgoing-text, and role-bearing outgoing-voice bubble classes,
-out-of-subtree controls, same-index and unindexed control ambiguity, prior audio
-without a repeated target label, draft text, multiple attachments, picker/Send
-unknowns, strong exact-thread `+1` confirmation, receipt coherence, and
-exactly-once Send accounting. The constructors have no network, Safari,
-Instagram, campaign, or MailerLite authority.
+## Terminal evidence
 
-This slice performs no live action during development or tests. A later live
-run still requires the mission contract, private artifacts, action-time policy,
-and the already-approved bounded canary scope.
+Attempt and visual capabilities are opaque, one-use, attempt-nonce bound, and
+mode bound. The verifier burns every safely located fresh capability before
+pairing or later validation. Wrong binding, stale evidence, replay, a missing
+attempt, an already-consumed attempt, or a module/verifier error cannot preserve
+a visual capability for a second try.
+
+The verifier derives execution mode, upload state, Send count, attempt time,
+marker, observation time, and bubble delta only from private WeakMaps. Callers
+cannot submit an outcome or visual facts. It returns either an immutable exact
+evidence envelope or a fixed invalid status.
+
+## Version and migration policy
+
+The live-host contract, host receipt, composite receipt, PENDING, terminal,
+attempt receipt, claim, and cancellation records used by this integration are
+v2. A legacy v1 artifact in any family bumped to v2 is not migrated or
+dual-read; it blocks fail-closed. Legitimate unchanged and newly introduced v1
+families, including inspection/state/claim receipts and observation records,
+remain accepted under the coordinated v2 contracts. The preflight and
+operation guard contracts remain unchanged.
+
+## Privacy and scope
+
+Composite receipts contain only fixed enums, booleans, bounded counts, and
+redacted blocker codes. They contain no identity, handle, thread reference,
+path, anchor, digest, timestamp, payload, screenshot, accessibility text, or
+provider response.
+
+The module has no campaign, advertising, follower-source, profile-browsing,
+MailerLite, CRM-write, legacy proxy, resend, delete, or retrigger authority.
+Development and synthetic tests perform no Safari, Instagram, network, or
+provider action.
+
+## Verification matrix
+
+The synthetic matrix covers the sole-export namespace, confirmed composite,
+prepare throw/invalid receipt fail-closed claims, crash after durable PENDING,
+durable UNKNOWN, fatal UTF-8, metadata/path/inode/link tamper, strict five-minute
+boundaries, capability burn/replay, extra/class/accessor/Symbol/Proxy/revoked
+envelopes, wrong attempt/visual pairing, mode mismatch, stale clocks, exact
+thread parsing, no-prior-audio, empty composer, preview ambiguity, Send throw,
+and redacted receipt validation. Live execution remains separately gated by the
+mission contract and private owner-only artifacts.
+It also covers proven pre-PENDING cancellation followed by a fresh confirmed
+retry, and terminal cleanup under an adversarial PENDING replacement.
