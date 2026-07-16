@@ -264,3 +264,20 @@ Even after a green central integration, live use remains forbidden. A later
 mission needs a separate exact CEO approval bound to the integrated commit,
 source route, private input labels, candidate cap, UI actions, claim boundary,
 send boundary, and stop rules.
+
+## No-Live Canary Packet Draft Boundary
+
+A separately approved materializer may later accept exactly one already
+supplied owner-only projection as data-only input and prepare one owner-only
+`prepared_no_live_unapproved` packet draft. That downstream step does not
+acquire the observation, reopen the adapter's synthetic proof, or add source,
+candidate, claim, send, or live authority.
+
+The materializer must preserve `exact_follow_timestamp_claimed=false`,
+`provider_event_id_claimed=false`, and `campaign_membership_claimed=false`. It
+must not convert the visible UI bucket into `followed_at`, an exact campaign
+interval, or campaign membership. Its draft uses a schema and filename distinct
+from every execution approval and remains unusable by the live runtime.
+
+The controlling downstream contract is
+`docs/crm-vnext/instagram-welcome-audio-ui-attested-canary-packet-materializer-v1.md`.
