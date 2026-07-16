@@ -752,3 +752,52 @@
 - `later_live_gate`: Any live use requires a separate exact approval bound to
   the integrated commit, source route, private inputs, caps, UI actions,
   claim/send boundaries, verification, and stop rules.
+
+## UI-Attested Canary Packet Materialization No-Live Checkpoint
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_welcome_audio_ui_attested_canary_packet_materialization_no_live_v1_20260716`
+- `mode`: `repo_only_no_live_materialization_proof`
+- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `approved_baseline`:
+  `ada5db2df1d79bbb0b1c97de10f0f23562dea506`
+- `source_branch`:
+  `codex/crm-core-ui-attested-canary-materializer-v1-20260716`
+- `candidate_cap`: `1`
+- `input_boundary`: One already supplied owner-only raw UI-attested input and
+  one caller-declared protected-audio binding record; no source or UI
+  acquisition. The materializer adapts the source projection internally.
+- `trust_boundary`: Declared mission, contract, repository,
+  authorization-reference, and audio values are structurally validated and
+  frozen only; this pure function does not authenticate approval, current
+  central HEAD, or audio bytes.
+- `evidence_boundary`: Preserve visible-bucket attestation and keep exact
+  follow timestamp, provider event ID, and campaign membership non-claims
+  false. Do not reuse the exact-time sealed-manifest builder for this draft.
+- `maximum_output`: One immutable in-memory owner-only
+  `prepared_no_live_unapproved` packet draft and one aggregate receipt; the
+  pure materializer performs no filesystem publication.
+- `registry_boundary`: Record only a future empty-or-valid registry precondition
+  in the draft; do not write an operation registry or claim store.
+- `runtime_boundary`: The draft is not accepted by live preflight and cannot be
+  renamed, promoted, or interpreted as execution approval.
+- `forbidden_scope`: Safari, Instagram, Computer Use, source reads, profiles,
+  threads, screenshots, exact-time inference, execution approval, live
+  authority, PRECLAIM, claims, pending/terminal records, host/executor/actuator,
+  attachment, upload, Send, text, MailerLite, CRM, campaign, Ads, proxy,
+  browser, network, or external effects.
+- `implementation_status`: `pure_function_16_16_and_compatibility_429_429_green`
+- `independent_review`: `green_no_unresolved_p0_p1_p2`
+- `source_execution`: false
+- `canary_ready`: false
+- `production_ready`: false
+- `execution_approval_published`: false
+- `registry_written`: false
+- `claim_issued`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `external_effect_invoked`: false
+- `next_gate`: Complete independent review and, if green, one serialized
+  central integration. Any later filesystem or live materialization remains a
+  different mission.

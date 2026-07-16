@@ -6368,7 +6368,7 @@ routing and completion pointer.
 - `recommended_default`:
   `keep_source_execution_closed_until_a_separate_authoritative_source_path_is_explicitly_approved`
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_follower_source_vertical_slice_proof_v1_20260716`
@@ -6448,3 +6448,60 @@ routing and completion pointer.
   verification, and stop rules is mandatory.
 - `recommended_default`:
   `complete_connected_repo_only_ui_attested_source_to_preclaim_proof_then_keep_live_execution_closed`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_canary_packet_materialization_no_live_v1_20260716`
+- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `approved_baseline`:
+  `ada5db2df1d79bbb0b1c97de10f0f23562dea506`
+- `source_branch`:
+  `codex/crm-core-ui-attested-canary-materializer-v1-20260716`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-ui-attested-canary-packet-materialization-no-live-mission-v1.md`
+- `materializer_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-ui-attested-canary-packet-materializer-v1.md`
+- `objective`: Implement and prove a pure local materializer that accepts
+  exactly one already supplied owner-only UI-attested input plus one
+  structurally valid caller-declared audio-binding record and deterministically
+  prepares one immutable owner-only
+  `prepared_no_live_unapproved` canary packet draft.
+- `evidence_boundary`: Preserve the UI-attested projection without claiming an
+  exact follow timestamp, provider event ID, or campaign membership. Do not
+  route it through the exact-time sealed-manifest builder.
+- `allowed_scope`: Exact eight-file allowlist, repo-only implementation,
+  synthetic fixtures, independent review,
+  and at most one locked central integration after every gate is green.
+- `forbidden_scope`: Source or UI access, Safari, Instagram, Computer Use,
+  private source discovery, exact-time inference, execution approval, live
+  authority, registry or claim-store writes, PRECLAIM, host/executor/actuator,
+  attachment, upload, Send, text, MailerLite, CRM, campaign, Ads, proxy,
+  network, or external effects.
+- `candidate_cap`: `1`
+- `maximum_output`: One immutable in-memory owner-only non-executable draft and
+  one aggregate redacted receipt; no filesystem, live root, claim, registry, or
+  effect state may change.
+- `trust_boundary`: Caller-declared mission, contract, repository,
+  authorization-reference, and audio fields are preserved as structural
+  provenance only. This pure function does not authenticate approval, current
+  central HEAD, or audio bytes.
+- `completion_definition`: Focused, adversarial, privacy, immutability, inert
+  import, and welcome-audio compatibility tests are green; independent review
+  has no unresolved P0-P2 finding; exact allowlist is preserved; and any
+  central integration records only repo history with every live/effect flag
+  false.
+- `validation_receipt`: Focused `16/16`, required seven-file compatibility
+  `429/429`, syntax and diff checks green, exact eight-file allowlist preserved,
+  and independent review GREEN with no unresolved P0-P2 finding.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `registry_written=false`, `claim_issued=false`, `send_allowed=false`,
+  `live_authority=false`, `external_effect_invoked=false`.
+- `later_gate`: A separate exact approval and mission must materialize fresh
+  live authority and recheck source, manifest policy, audio, dedupe, registry,
+  caps, and current surface health before any real canary.
+- `recommended_default`:
+  `implement_one_candidate_no_live_packet_draft_then_stop_before_live_authority`

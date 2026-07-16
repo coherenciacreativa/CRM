@@ -1,0 +1,479 @@
+/**
+ * Pure no-live materializer for one UI-attested welcome-audio canary draft.
+ *
+ * This module consumes data only. It does not read files, inspect a browser,
+ * publish live authority, write a registry, issue a claim, or perform an
+ * external effect.
+ */
+
+import { createHash } from 'node:crypto';
+import { types as nodeUtilTypes } from 'node:util';
+
+import {
+  adaptWelcomeAudioUiAttestedFollowerSource,
+  validateWelcomeAudioUiAttestedFollowerSourceProjection,
+} from './crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs';
+
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION =
+  'crm_core_instagram_welcome_audio_ui_attested_canary_packet_materializer_v1';
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_ui_attested_canary_packet_request_v1';
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_DRAFT_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_ui_attested_canary_packet_draft_v1';
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_RECEIPT_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_ui_attested_canary_packet_materializer_receipt_v1';
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP = 1;
+
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION = Object.freeze({
+  PREPARED: 'prepared_no_live_unapproved',
+  BLOCKED: 'blocked_no_live_unapproved',
+});
+
+const WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER = Object.freeze({
+  INPUT_SCHEMA: 'blocked_materializer_input_schema',
+  REQUEST_SCHEMA: 'blocked_materializer_request_schema',
+  SOURCE_PROJECTION: 'blocked_materializer_source_projection',
+  SOURCE_BINDING: 'blocked_materializer_source_binding',
+  AUDIO_BINDING: 'blocked_materializer_audio_binding',
+  LIVE_AUTHORITY_REQUESTED: 'blocked_materializer_live_authority_requested',
+  DRAFT_CONTRACT: 'blocked_materializer_draft_contract',
+  RECEIPT_CONTRACT: 'blocked_materializer_receipt_contract',
+});
+
+const ROOT_FIELDS = Object.freeze([
+  'ui_attested_input',
+  'packet_request',
+  'now_ms',
+]);
+
+const REQUEST_FIELDS = Object.freeze([
+  'schema_version',
+  'status',
+  'mission_id',
+  'contract_version',
+  'central_repo_head',
+  'authorization_id',
+  'expected_source_mission_id',
+  'candidate_cap',
+  'future_attempt_cap',
+  'approved_audio_asset_id',
+  'approved_audio_sha256',
+  'approved_audio_binding_evidence',
+  'execution_approval_authorized',
+  'external_effect_authorized',
+]);
+
+const DRAFT_FIELDS = Object.freeze([
+  'schema_version',
+  'materializer_contract_version',
+  'status',
+  'mission_id',
+  'contract_version',
+  'central_repo_head',
+  'authorization_id',
+  'source_mission_id',
+  'candidate_cap',
+  'future_attempt_cap',
+  'operation_id',
+  'source_projection',
+  'approved_audio_asset_id',
+  'approved_audio_sha256',
+  'approved_audio_binding_evidence',
+  'registry_precondition',
+  'source_execution',
+  'canary_ready',
+  'production_ready',
+  'execution_approval_published',
+  'registry_written',
+  'claim_issued',
+  'pending_effect_recorded',
+  'send_allowed',
+  'live_authority',
+  'browser_used',
+  'network_used',
+  'external_effect_invoked',
+]);
+
+const RECEIPT_FIELDS = Object.freeze([
+  'receipt_schema_version',
+  'materializer_contract_version',
+  'redaction_status',
+  'decision',
+  'candidate_count',
+  'candidate_cap',
+  'projection_validated',
+  'exact_binding_preserved',
+  'nonclaims_preserved',
+  'draft_issued',
+  'source_execution',
+  'canary_ready',
+  'production_ready',
+  'execution_approval_published',
+  'registry_written',
+  'claim_issued',
+  'pending_effect_recorded',
+  'send_allowed',
+  'live_authority',
+  'browser_used',
+  'network_used',
+  'external_effect_invoked',
+  'blocker_codes',
+]);
+
+const RECEIPT_BOOLEAN_FIELDS = Object.freeze([
+  'projection_validated',
+  'exact_binding_preserved',
+  'nonclaims_preserved',
+  'draft_issued',
+  'source_execution',
+  'canary_ready',
+  'production_ready',
+  'execution_approval_published',
+  'registry_written',
+  'claim_issued',
+  'pending_effect_recorded',
+  'send_allowed',
+  'live_authority',
+  'browser_used',
+  'network_used',
+  'external_effect_invoked',
+]);
+
+const BLOCKER_CODES = new Set(Object.values(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER));
+const SHA256 = /^[a-f0-9]{64}$/;
+const GIT_SHA = /^[a-f0-9]{40}$/;
+const OPAQUE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{7,191}$/;
+
+const isPlainDataObject = (value) => (
+  value !== null
+  && typeof value === 'object'
+  && !Array.isArray(value)
+  && !nodeUtilTypes.isProxy(value)
+  && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+);
+
+const exactObject = (value, fields) => {
+  if (!isPlainDataObject(value)) return null;
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Reflect.ownKeys(descriptors);
+  if (
+    keys.length !== fields.length
+    || keys.some((key) => typeof key !== 'string')
+    || fields.some((field) => !Object.hasOwn(descriptors, field))
+    || keys.some((key) => !fields.includes(key))
+    || keys.some((key) => descriptors[key].get || descriptors[key].set)
+  ) return null;
+  return Object.freeze(Object.fromEntries(fields.map((field) => [field, descriptors[field].value])));
+};
+
+const snapshotStringArray = (value) => {
+  if (!Array.isArray(value) || nodeUtilTypes.isProxy(value)) return null;
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const length = descriptors.length?.value;
+  if (!Number.isInteger(length) || length < 0) return null;
+  const expectedKeys = Array.from({ length }, (_, index) => String(index));
+  const descriptorKeys = Reflect.ownKeys(descriptors);
+  if (descriptorKeys.some((key) => typeof key !== 'string')) return null;
+  const dataKeys = descriptorKeys.filter((key) => key !== 'length');
+  if (
+    dataKeys.length !== expectedKeys.length
+    || dataKeys.some((key, index) => key !== expectedKeys[index])
+    || expectedKeys.some((key) => descriptors[key].get || descriptors[key].set)
+    || expectedKeys.some((key) => typeof descriptors[key].value !== 'string')
+  ) return null;
+  return Object.freeze(expectedKeys.map((key) => descriptors[key].value));
+};
+
+const snapshotPlainData = (value) => {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (Array.isArray(value)) {
+    if (nodeUtilTypes.isProxy(value)) throw new TypeError('unsafe_array');
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const length = descriptors.length?.value;
+    const keys = Reflect.ownKeys(descriptors);
+    const expected = [...Array.from({ length }, (_, index) => String(index)), 'length'];
+    if (
+      !Number.isInteger(length)
+      || length < 0
+      || keys.length !== expected.length
+      || keys.some((key, index) => key !== expected[index])
+      || keys.some((key) => key !== 'length' && (descriptors[key].get || descriptors[key].set))
+    ) throw new TypeError('unsafe_array');
+    return Object.freeze(Array.from({ length }, (_, index) => (
+      snapshotPlainData(descriptors[String(index)].value)
+    )));
+  }
+  if (!isPlainDataObject(value)) throw new TypeError('unsafe_object');
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Reflect.ownKeys(descriptors);
+  if (
+    keys.some((key) => typeof key !== 'string')
+    || keys.some((key) => descriptors[key].get || descriptors[key].set)
+  ) throw new TypeError('unsafe_object');
+  return Object.freeze(Object.fromEntries(keys.map((key) => [
+    key,
+    snapshotPlainData(descriptors[key].value),
+  ])));
+};
+
+const isCleanString = (value) => (
+  typeof value === 'string'
+  && value.length > 0
+  && value === value.trim()
+  && !/[\u0000-\u001f\u007f]/u.test(value)
+);
+
+const canonicalize = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (!isPlainDataObject(value)) return value;
+  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
+};
+
+const canonicalJson = (value) => JSON.stringify(canonicalize(value));
+const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+
+const deepFreeze = (value) => {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
+  return value;
+};
+
+const fixedFalseFlags = Object.freeze({
+  source_execution: false,
+  canary_ready: false,
+  production_ready: false,
+  execution_approval_published: false,
+  registry_written: false,
+  claim_issued: false,
+  pending_effect_recorded: false,
+  send_allowed: false,
+  live_authority: false,
+  browser_used: false,
+  network_used: false,
+  external_effect_invoked: false,
+});
+
+const buildReceipt = ({ prepared = false, blockerCodes = [] } = {}) => Object.freeze({
+  receipt_schema_version: WELCOME_AUDIO_UI_ATTESTED_CANARY_RECEIPT_SCHEMA_VERSION,
+  materializer_contract_version: WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION,
+  redaction_status: 'aggregate_allowlist_only_no_private_values_times_buckets_paths_anchors_or_digests',
+  decision: prepared
+    ? WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION.PREPARED
+    : WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION.BLOCKED,
+  candidate_count: prepared ? 1 : 0,
+  candidate_cap: WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP,
+  projection_validated: prepared,
+  exact_binding_preserved: prepared,
+  nonclaims_preserved: prepared,
+  draft_issued: prepared,
+  ...fixedFalseFlags,
+  blocker_codes: Object.freeze([...new Set(blockerCodes)]),
+});
+
+const blocked = (...blockerCodes) => Object.freeze({
+  private_draft: null,
+  redacted_receipt: buildReceipt({ blockerCodes }),
+});
+
+const validateRequest = (value) => {
+  const request = exactObject(value, REQUEST_FIELDS);
+  if (!request) return null;
+  const stringsValid = [
+    request.mission_id,
+    request.contract_version,
+    request.authorization_id,
+    request.expected_source_mission_id,
+    request.approved_audio_asset_id,
+    request.approved_audio_binding_evidence,
+  ].every(isCleanString);
+  if (
+    request.schema_version !== WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION
+    || request.status !== 'approved_for_no_live_materialization_only'
+    || !stringsValid
+    || typeof request.central_repo_head !== 'string'
+    || !GIT_SHA.test(request.central_repo_head)
+    || !OPAQUE_ID.test(request.authorization_id)
+    || request.candidate_cap !== WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP
+    || request.future_attempt_cap !== 1
+    || typeof request.approved_audio_sha256 !== 'string'
+    || !SHA256.test(request.approved_audio_sha256)
+    || request.approved_audio_binding_evidence !== 'exact_approved_audio_binding_revalidated'
+    || request.execution_approval_authorized !== false
+    || request.external_effect_authorized !== false
+  ) return null;
+  return request;
+};
+
+const operationIdFor = (draftWithoutOperationId) => (
+  `ui_attested_canary_draft_${sha256(canonicalJson(draftWithoutOperationId))}`
+);
+
+const validateWelcomeAudioUiAttestedCanaryPacketDraft = (draft, options = {}) => {
+  const invalid = () => Object.freeze({
+    ok: false,
+    reason: WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.DRAFT_CONTRACT,
+  });
+  try {
+    const root = exactObject(draft, DRAFT_FIELDS);
+    const safeOptions = exactObject(options, ['now_ms']);
+    const nowMs = safeOptions?.now_ms;
+    if (!root || !safeOptions || !Number.isFinite(nowMs) || nowMs < 0) return invalid();
+    if (validateWelcomeAudioUiAttestedFollowerSourceProjection(
+      root.source_projection,
+      { nowMs },
+    ).ok !== true) return invalid();
+    const projection = snapshotPlainData(root.source_projection);
+    if (
+      root.schema_version !== WELCOME_AUDIO_UI_ATTESTED_CANARY_DRAFT_SCHEMA_VERSION
+      || root.materializer_contract_version
+        !== WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION
+      || root.status !== WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION.PREPARED
+      || !isCleanString(root.mission_id)
+      || !isCleanString(root.contract_version)
+      || typeof root.central_repo_head !== 'string'
+      || !GIT_SHA.test(root.central_repo_head)
+      || typeof root.authorization_id !== 'string'
+      || !OPAQUE_ID.test(root.authorization_id)
+      || root.candidate_cap !== 1
+      || root.future_attempt_cap !== 1
+      || !isCleanString(root.approved_audio_asset_id)
+      || typeof root.approved_audio_sha256 !== 'string'
+      || !SHA256.test(root.approved_audio_sha256)
+      || root.approved_audio_binding_evidence !== 'exact_approved_audio_binding_revalidated'
+      || root.registry_precondition !== 'empty_or_valid_revalidate_in_later_live_mission'
+      || Object.entries(fixedFalseFlags).some(([key, value]) => root[key] !== value)
+      || !isCleanString(root.source_mission_id)
+      || projection.mission_id !== root.source_mission_id
+      || projection.exact_follow_timestamp_claimed !== false
+      || projection.provider_event_id_claimed !== false
+      || projection.campaign_membership_claimed !== false
+    ) return invalid();
+    const { operation_id: operationId, ...withoutOperationIdRaw } = root;
+    if (typeof operationId !== 'string') return invalid();
+    const withoutOperationId = {
+      ...withoutOperationIdRaw,
+      source_projection: projection,
+    };
+    if (operationId !== operationIdFor(withoutOperationId)) return invalid();
+    return Object.freeze({ ok: true, reason: null });
+  } catch {
+    return invalid();
+  }
+};
+
+const validateWelcomeAudioUiAttestedCanaryPacketReceipt = (receipt) => {
+  const invalid = () => Object.freeze({
+    ok: false,
+    reason: WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.RECEIPT_CONTRACT,
+  });
+  try {
+    const root = exactObject(receipt, RECEIPT_FIELDS);
+    const blockerCodes = root ? snapshotStringArray(root.blocker_codes) : null;
+    if (!root || !blockerCodes) return invalid();
+    const prepared = root.decision === WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION.PREPARED;
+    const fixedValid = root.receipt_schema_version
+        === WELCOME_AUDIO_UI_ATTESTED_CANARY_RECEIPT_SCHEMA_VERSION
+      && root.materializer_contract_version
+        === WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION
+      && root.redaction_status
+        === 'aggregate_allowlist_only_no_private_values_times_buckets_paths_anchors_or_digests'
+      && Object.values(WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION).includes(root.decision)
+      && root.candidate_count === (prepared ? 1 : 0)
+      && root.candidate_cap === 1
+      && RECEIPT_BOOLEAN_FIELDS.every((field) => typeof root[field] === 'boolean')
+      && Object.entries(fixedFalseFlags).every(([key, value]) => root[key] === value)
+      && blockerCodes.every((code) => BLOCKER_CODES.has(code))
+      && new Set(blockerCodes).size === blockerCodes.length;
+    if (!fixedValid) return invalid();
+    const preparedFlags = [
+      root.projection_validated,
+      root.exact_binding_preserved,
+      root.nonclaims_preserved,
+      root.draft_issued,
+    ];
+    const semanticsValid = prepared
+      ? preparedFlags.every(Boolean) && blockerCodes.length === 0
+      : preparedFlags.every((value) => value === false) && blockerCodes.length >= 1;
+    return semanticsValid ? Object.freeze({ ok: true, reason: null }) : invalid();
+  } catch {
+    return invalid();
+  }
+};
+
+const materializeWelcomeAudioUiAttestedCanaryPacketDraft = (input) => {
+  try {
+    const root = exactObject(input, ROOT_FIELDS);
+    if (!root || !Number.isFinite(root.now_ms) || root.now_ms < 0) {
+      return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.INPUT_SCHEMA);
+    }
+    const request = validateRequest(root.packet_request);
+    if (!request) return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.REQUEST_SCHEMA);
+    let safeSourceInput;
+    try {
+      safeSourceInput = snapshotPlainData(root.ui_attested_input);
+    } catch {
+      return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.SOURCE_PROJECTION);
+    }
+    const source = adaptWelcomeAudioUiAttestedFollowerSource(
+      safeSourceInput,
+      { nowMs: root.now_ms },
+    );
+    if (!source.private_projection) {
+      return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.SOURCE_PROJECTION);
+    }
+    const projection = source.private_projection;
+    if (
+      projection.mission_id !== request.expected_source_mission_id
+    ) return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.SOURCE_BINDING);
+    const draftWithoutOperationId = {
+      schema_version: WELCOME_AUDIO_UI_ATTESTED_CANARY_DRAFT_SCHEMA_VERSION,
+      materializer_contract_version:
+        WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION,
+      status: WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION.PREPARED,
+      mission_id: request.mission_id,
+      contract_version: request.contract_version,
+      central_repo_head: request.central_repo_head,
+      authorization_id: request.authorization_id,
+      source_mission_id: request.expected_source_mission_id,
+      candidate_cap: request.candidate_cap,
+      future_attempt_cap: request.future_attempt_cap,
+      source_projection: projection,
+      approved_audio_asset_id: request.approved_audio_asset_id,
+      approved_audio_sha256: request.approved_audio_sha256,
+      approved_audio_binding_evidence: request.approved_audio_binding_evidence,
+      registry_precondition: 'empty_or_valid_revalidate_in_later_live_mission',
+      ...fixedFalseFlags,
+    };
+    const draft = deepFreeze({
+      ...draftWithoutOperationId,
+      operation_id: operationIdFor(draftWithoutOperationId),
+    });
+    if (validateWelcomeAudioUiAttestedCanaryPacketDraft(
+      draft,
+      { now_ms: root.now_ms },
+    ).ok !== true) return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.DRAFT_CONTRACT);
+    const receipt = buildReceipt({ prepared: true });
+    if (validateWelcomeAudioUiAttestedCanaryPacketReceipt(receipt).ok !== true) {
+      return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.RECEIPT_CONTRACT);
+    }
+    return Object.freeze({ private_draft: draft, redacted_receipt: receipt });
+  } catch {
+    return blocked(WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.INPUT_SCHEMA);
+  }
+};
+
+export {
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER,
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP,
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION,
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_DRAFT_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION,
+  materializeWelcomeAudioUiAttestedCanaryPacketDraft,
+  validateWelcomeAudioUiAttestedCanaryPacketDraft,
+  validateWelcomeAudioUiAttestedCanaryPacketReceipt,
+};

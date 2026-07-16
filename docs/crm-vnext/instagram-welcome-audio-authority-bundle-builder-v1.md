@@ -147,6 +147,18 @@ No blocked or invalid result may be converted to success by filling a value
 from memory, normalizing an identity, deriving an exact time from relative
 text, or broadening the source route.
 
+## UI-Attested Draft Compatibility Boundary
+
+The UI-attested packet materializer is a separate no-live route. It may reuse
+an independently valid protected-audio binding, but it must not pass a visible
+UI time bucket or UI-attested projection into this builder's exact-time source
+capture schema. It must not claim that this builder produced an interval or
+sealed manifest for that projection.
+
+Any UI-attested packet remains `prepared_no_live_unapproved`, outside the live
+authority root, and distinct from `execution-approval-v1.json`. This builder
+does not publish, promote, or make that draft executable.
+
 ## Review and integration gate
 
 Repository implementation and deterministic tests may proceed on the exact
