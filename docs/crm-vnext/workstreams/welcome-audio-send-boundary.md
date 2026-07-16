@@ -1,34 +1,50 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-welcome-audio-source-capability-gate-v1-20260716`
+- `branch`: `codex/crm-core-welcome-audio-ui-attested-source-v1-20260716`
 - `worktree_path`:
-  `/Users/alejandrogomez/CRM-core-welcome-audio-source-capability-gate-v1`
+  `/Users/alejandrogomez/CRM-core-welcome-audio-ui-attested-source-v1`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
 - `codex_worker`: Central Integration Worker
 - `status`:
-  `source_capability_gate_proof_completed_green_integrated_repo_only_no_source_authority`
-- `objective`: Implement and prove only a pure deterministic gate that
-  classifies caller-supplied synthetic source evidence without acquiring source
-  data or creating live authority.
-- `why_now`: The bounded sealed-backlog bootstrap reached an authenticated
-  Notifications surface but completed fail-closed because it exposed zero
-  accessible and verifiable follower rows. A repo-only capability gate is the
-  next narrow seam for making that blocker deterministic without reopening the
-  source.
+  `ui_attested_follower_source_vertical_slice_proof_completed_green_integrated_repo_only_no_source_authority`
+- `source_commit`:
+  `04cb67f0a57931a5ef3bf7f2518bcee5b309d3be`
+- `central_integration_status`:
+  `completed_no_live_git_history_authoritative`
+- `objective`: Prove the connected synthetic order from a durable source-less
+  ordinal slot through adapter, issuer-private connected preflight one-use
+  capability, capability consumption/verification, operation guard PRECLAIM,
+  and only then a durable inspection result, without creating live claim or
+  send authority.
+- `why_now`: The source-capability gate correctly fixed the accessibility-route
+  blocker but did not connect a private visual evidence class to the
+  operational preclaim rail. This mission closes that repo-only gap without
+  reopening a source or weakening historical truth.
 - `allowed_files`:
-  - exact six-file allowlist recorded in
-    `docs/crm-vnext/crm-core-welcome-audio-source-capability-gate-proof-mission-v1.md`
+  - exact twelve-file allowlist recorded in
+    `docs/crm-vnext/crm-core-welcome-audio-ui-attested-follower-source-vertical-slice-proof-mission-v1.md`
 - `forbidden_files`:
-  - every file outside the exact six-file mission allowlist
+  - every file outside the exact twelve-file mission allowlist
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
-  - exact pure gate implementation, deterministic synthetic tests,
-    documentation, independent review, and one gated central integration in the
-    approved six-file allowlist
-  - no source or private-artifact phase is included in this mission
+  - exact source-less ordinal slot, adapter, issuer-private connected preflight
+    one-use capability, capability consumption/verification, operation guard
+    PRECLAIM, post-guard durable result, and restart-safe incomplete-slot reopen
+  - four exact contract/routing files, one independent review, and at most one
+    gated central integration in the approved twelve-file allowlist
+  - no source, private-artifact, candidate, live-claim, host, executor, or send
+    phase is included in this mission
+- `causal_capability_boundary`:
+  - the connected source capability is issued only through the issuer-private
+    bridge after stable durable-slot readback and exact mission, contract,
+    ordinal, claim nonce, slot-record digest, slot-record metadata, and
+    `inspection_capability_expires_at_ms` binding
+  - standalone public synthetic preflight capabilities are intentionally not
+    accepted by the connected record path
+  - timestamps remain freshness and expiry checks only, not causal authority
 - `historical_rendezvous_allowed_scope`:
   - deterministic simulated asynchronous session orchestration
   - a simulated Safari-shaped operation port with no browser handle
@@ -62,18 +78,27 @@
   - candidate queue generation
   - CRM/source writes
 - `private_artifact_policy`: This mission does not inspect, create, update, or
-  publish private artifacts. Synthetic test fixtures must contain no private
-  values or source anchors.
+  publish private artifacts. Synthetic test fixtures and owner-only temporary
+  inspection fixtures must contain synthetic values only and must be removed by
+  the tests.
 - `redacted_receipt_policy`: Receipts may include counts, stable status/blocker
   codes, and branch-safe aggregate booleans only; no identities, timestamps,
   references, private values, or message content. A no-row receipt must not
   claim campaign, record-time, UTF-8, identity, thread, owner, or source-event
   evidence.
 - `current_tasks`:
-  - completed the pure three-decision source-capability gate
-  - proved every decision and fail-closed edge with synthetic data-only tests
-  - obtained `GREEN_TO_INTEGRATE` with no P0-P2 finding and completed the single
-    locked central integration
+  - claim the exact durable source-less ordinal before adapter evaluation
+  - allow raw closed synthetic input to exist before the slot, but evaluate the
+    adapter internally only after stable slot readback; reject caller-supplied
+    projections and perform no live source read
+  - bind the exact internally-created adapter projection and durable slot to the
+    issuer-private connected preflight one-use capability, then consume/verify
+    it before operation guard PRECLAIM
+  - persist the durable inspection result only after exact logical PRECLAIM
+  - prove restart-safe reopen of the same incomplete slot without duplicate
+    result, ordinal advancement, or source/live/send authority
+  - obtain one independent review and integrate once only if the full
+    twelve-file vertical slice is green
 - `historical_rendezvous_tasks`:
   - prior async bridge status: centrally integrated, deterministic no-effect,
     and still no-live
@@ -639,3 +664,91 @@
 - `next_gate`: Keep source execution closed. Any attempt to acquire an
   authoritative follower source, create candidates, stage bundles, or run a
   canary requires a separate exact mission and authorization.
+
+## UI-Attested Follower Source Vertical Slice Proof Checkpoint
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_welcome_audio_ui_attested_follower_source_vertical_slice_proof_v1_20260716`
+- `mode`: `proof`
+- `status`: `completed_green_integrated_repo_only_synthetic_no_source_authority`
+- `approved_baseline`:
+  `3dcbe0d37589c11130c855ed6c71ffaf2970d2b2`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-ui-attested-source-v1-20260716`
+- `source_commit`:
+  `04cb67f0a57931a5ef3bf7f2518bcee5b309d3be`
+- `integration_validation`:
+  `focused_280_of_280_and_welcome_audio_591_of_591_green_dual_independent_review_green`
+- `source_class`: `ui_attested_follower_source_v1`
+- `adapter_contract`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_adapter_v1`
+- `adapter_input_schema`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_input_v1`
+- `adapter_projection_schema`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_projection_v1`
+- `adapter_receipt_schema`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_receipt_v1`
+- `pipeline`:
+  `durable source-less ordinal slot -> adapter -> issuer-private connected preflight one-use capability -> consume/verify capability -> operation guard PRECLAIM -> durable inspection result`
+- `required_evidence`: Explicit follower-notification row, preserved visible UI
+  bucket, fresh `attested_at` not later than validation time with zero future
+  tolerance, exact identity/profile/follows-owner/thread/owner bindings, and
+  fresh exact dedupe.
+- `fabrication_forbidden`: No `followed_at`, provider ID, campaign identity,
+  membership, interval, or provenance may be invented or inferred.
+- `evidence_non_claims`: `exact_follow_timestamp_claimed=false`,
+  `provider_event_id_claimed=false`, `campaign_membership_claimed=false` at the
+  adapter root and projection.
+- `adapter_decisions`:
+  - `ui_attested_source_ready`
+  - `blocked_ui_attested_source`
+- `preflight_decisions`:
+  - `validated_private_input`
+  - `blocked_private_input`
+- `connected_capability_boundary`: Only the issuer-private bridge may issue the
+  connected source capability, after stable durable-slot readback and exact
+  mission/contract/ordinal/claim-nonce/slot-record-digest/slot-record-metadata/
+  `inspection_capability_expires_at_ms` binding. Raw closed synthetic input may
+  exist earlier, but adapter evaluation and the accepted projection occur only
+  after that readback; prebuilt projections and standalone public synthetic
+  preflight capabilities are rejected by the connected record path. This proof
+  performs no live source read. Timestamps provide freshness and expiry checks
+  only, never causal authority.
+- `durable_inspection_decisions`:
+  - `ui_attested_inspection_slot_claimed_no_source`
+  - `ui_attested_inspection_preclaim_recorded`
+- `durable_order`: The source-less slot is first; the inspection result is
+  written only after capability consumption/verification and exact operation
+  guard PRECLAIM success. The guard never validates a pre-existing result.
+- `restart_boundary`: A verified restart may rehydrate and reopen only the same
+  incomplete slot after the original inspection-capability TTL expires and
+  after confirming its stable durable record and the absence of a result. It
+  cannot create another slot or result, advance the ordinal, or add
+  source/live/send authority.
+- `maximum_guard_result`: `phase=preclaim_eligible`,
+  `decision=eligible_for_atomic_claim`, `claim_allowed=true`,
+  `send_ready=false`, `send_allowed=false`.
+- `claim_flags`: `live_claim_issued=false`,
+  `private_live_claim_capability_issued=false`,
+  `live_claim_record_persisted=false`.
+- `effect_flags`: `live_authority=false`, `external_effect_invoked=false`,
+  `browser_used=false`, `network_used=false`.
+- `autonomy_budget`: 120 minutes, at most three repair cycles, zero real
+  targets/sources/effects, and no routine CEO interruption.
+- `review_gate`: One independent adversarial review with no unresolved P0-P2
+  finding is required before integration.
+- `integration_gate`: At most one central integration under the established
+  lock after exact twelve-file allowlist, validation, privacy, false-claim,
+  compatibility, and review checks are green.
+- `historical_truth_preserved`: The prior source-capability gate and its
+  fail-closed accessibility-route result remain unchanged.
+- `forbidden_scope`: Live UI/source reads, real OCR, private artifacts, real
+  candidates, durable live claims, host/executor/actuator/send, MailerLite, CRM,
+  campaign, Ads, API, proxy, browser, network, or external effects.
+- `approval_meaning`: `adelante` covers only repo implementation, synthetic
+  tests, safe repairs, one independent review, and at most one green central
+  integration of this exact mission. It grants no live authority.
+- `later_live_gate`: Any live use requires a separate exact approval bound to
+  the integrated commit, source route, private inputs, caps, UI actions,
+  claim/send boundaries, verification, and stop rules.

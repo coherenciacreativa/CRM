@@ -28,11 +28,16 @@ import {
   WELCOME_AUDIO_LIVE_AUTHORITY_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_AUTHORITY_MODE,
   WELCOME_AUDIO_SEALED_MANIFEST_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_CAPABILITY_TTL_MS,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_PREFLIGHT_RECEIPT_FIELDS,
   computeWelcomeAudioCampaignIntervalSha256,
   computeWelcomeAudioExactIdentityAnchorSha256,
   computeWelcomeAudioSealedManifestSha256,
   consumeWelcomeAudioLiveOperationContextCapabilityOnce,
   consumeWelcomeAudioLiveTargetBindingCapabilityOnce,
+  consumeWelcomeAudioUiAttestedSourceCapabilityOnce,
+  createWelcomeAudioUiAttestedConnectedSourcePreflightBridge,
   createSyntheticWelcomeAudioLiveAuthorityCapability,
   revalidateApprovedWelcomeAudioAssetCapability,
   revalidateWelcomeAudioLiveAuthorityCapability,
@@ -41,10 +46,18 @@ import {
   validateWelcomeAudioLiveOperationContext,
   validateWelcomeAudioLiveOperationContextReceipt,
   validateWelcomeAudioLivePreflightReceipt,
+  validateWelcomeAudioUiAttestedSourcePreflight,
+  validateWelcomeAudioUiAttestedSourcePreflightReceipt,
   verifyApprovedWelcomeAudioAssetCapabilityPathBinding,
   verifyWelcomeAudioLiveOperationContextCapabilityBinding,
+  verifyWelcomeAudioUiAttestedSourceCapabilityBinding,
   verifySealedWelcomeAudioManifestCapability,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
+import {
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
+  adaptWelcomeAudioUiAttestedFollowerSource,
+} from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
 import {
   WELCOME_AUDIO_ADAPTER_VERSION,
   WELCOME_AUDIO_ASSET_PREVIEW_BINDING,
@@ -1119,5 +1132,571 @@ describe("Instagram welcome-audio exact asset preflight", () => {
     const before = await readdir(root);
     await import(`${resolve("scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs")}?inert=1`);
     expect(await readdir(root)).toEqual(before);
+  });
+});
+
+const UI_ATTESTED_NOW_MS = Date.parse("2026-07-16T15:00:00.000Z");
+
+const uiAttestedSourceInputFixture = () => ({
+  schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
+  source_class: WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  mission_id: "synthetic_ui_attested_preflight_mission_001",
+  notification_row: {
+    row_ordinal: 3,
+    exact_target_utf8: "Synthetic.Preflight+Exact_é",
+    notification_evidence: "explicit_recent_follower_notification_row",
+    follower_signal: "started_following_owner",
+    time_bucket_utf8: "synthetic visible bucket 2 d",
+    time_bucket_evidence: "explicit_visible_relative_time_label",
+    attested_at: "2026-07-16T14:59:00.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  profile: {
+    exact_target_utf8: "Synthetic.Preflight+Exact_é",
+    notification_to_profile_binding: "exact",
+    profile_identity_evidence: "exact_private_visual_profile_identity",
+    follows_owner: "confirmed",
+    follows_owner_evidence: "explicit_visible_follows_owner_signal",
+    attested_at: "2026-07-16T14:59:10.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  thread: {
+    bound_thread_reference_utf8: "synthetic-thread-reference/Preflight+Exact",
+    profile_to_thread_binding: "exact",
+    thread_binding_evidence: "exact_bound_thread_observed",
+    attested_at: "2026-07-16T14:59:20.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  owner: {
+    owner_account_reference_utf8: "synthetic-owner-reference/Preflight+Exact",
+    owner_binding_evidence: "exact_owner_account_observed",
+    attested_at: "2026-07-16T14:59:30.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  dedupe: {
+    status: "clear_no_prior_welcome_or_attempt",
+    already_welcomed_status: "not_found",
+    send_history_status: "no_prior_attempt",
+    exact_target_utf8: "Synthetic.Preflight+Exact_é",
+    bound_thread_reference_utf8: "synthetic-thread-reference/Preflight+Exact",
+    owner_account_reference_utf8: "synthetic-owner-reference/Preflight+Exact",
+    checked_at: "2026-07-16T14:59:40.000Z",
+    dedupe_evidence: "exact_bound_thread_history_observed",
+    inference_status: "explicit_not_inferred",
+  },
+  exact_follow_timestamp_claimed: false,
+  provider_event_id_claimed: false,
+  campaign_membership_claimed: false,
+});
+
+const validUiAttestedProjection = () => {
+  const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
+    uiAttestedSourceInputFixture(),
+    { nowMs: UI_ATTESTED_NOW_MS },
+  );
+  expect(adapted.private_projection).not.toBeNull();
+  return adapted.private_projection!;
+};
+
+const uiAttestedCapabilityBinding = (
+  privateCapability: unknown,
+  projection: ReturnType<typeof validUiAttestedProjection>,
+  nowMs = UI_ATTESTED_NOW_MS,
+  minimumIssuedAtMs = UI_ATTESTED_NOW_MS - 1,
+) => ({
+  private_ui_attested_source_capability: privateCapability,
+  required_mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+  mission_id: projection.mission_id,
+  source_evidence_schema_version: projection.schema_version,
+  source_evidence_sha256: projection.source_evidence_sha256,
+  source_record_ordinal: projection.notification_row.row_ordinal,
+  source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+  profile_anchor_sha256: projection.anchors.profile_anchor_sha256,
+  candidate_anchor_sha256: projection.anchors.candidate_anchor_sha256,
+  thread_anchor_sha256: projection.anchors.thread_anchor_sha256,
+  owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+  dedupe_anchor_sha256: projection.anchors.dedupe_anchor_sha256,
+  evidence_observed_at: projection.dedupe.checked_at,
+  minimum_issued_at_ms: minimumIssuedAtMs,
+  now_ms: nowMs,
+});
+
+describe("Instagram welcome-audio synthetic UI-attested source preflight", () => {
+  test("binds the exact adapter projection and issues one non-serializable capability", () => {
+    const projection = validUiAttestedProjection();
+    const result = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    });
+
+    expect(result.private_capability).not.toBeNull();
+    expect(Object.isFrozen(result.private_capability)).toBe(true);
+    expect(() => JSON.stringify(result.private_capability)).toThrow(
+      "private_preflight_capability_not_serializable",
+    );
+    expect(Object.keys(result.redacted_receipt)).toEqual([
+      ...WELCOME_AUDIO_UI_ATTESTED_SOURCE_PREFLIGHT_RECEIPT_FIELDS,
+    ]);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_PREFLIGHT_DECISION.VALID,
+      ui_attested_source_bound: true,
+      exact_identity_bound: true,
+      profile_bound: true,
+      follows_owner_bound: true,
+      thread_bound: true,
+      owner_bound: true,
+      dedupe_bound: true,
+      private_ui_attested_source_capability_issued: true,
+      live_authority: false,
+      live_claim_issued: false,
+      private_live_claim_capability_issued: false,
+      live_claim_record_persisted: false,
+      send_allowed: false,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      blocker_codes: [],
+    });
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+
+    const binding = uiAttestedCapabilityBinding(
+      result.private_capability,
+      projection,
+    );
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(binding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+    expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(binding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(binding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+    expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(binding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+  });
+
+  test("rejects binding drift and the exact capability expiry boundary", () => {
+    const projection = validUiAttestedProjection();
+    const result = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    });
+    const binding = uiAttestedCapabilityBinding(result.private_capability, projection);
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding({
+      ...binding,
+      thread_anchor_sha256: "0".repeat(64),
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding({
+      ...binding,
+      source_evidence_sha256: "f".repeat(64),
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding({
+      ...binding,
+      now_ms: UI_ATTESTED_NOW_MS + WELCOME_AUDIO_UI_ATTESTED_SOURCE_CAPABILITY_TTL_MS,
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(binding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+  });
+
+  test("requires post-slot issuance and exact projection observation-time binding", () => {
+    const projection = validUiAttestedProjection();
+    const preSlot = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    });
+    const preSlotBinding = uiAttestedCapabilityBinding(
+      preSlot.private_capability,
+      projection,
+      UI_ATTESTED_NOW_MS + 1,
+      UI_ATTESTED_NOW_MS + 1,
+    );
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(preSlotBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+    expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(preSlotBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding({
+      ...preSlotBinding,
+      minimum_issued_at_ms: UI_ATTESTED_NOW_MS,
+      evidence_observed_at: "2026-07-16T14:59:39.999Z",
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding({
+      ...preSlotBinding,
+      minimum_issued_at_ms: UI_ATTESTED_NOW_MS,
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+
+    const postSlot = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS + 2,
+    });
+    const postSlotBinding = uiAttestedCapabilityBinding(
+      postSlot.private_capability,
+      projection,
+      UI_ATTESTED_NOW_MS + 3,
+      UI_ATTESTED_NOW_MS + 1,
+    );
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(postSlotBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+    expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(postSlotBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+  });
+
+  test("keeps connected source capabilities private to one opaque slot bridge", () => {
+    const projection = validUiAttestedProjection();
+    const channelA = createWelcomeAudioUiAttestedConnectedSourcePreflightBridge();
+    const channelB = createWelcomeAudioUiAttestedConnectedSourcePreflightBridge();
+    const privateSlotBinding = Object.freeze({ synthetic_slot: "a" });
+    const otherSlotBinding = Object.freeze({ synthetic_slot: "b" });
+    const equalTime = channelA.issue({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+      minimum_issued_at_ms: UI_ATTESTED_NOW_MS,
+      private_slot_binding: privateSlotBinding,
+    });
+    expect(equalTime.private_capability).toBeNull();
+
+    const connected = channelA.issue({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS + 1,
+      minimum_issued_at_ms: UI_ATTESTED_NOW_MS,
+      private_slot_binding: privateSlotBinding,
+    });
+    expect(connected.private_capability).not.toBeNull();
+    const connectedBinding = {
+      ...uiAttestedCapabilityBinding(
+        connected.private_capability,
+        projection,
+        UI_ATTESTED_NOW_MS + 2,
+        UI_ATTESTED_NOW_MS,
+      ),
+      private_slot_binding: privateSlotBinding,
+    };
+    expect(channelA.verify(connectedBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+    expect(channelA.verify({
+      ...connectedBinding,
+      private_slot_binding: otherSlotBinding,
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(channelB.verify(connectedBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(
+      connectedBinding,
+    )).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+
+    const standalone = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS + 1,
+    });
+    expect(channelA.verify({
+      ...connectedBinding,
+      private_ui_attested_source_capability: standalone.private_capability,
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(channelA.consume(connectedBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+    expect(channelA.verify(connectedBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+
+    const retired = channelA.issue({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS + 3,
+      minimum_issued_at_ms: UI_ATTESTED_NOW_MS,
+      private_slot_binding: privateSlotBinding,
+    });
+    const retiredBinding = {
+      ...connectedBinding,
+      private_ui_attested_source_capability: retired.private_capability,
+      now_ms: UI_ATTESTED_NOW_MS + 4,
+    };
+    expect(channelA.retire(privateSlotBinding)).toBe(true);
+    expect(channelA.verify(retiredBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+  });
+
+  test("blocks stale or tampered adapter projections before capability issuance", () => {
+    const projection = validUiAttestedProjection();
+    const stale = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS + 5 * 60 * 1000 + 1,
+    });
+    expect(stale.private_capability).toBeNull();
+    expect(stale.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_PREFLIGHT_DECISION.BLOCKED,
+      private_ui_attested_source_capability_issued: false,
+      live_authority: false,
+      live_claim_issued: false,
+      private_live_claim_capability_issued: false,
+      live_claim_record_persisted: false,
+      send_allowed: false,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      blocker_codes: [WELCOME_AUDIO_LIVE_PREFLIGHT_BLOCKER.UI_ATTESTED_SOURCE_INVALID],
+    });
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      stale.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+
+    for (const mutate of [
+      (value: any) => { value.source_evidence_sha256 = "0".repeat(64); },
+      (value: any) => { value.anchors.profile_anchor_sha256 = "1".repeat(64); },
+      (value: any) => { value.exact_follow_timestamp_claimed = true; },
+    ]) {
+      const tampered = structuredClone(projection);
+      mutate(tampered);
+      const blocked = validateWelcomeAudioUiAttestedSourcePreflight({
+        private_source_projection: tampered,
+        mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+        now_ms: UI_ATTESTED_NOW_MS,
+      });
+      expect(blocked.private_capability).toBeNull();
+      expect(blocked.redacted_receipt.blocker_codes).toEqual([
+        WELCOME_AUDIO_LIVE_PREFLIGHT_BLOCKER.UI_ATTESTED_SOURCE_INVALID,
+      ]);
+      expect(blocked.redacted_receipt).toMatchObject({
+        live_authority: false,
+        live_claim_issued: false,
+        private_live_claim_capability_issued: false,
+        live_claim_record_persisted: false,
+        send_allowed: false,
+        external_effect_invoked: false,
+        browser_used: false,
+        network_used: false,
+      });
+    }
+  });
+
+  test("keeps all aggregate receipts free of private source material", () => {
+    const input = uiAttestedSourceInputFixture();
+    const projection = validUiAttestedProjection();
+    const receipts = [
+      validateWelcomeAudioUiAttestedSourcePreflight({
+        private_source_projection: projection,
+        mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+        now_ms: UI_ATTESTED_NOW_MS,
+      }).redacted_receipt,
+      validateWelcomeAudioUiAttestedSourcePreflight({
+        private_source_projection: projection,
+        mode: "live",
+        now_ms: UI_ATTESTED_NOW_MS,
+      }).redacted_receipt,
+    ];
+    const privateValues = [
+      input.mission_id,
+      input.notification_row.exact_target_utf8,
+      input.notification_row.time_bucket_utf8,
+      input.notification_row.attested_at,
+      input.thread.bound_thread_reference_utf8,
+      input.owner.owner_account_reference_utf8,
+      input.dedupe.checked_at,
+      projection.source_evidence_sha256,
+      ...Object.values(projection.anchors),
+    ];
+    for (const receipt of receipts) {
+      const serialized = JSON.stringify(receipt);
+      for (const value of privateValues) expect(serialized).not.toContain(value);
+      expect(serialized).not.toContain("/Users/");
+      expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(receipt))
+        .toEqual({ ok: true, reason: null });
+    }
+  });
+
+  test("fails closed for hostile public preflight, receipt, and capability inputs", () => {
+    const projection = validUiAttestedProjection();
+    const validResult = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    });
+    const binding = uiAttestedCapabilityBinding(
+      validResult.private_capability,
+      projection,
+    );
+    let trapCount = 0;
+    let getterCount = 0;
+
+    const hostilePreflightEnvelope = new Proxy({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    }, {
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+    });
+    expect(() => validateWelcomeAudioUiAttestedSourcePreflight(
+      hostilePreflightEnvelope,
+    )).not.toThrow();
+    expect(validateWelcomeAudioUiAttestedSourcePreflight(
+      hostilePreflightEnvelope,
+    ).private_capability).toBeNull();
+
+    const accessorPreflightEnvelope: any = {
+      private_source_projection: projection,
+      now_ms: UI_ATTESTED_NOW_MS,
+    };
+    Object.defineProperty(accessorPreflightEnvelope, "mode", {
+      enumerable: true,
+      get() {
+        getterCount += 1;
+        return WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY;
+      },
+    });
+    expect(() => validateWelcomeAudioUiAttestedSourcePreflight(
+      accessorPreflightEnvelope,
+    )).not.toThrow();
+    expect(validateWelcomeAudioUiAttestedSourcePreflight(
+      accessorPreflightEnvelope,
+    ).private_capability).toBeNull();
+
+    const nestedProjection: any = structuredClone(projection);
+    nestedProjection.anchors = new Proxy(nestedProjection.anchors, {
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+    });
+    expect(() => validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: nestedProjection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    })).not.toThrow();
+    expect(validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: nestedProjection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    }).private_capability).toBeNull();
+
+    const hostileBinding = new Proxy(binding, {
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+    });
+    expect(() => verifyWelcomeAudioUiAttestedSourceCapabilityBinding(
+      hostileBinding,
+    )).not.toThrow();
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(hostileBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+    expect(() => consumeWelcomeAudioUiAttestedSourceCapabilityOnce(
+      hostileBinding,
+    )).not.toThrow();
+    expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(hostileBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+
+    const accessorBinding: any = { ...binding };
+    Object.defineProperty(accessorBinding, "mission_id", {
+      enumerable: true,
+      get() {
+        getterCount += 1;
+        return projection.mission_id;
+      },
+    });
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(accessorBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+    expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(accessorBinding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    );
+
+    const capabilityProxy = new Proxy(validResult.private_capability, {
+      get() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+    });
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding({
+      ...binding,
+      private_ui_attested_source_capability: capabilityProxy,
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+
+    const hostileReceipt = new Proxy(validResult.redacted_receipt, {
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+    });
+    expect(() => validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      hostileReceipt,
+    )).not.toThrow();
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(hostileReceipt).ok)
+      .toBe(false);
+
+    const nestedArrayProxyReceipt: any = structuredClone(validResult.redacted_receipt);
+    nestedArrayProxyReceipt.blocker_codes = new Proxy([], {
+      get() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("must not run");
+      },
+    });
+    expect(() => validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      nestedArrayProxyReceipt,
+    )).not.toThrow();
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      nestedArrayProxyReceipt,
+    ).ok).toBe(false);
+
+    const accessorArrayReceipt: any = structuredClone(validResult.redacted_receipt);
+    const accessorArray: any[] = [];
+    Object.defineProperty(accessorArray, "0", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        getterCount += 1;
+        return WELCOME_AUDIO_LIVE_PREFLIGHT_BLOCKER.UI_ATTESTED_SOURCE_INVALID;
+      },
+    });
+    accessorArrayReceipt.blocker_codes = accessorArray;
+    expect(() => validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      accessorArrayReceipt,
+    )).not.toThrow();
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      accessorArrayReceipt,
+    ).ok).toBe(false);
+
+    const accessorReceipt: any = structuredClone(validResult.redacted_receipt);
+    Object.defineProperty(accessorReceipt, "decision", {
+      enumerable: true,
+      get() {
+        getterCount += 1;
+        return WELCOME_AUDIO_LIVE_PREFLIGHT_DECISION.VALID;
+      },
+    });
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(accessorReceipt).ok)
+      .toBe(false);
+
+    expect(verifyWelcomeAudioUiAttestedSourceCapabilityBinding(binding)).toBe(
+      WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    );
+    expect(trapCount).toBe(0);
+    expect(getterCount).toBe(0);
   });
 });

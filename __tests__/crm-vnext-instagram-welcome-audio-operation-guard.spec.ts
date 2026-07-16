@@ -23,6 +23,10 @@ import {
   WELCOME_AUDIO_SOURCE_RECENCY,
   WELCOME_AUDIO_BUSINESS_ELIGIBILITY,
   WELCOME_AUDIO_SURFACE,
+  WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_REDACTED_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_PROJECTION_SCHEMA_VERSION,
   buildWelcomeAudioCanonicalOperationDigest,
   buildWelcomeAudioRedactedReceipt as buildWelcomeAudioRedactedReceiptRaw,
   classifyRecentFollowerBucket,
@@ -47,6 +51,7 @@ const CLAIM_OWNER_ID = "claim_owner_current_001";
 const CLAIM_TOKEN_ID = "claim_token_current_001";
 const ATTEMPT_ID = "send_attempt_current_001";
 const SOURCE_MAX_AGE_MS = 4 * 60 * 60 * 1000;
+const UI_ATTESTED_SOURCE_MAX_AGE_MS = 5 * 60 * 1000;
 const TRUSTED_CANONICAL_OPERATION_DIGESTS = new WeakMap<object, string>();
 
 const bindCanonicalOperationDigest = (input: Record<string, any>) => {
@@ -377,7 +382,186 @@ const sealedBacklogPreclaimOperation = () => {
   return boundInput;
 };
 
+const UI_ATTESTED_SOURCE_EVIDENCE_SHA = "9".repeat(64);
+
+const rebindUiAttestedCanonicalDigest = (input: Record<string, any>) => {
+  const boundInput = bindCanonicalOperationDigest(input);
+  TRUSTED_CANONICAL_OPERATION_DIGESTS.set(
+    boundInput,
+    boundInput.canonical_operation_sha256,
+  );
+  return boundInput;
+};
+
+const uiAttestedPreclaimOperation = () => {
+  const input = preclaimOperation();
+  const { source_event_anchor_sha256: _operationSourceEvent, ...legacyOperation } =
+    input.operation;
+  const {
+    source_event_anchor_sha256: _approvalSourceEvent,
+    source_recency_max_age_ms: _approvalSourceAge,
+    ...legacyApproval
+  } = input.approval;
+  const { source_event_anchor_sha256: _bindingSourceEvent, ...legacyBinding } =
+    input.binding;
+  input.adapter_version = WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION;
+  input.contract_version = WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION;
+  input.operation = {
+    ...legacyOperation,
+    source_evidence_anchor_sha256: SOURCE_SHA,
+  };
+  input.approval = {
+    ...legacyApproval,
+    source_evidence_anchor_sha256: SOURCE_SHA,
+    source_evidence_freshness_max_age_ms: UI_ATTESTED_SOURCE_MAX_AGE_MS,
+  };
+  input.follower_evidence = {
+    source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+    evidence_observed_at: "2026-07-14T15:58:05.000Z",
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    source_evidence_freshness_max_age_ms: UI_ATTESTED_SOURCE_MAX_AGE_MS,
+    source_evidence_anchor_sha256: SOURCE_SHA,
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  input.binding = {
+    ...legacyBinding,
+    source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+    source_evidence_anchor_sha256: SOURCE_SHA,
+  };
+  input.eligibility = {
+    ...input.eligibility,
+    business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER,
+  };
+  input.asset = {
+    ...input.asset,
+    asset_preview_binding: WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE,
+    preview_status: "approved_file_validated_before_upload",
+  };
+  input.source_provenance = {
+    source_class: WELCOME_AUDIO_SOURCE_CLASS.UI_ATTESTED_FOLLOWER_SOURCE_V1,
+    source_evidence_schema_version:
+      WELCOME_AUDIO_UI_ATTESTED_SOURCE_PROJECTION_SCHEMA_VERSION,
+    source_evidence_sha256: UI_ATTESTED_SOURCE_EVIDENCE_SHA,
+    source_evidence_anchor_sha256: SOURCE_SHA,
+    source_record_ordinal: 1,
+    source_record_cap: 8,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  return rebindUiAttestedCanonicalDigest(input);
+};
+
 describe("Instagram welcome-audio operation guard", () => {
+  test("admits ui-attested follower evidence only at PRECLAIM without event id, exact follow timestamp, or campaign", () => {
+    const input = uiAttestedPreclaimOperation();
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
+
+    expect(result).toMatchObject({
+      ok: true,
+      state_valid: true,
+      phase: WELCOME_AUDIO_GUARD_PHASE.PRECLAIM,
+      decision: WELCOME_AUDIO_GUARD_DECISION.ELIGIBLE_TO_CLAIM,
+      claim_allowed: true,
+      send_allowed: false,
+      terminal: false,
+      blockers: [],
+    });
+    expect(receipt).toMatchObject({
+      receipt_schema_version: WELCOME_AUDIO_UI_ATTESTED_REDACTED_RECEIPT_SCHEMA_VERSION,
+      guard_contract_version: WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
+      adapter_version: WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION,
+      source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+      source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+      business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER,
+      claim_allowed: true,
+      send_allowed: false,
+    });
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
+    const serialized = JSON.stringify(input);
+    expect(serialized).not.toContain("followed_at");
+    expect(serialized).not.toContain('"provider_event_id":');
+    expect(serialized).not.toContain("manifest_digest");
+    expect(serialized).not.toContain("campaign_interval");
+  });
+
+  test.each([
+    ["source bucket", (input: any) => { input.follower_evidence.time_bucket_attestation = "inferred"; }],
+    ["stale evidence", (input: any) => { input.follower_evidence.evidence_observed_at = "2026-07-14T10:00:00.000Z"; }],
+    ["future evidence by one millisecond", (input: any) => {
+      input.follower_evidence.evidence_observed_at = new Date(NOW_MS + 1).toISOString();
+    }],
+    ["source binding", (input: any) => { input.binding.source_to_profile = "ambiguous"; }],
+    ["follows owner", (input: any) => { input.binding.follows_owner = "unknown"; }],
+    ["thread binding", (input: any) => { input.binding.thread_anchor_sha256 = "a".repeat(64); }],
+    ["dedupe", (input: any) => { input.dedupe.status = "unknown"; }],
+    ["source schema", (input: any) => { input.source_provenance.source_evidence_schema_version = "synthetic_other_schema_v1"; }],
+    ["source freshness window", (input: any) => {
+      input.approval.source_evidence_freshness_max_age_ms = 10 * 60 * 1000;
+      input.follower_evidence.source_evidence_freshness_max_age_ms = 10 * 60 * 1000;
+    }],
+    ["exact follow timestamp claim", (input: any) => { input.source_provenance.exact_follow_timestamp_claimed = true; }],
+    ["provider id claim", (input: any) => { input.source_provenance.provider_event_id_claimed = true; }],
+    ["campaign claim", (input: any) => { input.source_provenance.campaign_membership_claimed = true; }],
+  ])("fails closed for ui-attested %s drift", (_label, mutate) => {
+    const input = uiAttestedPreclaimOperation();
+    mutate(input);
+    rebindUiAttestedCanonicalDigest(input);
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result.ok).toBe(false);
+    expect(result.claim_allowed).toBe(false);
+    expect(result.send_allowed).toBe(false);
+  });
+
+  test("preserves the legacy recent-source future clock tolerance", () => {
+    const input = preclaimOperation();
+    input.follower_evidence.observed_at = new Date(NOW_MS + 1).toISOString();
+    bindCanonicalOperationDigest(input);
+    TRUSTED_CANONICAL_OPERATION_DIGESTS.set(input, input.canonical_operation_sha256);
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({
+      ok: true,
+      phase: WELCOME_AUDIO_GUARD_PHASE.PRECLAIM,
+      claim_allowed: true,
+      send_allowed: false,
+    });
+  });
+
+  test("seals ui-attested provenance into the versioned digest and never promotes it beyond PRECLAIM", () => {
+    const input = uiAttestedPreclaimOperation();
+    const baseline = input.canonical_operation_sha256;
+    input.source_provenance.source_record_ordinal = 2;
+    expect(buildWelcomeAudioCanonicalOperationDigest(input)).not.toBe(baseline);
+
+    const postclaim = sendReadyOperation(uiAttestedPreclaimOperation());
+    const result = validateWelcomeAudioOperation(postclaim, { nowMs: NOW_MS });
+    expect(result.send_ready).toBe(false);
+    expect(result.send_allowed).toBe(false);
+    expect(result.decision).not.toBe(WELCOME_AUDIO_GUARD_DECISION.READY);
+  });
+
+  test("rejects cross-class adapter and provenance replay", () => {
+    const uiAsLegacy = uiAttestedPreclaimOperation();
+    uiAsLegacy.adapter_version = WELCOME_AUDIO_ADAPTER_VERSION;
+    uiAsLegacy.contract_version = WELCOME_AUDIO_OPERATION_GUARD_CONTRACT_VERSION;
+    rebindUiAttestedCanonicalDigest(uiAsLegacy);
+    expect(validateWelcomeAudioOperation(uiAsLegacy, { nowMs: NOW_MS }).ok).toBe(false);
+
+    const sealedAsUi = sealedBacklogPreclaimOperation();
+    sealedAsUi.source_provenance.source_class =
+      WELCOME_AUDIO_SOURCE_CLASS.UI_ATTESTED_FOLLOWER_SOURCE_V1;
+    bindCanonicalOperationDigest(sealedAsUi);
+    TRUSTED_CANONICAL_OPERATION_DIGESTS.set(
+      sealedAsUi,
+      sealedAsUi.canonical_operation_sha256,
+    );
+    expect(validateWelcomeAudioOperation(sealedAsUi, { nowMs: NOW_MS }).ok).toBe(false);
+  });
+
   test("admits an over-24-hour follower bound to the sealed paused-campaign backlog", () => {
     const input = sealedBacklogPreclaimOperation();
     const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
@@ -757,7 +941,7 @@ describe("Instagram welcome-audio operation guard", () => {
     expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
   });
 
-  test("does not infer a durable attempt from claim enums alone", () => {
+  test("does not infer a durable attempt or a valid source receipt from claim enums alone", () => {
     const input = {
       effect_claim: {
         claim_result: WELCOME_AUDIO_CLAIM_RESULT.STALE,
@@ -780,7 +964,10 @@ describe("Instagram welcome-audio operation guard", () => {
       confirmation_marker: WELCOME_AUDIO_CONFIRMATION_MARKER.NONE,
       retry_disposition: WELCOME_AUDIO_RETRY_DISPOSITION.BEFORE_ATTEMPT,
     });
-    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_CONTRACT,
+    });
   });
 
   test.each([
@@ -1346,7 +1533,7 @@ describe("Instagram welcome-audio operation guard", () => {
     ]) expect(serialized).not.toContain(privateValue);
   });
 
-  test("sanitizes arbitrary input instead of copying it into a receipt", () => {
+  test("sanitizes arbitrary input and keeps an unbound source triplet invalid", () => {
     const input = preclaimOperation();
     input.execution_surface.surface = "private-looking-handle";
     input.binding.source_binding = "private-looking-id";
@@ -1361,7 +1548,10 @@ describe("Instagram welcome-audio operation guard", () => {
     expect(receipt.send_attempt_count).toBeNull();
     expect(JSON.stringify(receipt)).not.toContain("private-looking");
     expect(JSON.stringify(receipt)).not.toContain("987654321");
-    expect(validateWelcomeAudioRedactedReceipt(receipt).ok).toBe(true);
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({
+      ok: false,
+      reason: WELCOME_AUDIO_GUARD_REASON.RECEIPT_CONTRACT,
+    });
   });
 
   test("rejects missing keys and tampered receipt enums", () => {
@@ -1551,5 +1741,212 @@ describe("Instagram welcome-audio operation guard", () => {
       WELCOME_AUDIO_GUARD_REASON.EFFECT_CLAIM_REENTRY,
       WELCOME_AUDIO_GUARD_REASON.TERMINAL_NO_RETRY,
     ]));
+  });
+
+  test("binds legacy and UI-attested receipt versions to only their permitted source triplets", () => {
+    const legacy = buildWelcomeAudioRedactedReceipt(preclaimOperation(), { nowMs: NOW_MS });
+    const legacyReady = buildWelcomeAudioRedactedReceipt(
+      sendReadyOperation(),
+      { nowMs: NOW_MS },
+    );
+    const attemptedOperation = confirmedOperation(WELCOME_AUDIO_CONFIRMATION_MARKER.NONE);
+    attemptedOperation.execution.send_claim = WELCOME_AUDIO_SEND_CLAIM.ATTEMPTED_UNCONFIRMED;
+    attemptedOperation.confirmation.bound_to_current_operation = false;
+    const legacyAttempted = buildWelcomeAudioRedactedReceipt(
+      attemptedOperation,
+      { nowMs: NOW_MS },
+    );
+    const legacyTerminal = buildWelcomeAudioRedactedReceipt(
+      confirmedOperation(),
+      { nowMs: NOW_MS },
+    );
+    const uiAttested = buildWelcomeAudioRedactedReceipt(
+      uiAttestedPreclaimOperation(),
+      { nowMs: NOW_MS },
+    );
+    const asUiAttestedVersion = (receipt: Record<string, any>) => ({
+      ...receipt,
+      receipt_schema_version: uiAttested.receipt_schema_version,
+      guard_contract_version: uiAttested.guard_contract_version,
+      adapter_version: uiAttested.adapter_version,
+      source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+      source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+      business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER,
+    });
+    const withInvalidSourceTriplet = (receipt: Record<string, any>) => ({
+      ...receipt,
+      source_recency: WELCOME_AUDIO_RECEIPT_INVALID_SENTINEL,
+      source_binding: WELCOME_AUDIO_RECEIPT_INVALID_SENTINEL,
+      business_eligibility: WELCOME_AUDIO_RECEIPT_INVALID_SENTINEL,
+    });
+
+    expect(validateWelcomeAudioRedactedReceipt({
+      ...legacy,
+      receipt_schema_version: uiAttested.receipt_schema_version,
+      guard_contract_version: uiAttested.guard_contract_version,
+      adapter_version: uiAttested.adapter_version,
+    }).ok).toBe(false);
+    expect(validateWelcomeAudioRedactedReceipt({
+      ...uiAttested,
+      receipt_schema_version: legacy.receipt_schema_version,
+      guard_contract_version: legacy.guard_contract_version,
+      adapter_version: legacy.adapter_version,
+    }).ok).toBe(false);
+    expect(validateWelcomeAudioRedactedReceipt({
+      ...legacy,
+      source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+      source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+      business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER,
+    }).ok).toBe(false);
+    expect(validateWelcomeAudioRedactedReceipt({
+      ...uiAttested,
+      source_recency: WELCOME_AUDIO_SOURCE_RECENCY.EXACT_RECENT,
+      source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT,
+      business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.RECENT_FOLLOWER,
+    }).ok).toBe(false);
+
+    const receiptsAcrossVersionFamiliesAndStates = [
+      ["legacy preclaim", legacy],
+      ["legacy ready", legacyReady],
+      ["legacy attempted", legacyAttempted],
+      ["legacy terminal", legacyTerminal],
+      ["UI-attested preclaim", uiAttested],
+      ["UI-attested attempted", asUiAttestedVersion(legacyAttempted)],
+      ["UI-attested terminal", asUiAttestedVersion(legacyTerminal)],
+    ];
+    for (const [label, receipt] of receiptsAcrossVersionFamiliesAndStates) {
+      expect(validateWelcomeAudioRedactedReceipt(receipt).ok, label).toBe(true);
+      expect(
+        validateWelcomeAudioRedactedReceipt(withInvalidSourceTriplet(receipt)).ok,
+        `${label} with invalid source triplet`,
+      )
+        .toBe(false);
+    }
+
+    const uiAttestedReadyShape = asUiAttestedVersion(legacyReady);
+    expect(validateWelcomeAudioRedactedReceipt(uiAttestedReadyShape).ok).toBe(false);
+    expect(validateWelcomeAudioRedactedReceipt(
+      withInvalidSourceTriplet(uiAttestedReadyShape),
+    ).ok).toBe(false);
+  });
+
+  test("fails closed without executing hostile operation proxies, getters, functions, or options", () => {
+    let trapCount = 0;
+    const hostile = new Proxy({}, {
+      get() {
+        trapCount += 1;
+        throw new Error("hostile get trap executed");
+      },
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("hostile ownKeys trap executed");
+      },
+      getOwnPropertyDescriptor() {
+        trapCount += 1;
+        throw new Error("hostile descriptor trap executed");
+      },
+      getPrototypeOf() {
+        trapCount += 1;
+        throw new Error("hostile prototype trap executed");
+      },
+    });
+
+    expect(buildWelcomeAudioCanonicalOperationDigest(hostile)).toBeNull();
+    expect(validateWelcomeAudioOperationRaw(hostile, { nowMs: NOW_MS })).toMatchObject({
+      ok: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+      blockers: [WELCOME_AUDIO_GUARD_REASON.INPUT_SHAPE],
+    });
+    expect(buildWelcomeAudioRedactedReceiptRaw(hostile, { nowMs: NOW_MS })).toMatchObject({
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+      send_allowed: false,
+    });
+
+    const nestedProxy = preclaimOperation();
+    nestedProxy.binding = hostile;
+    expect(validateWelcomeAudioOperationRaw(nestedProxy, { nowMs: NOW_MS })).toMatchObject({
+      ok: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+
+    let getterCount = 0;
+    const accessorInput = preclaimOperation();
+    Object.defineProperty(accessorInput, "binding", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        getterCount += 1;
+        throw new Error("hostile getter executed");
+      },
+    });
+    expect(validateWelcomeAudioOperationRaw(accessorInput, { nowMs: NOW_MS })).toMatchObject({
+      ok: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+
+    let functionExecutionCount = 0;
+    const functionInput = preclaimOperation();
+    functionInput.binding = (() => {
+      functionExecutionCount += 1;
+    }) as any;
+    expect(validateWelcomeAudioOperationRaw(functionInput, { nowMs: NOW_MS })).toMatchObject({
+      ok: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(validateWelcomeAudioOperationRaw(preclaimOperation(), hostile as any)).toMatchObject({
+      ok: false,
+      decision: WELCOME_AUDIO_GUARD_DECISION.BLOCKED,
+    });
+    expect(trapCount).toBe(0);
+    expect(getterCount).toBe(0);
+    expect(functionExecutionCount).toBe(0);
+  });
+
+  test("fails closed without executing hostile receipt proxies, accessors, or blocker arrays", () => {
+    const validReceipt = buildWelcomeAudioRedactedReceipt(
+      preclaimOperation(),
+      { nowMs: NOW_MS },
+    );
+    let trapCount = 0;
+    const hostileHandler = {
+      get() {
+        trapCount += 1;
+        throw new Error("hostile receipt get trap executed");
+      },
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("hostile receipt ownKeys trap executed");
+      },
+      getOwnPropertyDescriptor() {
+        trapCount += 1;
+        throw new Error("hostile receipt descriptor trap executed");
+      },
+      getPrototypeOf() {
+        trapCount += 1;
+        throw new Error("hostile receipt prototype trap executed");
+      },
+    };
+    const hostileReceipt = new Proxy(validReceipt, hostileHandler);
+    expect(validateWelcomeAudioRedactedReceipt(hostileReceipt).ok).toBe(false);
+
+    let getterCount = 0;
+    const accessorReceipt = { ...validReceipt };
+    Object.defineProperty(accessorReceipt, "decision", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        getterCount += 1;
+        throw new Error("hostile receipt getter executed");
+      },
+    });
+    expect(validateWelcomeAudioRedactedReceipt(accessorReceipt).ok).toBe(false);
+
+    const hostileBlockers = new Proxy([], hostileHandler);
+    expect(validateWelcomeAudioRedactedReceipt({
+      ...validReceipt,
+      blocker_codes: hostileBlockers,
+    }).ok).toBe(false);
+    expect(trapCount).toBe(0);
+    expect(getterCount).toBe(0);
   });
 });
