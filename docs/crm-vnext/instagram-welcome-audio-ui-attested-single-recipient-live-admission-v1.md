@@ -1,7 +1,7 @@
 # Instagram Welcome Audio UI-Attested Single-Recipient Live Admission v1
 
 Date: 2026-07-16
-Status: `repo_only_no_live_preflight_checkpoint_green_claim_host_pending`
+Status: `repo_only_no_live_complete_reviewed_green_awaiting_integration`
 
 ## Purpose
 
@@ -116,8 +116,14 @@ fixed-root writes, provider calls, network calls, or external effects.
 
 ## Current Implementation Checkpoint
 
-The publisher and preflight portions are green under synthetic owner-only test
-roots (`42/42` focused tests). Fixed-root publication remains deliberately
-disabled in this no-live mission. Claim, PENDING, terminal, Safari host, and
-Send remain unimplemented for the UI-attested family and therefore unavailable.
-This checkpoint is not live authority and is not canary-ready.
+The complete repo-only synthetic bridge is green (`242/242` combined tests):
+publisher, preflight, permanent claim, PENDING, terminal finalization, and the
+fake-driver Safari composite all pass with the existing sealed route still
+available and regression-green. Cross-family identity dedupe, family-exact
+capabilities, exact expiry, hostile input, replay, ambiguity, and strict
+same-thread `+1` confirmation are covered.
+
+Fixed-root publication remains deliberately disabled. No real authority,
+claim, PENDING, browser action, attachment, or Send occurred. This result is
+not live authority, not canary-ready, and not production-ready. Independent
+review is `green_to_self_integrate`; one serialized central integration remains.

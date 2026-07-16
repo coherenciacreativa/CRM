@@ -6508,7 +6508,7 @@ routing and completion pointer.
 - `recommended_default`:
   `implement_one_candidate_no_live_packet_draft_then_stop_before_live_authority`
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_single_recipient_live_admission_bridge_no_live_v1_20260716`
@@ -6563,3 +6563,48 @@ routing and completion pointer.
   network, or external effect occurred.
 - `blocker`:
   `blocked_time_budget_insufficient_for_claim_host_schema_dispatch_and_regression`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_claim_host_completion_no_live_v1_20260716`
+- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `checkpoint_commit`: `996ea7b`
+- `central_baseline`: `725afd3d47147aa63c37f604d39e29ead9d51171`
+- `source_branch`:
+  `codex/crm-core-ui-attested-live-admission-bridge-v1-20260716`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-ui-attested-claim-host-completion-no-live-mission-v1.md`
+- `objective`: Complete one sibling UI-attested claim/PENDING/terminal family
+  and one synthetic Safari composite while preserving the existing sealed
+  route and all no-retry confirmation semantics.
+- `candidate_cap`: `1`
+- `claim_cap`: `1`
+- `send_attempt_cap`: `1`
+- `time_budget_minutes`: `150`
+- `forbidden_scope`: Real source/private reads, fixed roots, browser, Instagram,
+  real claim/PENDING/upload/Send, MailerLite, CRM, campaign, Ads, proxy, network,
+  old-route unavailability, or any file outside the exact nine-file write
+  allowlist.
+- `observable_success`: One synthetic materializer-to-confirmed-terminal run
+  with exactly one upload and one Send; ambiguity is permanent no-retry; old
+  sealed claim and Safari regressions remain green and available.
+- `approval_meaning`: Alejandro's exact authorization permits this repo-only
+  completion, safe repair, review, one completion commit, and one source push
+  plus serialized central integration only after full GREEN. It grants no live
+  or private effect authority.
+- `recommended_default`:
+  `complete_review_and_integrate_once_only_if_full_bridge_green_then_stop_before_private_or_live_execution`
+- `validation_receipt`: Combined focused and compatibility validation is
+  `242/242` green: claim `60/60`, Safari host `111/111`, and source through
+  preflight compatibility `71/71`. Syntax and diff checks are green; exact
+  write allowlist is `9/9` and integration union is `14/14`.
+- `reviewer_verdict`: `green_to_self_integrate`
+- `integration_status`: `not_started`
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.

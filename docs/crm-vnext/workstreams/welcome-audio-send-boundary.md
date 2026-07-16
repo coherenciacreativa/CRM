@@ -846,3 +846,39 @@
 - `blocker`:
   `blocked_time_budget_insufficient_for_claim_host_schema_dispatch_and_regression`
 - `integration_status`: `not_requested_partial_checkpoint_not_canary_ready`
+
+## UI-Attested Claim/Host Completion No-Live Checkpoint
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_welcome_audio_ui_attested_claim_host_completion_no_live_v1_20260716`
+- `mode`: `proof`
+- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `checkpoint_commit`: `996ea7b`
+- `time_budget_minutes`: `150`
+- `candidate_cap`: `1`
+- `claim_cap`: `1`
+- `pending_cap`: `1`
+- `upload_cap`: `1`
+- `send_attempt_cap`: `1`
+- `retry_cap`: `0`
+- `objective`: Complete the separately versioned UI claim/PENDING/terminal
+  family and synthetic Safari composite while preserving cross-family identity
+  dedupe and continued sealed-route availability.
+- `development_boundary`: Exact nine-file repo-only allowlist, synthetic
+  owner-only temporary roots, fake driver, deterministic clocks, zero fixed
+  roots, zero browser, zero network, and zero external effect.
+- `integration_gate`: One completion commit and one serialized central
+  integration only after independent `green_to_self_integrate` for the complete
+  fourteen-file union.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+- `validation_receipt`: `242/242` combined green; claim `60/60`; Safari host
+  `111/111`; source/materializer/publisher/preflight compatibility `71/71`;
+  node syntax and diff checks green; exact write allowlist `9/9`; exact
+  integration union `14/14`.
+- `reviewer_verdict`: `green_to_self_integrate`
+- `integration_status`: `not_started`

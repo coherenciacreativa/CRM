@@ -25,7 +25,9 @@ import {
   WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_AUTHORITY_MODE,
   WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE,
   consumeWelcomeAudioLiveTargetBindingCapabilityOnce,
+  consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce,
   verifyApprovedWelcomeAudioAssetCapabilityPathBinding,
 } from './crm-vnext-instagram-welcome-audio-live-preflight.mjs';
 import {
@@ -36,15 +38,23 @@ import {
   WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS,
   WELCOME_AUDIO_LIVE_PENDING_RECORD_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_STORE_MODE,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_CLAIM_ISSUER_CONTRACT_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_PENDING_RECORD_FIELDS,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_PENDING_RECORD_SCHEMA_VERSION,
   cancelWelcomeAudioLiveReservationZeroEffect,
   configureWelcomeAudioLiveAttemptBoundaryScenarioForTest,
   consumeWelcomeAudioLiveHostPendingCapabilityOnce,
+  consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce,
   enterWelcomeAudioLiveAttemptBoundary,
+  enterWelcomeAudioUiAttestedLiveAttemptBoundary,
   finalizeWelcomeAudioLiveAttempt,
+  finalizeWelcomeAudioUiAttestedLiveAttempt,
   issueWelcomeAudioLiveClaim,
+  issueWelcomeAudioUiAttestedLiveClaim,
   openFixedWelcomeAudioLiveClaimStore,
   validateWelcomeAudioLiveAttemptReceipt,
   validateWelcomeAudioLiveClaimReceipt,
+  validateWelcomeAudioUiAttestedLiveClaimReceipt,
   verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest,
 } from './crm-vnext-instagram-welcome-audio-live-claim-issuer.mjs';
 import {
@@ -61,6 +71,8 @@ const WELCOME_AUDIO_SAFARI_LIVE_HOST_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_safari_live_host_receipt_v2';
 const WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_safari_live_composite_receipt_v2';
+const WELCOME_AUDIO_SAFARI_UI_ATTESTED_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_safari_ui_attested_live_composite_receipt_v1';
 const MAX_PENDING_RECORD_BYTES = 32 * 1024;
 const fatalUtf8Decoder = new TextDecoder('utf-8', { fatal: true });
 const FIXED_LIVE_CLAIM_STORE_ROOT = resolve(
@@ -194,6 +206,11 @@ const WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER = Object.freeze({
   PREPARE_BLOCKED: 'composite_prepare_blocked_zero_effect_cancelled',
   PENDING_BLOCKED: 'composite_pending_boundary_blocked',
   POST_PENDING_UNKNOWN: 'composite_post_pending_unknown',
+});
+
+const WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY = Object.freeze({
+  SEALED_MANIFEST: 'sealed_manifest',
+  UI_ATTESTED: 'ui_attested_single_recipient',
 });
 
 const WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST = Object.freeze({
@@ -1202,7 +1219,7 @@ const assertStableStoreRoot = async (identity) => {
   return current;
 };
 
-const validatePendingRecord = ({ record, binding, preparedAtMs, nowMs }) => {
+const validateSealedPendingRecord = ({ record, binding, preparedAtMs, nowMs }) => {
   const enteredAtMs = Date.parse(record?.entered_at ?? '');
   if (
     !exactObjectKeys(record, PENDING_RECORD_FIELDS)
@@ -1244,6 +1261,66 @@ const validatePendingRecord = ({ record, binding, preparedAtMs, nowMs }) => {
     || !/^[a-f0-9]{64}$/.test(record.attempt_nonce)
   ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PENDING_INVALID);
   return true;
+};
+
+const validateUiAttestedPendingRecord = ({ record, binding, preparedAtMs, nowMs }) => {
+  const enteredAtMs = Date.parse(record?.entered_at ?? '');
+  if (
+    !exactObjectKeys(record, WELCOME_AUDIO_UI_ATTESTED_LIVE_PENDING_RECORD_FIELDS)
+    || record.record_schema_version
+      !== WELCOME_AUDIO_UI_ATTESTED_LIVE_PENDING_RECORD_SCHEMA_VERSION
+    || record.claim_issuer_contract_version
+      !== WELCOME_AUDIO_UI_ATTESTED_LIVE_CLAIM_ISSUER_CONTRACT_VERSION
+    || record.authority_family !== WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+    || binding.authority_family !== WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+    || !isOpaqueId(record.mission_id)
+    || record.mission_id !== binding.expected_mission_id
+    || !isOpaqueId(record.contract_version)
+    || !isSha256(record.mission_contract_sha256)
+    || !isOpaqueId(record.approval_packet_id)
+    || !isOpaqueId(record.authorization_id)
+    || record.authorization_id !== binding.expected_authorization_id
+    || !isOpaqueId(record.operation_id)
+    || record.operation_id !== binding.expected_operation_id
+    || !/^[a-f0-9]{40}$/.test(record.central_repo_head)
+    || !isSha256(record.canonical_operation_sha256)
+    || !isSha256(record.approval_binding_sha256)
+    || record.identity_anchor_sha256 !== binding.expected_identity_anchor_sha256
+    || record.identity_anchor_schema_version
+      !== WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION
+    || record.thread_anchor_sha256 !== binding.expected_thread_anchor_sha256
+    || record.owner_anchor_sha256 !== binding.expected_owner_anchor_sha256
+    || record.dedupe_anchor_sha256 !== binding.expected_dedupe_anchor_sha256
+    || record.source_evidence_sha256 !== binding.expected_source_evidence_sha256
+    || record.audio_asset_sha256 !== binding.expected_audio_sha256
+    || !Number.isInteger(record.source_record_ordinal)
+    || record.source_record_ordinal < 1
+    || record.source_record_ordinal > 8
+    || record.source_record_ordinal !== binding.expected_source_record_ordinal
+    || record.mission_slot !== 1
+    || record.exact_follow_timestamp_claimed !== false
+    || record.provider_event_id_claimed !== false
+    || record.campaign_membership_claimed !== false
+    || !/^[a-f0-9]{64}$/.test(record.claim_nonce)
+    || record.owner_pid !== process.pid
+    || !/^[a-f0-9]{64}$/.test(record.owner_nonce)
+    || !isExactIso(record.entered_at)
+    || enteredAtMs < preparedAtMs
+    || enteredAtMs > nowMs
+    || nowMs - enteredAtMs >= WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS
+    || record.boundary_status !== 'pending_durable_before_attachment_upload'
+    || record.attachment_upload_entered !== false
+    || record.send_control_actuation_count !== 0
+    || !/^[a-f0-9]{64}$/.test(record.attempt_nonce)
+  ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PENDING_INVALID);
+  return true;
+};
+
+const validatePendingRecord = ({ record, binding, preparedAtMs, nowMs }) => {
+  if (binding.authority_family === WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED) {
+    return validateUiAttestedPendingRecord({ record, binding, preparedAtMs, nowMs });
+  }
+  return validateSealedPendingRecord({ record, binding, preparedAtMs, nowMs });
 };
 
 const pendingNames = ({ storeRoot, identityAnchorSha256 }) => {
@@ -1437,6 +1514,7 @@ const createWelcomeAudioSafariLiveHostCapability = (parameters = {}) => {
   );
   HOST_CAPABILITY_STATE.set(capability, {
     phase: 'fresh',
+    authority_family: WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.SEALED_MANIFEST,
     driver: parameters.driver,
     execution_mode: parameters.execution_mode,
     private_audio_asset_capability: parameters.private_audio_asset_capability,
@@ -1474,6 +1552,52 @@ const createInstalledComputerUseSafariLiveHostCapability = (
   pending_store_root: null,
 });
 
+const createWelcomeAudioSafariUiAttestedHostCapability = (parameters = {}) => {
+  if (!exactObjectKeys(parameters, [
+    'driver',
+    'execution_mode',
+    'private_audio_asset_capability',
+    'required_authority_mode',
+    'pending_store_root',
+  ])) throw new TypeError(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID);
+  const driverState = DRIVER_STATE.get(parameters.driver);
+  const live = parameters.execution_mode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE;
+  const synthetic = parameters.execution_mode
+    === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC;
+  if (
+    !driverState
+    || (!live && !synthetic)
+    || (live && driverState.kind !== 'sky_live')
+    || (synthetic && driverState.kind !== 'synthetic_test')
+    || (live && parameters.required_authority_mode
+      !== WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.FIXED_OWNER_ONLY)
+    || (synthetic && parameters.required_authority_mode
+      !== WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY)
+    || (live && parameters.pending_store_root !== null)
+    || (synthetic && typeof parameters.pending_store_root !== 'string')
+    || !parameters.private_audio_asset_capability
+    || typeof parameters.private_audio_asset_capability !== 'object'
+  ) throw new TypeError(
+    live && driverState?.kind !== 'sky_live'
+      ? WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.LIVE_DRIVER_REQUIRED
+      : WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID,
+  );
+  const capability = opaqueCapability(
+    'crm_core_welcome_audio_safari_ui_attested_live_host_capability',
+    'welcome_audio_safari_ui_attested_live_host_capability_not_serializable',
+  );
+  HOST_CAPABILITY_STATE.set(capability, {
+    phase: 'fresh',
+    authority_family: WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED,
+    driver: parameters.driver,
+    execution_mode: parameters.execution_mode,
+    private_audio_asset_capability: parameters.private_audio_asset_capability,
+    required_authority_mode: parameters.required_authority_mode,
+    pending_store_root: parameters.pending_store_root,
+  });
+  return capability;
+};
+
 const prepareWelcomeAudioSafariLiveTarget = async (parameters = {}) => {
   const blocked = (executionMode, blocker) => Object.freeze({
     private_prepared_permit: null,
@@ -1499,7 +1623,11 @@ const prepareWelcomeAudioSafariLiveTarget = async (parameters = {}) => {
     WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID,
   );
   const host = HOST_CAPABILITY_STATE.get(parameters.private_live_host_capability);
-  if (!host || host.phase !== 'fresh') {
+  if (
+    !host
+    || host.phase !== 'fresh'
+    || host.authority_family !== WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.SEALED_MANIFEST
+  ) {
     return blocked(
       host?.execution_mode ?? WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.UNBOUND,
       WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.CAPABILITY_INVALID,
@@ -1627,6 +1755,212 @@ const prepareWelcomeAudioSafariLiveTarget = async (parameters = {}) => {
         [],
         true,
       ),
+    });
+  } catch (error) {
+    state.phase = 'blocked';
+    state.exact_target = null;
+    return Object.freeze({
+      private_prepared_permit: null,
+      redacted_receipt: receipt(
+        WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.BLOCKED,
+        [safeKnownBlockerMessage(error)
+          ?? WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID],
+      ),
+    });
+  }
+};
+
+const prepareWelcomeAudioSafariUiAttestedTarget = async (parameters = {}) => {
+  const blocked = (executionMode, blocker) => Object.freeze({
+    private_prepared_permit: null,
+    redacted_receipt: buildReceipt({
+      executionMode,
+      phase: WELCOME_AUDIO_SAFARI_LIVE_HOST_PHASE.PREPARATION,
+      decision: WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.BLOCKED,
+      blockerCodes: [blocker],
+    }),
+  });
+  if (!exactObjectKeys(parameters, [
+    'private_live_host_capability',
+    'private_target_binding_capability',
+    'private_authority_capability',
+    'private_source_capability',
+    'exact_target',
+    'exact_bound_thread_reference',
+    'exact_owner_account_reference',
+    'expected_mission_id',
+    'expected_authorization_id',
+    'expected_operation_id',
+    'expected_draft_sha256',
+    'expected_projection_sha256',
+    'expected_source_evidence_sha256',
+    'expected_source_record_ordinal',
+    'expected_identity_anchor_sha256',
+    'expected_thread_anchor_sha256',
+    'expected_owner_anchor_sha256',
+    'expected_dedupe_anchor_sha256',
+    'expected_audio_sha256',
+    'now_ms',
+  ])) return blocked(
+    WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.UNBOUND,
+    WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID,
+  );
+  const host = HOST_CAPABILITY_STATE.get(parameters.private_live_host_capability);
+  if (
+    !host
+    || host.phase !== 'fresh'
+    || host.authority_family !== WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+  ) return blocked(
+    host?.execution_mode ?? WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.UNBOUND,
+    WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.CAPABILITY_INVALID,
+  );
+  host.phase = 'consumed';
+  const effectiveNow = host.execution_mode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE
+    ? Date.now()
+    : parameters.now_ms;
+  const state = {
+    driver: host.driver,
+    authority_family: WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED,
+    execution_mode: host.execution_mode,
+    required_authority_mode: host.required_authority_mode,
+    private_audio_asset_capability: host.private_audio_asset_capability,
+    pending_store_root: host.pending_store_root,
+    exact_target: parameters.exact_target,
+    approved_audio_asset_path: null,
+    binding: Object.freeze({
+      authority_family: WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED,
+      expected_mission_id: parameters.expected_mission_id,
+      expected_authorization_id: parameters.expected_authorization_id,
+      expected_operation_id: parameters.expected_operation_id,
+      expected_source_evidence_sha256: parameters.expected_source_evidence_sha256,
+      expected_source_record_ordinal: parameters.expected_source_record_ordinal,
+      expected_identity_anchor_sha256: parameters.expected_identity_anchor_sha256,
+      expected_thread_anchor_sha256: parameters.expected_thread_anchor_sha256,
+      expected_owner_anchor_sha256: parameters.expected_owner_anchor_sha256,
+      expected_dedupe_anchor_sha256: parameters.expected_dedupe_anchor_sha256,
+      expected_audio_sha256: parameters.expected_audio_sha256,
+    }),
+    prepared_at_ms: effectiveNow,
+    phase: 'preparing',
+    last_revision: 0,
+    fresh_state_check_count: 0,
+    fixed_ui_action_count: 0,
+    safari_standard_isolated: false,
+    target_binding_consumed: false,
+    source_thread_bound: false,
+    native_chooser_opened: false,
+    baseline_outgoing_audio_bubble_count: null,
+    store_identity: null,
+  };
+  const receipt = (decision, blockerCodes = [], permitIssued = false) => buildReceipt({
+    executionMode: state.execution_mode,
+    phase: WELCOME_AUDIO_SAFARI_LIVE_HOST_PHASE.PREPARATION,
+    decision,
+    hostCapabilityConsumed: true,
+    targetBindingConsumed: state.target_binding_consumed,
+    preparedPermitIssued: permitIssued,
+    safariStandardIsolated: state.safari_standard_isolated,
+    freshStateCheckCount: state.fresh_state_check_count,
+    fixedUiActionCount: state.fixed_ui_action_count,
+    sourceThreadBound: state.source_thread_bound,
+    nativeChooserOpened: state.native_chooser_opened,
+    blockerCodes,
+  });
+  try {
+    if (
+      typeof parameters.exact_target !== 'string'
+      || parameters.exact_target.length === 0
+      || typeof parameters.exact_bound_thread_reference !== 'string'
+      || parameters.exact_bound_thread_reference.length === 0
+      || typeof parameters.exact_owner_account_reference !== 'string'
+      || parameters.exact_owner_account_reference.length === 0
+      || !isOpaqueId(parameters.expected_mission_id)
+      || !isOpaqueId(parameters.expected_authorization_id)
+      || !isOpaqueId(parameters.expected_operation_id)
+      || !isSha256(parameters.expected_draft_sha256)
+      || !isSha256(parameters.expected_projection_sha256)
+      || !isSha256(parameters.expected_source_evidence_sha256)
+      || !Number.isInteger(parameters.expected_source_record_ordinal)
+      || parameters.expected_source_record_ordinal < 1
+      || parameters.expected_source_record_ordinal > 8
+      || !isSha256(parameters.expected_identity_anchor_sha256)
+      || !isSha256(parameters.expected_thread_anchor_sha256)
+      || !isSha256(parameters.expected_owner_anchor_sha256)
+      || !isSha256(parameters.expected_dedupe_anchor_sha256)
+      || !isSha256(parameters.expected_audio_sha256)
+      || !Number.isFinite(effectiveNow)
+      || effectiveNow < 0
+    ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.INPUT_INVALID);
+    state.store_identity = Object.freeze({
+      ...(await resolveStoreRoot({
+        executionMode: state.execution_mode,
+        pendingStoreRoot: state.pending_store_root,
+      })),
+      execution_mode: state.execution_mode,
+    });
+    const targetStatus = await consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce({
+      private_target_binding_capability: parameters.private_target_binding_capability,
+      private_authority_capability: parameters.private_authority_capability,
+      private_source_capability: parameters.private_source_capability,
+      required_authority_mode: state.required_authority_mode,
+      exact_target: parameters.exact_target,
+      exact_bound_thread_reference: parameters.exact_bound_thread_reference,
+      exact_owner_account_reference: parameters.exact_owner_account_reference,
+      expected_operation_id: parameters.expected_operation_id,
+      expected_draft_sha256: parameters.expected_draft_sha256,
+      expected_projection_sha256: parameters.expected_projection_sha256,
+      expected_source_evidence_sha256: parameters.expected_source_evidence_sha256,
+      expected_identity_anchor_sha256: parameters.expected_identity_anchor_sha256,
+      expected_thread_anchor_sha256: parameters.expected_thread_anchor_sha256,
+      expected_owner_anchor_sha256: parameters.expected_owner_anchor_sha256,
+      expected_dedupe_anchor_sha256: parameters.expected_dedupe_anchor_sha256,
+      now_ms: effectiveNow,
+    });
+    if (targetStatus !== WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID) {
+      throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.TARGET_BINDING_INVALID);
+    }
+    state.target_binding_consumed = true;
+    const thread = await acquireFreshState(state);
+    if (
+      thread.exact_source_target_bound !== true
+      || thread.exact_thread_bound !== true
+      || thread.message_input_visible !== true
+    ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SOURCE_THREAD_INVALID);
+    if (thread.message_composer_empty !== true) {
+      throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.COMPOSER_NOT_EMPTY);
+    }
+    if (
+      thread.outgoing_audio_scope_proven !== true
+      || thread.outgoing_audio_bubble_count !== 0
+    ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PRIOR_AUDIO_PRESENT_OR_UNKNOWN);
+    if (thread.attachment_preview_count !== 0) {
+      throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.PREVIEW_INVALID);
+    }
+    if (thread.attachment_control_index === null) {
+      throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.ATTACHMENT_CONTROL_INVALID);
+    }
+    state.source_thread_bound = true;
+    state.baseline_outgoing_audio_bubble_count = thread.outgoing_audio_bubble_count;
+    await fixedUiAction(state, {
+      action: 'open_attachment',
+      elementIndex: thread.attachment_control_index,
+    });
+    const chooser = await acquireFreshState(state);
+    if (
+      chooser.exact_source_target_bound !== true
+      || chooser.exact_thread_bound !== true
+      || chooser.native_file_chooser_visible !== true
+    ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.NATIVE_CHOOSER_INVALID);
+    state.native_chooser_opened = true;
+    state.phase = 'prepared';
+    const permit = opaqueCapability(
+      'crm_core_welcome_audio_safari_ui_attested_prepared_permit',
+      'welcome_audio_safari_ui_attested_prepared_permit_not_serializable',
+    );
+    PREPARED_PERMIT_STATE.set(permit, state);
+    return Object.freeze({
+      private_prepared_permit: permit,
+      redacted_receipt: receipt(WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.PREPARED, [], true),
     });
   } catch (error) {
     state.phase = 'blocked';
@@ -1779,7 +2113,11 @@ const executeWelcomeAudioSafariLivePostPending = async (parameters = {}) => {
       nowMs: effectiveEntryNow,
     });
     pendingValidationCount += 1;
-    const hostPendingStatus = await consumeWelcomeAudioLiveHostPendingCapabilityOnce({
+    const consumeHostPendingCapability = state.authority_family
+      === WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+      ? consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce
+      : consumeWelcomeAudioLiveHostPendingCapabilityOnce;
+    const hostPendingStatus = await consumeHostPendingCapability({
       private_host_pending_capability: input.private_host_pending_capability,
       required_store_mode: storeModeForExecutionMode(state.execution_mode),
       independently_read_pending_evidence: buildIndependentPendingEvidence({
@@ -2315,6 +2653,69 @@ const COMPOSITE_SYNTHETIC_FIELDS = Object.freeze([
   'synthetic_fault_scenario',
 ]);
 
+const UI_ATTESTED_COMPOSITE_COMMON_FIELDS = Object.freeze([
+  'private_operation_context_capability',
+  'private_authority_capability',
+  'private_source_capability',
+  'private_audio_asset_capability',
+  'private_target_binding_capability',
+  'exact_target',
+  'exact_bound_thread_reference',
+  'exact_owner_account_reference',
+  'mission_id',
+  'contract_version',
+  'expected_mission_contract_sha256',
+  'expected_active_next_action_id',
+  'expected_active_next_action_sha256',
+  'expected_approval_packet_id',
+  'expected_authorization_id',
+  'expected_operation_id',
+  'expected_central_repo_head',
+  'expected_canonical_operation_sha256',
+  'expected_draft_sha256',
+  'expected_projection_sha256',
+  'expected_source_mission_id',
+  'expected_source_evidence_schema_version',
+  'expected_source_evidence_sha256',
+  'expected_source_record_ordinal',
+  'expected_source_record_cap',
+  'evidence_observed_at',
+  'expected_source_evidence_anchor_sha256',
+  'expected_profile_anchor_sha256',
+  'identity_anchor_sha256',
+  'expected_thread_anchor_sha256',
+  'expected_owner_anchor_sha256',
+  'expected_dedupe_anchor_sha256',
+  'expected_approved_audio_asset_id',
+  'expected_audio_sha256',
+  'candidate_cap',
+  'claim_cap',
+  'pending_cap',
+  'upload_cap',
+  'send_cap',
+  'retry_cap',
+  'exact_follow_timestamp_claimed',
+  'provider_event_id_claimed',
+  'campaign_membership_claimed',
+]);
+
+const UI_ATTESTED_COMPOSITE_SYNTHETIC_FIELDS = Object.freeze([
+  ...UI_ATTESTED_COMPOSITE_COMMON_FIELDS,
+  'private_store_capability',
+  'driver',
+  'approved_audio_asset_path',
+  'synthetic_store_root',
+  'synthetic_claim_now_ms',
+  'synthetic_prepare_now_ms',
+  'synthetic_pending_now_ms',
+  'synthetic_entry_now_ms',
+  'synthetic_preupload_now_ms',
+  'synthetic_attempted_at_ms',
+  'synthetic_confirmation_now_ms',
+  'synthetic_terminal_now_ms',
+  'synthetic_fault_scenario',
+]);
+
 const buildCompositeReceipt = ({
   decision,
   claimCreated = false,
@@ -2344,6 +2745,12 @@ const buildCompositeReceipt = ({
   external_effect_possible: externalEffectPossible,
   retry_forbidden_permanently: retryForbiddenPermanently,
   blocker_codes: Object.freeze([...new Set(blockerCodes)]),
+});
+
+const buildUiAttestedCompositeReceipt = (input) => Object.freeze({
+  ...buildCompositeReceipt(input),
+  receipt_schema_version:
+    WELCOME_AUDIO_SAFARI_UI_ATTESTED_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION,
 });
 
 const validateWelcomeAudioSafariLiveCompositeReceipt = (value) => {
@@ -2467,6 +2874,21 @@ const validateWelcomeAudioSafariLiveCompositeReceipt = (value) => {
     : { ok: false, reason: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID };
 };
 
+const validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt = (value) => {
+  if (
+    !isPlainDataObject(value)
+    || !exactObjectKeys(value, COMPOSITE_RECEIPT_FIELDS)
+    || value.receipt_schema_version
+      !== WELCOME_AUDIO_SAFARI_UI_ATTESTED_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION
+    || value.zero_effect_claim_cancelled !== false
+  ) return { ok: false, reason: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID };
+  const sealedShape = {
+    ...value,
+    receipt_schema_version: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION,
+  };
+  return validateWelcomeAudioSafariLiveCompositeReceipt(sealedShape);
+};
+
 const compositeBlocked = ({
   blocker,
   claimCreated = false,
@@ -2479,6 +2901,20 @@ const compositeBlocked = ({
     zeroEffectClaimCancelled,
     nativeChooserOpened,
     retryForbiddenPermanently: claimCreated && !zeroEffectClaimCancelled,
+    blockerCodes: [blocker],
+  }),
+});
+
+const uiAttestedCompositeBlocked = ({
+  blocker,
+  claimCreated = false,
+  nativeChooserOpened = false,
+}) => Object.freeze({
+  redacted_receipt: buildUiAttestedCompositeReceipt({
+    decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.BLOCKED_ZERO_EFFECT,
+    claimCreated,
+    nativeChooserOpened,
+    retryForbiddenPermanently: claimCreated,
     blockerCodes: [blocker],
   }),
 });
@@ -2917,6 +3353,371 @@ const runWelcomeAudioSafariSyntheticCompositeOnceForTest = async (parameters = {
   return runWelcomeAudioSafariCompositeInternal({ input: envelope.values, synthetic: true });
 };
 
+const uiAttestedClaimBindingFromComposite = (
+  input,
+  privateClaimCapability,
+  requiredStoreMode,
+) => ({
+  private_claim_capability: privateClaimCapability,
+  required_store_mode: requiredStoreMode,
+  private_audio_asset_capability: input.private_audio_asset_capability,
+  approved_audio_asset_path: input.approved_audio_asset_path,
+  mission_id: input.mission_id,
+  contract_version: input.contract_version,
+  mission_contract_sha256: input.expected_mission_contract_sha256,
+  approval_packet_id: input.expected_approval_packet_id,
+  authorization_id: input.expected_authorization_id,
+  operation_id: input.expected_operation_id,
+  central_repo_head: input.expected_central_repo_head,
+  canonical_operation_sha256: input.expected_canonical_operation_sha256,
+  identity_anchor_sha256: input.identity_anchor_sha256,
+  thread_anchor_sha256: input.expected_thread_anchor_sha256,
+  owner_anchor_sha256: input.expected_owner_anchor_sha256,
+  dedupe_anchor_sha256: input.expected_dedupe_anchor_sha256,
+  source_evidence_sha256: input.expected_source_evidence_sha256,
+  audio_asset_sha256: input.expected_audio_sha256,
+  source_record_ordinal: input.expected_source_record_ordinal,
+});
+
+const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) => {
+  const requiredStoreMode = WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY;
+  let storeCapability;
+  try {
+    storeCapability = input.private_store_capability;
+    if (await verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest({
+      private_store_capability: storeCapability,
+      synthetic_store_root: input.synthetic_store_root,
+    }) !== true) throw new Error('synthetic_store_binding_invalid');
+  } catch {
+    return uiAttestedCompositeBlocked({
+      blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED,
+    });
+  }
+  let claim;
+  try {
+    claim = await issueWelcomeAudioUiAttestedLiveClaim({
+      private_store_capability: storeCapability,
+      private_operation_context_capability: input.private_operation_context_capability,
+      private_authority_capability: input.private_authority_capability,
+      private_audio_asset_capability: input.private_audio_asset_capability,
+      required_authority_mode:
+        WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      mission_id: input.mission_id,
+      contract_version: input.contract_version,
+      expected_mission_contract_sha256: input.expected_mission_contract_sha256,
+      expected_active_next_action_id: input.expected_active_next_action_id,
+      expected_active_next_action_sha256: input.expected_active_next_action_sha256,
+      expected_approval_packet_id: input.expected_approval_packet_id,
+      expected_authorization_id: input.expected_authorization_id,
+      expected_operation_id: input.expected_operation_id,
+      expected_central_repo_head: input.expected_central_repo_head,
+      expected_canonical_operation_sha256: input.expected_canonical_operation_sha256,
+      expected_draft_sha256: input.expected_draft_sha256,
+      expected_projection_sha256: input.expected_projection_sha256,
+      expected_source_mission_id: input.expected_source_mission_id,
+      expected_source_evidence_schema_version: input.expected_source_evidence_schema_version,
+      expected_source_evidence_sha256: input.expected_source_evidence_sha256,
+      expected_source_record_ordinal: input.expected_source_record_ordinal,
+      expected_source_record_cap: input.expected_source_record_cap,
+      evidence_observed_at: input.evidence_observed_at,
+      expected_source_evidence_anchor_sha256: input.expected_source_evidence_anchor_sha256,
+      expected_profile_anchor_sha256: input.expected_profile_anchor_sha256,
+      identity_anchor_sha256: input.identity_anchor_sha256,
+      expected_thread_anchor_sha256: input.expected_thread_anchor_sha256,
+      expected_owner_anchor_sha256: input.expected_owner_anchor_sha256,
+      expected_dedupe_anchor_sha256: input.expected_dedupe_anchor_sha256,
+      expected_approved_audio_asset_id: input.expected_approved_audio_asset_id,
+      approved_audio_asset_path: input.approved_audio_asset_path,
+      expected_audio_sha256: input.expected_audio_sha256,
+      candidate_cap: input.candidate_cap,
+      claim_cap: input.claim_cap,
+      pending_cap: input.pending_cap,
+      upload_cap: input.upload_cap,
+      send_cap: input.send_cap,
+      retry_cap: input.retry_cap,
+      exact_follow_timestamp_claimed: input.exact_follow_timestamp_claimed,
+      provider_event_id_claimed: input.provider_event_id_claimed,
+      campaign_membership_claimed: input.campaign_membership_claimed,
+      now_ms: input.synthetic_claim_now_ms,
+    });
+  } catch {
+    return uiAttestedCompositeBlocked({
+      blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED,
+    });
+  }
+  if (
+    validateWelcomeAudioUiAttestedLiveClaimReceipt(claim.redacted_receipt).ok !== true
+    || claim.redacted_receipt.decision !== WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED
+    || !claim.private_claim_capability
+  ) return uiAttestedCompositeBlocked({
+    blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED,
+  });
+  const claimBinding = uiAttestedClaimBindingFromComposite(
+    input,
+    claim.private_claim_capability,
+    requiredStoreMode,
+  );
+  let hostCapability;
+  try {
+    hostCapability = createWelcomeAudioSafariUiAttestedHostCapability({
+      driver: input.driver,
+      execution_mode: WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC,
+      private_audio_asset_capability: input.private_audio_asset_capability,
+      required_authority_mode:
+        WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      pending_store_root: input.synthetic_store_root,
+    });
+  } catch {
+    return uiAttestedCompositeBlocked({
+      blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.PREPARE_BLOCKED,
+      claimCreated: true,
+    });
+  }
+  let prepared;
+  let knownNativeChooserOpened = false;
+  try {
+    prepared = await prepareWelcomeAudioSafariUiAttestedTarget({
+      private_live_host_capability: hostCapability,
+      private_target_binding_capability: input.private_target_binding_capability,
+      private_authority_capability: input.private_authority_capability,
+      private_source_capability: input.private_source_capability,
+      exact_target: input.exact_target,
+      exact_bound_thread_reference: input.exact_bound_thread_reference,
+      exact_owner_account_reference: input.exact_owner_account_reference,
+      expected_mission_id: input.mission_id,
+      expected_authorization_id: input.expected_authorization_id,
+      expected_operation_id: input.expected_operation_id,
+      expected_draft_sha256: input.expected_draft_sha256,
+      expected_projection_sha256: input.expected_projection_sha256,
+      expected_source_evidence_sha256: input.expected_source_evidence_sha256,
+      expected_source_record_ordinal: input.expected_source_record_ordinal,
+      expected_identity_anchor_sha256: input.identity_anchor_sha256,
+      expected_thread_anchor_sha256: input.expected_thread_anchor_sha256,
+      expected_owner_anchor_sha256: input.expected_owner_anchor_sha256,
+      expected_dedupe_anchor_sha256: input.expected_dedupe_anchor_sha256,
+      expected_audio_sha256: input.expected_audio_sha256,
+      now_ms: input.synthetic_prepare_now_ms,
+    });
+    knownNativeChooserOpened = validateWelcomeAudioSafariLiveHostReceipt(
+      prepared?.redacted_receipt,
+    ).ok === true && prepared.redacted_receipt.native_chooser_opened === true;
+    if (input.synthetic_fault_scenario
+      === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.THROW_AFTER_CHOOSER) {
+      throw new Error('synthetic_throw_after_chooser');
+    }
+    if (input.synthetic_fault_scenario
+      === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.INVALID_PREPARED_RECEIPT) {
+      prepared = Object.freeze({
+        private_prepared_permit: prepared.private_prepared_permit,
+        redacted_receipt: Object.freeze({ ...prepared.redacted_receipt, unexpected: true }),
+      });
+    }
+  } catch {
+    return uiAttestedCompositeBlocked({
+      blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.PREPARE_BLOCKED,
+      claimCreated: true,
+      nativeChooserOpened: knownNativeChooserOpened,
+    });
+  }
+  const preparedValid = validateWelcomeAudioSafariLiveHostReceipt(prepared.redacted_receipt).ok;
+  if (
+    !preparedValid
+    || prepared.redacted_receipt.decision !== WELCOME_AUDIO_SAFARI_LIVE_HOST_DECISION.PREPARED
+    || !prepared.private_prepared_permit
+  ) return uiAttestedCompositeBlocked({
+    blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.PREPARE_BLOCKED,
+    claimCreated: true,
+    nativeChooserOpened: knownNativeChooserOpened,
+  });
+  let armed;
+  try {
+    armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary({
+      ...claimBinding,
+      entered_at_ms: input.synthetic_pending_now_ms,
+    });
+    if (input.synthetic_fault_scenario
+      === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.THROW_AFTER_PENDING_LINK) {
+      throw new Error('synthetic_throw_after_pending_link');
+    }
+  } catch {
+    if (armed?.private_terminal_capability) {
+      const terminal = await finalizeWelcomeAudioUiAttestedLiveAttempt({
+        private_terminal_capability: armed.private_terminal_capability,
+        required_store_mode: requiredStoreMode,
+        private_attempt_evidence_capability: null,
+        private_visual_confirmation_capability: null,
+        synthetic_now_ms: input.synthetic_terminal_now_ms,
+      });
+      const terminalDurable = validateWelcomeAudioLiveAttemptReceipt(
+        terminal.redacted_receipt,
+      ).ok === true && terminal.redacted_receipt.decision
+        === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN;
+      return Object.freeze({
+        redacted_receipt: buildUiAttestedCompositeReceipt({
+          decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.UNKNOWN,
+          claimCreated: true,
+          nativeChooserOpened: true,
+          pendingDurable: true,
+          attachmentUploadEntered: false,
+          sendControlActuationCount: 0,
+          terminalDurable,
+          externalEffectPossible: false,
+          retryForbiddenPermanently: true,
+          blockerCodes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.POST_PENDING_UNKNOWN],
+        }),
+      });
+    }
+    return Object.freeze({
+      redacted_receipt: buildUiAttestedCompositeReceipt({
+        decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.UNKNOWN,
+        claimCreated: true,
+        nativeChooserOpened: true,
+        pendingDurable: null,
+        attachmentUploadEntered: null,
+        sendControlActuationCount: null,
+        terminalDurable: false,
+        externalEffectPossible: true,
+        retryForbiddenPermanently: true,
+        blockerCodes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.POST_PENDING_UNKNOWN],
+      }),
+    });
+  }
+  const armedReceiptValid = validateWelcomeAudioLiveAttemptReceipt(armed.redacted_receipt).ok
+    === true;
+  if (
+    !armedReceiptValid
+    || armed.redacted_receipt.decision !== WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.ARMED
+    || !armed.private_terminal_capability
+    || !armed.private_host_pending_capability
+  ) {
+    if (
+      armedReceiptValid
+      && armed.redacted_receipt.pending_record_present === false
+      && armed.redacted_receipt.terminal_record_present === false
+    ) return uiAttestedCompositeBlocked({
+      blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.PENDING_BLOCKED,
+      claimCreated: true,
+      nativeChooserOpened: true,
+    });
+    return Object.freeze({
+      redacted_receipt: buildUiAttestedCompositeReceipt({
+        decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.UNKNOWN,
+        claimCreated: true,
+        nativeChooserOpened: true,
+        pendingDurable: armedReceiptValid
+          ? armed.redacted_receipt.pending_record_present
+          : null,
+        attachmentUploadEntered: null,
+        sendControlActuationCount: null,
+        terminalDurable: armedReceiptValid
+          ? armed.redacted_receipt.terminal_record_present
+          : false,
+        externalEffectPossible: true,
+        retryForbiddenPermanently: true,
+        blockerCodes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.POST_PENDING_UNKNOWN],
+      }),
+    });
+  }
+  let hostAttempt = null;
+  try {
+    hostAttempt = await executeWelcomeAudioSafariLivePostPending({
+      private_prepared_permit: prepared.private_prepared_permit,
+      private_host_pending_capability: armed.private_host_pending_capability,
+      approved_audio_asset_path: input.approved_audio_asset_path,
+      expected_thread_anchor_sha256: input.expected_thread_anchor_sha256,
+      synthetic_entry_now_ms: input.synthetic_entry_now_ms,
+      synthetic_preupload_now_ms: input.synthetic_preupload_now_ms,
+      synthetic_attempted_at_ms: input.synthetic_attempted_at_ms,
+      synthetic_confirmation_now_ms: input.synthetic_confirmation_now_ms,
+    });
+  } catch {
+    hostAttempt = null;
+  }
+  const hostReceiptValid = hostAttempt
+    && validateWelcomeAudioSafariLiveHostReceipt(hostAttempt.redacted_receipt).ok === true;
+  const terminal = await finalizeWelcomeAudioUiAttestedLiveAttempt({
+    private_terminal_capability: armed.private_terminal_capability,
+    required_store_mode: requiredStoreMode,
+    private_attempt_evidence_capability: hostReceiptValid
+      ? hostAttempt.private_attempt_evidence_capability
+      : null,
+    private_visual_confirmation_capability: hostReceiptValid
+      ? hostAttempt.private_visual_confirmation_capability
+      : null,
+    synthetic_now_ms: input.synthetic_terminal_now_ms,
+  });
+  const terminalReceiptValid = validateWelcomeAudioLiveAttemptReceipt(terminal.redacted_receipt).ok;
+  const confirmed = terminalReceiptValid
+    && terminal.redacted_receipt.decision
+      === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_CONFIRMED;
+  const durableUnknown = terminalReceiptValid
+    && terminal.redacted_receipt.decision
+      === WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN;
+  const uploadEntered = hostReceiptValid
+    ? hostAttempt.redacted_receipt.attachment_upload_entered
+    : null;
+  const sendCount = hostReceiptValid
+    ? hostAttempt.redacted_receipt.send_control_actuation_count
+    : null;
+  const externalEffectPossible = hostReceiptValid
+    ? hostAttempt.redacted_receipt.external_effect_possible
+    : true;
+  return Object.freeze({
+    redacted_receipt: buildUiAttestedCompositeReceipt({
+      decision: confirmed
+        ? WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.CONFIRMED
+        : WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.UNKNOWN,
+      claimCreated: true,
+      nativeChooserOpened: true,
+      pendingDurable: true,
+      attachmentUploadEntered: confirmed ? true : uploadEntered,
+      sendControlActuationCount: confirmed ? 1 : sendCount,
+      terminalDurable: confirmed || durableUnknown,
+      confirmationProven: confirmed,
+      externalEffectPossible: confirmed
+        || externalEffectPossible
+        || uploadEntered === true
+        || sendCount === 1,
+      retryForbiddenPermanently: true,
+      blockerCodes: confirmed ? [] : [
+        WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.POST_PENDING_UNKNOWN,
+      ],
+    }),
+  });
+};
+
+const runWelcomeAudioSafariUiAttestedLiveCompositeOnce = async (parameters = {}) => {
+  if (!exactObjectKeys(parameters, [])) {
+    return uiAttestedCompositeBlocked({
+      blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID,
+    });
+  }
+  return uiAttestedCompositeBlocked({
+    blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED,
+  });
+};
+
+const runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest = async (
+  parameters = {},
+) => {
+  const envelope = inspectExactDataEnvelope(
+    parameters,
+    UI_ATTESTED_COMPOSITE_SYNTHETIC_FIELDS,
+  );
+  if (
+    !envelope.valid
+    || !Object.values(WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST).includes(
+      envelope.values.synthetic_fault_scenario,
+    )
+    || envelope.values.synthetic_fault_scenario
+      === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST
+        .PRE_PENDING_REVALIDATION_FAILURE
+  ) return uiAttestedCompositeBlocked({
+    blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID,
+  });
+  return runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal(envelope.values);
+};
+
 const resolveWelcomeAudioSafariLiveHostDeterministicOracleForTest = (parameters = {}) => {
   if (!exactObjectKeys(parameters, [
     'deferred_actuator_rendezvous_authority',
@@ -3000,7 +3801,10 @@ export {
   resolveWelcomeAudioSafariLiveHostDeterministicOracleForTest,
   runWelcomeAudioSafariLiveCompositeOnce,
   runWelcomeAudioSafariSyntheticCompositeOnceForTest,
+  runWelcomeAudioSafariUiAttestedLiveCompositeOnce,
+  runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest,
   validateWelcomeAudioSafariLiveCompositeReceipt,
   validateWelcomeAudioSafariLiveHostReceipt,
+  validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt,
   verifyAndConsumeWelcomeAudioSafariTerminalEvidenceOnce,
 };

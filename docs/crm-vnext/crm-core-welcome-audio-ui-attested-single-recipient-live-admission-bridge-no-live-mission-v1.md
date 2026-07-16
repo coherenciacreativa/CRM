@@ -222,3 +222,8 @@ publication, claim, browser action, upload, or Send occurred. Synthetic
 temporary-root publication occurred only inside deterministic tests. Continuing
 requires a separately bounded repo-only mission; the partial checkpoint must
 not be described as canary-ready.
+
+The separately authorized continuation is
+`crm_core_welcome_audio_ui_attested_claim_host_completion_no_live_v1_20260716`,
+bounded to 150 minutes and zero live effects. It begins from isolated checkpoint
+commit `996ea7b` and must preserve the existing sealed route.
