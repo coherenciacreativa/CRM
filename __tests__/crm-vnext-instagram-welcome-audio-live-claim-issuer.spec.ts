@@ -37,6 +37,8 @@ import {
   WELCOME_AUDIO_SOURCE_CLASS,
   WELCOME_AUDIO_SOURCE_RECENCY,
   WELCOME_AUDIO_SURFACE,
+  WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
   buildWelcomeAudioCanonicalOperationDigest,
 } from "../scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs";
 import {
@@ -45,12 +47,19 @@ import {
   WELCOME_AUDIO_LIVE_AUTHORITY_MODE,
   WELCOME_AUDIO_LIVE_AUTHORITY_SCHEMA_VERSION,
   WELCOME_AUDIO_SEALED_MANIFEST_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE,
   computeWelcomeAudioCampaignIntervalSha256,
   computeWelcomeAudioExactIdentityAnchorSha256,
   computeWelcomeAudioSealedManifestSha256,
   createSyntheticWelcomeAudioLiveAuthorityCapability,
+  validateWelcomeAudioUiAttestedSourcePreflight,
   validateWelcomeAudioLiveOperationContext,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
+import {
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  adaptWelcomeAudioUiAttestedFollowerSource,
+} from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
 import {
   WELCOME_AUDIO_LIVE_ATTEMPT_DECISION,
   WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME,
@@ -63,8 +72,10 @@ import {
   WELCOME_AUDIO_LIVE_MUTEX_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_LIVE_STATE_DECISION,
   WELCOME_AUDIO_LIVE_STORE_MODE,
+  WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION,
   cancelWelcomeAudioLiveReservationZeroEffect,
   claimNextWelcomeAudioLiveManifestInspection,
+  claimNextWelcomeAudioUiAttestedInspectionSlot,
   consumeWelcomeAudioLiveHostPendingCapabilityOnce,
   createSyntheticWelcomeAudioLiveClaimStoreCapability,
   configureWelcomeAudioLiveCancellationCleanupScenarioForTest,
@@ -75,6 +86,10 @@ import {
   recoverWelcomeAudioLivePendingAttemptAfterOwnerExit,
   recoverWelcomeAudioLivePendingAttemptAfterOwnerExitWithSyntheticPendingReplacementForTest,
   recordWelcomeAudioLiveInspectionResult,
+  reopenWelcomeAudioUiAttestedInspectionSlot,
+  recordWelcomeAudioUiAttestedInspectionPreclaimResult,
+  validateWelcomeAudioUiAttestedSourcePreflightForInspection,
+  validateWelcomeAudioUiAttestedInspectionReceipt,
   validateWelcomeAudioLiveAttemptReceipt,
   validateWelcomeAudioLiveClaimReceipt,
   validateWelcomeAudioLiveStateReceipt,
@@ -87,6 +102,7 @@ const CENTRAL_HEAD = "a".repeat(40);
 const OWNER_SHA = "b".repeat(64);
 const MISSION_CONTRACT_SHA = "9".repeat(64);
 const NOW_MS = Date.parse("2026-07-14T16:00:00.000Z");
+const UI_ATTESTED_INSPECTION_CAPABILITY_TTL_MS = 5 * 60 * 1000;
 
 afterEach(async () => {
   await Promise.all(cleanupPaths.splice(0).map((path) => rm(path, {
@@ -709,6 +725,1067 @@ const refreshOperationContext = async (
   if (!context.private_capability) throw new Error("synthetic context refresh failed");
   operation.operationContextCapability = context.private_capability;
 };
+
+const uiAttestedSourceInput = ({
+  missionId,
+  ordinal = 1,
+  suffix = "1",
+}: {
+  missionId: string;
+  ordinal?: number;
+  suffix?: string;
+}) => ({
+  schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
+  source_class: WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  mission_id: missionId,
+  notification_row: {
+    row_ordinal: ordinal,
+    exact_target_utf8: `Synthetic.Ui.Target+${suffix}`,
+    notification_evidence: "explicit_recent_follower_notification_row",
+    follower_signal: "started_following_owner",
+    time_bucket_utf8: "synthetic visible historical bucket",
+    time_bucket_evidence: "explicit_visible_relative_time_label",
+    attested_at: "2026-07-14T15:59:00.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  profile: {
+    exact_target_utf8: `Synthetic.Ui.Target+${suffix}`,
+    notification_to_profile_binding: "exact",
+    profile_identity_evidence: "exact_private_visual_profile_identity",
+    follows_owner: "confirmed",
+    follows_owner_evidence: "explicit_visible_follows_owner_signal",
+    attested_at: "2026-07-14T15:59:10.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  thread: {
+    bound_thread_reference_utf8: `synthetic-ui-thread-${suffix}`,
+    profile_to_thread_binding: "exact",
+    thread_binding_evidence: "exact_bound_thread_observed",
+    attested_at: "2026-07-14T15:59:20.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  owner: {
+    owner_account_reference_utf8: "synthetic-ui-owner",
+    owner_binding_evidence: "exact_owner_account_observed",
+    attested_at: "2026-07-14T15:59:30.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  dedupe: {
+    status: "clear_no_prior_welcome_or_attempt",
+    already_welcomed_status: "not_found",
+    send_history_status: "no_prior_attempt",
+    exact_target_utf8: `Synthetic.Ui.Target+${suffix}`,
+    bound_thread_reference_utf8: `synthetic-ui-thread-${suffix}`,
+    owner_account_reference_utf8: "synthetic-ui-owner",
+    checked_at: "2026-07-14T15:59:40.000Z",
+    dedupe_evidence: "exact_bound_thread_history_observed",
+    inference_status: "explicit_not_inferred",
+  },
+  exact_follow_timestamp_claimed: false,
+  provider_event_id_claimed: false,
+  campaign_membership_claimed: false,
+});
+
+const uiAttestedOperationSnapshot = ({
+  fixture,
+  projection,
+  ordinal = 1,
+}: {
+  fixture: Fixture;
+  projection: any;
+  ordinal?: number;
+}) => {
+  const operation = operationSnapshot({
+    missionId: fixture.missionId,
+    operationId: `synthetic_ui_attested_operation_${ordinal}`,
+    approvalPacketId: `synthetic_ui_attested_approval_${ordinal}`,
+    sourceSha: projection.anchors.source_evidence_anchor_sha256,
+    profileSha: projection.anchors.profile_anchor_sha256,
+    identitySha: projection.anchors.candidate_anchor_sha256,
+    threadSha: projection.anchors.thread_anchor_sha256,
+    audioSha256: fixture.audioSha256,
+    manifestSha256: fixture.manifestSha256,
+    campaignIntervalSha256: fixture.campaignIntervalSha256,
+    manifestOrdinal: ordinal,
+    manifestRecordCount: 8,
+    followedAt: "2026-07-13T13:00:00.000Z",
+  });
+  const { source_event_anchor_sha256: _operationSource, ...operationSection } =
+    operation.operation;
+  const {
+    source_event_anchor_sha256: _approvalSource,
+    source_recency_max_age_ms: _approvalAge,
+    ...approvalSection
+  } = operation.approval;
+  const { source_event_anchor_sha256: _bindingSource, ...bindingSection } =
+    operation.binding;
+  operation.adapter_version = WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION;
+  operation.contract_version = WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION;
+  operation.operation = {
+    ...operationSection,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+  };
+  operation.approval = {
+    ...approvalSection,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+    source_evidence_freshness_max_age_ms: 5 * 60 * 1000,
+  };
+  operation.follower_evidence = {
+    source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+    evidence_observed_at: projection.dedupe.checked_at,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    source_evidence_freshness_max_age_ms: 5 * 60 * 1000,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  operation.binding = {
+    ...bindingSection,
+    source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+  };
+  operation.eligibility.business_eligibility =
+    WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER;
+  operation.asset.asset_preview_binding = WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE;
+  operation.asset.preview_status = "approved_file_validated_before_upload";
+  operation.dedupe.owner_anchor_sha256 = projection.anchors.owner_anchor_sha256;
+  operation.effect_claim.owner_anchor_sha256 = projection.anchors.owner_anchor_sha256;
+  operation.source_provenance = {
+    source_class: WELCOME_AUDIO_SOURCE_CLASS.UI_ATTESTED_FOLLOWER_SOURCE_V1,
+    source_evidence_schema_version: projection.schema_version,
+    source_evidence_sha256: projection.source_evidence_sha256,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    source_record_ordinal: ordinal,
+    source_record_cap: 8,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  return bindCanonicalDigest(operation);
+};
+
+const prepareUiAttestedSourceInput = (
+  missionId: string,
+  ordinal = 1,
+  suffix = String(ordinal),
+  refreshEvidenceAtMs: number | null = null,
+) => {
+  const sourceInput = uiAttestedSourceInput({
+    missionId,
+    ordinal,
+    suffix,
+  });
+  if (refreshEvidenceAtMs !== null) {
+    sourceInput.notification_row.attested_at =
+      new Date(refreshEvidenceAtMs - 5_000).toISOString();
+    sourceInput.profile.attested_at = new Date(refreshEvidenceAtMs - 4_000).toISOString();
+    sourceInput.thread.attested_at = new Date(refreshEvidenceAtMs - 3_000).toISOString();
+    sourceInput.owner.attested_at = new Date(refreshEvidenceAtMs - 2_000).toISOString();
+    sourceInput.dedupe.checked_at = new Date(refreshEvidenceAtMs - 1_000).toISOString();
+  }
+  return sourceInput;
+};
+
+const prepareUiAttestedProjectionProof = (
+  fixture: Fixture,
+  ordinal = 1,
+  suffix = String(ordinal),
+  nowMs = NOW_MS + 1_500,
+  refreshEvidenceAtMs: number | null = null,
+) => {
+  const sourceInput = prepareUiAttestedSourceInput(
+    fixture.missionId,
+    ordinal,
+    suffix,
+    refreshEvidenceAtMs,
+  );
+  const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
+    sourceInput,
+    { nowMs },
+  );
+  if (!adapted.private_projection) throw new Error("synthetic UI source adaptation failed");
+  return {
+    sourceInput,
+    projection: adapted.private_projection,
+    operation: uiAttestedOperationSnapshot({
+      fixture,
+      projection: adapted.private_projection,
+      ordinal,
+    }),
+  };
+};
+
+const prepareUiAttestedProof = async (
+  fixture: Fixture,
+  privateInspectionCapability: unknown,
+  ordinal = 1,
+  suffix = String(ordinal),
+  nowMs = NOW_MS + 1_500,
+  refreshEvidenceAtMs: number | null = null,
+  connectedPreflight = validateWelcomeAudioUiAttestedSourcePreflightForInspection,
+) => {
+  const sourceInput = prepareUiAttestedSourceInput(
+    fixture.missionId,
+    ordinal,
+    suffix,
+    refreshEvidenceAtMs,
+  );
+  const preflight = await connectedPreflight({
+    private_inspection_capability: privateInspectionCapability,
+    private_source_input: sourceInput,
+    now_ms: nowMs,
+  });
+  if (
+    !preflight.private_source_projection
+    || !preflight.private_ui_attested_source_capability
+  ) {
+    throw new Error("synthetic connected UI source preflight failed");
+  }
+  return {
+    sourceInput,
+    projection: preflight.private_source_projection,
+    operation: uiAttestedOperationSnapshot({
+      fixture,
+      projection: preflight.private_source_projection,
+      ordinal,
+    }),
+    sourceCapability: preflight.private_ui_attested_source_capability,
+  };
+};
+
+const refreshUiAttestedOperationSnapshot = (operation: Record<string, any>, nowMs: number) => {
+  const refreshed = structuredClone(operation);
+  const freshIso = new Date(nowMs - 1_000).toISOString();
+  refreshed.approval.checked_at = freshIso;
+  refreshed.execution_surface.observed_at = freshIso;
+  refreshed.binding.observed_at = freshIso;
+  refreshed.eligibility.observed_at = freshIso;
+  refreshed.asset.preview_observed_at = freshIso;
+  refreshed.context.checked_at = freshIso;
+  refreshed.dedupe.checked_at = freshIso;
+  return bindCanonicalDigest(refreshed);
+};
+
+describe("UI-attested follower source synthetic PRECLAIM seam", () => {
+  test("durably records the ordered synthetic proof without creating live-claim artifacts", async () => {
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_issuer" });
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: NOW_MS + 1_000,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    expect(slot.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.SLOT_CLAIMED,
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+      live_authority: false,
+      live_claim_issued: false,
+      private_live_claim_capability_issued: false,
+      live_claim_record_persisted: false,
+      send_allowed: false,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+    });
+    expect(validateWelcomeAudioUiAttestedInspectionReceipt(
+      slot.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+
+    const recorded = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    expect(recorded.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: true,
+      ui_attested_source_bound: true,
+      guard_preclaim_valid: true,
+      claim_allowed_logical: true,
+      live_authority: false,
+      live_claim_issued: false,
+      private_live_claim_capability_issued: false,
+      live_claim_record_persisted: false,
+      send_allowed: false,
+      external_effect_invoked: false,
+      browser_used: false,
+      network_used: false,
+      blocker_codes: [],
+    });
+    expect(validateWelcomeAudioUiAttestedInspectionReceipt(
+      recorded.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(recorded).not.toHaveProperty("private_claim_capability");
+    expect(recorded).not.toHaveProperty("private_live_claim_capability");
+
+    const entries = await readdir(fixture.storeRoot);
+    expect(entries.filter((name) => name.startsWith("ui-inspection-")).length).toBe(2);
+    expect(entries.some((name) => /^(?:claim|pending|terminal)-/.test(name))).toBe(false);
+  });
+
+  test("fails closed when the inspection capability enters record flight during connected readback", async () => {
+    const fixture = await setup({
+      count: 1,
+      missionId: "synthetic_ui_attested_connected_readback_race",
+    });
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: NOW_MS + 1_000,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const competingPreflightPromise =
+      validateWelcomeAudioUiAttestedSourcePreflightForInspection({
+        private_inspection_capability: slot.private_inspection_capability,
+        private_source_input: proof.sourceInput,
+        now_ms: NOW_MS + 1_600,
+      });
+    const recordPromise = recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    const [competingPreflight, recorded] = await Promise.all([
+      competingPreflightPromise,
+      recordPromise,
+    ]);
+    expect(competingPreflight).toMatchObject({
+      private_source_projection: null,
+      private_ui_attested_source_capability: null,
+    });
+    expect(recorded.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+    const entries = await readdir(fixture.storeRoot);
+    expect(entries.filter((name) => name.startsWith("ui-inspection-"))).toHaveLength(2);
+    expect(entries.some((name) => /^(?:claim|pending|terminal)-/u.test(name))).toBe(false);
+  });
+
+  test("rejects a pre-slot projection and public preflight without consuming a post-slot connected capability", async () => {
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_slot_order" });
+    const proof = prepareUiAttestedProjectionProof(
+      fixture,
+      1,
+      "1",
+      NOW_MS + 1_000,
+    );
+    const publicPreflight = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: proof.projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: NOW_MS + 1_000,
+    });
+    expect(publicPreflight.private_capability).not.toBeNull();
+
+    const slotClaimedAtMs = NOW_MS;
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: slotClaimedAtMs,
+    });
+    const entriesBeforePrebuiltProjection = (await readdir(fixture.storeRoot)).sort();
+    const rejectedPrebuiltProjection =
+      await validateWelcomeAudioUiAttestedSourcePreflightForInspection({
+        private_inspection_capability: slot.private_inspection_capability,
+        private_source_projection: proof.projection,
+        now_ms: NOW_MS + 2_000,
+      } as any);
+    expect(rejectedPrebuiltProjection).toMatchObject({
+      private_source_projection: null,
+      private_ui_attested_source_capability: null,
+    });
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(
+      entriesBeforePrebuiltProjection,
+    );
+    expect((await readdir(fixture.storeRoot)).some(
+      (name) => name.startsWith("ui-inspection-result-")
+        || /^(?:claim|pending|terminal)-/u.test(name),
+    )).toBe(false);
+
+    const connectedPreflight = await validateWelcomeAudioUiAttestedSourcePreflightForInspection({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_source_input: proof.sourceInput,
+      now_ms: NOW_MS + 2_500,
+    });
+    expect(connectedPreflight.private_source_projection).not.toBeNull();
+    expect(connectedPreflight.private_ui_attested_source_capability).not.toBeNull();
+    const connectedOperation = uiAttestedOperationSnapshot({
+      fixture,
+      projection: connectedPreflight.private_source_projection,
+      ordinal: 1,
+    });
+
+    const entriesBeforeRejectedRecord = (await readdir(fixture.storeRoot)).sort();
+    const rejected = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: publicPreflight.private_capability,
+      operation_snapshot: connectedOperation,
+      expected_canonical_operation_sha256:
+        connectedOperation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256:
+        connectedPreflight.private_source_projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 3_000,
+    });
+    expect(rejected.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_CAPABILITY_INVALID],
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+      live_claim_issued: false,
+      send_allowed: false,
+    });
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBeforeRejectedRecord);
+
+    const accepted = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability:
+        connectedPreflight.private_ui_attested_source_capability,
+      operation_snapshot: connectedOperation,
+      expected_canonical_operation_sha256:
+        connectedOperation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256:
+        connectedPreflight.private_source_projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 4_000,
+    });
+    expect(accepted.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+  });
+
+  test("rejects raw mission and ordinal drift after slot readback without consuming the inspection slot", async () => {
+    const fixture = await setup({
+      count: 1,
+      missionId: "synthetic_ui_attested_raw_input_binding",
+    });
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: NOW_MS + 1_000,
+    });
+    const sourceInput = prepareUiAttestedSourceInput(fixture.missionId);
+    const wrongMission = structuredClone(sourceInput);
+    wrongMission.mission_id = "synthetic_ui_attested_other_mission";
+    const wrongOrdinal = structuredClone(sourceInput);
+    wrongOrdinal.notification_row.row_ordinal = 2;
+    const entriesBefore = (await readdir(fixture.storeRoot)).sort();
+
+    for (const [index, privateSourceInput] of [wrongMission, wrongOrdinal].entries()) {
+      const blocked = await validateWelcomeAudioUiAttestedSourcePreflightForInspection({
+        private_inspection_capability: slot.private_inspection_capability,
+        private_source_input: privateSourceInput,
+        now_ms: NOW_MS + 1_600 + index,
+      });
+      expect(blocked).toMatchObject({
+        private_source_projection: null,
+        private_ui_attested_source_capability: null,
+      });
+      expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBefore);
+    }
+
+    const valid = await validateWelcomeAudioUiAttestedSourcePreflightForInspection({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_source_input: sourceInput,
+      now_ms: NOW_MS + 1_700,
+    });
+    expect(valid.private_source_projection).toMatchObject({
+      mission_id: fixture.missionId,
+      notification_row: { row_ordinal: 1 },
+    });
+    expect(valid.private_ui_attested_source_capability).not.toBeNull();
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBefore);
+  });
+
+  test("rejects projection-to-operation observation-time drift before consuming the source capability", async () => {
+    const fixture = await setup({
+      count: 1,
+      missionId: "synthetic_ui_attested_observation_binding",
+    });
+    const slotClaimedAtMs = NOW_MS + 1_000;
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: slotClaimedAtMs,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const mismatched = structuredClone(proof.operation);
+    mismatched.follower_evidence.evidence_observed_at =
+      "2026-07-14T15:59:39.999Z";
+    bindCanonicalDigest(mismatched);
+    const entriesBeforeRejectedRecord = (await readdir(fixture.storeRoot)).sort();
+    const rejected = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: mismatched,
+      expected_canonical_operation_sha256: mismatched.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    expect(rejected.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_CAPABILITY_INVALID],
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+    });
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBeforeRejectedRecord);
+
+    const accepted = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_100,
+    });
+    expect(accepted.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+  });
+
+  test("rejects an invalid computed operation digest before consuming the source capability", async () => {
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_digest" });
+    const slotClaimedAtMs = NOW_MS + 1_000;
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: slotClaimedAtMs,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const staleDigestOperation = structuredClone(proof.operation);
+    staleDigestOperation.operation.operation_id = "synthetic_digest_was_not_rebound";
+    const entriesBeforeRejectedRecord = (await readdir(fixture.storeRoot)).sort();
+    const rejected = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: staleDigestOperation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    expect(rejected.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_INPUT_INVALID],
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+    });
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBeforeRejectedRecord);
+
+    const accepted = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_100,
+    });
+    expect(accepted.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+  });
+
+  test("fails closed on mutation during async work without consuming capabilities or advancing state", async () => {
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_toctou" });
+    const slotClaimedAtMs = NOW_MS + 1_000;
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: slotClaimedAtMs,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const mutableOperation = structuredClone(proof.operation);
+    const entriesBeforeMutation = (await readdir(fixture.storeRoot)).sort();
+    const pendingRecord = recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: mutableOperation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    mutableOperation.dedupe.status = "mutated_during_async_work";
+    const rejected = await pendingRecord;
+    expect(rejected.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_INPUT_INVALID],
+      inspection_cursor_count: 1,
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+      live_claim_issued: false,
+      send_allowed: false,
+    });
+    const entriesAfterMutation = (await readdir(fixture.storeRoot)).sort();
+    expect(entriesAfterMutation).toEqual(entriesBeforeMutation);
+    expect(entriesAfterMutation.filter((name) => (
+      name.startsWith("ui-inspection-")
+      && !name.startsWith("ui-inspection-result-")
+    ))).toHaveLength(1);
+    expect(entriesAfterMutation.some((name) => (
+      name.startsWith("ui-inspection-result-")
+      || /^(?:claim|pending|terminal)-/u.test(name)
+    ))).toBe(false);
+
+    const accepted = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_100,
+    });
+    expect(accepted.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+  });
+
+  test("enforces ordering, source-capability one use, and guard fail-closed behavior", async () => {
+    const fixture = await setup({ count: 2, missionId: "synthetic_ui_attested_order" });
+    const outOfOrder = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 2,
+      now_ms: NOW_MS + 1_000,
+    });
+    expect(outOfOrder.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INSPECTION_ORDER_INVALID,
+    ]);
+
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: NOW_MS + 1_000,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const tampered = structuredClone(proof.operation);
+    tampered.dedupe.status = "unknown";
+    bindCanonicalDigest(tampered);
+    const blocked = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: tampered,
+      expected_canonical_operation_sha256: tampered.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    expect(blocked.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_PRECLAIM_BLOCKED,
+    ]);
+    expect((await readdir(fixture.storeRoot)).some(
+      (name) => name.startsWith("ui-inspection-result-"),
+    )).toBe(false);
+
+    const consumedBeforeGuard = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_250,
+    });
+    expect(consumedBeforeGuard.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_CAPABILITY_INVALID,
+    ]);
+
+    const refreshedPreflight = await validateWelcomeAudioUiAttestedSourcePreflightForInspection({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_source_input: proof.sourceInput,
+      now_ms: NOW_MS + 2_500,
+    });
+    expect(refreshedPreflight.private_source_projection).not.toBeNull();
+    expect(refreshedPreflight.private_ui_attested_source_capability).not.toBeNull();
+    const refreshedOperation = uiAttestedOperationSnapshot({
+      fixture,
+      projection: refreshedPreflight.private_source_projection,
+      ordinal: 1,
+    });
+
+    const valid = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability:
+        refreshedPreflight.private_ui_attested_source_capability,
+      operation_snapshot: refreshedOperation,
+      expected_canonical_operation_sha256:
+        refreshedOperation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256:
+        refreshedPreflight.private_source_projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 3_000,
+    });
+    expect(valid.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+    const replay = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability:
+        refreshedPreflight.private_ui_attested_source_capability,
+      operation_snapshot: refreshedOperation,
+      expected_canonical_operation_sha256:
+        refreshedOperation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256:
+        refreshedPreflight.private_source_projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 4_000,
+    });
+    expect(replay.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+    );
+    expect(replay.redacted_receipt.live_claim_issued).toBe(false);
+  });
+
+  test("rehydrates only the durable incomplete ordinal after store reopen without widening authority", async () => {
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_rehydrate" });
+    const slotClaimedAtMs = NOW_MS - 30_000;
+    const originalCapabilityExpiresAtMs =
+      slotClaimedAtMs + UI_ATTESTED_INSPECTION_CAPABILITY_TTL_MS;
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: slotClaimedAtMs,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+      1,
+      "1",
+      NOW_MS,
+    );
+    const entriesBeforeEarlyReopen = (await readdir(fixture.storeRoot)).sort();
+
+    const sameProcessEarly = await reopenWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: slotClaimedAtMs + 1,
+    });
+    expect(sameProcessEarly.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INSPECTION_ORDER_INVALID],
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+      live_claim_issued: false,
+      send_allowed: false,
+    });
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBeforeEarlyReopen);
+
+    const restartedIssuer = await import(
+      "../scripts/crm-vnext-instagram-welcome-audio-live-claim-issuer.mjs?synthetic-restart-v1"
+    );
+    const reopenedStoreCapability = await restartedIssuer
+      .createSyntheticWelcomeAudioLiveClaimStoreCapability({
+      store_root: fixture.storeRoot,
+    });
+    const freshModuleEarly = await restartedIssuer.reopenWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: reopenedStoreCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: originalCapabilityExpiresAtMs - 1,
+    });
+    expect(freshModuleEarly.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INSPECTION_ORDER_INVALID],
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+      live_claim_issued: false,
+      send_allowed: false,
+    });
+    expect((await readdir(fixture.storeRoot)).sort()).toEqual(entriesBeforeEarlyReopen);
+
+    const rehydrated = await restartedIssuer.reopenWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: reopenedStoreCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: originalCapabilityExpiresAtMs,
+    });
+    expect(rehydrated.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.SLOT_REHYDRATED,
+      inspection_cursor_count: 1,
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: false,
+      live_authority: false,
+      live_claim_issued: false,
+      private_live_claim_capability_issued: false,
+      send_allowed: false,
+      external_effect_invoked: false,
+    });
+    expect(validateWelcomeAudioUiAttestedInspectionReceipt(
+      rehydrated.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    const afterRehydrateEntries = await readdir(fixture.storeRoot);
+    expect(afterRehydrateEntries.filter((name) => (
+      name.startsWith("ui-inspection-")
+      && !name.startsWith("ui-inspection-result-")
+    ))).toHaveLength(1);
+    expect(afterRehydrateEntries.some((name) => name.startsWith("ui-inspection-result-")))
+      .toBe(false);
+
+    const expiredOriginal = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: originalCapabilityExpiresAtMs,
+    });
+    expect(expiredOriginal.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_INPUT_INVALID],
+      live_claim_issued: false,
+      send_allowed: false,
+    });
+
+    const rehydratedProof = await prepareUiAttestedProof(
+      fixture,
+      rehydrated.private_inspection_capability,
+      1,
+      "1",
+      originalCapabilityExpiresAtMs,
+      originalCapabilityExpiresAtMs,
+      restartedIssuer.validateWelcomeAudioUiAttestedSourcePreflightForInspection,
+    );
+    const refreshedOperation = refreshUiAttestedOperationSnapshot(
+      rehydratedProof.operation,
+      originalCapabilityExpiresAtMs,
+    );
+
+    const recorded = await restartedIssuer
+      .recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: rehydrated.private_inspection_capability,
+      private_ui_attested_source_capability: rehydratedProof.sourceCapability,
+      operation_snapshot: refreshedOperation,
+      expected_canonical_operation_sha256: refreshedOperation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256:
+        rehydratedProof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: originalCapabilityExpiresAtMs + 100,
+    });
+    expect(recorded.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+    const finalEntries = await readdir(fixture.storeRoot);
+    expect(finalEntries.filter((name) => (
+      name.startsWith("ui-inspection-")
+      && !name.startsWith("ui-inspection-result-")
+    ))).toHaveLength(1);
+    expect(finalEntries.filter((name) => name.startsWith("ui-inspection-result-")))
+      .toHaveLength(1);
+    expect(finalEntries.some((name) => /^(?:claim|pending|terminal)-/u.test(name))).toBe(false);
+
+    const secondReopen = await restartedIssuer.reopenWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: reopenedStoreCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: originalCapabilityExpiresAtMs + 200,
+    });
+    expect(secondReopen.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      durable_inspection_slot_present: true,
+      durable_inspection_result_present: true,
+      live_claim_issued: false,
+      send_allowed: false,
+    });
+  });
+
+  test("fails closed without executing hostile UI-inspection proxies, accessors, or blocker arrays", async () => {
+    let trapCount = 0;
+    const hostileHandler = {
+      get() {
+        trapCount += 1;
+        throw new Error("hostile issuer get trap executed");
+      },
+      ownKeys() {
+        trapCount += 1;
+        throw new Error("hostile issuer ownKeys trap executed");
+      },
+      getOwnPropertyDescriptor() {
+        trapCount += 1;
+        throw new Error("hostile issuer descriptor trap executed");
+      },
+      getPrototypeOf() {
+        trapCount += 1;
+        throw new Error("hostile issuer prototype trap executed");
+      },
+    };
+    const hostileRoot = new Proxy({}, hostileHandler);
+    expect((await claimNextWelcomeAudioUiAttestedInspectionSlot(hostileRoot as any))
+      .redacted_receipt.decision).toBe(WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED);
+    expect((await reopenWelcomeAudioUiAttestedInspectionSlot(hostileRoot as any))
+      .redacted_receipt.decision).toBe(WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED);
+    expect((await recordWelcomeAudioUiAttestedInspectionPreclaimResult(hostileRoot as any))
+      .redacted_receipt.decision).toBe(WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED);
+
+    let getterCount = 0;
+    const accessorParameters: Record<string, any> = {};
+    Object.defineProperty(accessorParameters, "mission_id", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        getterCount += 1;
+        throw new Error("hostile issuer getter executed");
+      },
+    });
+    expect((await claimNextWelcomeAudioUiAttestedInspectionSlot(accessorParameters))
+      .redacted_receipt.decision).toBe(WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED);
+
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_hostile" });
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: NOW_MS + 1_000,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const nestedBlocked = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: hostileRoot,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    expect(nestedBlocked.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+    );
+
+    const prototypeKeyOperation = structuredClone(proof.operation);
+    Object.defineProperty(prototypeKeyOperation, "__proto__", {
+      value: { polluted: true },
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+    const prototypeKeyBlocked = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: prototypeKeyOperation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_100,
+    });
+    expect(prototypeKeyBlocked.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.BLOCKED,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.UI_ATTESTED_INPUT_INVALID],
+      durable_inspection_result_present: false,
+    });
+    expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
+
+    const accepted = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_200,
+    });
+    expect(accepted.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.PRECLAIM_RECORDED,
+    );
+
+    const validReceipt = slot.redacted_receipt;
+    expect(validateWelcomeAudioUiAttestedInspectionReceipt(
+      new Proxy(validReceipt, hostileHandler),
+    ).ok).toBe(false);
+    expect(validateWelcomeAudioUiAttestedInspectionReceipt({
+      ...validReceipt,
+      blocker_codes: new Proxy([], hostileHandler),
+    }).ok).toBe(false);
+    expect(trapCount).toBe(0);
+    expect(getterCount).toBe(0);
+  });
+
+  test("fails closed on malformed durable UI-attested ledger evidence", async () => {
+    const fixture = await setup({ count: 1, missionId: "synthetic_ui_attested_malformed" });
+    const slot = await claimNextWelcomeAudioUiAttestedInspectionSlot({
+      private_store_capability: fixture.storeCapability,
+      mission_id: fixture.missionId,
+      contract_version: CONTRACT_VERSION,
+      inspection_ordinal: 1,
+      now_ms: NOW_MS + 1_000,
+    });
+    const proof = await prepareUiAttestedProof(
+      fixture,
+      slot.private_inspection_capability,
+    );
+    const slotName = (await readdir(fixture.storeRoot)).find(
+      (name) => name.startsWith("ui-inspection-") && name.endsWith(".json"),
+    );
+    if (!slotName) throw new Error("synthetic UI slot missing");
+    await writeFile(
+      join(fixture.storeRoot, slotName.replace(/\.json$/u, "-malformed.json")),
+      "{}\n",
+      { mode: 0o600 },
+    );
+    const blocked = await recordWelcomeAudioUiAttestedInspectionPreclaimResult({
+      private_inspection_capability: slot.private_inspection_capability,
+      private_ui_attested_source_capability: proof.sourceCapability,
+      operation_snapshot: proof.operation,
+      expected_canonical_operation_sha256: proof.operation.canonical_operation_sha256,
+      expected_dedupe_anchor_sha256: proof.projection.anchors.dedupe_anchor_sha256,
+      now_ms: NOW_MS + 2_000,
+    });
+    expect(blocked.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_INSPECTION_DECISION.UNKNOWN_TERMINAL,
+      live_claim_issued: false,
+      private_live_claim_capability_issued: false,
+      live_claim_record_persisted: false,
+      send_allowed: false,
+    });
+    expect((await readdir(fixture.storeRoot)).some(
+      (name) => name.startsWith("ui-inspection-result-"),
+    )).toBe(false);
+  });
+});
 
 describe("Instagram welcome-audio live reservation and PENDING boundary", () => {
   test("rejects an inspection capability at the exact five-minute expiry", async () => {

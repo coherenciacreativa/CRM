@@ -6320,7 +6320,7 @@ routing and completion pointer.
 - `live_flags`: `production_ready=false`, `send_allowed=false`,
   `live_authority=false`.
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_welcome_audio_source_capability_gate_proof_v1_20260716`
@@ -6367,3 +6367,78 @@ routing and completion pointer.
   remained zero.
 - `recommended_default`:
   `keep_source_execution_closed_until_a_separate_authoritative_source_path_is_explicitly_approved`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_follower_source_vertical_slice_proof_v1_20260716`
+- `status`: `approved_in_progress_repo_only_synthetic_no_source_authority`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `approved_baseline`:
+  `3dcbe0d37589c11130c855ed6c71ffaf2970d2b2`
+- `source_branch`:
+  `codex/crm-core-welcome-audio-ui-attested-source-v1-20260716`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-ui-attested-follower-source-vertical-slice-proof-mission-v1.md`
+- `source_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md`
+- `objective`: Prove the exact connected synthetic sequence: durable
+  source-less ordinal slot -> adapter -> issuer-private connected preflight
+  one-use capability -> consume/verify capability -> operation guard PRECLAIM
+  -> durable inspection result.
+- `source_class`: `ui_attested_follower_source_v1`
+- `adapter_contract`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_adapter_v1`
+- `adapter_input_schema`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_input_v1`
+- `adapter_projection_schema`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_projection_v1`
+- `adapter_receipt_schema`:
+  `crm_core_instagram_welcome_audio_ui_attested_follower_source_receipt_v1`
+- `allowed_scope`: Exact twelve-file repo-only implementation and tests, safe
+  repairs within 120 minutes and three cycles, one independent review, and at
+  most one locked central integration if every gate is green.
+- `evidence_boundary`: Explicit follower-notification row, preserved visible UI
+  bucket, fresh `attested_at` not later than validation time with zero future
+  tolerance, exact identity/profile/follows-owner/thread/owner bindings, and
+  fresh exact dedupe. Never fabricate `followed_at`, provider ID, or campaign
+  evidence; keep `exact_follow_timestamp_claimed=false`,
+  `provider_event_id_claimed=false`, and `campaign_membership_claimed=false`.
+- `adapter_order_boundary`: Raw closed synthetic input may exist before the
+  slot, but adapter evaluation and the projection accepted by the connected
+  preflight occur only inside the issuer after stable durable-slot readback.
+  The connected API rejects prebuilt projections and performs no live source
+  read.
+- `causal_capability_boundary`: The connected source capability is issued only
+  through the issuer-private bridge after stable durable-slot readback and exact
+  mission/contract/ordinal/claim-nonce/slot-record-digest/slot-record-metadata
+  binding, including exact `inspection_capability_expires_at_ms`. Standalone
+  public synthetic preflight capabilities are intentionally not accepted by the
+  connected record path. Timestamps remain freshness and expiry checks only,
+  not causal authority.
+- `restart_boundary`: A verified restart may rehydrate and reopen only the same
+  incomplete source-less slot after the original inspection-capability TTL
+  expires; it cannot duplicate a slot or result, advance the ordinal, or add
+  source/live/send authority.
+- `maximum_proof`: Pure guard PRECLAIM may return logical
+  `claim_allowed=true`; `send_ready=false`, `send_allowed=false`,
+  `live_authority=false`, `live_claim_issued=false`,
+  `private_live_claim_capability_issued=false`,
+  `live_claim_record_persisted=false`, `external_effects=0`,
+  `browser_used=false`, and `network_used=false` remain fixed.
+- `forbidden_scope`: Live UI/source access, real OCR, private artifacts, real
+  candidates, durable live claims, host/executor/actuator/send, MailerLite, CRM,
+  campaign, Ads, API, proxy, network, prior-gate weakening, and every file
+  outside the exact allowlist.
+- `completion_definition`: The connected synthetic projection follows the exact
+  six-stage sequence through the issuer-private slot-bound bridge, records its
+  durable result only after logical PRECLAIM, and proves restart-safe reopening
+  of an incomplete slot; affected suites and compatibility remain green;
+  independent review is green; exact twelve-file scope is preserved; and at
+  most one central integration completes with zero live or external effects.
+- `live_execution_gate`: A later exact CEO approval bound to the integrated
+  commit, source route, private inputs, caps, UI actions, claim/send boundaries,
+  verification, and stop rules is mandatory.
+- `recommended_default`:
+  `complete_connected_repo_only_ui_attested_source_to_preclaim_proof_then_keep_live_execution_closed`
