@@ -70,14 +70,15 @@ The live preflight contract additionally binds:
 - one bound-thread observation state with the contract-defined read and time
   limits.
 
-This documentation update does not invent implementation or test evidence.
-Those fields must be replaced only from the final source merge and aggregate
-test record:
+The technical live runtime is implemented, independently reviewed, and
+assembled at `6a31b32eef31c4eabcaf826d122fde558fcdcfde`. The result below is
+limited to source and fake-driver evidence; formal Chief Architect review,
+central integration, and the post-integration validation rerun remain pending:
 
 ```text
-technical_live_runtime_implemented = <set_after_source_merge_and_final_review>
+technical_live_runtime_implemented = true
 validation_scope = fake_driver_only
-fake_driver_green = <set_after_final_fake_driver_run>
+fake_driver_green = true
 neutral_safari_binding_green = not_run
 instagram_surface_validated = false
 instagram_auth_validated = false
@@ -657,13 +658,15 @@ rail.
   picker, upload, preview, or Send;
 - no source read, profile opening, DM opening, candidate creation, or private
   identity use;
-- no invocation of the sibling live runtime or arbitrary callback;
+- no invocation of the sibling live runtime against Safari, Instagram, or any
+  private or live source; fake-driver evidence does not validate a live surface
+  or grant effect authority;
 - no live registry or non-temporary operational state;
 - no MailerLite, campaign, legacy proxy, CRM, card, Fact Store, ledger, scoring,
   automation, or source mutation;
 - no private operational artifact or live receipt creation;
-- no claim that the sibling live runtime has passed source merge, tests, or
-  review until the explicit placeholders above are replaced from evidence;
+- no claim that the assembled sibling live runtime is centrally integrated or
+  validated against Safari or Instagram before formal review and integration;
 - no reuse of the closed pilot or historical send as authority;
 - no production readiness, send authority, or live authority.
 
@@ -671,8 +674,10 @@ rail.
 
 The deterministic rail, simulated async bridge, and deferred rendezvous are
 centrally integrated historical no-effect evidence. The sibling live runtime
-contract also grants no send authority. The existing sealed-backlog staged
-canary requires all of the following as later, separate gates:
+is implemented, independently reviewed, and fake-driver green in the assembly,
+but is not yet centrally integrated and grants no send authority. The existing
+sealed-backlog staged canary requires all of the following as later, separate
+gates:
 
 1. the existing canary contract bound to the final integrated commit;
 2. fresh explicit CEO approval for that exact canary effect after integration;

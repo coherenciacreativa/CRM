@@ -3,7 +3,7 @@
 Date: 2026-07-15
 Mission ID: `crm_core_welcome_audio_live_gates_hardening_v1_2026_07_15`
 Mode: `hardening`
-Status: `approved_repo_only_no_live_effects`
+Status: `stage_c_green_assembled_coordination_and_formal_review_pending_repo_only_no_live_effects`
 Approved central baseline: `502b0bc9cc3f5fa901a3377173d1dcf5bca7c8ab`
 
 ```yaml
@@ -27,7 +27,8 @@ observable_success:
   - independent_adversarial_review=green_to_self_integrate
   - central_integration_count=1
   - instagram_browser_used=false
-  - neutral_local_safari_binding_used=<false_or_true_after_review>
+  - neutral_local_safari_binding_used=false
+  - neutral_safari_binding_green=not_run
   - network_used=false
   - private_artifacts_read=0
   - live_source_reads=0
@@ -107,9 +108,10 @@ escalation_conditions:
 central_integration_plan:
   target_branch: codex/crm-core-reentry
   source_commits:
-    - <live_claim_issuer_source_SHA>
-    - <safari_live_host_source_SHA>
-    - <assembly_source_SHA>
+    - adac1a9f24a2b4c0a85ecf38e09f15928f226bcf
+    - 503ccf3f27d9e7ee2f8b1eb37b70113719afbb37
+    - 4558a18eab3b344a0ddc434675599b6268cac2f3
+    - 6a31b32eef31c4eabcaf826d122fde558fcdcfde
   changed_file_allowlist:
     - scripts/crm-vnext-instagram-welcome-audio-live-claim-issuer.mjs
     - scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs
@@ -143,7 +145,7 @@ central_integration_plan:
     - git_diff_check
     - privacy_and_redaction_scan
     - no_browser_network_private_or_external_effect_evidence
-  integration_packet_id: <redacted_live_gates_packet_id>
+  integration_packet_id: pending_formal_review
   reviewer_verdict_required: green_to_self_integrate
   one_lock_for_all_sources: true
   integration_count: 1
@@ -157,6 +159,36 @@ final_ceo_brief_fields:
   - remaining_risk
   - next_highest_leverage_decision
   - all_mission_metrics
+```
+
+## Assembly checkpoint
+
+The four technical layers are assembled on
+`codex/crm-core-welcome-audio-live-gates-v1` at
+`6a31b32eef31c4eabcaf826d122fde558fcdcfde`. The source and fake-driver review
+is GREEN, with focused assembly validation `332/332`. The owner-only aggregate
+full-suite record is `243/244` files and `1896/1897` tests; the sole failure is
+the unchanged out-of-lane MailerLite approval-queue baseline. This checkpoint
+does not complete formal Chief Architect review or central integration and does
+not authorize a canary.
+
+```text
+technical_live_runtime_implemented = true
+fake_driver_green = true
+neutral_safari_binding_green = not_run
+instagram_surface_validated = false
+instagram_auth_validated = false
+instagram_upload_validated = false
+instagram_send_validated = false
+production_ready = false
+send_allowed = false
+live_authority = false
+real_canary_requires_fresh_approval = true
+formal_chief_architect_review_complete = false
+central_integration_complete = false
+browser_used = false
+network_used = false
+external_effect_invoked = false
 ```
 
 ## Execution boundary

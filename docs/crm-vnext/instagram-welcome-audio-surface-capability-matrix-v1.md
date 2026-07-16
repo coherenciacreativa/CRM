@@ -78,9 +78,9 @@ closure, and strong-confirmation filtering. It cannot validate Instagram,
 authentication, the real attachment control, native upload, Send, or delivery.
 
 ```text
-technical_live_runtime_implemented = <set_after_source_merge_and_final_review>
+technical_live_runtime_implemented = true
 validation_scope = fake_driver_only
-fake_driver_green = <set_after_final_fake_driver_run>
+fake_driver_green = true
 neutral_safari_binding_green = not_run
 instagram_surface_validated = false
 instagram_auth_validated = false
@@ -514,7 +514,7 @@ neutral enums.
 | Combined deterministic operational-rail suite v1 | `mechanical_claim_and_actuation_order_centrally_integrated_no_live` | Focused `244/244`, including targeted adversarial crash/concurrency/invalid-port `7/7`; full `239/240` files and `1669/1670` tests with only the unchanged out-of-lane baseline failing; covers claim issuance, partial-publication and crash-evidence dominance, fixed non-introspective capability statuses, pending-before-actuation ordering, at-most-one branded invocation, terminal closure, blocker-specific receipt semantics, and receipt privacy | Browser control, current Safari health, Instagram delivery, live authority, or production readiness |
 | Async browser session bridge v1 | `mechanical_async_ordering_evidence_centrally_integrated_no_live` | The simulated order only: synthetic preparation, authoritative durable PRECLAIM, existing READY/capability, durable pending, capability consumption, one modeled Send, one modeled confirmation, permanent terminal/no-retry. Bridge-only focused `44/44`; combined bridge-plus-inherited focused `276/276`, including async session bridge `25/25` and operational executor `19/19`; bridge-targeted adversarial `13/13`; full `240/241` files and `1701/1702` tests with only the exact unchanged out-of-lane baseline failing | A new surface, real actuator, browser or Safari use, Instagram or picker access, audio delivery, surface health, live issuer, canary authority, or production readiness |
 | Deferred actuator rendezvous v1 | `same_process_result_rendezvous_centrally_integrated_no_live` | Opaque exact-port/exact-binding authority, arm-after-pending-and-authority-consumption ordering, exactly one asynchronous deterministic result, early false/count `0`, terminal genuine post-armed uncertainty conservative true/count `1`, data-only snapshot without getter/Proxy observation, and fail-closed timeout/reuse/forgery/drift/mismatch handling; current five-file focused `292/292`, including session `40/40` and operational executor `20/20`; full `240/241` files and `1717/1718` tests with the exact unchanged historical out-of-lane baseline; independent review, formal artifact review, and central integration green | A host browser, attachment capability, Instagram delivery, live surface health, effect authority, production readiness, or live authority |
-| Sibling live claim and Safari host runtime v1 | `technical_runtime_fake_driver_scope_only` | After actual source merge and final review, may support only the implementation and fake-driver result recorded in the explicit placeholders above | Instagram surface or authentication, real picker/upload/Send, delivery, production readiness, Send authority, or live authority |
+| Sibling live claim and Safari host runtime v1 | `technical_runtime_implemented_fake_driver_green_assembled_no_live` | Implemented, independently reviewed, and assembled at `6a31b32eef31c4eabcaf826d122fde558fcdcfde`; focused assembly validation is fake-driver only, while formal Chief Architect review and central integration remain pending | Instagram surface or authentication, real picker/upload/Send, delivery, production readiness, Send authority, or live authority |
 | Fresh future operation observation | `operation_scoped_evidence` | The exact enum values for that operation | Another operation, another surface, or standing automation |
 
 ## Receipt Boundary
@@ -573,8 +573,9 @@ unchanged out-of-lane baseline failing.
 Historical rendezvous evidence is focused `292/292`, including operation session
 `40/40` and operational executor `20/20`, plus full `240/241` files and
 `1717/1718` tests with the exact unchanged historical out-of-lane baseline.
-The sibling runtime implementation and fake-driver result must be filled only
-from actual final integration evidence. The neutral Safari proof is `not_run`;
+The sibling runtime is implemented, independently reviewed, and fake-driver
+green in assembly `6a31b32eef31c4eabcaf826d122fde558fcdcfde`; formal Chief Architect
+review and central integration remain pending. The neutral Safari proof is `not_run`;
 Instagram surface, authentication, upload, and Send remain unvalidated.
 `production_ready`, `send_allowed`, and `live_authority` remain `false`. Fresh
 explicit owner approval bound to the final integrated commit and sealed private

@@ -72,14 +72,15 @@ claim and durable `PENDING`. Any exception, timeout, process death, ambiguous
 state, or missing strong current-operation confirmation after either boundary
 closes the operation terminally and cannot authorize another upload or Send.
 
-This documentation update precedes the final source merge and review. Its
-implementation and fake-driver result must be filled from actual integration
-evidence, never inferred here:
+The technical live runtime is implemented, independently reviewed, and
+assembled at `6a31b32eef31c4eabcaf826d122fde558fcdcfde`. The result below is
+limited to source and fake-driver evidence; formal Chief Architect review,
+central integration, and the post-integration validation rerun remain pending:
 
 ```text
-technical_live_runtime_implemented = <set_after_source_merge_and_final_review>
+technical_live_runtime_implemented = true
 validation_scope = fake_driver_only
-fake_driver_green = <set_after_final_fake_driver_run>
+fake_driver_green = true
 neutral_safari_binding_green = not_run
 instagram_surface_validated = false
 instagram_auth_validated = false
@@ -798,9 +799,10 @@ bridge-plus-inherited focused `276/276`, bridge-targeted adversarial `13/13`,
 and full repository `240/241` files and `1701/1702` tests with only the
 unchanged out-of-lane baseline failing.
 The deferred-rendezvous validation and central integration are historical
-no-effect evidence only. The sibling live runtime is documented separately and
-must use actual source-merge, fake-driver, and independent-review evidence
-where the placeholders above appear. The neutral Safari proof is `not_run`;
+no-effect evidence only. The sibling live runtime is now implemented,
+independently reviewed, and assembled with fake-driver evidence at
+`6a31b32eef31c4eabcaf826d122fde558fcdcfde`; formal Chief Architect review and
+central integration remain pending. The neutral Safari proof is `not_run`;
 Instagram surface, authentication, upload, and Send remain unvalidated.
 `production_ready`, `send_allowed`, and `live_authority` remain `false`. The
 real sealed-backlog canary still requires fresh exact approval bound to the

@@ -1164,11 +1164,13 @@
 - `privacy_process_note`: redacted non-blocking local trace disposition; future
   relay validation uses exact boolean checks and no broad UI or snapshot
   extraction.
-- `next_gate`: no-live next technical slice before any mission. The live
-  owner-only claim issuer and real browser-bound Safari actuator remain
-  missing. Only after those are separately reviewed and integrated may a new
-  mission be written and freshly approved before any live use. Central
-  integration alone grants no live authority.
+- `next_gate`: the technical owner-only claim issuer and Safari host are
+  implemented, independently reviewed, and fake-driver green in assembly
+  `6a31b32eef31c4eabcaf826d122fde558fcdcfde`. Formal Chief Architect review,
+  one allowlisted central integration, and the post-integration validation
+  rerun remain pending. Central integration alone grants no live authority; the existing
+  canary contract still requires fresh exact approval before any source or live
+  use.
 
 ## Real New-Follower Welcome E2E Proof Mission Contract v0.1
 
@@ -1222,3 +1224,38 @@
   only after a green canary.
 - `integration_disposition`: planning-only contract; no source access, send,
   MailerLite mutation, campaign action, or other live authority.
+
+## Welcome Audio Technical Live-Gates Assembly Checkpoint
+
+- `checkpoint_date`: `2026-07-15`
+- `assembly_branch`: `codex/crm-core-welcome-audio-live-gates-v1`
+- `assembly_commit`: `6a31b32eef31c4eabcaf826d122fde558fcdcfde`
+- `status`:
+  `green_formal_chief_architect_review_and_central_integration_pending_no_live`
+- `scope`: exact twenty-file allowlist recorded in
+  `docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md`
+- `technical_live_runtime_implemented`: true
+- `fake_driver_green`: true
+- `neutral_safari_binding_green`: `not_run`
+- `instagram_surface_validated`: false
+- `instagram_auth_validated`: false
+- `instagram_upload_validated`: false
+- `instagram_send_validated`: false
+- `validation_evidence`: focused `332/332`; full `243/244` files and
+  `1896/1897` tests, with the sole failure the unchanged historical out-of-lane
+  approval-queue baseline
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `real_canary_requires_fresh_approval`: true
+- `historical_continuity`: Earlier centrally integrated no-effect rail and
+  rendezvous evidence remains unchanged. This checkpoint supersedes only the
+  statement that the technical issuer and host are absent; it does not claim
+  production proof or current Instagram health.
+- `next_gate`: Submit the exact assembled artifact for formal Chief Architect
+  review. If green, integrate the allowlisted assembly once under the central
+  lock and rerun checks. Only then prepare a fresh canary approval packet bound
+  to the resulting canonical SHA; no live action is part of this checkpoint.

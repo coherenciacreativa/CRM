@@ -2023,14 +2023,13 @@ No lane outputs in review at creation.
 - `privacy_process_note`: redacted non-blocking local trace disposition; use
   exact boolean checks and no broad UI or snapshot extraction in future relay
   validation.
-- `integration_recommendation`: preserve the integrated action rail, synthetic
-  executor, deterministic no-effect operational rail, deterministic simulated
-  async browser-session bridge, and deterministic same-process deferred
-  rendezvous while keeping all live gates closed. The active next action is a
-  no-live technical slice before any mission. A live owner-only claim issuer
-  and real browser-bound Safari actuator remain prerequisites. Only after those
-  are separately reviewed and integrated may a newly written and freshly
-  approved future mission authorize any send; do not execute live.
+- `integration_recommendation`: preserve the integrated no-effect rail and keep
+  all live gates closed. This historical recommendation is superseded by the
+  technical live-gates assembly item below: the issuer and Safari host are now
+  implemented and fake-driver green, but still require formal Chief Architect
+  review and one allowlisted central integration. The existing canary contract
+  then requires fresh exact approval before any source or live use; do not
+  execute live.
 
 ## crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15
 
@@ -2083,6 +2082,48 @@ No lane outputs in review at creation.
   reactivation is separate and approval alone does not bypass any runtime gate
 - `integration_recommendation`: integrate only as a planning contract and keep
   every source and live-effect gate closed, with the campaign paused
+
+## crm_core_welcome_audio_live_gates_assembly_2026_07_15
+
+- `source_workstream`: `welcome-audio-send-boundary` and `integration`
+- `source_branch`: `codex/crm-core-welcome-audio-live-gates-v1`
+- `assembly_commit`: `6a31b32eef31c4eabcaf826d122fde558fcdcfde`
+- `status`:
+  `assembly_green_formal_chief_architect_review_and_central_integration_pending_no_live`
+- `files_changed`: exact twenty-file allowlist recorded in
+  `docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md`
+- `summary`: The technical owner-only live claim issuer and Safari host are
+  implemented and assembled over the existing no-effect rail. The assembly is
+  fail-closed and synthetic-driver validated, but has not run neutral Safari or
+  validated the current Instagram surface, authentication, upload, or send.
+- `tests_or_checks`: focused `332/332`; full `243/244` files and `1896/1897`
+  tests, with the sole failure the unchanged historical out-of-lane
+  approval-queue baseline
+- `technical_live_runtime_implemented`: true
+- `fake_driver_green`: true
+- `neutral_safari_binding_green`: `not_run`
+- `instagram_surface_validated`: false
+- `instagram_auth_validated`: false
+- `instagram_upload_validated`: false
+- `instagram_send_validated`: false
+- `private_artifacts_touched`: false
+- `source_actions_executed`: false
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `real_canary_requires_fresh_approval`: true
+- `central_files_requested`: true, limited to the exact twenty-file allowlist
+- `conflicts_expected`: none from the recorded assembly baseline
+- `decision_needed`: formal Chief Architect artifact verdict before any central
+  integration; no live execution decision is requested by this queue item
+- `integration_recommendation`: If and only if formal review is green, perform
+  one allowlisted central integration, rerun the exact checks, and prepare a
+  fresh canary approval packet bound to the resulting canonical SHA. Do not
+  open Instagram or perform any source, upload, send, MailerLite, campaign, or
+  other external effect during review or integration.
 
 ## Rejected / Needs Rework
 
