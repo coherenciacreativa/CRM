@@ -47,6 +47,7 @@ const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_SCHEMA_VERSION =
 const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MISSION_ID =
   'crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716';
 const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS = 8;
+const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS = 5 * 60 * 1000;
 const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_EXECUTION_MODE =
   'local_owner_only_no_live_staging_no_external_effect';
 
@@ -115,6 +116,7 @@ const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER = Object.freeze({
   STAGING_TARGET_EXISTS: 'blocked_bootstrap_staging_target_exists',
   ATOMIC_PUBLICATION_FAILED: 'blocked_bootstrap_atomic_publication_failed',
   LIVE_AUTHORITY_BOUNDARY: 'blocked_bootstrap_live_authority_boundary',
+  UNEXPECTED_LOCAL_FAILURE: 'blocked_bootstrap_unexpected_local_failure',
 });
 
 const AUTHORIZATION_FIELDS = Object.freeze([
@@ -125,6 +127,7 @@ const AUTHORIZATION_FIELDS = Object.freeze([
   'target_contract_version',
   'central_repo_head',
   'authorization_id',
+  'record_cap',
   'source_capture_sha256',
   'asset_selection_sha256',
   'approved_at',
@@ -158,6 +161,7 @@ const SOURCE_RECORD_FIELDS = Object.freeze([
   'exact_target_utf8',
   'identity_binding_evidence',
   'followed_at',
+  'source_observed_at',
   'follow_time_evidence',
   'campaign_membership_evidence',
   'bound_thread_reference_utf8',
@@ -200,6 +204,8 @@ const OPERATION_BINDING_FIELDS = Object.freeze([
   'identity_anchor_sha256',
   'thread_anchor_sha256',
   'owner_anchor_sha256',
+  'source_event_anchor_sha256',
+  'source_observed_at',
 ]);
 
 const WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS = Object.freeze([
@@ -517,6 +523,7 @@ const validateAuthorization = ({ authorization, sourceCaptureLoaded, assetSelect
     || !isOpaqueId(authorization.target_contract_version)
     || !isGitSha(authorization.central_repo_head)
     || !isOpaqueId(authorization.authorization_id)
+    || authorization.record_cap !== WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS
     || !isSha256(authorization.source_capture_sha256)
     || authorization.source_capture_sha256 !== sourceCaptureLoaded.digest
     || !isSha256(authorization.asset_selection_sha256)
@@ -546,6 +553,30 @@ const validateCampaignEvidence = ({ evidence, capturedAtMs }) => {
     startMs: Date.parse(evidence.start_at),
     endMs: Date.parse(evidence.end_at),
   });
+};
+
+const validateSourceCaptureFreshness = ({ sourceCapture, nowMs }) => {
+  if (!Number.isFinite(nowMs) || !Array.isArray(sourceCapture?.ordered_records)) {
+    fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS);
+  }
+  for (const record of sourceCapture.ordered_records) {
+    if (
+      !isExactIsoTimestamp(record?.followed_at)
+      || !isExactIsoTimestamp(record?.source_observed_at)
+    ) fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS, {
+      recordsSeenCount: sourceCapture.ordered_records.length,
+    });
+    const followedAtMs = Date.parse(record.followed_at);
+    const sourceObservedAtMs = Date.parse(record.source_observed_at);
+    if (
+      sourceObservedAtMs < followedAtMs
+      || sourceObservedAtMs > nowMs
+      || nowMs - sourceObservedAtMs > WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS
+    ) fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS, {
+      recordsSeenCount: sourceCapture.ordered_records.length,
+    });
+  }
+  return true;
 };
 
 const validateSourceCapture = (sourceCapture, nowMs) => {
@@ -584,6 +615,8 @@ const validateSourceCapture = (sourceCapture, nowMs) => {
   const seenThreads = new Set();
   const seenSourceEvents = new Set();
 
+  validateSourceCaptureFreshness({ sourceCapture, nowMs });
+
   const records = sourceCapture.ordered_records.map((record, index) => {
     if (!exactObjectKeys(record, SOURCE_RECORD_FIELDS) || record.ordinal !== index + 1) {
       fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.RECORD_ORDER_INVALID, {
@@ -602,15 +635,18 @@ const validateSourceCapture = (sourceCapture, nowMs) => {
     }
     if (
       !isExactIsoTimestamp(record.followed_at)
+      || !isExactIsoTimestamp(record.source_observed_at)
       || record.follow_time_evidence !== 'exact_absolute_source_timestamp'
     ) fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS, {
       recordsSeenCount: count,
     });
     const followedAtMs = Date.parse(record.followed_at);
+    const sourceObservedAtMs = Date.parse(record.source_observed_at);
     if (
       followedAtMs < interval.startMs
       || followedAtMs > interval.endMs
       || followedAtMs > capturedAtMs
+      || sourceObservedAtMs > capturedAtMs
       || record.campaign_membership_evidence
         !== 'exact_follow_timestamp_within_approved_campaign_interval'
     ) fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.CAMPAIGN_EVIDENCE_AMBIGUOUS, {
@@ -665,6 +701,7 @@ const validateSourceCapture = (sourceCapture, nowMs) => {
       record,
       identityAnchor,
       threadAnchor,
+      sourceEventAnchor,
     });
   });
   return Object.freeze({
@@ -913,7 +950,12 @@ const buildPrivateBundle = ({ authorization, sourceCapture, validatedCapture, as
     approved_audio_asset_path: approvedAudioAssetPath,
     approved_audio_asset_sha256: assetSelection.expected_sha256,
     asset_id: assetSelection.asset_id,
-    operation_bindings: validatedCapture.records.map(({ record, identityAnchor, threadAnchor }) => ({
+    operation_bindings: validatedCapture.records.map(({
+      record,
+      identityAnchor,
+      threadAnchor,
+      sourceEventAnchor,
+    }) => ({
       manifest_ordinal: record.ordinal,
       operation_id: buildOperationId({
         missionId: authorization.target_mission_id,
@@ -926,6 +968,8 @@ const buildPrivateBundle = ({ authorization, sourceCapture, validatedCapture, as
       identity_anchor_sha256: identityAnchor,
       thread_anchor_sha256: threadAnchor,
       owner_anchor_sha256: validatedCapture.ownerAnchor,
+      source_event_anchor_sha256: sourceEventAnchor,
+      source_observed_at: record.source_observed_at,
     })),
   };
   if (
@@ -978,7 +1022,10 @@ const prepareWelcomeAudioAuthorityBootstrapStaging = async ({
   nowMs,
   testOnlyBeforePublish = null,
 }) => {
-  const effectiveNowMs = typeof nowMs === 'function' ? nowMs() : nowMs;
+  if (typeof nowMs !== 'function') {
+    fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.AUTHORIZATION_INVALID);
+  }
+  const effectiveNowMs = nowMs();
   if (!Number.isFinite(effectiveNowMs)) {
     fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.AUTHORIZATION_INVALID);
   }
@@ -1145,6 +1192,13 @@ const prepareWelcomeAudioAuthorityBootstrapStaging = async ({
       stagingRoot,
       WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.STAGING_TARGET_EXISTS,
     );
+    const publicationNowMs = nowMs();
+    if (!Number.isFinite(publicationNowMs) || publicationNowMs < effectiveNowMs) {
+      fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS, {
+        recordsSeenCount: validatedCapture.count,
+      });
+    }
+    validateSourceCaptureFreshness({ sourceCapture, nowMs: publicationNowMs });
     await rename(temporaryRoot, stagingRoot);
     published = true;
     publishedExpectedIdentity = freshTemporaryIdentity;
@@ -1184,13 +1238,22 @@ const prepareWelcomeAudioAuthorityBootstrapStaging = async ({
   }
 };
 
+const redactPublicPreparationFailure = async (task) => {
+  try {
+    return await task();
+  } catch (error) {
+    if (error instanceof WelcomeAudioAuthorityBootstrapBlocked) throw error;
+    fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.UNEXPECTED_LOCAL_FAILURE);
+  }
+};
+
 const prepareFixedWelcomeAudioAuthorityBootstrapStaging = async () =>
-  prepareWelcomeAudioAuthorityBootstrapStaging({
+  redactPublicPreparationFailure(() => prepareWelcomeAudioAuthorityBootstrapStaging({
     inputRoot: FIXED_BOOTSTRAP_INPUT_ROOT,
     stagingRoot: FIXED_BOOTSTRAP_STAGING_ROOT,
     liveRoot: FIXED_LIVE_AUTHORITY_ROOT,
-    nowMs: Date.now(),
-  });
+    nowMs: () => Date.now(),
+  }));
 
 const assertSyntheticTestRoot = async (testRoot) => {
   let canonicalTemp;
@@ -1210,23 +1273,26 @@ const assertSyntheticTestRoot = async (testRoot) => {
   );
 };
 
-const prepareSyntheticWelcomeAudioAuthorityBootstrapStaging = async ({
-  test_root,
-  now_ms,
-  test_only_before_publish = null,
-}) => {
-  await assertSyntheticTestRoot(test_root);
-  if (test_only_before_publish !== null && typeof test_only_before_publish !== 'function') {
-    fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_SCHEMA_INVALID);
-  }
-  return prepareWelcomeAudioAuthorityBootstrapStaging({
-    inputRoot: join(test_root, 'input'),
-    stagingRoot: join(test_root, 'staging'),
-    liveRoot: join(test_root, 'live-authority'),
-    nowMs: now_ms,
-    testOnlyBeforePublish: test_only_before_publish,
+const prepareSyntheticWelcomeAudioAuthorityBootstrapStaging = async (options = {}) =>
+  redactPublicPreparationFailure(async () => {
+    const {
+      test_root,
+      now_ms,
+      test_only_before_publish = null,
+    } = options;
+    await assertSyntheticTestRoot(test_root);
+    if (
+      typeof now_ms !== 'function'
+      || (test_only_before_publish !== null && typeof test_only_before_publish !== 'function')
+    ) fail(WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_SCHEMA_INVALID);
+    return prepareWelcomeAudioAuthorityBootstrapStaging({
+      inputRoot: join(test_root, 'input'),
+      stagingRoot: join(test_root, 'staging'),
+      liveRoot: join(test_root, 'live-authority'),
+      nowMs: now_ms,
+      testOnlyBeforePublish: test_only_before_publish,
+    });
   });
-};
 
 const isDirectInvocation = process.argv[1]
   && pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
@@ -1270,6 +1336,7 @@ export {
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_OPERATION_BINDINGS_SCHEMA_VERSION,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_CAPTURE_SCHEMA_VERSION,
   WelcomeAudioAuthorityBootstrapBlocked,
   canonicalBytes,

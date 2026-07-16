@@ -31,6 +31,7 @@ import {
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MISSION_ID,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_OPERATION_BINDINGS_SCHEMA_VERSION,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_RECEIPT_FIELDS,
+  WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS,
   WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_CAPTURE_SCHEMA_VERSION,
   WelcomeAudioAuthorityBootstrapBlocked,
   canonicalBytes,
@@ -70,6 +71,7 @@ const sourceRecord = (ordinal: number, owner = "synthetic-owner-account") => ({
   exact_target_utf8: `Synthetic.Private.Target.${ordinal}`,
   identity_binding_evidence: "exact_profile_identity_and_follow_signal_observed",
   followed_at: `2026-07-13T${String(12 + ordinal).padStart(2, "0")}:00:00.000Z`,
+  source_observed_at: "2026-07-16T11:59:00.000Z",
   follow_time_evidence: "exact_absolute_source_timestamp",
   campaign_membership_evidence: "exact_follow_timestamp_within_approved_campaign_interval",
   bound_thread_reference_utf8: `synthetic-private-thread-${ordinal}`,
@@ -93,7 +95,7 @@ const createFixture = async (count = 2) => {
     schema_version: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_CAPTURE_SCHEMA_VERSION,
     capture_status: "exact_private_source_capture_complete",
     capture_method: "safari_native_instagram_read_only",
-    captured_at: "2026-07-16T11:00:00.000Z",
+    captured_at: "2026-07-16T11:59:30.000Z",
     timestamp_evidence: "absolute_timestamps_only_not_relative",
     campaign_evidence: {
       start_at: "2026-07-13T12:00:00.000Z",
@@ -123,6 +125,7 @@ const createFixture = async (count = 2) => {
     target_contract_version: TARGET_CONTRACT_VERSION,
     central_repo_head: "c2fb4dc32de26be8f7f8cb2f4e1a39c19deb8c75",
     authorization_id: "synthetic_no_live_bootstrap_authorization_001",
+    record_cap: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_MAX_RECORDS,
     source_capture_sha256: "0".repeat(64),
     asset_selection_sha256: "0".repeat(64),
     approved_at: "2026-07-16T11:30:00.000Z",
@@ -181,6 +184,8 @@ const expectBlocked = async (
       redacted_receipt: Record<string, unknown>;
     };
     expect(blocked.code).toBe(code);
+    expect(blocked.message).toBe(code);
+    expect("cause" in blocked).toBe(false);
     expect(blocked.redacted_receipt).toMatchObject({
       decision: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION.BLOCKED,
       execution_approval_published: false,
@@ -191,10 +196,14 @@ const expectBlocked = async (
   }
 };
 
-const run = (fixture: Fixture, beforePublish?: ({ temporaryRoot }: { temporaryRoot: string }) => Promise<void>) =>
+const run = (
+  fixture: Fixture,
+  beforePublish?: ({ temporaryRoot }: { temporaryRoot: string }) => Promise<void>,
+  nowMs: () => number = () => NOW_MS,
+) =>
   prepareSyntheticWelcomeAudioAuthorityBootstrapStaging({
     test_root: fixture.root,
-    now_ms: NOW_MS,
+    now_ms: nowMs,
     test_only_before_publish: beforePublish ?? null,
   });
 
@@ -296,7 +305,21 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
       owner_anchor_sha256: deriveOwnerAnchorSha256(
         fixture.sourceCapture.owner_account_reference_utf8,
       ),
+      source_event_anchor_sha256: deriveSourceEventAnchorSha256(
+        fixture.sourceCapture.ordered_records[0].source_event_reference_utf8,
+      ),
+      source_observed_at: fixture.sourceCapture.ordered_records[0].source_observed_at,
     });
+    expect(Object.keys(bindings.operation_bindings[0]).sort()).toEqual([
+      "manifest_ordinal",
+      "operation_id",
+      "exact_target_utf8",
+      "identity_anchor_sha256",
+      "thread_anchor_sha256",
+      "owner_anchor_sha256",
+      "source_event_anchor_sha256",
+      "source_observed_at",
+    ].sort());
     expect(receipt).toEqual(result.redacted_receipt);
   });
 
@@ -319,6 +342,9 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
     }, WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS],
     ["offset rather than canonical Z time", (fixture: Fixture) => {
       fixture.sourceCapture.ordered_records[0].followed_at = "2026-07-13T08:00:00.000-05:00";
+    }, WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS],
+    ["relative source observation time", (fixture: Fixture) => {
+      fixture.sourceCapture.ordered_records[0].source_observed_at = "one minute ago";
     }, WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS],
     ["inferred campaign interval", (fixture: Fixture) => {
       fixture.sourceCapture.campaign_evidence.inference_status = "inferred";
@@ -353,6 +379,54 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
     );
   });
 
+  test("accepts the exact five-minute observation boundary and rejects stale or future observations", async () => {
+    const exactBoundary = await createFixture(1);
+    exactBoundary.sourceCapture.ordered_records[0].source_observed_at = new Date(
+      NOW_MS - WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS,
+    ).toISOString();
+    await exactBoundary.writeInputs();
+    await expect(run(exactBoundary)).resolves.toMatchObject({
+      redacted_receipt: {
+        decision: WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_DECISION.STAGED,
+      },
+    });
+
+    const stale = await createFixture(1);
+    stale.sourceCapture.ordered_records[0].source_observed_at = new Date(
+      NOW_MS - WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS - 1,
+    ).toISOString();
+    await stale.writeInputs();
+    await expectBlocked(
+      run(stale),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS,
+    );
+
+    const future = await createFixture(1);
+    future.sourceCapture.ordered_records[0].source_observed_at = new Date(NOW_MS + 1).toISOString();
+    await future.writeInputs();
+    await expectBlocked(
+      run(future),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS,
+    );
+  });
+
+  test("rechecks source freshness on a fresh clock immediately before atomic rename", async () => {
+    const fixture = await createFixture(1);
+    let clockReads = 0;
+    const clock = () => {
+      clockReads += 1;
+      return clockReads === 1
+        ? NOW_MS
+        : NOW_MS + WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_SOURCE_FRESHNESS_MS + 1;
+    };
+    await expectBlocked(
+      run(fixture, undefined, clock),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.TIME_EVIDENCE_AMBIGUOUS,
+    );
+    expect(clockReads).toBe(2);
+    await expect(lstat(join(fixture.root, "staging"))).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   test("rejects duplicate exact identities, threads, and source events", async () => {
     const duplicateIdentity = await createFixture(2);
     duplicateIdentity.sourceCapture.ordered_records[1].exact_target_utf8 =
@@ -369,6 +443,15 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
     await duplicateThread.writeInputs();
     await expectBlocked(
       run(duplicateThread),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.DUPLICATE_BINDING,
+    );
+
+    const duplicateSourceEvent = await createFixture(2);
+    duplicateSourceEvent.sourceCapture.ordered_records[1].source_event_reference_utf8 =
+      duplicateSourceEvent.sourceCapture.ordered_records[0].source_event_reference_utf8;
+    await duplicateSourceEvent.writeInputs();
+    await expectBlocked(
+      run(duplicateSourceEvent),
       WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.DUPLICATE_BINDING,
     );
   });
@@ -432,6 +515,18 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
     await expectBlocked(
       run(extra),
       WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_SCHEMA_INVALID,
+    );
+
+    const wrongCap = await createFixture(1);
+    wrongCap.authorization.record_cap = 7;
+    await writeFile(
+      join(wrongCap.inputRoot, BOOTSTRAP_INPUT_FILE_NAMES.authorization),
+      canonicalBytes(wrongCap.authorization),
+      { mode: 0o600 },
+    );
+    await expectBlocked(
+      run(wrongCap),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.AUTHORIZATION_INVALID,
     );
   });
 
@@ -530,6 +625,95 @@ describe("welcome-audio no-live authority bootstrap builder", () => {
       WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.ATOMIC_PUBLICATION_FAILED,
     );
     await expect(lstat(join(fixture.root, "staging"))).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("round-trips source-event and observation bindings and detects staged binding tamper", async () => {
+    const fixture = await createFixture(2);
+    const result = await run(fixture);
+    const bindings = await json(join(
+      result.staging_root,
+      BOOTSTRAP_STAGING_FILE_NAMES.operationBindings,
+    ));
+    for (const [index, binding] of bindings.operation_bindings.entries()) {
+      const source = fixture.sourceCapture.ordered_records[index];
+      expect(binding.source_event_anchor_sha256).toBe(
+        deriveSourceEventAnchorSha256(source.source_event_reference_utf8),
+      );
+      expect(binding.source_observed_at).toBe(source.source_observed_at);
+    }
+
+    const tampered = await createFixture(1);
+    await expectBlocked(
+      run(tampered, async ({ temporaryRoot }) => {
+        const path = join(temporaryRoot, BOOTSTRAP_STAGING_FILE_NAMES.operationBindings);
+        const value = await json(path);
+        value.operation_bindings[0].source_event_anchor_sha256 = "f".repeat(64);
+        await writeFile(path, canonicalBytes(value), { mode: 0o600 });
+      }),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.ATOMIC_PUBLICATION_FAILED,
+    );
+    await expect(lstat(join(tampered.root, "staging"))).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("redacts unexpected public-boundary failures and malformed private UTF-8", async () => {
+    const fixture = await createFixture(1);
+    const privateMarker = `${fixture.root}/private-marker`;
+    const hostileOptions = Object.defineProperty({}, "test_root", {
+      enumerable: true,
+      get() {
+        throw new Error(privateMarker);
+      },
+    });
+    try {
+      await prepareSyntheticWelcomeAudioAuthorityBootstrapStaging(hostileOptions as never);
+      throw new Error("expected hostile options to be blocked");
+    } catch (error) {
+      expect(error).toBeInstanceOf(WelcomeAudioAuthorityBootstrapBlocked);
+      const blocked = error as WelcomeAudioAuthorityBootstrapBlocked & {
+        code: string;
+        redacted_receipt: Record<string, unknown>;
+      };
+      expect(blocked.code).toBe(
+        WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.UNEXPECTED_LOCAL_FAILURE,
+      );
+      expect(blocked.message).not.toContain(privateMarker);
+      expect(JSON.stringify(blocked.redacted_receipt)).not.toContain(privateMarker);
+    }
+
+    const malformed = await createFixture(1);
+    const malformedBytes = Buffer.from([0xc3, 0x28]);
+    await writeFile(
+      join(malformed.inputRoot, BOOTSTRAP_INPUT_FILE_NAMES.sourceCapture),
+      malformedBytes,
+      { mode: 0o600 },
+    );
+    malformed.authorization.source_capture_sha256 = sha256(malformedBytes);
+    await writeFile(
+      join(malformed.inputRoot, BOOTSTRAP_INPUT_FILE_NAMES.authorization),
+      canonicalBytes(malformed.authorization),
+      { mode: 0o600 },
+    );
+    await expectBlocked(
+      run(malformed),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.INPUT_JSON_INVALID,
+    );
+
+    const missingInput = await createFixture(1);
+    await rm(missingInput.inputRoot, { recursive: true, force: true });
+    await expectBlocked(
+      run(missingInput),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.ROOT_INVALID,
+    );
+
+    const callbackFailure = await createFixture(1);
+    await expectBlocked(
+      run(callbackFailure, async () => {
+        throw new Error(`${callbackFailure.root}/private-filesystem-failure`);
+      }),
+      WELCOME_AUDIO_AUTHORITY_BOOTSTRAP_BLOCKER.ATOMIC_PUBLICATION_FAILED,
+    );
+    await expect(lstat(join(callbackFailure.root, "staging")))
+      .rejects.toMatchObject({ code: "ENOENT" });
   });
 
   test("refuses an existing staging target rather than overwriting it", async () => {

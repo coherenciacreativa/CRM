@@ -37,7 +37,7 @@ these three owner-only files and no other entries:
 1. `bootstrap-authorization-v1.json`
    - exact mission identifier and approved baseline;
    - bounded no-effect scope;
-   - explicit maximum of eight source records;
+   - exact `record_cap` equal to eight;
    - explicit prohibition on live execution approval publication.
 2. `source-capture-v1.json`
    - exact owner-account binding;
@@ -45,7 +45,8 @@ these three owner-only files and no other entries:
    - deterministic source order;
    - at most eight records;
    - for every record, exact identity, exact source timestamp, exact bound
-     thread, and exact owner-account evidence.
+     thread, exact owner-account evidence, exact source-event binding, and an
+     absolute `source_observed_at` no more than five minutes old.
 3. `asset-selection-v1.json`
    - exact approved audio bytes selected from an authorized, owner-owned,
      regular single-link source that is not group- or world-writable;
@@ -85,6 +86,9 @@ Before any private publication, the builder must:
 - reject more than eight records;
 - reject relative, approximate, inferred, malformed, or out-of-interval
   timestamps;
+- reject a future, stale, or missing source-observation timestamp, including
+  by rechecking the five-minute bound against a fresh clock immediately before
+  atomic publication;
 - reject duplicate identities, duplicate thread bindings, owner mismatches,
   and non-deterministic order;
 - reject symlinks, hard-link substitution, non-regular files, unsafe roots,
@@ -94,12 +98,16 @@ Before any private publication, the builder must:
 - create directories and files with owner-only permissions;
 - publish atomically only after the complete bundle validates;
 - refuse to follow pre-existing links or overwrite an existing final bundle.
+- convert every exported programmatic failure, including filesystem failures,
+  into the typed aggregate blocked receipt without exposing a private path or
+  raw system error.
 
 On success, the owner-only staging bundle contains only the private forms of:
 
 - the validated backlog interval;
 - the deterministic manifest of at most eight records;
-- exact identity, thread, owner, and temporal bindings;
+- exact identity, thread, owner, temporal, source-event, and source-observation
+  bindings;
 - the protected copied audio asset and its integrity binding;
 - one aggregate redacted receipt.
 
