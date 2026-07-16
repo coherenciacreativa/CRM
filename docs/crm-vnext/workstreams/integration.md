@@ -1,19 +1,26 @@
 # CRM Core Workstream: Integration
 
 - `workstream_id`: `integration`
-- `branch`: `codex/crm-core-reentry`
+- `branch`: `codex/crm-core-sealed-backlog-manifest-bootstrap-v1-20260716`
 - `consultant_chat`: Chief Architect / Integration Chat
 - `codex_worker`: Integration Worker
-- `status`: `active`
-- `objective`: Maintain architecture, board, queue, central next actions.
-- `why_now`: Parallel CRM Core work needs a central coordination lane before
-  multiple consultants and Codex workers begin.
+- `status`:
+  `sealed_backlog_builder_approved_in_progress_source_not_started_no_effect`
+- `objective`: Coordinate the exact no-effect authority-bundle builder mission,
+  require green independent review, and permit at most one serialized central
+  integration without granting source capture or canary authority.
+- `why_now`: The paused-campaign backlog canary cannot proceed safely until an
+  exact owner-only manifest, bindings, and protected audio copy are validated
+  and staged without inference or live approval.
 - `allowed_files`:
+  - exact nine-file allowlist recorded in
+    `docs/crm-vnext/crm-core-sealed-backlog-manifest-bootstrap-no-effect-mission-v1.md`
   - `docs/crm-vnext/crm-core-next-action.md`
   - `docs/crm-vnext/crm-core-workstream-board-v0.md`
   - `docs/crm-vnext/crm-core-integration-queue-v0.md`
   - central policy and architecture docs when explicitly approved
 - `forbidden_files`:
+  - every file outside the exact nine-file mission allowlist for this mission
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
@@ -23,15 +30,23 @@
   - branch/workstream coordination
   - conflict resolution
   - board and queue updates
+  - exact builder implementation, deterministic tests, and approved docs in
+    `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
+  - after every prior gate is green, a later no-effect Safari capture of at
+    most eight approved historical backlog records
 - `forbidden_scope`:
-  - APIs
-  - UI, Computer Use, or `@Chrome`
-  - source actions
+  - attachment, upload preview, Send, text, follow-back, reaction, or outreach
+  - MailerLite, campaign, Ads, proxy, Chrome, or in-app browser
+  - unrelated source records, profiles, threads, or DMs
+  - inferred, approximate, relative-time, or fabricated bindings
+  - publication of live execution approval
   - CRM/source writes
   - candidate queue generation
   - welcome audio
-- `private_artifact_policy`: Never inspect, copy, commit, or paste private
-  artifact contents.
+- `private_artifact_policy`: The repo-only builder phase does not inspect
+  private contents. The later approved capture phase may read only its exact
+  owner-only bootstrap inputs and publish only the owner-only staging bundle;
+  never print, paste, or commit private contents.
 - `redacted_receipt_policy`: Source/operator receipts stay outside repo under
   `/Users/alejandrogomez/Documents/Mantis-Reports/`; future CRM Core
   development telemetry should use `/Users/alejandrogomez/Documents/CRM-Core-Reports/`.
@@ -1271,3 +1286,58 @@
   canary approval packet bound to the resulting canonical SHA.
   Neutral Safari remains not run and every Instagram validation remains false;
   no live action is part of this checkpoint.
+
+## Sealed Backlog Manifest Bootstrap No-Effect Mission v1
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-sealed-backlog-manifest-bootstrap-no-effect-mission-v1.md`
+- `builder_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-authority-bundle-builder-v1.md`
+- `approved_baseline`:
+  `c2fb4dc32de26be8f7f8cb2f4e1a39c19deb8c75`
+- `source_branch`:
+  `codex/crm-core-sealed-backlog-manifest-bootstrap-v1-20260716`
+- `status`:
+  `approved_in_progress_builder_phase_source_capture_not_started_no_effect`
+- `private_input_label`:
+  `crm-core-welcome-audio-authority-bootstrap-input-v1`
+- `private_staging_label`:
+  `crm-core-welcome-audio-authority-bootstrap-staging-v1`
+- `current_scope`: Implement and test only the exact allowlisted builder that
+  validates bootstrap authorization, source capture, and asset selection; then
+  stages interval, manifest, exact bindings, protected copied audio, and an
+  aggregate redacted receipt in owner-only storage.
+- `current_truth`: No tests, independent-review verdict, central integration,
+  Safari source capture, private staging result, or record count has yet been
+  recorded for this mission. Do not infer any of those outcomes.
+- `later_source_budget`: At most eight bounded Safari reads, only after prior
+  gates are green, and only for approved backlog records plus the matching
+  profiles and bound threads required to establish exact evidence.
+- `source_fail_closed_rule`: Any approximate or inferred identity, exact time,
+  interval membership, campaign provenance, owner account, thread, or asset
+  binding stops the source phase without publishing a final bundle.
+- `live_authority_boundary`: The builder never publishes
+  `execution-approval-v1.json` or any equivalent live record and never touches
+  the fixed live-authority root. A valid staging bundle remains no-live.
+- `forbidden_effects`: No attachment control, picker, upload, Send, text,
+  follow-back, like, comment, reaction, MailerLite, CRM, campaign, Ads, proxy,
+  Chrome, in-app browser, or unrelated source access.
+- `integration_gate`: Exact allowlist and deterministic checks green, then a
+  green independent review covering privacy, zero-effect scope, atomic
+  owner-only publication, no-follow behavior, inference rejection, and absence
+  of live approval publication. Only then may one serialized central
+  integration occur.
+- `source_actions_executed`: false
+- `records_read`: 0
+- `records_staged`: 0
+- `external_effects`: 0
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `next_gate`: Finish implementation and deterministic tests, obtain the green
+  independent verdict, and only then consider the single allowlisted central
+  integration. Neither review nor integration authorizes later source capture
+  or a live canary.

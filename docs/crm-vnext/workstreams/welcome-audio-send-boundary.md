@@ -1,35 +1,34 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-reentry`
-- `worktree_path`: `/Users/alejandrogomez/CRM-core`
+- `branch`: `codex/crm-core-sealed-backlog-manifest-bootstrap-v1-20260716`
+- `worktree_path`:
+  `/Users/alejandrogomez/CRM-core-sealed-backlog-manifest-bootstrap-v1`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
 - `codex_worker`: Central Integration Worker
 - `status`:
-  `technical_live_runtime_formal_review_green_centrally_integrated_no_live`
-- `objective`: Preserve the centrally integrated exact fail-closed owner-only claim
-  issuer plus Safari live host implementation without invoking Safari,
-  Instagram, upload, Send, or any private source.
-- `why_now`: The technical runtime is implemented, independently reviewed, and
-  fake-driver green at `6a31b32eef31c4eabcaf826d122fde558fcdcfde`.
-  Formal Chief Architect review returned `green_to_self_integrate`, with
-  integration safe and no CEO decision required, and one allowlisted central
-  integration is complete. Its fresh post-integration rerun is green: focused
-  `332/332`; full `243/244` files and `1896/1897` tests, with only the unchanged
-  historical out-of-lane approval-queue baseline failing. Every
-  live/browser/source gate remains closed and any later canary requires fresh
-  exact approval bound to the final canonical SHA recorded by Git history.
+  `authority_bundle_builder_approved_in_progress_capture_staging_only_no_effect`
+- `objective`: Implement and validate only the owner-only authority-bundle
+  builder and protected asset-copy boundary needed to stage an exact historical
+  backlog without creating live send authority.
+- `why_now`: The technical send rail is already centrally integrated, but the
+  canary remains fail-closed because its exact backlog, identity/thread/owner/
+  time bindings, and protected approved audio are not yet available as one
+  validated owner-only staging bundle. This mission fills only that no-effect
+  preparation gap.
 - `allowed_files`:
-  - exact twenty-file allowlist recorded in
-    `docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md`
+  - exact nine-file allowlist recorded in
+    `docs/crm-vnext/crm-core-sealed-backlog-manifest-bootstrap-no-effect-mission-v1.md`
 - `forbidden_files`:
-  - every file outside the exact twenty-file mission allowlist
+  - every file outside the exact nine-file mission allowlist
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
-  - repo-only post-integration validation, documentation, and central closeout
-  - no source, browser, network, private-artifact, or external effect
+  - exact builder implementation, deterministic tests, documentation, review,
+    and one gated central integration in the approved nine-file allowlist
+  - after prior gates are green, owner-only capture staging from at most eight
+    bounded Safari records with no attachment, upload, or send
 - `historical_rendezvous_allowed_scope`:
   - deterministic simulated asynchronous session orchestration
   - a simulated Safari-shaped operation port with no browser handle
@@ -52,13 +51,18 @@
   - narrow operational-rail, adapter, matrix and workstream docs
 - `forbidden_scope`:
   - sending audio
-  - opening DMs
-  - Instagram actions
-  - UI/Computer Use
+  - invoking attachment control, picker, upload preview, or Send
+  - text, follow-back, likes, comments, reactions, or other outreach
+  - unrelated Instagram records, profiles, threads, or DMs
+  - Chrome, in-app browser, MailerLite, campaign, Ads, or proxy
+  - inferred, approximate, relative-time, or fabricated bindings
+  - live execution approval publication
   - candidate queue generation
   - CRM/source writes
-- `private_artifact_policy`: No private artifact inspection; future welcome
-  history artifacts must remain outside repo.
+- `private_artifact_policy`: The repo-only builder phase does not inspect
+  private contents. The later approved capture phase may read only its exact
+  owner-only bootstrap inputs and publish only the owner-only staging bundle;
+  never print, paste, or commit private contents.
 - `redacted_receipt_policy`: Receipts may include counts and status only; no
   identities or message content.
 - `current_tasks`:
@@ -507,3 +511,61 @@
   run. Any real canary still requires a fresh approval bound to the final
   canonical SHA and all current surface gates; review and integration themselves
   authorize no source or live effect.
+
+## Sealed Backlog Authority Bundle Builder Checkpoint
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_sealed_backlog_manifest_bootstrap_no_effect_v1_20260716`
+- `approved_baseline`:
+  `c2fb4dc32de26be8f7f8cb2f4e1a39c19deb8c75`
+- `source_branch`:
+  `codex/crm-core-sealed-backlog-manifest-bootstrap-v1-20260716`
+- `status`:
+  `approved_in_progress_builder_phase_source_capture_not_started_no_effect`
+- `builder_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-authority-bundle-builder-v1.md`
+- `private_input_label`:
+  `crm-core-welcome-audio-authority-bootstrap-input-v1`
+- `private_staging_label`:
+  `crm-core-welcome-audio-authority-bootstrap-staging-v1`
+- `builder_inputs`: Exact bootstrap authorization, exact source capture, and
+  exact asset selection. Private values remain owner-only and never enter
+  tracked files or redacted receipts.
+- `builder_outputs`: Owner-only staging of the exact interval, deterministic
+  manifest of at most eight records, identity/thread/owner/time bindings,
+  protected copied audio, and aggregate redacted receipt. The output is staging
+  only, never a live execution approval.
+- `current_truth`: Implementation is in progress. Deterministic checks,
+  independent review, central integration, Safari reads, record staging, and
+  private publication outcomes are not yet recorded.
+- `later_capture_scope`: After the builder and prior gates are green, Safari may
+  read at most eight approved historical backlog records and only each matching
+  profile and bound thread required for exact evidence. No unrelated browsing
+  is permitted.
+- `fail_closed_rule`: Missing, relative, approximate, inferred, ambiguous, or
+  conflicting identity, source time, interval, campaign provenance, owner,
+  thread, or asset evidence produces no final bundle.
+- `zero_effect_boundary`: Attachment control, native picker, upload preview,
+  Send, text, follow-back, reactions, MailerLite, CRM, campaign, Ads, proxy,
+  Chrome, and in-app browser are forbidden.
+- `live_authority_boundary`: Do not create, update, or publish
+  `execution-approval-v1.json`, an equivalent live record, or any file in the
+  fixed runtime live-authority root.
+- `integration_gate`: A worker independent from implementation must return a
+  green review of observable outcome, exact allowlist, privacy, no-inference,
+  atomic owner-only/no-follow publication, zero-effect UI scope, and absence of
+  live-authority publication before one serialized central integration.
+- `records_read`: 0
+- `records_staged`: 0
+- `attachment_control_invoked`: false
+- `send_control_invoked`: false
+- `mailerlite_POST_attempts`: 0
+- `campaign_surfaces_touched`: 0
+- `external_effects`: 0
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `next_gate`: Finish implementation and deterministic tests, then obtain the
+  green independent verdict. Do not mark integration or source capture complete
+  until direct evidence exists; neither one authorizes a later send.
