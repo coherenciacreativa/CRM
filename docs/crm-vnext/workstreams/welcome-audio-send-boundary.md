@@ -1,43 +1,36 @@
 # CRM Core Workstream: Welcome Audio Send Boundary
 
 - `workstream_id`: `welcome-audio-send-boundary`
-- `branch`: `codex/crm-core-welcome-audio-deferred-actuator-rendezvous-v1`
-- `worktree_path`: `/Users/alejandrogomez/CRM-core-welcome-audio-deferred-actuator-rendezvous-v1`
+- `branch`: `codex/crm-core-reentry`
+- `worktree_path`: `/Users/alejandrogomez/CRM-core`
 - `consultant_chat`: `CRM Core — Chief Architect / 00 — North Star & Portfolio`
-- `codex_worker`: Welcome Audio deferred actuator rendezvous no-effect lane
-- `status`: `deferred_rendezvous_centrally_integrated_no_live`
-- `objective`: Implement a deterministic same-process deferred actuator
-  rendezvous around the centrally integrated async bridge. The rendezvous is
-  opaque, one-use, exact-port/exact-binding paired, armed only after durable
-  pending plus claim/session-authority consumption, and terminally fail closed
-  on every invalid, absent, ambiguous, or late result.
-- `why_now`: The guard, canonical Safari adapter, synthetic no-effect
-  boundary-A executor, shared claim issuer, and contract-shaped operational
-  executor and async session bridge are centrally integrated for deterministic
-  no-effect proof. Every
-  live/browser/source gate remains closed. A live owner-only claim issuer, real
-  browser-bound Safari actuator, and a new mission with fresh explicit CEO
-  approval remain later gates.
+- `codex_worker`: Central Integration Worker
+- `status`:
+  `technical_live_runtime_formal_review_green_centrally_integrated_no_live`
+- `objective`: Preserve the centrally integrated exact fail-closed owner-only claim
+  issuer plus Safari live host implementation without invoking Safari,
+  Instagram, upload, Send, or any private source.
+- `why_now`: The technical runtime is implemented, independently reviewed, and
+  fake-driver green at `6a31b32eef31c4eabcaf826d122fde558fcdcfde`.
+  Formal Chief Architect review returned `green_to_self_integrate`, with
+  integration safe and no CEO decision required, and one allowlisted central
+  integration is complete. Its fresh post-integration rerun is green: focused
+  `332/332`; full `243/244` files and `1896/1897` tests, with only the unchanged
+  historical out-of-lane approval-queue baseline failing. Every
+  live/browser/source gate remains closed and any later canary requires fresh
+  exact approval bound to the final canonical SHA recorded by Git history.
 - `allowed_files`:
-  - `scripts/crm-vnext-instagram-welcome-audio-safari-operation-port.mjs`
-  - `scripts/crm-vnext-instagram-welcome-audio-operation-session.mjs`
-  - `__tests__/crm-vnext-instagram-welcome-audio-operation-session.spec.ts`
-  - `scripts/crm-vnext-instagram-welcome-audio-safari-operational-executor.mjs`
-  - `__tests__/crm-vnext-instagram-welcome-audio-safari-operational-executor.spec.ts`
-  - `docs/crm-vnext/instagram-welcome-audio-operational-rail-v1.md`
-  - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
-  - `docs/crm-vnext/instagram-welcome-audio-surface-capability-matrix-v1.md`
-  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - exact twenty-file allowlist recorded in
+    `docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md`
 - `forbidden_files`:
-  - every file outside the exact lane allowlist above; the current delta changes
-    exactly eight files and leaves `operation-session.mjs` read-only
-  - the integrated operation guard, shared store, claim writer, synthetic
-    one-shot executor, and their tests, which are read-only dependencies
-  - central next-action, board, queue and integration records
+  - every file outside the exact twenty-file mission allowlist
   - private artifacts
   - Mantis-Reports receipts
   - Launch OS docs
 - `allowed_scope`:
+  - repo-only post-integration validation, documentation, and central closeout
+  - no source, browser, network, private-artifact, or external effect
+- `historical_rendezvous_allowed_scope`:
   - deterministic simulated asynchronous session orchestration
   - a simulated Safari-shaped operation port with no browser handle
   - one opaque frozen nonserializable deferred-rendezvous authority separate
@@ -69,6 +62,12 @@
 - `redacted_receipt_policy`: Receipts may include counts and status only; no
   identities or message content.
 - `current_tasks`:
+  - complete the fresh post-integration rerun and reconcile its aggregate result
+  - preserve the validated formal Chief Architect verdict and one-integration
+    record without duplicating the central commit SHA in this document
+  - prepare, but do not execute, a fresh canary approval packet bound to the
+    resulting canonical SHA
+- `historical_rendezvous_tasks`:
   - prior async bridge status: centrally integrated, deterministic no-effect,
     and still no-live
   - current task: implement only the deferred actuator rendezvous seam with
@@ -335,9 +334,10 @@
     stop/close conversation, human escalation, email handoff, MailerLite
     no-write preview, CRM enrichment preview, and CRM/source write remain
     separate approval boundaries
-- `latest_commit`: supplied by Git history for this exact lane; no hash is
-  duplicated inside the commit that creates it
-- `latest_receipt`: no live or persisted operational receipt; deterministic
+- `latest_source_commit`: `6a31b32eef31c4eabcaf826d122fde558fcdcfde`
+- `central_integration_commit`: supplied by Git history; not duplicated inside
+  the commit that records this integration
+- `historical_rendezvous_receipt`: no live or persisted operational receipt; deterministic
   test receipts remain ephemeral. The inherited rail's focused `244/244`,
   targeted adversarial `7/7`, and full `1669/1670` known-baseline evidence does
   not validate the current rendezvous. Bridge-lane validation is separately
@@ -348,14 +348,12 @@
   is `240/241` files and `1717/1718` tests with the same exact unchanged
   historical out-of-lane baseline; independent code, adversarial, and
   documentation reviews are green.
-- `blockers`: async-bridge formal artifact review and central integration are
-  complete. Deferred-rendezvous formal artifact review, commit/push, and central
-  integration are complete. A live owner-only claim issuer, real browser-bound
-  Safari actuator, and newly written mission with fresh explicit CEO approval
-  remain separate later gates.
-- `latest_execution_note`: this exact eight-file deferred-rendezvous delta
-  creates no browser, source, send, MailerLite, legacy proxy, campaign, CRM,
-  automation, network, private operational artifact, or external effect.
+- `blockers`: current Safari/Instagram surface validation and fresh exact canary
+  approval remain separate gates. Green post-integration validation grants no
+  live authority.
+- `latest_execution_note`: the exact twenty-file technical assembly creates no
+  browser, source, send, MailerLite, legacy proxy, campaign, CRM, automation,
+  network, private operational artifact, or external effect.
 - `safari_action_adapter_v1_status`:
   `operational_rail_centrally_integrated_no_live`
 - `surface_capability_matrix_v1_status`:
@@ -417,7 +415,8 @@
   integration.
 - `old_limited_operational_pilot_status`:
   `closed_superseded_effect_history_requires_owner_only_reconciliation`
-- `future_mission_status`: `required_not_created`
+- `future_mission_status`:
+  `canary_contract_exists_execution_not_approved_fresh_post_integration_approval_required`
 - `prior_one_send_evidence_status`:
   `historical_single_send_design_evidence_only_not_production_proof`
 - `prior_upload_route_v0_status`:
@@ -430,14 +429,13 @@
 - `permanent_no_retry_after_attempt`: true
 - `retry_disposition_after_attempt`:
   `retry_forbidden_permanently_after_attempt`
-- `next_recommended_step`: preserve the centrally integrated no-live rendezvous
-  evidence and proceed only through separately reviewed no-live technical work
-  before any future mission; every live gate remains closed.
-- `next_approval_needed`: no CEO decision is needed for this deterministic
-  no-live rendezvous implementation, validation, review, or exact-allowlist central
-  integration. Any future live use still requires a separately reviewed live
-  owner-only claim issuer and real browser-bound Safari actuator, then a newly
-  written mission plus fresh explicit CEO approval for the exact canary.
+- `next_recommended_step`: complete and record the fresh post-integration rerun,
+  then prepare a fresh approval packet bound to the final canonical SHA; every
+  live gate remains closed.
+- `next_approval_needed`: no additional CEO decision is needed for the already
+  completed repo-only review and exact-allowlist central integration. A later
+  real canary still requires fresh explicit approval after integration, a green
+  post-integration result, and all current private and surface gates.
 - `proposed_integration_note`: Welcome Audio would gain one deterministic
   same-process deferred result rendezvous around the centrally integrated async
   session bridge. The public port stays unchanged and non-invocable; a separate
@@ -452,14 +450,60 @@
   plain data-only envelope from own descriptors and rejects Proxy, accessors,
   or non-plain objects without observation. It adds no host browser or surface and creates no Safari,
   Instagram, picker, audio delivery, current surface-health, live issuer, live
-  authority, or canary authority. Current focused validation is `292/292`, the
-  current full suite is `1717/1718` with the exact unchanged historical
-  out-of-lane baseline, and independent review is green; formal artifact review
-  and central integration are complete.
-  Even after integration, `browser_used=false`, `network_used=false`,
+  authority, or canary authority. This historical rendezvous closeout recorded
+  focused validation `292/292`, full suite `1717/1718` with the exact unchanged
+  historical out-of-lane baseline, independent review green, and its formal
+  artifact review and central integration complete.
+  After that historical integration, `browser_used=false`, `network_used=false`,
   `external_effect_invoked=false`, `production_ready=false`,
-  `send_allowed=false`, and `live_authority=false`; the live claim issuer, real
-  browser-bound Safari actuator, new mission, and fresh explicit CEO approval
-  remain separate future gates.
+  `send_allowed=false`, and `live_authority=false`. The technical live-gates
+  assembly checkpoint below supersedes only the former missing-runtime
+  statement; it does not grant live authority or validate Safari/Instagram.
 - `closeout_format`: use template in
   `docs/crm-vnext/workstreams/_workstream-status-template-v0.md`.
+
+## Centrally Integrated Technical Live-Gates Checkpoint
+
+- `checkpoint_date`: `2026-07-15`
+- `assembly_branch`: `codex/crm-core-welcome-audio-live-gates-v1`
+- `assembly_commit`: `6a31b32eef31c4eabcaf826d122fde558fcdcfde`
+- `status`:
+  `technical_live_runtime_formal_review_green_centrally_integrated_no_live`
+- `technical_live_runtime_implemented`: true
+- `fake_driver_green`: true
+- `neutral_safari_binding_green`: `not_run`
+- `instagram_surface_validated`: false
+- `instagram_auth_validated`: false
+- `instagram_upload_validated`: false
+- `instagram_send_validated`: false
+- `assembly_focused_validation`: `332/332`
+- `assembly_full_validation`: `243/244` files and `1896/1897` tests; the sole failure is
+  the unchanged historical out-of-lane approval-queue baseline
+- `formal_chief_architect_review_complete`: true
+- `formal_chief_architect_review_verdict`: `green_to_self_integrate`
+- `formal_review_safe_to_integrate`: true
+- `formal_review_ceo_decision_required`: false
+- `central_integration_complete`: true
+- `central_integration_commit`: `git_history_authoritative`
+- `post_integration_validation`: `green_no_new_regressions`
+- `post_integration_focused_validation`: `332/332`
+- `post_integration_full_validation`: `243/244` files and `1896/1897` tests;
+  the sole failure is the unchanged historical out-of-lane approval-queue
+  baseline
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `real_canary_requires_fresh_approval`: true
+- `real_canary_execution_explicitly_approved`: false
+- `supersession_scope`: The technical claim issuer and browser-bound Safari
+  host are now centrally integrated as repo-only technical capability. Prior
+  historical and no-effect records remain intact; no neutral Safari binding or
+  Instagram validation has occurred, and central integration grants no live
+  authority.
+- `next_gate`: Complete the fresh post-integration rerun in the current central
+  run. Any real canary still requires a fresh approval bound to the final
+  canonical SHA and all current surface gates; review and integration themselves
+  authorize no source or live effect.

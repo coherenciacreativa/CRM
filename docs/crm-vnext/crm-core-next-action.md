@@ -6134,12 +6134,15 @@ routing and completion pointer.
 - `privacy_process_note`: redacted non-blocking local trace disposition; future
   relay validation uses exact boolean checks and no broad UI or snapshot
   extraction.
-- `next_external_gate`: no-live next technical slice before any mission; the
-  live owner-only claim issuer and real browser-bound Safari actuator remain
-  missing. Only after those are separately reviewed and integrated may a newly
-  written mission with fresh CEO approval authorize any send. Git history is
-  authoritative for the central merge and source chain; this action grants no
-  live authority.
+- `next_external_gate`: the technical owner-only claim issuer and Safari host
+  are implemented, independently reviewed, fake-driver green, formally
+  approved by the Chief Architect as `green_to_self_integrate`, and centrally
+  integrated with no live effect. Git history is authoritative for the central
+  integration. Fresh post-integration validation is green: focused `332/332`;
+  full `243/244` files and `1896/1897` tests, with only the unchanged historical
+  out-of-lane approval-queue baseline failing. The existing canary contract
+  still requires fresh exact CEO approval bound to the final canonical SHA
+  before any source or live use; this action grants no live authority.
 - `recommended_default`:
   `preserve_integrated_readiness_async_bridge_and_deferred_rendezvous_keep_all_live_gates_closed`
 
@@ -6192,8 +6195,53 @@ routing and completion pointer.
     with exactly two approved groups and add-only semantics.
 - `stop_rule`: Any failed gate stops before effect; any attempted, uncertain,
   timed-out, or unknown effect is terminal with no retry.
-- `decision_needed`: After central integration, one explicit owner-only CEO
-  approval, modification, decline, or pause of this exact amended contract.
-  Campaign reactivation remains a later, separate decision.
+- `decision_needed`: After the central commit is published and its final
+  canonical SHA is available, one explicit owner-only CEO approval,
+  modification, decline, or pause of this exact amended contract. Campaign
+  reactivation remains a later, separate decision.
 - `recommended_default`:
   `integrate_amended_planning_contract_then_await_fresh_execution_approval_keep_campaign_paused`
+
+## Technical Live-Gates Central Integration Checkpoint
+
+- `checkpoint_date`: `2026-07-15`
+- `assembly_branch`: `codex/crm-core-welcome-audio-live-gates-v1`
+- `assembly_commit`: `6a31b32eef31c4eabcaf826d122fde558fcdcfde`
+- `assembly_status`:
+  `green_formal_chief_architect_review_green_centrally_integrated_no_live`
+- `formal_chief_architect_verdict`: `green_to_self_integrate`
+- `formal_review_safe`: true
+- `formal_review_ceo_decision_required`: false
+- `central_integration_status`: `completed_no_live_git_history_authoritative`
+- `post_integration_validation`: `green_no_new_regressions`
+- `post_integration_focused_validation`: `332/332`
+- `post_integration_full_validation`: `243/244` files and `1896/1897` tests;
+  the sole failure is the unchanged historical out-of-lane approval-queue
+  baseline
+- `technical_live_runtime_implemented`: true
+- `fake_driver_green`: true
+- `neutral_safari_binding_green`: `not_run`
+- `instagram_surface_validated`: false
+- `instagram_auth_validated`: false
+- `instagram_upload_validated`: false
+- `instagram_send_validated`: false
+- `assembly_focused_validation`: `332/332`
+- `assembly_full_validation`: `243/244` files and `1896/1897` tests; the sole
+  failure is the unchanged historical out-of-lane approval-queue baseline
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `real_canary_requires_fresh_approval`: true
+- `scope_note`: This checkpoint supersedes only the earlier claim that the
+  technical live claim issuer and Safari host were missing. It does not alter
+  the historical no-effect evidence, authorize source access, or validate the
+  current Instagram surface.
+- `next_gate`: Publish the central integration commit, then prepare a fresh
+  canary approval packet bound to that canonical SHA. Neutral Safari remains
+  not run and every Instagram validation remains false. Do not execute the
+  canary as part of this integration closeout.
+- `recommended_default`:
+  `publish_central_integration_then_prepare_fresh_canary_approval_keep_all_live_gates_closed`

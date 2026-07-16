@@ -19,7 +19,9 @@ import {
   WELCOME_AUDIO_RETRY_DISPOSITION,
   WELCOME_AUDIO_SEND_CLAIM,
   WELCOME_AUDIO_SOURCE_BINDING,
+  WELCOME_AUDIO_SOURCE_CLASS,
   WELCOME_AUDIO_SOURCE_RECENCY,
+  WELCOME_AUDIO_BUSINESS_ELIGIBILITY,
   WELCOME_AUDIO_SURFACE,
   buildWelcomeAudioCanonicalOperationDigest,
   buildWelcomeAudioRedactedReceipt as buildWelcomeAudioRedactedReceiptRaw,
@@ -35,6 +37,8 @@ const CANDIDATE_SHA = "3".repeat(64);
 const THREAD_SHA = "4".repeat(64);
 const OWNER_SHA = "5".repeat(64);
 const ASSET_SHA = "6".repeat(64);
+const MANIFEST_SHA = "7".repeat(64);
+const CAMPAIGN_INTERVAL_SHA = "8".repeat(64);
 const OPERATION_ID = "welcome_audio_operation_001";
 const APPROVAL_PACKET_ID = "welcome_audio_approval_001";
 const ASSET_ID = "welcome_audio_asset_001";
@@ -263,8 +267,7 @@ const preclaimOperation = () => {
   return boundInput;
 };
 
-const sendReadyOperation = () => {
-  const input = preclaimOperation();
+const sendReadyOperation = (input = preclaimOperation()) => {
   input.effect_claim = {
     status: WELCOME_AUDIO_EFFECT_CLAIM.PERMANENTLY_CLAIMED_BEFORE_ATTEMPT,
     claim_result: WELCOME_AUDIO_CLAIM_RESULT.FRESH_CURRENT_INVOCATION,
@@ -337,7 +340,117 @@ const confirmedOperation = (
   return input;
 };
 
+const sealedBacklogPreclaimOperation = () => {
+  const input = preclaimOperation();
+  input.follower_evidence = {
+    ...input.follower_evidence,
+    source_recency: WELCOME_AUDIO_SOURCE_RECENCY.SEALED_PAUSED_CAMPAIGN_BACKLOG,
+    observed_at: "2026-07-10T15:58:05.000Z",
+    time_bucket: "sealed_campaign_interval",
+  };
+  input.binding = {
+    ...input.binding,
+    source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_SEALED_BACKLOG,
+  };
+  input.eligibility = {
+    ...input.eligibility,
+    business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER,
+  };
+  input.asset = {
+    ...input.asset,
+    asset_preview_binding: WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE,
+    preview_status: "approved_file_validated_before_upload",
+  };
+  input.source_provenance = {
+    source_class: WELCOME_AUDIO_SOURCE_CLASS.SEALED_PAUSED_CAMPAIGN_BACKLOG_MEMBER,
+    manifest_digest_sha256: MANIFEST_SHA,
+    campaign_interval_digest_sha256: CAMPAIGN_INTERVAL_SHA,
+    manifest_record_index: 0,
+    manifest_record_count: 8,
+    source_event_anchor_sha256: SOURCE_SHA,
+  };
+  const boundInput = bindCanonicalOperationDigest(input);
+  TRUSTED_CANONICAL_OPERATION_DIGESTS.set(
+    boundInput,
+    boundInput.canonical_operation_sha256,
+  );
+  return boundInput;
+};
+
 describe("Instagram welcome-audio operation guard", () => {
+  test("admits an over-24-hour follower bound to the sealed paused-campaign backlog", () => {
+    const input = sealedBacklogPreclaimOperation();
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    const receipt = buildWelcomeAudioRedactedReceipt(input, { nowMs: NOW_MS });
+
+    expect(result).toMatchObject({
+      ok: true,
+      state_valid: true,
+      phase: WELCOME_AUDIO_GUARD_PHASE.PRECLAIM,
+      decision: WELCOME_AUDIO_GUARD_DECISION.ELIGIBLE_TO_CLAIM,
+      claim_allowed: true,
+      send_allowed: false,
+      blockers: [],
+    });
+    expect(receipt).toMatchObject({
+      source_recency: WELCOME_AUDIO_SOURCE_RECENCY.SEALED_PAUSED_CAMPAIGN_BACKLOG,
+      source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_SEALED_BACKLOG,
+      business_eligibility: WELCOME_AUDIO_BUSINESS_ELIGIBILITY.SEALED_BACKLOG_FOLLOWER,
+    });
+    expect(validateWelcomeAudioRedactedReceipt(receipt)).toEqual({ ok: true, reason: null });
+  });
+
+  test("seals manifest, interval, ordinal, and source anchor into the canonical digest", () => {
+    const baseline = sealedBacklogPreclaimOperation();
+    const mutations: Array<(input: Record<string, any>) => void> = [
+      (input) => { input.source_provenance.manifest_digest_sha256 = "9".repeat(64); },
+      (input) => { input.source_provenance.campaign_interval_digest_sha256 = "a".repeat(64); },
+      (input) => { input.source_provenance.manifest_record_index = 1; },
+      (input) => { input.source_provenance.manifest_record_count = 7; },
+      (input) => { input.source_provenance.source_event_anchor_sha256 = "b".repeat(64); },
+    ];
+
+    for (const mutate of mutations) {
+      const changed = structuredClone(baseline);
+      mutate(changed);
+      expect(buildWelcomeAudioCanonicalOperationDigest(changed))
+        .not.toBe(baseline.canonical_operation_sha256);
+    }
+  });
+
+  test("rejects pre-upload asset evidence for the legacy recent-follower route", () => {
+    const input = preclaimOperation();
+    input.asset.asset_preview_binding = WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE;
+    input.asset.preview_status = "approved_file_validated_before_upload";
+    bindCanonicalOperationDigest(input);
+    TRUSTED_CANONICAL_OPERATION_DIGESTS.set(input, input.canonical_operation_sha256);
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({ ok: false, claim_allowed: false, send_allowed: false });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW);
+  });
+
+  test("does not treat sealed pre-upload evidence as a post-claim send-ready state", () => {
+    const ready = sendReadyOperation(sealedBacklogPreclaimOperation());
+    const result = validateWelcomeAudioOperation(ready, { nowMs: NOW_MS });
+    expect(result).toMatchObject({ ok: false, send_ready: false, send_allowed: false });
+    expect(result.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.ASSET_PREVIEW);
+  });
+
+  test.each([
+    ["missing provenance", (input: Record<string, any>) => { delete input.source_provenance; }, WELCOME_AUDIO_GUARD_REASON.SOURCE_PROVENANCE],
+    ["over-cap manifest", (input: Record<string, any>) => { input.source_provenance.manifest_record_count = 9; }, WELCOME_AUDIO_GUARD_REASON.SOURCE_MANIFEST_POSITION],
+    ["out-of-range ordinal", (input: Record<string, any>) => { input.source_provenance.manifest_record_index = 8; }, WELCOME_AUDIO_GUARD_REASON.SOURCE_MANIFEST_POSITION],
+    ["mismatched source anchor", (input: Record<string, any>) => { input.source_provenance.source_event_anchor_sha256 = "c".repeat(64); }, WELCOME_AUDIO_GUARD_REASON.SOURCE_MANIFEST_BINDING],
+  ])("rejects sealed backlog with %s", (_label, mutate, reason) => {
+    const input = sealedBacklogPreclaimOperation();
+    mutate(input);
+    bindCanonicalOperationDigest(input);
+    TRUSTED_CANONICAL_OPERATION_DIGESTS.set(input, input.canonical_operation_sha256);
+    const result = validateWelcomeAudioOperation(input, { nowMs: NOW_MS });
+    expect(result).toMatchObject({ ok: false, claim_allowed: false, send_allowed: false });
+    expect(result.blockers).toContain(reason);
+  });
+
   test("separates preclaim eligibility from send authority", () => {
     const result = validateWelcomeAudioOperation(preclaimOperation(), { nowMs: NOW_MS });
     expect(result).toMatchObject({

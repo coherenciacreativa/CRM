@@ -2023,14 +2023,13 @@ No lane outputs in review at creation.
 - `privacy_process_note`: redacted non-blocking local trace disposition; use
   exact boolean checks and no broad UI or snapshot extraction in future relay
   validation.
-- `integration_recommendation`: preserve the integrated action rail, synthetic
-  executor, deterministic no-effect operational rail, deterministic simulated
-  async browser-session bridge, and deterministic same-process deferred
-  rendezvous while keeping all live gates closed. The active next action is a
-  no-live technical slice before any mission. A live owner-only claim issuer
-  and real browser-bound Safari actuator remain prerequisites. Only after those
-  are separately reviewed and integrated may a newly written and freshly
-  approved future mission authorize any send; do not execute live.
+- `integration_recommendation`: preserve the integrated no-effect rail and keep
+  all live gates closed. This historical recommendation is superseded by the
+  technical live-gates assembly item below: the issuer and Safari host are now
+  implemented and fake-driver green, but still require formal Chief Architect
+  review and one allowlisted central integration. The existing canary contract
+  then requires fresh exact approval before any source or live use; do not
+  execute live.
 
 ## crm_core_real_new_follower_welcome_e2e_proof_v0_2026_07_15
 
@@ -2084,6 +2083,60 @@ No lane outputs in review at creation.
 - `integration_recommendation`: integrate only as a planning contract and keep
   every source and live-effect gate closed, with the campaign paused
 
+## crm_core_welcome_audio_live_gates_assembly_2026_07_15
+
+- `source_workstream`: `welcome-audio-send-boundary` and `integration`
+- `source_branch`: `codex/crm-core-welcome-audio-live-gates-v1`
+- `assembly_commit`: `6a31b32eef31c4eabcaf826d122fde558fcdcfde`
+- `status`:
+  `formal_chief_architect_review_green_centrally_integrated_post_integration_validation_green_no_live`
+- `formal_chief_architect_verdict`: `green_to_self_integrate`
+- `formal_review_safe`: true
+- `formal_review_ceo_decision_required`: false
+- `central_integration_status`: `completed_no_live_git_history_authoritative`
+- `post_integration_validation`: `green_no_new_regressions`
+- `post_integration_focused_validation`: `332/332`
+- `post_integration_full_validation`: `243/244` files and `1896/1897` tests;
+  the sole failure is the unchanged historical out-of-lane approval-queue
+  baseline
+- `files_changed`: exact twenty-file allowlist recorded in
+  `docs/crm-vnext/crm-core-welcome-audio-live-gates-hardening-mission-v1.md`
+- `summary`: The technical owner-only live claim issuer and Safari host were
+  formally reviewed green and centrally integrated over the existing no-effect
+  rail. The package is fail-closed and synthetic-driver validated, but has not
+  run neutral Safari or validated the current Instagram surface,
+  authentication, upload, or send.
+- `assembly_tests_or_checks`: focused `332/332`; full `243/244` files and
+  `1896/1897` tests, with the sole failure the unchanged historical out-of-lane
+  approval-queue baseline
+- `technical_live_runtime_implemented`: true
+- `fake_driver_green`: true
+- `neutral_safari_binding_green`: `not_run`
+- `instagram_surface_validated`: false
+- `instagram_auth_validated`: false
+- `instagram_upload_validated`: false
+- `instagram_send_validated`: false
+- `private_artifacts_touched`: false
+- `source_actions_executed`: false
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `real_canary_requires_fresh_approval`: true
+- `central_files_requested`: satisfied, limited to the exact twenty-file
+  allowlist
+- `conflicts_expected`: none; central integration completed under lock
+- `decision_needed`: after the central commit is published, prepare a fresh
+  canary approval packet bound to its final canonical SHA; no live execution
+  decision is requested by this queue item
+- `integration_recommendation`: Preserve the centrally integrated package,
+  rerun the exact no-live checks, and prepare a fresh canary approval packet
+  bound to the resulting canonical SHA. Do not open Instagram or perform any
+  source, upload, send, MailerLite, campaign, or other external effect during
+  validation.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
@@ -2098,14 +2151,15 @@ baseline `44bff5a61eff7c8d7eae78aed0d7584c4e1cc12d`. It is planning-only:
 `execution_explicitly_approved=false`, the campaign is CEO-reported paused,
 and zero live effects occurred.
 
-After central integration, the next execution decision is one explicit CEO
-approval, modification, decline, or pause of that exact amended contract. A
-future approved canary proves one audio before any expansion to at most three
-eligible identities; no reply or email is required for audio success. Approval
-alone does not open the source: a fresh post-integration canonical HEAD equal
-to remote must be recorded in and bound by the owner-only approval; clean exact
-context, sealed backlog interval, live claim emitter with dedupe/caps, real
-browser-bound Safari actuator with provenance/timing, fresh source/asset/private
+After the fresh post-integration validation rerun and final canonical SHA are
+available, the next execution decision is one explicit CEO approval,
+modification, decline, or pause of that exact amended contract. A future
+approved canary proves one audio before any expansion to at most three eligible
+identities; no reply or email is required for audio success. Approval alone
+does not open the source: a fresh post-integration canonical HEAD equal to
+remote must be recorded in and bound by the owner-only approval; clean exact
+context, sealed backlog interval, current claim emitter with dedupe/caps,
+current browser-bound Safari provenance/timing, fresh source/asset/private
 bindings, post-source eligibility checks, and any conditional MailerLite gates
 must all be green. Campaign reactivation and the approximately 12-per-day
 capacity plan require a later separate CEO decision. Otherwise stop before

@@ -2,14 +2,15 @@
 
 - `contract_version`: `crm_core_instagram_welcome_audio_operational_rail_v1`
 - `execution_mode`: `deterministic_no_effect_test`
-- `status`: `operational_rail_async_bridge_and_deferred_rendezvous_centrally_integrated_no_live`
+- `status`: `deterministic_rail_preserved_sibling_live_runtime_centrally_integrated_technical_no_live`
 - `production_ready`: `false`
 - `send_allowed`: `false`
 - `live_authority`: `false`
 - `browser_used`: `false`
 - `network_used`: `false`
 - `external_effect_invoked`: `false`
-- `future_mission_required`: `true`
+- `current_canary_contract_exists`: `true`
+- `fresh_real_canary_approval_required`: `true`
 
 ## Purpose
 
@@ -26,6 +27,72 @@ The joined rail is a deterministic no-effect proof only. It does not open
 Safari, Instagram, a DM, a native picker, or any private source. It does not
 upload or send anything. The Safari branding fixes the future surface contract;
 it is not a browser driver or evidence that the live surface is healthy.
+
+## Separate Sibling Live Runtime v1
+
+The live-gates hardening mission adds a separate sibling runtime contract. It
+does not make this deterministic rail dual-mode and does not reuse the
+deterministic port or 100-millisecond rendezvous as a live transport. The
+historical rail remains an oracle for ordering, replay, and receipt semantics;
+the sibling runtime imports the pure guard and uses separately reviewed live
+preflight, owner-only claim, durable state, and Safari-host boundaries.
+
+The live ordering is mandatory:
+
+```text
+fresh live preflight
+  -> durable global exact-identity claim plus mission-cap reservation
+  -> durable PENDING before any audio-byte upload
+  -> consume one-use upload authority and invoke native-picker upload once
+  -> consume one-use Send authority and actuate Send at most once
+  -> durable TERMINAL confirmed-or-unknown state
+  -> permanent no-retry
+```
+
+Upload and Send are separate external-effect boundaries. A crash or unknown
+outcome at or after upload cannot return to preflight, reclaim the identity, or
+mint another upload/Send authority. `PENDING` must already be durable before
+the upload authority is consumed. Durable `TERMINAL` must dominate replay even
+when a public receipt is missing.
+
+The live preflight contract additionally binds:
+
+- one sealed paused-campaign manifest of at most eight ordered records;
+- exact manifest and campaign-interval digests, record index/count, source
+  class, and source-event anchor in `source_provenance`;
+- one durable ordered inspection cursor whose reservations remain visible
+  after crash;
+- global exact-identity dedupe independent of mission ID and an atomic maximum
+  of three claimed sends;
+- explicit Stage 1 strong confirmation before claim slots 2 or 3;
+- an exact approved regular-file audio asset with no symlink or hard-link
+  substitution and revalidation before the effect boundary;
+- one bound-thread observation state with the contract-defined read and time
+  limits.
+
+The technical live runtime is implemented, independently and formally reviewed,
+and centrally integrated as a technical no-live runtime. The result below is
+limited to source and fake-driver evidence. Fresh post-integration validation
+is green: focused `332/332`; full `243/244` files and `1896/1897` tests, with
+only the unchanged historical out-of-lane approval-queue baseline failing:
+
+```text
+technical_live_runtime_implemented = true
+validation_scope = fake_driver_only
+fake_driver_green = true
+formal_chief_architect_review_complete = true
+central_integration_complete = true
+post_integration_validation_rerun = green_no_new_regressions
+neutral_safari_binding_green = not_run
+instagram_surface_validated = false
+instagram_auth_validated = false
+instagram_upload_validated = false
+instagram_send_validated = false
+production_ready = false
+send_allowed = false
+live_authority = false
+real_canary_requires_fresh_approval = true
+```
 
 ## Centrally Integrated Async Browser Session Bridge
 
@@ -82,9 +149,9 @@ approval-queue baseline. None of these counts is evidence of a browser, real
 actuator, Safari or Instagram use, picker access, audio delivery, surface
 health, live issuer, or authorized canary.
 
-## Deferred Actuator Rendezvous v1 (Current Lane)
+## Deferred Actuator Rendezvous v1 (Historical No-Effect Lane)
 
-The current no-live delta adds a same-process deferred rendezvous between the
+The historical no-live delta adds a same-process deferred rendezvous between the
 integrated operation session and its deterministic actuator result. The
 rendezvous authority is separate from the public port, opaque, frozen,
 nonserializable, and paired privately to the exact port and operation binding.
@@ -106,16 +173,16 @@ validated, compared, and stored without re-reading the caller object. An absent
 result reaches a bounded deterministic timeout and never arms or accepts a
 second resolution.
 
-This is a seam for a future separately reviewed host; it is not a host-browser
-implementation or a browser test. Current focused validation is `292/292`
+This was a seam for a future separately reviewed host; it is not itself a
+host-browser implementation or a browser test. Historical focused validation is `292/292`
 across the five Welcome Audio files, including operation session `40/40` and
 operational executor `20/20`. The prior centrally integrated bridge evidence
 remains `44/44`, `276/276`, targeted `13/13`, and full known baseline
 `1701/1702`. Current rendezvous full-suite validation is `240/241` files and
 `1717/1718` tests with the same exact unchanged historical out-of-lane baseline.
-Independent code, adversarial, and documentation reviews are green; formal
-artifact review, commit, push, and central integration of this rendezvous delta
-remain pending. All receipts still fix:
+Independent code, adversarial, and documentation reviews, formal artifact
+review, commit, push, and central integration of this rendezvous delta are
+complete. All historical rendezvous receipts still fix:
 
 ```text
 browser_used = false
@@ -569,8 +636,9 @@ bridge-targeted adversarial `13/13`; and full repository `240/241` files and
 approval-queue baseline failing. Independent code/adversarial and documentation
 reviews, formal artifact review, commit, push, and central integration of the
 exact bridge allowlist are complete. Those completed no-live gates grant no
-send authority. The deferred rendezvous delta described above has completed
-independent review and is the current artifact-review-pending lane.
+send authority. The deferred rendezvous delta described above also completed
+independent review, formal artifact review, commit, push, and central
+integration; it remains historical no-effect evidence.
 
 ### Redacted Validation Incident
 
@@ -590,37 +658,49 @@ rail.
 ## Closed Gates
 
 - no live run;
-- no Safari, Instagram, browser, UI, Computer Use, file picker, upload, preview,
-  or send;
+- no Instagram, live Safari source, private UI, Computer Use effect, file
+  picker, upload, preview, or Send;
 - no source read, profile opening, DM opening, candidate creation, or private
   identity use;
-- no arbitrary callback or live actuator;
+- no invocation of the sibling live runtime against Safari, Instagram, or any
+  private or live source; fake-driver evidence does not validate a live surface
+  or grant effect authority;
 - no live registry or non-temporary operational state;
 - no MailerLite, campaign, legacy proxy, CRM, card, Fact Store, ledger, scoring,
   automation, or source mutation;
 - no private operational artifact or live receipt creation;
-- no claim that the current deferred rendezvous formal artifact review, commit,
-  push, or central integration is complete before those gates actually close;
+- no claim that central integration of the sibling live runtime validates
+  Safari or Instagram or grants source, Send, production, or live authority;
 - no reuse of the closed pilot or historical send as authority;
 - no production readiness, send authority, or live authority.
 
 ## Future Canary Boundary
 
-The deterministic rail and simulated async bridge are centrally integrated;
-the independently reviewed, artifact-review-pending rendezvous delta also
-grants no send authority. A future
-one-recipient, one-audio, one-attempt
-canary requires all of the following as later, separate gates:
+The deterministic rail, simulated async bridge, and deferred rendezvous are
+centrally integrated historical no-effect evidence. The sibling live runtime
+is implemented, independently and formally reviewed, centrally integrated, and
+fake-driver green as a technical no-live runtime. Its fresh post-integration
+validation is green at focused `332/332` and full `243/244` files plus
+`1896/1897` tests, with only the unchanged historical out-of-lane baseline
+failing; it grants no send authority. The existing
+sealed-backlog staged canary requires all of the following as later, separate
+gates:
 
-1. a newly written mission contract bound to the exact integrated commit;
-2. fresh explicit CEO approval for that exact canary effect;
+1. the existing canary contract bound to the final integrated commit;
+2. fresh explicit CEO approval for that exact canary effect after integration;
 3. fresh private source, exact identity/thread, exact asset, context, dedupe,
    and already-welcomed evidence;
-4. an owner-only live store and claim issuer reviewed for that mission;
-5. a separately reviewed real browser-bound Safari actuator that preserves the
-   claim-to-pending-to-one-actuation-to-terminal ordering;
-6. exact action-time confirmation if the future mission requires it;
+4. the integrated owner-only live preflight, global claim issuer, durable
+   cursor, caps, dedupe, stage gate, and observer state freshly bound to that
+   mission;
+5. the integrated sibling Safari host freshly bound to an isolated standard
+   Safari session, with current Instagram authentication, exact surface,
+   attachment, upload, Send, and strong-confirmation controls validated;
+6. exact action-time confirmation if the approved canary requires it;
 7. strong current-operation confirmation and permanent no-retry for every
    attempted, timed-out, ambiguous, or unknown outcome.
 
-No item above is created, approved, or satisfied by this lane.
+No item above is approved or satisfied by this repo-only hardening mission.
+The neutral Safari proof is `not_run`; Instagram surface, authentication,
+upload, and Send are unvalidated. Production readiness, Send authority, and
+live authority remain false.
