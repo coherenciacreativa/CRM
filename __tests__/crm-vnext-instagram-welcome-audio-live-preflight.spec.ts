@@ -31,16 +31,21 @@ import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CAPABILITY_TTL_MS,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_PREFLIGHT_RECEIPT_FIELDS,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE,
   computeWelcomeAudioCampaignIntervalSha256,
   computeWelcomeAudioExactIdentityAnchorSha256,
   computeWelcomeAudioSealedManifestSha256,
   consumeWelcomeAudioLiveOperationContextCapabilityOnce,
   consumeWelcomeAudioLiveTargetBindingCapabilityOnce,
   consumeWelcomeAudioUiAttestedSourceCapabilityOnce,
+  consumeWelcomeAudioUiAttestedLiveAdmissionCapabilitySetOnce,
+  consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce,
   createWelcomeAudioUiAttestedConnectedSourcePreflightBridge,
   createSyntheticWelcomeAudioLiveAuthorityCapability,
+  createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability,
   revalidateApprovedWelcomeAudioAssetCapability,
   revalidateWelcomeAudioLiveAuthorityCapability,
+  revalidateWelcomeAudioUiAttestedLiveAuthorityCapability,
   validateApprovedWelcomeAudioAsset,
   validateSealedWelcomeAudioBacklogManifest,
   validateWelcomeAudioLiveOperationContext,
@@ -48,11 +53,19 @@ import {
   validateWelcomeAudioLivePreflightReceipt,
   validateWelcomeAudioUiAttestedSourcePreflight,
   validateWelcomeAudioUiAttestedSourcePreflightReceipt,
+  validateWelcomeAudioUiAttestedLiveAuthorityReceipt,
+  validateWelcomeAudioUiAttestedLiveOperationContext,
+  validateWelcomeAudioUiAttestedLiveOperationContextReceipt,
   verifyApprovedWelcomeAudioAssetCapabilityPathBinding,
   verifyWelcomeAudioLiveOperationContextCapabilityBinding,
   verifyWelcomeAudioUiAttestedSourceCapabilityBinding,
+  verifyWelcomeAudioUiAttestedLiveOperationContextCapabilityBinding,
   verifySealedWelcomeAudioManifestCapability,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
+import * as uiAttestedMaterializer from
+  "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
+import * as uiAttestedPublisher from
+  "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-authority-publisher.mjs";
 import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
@@ -76,6 +89,8 @@ import {
   WELCOME_AUDIO_SOURCE_CLASS,
   WELCOME_AUDIO_SOURCE_RECENCY,
   WELCOME_AUDIO_SURFACE,
+  WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
   buildWelcomeAudioCanonicalOperationDigest,
 } from "../scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs";
 
@@ -98,6 +113,360 @@ afterEach(async () => {
     recursive: true,
     force: true,
   })));
+});
+
+const UI_LIVE_NOW_MS = Date.parse("2026-07-16T15:00:00.000Z");
+
+const createUiAttestedLiveAuthorityFixture = async () => {
+  const asset = await createSyntheticAsset();
+  const authorityRoot = await realpath(await mkdtemp(join(
+    tmpdir(),
+    uiAttestedPublisher.WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_SYNTHETIC_PREFIX,
+  )));
+  cleanupPaths.push(authorityRoot);
+  await chmod(authorityRoot, 0o700);
+  const sourceInput = uiAttestedSourceInputFixture();
+  const materialized = uiAttestedMaterializer
+    .materializeWelcomeAudioUiAttestedCanaryPacketDraft({
+      ui_attested_input: sourceInput,
+      packet_request: {
+        schema_version:
+          uiAttestedMaterializer.WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION,
+        status: "approved_for_no_live_materialization_only",
+        mission_id: "synthetic_ui_attested_live_preflight_mission_001",
+        contract_version: "synthetic_ui_attested_live_preflight_contract_v1",
+        central_repo_head: "7".repeat(40),
+        authorization_id: "synthetic_ui_live_preflight_authorization_001",
+        expected_source_mission_id: sourceInput.mission_id,
+        candidate_cap: 1,
+        future_attempt_cap: 1,
+        approved_audio_asset_id: "synthetic_ui_live_preflight_audio_001",
+        approved_audio_sha256: asset.digest,
+        approved_audio_binding_evidence: "exact_approved_audio_binding_revalidated",
+        execution_approval_authorized: false,
+        external_effect_authorized: false,
+      },
+      now_ms: UI_LIVE_NOW_MS,
+    });
+  expect(materialized.private_draft).not.toBeNull();
+  const draft = materialized.private_draft!;
+  const projection = draft.source_projection;
+  const authorization: Record<string, any> = {
+    schema_version: "crm_core_instagram_welcome_audio_ui_attested_live_authorization_input_v1",
+    status: "approved_for_exact_ui_attested_draft_and_audio",
+    mission_contract_sha256: "8".repeat(64),
+    active_next_action_id: "synthetic_ui_live_next_action_001",
+    active_next_action_sha256: "9".repeat(64),
+    approval_packet_id: "synthetic_ui_live_approval_packet_001",
+    approved_audio_asset_path: asset.assetPath,
+    approved_at: "2026-07-16T14:59:45.000Z",
+    expires_at: "2026-07-16T15:04:45.000Z",
+    candidate_cap: 1,
+    claim_cap: 1,
+    pending_cap: 1,
+    upload_cap: 1,
+    send_cap: 1,
+    action_time_confirmation_required: true,
+    execution_browser: "safari",
+    text_fallback: "forbidden",
+    campaign_effect_allowed: false,
+    mailerlite_effect_allowed: false,
+    expected_draft_sha256:
+      uiAttestedPublisher.computeWelcomeAudioUiAttestedLiveAuthorityDraftSha256(draft),
+    expected_projection_sha256:
+      uiAttestedPublisher.computeWelcomeAudioUiAttestedLiveAuthorityProjectionSha256(
+        projection,
+      ),
+    expected_operation_id: draft.operation_id,
+    expected_canonical_operation_sha256: "a".repeat(64),
+    expected_authorization_id: draft.authorization_id,
+    expected_source_evidence_sha256: projection.source_evidence_sha256,
+    expected_source_evidence_anchor_sha256:
+      projection.anchors.source_evidence_anchor_sha256,
+    expected_profile_anchor_sha256: projection.anchors.profile_anchor_sha256,
+    expected_candidate_anchor_sha256: projection.anchors.candidate_anchor_sha256,
+    expected_thread_anchor_sha256: projection.anchors.thread_anchor_sha256,
+    expected_owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+    expected_dedupe_anchor_sha256: projection.anchors.dedupe_anchor_sha256,
+    expected_audio_sha256: draft.approved_audio_sha256,
+  };
+  const provisionalAuthority = {
+    mission_id: draft.mission_id,
+    contract_version: draft.contract_version,
+    operation_id: draft.operation_id,
+    approval_packet_id: authorization.approval_packet_id,
+    central_repo_head: draft.central_repo_head,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    profile_anchor_sha256: projection.anchors.profile_anchor_sha256,
+    candidate_anchor_sha256: projection.anchors.candidate_anchor_sha256,
+    thread_anchor_sha256: projection.anchors.thread_anchor_sha256,
+    owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+    dedupe_anchor_sha256: projection.anchors.dedupe_anchor_sha256,
+    approved_audio_asset_id: draft.approved_audio_asset_id,
+  };
+  const operationSnapshot = uiAttestedLiveOperationFixture({
+    liveFixture: {
+      projection,
+      asset,
+      published: {
+        private_authority_envelope: { authority: provisionalAuthority },
+      },
+    } as any,
+  });
+  authorization.expected_canonical_operation_sha256 =
+    operationSnapshot.canonical_operation_sha256;
+  const published = await uiAttestedPublisher
+    .publishSyntheticWelcomeAudioUiAttestedLiveAuthorityForTest({
+      authority_root: authorityRoot,
+      private_draft: draft,
+      private_authorization: authorization,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+  return {
+    asset,
+    authorityRoot,
+    draft,
+    projection,
+    authorization,
+    operationSnapshot,
+    published,
+  };
+};
+
+describe("UI-attested single-recipient live authority preflight", () => {
+  test("loads and revalidates the one-file synthetic authority without claiming tracked state", async () => {
+    const fixture = await createUiAttestedLiveAuthorityFixture();
+    expect(fixture.published.private_authority_envelope).not.toBeNull();
+    const opened = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+      authority_root: fixture.authorityRoot,
+      expected_central_repo_head: fixture.draft.central_repo_head,
+      expected_mission_contract_sha256: fixture.authorization.mission_contract_sha256,
+      expected_active_next_action_id: fixture.authorization.active_next_action_id,
+      expected_active_next_action_sha256: fixture.authorization.active_next_action_sha256,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+    expect(opened.private_authority_capability).not.toBeNull();
+    expect(opened.private_source_capability).not.toBeNull();
+    expect(opened.private_audio_asset_capability).not.toBeNull();
+    expect(opened.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_PREFLIGHT_DECISION.VALID,
+      tracked_mission_bound: false,
+      tracked_next_action_bound: false,
+      central_repo_clean_exact_upstream: false,
+      caps_all_one: true,
+      nonclaims_preserved: true,
+      send_allowed: false,
+      external_effect_invoked: false,
+    });
+    expect(validateWelcomeAudioUiAttestedLiveAuthorityReceipt(
+      opened.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(await revalidateWelcomeAudioUiAttestedLiveAuthorityCapability({
+      private_authority_capability: opened.private_authority_capability,
+      now_ms: UI_LIVE_NOW_MS + 1,
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID);
+    expect(await revalidateWelcomeAudioUiAttestedLiveAuthorityCapability({
+      private_authority_capability: opened.private_authority_capability,
+      now_ms: Date.parse(fixture.authorization.expires_at),
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+  });
+
+  test("rejects mixed authority roots and declared tracked-binding drift", async () => {
+    const fixture = await createUiAttestedLiveAuthorityFixture();
+    await writeFile(join(fixture.authorityRoot, "execution-approval-v1.json"), "{}\n", {
+      mode: 0o600,
+    });
+    const mixed = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+      authority_root: fixture.authorityRoot,
+      expected_central_repo_head: fixture.draft.central_repo_head,
+      expected_mission_contract_sha256: fixture.authorization.mission_contract_sha256,
+      expected_active_next_action_id: fixture.authorization.active_next_action_id,
+      expected_active_next_action_sha256: fixture.authorization.active_next_action_sha256,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+    expect(mixed.private_authority_capability).toBeNull();
+
+    const cleanFixture = await createUiAttestedLiveAuthorityFixture();
+    const drift = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+      authority_root: cleanFixture.authorityRoot,
+      expected_central_repo_head: "0".repeat(40),
+      expected_mission_contract_sha256: cleanFixture.authorization.mission_contract_sha256,
+      expected_active_next_action_id: cleanFixture.authorization.active_next_action_id,
+      expected_active_next_action_sha256:
+        cleanFixture.authorization.active_next_action_sha256,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+    expect(drift.private_authority_capability).toBeNull();
+
+    const malformedTimeFixture = await createUiAttestedLiveAuthorityFixture();
+    const malformedEnvelope = JSON.parse(await readFile(
+      malformedTimeFixture.published.authority_path!,
+      "utf8",
+    ));
+    malformedEnvelope.authority.expires_at = "not-a-timestamp";
+    await writeFile(
+      malformedTimeFixture.published.authority_path!,
+      `${JSON.stringify(malformedEnvelope)}\n`,
+      { mode: 0o600 },
+    );
+    const malformedTime = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+      authority_root: malformedTimeFixture.authorityRoot,
+      expected_central_repo_head: malformedTimeFixture.draft.central_repo_head,
+      expected_mission_contract_sha256:
+        malformedTimeFixture.authorization.mission_contract_sha256,
+      expected_active_next_action_id:
+        malformedTimeFixture.authorization.active_next_action_id,
+      expected_active_next_action_sha256:
+        malformedTimeFixture.authorization.active_next_action_sha256,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+    expect(malformedTime.private_authority_capability).toBeNull();
+
+    const nonExpiringFixture = await createUiAttestedLiveAuthorityFixture();
+    const nonExpiringEnvelope = JSON.parse(await readFile(
+      nonExpiringFixture.published.authority_path!,
+      "utf8",
+    ));
+    nonExpiringEnvelope.authority.expires_at = "2026-07-16T15:59:45.000Z";
+    await writeFile(
+      nonExpiringFixture.published.authority_path!,
+      `${JSON.stringify(nonExpiringEnvelope)}\n`,
+      { mode: 0o600 },
+    );
+    const nonExpiring = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+      authority_root: nonExpiringFixture.authorityRoot,
+      expected_central_repo_head: nonExpiringFixture.draft.central_repo_head,
+      expected_mission_contract_sha256:
+        nonExpiringFixture.authorization.mission_contract_sha256,
+      expected_active_next_action_id:
+        nonExpiringFixture.authorization.active_next_action_id,
+      expected_active_next_action_sha256:
+        nonExpiringFixture.authorization.active_next_action_sha256,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+    expect(nonExpiring.private_authority_capability).toBeNull();
+  });
+
+  test("binds one UI PRECLAIM and atomically consumes context/source while leaving target once", async () => {
+    const fixture = await createUiAttestedLiveAuthorityFixture();
+    const opened = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+      authority_root: fixture.authorityRoot,
+      expected_central_repo_head: fixture.draft.central_repo_head,
+      expected_mission_contract_sha256: fixture.authorization.mission_contract_sha256,
+      expected_active_next_action_id: fixture.authorization.active_next_action_id,
+      expected_active_next_action_sha256: fixture.authorization.active_next_action_sha256,
+      now_ms: UI_LIVE_NOW_MS,
+    });
+    const context = await validateWelcomeAudioUiAttestedLiveOperationContext({
+      operation_snapshot: fixture.operationSnapshot,
+      private_authority_capability: opened.private_authority_capability,
+      private_source_capability: opened.private_source_capability,
+      private_audio_asset_capability: opened.private_audio_asset_capability,
+      expected_canonical_operation_sha256:
+        fixture.operationSnapshot.canonical_operation_sha256,
+      now_ms: UI_LIVE_NOW_MS + 1,
+    });
+    expect(context.private_capability, context.redacted_receipt.blocker_codes.join(","))
+      .not.toBeNull();
+    expect(context.private_target_binding_capability).not.toBeNull();
+    expect(validateWelcomeAudioUiAttestedLiveOperationContextReceipt(
+      context.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    const authority = fixture.published.private_authority_envelope!.authority;
+    const contextBinding = {
+      private_operation_context_capability: context.private_capability,
+      private_authority_capability: opened.private_authority_capability,
+      private_audio_asset_capability: opened.private_audio_asset_capability,
+      required_authority_mode:
+        WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      mission_id: authority.mission_id,
+      contract_version: authority.contract_version,
+      mission_contract_sha256: authority.mission_contract_sha256,
+      active_next_action_id: authority.active_next_action_id,
+      active_next_action_sha256: authority.active_next_action_sha256,
+      approval_packet_id: authority.approval_packet_id,
+      authorization_id: authority.authorization_id,
+      operation_id: authority.operation_id,
+      central_repo_head: authority.central_repo_head,
+      canonical_operation_sha256: authority.canonical_operation_sha256,
+      draft_sha256: authority.draft_sha256,
+      projection_sha256: authority.projection_sha256,
+      source_mission_id: authority.source_mission_id,
+      source_evidence_schema_version: fixture.projection.schema_version,
+      source_evidence_sha256: authority.source_evidence_sha256,
+      source_record_ordinal: fixture.projection.notification_row.row_ordinal,
+      source_record_cap: 8,
+      evidence_observed_at: fixture.projection.dedupe.checked_at,
+      source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+      profile_anchor_sha256: authority.profile_anchor_sha256,
+      identity_anchor_sha256: authority.candidate_anchor_sha256,
+      thread_anchor_sha256: authority.thread_anchor_sha256,
+      owner_anchor_sha256: authority.owner_anchor_sha256,
+      dedupe_anchor_sha256: authority.dedupe_anchor_sha256,
+      approved_audio_asset_id: authority.approved_audio_asset_id,
+      approved_audio_asset_path: authority.approved_audio_asset_path,
+      audio_asset_sha256: authority.approved_audio_asset_sha256,
+      candidate_cap: 1,
+      claim_cap: 1,
+      pending_cap: 1,
+      upload_cap: 1,
+      send_cap: 1,
+      retry_cap: 0,
+      exact_follow_timestamp_claimed: false,
+      provider_event_id_claimed: false,
+      campaign_membership_claimed: false,
+      now_ms: UI_LIVE_NOW_MS + 2,
+    };
+    expect(await verifyWelcomeAudioUiAttestedLiveOperationContextCapabilityBinding(
+      contextBinding,
+    )).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID);
+    expect(await verifyWelcomeAudioUiAttestedLiveOperationContextCapabilityBinding({
+      ...contextBinding,
+      now_ms: Date.parse(authority.expires_at),
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    expect(await consumeWelcomeAudioUiAttestedLiveAdmissionCapabilitySetOnce(
+      contextBinding,
+    )).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID);
+    expect(await consumeWelcomeAudioUiAttestedLiveAdmissionCapabilitySetOnce(
+      contextBinding,
+    )).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    const targetBinding = {
+      private_target_binding_capability: context.private_target_binding_capability,
+      private_authority_capability: opened.private_authority_capability,
+      private_source_capability: opened.private_source_capability,
+      required_authority_mode:
+        WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      exact_target: authority.exact_target_utf8,
+      exact_bound_thread_reference: authority.bound_thread_reference_utf8,
+      exact_owner_account_reference: authority.owner_account_reference_utf8,
+      expected_operation_id: authority.operation_id,
+      expected_draft_sha256: authority.draft_sha256,
+      expected_projection_sha256: authority.projection_sha256,
+      expected_source_evidence_sha256: authority.source_evidence_sha256,
+      expected_identity_anchor_sha256: authority.candidate_anchor_sha256,
+      expected_thread_anchor_sha256: authority.thread_anchor_sha256,
+      expected_owner_anchor_sha256: authority.owner_anchor_sha256,
+      expected_dedupe_anchor_sha256: authority.dedupe_anchor_sha256,
+      now_ms: UI_LIVE_NOW_MS + 3,
+    };
+    expect(await consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce({
+      ...targetBinding,
+      now_ms: Date.parse(authority.expires_at),
+    })).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+    const concurrentTargetResults = await Promise.all([
+      consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce(targetBinding),
+      consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce(targetBinding),
+    ]);
+    expect(concurrentTargetResults.filter(
+      (status) => status === WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID,
+    )).toHaveLength(1);
+    expect(concurrentTargetResults.filter(
+      (status) => status === WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
+    )).toHaveLength(1);
+    expect(await consumeWelcomeAudioUiAttestedLiveTargetBindingCapabilityOnce(
+      targetBinding,
+    )).toBe(WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID);
+  });
 });
 
 const interval = () => ({
@@ -431,6 +800,115 @@ const operationFixture = ({
       source_event_anchor_sha256: SOURCE_SHA,
     },
   });
+};
+
+const uiAttestedLiveOperationFixture = ({
+  liveFixture,
+}: {
+  liveFixture: Awaited<ReturnType<typeof createUiAttestedLiveAuthorityFixture>>;
+}) => {
+  const projection = liveFixture.projection;
+  const authority = liveFixture.published.private_authority_envelope!.authority;
+  const baseFixture = manifestFixture(1);
+  const base = operationFixture({
+    fixture: baseFixture,
+    audioSha256: liveFixture.asset.digest,
+  });
+  const replacements = new Map<any, any>([
+    [MISSION_ID, authority.mission_id],
+    [CONTRACT_VERSION, authority.contract_version],
+    [OPERATION_ID, authority.operation_id],
+    [APPROVAL_PACKET_ID, authority.approval_packet_id],
+    [CENTRAL_HEAD, authority.central_repo_head],
+    [SOURCE_SHA, authority.source_evidence_anchor_sha256],
+    [PROFILE_SHA, authority.profile_anchor_sha256],
+    [baseFixture.manifest.ordered_records[0].identity_anchor_sha256,
+      authority.candidate_anchor_sha256],
+    [THREAD_SHA, authority.thread_anchor_sha256],
+    [OWNER_SHA, authority.owner_anchor_sha256],
+    [ASSET_ID, authority.approved_audio_asset_id],
+  ]);
+  const replace = (value: any): any => {
+    if (replacements.has(value)) return replacements.get(value);
+    if (Array.isArray(value)) return value.map(replace);
+    if (value && typeof value === "object") {
+      return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, replace(nested)]));
+    }
+    return value;
+  };
+  const operation = replace(base);
+  const { source_event_anchor_sha256: _operationSource, ...operationSection } =
+    operation.operation;
+  const {
+    source_event_anchor_sha256: _approvalSource,
+    source_recency_max_age_ms: _approvalAge,
+    ...approvalSection
+  } = operation.approval;
+  const { source_event_anchor_sha256: _bindingSource, ...bindingSection } =
+    operation.binding;
+  operation.adapter_version = WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION;
+  operation.contract_version = WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION;
+  operation.operation = {
+    ...operationSection,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+  };
+  operation.approval = {
+    ...approvalSection,
+    checked_at: "2026-07-16T14:59:42.000Z",
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+    source_evidence_freshness_max_age_ms: 5 * 60 * 1000,
+  };
+  operation.execution_surface.observed_at = "2026-07-16T14:59:43.000Z";
+  operation.follower_evidence = {
+    source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+    evidence_observed_at: projection.dedupe.checked_at,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    source_evidence_freshness_max_age_ms: 5 * 60 * 1000,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  operation.binding = {
+    ...bindingSection,
+    source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+    observed_at: "2026-07-16T14:59:44.000Z",
+  };
+  operation.eligibility.business_eligibility =
+    WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER;
+  operation.eligibility.observed_at = "2026-07-16T14:59:44.000Z";
+  operation.asset.asset_preview_binding =
+    WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE;
+  operation.asset.preview_status = "approved_file_validated_before_upload";
+  operation.asset.preview_observed_at = "2026-07-16T14:59:44.000Z";
+  operation.context.checked_at = "2026-07-16T14:59:43.000Z";
+  operation.dedupe.checked_at = projection.dedupe.checked_at;
+  operation.source_provenance = {
+    source_class: WELCOME_AUDIO_SOURCE_CLASS.UI_ATTESTED_FOLLOWER_SOURCE_V1,
+    source_evidence_schema_version: projection.schema_version,
+    source_evidence_sha256: projection.source_evidence_sha256,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    source_record_ordinal: projection.notification_row.row_ordinal,
+    source_record_cap: 8,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  operation.canonical_operation_sha256 = "0".repeat(64);
+  for (const section of [
+    "operation",
+    "approval",
+    "context",
+    "effect_claim",
+    "execution",
+    "confirmation",
+  ]) operation[section].canonical_operation_sha256 = "0".repeat(64);
+  return bindCanonicalDigest(operation);
 };
 
 const validateOperationContextFixture = ({

@@ -6449,17 +6449,19 @@ routing and completion pointer.
 - `recommended_default`:
   `complete_connected_repo_only_ui_attested_source_to_preclaim_proof_then_keep_live_execution_closed`
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_canary_packet_materialization_no_live_v1_20260716`
-- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `status`: `completed_green_centrally_integrated_no_live`
 - `created_at`: `2026-07-16`
 - `updated_at`: `2026-07-16`
 - `approved_baseline`:
   `ada5db2df1d79bbb0b1c97de10f0f23562dea506`
 - `source_branch`:
   `codex/crm-core-ui-attested-canary-materializer-v1-20260716`
+- `central_integration_commit`:
+  `725afd3d47147aa63c37f604d39e29ead9d51171`
 - `mission_contract`:
   `docs/crm-vnext/crm-core-welcome-audio-ui-attested-canary-packet-materialization-no-live-mission-v1.md`
 - `materializer_contract`:
@@ -6505,3 +6507,59 @@ routing and completion pointer.
   caps, and current surface health before any real canary.
 - `recommended_default`:
   `implement_one_candidate_no_live_packet_draft_then_stop_before_live_authority`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_single_recipient_live_admission_bridge_no_live_v1_20260716`
+- `status`: `paused_safe_preflight_checkpoint_blocked_time_budget_no_live`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `approved_baseline`:
+  `725afd3d47147aa63c37f604d39e29ead9d51171`
+- `source_branch`:
+  `codex/crm-core-ui-attested-live-admission-bridge-v1-20260716`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-ui-attested-single-recipient-live-admission-bridge-no-live-mission-v1.md`
+- `admission_contract`:
+  `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
+- `objective`: Add the smallest sibling admission path that lets a later exact
+  one-recipient canary consume a freshly revalidated UI-attested draft without
+  fabricating an exact follow timestamp, provider event id, campaign interval,
+  or campaign membership. Preserve the old sealed-manifest route unchanged.
+- `allowed_scope`: Exact thirteen-file repo-only implementation, synthetic
+  fixtures and owner-only temporary test roots, deterministic focused and
+  regression validation, independent adversarial review, formal artifact
+  review, and at most one serialized central integration if every gate is
+  green.
+- `candidate_cap`: `1`
+- `claim_cap`: `1`
+- `send_attempt_cap`: `1`
+- `source_nonclaims`: `exact_follow_timestamp_claimed=false`,
+  `provider_event_id_claimed=false`, and
+  `campaign_membership_claimed=false`.
+- `forbidden_scope`: Browser or source access, private artifacts, fixed live
+  roots or claim stores, execution-approval publication, real candidates,
+  claims, PENDING, upload, Send, text, follow-back, MailerLite, CRM, campaign,
+  Ads, proxy, network, external effects, old-route weakening, and every file
+  outside the exact allowlist.
+- `observable_success`: A valid integrated materializer draft reaches one
+  confirmed synthetic Safari composite through a distinct UI-attested
+  authority/source/claim path with all caps equal to one, strong visible
+  confirmation semantics, terminal no-retry ambiguity, redacted receipts, and
+  the old exact-time sealed-manifest route still green.
+- `approval_meaning`: Alejandro's current `go ahead` authorizes only this exact
+  repo-only mission, safe repairs, review, and one green integration. It grants
+  no source, private, browser, authority, claim, Send, campaign, MailerLite,
+  CRM, network, or external-effect authority.
+- `later_gate`: After green central integration, prepare fresh owner-only
+  one-candidate authority and request one exact execution approval plus a
+  separate action-time confirmation immediately before Send.
+- `recommended_default`:
+  `open_a_separately_bounded_repo_only_claim_host_completion_mission_or_stop_without_integrating_the_partial_checkpoint`
+- `checkpoint_evidence`: UI-attested publisher and PRECLAIM preflight are
+  `42/42` focused green; syntax and diff checks are green; fixed publication is
+  disabled; claim issuer and Safari host are unchanged; zero private, browser,
+  network, or external effect occurred.
+- `blocker`:
+  `blocked_time_budget_insufficient_for_claim_host_schema_dispatch_and_regression`

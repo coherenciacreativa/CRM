@@ -759,11 +759,13 @@
 - `mission_id`:
   `crm_core_welcome_audio_ui_attested_canary_packet_materialization_no_live_v1_20260716`
 - `mode`: `repo_only_no_live_materialization_proof`
-- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `status`: `completed_green_centrally_integrated_no_live`
 - `approved_baseline`:
   `ada5db2df1d79bbb0b1c97de10f0f23562dea506`
 - `source_branch`:
   `codex/crm-core-ui-attested-canary-materializer-v1-20260716`
+- `central_integration_commit`:
+  `725afd3d47147aa63c37f604d39e29ead9d51171`
 - `candidate_cap`: `1`
 - `input_boundary`: One already supplied owner-only raw UI-attested input and
   one caller-declared protected-audio binding record; no source or UI
@@ -798,6 +800,49 @@
 - `send_allowed`: false
 - `live_authority`: false
 - `external_effect_invoked`: false
-- `next_gate`: Complete independent review and, if green, one serialized
-  central integration. Any later filesystem or live materialization remains a
-  different mission.
+- `next_gate`: The separate repo-only UI-attested single-recipient live
+  admission bridge mission is active. Any private filesystem publication,
+  source read, claim, browser action, or Send remains a later exact mission.
+
+## UI-Attested Single-Recipient Live Admission Bridge No-Live Checkpoint
+
+- `checkpoint_date`: `2026-07-16`
+- `mission_id`:
+  `crm_core_welcome_audio_ui_attested_single_recipient_live_admission_bridge_no_live_v1_20260716`
+- `mode`: `proof`
+- `status`: `paused_safe_preflight_checkpoint_blocked_time_budget_no_live`
+- `approved_baseline`:
+  `725afd3d47147aa63c37f604d39e29ead9d51171`
+- `source_branch`:
+  `codex/crm-core-ui-attested-live-admission-bridge-v1-20260716`
+- `objective`: Add a distinct one-candidate authority, source capability,
+  claim, and Safari-composite admission path for a freshly revalidated
+  UI-attested draft while leaving the existing sealed-manifest route
+  unchanged.
+- `candidate_cap`: `1`
+- `claim_cap`: `1`
+- `send_attempt_cap`: `1`
+- `evidence_nonclaims`: `exact_follow_timestamp_claimed=false`,
+  `provider_event_id_claimed=false`, and
+  `campaign_membership_claimed=false`.
+- `development_boundary`: Synthetic fixtures, owner-only temporary test roots,
+  and a fake Safari driver only. No fixed authority root, fixed claim store,
+  source, browser, private artifact, Instagram, campaign, MailerLite, CRM,
+  proxy, network, or external effect may be touched.
+- `old_route_boundary`: The exact-time sealed-manifest and campaign-interval
+  authority remains separately versioned and must pass unchanged regression
+  tests.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+- `later_gate`: Independent review, formal artifact review, and one serialized
+  central integration. A later exact owner-only execution approval and a
+  separate action-time Send confirmation remain mandatory.
+- `checkpoint_evidence`: Publisher plus UI-attested authority loader and
+  PRECLAIM context are `42/42` focused green. Fixed-root publication is
+  deliberately disabled. Claim issuer and Safari host remain unchanged.
+- `blocker`:
+  `blocked_time_budget_insufficient_for_claim_host_schema_dispatch_and_regression`
+- `integration_status`: `not_requested_partial_checkpoint_not_canary_ready`
