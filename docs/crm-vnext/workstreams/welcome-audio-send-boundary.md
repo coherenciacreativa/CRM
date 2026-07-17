@@ -693,10 +693,12 @@
   `durable source-less ordinal slot -> adapter -> issuer-private connected preflight one-use capability -> consume/verify capability -> operation guard PRECLAIM -> durable inspection result`
 - `required_evidence`: Explicit follower-notification row, preserved visible UI
   bucket, fresh `attested_at` not later than validation time with zero future
-  tolerance, exact identity/profile/follows-owner/thread/owner bindings, and
-  fresh exact dedupe.
-- `fabrication_forbidden`: No `followed_at`, provider ID, campaign identity,
-  membership, interval, or provenance may be invented or inferred.
+  tolerance, exact identity/profile/thread/owner bindings, and either current
+  visible follows-owner evidence or the bounded pilot 3-to-7-day exact recent-event
+  mode with no explicit contradiction, plus fresh exact dedupe.
+- `fabrication_forbidden`: No current follower-list membership, `followed_at`,
+  provider ID, campaign identity, membership, interval, or provenance may be
+  invented or inferred.
 - `evidence_non_claims`: `exact_follow_timestamp_claimed=false`,
   `provider_event_id_claimed=false`, `campaign_membership_claimed=false` at the
   adapter root and projection.

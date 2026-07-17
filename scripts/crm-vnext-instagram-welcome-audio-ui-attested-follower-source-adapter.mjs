@@ -23,6 +23,18 @@ const WELCOME_AUDIO_UI_ATTESTED_SOURCE_RECEIPT_SCHEMA_VERSION =
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_MAX_RECORDS = 8;
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_FRESHNESS_MS = 5 * 60 * 1000;
 
+const WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE = Object.freeze({
+  CURRENT_FOLLOWS_OWNER_CONFIRMED: 'confirmed',
+  RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION:
+    'recent_follow_event_no_explicit_contradiction',
+});
+
+const WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE = Object.freeze({
+  CURRENT_VISIBLE_FOLLOWS_OWNER: 'explicit_visible_follows_owner_signal',
+  RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET:
+    'exact_recent_follow_notification_profile_binding_visible_3_to_7_day_pilot_bucket',
+});
+
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_DECISION = Object.freeze({
   READY: 'ui_attested_source_ready',
   BLOCKED: 'blocked_ui_attested_source',
@@ -195,8 +207,14 @@ const EXACT = Object.freeze({
   inferenceStatus: 'explicit_not_inferred',
   notificationToProfile: 'exact',
   profileIdentityEvidence: 'exact_private_visual_profile_identity',
-  followsOwner: 'confirmed',
-  followsOwnerEvidence: 'explicit_visible_follows_owner_signal',
+  followsOwner: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+    .CURRENT_FOLLOWS_OWNER_CONFIRMED,
+  followsOwnerEvidence: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+    .CURRENT_VISIBLE_FOLLOWS_OWNER,
+  recentFollowEventNoContradiction: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+    .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION,
+  recentFollowEventEvidence: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+    .RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET,
   profileToThread: 'exact',
   threadBindingEvidence: 'exact_bound_thread_observed',
   ownerBindingEvidence: 'exact_owner_account_observed',
@@ -220,6 +238,8 @@ const RECEIPT_BLOCKERS = new Set(Object.values(WELCOME_AUDIO_UI_ATTESTED_SOURCE_
 const isSha256 = (value) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const isOpaqueId = (value) => typeof value === 'string'
   && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(value);
+const BOUNDED_PILOT_DAY_BUCKET =
+  /(?:^|[^\p{L}\p{N}])(?:[3-7])\s*(?:d|days?|d[ií]as?)(?=$|[^\p{L}\p{N}])/iu;
 
 const comparePropertyKeys = (left, right) => {
   const leftText = String(left);
@@ -319,6 +339,14 @@ const isExactPrivateUtf8 = (value, maximumBytes) => {
   ) return false;
   const byteLength = Buffer.byteLength(value, 'utf8');
   return byteLength >= 1 && byteLength <= maximumBytes;
+};
+
+const isBoundedPilotThreeToSevenDayBucket = (value) => {
+  if (!isExactPrivateUtf8(value, 128)) return false;
+  const numericTokens = value.match(/[0-9]+/gu) ?? [];
+  return numericTokens.length === 1
+    && /^[3-7]$/.test(numericTokens[0])
+    && BOUNDED_PILOT_DAY_BUCKET.test(value);
 };
 
 const parseCanonicalTimestamp = (value) => {
@@ -426,10 +454,18 @@ const evaluateEvidence = ({ root, sections, nowMs, inputSchemaExpected }) => {
     || exactTargetValues.some((value) => value !== notification.exact_target_utf8)
   ) addBlocker(blockers, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.IDENTITY_BINDING);
 
+  const currentFollowsOwnerConfirmed = profile.follows_owner === EXACT.followsOwner
+    && profile.follows_owner_evidence === EXACT.followsOwnerEvidence;
+  const recentFollowEventNoContradiction = profile.follows_owner
+      === EXACT.recentFollowEventNoContradiction
+    && profile.follows_owner_evidence === EXACT.recentFollowEventEvidence;
+  if (!currentFollowsOwnerConfirmed && !recentFollowEventNoContradiction) {
+    addBlocker(blockers, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.FOLLOWS_OWNER);
+  }
   if (
-    profile.follows_owner !== EXACT.followsOwner
-    || profile.follows_owner_evidence !== EXACT.followsOwnerEvidence
-  ) addBlocker(blockers, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.FOLLOWS_OWNER);
+    recentFollowEventNoContradiction
+    && !isBoundedPilotThreeToSevenDayBucket(notification.time_bucket_utf8)
+  ) addBlocker(blockers, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.TIME_BUCKET);
 
   if (
     thread.profile_to_thread_binding !== EXACT.profileToThread
@@ -468,7 +504,11 @@ const evaluateEvidence = ({ root, sections, nowMs, inputSchemaExpected }) => {
     || evidenceTimeMs.slice(0, 4).some((value) => value > evidenceTimeMs[4])
   ) addBlocker(blockers, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.TIME_EVIDENCE);
 
-  return Object.freeze({ blockers: Object.freeze(blockers) });
+  return Object.freeze({
+    blockers: Object.freeze(blockers),
+    currentFollowsOwnerConfirmed,
+    recentFollowEventNoContradiction,
+  });
 };
 
 const buildAnchors = (sections) => {
@@ -520,7 +560,11 @@ const deriveSourceEvidenceSha256 = ({ root, sections, anchors }) => deriveAnchor
   [JSON.stringify(evidenceDigestPayload({ root, sections, anchors }))],
 );
 
-const buildReceipt = ({ ready = false, blockerCodes = [] }) => Object.freeze({
+const buildReceipt = ({
+  ready = false,
+  followsOwnerConfirmed = false,
+  blockerCodes = [],
+}) => Object.freeze({
   receipt_schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_RECEIPT_SCHEMA_VERSION,
   adapter_contract_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_ADAPTER_CONTRACT_VERSION,
   redaction_status:
@@ -535,7 +579,7 @@ const buildReceipt = ({ ready = false, blockerCodes = [] }) => Object.freeze({
   notification_row_exact: ready,
   time_bucket_attested: ready,
   identity_binding_exact: ready,
-  follows_owner_confirmed: ready,
+  follows_owner_confirmed: ready && followsOwnerConfirmed,
   thread_binding_exact: ready,
   owner_binding_exact: ready,
   dedupe_clear: ready,
@@ -609,7 +653,10 @@ const adaptWelcomeAudioUiAttestedFollowerSource = (input, options = {}) => {
     }
     return Object.freeze({
       private_projection: projectionRoot,
-      redacted_receipt: buildReceipt({ ready: true }),
+      redacted_receipt: buildReceipt({
+        ready: true,
+        followsOwnerConfirmed: evaluation.currentFollowsOwnerConfirmed,
+      }),
     });
   } catch {
     return blockedResult();
@@ -706,7 +753,6 @@ const validateWelcomeAudioUiAttestedFollowerSourceReceipt = (receipt) => {
       'notification_row_exact',
       'time_bucket_attested',
       'identity_binding_exact',
-      'follows_owner_confirmed',
       'thread_binding_exact',
       'owner_binding_exact',
       'dedupe_clear',
@@ -715,9 +761,11 @@ const validateWelcomeAudioUiAttestedFollowerSourceReceipt = (receipt) => {
     const semanticsValid = ready
       ? root.evidence_record_count === 1
         && evidenceFlags.every((field) => root[field] === true)
+        && typeof root.follows_owner_confirmed === 'boolean'
         && blockerCodes.length === 0
       : root.evidence_record_count === 0
         && evidenceFlags.every((field) => root[field] === false)
+        && root.follows_owner_confirmed === false
         && blockerCodes.length >= 1;
     return semanticsValid ? Object.freeze({ ok: true, reason: null }) : invalid();
   } catch {
@@ -736,6 +784,8 @@ export {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_RECEIPT_FIELDS,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_RECEIPT_SCHEMA_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   adaptWelcomeAudioUiAttestedFollowerSource,
   validateWelcomeAudioUiAttestedFollowerSourceProjection,
   validateWelcomeAudioUiAttestedFollowerSourceReceipt,

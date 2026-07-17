@@ -53,7 +53,8 @@ observation contains all of the following:
 - one canonical, fresh `attested_at` for the observation itself that is not
   later than validation time, with zero future-time tolerance;
 - one exact identity preserved byte-for-byte across notification and profile;
-- one exact profile observation with the follows-owner signal confirmed;
+- one exact profile observation using either the current visible follows-owner
+  mode or the bounded recent-event/no-explicit-contradiction mode below;
 - one exact thread binding for the same identity and owner;
 - one exact owner binding shared by every attested surface; and
 - one fresh exact dedupe result that is clear for the candidate/thread/owner
@@ -61,6 +62,33 @@ observation contains all of the following:
 
 The adapter returns `blocked_ui_attested_source` for any missing, unknown,
 ambiguous, conflicting, normalized, stale, duplicated, or inferred evidence.
+The mere absence of a current follows-owner badge is not conflicting evidence
+when the bounded mode is otherwise exact.
+
+### Relationship Evidence Modes
+
+The stronger existing mode is:
+
+- `follows_owner=confirmed`;
+- `follows_owner_evidence=explicit_visible_follows_owner_signal`.
+
+The bounded recent-event mode is:
+
+- `follows_owner=recent_follow_event_no_explicit_contradiction`;
+- `follows_owner_evidence=exact_recent_follow_notification_profile_binding_visible_3_to_7_day_pilot_bucket`.
+
+The bounded mode is accepted only with the same exact recent-follower event,
+exact notification-to-profile identity, exact thread and owner bindings, fresh
+dedupe, explicit non-inference, and a preserved visible 3-to-7-day bucket. The
+bucket is inside the catch-up pilot's 168-hour ceiling but is never converted
+to an exact follow time. Any explicit contradictory relationship evidence
+blocks. This temporary catch-up range is not the production freshness policy;
+production must adopt a separately reviewed shorter window.
+
+The private projection and `source_evidence_sha256` bind the selected mode. A
+ready bounded-mode redacted receipt truthfully keeps
+`follows_owner_confirmed=false`; readiness means the complete relationship
+evidence mode is sufficient, not that a current profile badge was visible.
 
 Every accepted input and ready projection fixes these three evidence
 non-claims false:

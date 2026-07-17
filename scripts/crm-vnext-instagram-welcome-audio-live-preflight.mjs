@@ -19,6 +19,7 @@ import {
   validateWelcomeAudioOperation,
 } from './crm-vnext-instagram-welcome-audio-operation-guard.mjs';
 import {
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
   validateWelcomeAudioUiAttestedFollowerSourceProjection,
 } from './crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs';
@@ -2620,6 +2621,7 @@ const snapshotExactUiAttestedDataArray = (value) => {
 
 const buildWelcomeAudioUiAttestedSourcePreflightReceipt = ({
   valid = false,
+  followsOwnerBound = false,
   blockerCodes = [],
 } = {}) => Object.freeze({
   receipt_schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_PREFLIGHT_RECEIPT_SCHEMA_VERSION,
@@ -2632,7 +2634,7 @@ const buildWelcomeAudioUiAttestedSourcePreflightReceipt = ({
   ui_attested_source_bound: valid,
   exact_identity_bound: valid,
   profile_bound: valid,
-  follows_owner_bound: valid,
+  follows_owner_bound: valid && followsOwnerBound,
   thread_bound: valid,
   owner_bound: valid,
   dedupe_bound: valid,
@@ -2722,7 +2724,12 @@ const validateWelcomeAudioUiAttestedSourcePreflight = (parameters = {}) => {
     );
     return {
       private_capability: capability,
-      redacted_receipt: buildWelcomeAudioUiAttestedSourcePreflightReceipt({ valid: true }),
+      redacted_receipt: buildWelcomeAudioUiAttestedSourcePreflightReceipt({
+        valid: true,
+        followsOwnerBound: projection.profile.follows_owner
+          === WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+            .CURRENT_FOLLOWS_OWNER_CONFIRMED,
+      }),
     };
   } catch {
     return blocked(WELCOME_AUDIO_LIVE_PREFLIGHT_BLOCKER.UI_ATTESTED_SOURCE_INVALID);
@@ -2954,6 +2961,7 @@ const validateWelcomeAudioUiAttestedSourcePreflightReceipt = (receipt) => {
     const valid = data.decision === WELCOME_AUDIO_LIVE_PREFLIGHT_DECISION.VALID;
     const expected = buildWelcomeAudioUiAttestedSourcePreflightReceipt({
       valid,
+      followsOwnerBound: valid && data.follows_owner_bound,
       blockerCodes: valid ? [] : blockerCodes,
     });
     const scalarFieldsValid = WELCOME_AUDIO_UI_ATTESTED_SOURCE_PREFLIGHT_RECEIPT_FIELDS

@@ -85,8 +85,10 @@ The sibling one-shot composite must preserve this order:
 
 1. consume and revalidate the UI-attested authority, source, operation, and
    audio capabilities;
-2. recheck current follows-owner, exact thread, no prior welcome/audio/claim,
-   dedupe, registry and cap state in the later live mission;
+2. recheck either current visible follows-owner or the exact bounded pilot
+   3-to-7-day recent-follow-event/no-explicit-contradiction mode, plus exact
+   thread, no prior welcome/audio/claim/ambiguous result, dedupe, registry and
+   cap state in the later live mission;
 3. persist one durable claim before any possible effect boundary;
 4. prepare only the exact bound Safari thread and native chooser;
 5. persist and reread PENDING before selecting or uploading the file;
@@ -100,6 +102,11 @@ The sibling one-shot composite must preserve this order:
 Compose reset, Sent/Seen alone, lack of an error, timeout, or an observation at
 exactly five minutes is not confirmation. Any attempted, uncertain, timed-out,
 or unknown outcome is durable terminal and has no retry.
+
+The bounded relationship mode does not claim current follower-list membership.
+An absent desktop badge is not a blocker by itself; an explicit contradiction,
+identity mismatch, stale/out-of-window event, or ambiguous profile/thread
+binding blocks before claim.
 
 ## Privacy and Receipts
 

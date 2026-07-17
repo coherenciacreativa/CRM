@@ -26,6 +26,7 @@ import {
   WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_REDACTED_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_PROJECTION_SCHEMA_VERSION,
   buildWelcomeAudioCanonicalOperationDigest,
   buildWelcomeAudioRedactedReceipt as buildWelcomeAudioRedactedReceiptRaw,
@@ -487,6 +488,30 @@ describe("Instagram welcome-audio operation guard", () => {
     expect(serialized).not.toContain('"provider_event_id":');
     expect(serialized).not.toContain("manifest_digest");
     expect(serialized).not.toContain("campaign_interval");
+  });
+
+  test("admits bounded recent-event relationship evidence only for UI-attested PRECLAIM", () => {
+    const uiAttested = uiAttestedPreclaimOperation();
+    uiAttested.binding.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+      .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
+    rebindUiAttestedCanonicalDigest(uiAttested);
+    const uiResult = validateWelcomeAudioOperation(uiAttested, { nowMs: NOW_MS });
+    expect(uiResult).toMatchObject({
+      ok: true,
+      phase: WELCOME_AUDIO_GUARD_PHASE.PRECLAIM,
+      decision: WELCOME_AUDIO_GUARD_DECISION.ELIGIBLE_TO_CLAIM,
+      claim_allowed: true,
+      send_allowed: false,
+      blockers: [],
+    });
+
+    const legacy = preclaimOperation();
+    legacy.binding.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+      .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
+    const legacyResult = validateWelcomeAudioOperation(legacy, { nowMs: NOW_MS });
+    expect(legacyResult.ok).toBe(false);
+    expect(legacyResult.claim_allowed).toBe(false);
+    expect(legacyResult.blockers).toContain(WELCOME_AUDIO_GUARD_REASON.FOLLOWS_OWNER);
   });
 
   test.each([

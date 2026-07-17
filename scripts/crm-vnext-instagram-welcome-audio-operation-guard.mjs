@@ -75,6 +75,12 @@ const WELCOME_AUDIO_BUSINESS_ELIGIBILITY = Object.freeze({
   UI_ATTESTED_FOLLOWER: 'eligible_confirmed_ui_attested_follower',
 });
 
+const WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE = Object.freeze({
+  CURRENT_FOLLOWS_OWNER_CONFIRMED: 'confirmed',
+  RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION:
+    'recent_follow_event_no_explicit_contradiction',
+});
+
 const WELCOME_AUDIO_AUDIO_CAPABILITY = Object.freeze({
   PRESENT_AND_USABLE: 'present_and_usable',
   MISSING: 'missing',
@@ -1593,7 +1599,12 @@ const evaluateWelcomeAudioOperation = (input, options = {}) => {
   }
   if (binding.source_to_profile !== 'exact') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.SOURCE_TO_PROFILE);
   if (binding.profile_to_thread !== 'exact') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.PROFILE_TO_THREAD);
-  if (binding.follows_owner !== 'confirmed') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.FOLLOWS_OWNER);
+  const followsOwnerEvidenceValid = binding.follows_owner
+      === WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE.CURRENT_FOLLOWS_OWNER_CONFIRMED
+    || (uiAttestedSource && binding.follows_owner
+      === WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+        .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION);
+  if (!followsOwnerEvidenceValid) addReason(reasons, WELCOME_AUDIO_GUARD_REASON.FOLLOWS_OWNER);
   if (binding.ambiguity !== 'clear') addReason(reasons, WELCOME_AUDIO_GUARD_REASON.IDENTITY_AMBIGUITY);
 
   const bindingAnchors = [
@@ -2324,6 +2335,7 @@ export {
   WELCOME_AUDIO_UI_ATTESTED_CANONICAL_OPERATION_PROJECTION_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_REDACTED_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_PROJECTION_SCHEMA_VERSION,
   bogotaCalendarDayNumber,
   buildInstagramWelcomeAudioRedactedReceipt,
