@@ -6564,7 +6564,7 @@ routing and completion pointer.
 - `blocker`:
   `blocked_time_budget_insufficient_for_claim_host_schema_dispatch_and_regression`
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_claim_host_completion_no_live_v1_20260716`
@@ -6610,3 +6610,47 @@ routing and completion pointer.
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
   `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_ui_attested_welcome_audio_live_activation_proof_v1_20260716`
+- `status`: `reviewed_green_repo_only_no_live_awaiting_integration`
+- `created_at`: `2026-07-16`
+- `updated_at`: `2026-07-16`
+- `approved_baseline`:
+  `c28c1ba2d69761baa039377d0d32bb7c7ea02f62`
+- `source_branch`:
+  `codex/crm-core-live-activation-proof-v1-20260716`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-ui-attested-live-activation-proof-v1.md`
+- `objective`: Open only the missing fixed UI-attested publisher and one-shot
+  live-composite dispatch seams around the already proven claim, Safari,
+  PENDING, upload, Send, and strong-confirmation sequence.
+- `public_live_input_boundary`: Exact private UI-attested binding capabilities
+  and values plus the approved audio path already capability-bound. Caller
+  driver, store root, clock, callback, outcome, actuation result, URL,
+  selector, and coordinate fields are rejected.
+- `fixed_internal_boundary`: The publisher owns its authority root, mode, and
+  clock. The composite owns the fixed claim store, installed Safari Computer
+  Use driver, live authority mode, and all clocks.
+- `validation_receipt`: Focused publisher, host, namespace, and shared
+  synthetic dispatch validation is `117/117` green; full welcome-audio
+  compatibility is `637/637` green across 13 suites; syntax and diff checks
+  are green.
+- `reviewer_verdict`: `GREEN_TO_SELF_INTEGRATE`; exact allowlist `7/7`; no
+  unresolved P0-P2 finding.
+- `real_effects`: `0`; Safari, private source, fixed live roots, claim,
+  PENDING, upload, Send, network, MailerLite, CRM, campaign, Ads, and proxy were
+  not touched.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+- `completion_definition`: Independent review has no unresolved P0-P2 finding,
+  the exact seven-file allowlist is preserved, compatibility validation is
+  green, and one serialized central integration completes with zero live or
+  external effects.
+- `recommended_default`:
+  `review_and_integrate_the_live_activation_proof_then_run_one_separately_authorized_real_canary`

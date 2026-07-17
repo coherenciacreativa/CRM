@@ -273,7 +273,7 @@ describe("UI-attested Safari sibling composite", () => {
     ).ok).toBe(false);
   });
 
-  test("the UI live wrapper rejects caller driver, path, clocks, callbacks, and outcomes", async () => {
+  test("the UI live wrapper rejects caller driver, store, clocks, callbacks, and outcomes", async () => {
     const empty = await runWelcomeAudioSafariUiAttestedLiveCompositeOnce({});
     expect(validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt(empty.redacted_receipt))
       .toEqual({ ok: true, reason: null });
@@ -281,11 +281,11 @@ describe("UI-attested Safari sibling composite", () => {
       decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.BLOCKED_ZERO_EFFECT,
       claim_created: false,
       external_effect_possible: false,
-      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED],
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID],
     });
     for (const input of [
       { driver: {} },
-      { approved_audio_asset_path: "/tmp/forbidden" },
+      { private_store_capability: {} },
       { now_ms: UI_ATTESTED_NOW_MS },
       { callback: () => true },
       { outcome: "confirmed" },
@@ -301,6 +301,22 @@ describe("UI-attested Safari sibling composite", () => {
         result.redacted_receipt,
       )).toEqual({ ok: true, reason: null });
     }
+  });
+
+  test("the UI live dispatch shares the synthetic sequence but owns store, Safari, and clocks", async () => {
+    const source = await readFile(MODULE_PATH, "utf8");
+    expect(source).toMatch(
+      /const runWelcomeAudioSafariUiAttestedLiveCompositeOnce = async[\s\S]*?UI_ATTESTED_COMPOSITE_LIVE_FIELDS[\s\S]*?runWelcomeAudioSafariUiAttestedCompositeInternal\(\{[\s\S]*?synthetic: false/u,
+    );
+    expect(source).toMatch(
+      /const runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest = async[\s\S]*?runWelcomeAudioSafariUiAttestedCompositeInternal\(\{[\s\S]*?synthetic: true/u,
+    );
+    expect(source).toContain(": await openFixedWelcomeAudioLiveClaimStore()");
+    expect(source).toContain("createInstalledComputerUseSafariUiAttestedLiveHostCapability(");
+    expect(source).toMatch(/now_ms: synthetic \? input\.synthetic_claim_now_ms : Date\.now\(\)/u);
+    expect(source).toMatch(/entered_at_ms: synthetic \? input\.synthetic_pending_now_ms : Date\.now\(\)/u);
+    expect(source).not.toMatch(/UI_ATTESTED_COMPOSITE_LIVE_FIELDS[\s\S]{0,700}'driver'/u);
+    expect(source).not.toMatch(/UI_ATTESTED_COMPOSITE_LIVE_FIELDS[\s\S]{0,700}'private_store_capability'/u);
   });
 });
 
