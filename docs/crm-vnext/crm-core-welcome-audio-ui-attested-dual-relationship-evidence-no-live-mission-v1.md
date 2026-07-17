@@ -2,7 +2,8 @@
 
 Date: 2026-07-17
 
-Status: CEO-authorized compact repo-only repair; no source or live authority
+Status: completed no-live repair, formally reviewed GREEN and centrally
+integrated under lock; no source or live authority
 
 ## Objective
 
@@ -103,12 +104,15 @@ integration. This mission grants no live canary authority.
 
 ## Lane Result
 
-The approved repair is complete as a repo-only lane: focused dual-mode
-validation is `289/289` green, and the 13-suite welcome-audio compatibility
-boundary is `675/675` green. Syntax and diff checks are green, the exact
-12-file allowlist is preserved, and independent review found no unresolved
-P0-P2 issue. No browser, private source, fixed live root, authority, claim,
-PENDING, upload, Send, network, or external effect was invoked. Central
-integration remains pending a fresh formal Chief Architect integration review
-after its requested closed-grammar and truthful-age correction; no live canary
-is authorized by this result.
+The approved repair is complete as a repo-only lane and centrally integrated:
+focused dual-mode validation is `289/289` green, and the 13-suite
+welcome-audio compatibility boundary is `675/675` green. Syntax and diff checks
+are green, the exact 12-file allowlist is preserved, independent review found
+no unresolved P0-P2 issue, and the formal Chief Architect integration review is
+GREEN with `safe_to_self_integrate_now=true` and `ceo_decision_needed=false`
+from the redacted receipt. Central integration completed under the Central
+Integration Lock, the central branch was pushed, and the source lane was
+fast-forwarded. No browser, private source, fixed live root, authority, claim,
+PENDING, upload, Send, network, or external effect was invoked. No live canary
+is authorized by this result; any canary remains a separate mission up to the
+Send boundary with fresh authority.

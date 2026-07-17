@@ -6660,7 +6660,7 @@ routing and completion pointer.
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_dual_relationship_evidence_no_live_v1_20260717`
-- `status`: `completed_green_lane_local_repo_only_no_live`
+- `status`: `completed_green_centrally_integrated_repo_only_no_live`
 - `created_at`: `2026-07-17`
 - `updated_at`: `2026-07-17`
 - `approved_baseline`:
@@ -6699,8 +6699,11 @@ routing and completion pointer.
 - `independent_reviewer_verdict`: `GREEN_TO_COMMIT_AND_REREVIEW`; exact
   baseline-to-working-tree allowlist `12/12`; no unresolved P0-P2 finding after
   the Chief Architect packet fix.
+- `formal_chief_architect_integration_verdict`: `green_to_self_integrate`;
+  `safe_to_self_integrate_now=true`; `ceo_decision_needed=false`, recorded from
+  the redacted receipt only.
 - `integration_status`:
-  `chief_architect_packet_fix_applied_pending_fresh_formal_review`.
+  `completed_no_live_git_history_authoritative`.
 - `real_effects`: `0`; no browser, private source, fixed live root, authority,
   claim, PENDING, upload, Send, network, MailerLite, CRM, campaign, Ads, or
   proxy boundary was entered.
