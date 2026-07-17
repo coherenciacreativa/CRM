@@ -239,7 +239,7 @@ const isSha256 = (value) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(v
 const isOpaqueId = (value) => typeof value === 'string'
   && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(value);
 const BOUNDED_PILOT_DAY_BUCKET =
-  /(?:^|[^\p{L}\p{N}])(?:[3-7])\s*(?:d|days?|d[ií]as?)(?=$|[^\p{L}\p{N}])/iu;
+  /^(?:[3-7](?: ?d| days| d[ií]as)|hace [3-7] d[ií]as)$/iu;
 
 const comparePropertyKeys = (left, right) => {
   const leftText = String(left);
@@ -343,10 +343,7 @@ const isExactPrivateUtf8 = (value, maximumBytes) => {
 
 const isBoundedPilotThreeToSevenDayBucket = (value) => {
   if (!isExactPrivateUtf8(value, 128)) return false;
-  const numericTokens = value.match(/[0-9]+/gu) ?? [];
-  return numericTokens.length === 1
-    && /^[3-7]$/.test(numericTokens[0])
-    && BOUNDED_PILOT_DAY_BUCKET.test(value);
+  return BOUNDED_PILOT_DAY_BUCKET.test(value);
 };
 
 const parseCanonicalTimestamp = (value) => {

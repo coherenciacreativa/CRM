@@ -83,7 +83,7 @@ const adapt = (input: unknown, nowMs = NOW_MS) => (
 
 const recentEventInputFixture = () => {
   const input = inputFixture();
-  input.notification_row.time_bucket_utf8 = "synthetic visible bucket 3 d";
+  input.notification_row.time_bucket_utf8 = "3 d";
   input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
     .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
   input.profile.follows_owner_evidence = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
@@ -255,10 +255,12 @@ describe("UI-attested follower source adapter", () => {
   });
 
   test.each([
-    "synthetic visible bucket 3 d",
-    "synthetic visible bucket 4 days",
-    "hace 6 días",
+    "3d",
+    "4 d",
+    "5 days",
+    "6 días",
     "hace 7 dias",
+    "HACE 7 DÍAS",
   ])("P0 admits an exact supported bounded day bucket: %s", (timeBucket) => {
     const input = recentEventInputFixture();
     input.notification_row.time_bucket_utf8 = timeBucket;
@@ -270,6 +272,30 @@ describe("UI-attested follower source adapter", () => {
     "synthetic visible bucket 8 days",
     "hace varios días",
     "3 d / 4 d",
+    "synthetic visible bucket 3 d",
+    "older than 3 days",
+    "más antiguo que 3 días",
+    "at least 3 days",
+    "al menos 3 días",
+    "more than 3 days",
+    "más de 3 días",
+    "not 3 days",
+    "no hace 3 días",
+    "+3 d",
+    "-3 d",
+    "3.5 d",
+    "3-4 d",
+    "3 to 4 days",
+    "3 a 4 días",
+    "about 3 days",
+    "hace más de 3 días",
+    "3 days approximately",
+    "−3 días",
+    "3,5 días",
+    "3–4 días",
+    " 3 days",
+    "3 days ",
+    "3\tdays",
   ])("P0 rejects an out-of-window or ambiguous bounded day bucket: %s", (timeBucket) => {
     const input = recentEventInputFixture();
     input.notification_row.time_bucket_utf8 = timeBucket;

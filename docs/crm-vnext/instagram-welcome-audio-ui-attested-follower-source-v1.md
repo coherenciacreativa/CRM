@@ -80,10 +80,15 @@ The bounded recent-event mode is:
 The bounded mode is accepted only with the same exact recent-follower event,
 exact notification-to-profile identity, exact thread and owner bindings, fresh
 dedupe, explicit non-inference, and a preserved visible 3-to-7-day bucket. The
-bucket is inside the catch-up pilot's 168-hour ceiling but is never converted
-to an exact follow time. Any explicit contradictory relationship evidence
-blocks. This temporary catch-up range is not the production freshness policy;
-production must adopt a separately reviewed shorter window.
+bucket is admitted only when the entire preserved label matches the pilot's
+closed inclusive grammar: `3d`/`3 d`-shaped abbreviations, bare plural English
+or Spanish day labels, or Spanish `hace` plus a plural day label, with the
+single digit limited to 3 through 7. Prefixes, suffixes, modifiers, negations,
+signs, decimals, ranges, and surrounding whitespace block. The label is never
+converted to an exact follow time; without an exact follow timestamp, the
+actual elapsed age remains unknown. Any explicit contradictory relationship
+evidence blocks. This temporary catch-up range is not the production freshness
+policy; production must adopt a separately reviewed shorter window.
 
 The private projection and `source_evidence_sha256` bind the selected mode. A
 ready bounded-mode redacted receipt truthfully keeps

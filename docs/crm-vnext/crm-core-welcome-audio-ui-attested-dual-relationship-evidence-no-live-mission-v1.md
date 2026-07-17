@@ -30,8 +30,9 @@ One bounded alternative is added:
 The alternative is valid only when the existing closed projection also proves:
 
 - one exact visible `started_following_owner` event;
-- one preserved visible 3-to-7-day relative-time bucket, which is inside this
-  catch-up pilot's 168-hour ceiling without claiming an exact timestamp;
+- one preserved visible 3-to-7-day relative-time label matching the complete
+  closed pilot grammar, without modifiers, negations, signs, decimals, ranges,
+  or any claim of an exact timestamp or maximum elapsed age;
 - exact notification-to-profile identity;
 - exact profile-to-thread and owner binding;
 - fresh clear dedupe with no prior welcome, audio, claim, attempt, ambiguous
@@ -46,7 +47,9 @@ blocks.
 This 3-to-7-day allowance is a bounded catch-up policy for the first real
 pilot after the implementation delay. It is not the intended production
 freshness policy; production activation must replace it with a separately
-reviewed same-day or otherwise shorter window.
+reviewed same-day or otherwise shorter window. The policy is inclusive over
+the visible label only; actual elapsed age remains unknown because no exact
+follow timestamp is claimed.
 
 ## Truthful Receipts
 
@@ -101,10 +104,11 @@ integration. This mission grants no live canary authority.
 ## Lane Result
 
 The approved repair is complete as a repo-only lane: focused dual-mode
-validation is `263/263` green, and the 13-suite welcome-audio compatibility
-boundary is `649/649` green. Syntax and diff checks are green, the exact
+validation is `289/289` green, and the 13-suite welcome-audio compatibility
+boundary is `675/675` green. Syntax and diff checks are green, the exact
 12-file allowlist is preserved, and independent review found no unresolved
 P0-P2 issue. No browser, private source, fixed live root, authority, claim,
 PENDING, upload, Send, network, or external effect was invoked. Central
-integration remains pending its separate formal Chief Architect integration
-review; no live canary is authorized by this result.
+integration remains pending a fresh formal Chief Architect integration review
+after its requested closed-grammar and truthful-age correction; no live canary
+is authorized by this result.

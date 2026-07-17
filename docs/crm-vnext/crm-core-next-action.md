@@ -6693,12 +6693,14 @@ routing and completion pointer.
   must start from a fresh eligible cohort after green central integration. The
   3-to-7-day range is catch-up-pilot-only; production requires a separately
   reviewed shorter freshness policy.
-- `validation_receipt`: Focused dual-mode validation is `263/263` green; full
-  welcome-audio compatibility is `649/649` green across 13 suites; syntax and
+- `validation_receipt`: Focused dual-mode validation is `289/289` green; full
+  welcome-audio compatibility is `675/675` green across 13 suites; syntax and
   diff checks are green.
-- `independent_reviewer_verdict`: `GREEN_TO_SELF_INTEGRATE`; exact allowlist
-  `12/12`; no unresolved P0-P2 finding.
-- `integration_status`: `pending_formal_chief_architect_integration_review`.
+- `independent_reviewer_verdict`: `GREEN_TO_COMMIT_AND_REREVIEW`; exact
+  baseline-to-working-tree allowlist `12/12`; no unresolved P0-P2 finding after
+  the Chief Architect packet fix.
+- `integration_status`:
+  `chief_architect_packet_fix_applied_pending_fresh_formal_review`.
 - `real_effects`: `0`; no browser, private source, fixed live root, authority,
   claim, PENDING, upload, Send, network, MailerLite, CRM, campaign, Ads, or
   proxy boundary was entered.

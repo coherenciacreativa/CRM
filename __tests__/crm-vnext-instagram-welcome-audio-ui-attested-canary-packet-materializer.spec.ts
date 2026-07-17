@@ -136,7 +136,7 @@ describe("UI-attested canary packet materializer", () => {
 
   test("prepares the same inert draft for bounded recent-event relationship evidence", () => {
     const input = sourceInput();
-    input.notification_row.time_bucket_utf8 = "synthetic visible bucket 3 d";
+    input.notification_row.time_bucket_utf8 = "3 d";
     input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
       .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
     input.profile.follows_owner_evidence = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE

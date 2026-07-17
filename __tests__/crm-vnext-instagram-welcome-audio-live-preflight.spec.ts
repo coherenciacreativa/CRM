@@ -1680,7 +1680,7 @@ const validUiAttestedProjection = () => {
 
 const validUiAttestedRecentEventProjection = () => {
   const input = uiAttestedSourceInputFixture();
-  input.notification_row.time_bucket_utf8 = "synthetic visible bucket 4 d";
+  input.notification_row.time_bucket_utf8 = "4 d";
   input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
     .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
   input.profile.follows_owner_evidence = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
