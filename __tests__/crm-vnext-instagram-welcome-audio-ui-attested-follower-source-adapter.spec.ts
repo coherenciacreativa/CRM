@@ -16,6 +16,8 @@ const {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_RECEIPT_FIELDS,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_RECEIPT_SCHEMA_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   adaptWelcomeAudioUiAttestedFollowerSource,
   validateWelcomeAudioUiAttestedFollowerSourceProjection,
   validateWelcomeAudioUiAttestedFollowerSourceReceipt,
@@ -78,6 +80,16 @@ const inputFixture = () => ({
 const adapt = (input: unknown, nowMs = NOW_MS) => (
   adaptWelcomeAudioUiAttestedFollowerSource(input, { nowMs })
 );
+
+const recentEventInputFixture = () => {
+  const input = inputFixture();
+  input.notification_row.time_bucket_utf8 = "3 d";
+  input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+    .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
+  input.profile.follows_owner_evidence = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+    .RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET;
+  return input;
+};
 
 const assertBlocked = (input: unknown, blocker: string) => {
   const result = adapt(input);
@@ -210,6 +222,86 @@ describe("UI-attested follower source adapter", () => {
     )).size).toBe(variants.length);
   });
 
+  test("P0 admits a bound 3-to-7-day pilot follow event without claiming a current badge", () => {
+    const current = adapt(inputFixture());
+    const recentEvent = adapt(recentEventInputFixture());
+
+    expect(recentEvent.private_projection).not.toBeNull();
+    expect(recentEvent.private_projection!.profile).toMatchObject({
+      follows_owner: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+        .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION,
+      follows_owner_evidence: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+        .RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET,
+    });
+    expect(recentEvent.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_SOURCE_DECISION.READY,
+      ui_attested_source_ready: true,
+      follows_owner_confirmed: false,
+      blocker_codes: [],
+    });
+    expect(validateWelcomeAudioUiAttestedFollowerSourceProjection(
+      recentEvent.private_projection,
+      { nowMs: NOW_MS },
+    )).toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioUiAttestedFollowerSourceReceipt(
+      recentEvent.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(recentEvent.private_projection!.source_evidence_sha256).not.toBe(
+      current.private_projection!.source_evidence_sha256,
+    );
+    expect(recentEvent.private_projection!.anchors).toEqual(
+      current.private_projection!.anchors,
+    );
+  });
+
+  test.each([
+    "3d",
+    "4 d",
+    "5 days",
+    "6 días",
+    "hace 7 dias",
+    "HACE 7 DÍAS",
+  ])("P0 admits an exact supported bounded day bucket: %s", (timeBucket) => {
+    const input = recentEventInputFixture();
+    input.notification_row.time_bucket_utf8 = timeBucket;
+    expect(adapt(input).private_projection).not.toBeNull();
+  });
+
+  test.each([
+    "synthetic visible bucket 2 d",
+    "synthetic visible bucket 8 days",
+    "hace varios días",
+    "3 d / 4 d",
+    "synthetic visible bucket 3 d",
+    "older than 3 days",
+    "más antiguo que 3 días",
+    "at least 3 days",
+    "al menos 3 días",
+    "more than 3 days",
+    "más de 3 días",
+    "not 3 days",
+    "no hace 3 días",
+    "+3 d",
+    "-3 d",
+    "3.5 d",
+    "3-4 d",
+    "3 to 4 days",
+    "3 a 4 días",
+    "about 3 days",
+    "hace más de 3 días",
+    "3 days approximately",
+    "−3 días",
+    "3,5 días",
+    "3–4 días",
+    " 3 days",
+    "3 days ",
+    "3\tdays",
+  ])("P0 rejects an out-of-window or ambiguous bounded day bucket: %s", (timeBucket) => {
+    const input = recentEventInputFixture();
+    input.notification_row.time_bucket_utf8 = timeBucket;
+    assertBlocked(input, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.TIME_BUCKET);
+  });
+
   test("P0 keeps binding anchors stable across observation-time changes", () => {
     const first = adapt(inputFixture()).private_projection!;
     const shifted = inputFixture();
@@ -276,6 +368,11 @@ describe("UI-attested follower source adapter", () => {
       }, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.IDENTITY_BINDING],
       ["follows owner", (input) => {
         input.profile.follows_owner = "unknown";
+      }, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.FOLLOWS_OWNER],
+      ["relationship evidence", (input) => {
+        input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+          .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
+        input.profile.follows_owner_evidence = "unsupported_recent_event_evidence";
       }, WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER.FOLLOWS_OWNER],
       ["thread", (input) => {
         input.thread.profile_to_thread_binding = "ambiguous";
@@ -617,6 +714,8 @@ describe("UI-attested follower source adapter", () => {
 
   test("P2 exports one exact data-only surface with no browser, fs, env, or network import", () => {
     expect(Object.keys(adapterModule).sort()).toEqual([
+      "WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE",
+      "WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE",
       "WELCOME_AUDIO_UI_ATTESTED_SOURCE_ADAPTER_CONTRACT_VERSION",
       "WELCOME_AUDIO_UI_ATTESTED_SOURCE_BLOCKER",
       "WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS",

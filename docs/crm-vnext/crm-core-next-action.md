@@ -6611,7 +6611,7 @@ routing and completion pointer.
   `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
 
-## Active Next Action
+## Previous Active Next Action
 
 - `next_action_id`:
   `crm_core_ui_attested_welcome_audio_live_activation_proof_v1_20260716`
@@ -6655,3 +6655,57 @@ routing and completion pointer.
   external effects.
 - `recommended_default`:
   `review_and_integrate_the_live_activation_proof_then_run_one_separately_authorized_real_canary`
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_dual_relationship_evidence_no_live_v1_20260717`
+- `status`: `completed_green_lane_local_repo_only_no_live`
+- `created_at`: `2026-07-17`
+- `updated_at`: `2026-07-17`
+- `approved_baseline`:
+  `aecc77cd286daa2f4a53562a90003127b19c0f11`
+- `source_branch`:
+  `codex/crm-core-ui-attested-dual-evidence-v1-20260717`
+- `mission_contract`:
+  `docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md`
+- `objective`: Extend the existing UI-attested follower source family with a
+  second bounded relationship-evidence mode for an exact visible recent-follow
+  notification bound to the exact profile, thread, and owner, while preserving
+  the existing current-follows-owner mode unchanged.
+- `accepted_relationship_modes`:
+  - `confirmed` with `explicit_visible_follows_owner_signal`
+  - `recent_follow_event_no_explicit_contradiction` with
+    `exact_recent_follow_notification_profile_binding_visible_3_to_7_day_pilot_bucket`
+- `truthful_receipts`: The bounded recent-event mode may be READY but must keep
+  `follows_owner_confirmed=false` and `follows_owner_bound=false`; it makes no
+  current follower-list membership, exact timestamp, provider-event, campaign,
+  or campaign-membership claim.
+- `allowed_scope`: Exact twelve-file repo-only implementation, synthetic
+  fixtures, deterministic focused and compatibility validation, independent
+  adversarial review, and a later serialized central integration only if every
+  repository gate and authority check is green.
+- `forbidden_scope`: Browser or source access, private artifacts, fixed live
+  roots, real authority, claims, PENDING, upload, Send, text, follow-back,
+  MailerLite, CRM, campaign, Ads, proxy, network, external effects, a new source
+  family, or any file outside the exact allowlist.
+- `later_gate`: A real one-recipient canary remains separately authorized and
+  must start from a fresh eligible cohort after green central integration. The
+  3-to-7-day range is catch-up-pilot-only; production requires a separately
+  reviewed shorter freshness policy.
+- `validation_receipt`: Focused dual-mode validation is `289/289` green; full
+  welcome-audio compatibility is `675/675` green across 13 suites; syntax and
+  diff checks are green.
+- `independent_reviewer_verdict`: `GREEN_TO_COMMIT_AND_REREVIEW`; exact
+  baseline-to-working-tree allowlist `12/12`; no unresolved P0-P2 finding after
+  the Chief Architect packet fix.
+- `integration_status`:
+  `chief_architect_packet_fix_applied_pending_fresh_formal_review`.
+- `real_effects`: `0`; no browser, private source, fixed live root, authority,
+  claim, PENDING, upload, Send, network, MailerLite, CRM, campaign, Ads, or
+  proxy boundary was entered.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.

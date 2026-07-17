@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
 } from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
@@ -129,6 +131,31 @@ describe("UI-attested canary packet materializer", () => {
     )).toEqual({ ok: true, reason: null });
     expect(materializer.validateWelcomeAudioUiAttestedCanaryPacketReceipt(
       first.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+  });
+
+  test("prepares the same inert draft for bounded recent-event relationship evidence", () => {
+    const input = sourceInput();
+    input.notification_row.time_bucket_utf8 = "3 d";
+    input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+      .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
+    input.profile.follows_owner_evidence = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+      .RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET;
+
+    const result = run(input);
+    expect(result.private_draft).not.toBeNull();
+    expect(result.redacted_receipt.decision).toBe(
+      materializer.WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION.PREPARED,
+    );
+    expect(result.private_draft!.source_projection.profile).toMatchObject({
+      follows_owner: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+        .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION,
+      follows_owner_evidence: WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+        .RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET,
+    });
+    expect(materializer.validateWelcomeAudioUiAttestedCanaryPacketDraft(
+      result.private_draft,
+      { now_ms: NOW_MS },
     )).toEqual({ ok: true, reason: null });
   });
 

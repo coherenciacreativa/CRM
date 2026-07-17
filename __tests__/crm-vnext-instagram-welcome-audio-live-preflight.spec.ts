@@ -67,6 +67,8 @@ import * as uiAttestedMaterializer from
 import * as uiAttestedPublisher from
   "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-authority-publisher.mjs";
 import {
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE,
+  WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
   adaptWelcomeAudioUiAttestedFollowerSource,
@@ -1676,6 +1678,21 @@ const validUiAttestedProjection = () => {
   return adapted.private_projection!;
 };
 
+const validUiAttestedRecentEventProjection = () => {
+  const input = uiAttestedSourceInputFixture();
+  input.notification_row.time_bucket_utf8 = "4 d";
+  input.profile.follows_owner = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_STATE
+    .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION;
+  input.profile.follows_owner_evidence = WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE
+    .RECENT_EVENT_VISIBLE_3_TO_7_DAY_PILOT_BUCKET;
+  const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
+    input,
+    { nowMs: UI_ATTESTED_NOW_MS },
+  );
+  expect(adapted.private_projection).not.toBeNull();
+  return adapted.private_projection!;
+};
+
 const uiAttestedCapabilityBinding = (
   privateCapability: unknown,
   projection: ReturnType<typeof validUiAttestedProjection>,
@@ -1756,6 +1773,30 @@ describe("Instagram welcome-audio synthetic UI-attested source preflight", () =>
     expect(consumeWelcomeAudioUiAttestedSourceCapabilityOnce(binding)).toBe(
       WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.INVALID,
     );
+  });
+
+  test("binds bounded recent-event evidence without claiming a current follows-owner badge", () => {
+    const projection = validUiAttestedRecentEventProjection();
+    const result = validateWelcomeAudioUiAttestedSourcePreflight({
+      private_source_projection: projection,
+      mode: WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE.SYNTHETIC_PROOF_ONLY,
+      now_ms: UI_ATTESTED_NOW_MS,
+    });
+
+    expect(result.private_capability).not.toBeNull();
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_PREFLIGHT_DECISION.VALID,
+      ui_attested_source_bound: true,
+      follows_owner_bound: false,
+      thread_bound: true,
+      dedupe_bound: true,
+      send_allowed: false,
+      external_effect_invoked: false,
+      blocker_codes: [],
+    });
+    expect(validateWelcomeAudioUiAttestedSourcePreflightReceipt(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
   });
 
   test("rejects binding drift and the exact capability expiry boundary", () => {
