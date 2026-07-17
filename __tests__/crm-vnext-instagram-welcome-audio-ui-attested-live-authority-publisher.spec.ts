@@ -1,6 +1,15 @@
 import { createHash } from "node:crypto";
-import { chmod, lstat, mkdtemp, realpath, rm, symlink, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import {
+  chmod,
+  lstat,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
 import { afterEach, describe, expect, test } from "vitest";
@@ -17,6 +26,10 @@ const PRIVATE_TARGET = "Synthetic.Exact+Tag_é";
 const PRIVATE_THREAD = "synthetic-thread-reference/Exact+Case";
 const PRIVATE_OWNER = "synthetic-owner-reference/Exact+Case";
 const roots: string[] = [];
+const MODULE_PATH = resolve(
+  process.cwd(),
+  "scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-authority-publisher.mjs",
+);
 
 const sha256 = (value: Buffer | string) => createHash("sha256").update(value).digest("hex");
 
@@ -279,7 +292,7 @@ describe("UI-attested one-recipient live authority publisher", () => {
     expect("publishWelcomeAudioUiAttestedLiveAuthority" in publisher).toBe(false);
   });
 
-  test("keeps fixed-root publication disabled before inspecting fabricated caller objects", async () => {
+  test("rejects non-exact fixed publisher input without inspecting fabricated caller objects", async () => {
     let trapCount = 0;
     const fabricated = new Proxy({}, {
       get() {
@@ -299,10 +312,31 @@ describe("UI-attested one-recipient live authority publisher", () => {
     expect(result.authority_path).toBeNull();
     expect(result.redacted_receipt.blocker_codes).toEqual([
       publisher.WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_BLOCKER
-        .FIXED_PUBLICATION_DISABLED,
+        .INPUT_INVALID,
     ]);
     expect(publisher.validateWelcomeAudioUiAttestedLiveAuthorityPublisherReceipt(
       result.redacted_receipt,
     )).toEqual({ ok: true, reason: null });
+  });
+
+  test("the fixed publisher owns root, mode, and clock and exposes no generic publication surface", async () => {
+    const source = await readFile(MODULE_PATH, "utf8");
+    expect(source).toMatch(
+      /const publishFixedWelcomeAudioUiAttestedLiveAuthority = async \(parameters = \{\}\)[\s\S]*?'private_draft',[\s\S]*?'private_authorization',[\s\S]*?authority_root: WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_FIXED_ROOT,[\s\S]*?mode: WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE\.FIXED_OWNER_ONLY,[\s\S]*?now_ms: Date\.now\(\)/u,
+    );
+    for (const input of [
+      { authority_root: "/tmp/forbidden" },
+      { mode: "synthetic" },
+      { now_ms: NOW_MS },
+      { browser: {} },
+      { outcome: "published" },
+    ]) {
+      const result = await publisher.publishFixedWelcomeAudioUiAttestedLiveAuthority(input as any);
+      expect(result.private_authority_envelope).toBeNull();
+      expect(result.redacted_receipt.blocker_codes).toEqual([
+        publisher.WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_BLOCKER.INPUT_INVALID,
+      ]);
+    }
+    expect("publishWelcomeAudioUiAttestedLiveAuthorityInternal" in publisher).toBe(false);
   });
 });

@@ -855,12 +855,25 @@ const publishWelcomeAudioUiAttestedLiveAuthorityInternal = async (parameters = {
   }
 };
 
-// This implementation mission may build only synthetic fixtures. A later live
-// execution mission must provide an authenticated owner-only capability before
-// any fixed-root publisher can exist. Deliberately do not inspect caller input.
-const publishFixedWelcomeAudioUiAttestedLiveAuthority = async () => blockedResult(
-  WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_BLOCKER.FIXED_PUBLICATION_DISABLED,
-);
+// Fixed publication accepts only the two already-private, exact admission
+// records. The live root, authority mode, and clock remain module-owned so a
+// caller cannot redirect publication or backdate authority freshness.
+const publishFixedWelcomeAudioUiAttestedLiveAuthority = async (parameters = {}) => {
+  const input = exactDataObject(parameters, [
+    'private_draft',
+    'private_authorization',
+  ]);
+  if (!input) {
+    return blockedResult(WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_BLOCKER.INPUT_INVALID);
+  }
+  return publishWelcomeAudioUiAttestedLiveAuthorityInternal({
+    authority_root: WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_FIXED_ROOT,
+    mode: WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.FIXED_OWNER_ONLY,
+    private_draft: input.private_draft,
+    private_authorization: input.private_authorization,
+    now_ms: Date.now(),
+  });
+};
 
 const publishSyntheticWelcomeAudioUiAttestedLiveAuthorityForTest = async (
   parameters = {},

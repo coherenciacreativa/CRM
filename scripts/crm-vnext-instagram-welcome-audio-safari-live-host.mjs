@@ -1598,6 +1598,18 @@ const createWelcomeAudioSafariUiAttestedHostCapability = (parameters = {}) => {
   return capability;
 };
 
+// The live UI-attested path owns the installed Computer Use runtime binding.
+// It is intentionally not exported and cannot be replaced by caller input.
+const createInstalledComputerUseSafariUiAttestedLiveHostCapability = (
+  privateAudioAssetCapability,
+) => createWelcomeAudioSafariUiAttestedHostCapability({
+  driver: createTrustedSkySafariDriverFromInstalledRuntime(),
+  execution_mode: WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE,
+  private_audio_asset_capability: privateAudioAssetCapability,
+  required_authority_mode: WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.FIXED_OWNER_ONLY,
+  pending_store_root: null,
+});
+
 const prepareWelcomeAudioSafariLiveTarget = async (parameters = {}) => {
   const blocked = (executionMode, blocker) => Object.freeze({
     private_prepared_permit: null,
@@ -2716,6 +2728,11 @@ const UI_ATTESTED_COMPOSITE_SYNTHETIC_FIELDS = Object.freeze([
   'synthetic_fault_scenario',
 ]);
 
+const UI_ATTESTED_COMPOSITE_LIVE_FIELDS = Object.freeze([
+  ...UI_ATTESTED_COMPOSITE_COMMON_FIELDS,
+  'approved_audio_asset_path',
+]);
+
 const buildCompositeReceipt = ({
   decision,
   claimCreated = false,
@@ -3379,12 +3396,16 @@ const uiAttestedClaimBindingFromComposite = (
   source_record_ordinal: input.expected_source_record_ordinal,
 });
 
-const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) => {
-  const requiredStoreMode = WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY;
+const runWelcomeAudioSafariUiAttestedCompositeInternal = async ({ input, synthetic }) => {
+  const requiredStoreMode = synthetic
+    ? WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY
+    : WELCOME_AUDIO_LIVE_STORE_MODE.FIXED_LIVE_OWNER_ONLY;
   let storeCapability;
   try {
-    storeCapability = input.private_store_capability;
-    if (await verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest({
+    storeCapability = synthetic
+      ? input.private_store_capability
+      : await openFixedWelcomeAudioLiveClaimStore();
+    if (synthetic && await verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest({
       private_store_capability: storeCapability,
       synthetic_store_root: input.synthetic_store_root,
     }) !== true) throw new Error('synthetic_store_binding_invalid');
@@ -3400,8 +3421,9 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
       private_operation_context_capability: input.private_operation_context_capability,
       private_authority_capability: input.private_authority_capability,
       private_audio_asset_capability: input.private_audio_asset_capability,
-      required_authority_mode:
-        WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      required_authority_mode: synthetic
+        ? WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY
+        : WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.FIXED_OWNER_ONLY,
       mission_id: input.mission_id,
       contract_version: input.contract_version,
       expected_mission_contract_sha256: input.expected_mission_contract_sha256,
@@ -3438,7 +3460,7 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
       exact_follow_timestamp_claimed: input.exact_follow_timestamp_claimed,
       provider_event_id_claimed: input.provider_event_id_claimed,
       campaign_membership_claimed: input.campaign_membership_claimed,
-      now_ms: input.synthetic_claim_now_ms,
+      now_ms: synthetic ? input.synthetic_claim_now_ms : Date.now(),
     });
   } catch {
     return uiAttestedCompositeBlocked({
@@ -3459,14 +3481,18 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
   );
   let hostCapability;
   try {
-    hostCapability = createWelcomeAudioSafariUiAttestedHostCapability({
-      driver: input.driver,
-      execution_mode: WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC,
-      private_audio_asset_capability: input.private_audio_asset_capability,
-      required_authority_mode:
-        WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
-      pending_store_root: input.synthetic_store_root,
-    });
+    hostCapability = synthetic
+      ? createWelcomeAudioSafariUiAttestedHostCapability({
+        driver: input.driver,
+        execution_mode: WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC,
+        private_audio_asset_capability: input.private_audio_asset_capability,
+        required_authority_mode:
+          WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+        pending_store_root: input.synthetic_store_root,
+      })
+      : createInstalledComputerUseSafariUiAttestedLiveHostCapability(
+        input.private_audio_asset_capability,
+      );
   } catch {
     return uiAttestedCompositeBlocked({
       blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.PREPARE_BLOCKED,
@@ -3496,16 +3522,16 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
       expected_owner_anchor_sha256: input.expected_owner_anchor_sha256,
       expected_dedupe_anchor_sha256: input.expected_dedupe_anchor_sha256,
       expected_audio_sha256: input.expected_audio_sha256,
-      now_ms: input.synthetic_prepare_now_ms,
+      now_ms: synthetic ? input.synthetic_prepare_now_ms : null,
     });
     knownNativeChooserOpened = validateWelcomeAudioSafariLiveHostReceipt(
       prepared?.redacted_receipt,
     ).ok === true && prepared.redacted_receipt.native_chooser_opened === true;
-    if (input.synthetic_fault_scenario
+    if (synthetic && input.synthetic_fault_scenario
       === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.THROW_AFTER_CHOOSER) {
       throw new Error('synthetic_throw_after_chooser');
     }
-    if (input.synthetic_fault_scenario
+    if (synthetic && input.synthetic_fault_scenario
       === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.INVALID_PREPARED_RECEIPT) {
       prepared = Object.freeze({
         private_prepared_permit: prepared.private_prepared_permit,
@@ -3533,9 +3559,9 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
   try {
     armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary({
       ...claimBinding,
-      entered_at_ms: input.synthetic_pending_now_ms,
+      entered_at_ms: synthetic ? input.synthetic_pending_now_ms : Date.now(),
     });
-    if (input.synthetic_fault_scenario
+    if (synthetic && input.synthetic_fault_scenario
       === WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.THROW_AFTER_PENDING_LINK) {
       throw new Error('synthetic_throw_after_pending_link');
     }
@@ -3546,7 +3572,7 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
         required_store_mode: requiredStoreMode,
         private_attempt_evidence_capability: null,
         private_visual_confirmation_capability: null,
-        synthetic_now_ms: input.synthetic_terminal_now_ms,
+        synthetic_now_ms: synthetic ? input.synthetic_terminal_now_ms : null,
       });
       const terminalDurable = validateWelcomeAudioLiveAttemptReceipt(
         terminal.redacted_receipt,
@@ -3625,10 +3651,10 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
       private_host_pending_capability: armed.private_host_pending_capability,
       approved_audio_asset_path: input.approved_audio_asset_path,
       expected_thread_anchor_sha256: input.expected_thread_anchor_sha256,
-      synthetic_entry_now_ms: input.synthetic_entry_now_ms,
-      synthetic_preupload_now_ms: input.synthetic_preupload_now_ms,
-      synthetic_attempted_at_ms: input.synthetic_attempted_at_ms,
-      synthetic_confirmation_now_ms: input.synthetic_confirmation_now_ms,
+      synthetic_entry_now_ms: synthetic ? input.synthetic_entry_now_ms : null,
+      synthetic_preupload_now_ms: synthetic ? input.synthetic_preupload_now_ms : null,
+      synthetic_attempted_at_ms: synthetic ? input.synthetic_attempted_at_ms : null,
+      synthetic_confirmation_now_ms: synthetic ? input.synthetic_confirmation_now_ms : null,
     });
   } catch {
     hostAttempt = null;
@@ -3644,7 +3670,7 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
     private_visual_confirmation_capability: hostReceiptValid
       ? hostAttempt.private_visual_confirmation_capability
       : null,
-    synthetic_now_ms: input.synthetic_terminal_now_ms,
+    synthetic_now_ms: synthetic ? input.synthetic_terminal_now_ms : null,
   });
   const terminalReceiptValid = validateWelcomeAudioLiveAttemptReceipt(terminal.redacted_receipt).ok;
   const confirmed = terminalReceiptValid
@@ -3687,13 +3713,15 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal = async (input) 
 };
 
 const runWelcomeAudioSafariUiAttestedLiveCompositeOnce = async (parameters = {}) => {
-  if (!exactObjectKeys(parameters, [])) {
+  const envelope = inspectExactDataEnvelope(parameters, UI_ATTESTED_COMPOSITE_LIVE_FIELDS);
+  if (!envelope.valid) {
     return uiAttestedCompositeBlocked({
       blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID,
     });
   }
-  return uiAttestedCompositeBlocked({
-    blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED,
+  return runWelcomeAudioSafariUiAttestedCompositeInternal({
+    input: envelope.values,
+    synthetic: false,
   });
 };
 
@@ -3715,7 +3743,10 @@ const runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest = async (
   ) return uiAttestedCompositeBlocked({
     blocker: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID,
   });
-  return runWelcomeAudioSafariUiAttestedSyntheticCompositeInternal(envelope.values);
+  return runWelcomeAudioSafariUiAttestedCompositeInternal({
+    input: envelope.values,
+    synthetic: true,
+  });
 };
 
 const resolveWelcomeAudioSafariLiveHostDeterministicOracleForTest = (parameters = {}) => {

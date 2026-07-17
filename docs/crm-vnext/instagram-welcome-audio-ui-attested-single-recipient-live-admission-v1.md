@@ -1,7 +1,7 @@
 # Instagram Welcome Audio UI-Attested Single-Recipient Live Admission v1
 
 Date: 2026-07-16
-Status: `repo_only_no_live_complete_reviewed_green_awaiting_integration`
+Status: `repo_only_live_dispatch_seam_completed_green_centrally_integrated_no_live`
 
 ## Purpose
 
@@ -42,8 +42,11 @@ A later live admission may accept only closed owner-only records for:
   and link-count evidence; and
 - an empty-or-valid fixed operation registry and claim store.
 
-No caller-selected browser driver, callback, URL, selector, coordinate,
-outcome, verifier, capability, or prebuilt live authority is accepted.
+No caller-selected browser driver, store root, clock, callback, URL, selector,
+coordinate, outcome, verifier, actuation result, or prebuilt live authority is
+accepted. The live composite accepts only the private exact binding
+capabilities and values plus the approved audio path already bound by the
+audio capability.
 
 ## Separate Authority Schema
 
@@ -123,7 +126,21 @@ available and regression-green. Cross-family identity dedupe, family-exact
 capabilities, exact expiry, hostile input, replay, ambiguity, and strict
 same-thread `+1` confirmation are covered.
 
-Fixed-root publication remains deliberately disabled. No real authority,
-claim, PENDING, browser action, attachment, or Send occurred. This result is
-not live authority, not canary-ready, and not production-ready. Independent
-review is `green_to_self_integrate`; one serialized central integration remains.
+The fixed publisher and live composite dispatch seams are now implemented.
+The publisher owns its fixed root, mode, and clock; the composite owns its
+fixed claim store, installed Safari driver, and clocks while sharing the
+synthetic-proven ordered sequence. Focused authority/host and namespace
+validation is `117/117` green; full welcome-audio compatibility is `637/637`
+green across 13 suites.
+
+No fixed root was opened, no real authority, claim, PENDING, browser action,
+attachment, or Send occurred. This result is not canary-ready and remains
+`production_ready=false` until one serialized central integration and a
+separately authorized real one-recipient canary.
+
+Independent review is `GREEN_TO_SELF_INTEGRATE`, with the exact `7/7`
+allowlist, focused validation `117/117`, welcome-audio compatibility `637/637`,
+and no unresolved P0-P2 finding.
+
+One serialized central integration completed with Git history authoritative
+for the final commit and zero live or private effect.
