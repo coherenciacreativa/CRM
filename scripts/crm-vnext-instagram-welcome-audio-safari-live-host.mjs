@@ -64,6 +64,8 @@ import {
 } from './crm-vnext-instagram-welcome-audio-safari-operation-port.mjs';
 
 const SAFARI_APP_ID = 'com.apple.Safari';
+const WELCOME_AUDIO_SAFARI_NEUTRAL_STANDBY_URL =
+  'file:///tmp/crm_core_computer_use_preflight.html';
 const COMPUTER_USE_INSTALLED_RUNTIME_SYMBOL = Symbol.for('openai.computer-use.runtime');
 const WELCOME_AUDIO_SAFARI_LIVE_HOST_CONTRACT_VERSION =
   'crm_core_instagram_welcome_audio_safari_live_host_v2';
@@ -170,6 +172,11 @@ const WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO_FOR_TEST = Object.free
   DUPLICATE_SCOPED_CONTROLS_SAME_INDEX: 'duplicate_scoped_controls_same_index',
   DUPLICATE_SCOPED_CONTROLS_UNINDEXED: 'duplicate_scoped_controls_unindexed',
   TARGET_SUBSTRING_DECOY: 'exact_target_substring_decoy',
+});
+
+const WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE = Object.freeze({
+  LEGACY_STRICT_HIERARCHY: 'legacy_strict_hierarchy',
+  UI_ATTESTED_REAL_FLAT_TREE: 'ui_attested_real_flat_tree',
 });
 
 const WELCOME_AUDIO_SAFARI_ATTEMPT_EVIDENCE_STATUS = Object.freeze({
@@ -500,6 +507,447 @@ const parseAccessibilityTree = (text) => {
   return Object.freeze({ nodes, hierarchy_valid: hierarchyValid });
 };
 
+const parseFlatAccessibilityRecords = (text) => Object.freeze(text
+  .split(/\r?\n/u)
+  .map((raw, lineNumber) => {
+    if (raw.trim().length === 0) return null;
+    const leading = raw.match(/^[ \t]*/u)?.[0] ?? '';
+    const depth = [...leading].reduce((total, character) => (
+      total + (character === '\t' ? 2 : 1)
+    ), 0);
+    const rest = raw.slice(leading.length);
+    const match = rest.match(
+      /^(?:(?:\[(\d+)\]|(\d+)(?:[.:])?)\s+)?(selected\s+tab|pinned\s+tab|tab|application|navigation|list|group|toolbar|link|button|image|heading|text)\b(.*)$/u,
+    );
+    if (!match) return Object.freeze({
+      raw,
+      line_number: lineNumber,
+      depth,
+      role: null,
+      body: rest,
+      element_index: null,
+      selected: false,
+      pinned: false,
+    });
+    const parsedIndex = Number.parseInt(match[1] ?? match[2] ?? '', 10);
+    const rolePhrase = match[3];
+    return Object.freeze({
+      raw,
+      line_number: lineNumber,
+      depth,
+      role: rolePhrase.endsWith('tab') ? 'tab' : rolePhrase,
+      body: match[4].replace(/^\s+/u, ''),
+      element_index: Number.isSafeInteger(parsedIndex) && parsedIndex >= 0
+        ? parsedIndex
+        : null,
+      selected: rolePhrase === 'selected tab'
+        || /(?:^|,\s*)selected(?:,|$)/u.test(match[4]),
+      pinned: rolePhrase === 'pinned tab'
+        || /(?:^|,\s*)pinned(?:,|$)/u.test(match[4]),
+    });
+  })
+  .filter((record) => record !== null));
+
+const flatRecordLabel = (record) => record.body
+  .split(/,\s+(?:url|position|description|value|placeholder|enabled|selected|id)\b/iu, 1)[0]
+  .trim();
+
+const flatStructuredField = (record, field) => {
+  const match = record.body.match(new RegExp(
+    `(?:^|,\\s*|\\s+)${escapeRegExp(field)}(?:\\s*[:=]\\s*|\\s+)([^,\\r\\n]*)`,
+    'iu',
+  ));
+  return match
+    ? Object.freeze({ present: true, value: match[1].trim() })
+    : Object.freeze({ present: false, value: null });
+};
+
+const flatPrimarySegment = (record) => record.body
+  .split(/,\s+(?:url|position|description|value|placeholder|enabled|selected|id)\b/iu, 1)[0]
+  .trim();
+
+const hasExactSerializedToken = (record, value) => {
+  if (typeof value !== 'string' || value.length === 0) return false;
+  return new RegExp(
+    `(?:^|[\\s"'(),:=])${escapeRegExp(value)}(?=$|[\\s"'(),:=])`,
+    'u',
+  ).test(flatPrimarySegment(record));
+};
+
+const hasExactSerializedSuffix = (record, value) => {
+  if (typeof value !== 'string' || value.length === 0) return false;
+  return new RegExp(
+    `(?:^|[\\s"'(),:=])${escapeRegExp(value)}$`,
+    'u',
+  ).test(flatPrimarySegment(record));
+};
+
+const flatNativeSafariTabState = (record) => {
+  if (record.role !== 'tab') return null;
+  const pinned = record.body.match(/(?:[?&])isPinned=(true|false)(?:&|\b)/u)?.[1];
+  const active = record.body.match(/(?:[?&])isActive=(true|false)(?:&|\b)/u)?.[1];
+  if (pinned === undefined || active === undefined) return null;
+  return Object.freeze({
+    pinned: pinned === 'true',
+    active: active === 'true',
+  });
+};
+
+const isExactSafariAddressField = (record, exactBoundThreadReference) => {
+  if (
+    record.role !== 'text'
+    || !Number.isSafeInteger(record.element_index)
+    || !/^field\s+\(settable, string\)(?:\s|$)/u.test(record.body)
+  ) return false;
+  const description = flatStructuredField(record, 'Description');
+  const value = flatStructuredField(record, 'Value');
+  const id = flatStructuredField(record, 'ID');
+  return description.present
+    && description.value === 'smart search field'
+    && value.present
+    && value.value === exactBoundThreadReference
+    && id.present
+    && id.value === 'WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD';
+};
+
+const isIndexedFlatEmptyMessageTextArea = (record) => (
+  record.role === 'text'
+  && Number.isSafeInteger(record.element_index)
+  && /^entry area\s+\(settable, string\)(?:\s|$)/u.test(flatPrimarySegment(record))
+  && flatStructuredField(record, 'Placeholder').present
+  && /^(?:Message\.\.\.|Message…)$/u.test(
+    flatStructuredField(record, 'Placeholder').value ?? '',
+  )
+  && flatStructuredField(record, 'Value').present
+  && flatStructuredField(record, 'Value').value === ''
+);
+
+const isIndexedFlatPhotoVideoAttachment = (record) => (
+  record.role === 'button'
+  && Number.isSafeInteger(record.element_index)
+  && flatPrimarySegment(record) === 'Add Photo or Video'
+);
+
+const isIndexedFlatSendControl = (record) => (
+  record.role === 'button'
+  && Number.isSafeInteger(record.element_index)
+  && /(?:^|\s)Send$/u.test(flatPrimarySegment(record))
+);
+
+const isFlatAttachmentPreview = (record) => (
+  ['text', 'image', 'button'].includes(record.role)
+  && /^(?:Attachment preview|Audio attachment|Selected audio file)\s+\S/u
+    .test(flatRecordLabel(record))
+);
+
+const isFlatExactAttachmentPreview = (record, assetName) => {
+  if (assetName.length === 0 || !isFlatAttachmentPreview(record)) return false;
+  return [
+    `Attachment preview ${assetName}`,
+    `Audio attachment ${assetName}`,
+    `Selected audio file ${assetName}`,
+  ].includes(flatRecordLabel(record));
+};
+
+const isFlatOutgoingAudioEvidence = (record) => (
+  ['text', 'button'].includes(record.role)
+  && [
+    'Outgoing audio message sent by you',
+    'Outgoing voice message sent by you',
+    'Audio message from you',
+    'Voice message from you',
+  ].includes(flatRecordLabel(record))
+);
+
+const flatPaneForRecord = (records, record) => {
+  const previousBoundary = records
+    .filter((candidate) => (
+      candidate.line_number < record.line_number && candidate.depth < record.depth
+    ))
+    .at(-1)?.line_number ?? -1;
+  const nextBoundary = records.find((candidate) => (
+    candidate.line_number > record.line_number && candidate.depth < record.depth
+  ))?.line_number ?? Number.POSITIVE_INFINITY;
+  return records.filter((candidate) => (
+    candidate.line_number > previousBoundary
+    && candidate.line_number < nextBoundary
+    && candidate.depth >= record.depth
+  ));
+};
+
+const flatDescendantSegment = (records, root) => {
+  const nextBoundary = records.find((candidate) => (
+    candidate.line_number > root.line_number && candidate.depth <= root.depth
+  ))?.line_number ?? Number.POSITIVE_INFINITY;
+  return records.filter((candidate) => (
+    candidate.line_number >= root.line_number
+    && candidate.line_number < nextBoundary
+    && candidate.depth >= root.depth
+  ));
+};
+
+const isApprovedNeutralNativeTab = (record) => (
+  record.body.includes(WELCOME_AUDIO_SAFARI_NEUTRAL_STANDBY_URL)
+  || /(?:^|[\s"'(),:=])Neutral UI Preflight(?=$|[\s"'(),:=])/u
+    .test(record.body)
+);
+
+const isExactTargetInstagramText = (record, exactTarget) => (
+  record.role === 'text'
+  && new RegExp(
+    `(?:^|[\\s"'(),:=])${escapeRegExp(exactTarget)} · Instagram$`,
+    'u',
+  ).test(flatPrimarySegment(record))
+);
+
+const isExactTargetProfileLink = (record, exactTarget) => (
+  record.role === 'link'
+  && hasExactSerializedSuffix(record, 'View profile')
+  && flatStructuredField(record, 'Value').value === `instagram.com/${exactTarget}/`
+);
+
+const isFlatAudioLikeEvidence = (record) => (
+  ['text', 'button', 'image'].includes(record.role)
+  && /\b(?:audio|voice)\b/iu.test(flatPrimarySegment(record))
+);
+
+const INSTAGRAM_AUTHENTICATED_NAV_LABELS_BEFORE_OWNER = Object.freeze([
+  'Instagram',
+  'Home',
+  'Reels',
+  'Messages',
+  'Search',
+  'Notifications',
+  'New post',
+  'Professional dashboard',
+]);
+
+const INSTAGRAM_AUTHENTICATED_NAV_LABELS_AFTER_OWNER = Object.freeze([
+  'Settings',
+  'Also from Meta',
+]);
+
+const exactAuthenticatedNavigationClusters = (records, exactOwnerAccountReference) => {
+  const links = records.filter((record) => record.role === 'link');
+  const clusters = [];
+  const depths = [...new Set(links.map((record) => record.depth))];
+  for (const depth of depths) {
+    const sameDepthLinks = links.filter((record) => record.depth === depth);
+    const width = INSTAGRAM_AUTHENTICATED_NAV_LABELS_BEFORE_OWNER.length
+      + 1
+      + INSTAGRAM_AUTHENTICATED_NAV_LABELS_AFTER_OWNER.length;
+    for (let start = 0; start + width <= sameDepthLinks.length; start += 1) {
+      const window = sameDepthLinks.slice(start, start + width);
+      const beforeMatches = INSTAGRAM_AUTHENTICATED_NAV_LABELS_BEFORE_OWNER.every(
+        (label, offset) => hasExactSerializedSuffix(window[offset], label),
+      );
+      const ownerOffset = INSTAGRAM_AUTHENTICATED_NAV_LABELS_BEFORE_OWNER.length;
+      const ownerMatches = flatPrimarySegment(window[ownerOffset])
+        === `instagram.com/${exactOwnerAccountReference}/`;
+      const afterMatches = INSTAGRAM_AUTHENTICATED_NAV_LABELS_AFTER_OWNER.every(
+        (label, offset) => hasExactSerializedSuffix(window[ownerOffset + 1 + offset], label),
+      );
+      if (beforeMatches && ownerMatches && afterMatches) {
+        clusters.push(Object.freeze({
+          first_line_number: window[0].line_number,
+          owner_line_number: window[ownerOffset].line_number,
+          last_line_number: window.at(-1).line_number,
+        }));
+      }
+    }
+  }
+  return Object.freeze(clusters);
+};
+
+const inspectUiAttestedRealFlatTree = ({
+  text,
+  exactTarget,
+  exactBoundThreadReference,
+  exactOwnerAccountReference,
+  assetName,
+}) => {
+  const invalidThread = Object.freeze({
+    exact_thread_bound: false,
+    message_input_visible: false,
+    message_composer_empty: false,
+    attachment_control_index: null,
+    exact_asset_preview_visible: false,
+    attachment_preview_count: 0,
+    send_control_index: null,
+    outgoing_audio_bubble_count: 0,
+    outgoing_audio_scope_proven: false,
+    explicit_sent_marker_visible: false,
+    exact_binding_sha256: null,
+  });
+  if (
+    typeof exactTarget !== 'string'
+    || exactTarget.length === 0
+    || typeof exactBoundThreadReference !== 'string'
+    || exactBoundThreadReference.length === 0
+    || typeof exactOwnerAccountReference !== 'string'
+    || exactOwnerAccountReference.length === 0
+  ) return Object.freeze({
+    thread: invalidThread,
+    isolated_surface: false,
+    unrelated_regular_tabs_present: true,
+  });
+  const records = parseFlatAccessibilityRecords(text);
+  const nativeTabs = records
+    .map((record) => ({ record, state: flatNativeSafariTabState(record) }))
+    .filter(({ state }) => state !== null);
+  const regularTabs = nativeTabs.filter(({ state }) => state.pinned === false);
+  const activeNativeTabs = nativeTabs.filter(({ state }) => state.active === true);
+  const neutralTabs = regularTabs.filter(({ record, state }) => (
+    state.active === false && isApprovedNeutralNativeTab(record)
+  ));
+  const addressFields = records.filter((record) => (
+    record.role === 'text'
+    && Number.isSafeInteger(record.element_index)
+    && /^field\s+\(settable, string\)(?:\s|$)/u.test(record.body)
+    && flatStructuredField(record, 'Description').value === 'smart search field'
+    && flatStructuredField(record, 'ID').value === 'WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD'
+  ));
+  const exactAddressFields = addressFields.filter((record) => (
+    isExactSafariAddressField(record, exactBoundThreadReference)
+  ));
+  const activeRegularSurface = regularTabs.length === 2
+    && activeNativeTabs.length === 1
+    && activeNativeTabs[0].state.pinned === false
+    && neutralTabs.length === 1;
+  const isolatedSurface = activeRegularSurface
+    && addressFields.length === 1
+    && exactAddressFields.length === 1;
+  const authenticatedNavigationClusters = exactAuthenticatedNavigationClusters(
+    records,
+    exactOwnerAccountReference,
+  );
+  const ownerBound = authenticatedNavigationClusters.length === 1;
+  const composers = records.filter(isIndexedFlatEmptyMessageTextArea);
+  const candidatePanes = composers
+    .map((composer) => {
+      const broadPane = flatPaneForRecord(records, composer);
+      const headerClusters = broadPane
+        .filter((record) => (
+          record.role === 'heading'
+          && record.depth === composer.depth
+          && record.line_number < composer.line_number
+        ))
+        .map((heading) => {
+          const nextSameDepthHeading = broadPane.find((record) => (
+            record.line_number > heading.line_number
+            && record.line_number < composer.line_number
+            && record.role === 'heading'
+            && record.depth === heading.depth
+          ));
+          const recordsAfterHeading = broadPane.filter((record) => (
+            record.line_number > heading.line_number
+            && record.line_number < composer.line_number
+            && record.line_number
+              < (nextSameDepthHeading?.line_number ?? composer.line_number)
+          ));
+          const instagramTexts = recordsAfterHeading.filter((record) => (
+            record.depth === heading.depth
+            && isExactTargetInstagramText(record, exactTarget)
+          ));
+          const targetLinks = recordsAfterHeading.filter((record) => (
+            record.depth === heading.depth
+            && isExactTargetProfileLink(record, exactTarget)
+          ));
+          const exactOrder = instagramTexts.length === 1
+            && targetLinks.length === 1
+            && instagramTexts[0].line_number < targetLinks[0].line_number;
+          return {
+            heading,
+            exact_order: exactOrder,
+            target_link_line_number: exactOrder ? targetLinks[0].line_number : null,
+          };
+        })
+        .filter(({ exact_order: exactOrder }) => exactOrder);
+      const heading = headerClusters.length === 1 ? headerClusters[0].heading : null;
+      return {
+        composer,
+        target_bound: heading !== null,
+        history_start_line_number: headerClusters.length === 1
+          ? headerClusters[0].target_link_line_number
+          : null,
+        pane: heading === null
+          ? []
+          : broadPane.filter((record) => record.line_number >= heading.line_number),
+      };
+    })
+    .filter(({ target_bound: targetBound }) => targetBound);
+  const ownerPrecedesBoundPane = candidatePanes.length === 1
+    && authenticatedNavigationClusters.length === 1
+    && authenticatedNavigationClusters[0].last_line_number
+      < candidatePanes[0].pane[0].line_number;
+  if (
+    !isolatedSurface
+    || !ownerBound
+    || !ownerPrecedesBoundPane
+    || candidatePanes.length !== 1
+  ) return Object.freeze({
+    thread: invalidThread,
+    isolated_surface: isolatedSurface,
+    unrelated_regular_tabs_present: !isolatedSurface,
+  });
+  const { composer, history_start_line_number: historyStartLineNumber, pane } = candidatePanes[0];
+  const paneComposers = pane.filter(isIndexedFlatEmptyMessageTextArea);
+  const history = pane.filter((record) => (
+    record.line_number > historyStartLineNumber
+    && record.line_number < composer.line_number
+  ));
+  const actionSegment = pane.filter((record) => record.line_number > composer.line_number);
+  const preComposerActionDecoys = history.filter((record) => (
+    isIndexedFlatPhotoVideoAttachment(record)
+    || isFlatAttachmentPreview(record)
+    || isIndexedFlatSendControl(record)
+  ));
+  const attachmentControls = actionSegment.filter(isIndexedFlatPhotoVideoAttachment);
+  const previews = actionSegment.filter(isFlatAttachmentPreview);
+  const exactPreviews = previews.filter((record) => (
+    isFlatExactAttachmentPreview(record, assetName)
+  ));
+  const sendControls = actionSegment.filter(isIndexedFlatSendControl);
+  const outgoingAudio = history.filter(isFlatOutgoingAudioEvidence);
+  const unknownAudio = history.filter((record) => (
+    isFlatAudioLikeEvidence(record) && !isFlatOutgoingAudioEvidence(record)
+  ));
+  const exactThreadBound = paneComposers.length === 1
+    && paneComposers[0] === composer
+    && preComposerActionDecoys.length === 0;
+  const outgoingAudioScopeProven = exactThreadBound && unknownAudio.length === 0;
+  return Object.freeze({
+    thread: Object.freeze({
+      exact_thread_bound: exactThreadBound,
+      message_input_visible: exactThreadBound,
+      message_composer_empty: exactThreadBound,
+      attachment_control_index: exactThreadBound
+        && attachmentControls.length === 1
+        ? attachmentControls[0].element_index
+        : null,
+      exact_asset_preview_visible: exactThreadBound
+        && previews.length === 1
+        && exactPreviews.length === 1,
+      attachment_preview_count: exactThreadBound ? previews.length : 0,
+      send_control_index: exactThreadBound && sendControls.length === 1
+        ? sendControls[0].element_index
+        : null,
+      outgoing_audio_bubble_count: outgoingAudioScopeProven ? outgoingAudio.length : 0,
+      outgoing_audio_scope_proven: outgoingAudioScopeProven,
+      explicit_sent_marker_visible: false,
+      exact_binding_sha256: exactThreadBound
+        ? sha256(JSON.stringify([
+          exactBoundThreadReference,
+          exactOwnerAccountReference,
+          exactTarget,
+        ]))
+        : null,
+    }),
+    isolated_surface: isolatedSurface,
+    unrelated_regular_tabs_present: !isolatedSurface,
+  });
+};
+
 const isDescendantOf = (node, ancestor) => {
   let cursor = node?.parent ?? null;
   while (cursor) {
@@ -654,7 +1102,15 @@ const inspectExactActiveThreadSubtree = ({
   });
 };
 
-const inspectLiveSafariState = ({ raw, exactTarget, approvedAssetPath, revision }) => {
+const inspectLiveSafariState = ({
+  raw,
+  exactTarget,
+  approvedAssetPath,
+  revision,
+  parserMode = WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE.LEGACY_STRICT_HIERARCHY,
+  exactBoundThreadReference = null,
+  exactOwnerAccountReference = null,
+}) => {
   if (!raw || typeof raw !== 'object' || typeof raw.text !== 'string') return null;
   const text = raw.text;
   const parsedTree = parseAccessibilityTree(text);
@@ -663,7 +1119,16 @@ const inspectLiveSafariState = ({ raw, exactTarget, approvedAssetPath, revision 
   const regularTabs = tabs.filter((node) => !/pinned/i.test(node.label));
   const instagramRegularTabs = regularTabs.filter((node) => /instagram/i.test(node.label));
   const assetName = typeof approvedAssetPath === 'string' ? basename(approvedAssetPath) : '';
-  const thread = inspectExactActiveThreadSubtree({
+  const flat = parserMode === WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE.UI_ATTESTED_REAL_FLAT_TREE
+    ? inspectUiAttestedRealFlatTree({
+      text,
+      exactTarget,
+      exactBoundThreadReference,
+      exactOwnerAccountReference,
+      assetName,
+    })
+    : null;
+  const thread = flat?.thread ?? inspectExactActiveThreadSubtree({
     nodes,
     hierarchyValid: parsedTree.hierarchy_valid,
     exactTarget,
@@ -672,9 +1137,11 @@ const inspectLiveSafariState = ({ raw, exactTarget, approvedAssetPath, revision 
   return Object.freeze({
     revision,
     standard_safari: raw.app === SAFARI_APP_ID,
-    isolated_surface: regularTabs.length === 1 && instagramRegularTabs.length === 1,
+    isolated_surface: flat?.isolated_surface
+      ?? (regularTabs.length === 1 && instagramRegularTabs.length === 1),
     private_browsing: /private\s+(?:browsing|window)/i.test(text),
-    unrelated_regular_tabs_present: regularTabs.length !== instagramRegularTabs.length,
+    unrelated_regular_tabs_present: flat?.unrelated_regular_tabs_present
+      ?? (regularTabs.length !== instagramRegularTabs.length),
     challenge_or_error_visible:
       /(?:challenge|required|try\s+again|couldn['’]t\s+send|error)/i.test(text),
     exact_source_target_bound: thread.exact_thread_bound,
@@ -691,12 +1158,20 @@ const inspectLiveSafariState = ({ raw, exactTarget, approvedAssetPath, revision 
     outgoing_audio_bubble_count: thread.outgoing_audio_bubble_count,
     outgoing_audio_scope_proven: thread.outgoing_audio_scope_proven,
     explicit_sent_marker_visible: thread.explicit_sent_marker_visible,
+    exact_binding_sha256: thread.exact_binding_sha256 ?? null,
     compose_reset_visible: /(?:new\s+message|to:|search\s+recipient)/i.test(text)
       && !thread.exact_thread_bound,
   });
 };
 
-const syntheticObservation = ({ state, exactTarget, approvedAssetPath }) => {
+const syntheticObservation = ({
+  state,
+  authorityFamily,
+  exactTarget,
+  approvedAssetPath,
+  exactBoundThreadReference,
+  exactOwnerAccountReference,
+}) => {
   const badSurface = state.scenario
     === WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.MIXED_OR_PRIVATE_SURFACE;
   const threadMismatch = [
@@ -750,6 +1225,16 @@ const syntheticObservation = ({ state, exactTarget, approvedAssetPath }) => {
         : state.baseline_audio_count,
     outgoing_audio_scope_proven: inThread,
     explicit_sent_marker_visible: confirmed || sentMarkerOnly,
+    exact_binding_sha256: authorityFamily === WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+      && inThread
+      && typeof exactBoundThreadReference === 'string'
+      && typeof exactOwnerAccountReference === 'string'
+      ? sha256(JSON.stringify([
+        exactBoundThreadReference,
+        exactOwnerAccountReference,
+        exactTarget,
+      ]))
+      : null,
     compose_reset_visible: composeReset,
   });
 };
@@ -1049,7 +1534,51 @@ const inspectSyntheticLiveSafariStateForTest = (parameters = {}) => {
   });
 };
 
-const getFreshDriverObservation = async ({ driver, exactTarget, approvedAssetPath }) => {
+const inspectSyntheticUiAttestedFlatSafariStateForTest = (parameters = {}) => {
+  if (
+    !exactObjectKeys(parameters, [
+      'raw_text',
+      'exact_target',
+      'exact_bound_thread_reference',
+      'exact_owner_account_reference',
+      'approved_audio_asset_path',
+    ])
+    || typeof parameters.raw_text !== 'string'
+    || parameters.raw_text.length === 0
+    || typeof parameters.exact_target !== 'string'
+    || parameters.exact_target.length === 0
+    || typeof parameters.exact_bound_thread_reference !== 'string'
+    || parameters.exact_bound_thread_reference.length === 0
+    || typeof parameters.exact_owner_account_reference !== 'string'
+    || parameters.exact_owner_account_reference.length === 0
+    || typeof parameters.approved_audio_asset_path !== 'string'
+  ) return null;
+  const observation = inspectLiveSafariState({
+    raw: {
+      app: SAFARI_APP_ID,
+      text: parameters.raw_text,
+    },
+    exactTarget: parameters.exact_target,
+    approvedAssetPath: parameters.approved_audio_asset_path,
+    revision: 1,
+    parserMode: WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE.UI_ATTESTED_REAL_FLAT_TREE,
+    exactBoundThreadReference: parameters.exact_bound_thread_reference,
+    exactOwnerAccountReference: parameters.exact_owner_account_reference,
+  });
+  if (!observation) return null;
+  return Object.freeze(Object.fromEntries(Object.entries(observation).filter(
+    ([key]) => key !== 'exact_binding_sha256',
+  )));
+};
+
+const getFreshDriverObservation = async ({
+  driver,
+  authorityFamily,
+  exactTarget,
+  exactBoundThreadReference,
+  exactOwnerAccountReference,
+  approvedAssetPath,
+}) => {
   const state = DRIVER_STATE.get(driver);
   if (!state) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.DRIVER_INVALID);
   state.revision += 1;
@@ -1059,7 +1588,14 @@ const getFreshDriverObservation = async ({ driver, exactTarget, approvedAssetPat
       state.pending_mode_tamper_path = null;
       await chmod(tamperPath, 0o644);
     }
-    return syntheticObservation({ state, exactTarget, approvedAssetPath });
+    return syntheticObservation({
+      state,
+      authorityFamily,
+      exactTarget,
+      approvedAssetPath,
+      exactBoundThreadReference,
+      exactOwnerAccountReference,
+    });
   }
   const raw = await state.methods.get_app_state({ app: SAFARI_APP_ID, disableDiff: true });
   return inspectLiveSafariState({
@@ -1067,6 +1603,11 @@ const getFreshDriverObservation = async ({ driver, exactTarget, approvedAssetPat
     exactTarget,
     approvedAssetPath,
     revision: state.revision,
+    parserMode: authorityFamily === WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+      ? WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE.UI_ATTESTED_REAL_FLAT_TREE
+      : WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE.LEGACY_STRICT_HIERARCHY,
+    exactBoundThreadReference,
+    exactOwnerAccountReference,
   });
 };
 
@@ -1143,7 +1684,10 @@ const isExactIsolatedSafari = (observation) => observation !== null
 const acquireFreshState = async (state) => {
   const observation = await getFreshDriverObservation({
     driver: state.driver,
+    authorityFamily: state.authority_family ?? WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.SEALED_MANIFEST,
     exactTarget: state.exact_target,
+    exactBoundThreadReference: state.exact_bound_thread_reference ?? null,
+    exactOwnerAccountReference: state.exact_owner_account_reference ?? null,
     approvedAssetPath: state.approved_audio_asset_path,
   });
   state.fresh_state_check_count += 1;
@@ -1156,6 +1700,11 @@ const acquireFreshState = async (state) => {
   if (!isExactIsolatedSafari(observation)) {
     throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SURFACE_INVALID);
   }
+  if (
+    state.authority_family === WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED
+    && state.exact_binding_sha256 !== null
+    && observation.exact_binding_sha256 !== state.exact_binding_sha256
+  ) throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SOURCE_THREAD_INVALID);
   state.safari_standard_isolated = true;
   return observation;
 };
@@ -1656,6 +2205,9 @@ const prepareWelcomeAudioSafariLiveTarget = async (parameters = {}) => {
     private_audio_asset_capability: host.private_audio_asset_capability,
     pending_store_root: host.pending_store_root,
     exact_target: parameters.exact_target,
+    exact_bound_thread_reference: null,
+    exact_owner_account_reference: null,
+    exact_binding_sha256: null,
     approved_audio_asset_path: null,
     binding: Object.freeze({
       expected_mission_id: parameters.expected_mission_id,
@@ -1838,6 +2390,9 @@ const prepareWelcomeAudioSafariUiAttestedTarget = async (parameters = {}) => {
     private_audio_asset_capability: host.private_audio_asset_capability,
     pending_store_root: host.pending_store_root,
     exact_target: parameters.exact_target,
+    exact_bound_thread_reference: parameters.exact_bound_thread_reference,
+    exact_owner_account_reference: parameters.exact_owner_account_reference,
+    exact_binding_sha256: null,
     approved_audio_asset_path: null,
     binding: Object.freeze({
       authority_family: WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED,
@@ -1952,6 +2507,10 @@ const prepareWelcomeAudioSafariUiAttestedTarget = async (parameters = {}) => {
       throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.ATTACHMENT_CONTROL_INVALID);
     }
     state.source_thread_bound = true;
+    if (!isSha256(thread.exact_binding_sha256)) {
+      throw new Error(WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER.SOURCE_THREAD_INVALID);
+    }
+    state.exact_binding_sha256 = thread.exact_binding_sha256;
     state.baseline_outgoing_audio_bubble_count = thread.outgoing_audio_bubble_count;
     await fixedUiAction(state, {
       action: 'open_attachment',
@@ -1977,6 +2536,9 @@ const prepareWelcomeAudioSafariUiAttestedTarget = async (parameters = {}) => {
   } catch (error) {
     state.phase = 'blocked';
     state.exact_target = null;
+    state.exact_bound_thread_reference = null;
+    state.exact_owner_account_reference = null;
+    state.exact_binding_sha256 = null;
     return Object.freeze({
       private_prepared_permit: null,
       redacted_receipt: receipt(
@@ -2300,6 +2862,9 @@ const executeWelcomeAudioSafariLivePostPending = async (parameters = {}) => {
   });
   state.phase = 'terminal_evidence_issued';
   state.exact_target = null;
+  state.exact_bound_thread_reference = null;
+  state.exact_owner_account_reference = null;
+  state.exact_binding_sha256 = null;
   state.approved_audio_asset_path = null;
   const confirmed = visualCapability !== null;
   return Object.freeze({
@@ -3827,6 +4392,7 @@ export {
   inspectInstalledComputerUseRuntimeBindingForTest,
   inspectInstalledComputerUseRuntimeReplacementResistanceForTest,
   inspectSyntheticLiveSafariStateForTest,
+  inspectSyntheticUiAttestedFlatSafariStateForTest,
   inspectSyntheticSafariDriverForTest,
   prepareWelcomeAudioSafariSyntheticTargetForTest,
   resolveWelcomeAudioSafariLiveHostDeterministicOracleForTest,

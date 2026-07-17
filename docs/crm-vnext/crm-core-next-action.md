@@ -6712,3 +6712,48 @@ routing and completion pointer.
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
   `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
+
+## Current Repo-Only Compatibility Next Action
+
+- `next_action_id`:
+  `crm_core_safari_real_ax_ui_attested_compat_no_live_v1_20260717`
+- `status`: `implemented_repo_only_no_live_independent_review_green`
+- `created_at`: `2026-07-17`
+- `updated_at`: `2026-07-17`
+- `approved_baseline`:
+  `f6c76b7f0ac1f61dc5d65c1e3bf44d43f734574a`
+- `source_branch`: `codex/safari-real-ax-compat`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-safari-real-ax-compat-no-live-v1.md`
+- `objective`: Admit the real Computer Use flat Safari serialization only for
+  the UI-attested sibling while keeping the sealed-manifest strict hierarchy
+  parser unchanged.
+- `accepted_surface`: Native Safari metadata proves one active unpinned source
+  tab plus one inactive unpinned `Neutral UI Preflight`; page-level tabs are
+  ignored and shared pinned tabs remain inactive. One exact browser address
+  field binds the thread, one ordered authenticated top-navigation cluster
+  binds the owner, one unique heading then exact `<target> · Instagram` then
+  exact `View profile`-Value cluster binds the current pane, and
+  one exact structured-empty `entry area (settable, string)` precedes one exact
+  indexed `Add Photo or Video` control.
+- `confirmation_boundary`: Attachment, preview, and Send controls are
+  post-composer only. Outgoing audio is post-header/pre-composer only; generic
+  non-audio history is allowed, but recognized prior outgoing audio blocks and
+  unrecognized audio/voice is UNKNOWN. Confirmation requires the same binding
+  plus a fresh post-Send `+1` delta; historical status is not a marker.
+- `allowed_scope`: Exact six-file repo-only implementation and synthetic
+  redacted fixtures; deterministic tests, one independent review, and one
+  isolated lane commit for formal central-integration review.
+- `forbidden_scope`: Safari or other UI, private artifacts, authority, fixed
+  roots, claim, PENDING, file upload, Send, network, MailerLite, CRM, campaign,
+  Ads, proxy, or any other external effect.
+- `validation_receipt`: Focused Safari host suite is green with `137/137`
+  tests; the complete 13-suite welcome-audio boundary is `700/700` green;
+  Node syntax and diff checks are green.
+- `independent_review`: `green_no_unresolved_p0_p2`
+- `integration_status`: `ready_for_lane_commit_then_chief_architect_review`
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
