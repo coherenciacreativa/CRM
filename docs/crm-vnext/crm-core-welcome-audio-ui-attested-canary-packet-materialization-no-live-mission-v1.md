@@ -5,11 +5,13 @@ Date: 2026-07-16
 - `mission_id`:
   `crm_core_welcome_audio_ui_attested_canary_packet_materialization_no_live_v1_20260716`
 - `mode`: `repo_only_no_live_materialization_proof`
-- `status`: `completed_green_reviewed_awaiting_central_integration`
+- `status`: `completed_green_centrally_integrated_no_live`
 - `approved_baseline`:
   `ada5db2df1d79bbb0b1c97de10f0f23562dea506`
 - `source_branch`:
   `codex/crm-core-ui-attested-canary-materializer-v1-20260716`
+- `central_integration_commit`:
+  `725afd3d47147aa63c37f604d39e29ead9d51171`
 
 ## Objective
 
@@ -137,7 +139,9 @@ Review and integration remain repo-history effects only.
 Final lane evidence: focused materializer validation `16/16`, required
 seven-file welcome-audio compatibility validation `429/429`, syntax and diff
 checks green, exact eight-file allowlist preserved, and independent review
-GREEN with no unresolved P0-P2 finding.
+GREEN with no unresolved P0-P2 finding. The dedicated central integration
+completed under the canonical lock, was pushed, and left the central branch
+clean and synchronized with every live/effect flag false.
 
 ## Stop Conditions
 
@@ -154,4 +158,7 @@ central integration if every gate is green. It does not authorize private
 input acquisition, filesystem publication, source action, canary, claim, send,
 or any live effect. Even after a green implementation, a later separately
 approved mission must
-materialize fresh execution authority before any real canary can run.
+materialize fresh execution authority before any real canary can run. The next
+repo-only mission is the separately versioned UI-attested single-recipient live
+admission bridge; it must not reinterpret this draft or the old exact-time
+sealed-manifest route.

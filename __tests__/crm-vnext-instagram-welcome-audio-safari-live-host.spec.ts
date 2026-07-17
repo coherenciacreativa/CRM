@@ -21,11 +21,14 @@ import {
   WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_AUTHORITY_SCHEMA_VERSION,
   WELCOME_AUDIO_SEALED_MANIFEST_SCHEMA_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE,
   computeWelcomeAudioCampaignIntervalSha256,
   computeWelcomeAudioExactIdentityAnchorSha256,
   computeWelcomeAudioSealedManifestSha256,
   createSyntheticWelcomeAudioLiveAuthorityCapability,
+  createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability,
   validateWelcomeAudioLiveOperationContext,
+  validateWelcomeAudioUiAttestedLiveOperationContext,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
 import {
   WELCOME_AUDIO_LIVE_INSPECTION_CLASSIFICATION,
@@ -65,6 +68,8 @@ import {
   WELCOME_AUDIO_SOURCE_CLASS,
   WELCOME_AUDIO_SOURCE_RECENCY,
   WELCOME_AUDIO_SURFACE,
+  WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION,
+  WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION,
   buildWelcomeAudioCanonicalOperationDigest,
 } from "../scripts/crm-vnext-instagram-welcome-audio-operation-guard.mjs";
 import {
@@ -92,9 +97,20 @@ import {
   prepareWelcomeAudioSafariSyntheticTargetForTest as prepareWelcomeAudioSafariLiveTarget,
   runWelcomeAudioSafariSyntheticCompositeOnceForTest,
   runWelcomeAudioSafariLiveCompositeOnce,
+  runWelcomeAudioSafariUiAttestedLiveCompositeOnce,
+  runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest,
   validateWelcomeAudioSafariLiveCompositeReceipt,
   validateWelcomeAudioSafariLiveHostReceipt,
+  validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs";
+import {
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
+} from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
+import * as uiAttestedMaterializer from
+  "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
+import * as uiAttestedPublisher from
+  "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-authority-publisher.mjs";
 
 const cleanupPaths: string[] = [];
 const MISSION_ID = "synthetic_live_claim_mission";
@@ -126,6 +142,166 @@ afterEach(async () => {
     recursive: true,
     force: true,
   })));
+});
+
+describe("UI-attested Safari sibling composite", () => {
+  test("owns one synthetic claim through stable PENDING and one confirmed Send", async () => {
+    const item = await createUiAttestedCompositeHarness(
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE,
+    );
+    const result = await runUiAttestedComposite(item);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.CONFIRMED,
+      claim_created: true,
+      zero_effect_claim_cancelled: false,
+      pending_durable: true,
+      attachment_upload_entered: true,
+      send_control_actuation_count: 1,
+      terminal_durable: true,
+      confirmation_proven: true,
+      retry_forbidden_permanently: true,
+      blocker_codes: [],
+    });
+    const names = await readdir(item.claimRoot);
+    expect(names.filter((name) => name.startsWith("claim-"))).toHaveLength(1);
+    expect(names.filter((name) => name.startsWith("pending-"))).toHaveLength(0);
+    expect(names.filter((name) => name.startsWith("terminal-"))).toHaveLength(1);
+    const terminal = JSON.parse(await readFile(
+      join(item.claimRoot, names.find((name) => name.startsWith("terminal-"))!),
+      "utf8",
+    ));
+    expect(terminal).toMatchObject({
+      authority_family: "ui_attested_single_recipient",
+      mission_slot: 1,
+      exact_follow_timestamp_claimed: false,
+      provider_event_id_claimed: false,
+      campaign_membership_claimed: false,
+      attachment_upload_entered: true,
+      send_control_actuation_count: 1,
+      outcome: "confirmed_exact_thread_new_audio_terminal_no_retry",
+    });
+    expect(terminal).not.toHaveProperty("manifest_sha256");
+    expect(terminal).not.toHaveProperty("campaign_interval_sha256");
+  });
+
+  test("a preparation failure leaves the UI claim permanent with no cancellation or Send", async () => {
+    const item = await createUiAttestedCompositeHarness(
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.MIXED_OR_PRIVATE_SURFACE,
+    );
+    const result = await runUiAttestedComposite(item);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.BLOCKED_ZERO_EFFECT,
+      claim_created: true,
+      zero_effect_claim_cancelled: false,
+      pending_durable: false,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      terminal_durable: false,
+      confirmation_proven: false,
+      external_effect_possible: false,
+      retry_forbidden_permanently: true,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.PREPARE_BLOCKED],
+    });
+    const names = await readdir(item.claimRoot);
+    expect(names.filter((name) => name.startsWith("claim-"))).toHaveLength(1);
+    expect(names.some((name) => name.startsWith("pending-"))).toBe(false);
+    expect(names.some((name) => name.startsWith("terminal-"))).toBe(false);
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })?.action_count).toBe(0);
+  });
+
+  test.each([
+    [WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.SENT_MARKER_ONLY, {}],
+    [WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.COMPOSE_RESET_ONLY, {}],
+    [WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.SEND_ACTION_THROWS, {}],
+    [WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE, {
+      synthetic_confirmation_now_ms:
+        UI_ATTESTED_ATTEMPTED_AT_MS + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+      synthetic_terminal_now_ms:
+        UI_ATTESTED_ATTEMPTED_AT_MS + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS + 1,
+    }],
+  ])("terminalizes UI post-PENDING ambiguity with no retry: %s", async (scenario, clocks) => {
+    const item = await createUiAttestedCompositeHarness(scenario as Scenario);
+    const result = await runUiAttestedComposite(item, clocks);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.UNKNOWN,
+      claim_created: true,
+      zero_effect_claim_cancelled: false,
+      pending_durable: true,
+      terminal_durable: true,
+      confirmation_proven: false,
+      retry_forbidden_permanently: true,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.POST_PENDING_UNKNOWN],
+    });
+    expect((await readdir(item.claimRoot)).filter(
+      (name) => name.startsWith("terminal-"),
+    )).toHaveLength(1);
+  });
+
+  test("a lost confirmed return is permanently deduped with zero additional Send", async () => {
+    const item = await createUiAttestedCompositeHarness(
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE,
+    );
+    await runUiAttestedComposite(item);
+    const before = inspectSyntheticSafariDriverForTest({ driver: item.driver });
+    await refreshUiAttestedCompositeOperation(item, UI_ATTESTED_NOW_MS + 3_000);
+    const replay = await runUiAttestedComposite(item, {
+      synthetic_claim_now_ms: UI_ATTESTED_NOW_MS + 3_100,
+    });
+    expect(replay.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.BLOCKED_ZERO_EFFECT,
+      claim_created: false,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      external_effect_possible: false,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED],
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual(before);
+  });
+
+  test("keeps UI and sealed receipts, capabilities, and public validators family-exact", async () => {
+    const uiItem = await createUiAttestedCompositeHarness(
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE,
+    );
+    const ui = await runUiAttestedComposite(uiItem);
+    expect(validateWelcomeAudioSafariLiveCompositeReceipt(ui.redacted_receipt).ok).toBe(false);
+    const sealedItem = await createCompositeHarness(
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE,
+    );
+    const sealed = await runComposite(sealedItem);
+    expect(validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt(
+      sealed.redacted_receipt,
+    ).ok).toBe(false);
+  });
+
+  test("the UI live wrapper rejects caller driver, path, clocks, callbacks, and outcomes", async () => {
+    const empty = await runWelcomeAudioSafariUiAttestedLiveCompositeOnce({});
+    expect(validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt(empty.redacted_receipt))
+      .toEqual({ ok: true, reason: null });
+    expect(empty.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.BLOCKED_ZERO_EFFECT,
+      claim_created: false,
+      external_effect_possible: false,
+      blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.CLAIM_BLOCKED],
+    });
+    for (const input of [
+      { driver: {} },
+      { approved_audio_asset_path: "/tmp/forbidden" },
+      { now_ms: UI_ATTESTED_NOW_MS },
+      { callback: () => true },
+      { outcome: "confirmed" },
+    ]) {
+      const result = await runWelcomeAudioSafariUiAttestedLiveCompositeOnce(input);
+      expect(result.redacted_receipt).toMatchObject({
+        decision: WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_DECISION.BLOCKED_ZERO_EFFECT,
+        claim_created: false,
+        external_effect_possible: false,
+        blocker_codes: [WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_BLOCKER.INPUT_INVALID],
+      });
+      expect(validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt(
+        result.redacted_receipt,
+      )).toEqual({ ok: true, reason: null });
+    }
+  });
 });
 
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
@@ -840,6 +1016,413 @@ const runComposite = async (
   expect(validateWelcomeAudioSafariLiveCompositeReceipt(result.redacted_receipt))
     .toEqual({ ok: true, reason: null });
   return result;
+};
+
+const UI_ATTESTED_NOW_MS = Date.parse("2026-07-16T15:00:00.000Z");
+const UI_ATTESTED_PENDING_AT_MS = UI_ATTESTED_NOW_MS + 1_000;
+const UI_ATTESTED_ENTRY_AT_MS = UI_ATTESTED_NOW_MS + 1_100;
+const UI_ATTESTED_PREUPLOAD_AT_MS = UI_ATTESTED_NOW_MS + 1_200;
+const UI_ATTESTED_ATTEMPTED_AT_MS = UI_ATTESTED_NOW_MS + 1_500;
+const UI_ATTESTED_CONFIRMATION_AT_MS = UI_ATTESTED_NOW_MS + 2_000;
+const UI_PRIVATE_TARGET = "Synthetic.UiAttested+Exact_é";
+const UI_PRIVATE_THREAD = "synthetic-thread-reference/UiAttested+Exact";
+const UI_PRIVATE_OWNER = "synthetic-owner-reference/UiAttested+Exact";
+
+const uiAttestedSourceInput = () => ({
+  schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
+  source_class: WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  mission_id: "synthetic_ui_attested_host_source_mission_001",
+  notification_row: {
+    row_ordinal: 1,
+    exact_target_utf8: UI_PRIVATE_TARGET,
+    notification_evidence: "explicit_recent_follower_notification_row",
+    follower_signal: "started_following_owner",
+    time_bucket_utf8: "synthetic visible bucket 2 d",
+    time_bucket_evidence: "explicit_visible_relative_time_label",
+    attested_at: "2026-07-16T14:59:00.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  profile: {
+    exact_target_utf8: UI_PRIVATE_TARGET,
+    notification_to_profile_binding: "exact",
+    profile_identity_evidence: "exact_private_visual_profile_identity",
+    follows_owner: "confirmed",
+    follows_owner_evidence: "explicit_visible_follows_owner_signal",
+    attested_at: "2026-07-16T14:59:10.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  thread: {
+    bound_thread_reference_utf8: UI_PRIVATE_THREAD,
+    profile_to_thread_binding: "exact",
+    thread_binding_evidence: "exact_bound_thread_observed",
+    attested_at: "2026-07-16T14:59:20.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  owner: {
+    owner_account_reference_utf8: UI_PRIVATE_OWNER,
+    owner_binding_evidence: "exact_owner_account_observed",
+    attested_at: "2026-07-16T14:59:30.000Z",
+    inference_status: "explicit_not_inferred",
+  },
+  dedupe: {
+    status: "clear_no_prior_welcome_or_attempt",
+    already_welcomed_status: "not_found",
+    send_history_status: "no_prior_attempt",
+    exact_target_utf8: UI_PRIVATE_TARGET,
+    bound_thread_reference_utf8: UI_PRIVATE_THREAD,
+    owner_account_reference_utf8: UI_PRIVATE_OWNER,
+    checked_at: "2026-07-16T14:59:40.000Z",
+    dedupe_evidence: "exact_bound_thread_history_observed",
+    inference_status: "explicit_not_inferred",
+  },
+  exact_follow_timestamp_claimed: false,
+  provider_event_id_claimed: false,
+  campaign_membership_claimed: false,
+});
+
+const uiAttestedOperationFixture = ({
+  projection,
+  authority,
+  audioSha256,
+}: {
+  projection: Record<string, any>;
+  authority: Record<string, any>;
+  audioSha256: string;
+}) => {
+  const sealedFixture = manifestFixture();
+  const base = operationFixture({ fixture: sealedFixture, audioSha256 });
+  const replacements = new Map<any, any>([
+    [MISSION_ID, authority.mission_id],
+    [CONTRACT_VERSION, authority.contract_version],
+    [OPERATION_ID, authority.operation_id],
+    [APPROVAL_PACKET_ID, authority.approval_packet_id],
+    [CENTRAL_HEAD, authority.central_repo_head],
+    [SOURCE_SHA, authority.source_evidence_anchor_sha256],
+    [PROFILE_SHA, authority.profile_anchor_sha256],
+    [sealedFixture.manifest.ordered_records[0].identity_anchor_sha256,
+      authority.candidate_anchor_sha256],
+    [THREAD_SHA, authority.thread_anchor_sha256],
+    [OWNER_SHA, authority.owner_anchor_sha256],
+    [ASSET_ID, authority.approved_audio_asset_id],
+  ]);
+  const replace = (value: any): any => {
+    if (replacements.has(value)) return replacements.get(value);
+    if (Array.isArray(value)) return value.map(replace);
+    if (value && typeof value === "object") {
+      return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, replace(nested)]));
+    }
+    return value;
+  };
+  const operation = replace(base);
+  const { source_event_anchor_sha256: _operationSource, ...operationSection } =
+    operation.operation;
+  const {
+    source_event_anchor_sha256: _approvalSource,
+    source_recency_max_age_ms: _approvalAge,
+    ...approvalSection
+  } = operation.approval;
+  const { source_event_anchor_sha256: _bindingSource, ...bindingSection } =
+    operation.binding;
+  operation.adapter_version = WELCOME_AUDIO_UI_ATTESTED_ADAPTER_VERSION;
+  operation.contract_version = WELCOME_AUDIO_UI_ATTESTED_OPERATION_GUARD_CONTRACT_VERSION;
+  operation.operation = {
+    ...operationSection,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+  };
+  operation.approval = {
+    ...approvalSection,
+    checked_at: "2026-07-16T14:59:42.000Z",
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+    source_evidence_freshness_max_age_ms: 5 * 60 * 1000,
+  };
+  operation.execution_surface.observed_at = "2026-07-16T14:59:43.000Z";
+  operation.follower_evidence = {
+    source_recency: WELCOME_AUDIO_SOURCE_RECENCY.UI_ATTESTED_CAPTURE_FRESH,
+    evidence_observed_at: projection.dedupe.checked_at,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    source_evidence_freshness_max_age_ms: 5 * 60 * 1000,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  operation.binding = {
+    ...bindingSection,
+    source_binding: WELCOME_AUDIO_SOURCE_BINDING.EXACT_UI_ATTESTED,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+    observed_at: "2026-07-16T14:59:44.000Z",
+  };
+  operation.eligibility.business_eligibility =
+    WELCOME_AUDIO_BUSINESS_ELIGIBILITY.UI_ATTESTED_FOLLOWER;
+  operation.eligibility.observed_at = "2026-07-16T14:59:44.000Z";
+  operation.asset.asset_preview_binding = WELCOME_AUDIO_ASSET_PREVIEW_BINDING.PREUPLOAD_APPROVED_FILE;
+  operation.asset.preview_status = "approved_file_validated_before_upload";
+  operation.asset.preview_observed_at = "2026-07-16T14:59:44.000Z";
+  operation.context.checked_at = "2026-07-16T14:59:43.000Z";
+  operation.dedupe.checked_at = projection.dedupe.checked_at;
+  operation.source_provenance = {
+    source_class: WELCOME_AUDIO_SOURCE_CLASS.UI_ATTESTED_FOLLOWER_SOURCE_V1,
+    source_evidence_schema_version: projection.schema_version,
+    source_evidence_sha256: projection.source_evidence_sha256,
+    source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    source_record_ordinal: projection.notification_row.row_ordinal,
+    source_record_cap: 8,
+    time_bucket_attestation: "explicit_visible_not_exact_timestamp",
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+  };
+  operation.canonical_operation_sha256 = "0".repeat(64);
+  for (const section of [
+    "operation",
+    "approval",
+    "context",
+    "effect_claim",
+    "execution",
+    "confirmation",
+  ]) operation[section].canonical_operation_sha256 = "0".repeat(64);
+  return bindCanonicalDigest(operation);
+};
+
+const createUiAttestedCompositeHarness = async (scenario: Scenario) => {
+  const asset = await createSyntheticAsset();
+  const authorityRoot = await realpath(await mkdtemp(join(
+    tmpdir(),
+    uiAttestedPublisher.WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_SYNTHETIC_PREFIX,
+  )));
+  cleanupPaths.push(authorityRoot);
+  await chmod(authorityRoot, 0o700);
+  const source = uiAttestedSourceInput();
+  const materialized = uiAttestedMaterializer.materializeWelcomeAudioUiAttestedCanaryPacketDraft({
+    ui_attested_input: source,
+    packet_request: {
+      schema_version: uiAttestedMaterializer.WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION,
+      status: "approved_for_no_live_materialization_only",
+      mission_id: "synthetic_ui_attested_host_mission_001",
+      contract_version: "synthetic_ui_attested_host_contract_v1",
+      central_repo_head: "7".repeat(40),
+      authorization_id: "synthetic_ui_attested_host_authorization_001",
+      expected_source_mission_id: source.mission_id,
+      candidate_cap: 1,
+      future_attempt_cap: 1,
+      approved_audio_asset_id: "synthetic_ui_attested_host_audio_001",
+      approved_audio_sha256: asset.audioSha256,
+      approved_audio_binding_evidence: "exact_approved_audio_binding_revalidated",
+      execution_approval_authorized: false,
+      external_effect_authorized: false,
+    },
+    now_ms: UI_ATTESTED_NOW_MS,
+  });
+  expect(materialized.private_draft).not.toBeNull();
+  const draft = materialized.private_draft!;
+  const projection = draft.source_projection;
+  const authorization: Record<string, any> = {
+    schema_version: "crm_core_instagram_welcome_audio_ui_attested_live_authorization_input_v1",
+    status: "approved_for_exact_ui_attested_draft_and_audio",
+    mission_contract_sha256: "8".repeat(64),
+    active_next_action_id: "synthetic_ui_attested_host_next_action_001",
+    active_next_action_sha256: "9".repeat(64),
+    approval_packet_id: "synthetic_ui_attested_host_approval_001",
+    approved_audio_asset_path: asset.assetPath,
+    approved_at: "2026-07-16T14:59:45.000Z",
+    expires_at: "2026-07-16T15:04:45.000Z",
+    candidate_cap: 1,
+    claim_cap: 1,
+    pending_cap: 1,
+    upload_cap: 1,
+    send_cap: 1,
+    action_time_confirmation_required: true,
+    execution_browser: "safari",
+    text_fallback: "forbidden",
+    campaign_effect_allowed: false,
+    mailerlite_effect_allowed: false,
+    expected_draft_sha256:
+      uiAttestedPublisher.computeWelcomeAudioUiAttestedLiveAuthorityDraftSha256(draft),
+    expected_projection_sha256:
+      uiAttestedPublisher.computeWelcomeAudioUiAttestedLiveAuthorityProjectionSha256(projection),
+    expected_operation_id: draft.operation_id,
+    expected_canonical_operation_sha256: "a".repeat(64),
+    expected_authorization_id: draft.authorization_id,
+    expected_source_evidence_sha256: projection.source_evidence_sha256,
+    expected_source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    expected_profile_anchor_sha256: projection.anchors.profile_anchor_sha256,
+    expected_candidate_anchor_sha256: projection.anchors.candidate_anchor_sha256,
+    expected_thread_anchor_sha256: projection.anchors.thread_anchor_sha256,
+    expected_owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+    expected_dedupe_anchor_sha256: projection.anchors.dedupe_anchor_sha256,
+    expected_audio_sha256: draft.approved_audio_sha256,
+  };
+  const provisionalAuthority = {
+    mission_id: draft.mission_id,
+    contract_version: draft.contract_version,
+    operation_id: draft.operation_id,
+    approval_packet_id: authorization.approval_packet_id,
+    central_repo_head: draft.central_repo_head,
+    source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    profile_anchor_sha256: projection.anchors.profile_anchor_sha256,
+    candidate_anchor_sha256: projection.anchors.candidate_anchor_sha256,
+    thread_anchor_sha256: projection.anchors.thread_anchor_sha256,
+    owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+    dedupe_anchor_sha256: projection.anchors.dedupe_anchor_sha256,
+    approved_audio_asset_id: draft.approved_audio_asset_id,
+  };
+  const operationSnapshot = uiAttestedOperationFixture({
+    projection,
+    authority: provisionalAuthority,
+    audioSha256: asset.audioSha256,
+  });
+  authorization.expected_canonical_operation_sha256 = operationSnapshot.canonical_operation_sha256;
+  const published = await uiAttestedPublisher.publishSyntheticWelcomeAudioUiAttestedLiveAuthorityForTest({
+    authority_root: authorityRoot,
+    private_draft: draft,
+    private_authorization: authorization,
+    now_ms: UI_ATTESTED_NOW_MS,
+  });
+  expect(published.private_authority_envelope).not.toBeNull();
+  const authority = published.private_authority_envelope!.authority;
+  const opened = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+    authority_root: authorityRoot,
+    expected_central_repo_head: draft.central_repo_head,
+    expected_mission_contract_sha256: authorization.mission_contract_sha256,
+    expected_active_next_action_id: authorization.active_next_action_id,
+    expected_active_next_action_sha256: authorization.active_next_action_sha256,
+    now_ms: UI_ATTESTED_NOW_MS,
+  });
+  const operation = await validateWelcomeAudioUiAttestedLiveOperationContext({
+    operation_snapshot: operationSnapshot,
+    private_authority_capability: opened.private_authority_capability,
+    private_source_capability: opened.private_source_capability,
+    private_audio_asset_capability: opened.private_audio_asset_capability,
+    expected_canonical_operation_sha256: operationSnapshot.canonical_operation_sha256,
+    now_ms: UI_ATTESTED_NOW_MS,
+  });
+  expect(operation.private_capability).not.toBeNull();
+  const claimRoot = await realpath(await mkdtemp(join(
+    tmpdir(),
+    "crm-core-welcome-audio-live-claim-store-test-",
+  )));
+  cleanupPaths.push(claimRoot);
+  await chmod(claimRoot, 0o700);
+  const storeCapability = await createSyntheticWelcomeAudioLiveClaimStoreCapability({
+    store_root: claimRoot,
+  });
+  return {
+    asset,
+    authorityRoot,
+    claimRoot,
+    storeCapability,
+    driver: createSyntheticSafariDriverForTest({ scenario }),
+    draft,
+    projection,
+    authorization,
+    authority,
+    opened,
+    operation,
+    operationSnapshot,
+  };
+};
+
+const uiAttestedCompositeCommonInput = (
+  item: Awaited<ReturnType<typeof createUiAttestedCompositeHarness>>,
+) => ({
+  private_operation_context_capability: item.operation.private_capability,
+  private_authority_capability: item.opened.private_authority_capability,
+  private_source_capability: item.opened.private_source_capability,
+  private_audio_asset_capability: item.opened.private_audio_asset_capability,
+  private_target_binding_capability: item.operation.private_target_binding_capability,
+  exact_target: item.projection.notification_row.exact_target_utf8,
+  exact_bound_thread_reference: item.projection.thread.bound_thread_reference_utf8,
+  exact_owner_account_reference: item.projection.owner.owner_account_reference_utf8,
+  mission_id: item.authority.mission_id,
+  contract_version: item.authority.contract_version,
+  expected_mission_contract_sha256: item.authority.mission_contract_sha256,
+  expected_active_next_action_id: item.authority.active_next_action_id,
+  expected_active_next_action_sha256: item.authority.active_next_action_sha256,
+  expected_approval_packet_id: item.authority.approval_packet_id,
+  expected_authorization_id: item.authority.authorization_id,
+  expected_operation_id: item.authority.operation_id,
+  expected_central_repo_head: item.authority.central_repo_head,
+  expected_canonical_operation_sha256: item.operationSnapshot.canonical_operation_sha256,
+  expected_draft_sha256: item.authority.draft_sha256,
+  expected_projection_sha256: item.authority.projection_sha256,
+  expected_source_mission_id: item.authority.source_mission_id,
+  expected_source_evidence_schema_version: item.projection.schema_version,
+  expected_source_evidence_sha256: item.authority.source_evidence_sha256,
+  expected_source_record_ordinal: item.projection.notification_row.row_ordinal,
+  expected_source_record_cap: 8,
+  evidence_observed_at: item.projection.dedupe.checked_at,
+  expected_source_evidence_anchor_sha256: item.authority.source_evidence_anchor_sha256,
+  expected_profile_anchor_sha256: item.authority.profile_anchor_sha256,
+  identity_anchor_sha256: item.authority.candidate_anchor_sha256,
+  expected_thread_anchor_sha256: item.authority.thread_anchor_sha256,
+  expected_owner_anchor_sha256: item.authority.owner_anchor_sha256,
+  expected_dedupe_anchor_sha256: item.authority.dedupe_anchor_sha256,
+  expected_approved_audio_asset_id: item.authority.approved_audio_asset_id,
+  expected_audio_sha256: item.authority.approved_audio_asset_sha256,
+  candidate_cap: 1,
+  claim_cap: 1,
+  pending_cap: 1,
+  upload_cap: 1,
+  send_cap: 1,
+  retry_cap: 0,
+  exact_follow_timestamp_claimed: false,
+  provider_event_id_claimed: false,
+  campaign_membership_claimed: false,
+});
+
+const runUiAttestedComposite = async (
+  item: Awaited<ReturnType<typeof createUiAttestedCompositeHarness>>,
+  overrides: Record<string, unknown> = {},
+) => {
+  const result = await runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest({
+    ...uiAttestedCompositeCommonInput(item),
+    private_store_capability: item.storeCapability,
+    driver: item.driver,
+    approved_audio_asset_path: item.asset.assetPath,
+    synthetic_store_root: item.claimRoot,
+    synthetic_claim_now_ms: UI_ATTESTED_NOW_MS + 100,
+    synthetic_prepare_now_ms: UI_ATTESTED_NOW_MS + 200,
+    synthetic_pending_now_ms: UI_ATTESTED_PENDING_AT_MS,
+    synthetic_entry_now_ms: UI_ATTESTED_ENTRY_AT_MS,
+    synthetic_preupload_now_ms: UI_ATTESTED_PREUPLOAD_AT_MS,
+    synthetic_attempted_at_ms: UI_ATTESTED_ATTEMPTED_AT_MS,
+    synthetic_confirmation_now_ms: UI_ATTESTED_CONFIRMATION_AT_MS,
+    synthetic_terminal_now_ms: UI_ATTESTED_CONFIRMATION_AT_MS + 100,
+    synthetic_fault_scenario:
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.NONE,
+    ...overrides,
+  });
+  expect(validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt(result.redacted_receipt))
+    .toEqual({ ok: true, reason: null });
+  return result;
+};
+
+const refreshUiAttestedCompositeOperation = async (
+  item: Awaited<ReturnType<typeof createUiAttestedCompositeHarness>>,
+  nowMs: number,
+) => {
+  const opened = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+    authority_root: item.authorityRoot,
+    expected_central_repo_head: item.draft.central_repo_head,
+    expected_mission_contract_sha256: item.authorization.mission_contract_sha256,
+    expected_active_next_action_id: item.authorization.active_next_action_id,
+    expected_active_next_action_sha256: item.authorization.active_next_action_sha256,
+    now_ms: nowMs,
+  });
+  const operation = await validateWelcomeAudioUiAttestedLiveOperationContext({
+    operation_snapshot: item.operationSnapshot,
+    private_authority_capability: opened.private_authority_capability,
+    private_source_capability: opened.private_source_capability,
+    private_audio_asset_capability: opened.private_audio_asset_capability,
+    expected_canonical_operation_sha256: item.operationSnapshot.canonical_operation_sha256,
+    now_ms: nowMs,
+  });
+  expect(operation.private_capability).not.toBeNull();
+  item.opened = opened;
+  item.operation = operation;
 };
 
 const claimObservation = async (
@@ -2769,6 +3352,11 @@ describe("driver and source confinement", () => {
     );
     expect(namespace.runWelcomeAudioSafariLiveCompositeOnce).toBeTypeOf("function");
     expect(namespace.runWelcomeAudioSafariSyntheticCompositeOnceForTest).toBeTypeOf("function");
+    expect(namespace.runWelcomeAudioSafariUiAttestedLiveCompositeOnce).toBeTypeOf("function");
+    expect(namespace.runWelcomeAudioSafariUiAttestedSyntheticCompositeOnceForTest)
+      .toBeTypeOf("function");
+    expect(namespace.validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt)
+      .toBeTypeOf("function");
     for (const forbidden of [
       "prepareWelcomeAudioSafariLiveTarget",
       "executeWelcomeAudioSafariLivePostPending",
@@ -2781,7 +3369,10 @@ describe("driver and source confinement", () => {
       /^(?:run|prepare|execute|consume|create)/u.test(name)
       && !name.endsWith("ForTest")
     ));
-    expect(unsuffixedEffectful).toEqual(["runWelcomeAudioSafariLiveCompositeOnce"]);
+    expect(unsuffixedEffectful).toEqual([
+      "runWelcomeAudioSafariLiveCompositeOnce",
+      "runWelcomeAudioSafariUiAttestedLiveCompositeOnce",
+    ]);
     const unsuffixedSyntheticScenarioOrFaultControls = Object.keys(namespace).filter((name) => (
       /synthetic/iu.test(name)
       && /(?:scenario|fault)/iu.test(name)

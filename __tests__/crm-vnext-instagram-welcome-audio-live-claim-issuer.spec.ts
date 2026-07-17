@@ -45,6 +45,7 @@ import {
   WELCOME_AUDIO_CAMPAIGN_INTERVAL_SCHEMA_VERSION,
   WELCOME_AUDIO_EXACT_IDENTITY_ANCHOR_SCHEMA_VERSION,
   WELCOME_AUDIO_LIVE_AUTHORITY_MODE,
+  WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE,
   WELCOME_AUDIO_LIVE_AUTHORITY_SCHEMA_VERSION,
   WELCOME_AUDIO_SEALED_MANIFEST_SCHEMA_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_MODE,
@@ -52,9 +53,15 @@ import {
   computeWelcomeAudioExactIdentityAnchorSha256,
   computeWelcomeAudioSealedManifestSha256,
   createSyntheticWelcomeAudioLiveAuthorityCapability,
+  createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability,
   validateWelcomeAudioUiAttestedSourcePreflight,
   validateWelcomeAudioLiveOperationContext,
+  validateWelcomeAudioUiAttestedLiveOperationContext,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
+import * as uiAttestedMaterializer from
+  "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
+import * as uiAttestedPublisher from
+  "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-authority-publisher.mjs";
 import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
@@ -77,12 +84,17 @@ import {
   claimNextWelcomeAudioLiveManifestInspection,
   claimNextWelcomeAudioUiAttestedInspectionSlot,
   consumeWelcomeAudioLiveHostPendingCapabilityOnce,
+  consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce,
   createSyntheticWelcomeAudioLiveClaimStoreCapability,
   configureWelcomeAudioLiveCancellationCleanupScenarioForTest,
   configureWelcomeAudioLiveMutexScenarioForTest,
   enterWelcomeAudioLiveAttemptBoundary,
+  enterWelcomeAudioUiAttestedLiveAttemptBoundary,
+  finalizeWelcomeAudioLiveAttempt,
   finalizeWelcomeAudioSyntheticAttemptAsUnknownForTest as finalizeWelcomeAudioLiveAttemptAsUnknown,
+  finalizeWelcomeAudioUiAttestedLiveAttempt,
   issueWelcomeAudioLiveClaim,
+  issueWelcomeAudioUiAttestedLiveClaim,
   recoverWelcomeAudioLivePendingAttemptAfterOwnerExit,
   recoverWelcomeAudioLivePendingAttemptAfterOwnerExitWithSyntheticPendingReplacementForTest,
   recordWelcomeAudioLiveInspectionResult,
@@ -92,6 +104,7 @@ import {
   validateWelcomeAudioUiAttestedInspectionReceipt,
   validateWelcomeAudioLiveAttemptReceipt,
   validateWelcomeAudioLiveClaimReceipt,
+  validateWelcomeAudioUiAttestedLiveClaimReceipt,
   validateWelcomeAudioLiveStateReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-claim-issuer.mjs";
 
@@ -109,6 +122,567 @@ afterEach(async () => {
     recursive: true,
     force: true,
   })));
+});
+
+const UI_LIVE_CLAIM_NOW_MS = NOW_MS + 20_000;
+
+const setupUiAttestedLiveClaim = async ({
+  baseExactTargets,
+  baseCount = 2,
+  missionId = "synthetic_ui_attested_live_claim_family",
+  sourceSuffix = "live-claim-1",
+}: {
+  baseExactTargets?: string[];
+  baseCount?: number;
+  missionId?: string;
+  sourceSuffix?: string;
+} = {}) => {
+  const fixture = await setup({
+    count: baseCount,
+    missionId,
+    exactTargets: baseExactTargets,
+  });
+  const authorityRoot = await realpath(await mkdtemp(join(
+    tmpdir(),
+    uiAttestedPublisher.WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_SYNTHETIC_PREFIX,
+  )));
+  cleanupPaths.push(authorityRoot);
+  await chmod(authorityRoot, 0o700);
+  const sourceInput = prepareUiAttestedSourceInput(
+    missionId,
+    1,
+    sourceSuffix,
+    UI_LIVE_CLAIM_NOW_MS,
+  );
+  const materialized = uiAttestedMaterializer
+    .materializeWelcomeAudioUiAttestedCanaryPacketDraft({
+      ui_attested_input: sourceInput,
+      packet_request: {
+        schema_version:
+          uiAttestedMaterializer.WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION,
+        status: "approved_for_no_live_materialization_only",
+        mission_id: missionId,
+        contract_version: CONTRACT_VERSION,
+        central_repo_head: CENTRAL_HEAD,
+        authorization_id: "synthetic_ui_live_claim_authorization_001",
+        expected_source_mission_id: sourceInput.mission_id,
+        candidate_cap: 1,
+        future_attempt_cap: 1,
+        approved_audio_asset_id: "synthetic_welcome_audio_asset_001",
+        approved_audio_sha256: fixture.audioSha256,
+        approved_audio_binding_evidence: "exact_approved_audio_binding_revalidated",
+        execution_approval_authorized: false,
+        external_effect_authorized: false,
+      },
+      now_ms: UI_LIVE_CLAIM_NOW_MS,
+    });
+  if (!materialized.private_draft) throw new Error("ui live claim draft failed");
+  const draft = materialized.private_draft;
+  const projection = draft.source_projection;
+  const authorization: Record<string, any> = {
+    schema_version: "crm_core_instagram_welcome_audio_ui_attested_live_authorization_input_v1",
+    status: "approved_for_exact_ui_attested_draft_and_audio",
+    mission_contract_sha256: MISSION_CONTRACT_SHA,
+    active_next_action_id: "synthetic_ui_live_claim_next_action_001",
+    active_next_action_sha256: "8".repeat(64),
+    approval_packet_id: "synthetic_ui_live_claim_approval_packet_001",
+    approved_audio_asset_path: fixture.assetPath,
+    approved_at: new Date(UI_LIVE_CLAIM_NOW_MS - 15_000).toISOString(),
+    expires_at: new Date(UI_LIVE_CLAIM_NOW_MS + 285_000).toISOString(),
+    candidate_cap: 1,
+    claim_cap: 1,
+    pending_cap: 1,
+    upload_cap: 1,
+    send_cap: 1,
+    action_time_confirmation_required: true,
+    execution_browser: "safari",
+    text_fallback: "forbidden",
+    campaign_effect_allowed: false,
+    mailerlite_effect_allowed: false,
+    expected_draft_sha256:
+      uiAttestedPublisher.computeWelcomeAudioUiAttestedLiveAuthorityDraftSha256(draft),
+    expected_projection_sha256:
+      uiAttestedPublisher.computeWelcomeAudioUiAttestedLiveAuthorityProjectionSha256(projection),
+    expected_operation_id: draft.operation_id,
+    expected_canonical_operation_sha256: "0".repeat(64),
+    expected_authorization_id: draft.authorization_id,
+    expected_source_evidence_sha256: projection.source_evidence_sha256,
+    expected_source_evidence_anchor_sha256: projection.anchors.source_evidence_anchor_sha256,
+    expected_profile_anchor_sha256: projection.anchors.profile_anchor_sha256,
+    expected_candidate_anchor_sha256: projection.anchors.candidate_anchor_sha256,
+    expected_thread_anchor_sha256: projection.anchors.thread_anchor_sha256,
+    expected_owner_anchor_sha256: projection.anchors.owner_anchor_sha256,
+    expected_dedupe_anchor_sha256: projection.anchors.dedupe_anchor_sha256,
+    expected_audio_sha256: draft.approved_audio_sha256,
+  };
+  const operation = uiAttestedOperationSnapshot({
+    fixture,
+    projection,
+    ordinal: 1,
+    operationId: draft.operation_id,
+    approvalPacketId: authorization.approval_packet_id,
+  });
+  authorization.expected_canonical_operation_sha256 = operation.canonical_operation_sha256;
+  const published = await uiAttestedPublisher
+    .publishSyntheticWelcomeAudioUiAttestedLiveAuthorityForTest({
+      authority_root: authorityRoot,
+      private_draft: draft,
+      private_authorization: authorization,
+      now_ms: UI_LIVE_CLAIM_NOW_MS,
+    });
+  if (!published.private_authority_envelope) throw new Error("ui live authority publish failed");
+  const opened = await createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability({
+    authority_root: authorityRoot,
+    expected_central_repo_head: draft.central_repo_head,
+    expected_mission_contract_sha256: authorization.mission_contract_sha256,
+    expected_active_next_action_id: authorization.active_next_action_id,
+    expected_active_next_action_sha256: authorization.active_next_action_sha256,
+    now_ms: UI_LIVE_CLAIM_NOW_MS,
+  });
+  if (!opened.private_authority_capability) throw new Error("ui live authority open failed");
+  const context = await validateWelcomeAudioUiAttestedLiveOperationContext({
+    operation_snapshot: operation,
+    private_authority_capability: opened.private_authority_capability,
+    private_source_capability: opened.private_source_capability,
+    private_audio_asset_capability: opened.private_audio_asset_capability,
+    expected_canonical_operation_sha256: operation.canonical_operation_sha256,
+    now_ms: UI_LIVE_CLAIM_NOW_MS + 1,
+  });
+  if (!context.private_capability) throw new Error("ui live operation context failed");
+  const authority = published.private_authority_envelope.authority;
+  const issueInput = {
+    private_store_capability: fixture.storeCapability,
+    private_operation_context_capability: context.private_capability,
+    private_authority_capability: opened.private_authority_capability,
+    private_audio_asset_capability: opened.private_audio_asset_capability,
+    required_authority_mode:
+      WELCOME_AUDIO_UI_ATTESTED_LIVE_AUTHORITY_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+    mission_id: authority.mission_id,
+    contract_version: authority.contract_version,
+    expected_mission_contract_sha256: authority.mission_contract_sha256,
+    expected_active_next_action_id: authority.active_next_action_id,
+    expected_active_next_action_sha256: authority.active_next_action_sha256,
+    expected_approval_packet_id: authority.approval_packet_id,
+    expected_authorization_id: authority.authorization_id,
+    expected_operation_id: authority.operation_id,
+    expected_central_repo_head: authority.central_repo_head,
+    expected_canonical_operation_sha256: authority.canonical_operation_sha256,
+    expected_draft_sha256: authority.draft_sha256,
+    expected_projection_sha256: authority.projection_sha256,
+    expected_source_mission_id: authority.source_mission_id,
+    expected_source_evidence_schema_version: projection.schema_version,
+    expected_source_evidence_sha256: authority.source_evidence_sha256,
+    expected_source_record_ordinal: projection.notification_row.row_ordinal,
+    expected_source_record_cap: 8,
+    evidence_observed_at: projection.dedupe.checked_at,
+    expected_source_evidence_anchor_sha256: authority.source_evidence_anchor_sha256,
+    expected_profile_anchor_sha256: authority.profile_anchor_sha256,
+    identity_anchor_sha256: authority.candidate_anchor_sha256,
+    expected_thread_anchor_sha256: authority.thread_anchor_sha256,
+    expected_owner_anchor_sha256: authority.owner_anchor_sha256,
+    expected_dedupe_anchor_sha256: authority.dedupe_anchor_sha256,
+    expected_approved_audio_asset_id: authority.approved_audio_asset_id,
+    approved_audio_asset_path: authority.approved_audio_asset_path,
+    expected_audio_sha256: authority.approved_audio_asset_sha256,
+    candidate_cap: 1,
+    claim_cap: 1,
+    pending_cap: 1,
+    upload_cap: 1,
+    send_cap: 1,
+    retry_cap: 0,
+    exact_follow_timestamp_claimed: false,
+    provider_event_id_claimed: false,
+    campaign_membership_claimed: false,
+    now_ms: UI_LIVE_CLAIM_NOW_MS + 2,
+  };
+  const boundaryInput = (privateClaimCapability: unknown) => ({
+    private_claim_capability: privateClaimCapability,
+    required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+    private_audio_asset_capability: opened.private_audio_asset_capability,
+    approved_audio_asset_path: authority.approved_audio_asset_path,
+    mission_id: authority.mission_id,
+    contract_version: authority.contract_version,
+    mission_contract_sha256: authority.mission_contract_sha256,
+    approval_packet_id: authority.approval_packet_id,
+    authorization_id: authority.authorization_id,
+    operation_id: authority.operation_id,
+    central_repo_head: authority.central_repo_head,
+    canonical_operation_sha256: authority.canonical_operation_sha256,
+    identity_anchor_sha256: authority.candidate_anchor_sha256,
+    thread_anchor_sha256: authority.thread_anchor_sha256,
+    owner_anchor_sha256: authority.owner_anchor_sha256,
+    dedupe_anchor_sha256: authority.dedupe_anchor_sha256,
+    source_evidence_sha256: authority.source_evidence_sha256,
+    audio_asset_sha256: authority.approved_audio_asset_sha256,
+    source_record_ordinal: projection.notification_row.row_ordinal,
+    entered_at_ms: UI_LIVE_CLAIM_NOW_MS + 3,
+  });
+  return { fixture, authority, issueInput, boundaryInput };
+};
+
+describe("UI-attested one-recipient permanent claim family", () => {
+  test("publishes one permanent claim, one PENDING, and consumes host evidence once", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    expect(claimed.private_claim_capability).not.toBeNull();
+    expect(claimed.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CREATED,
+      permanent_no_retry_claim_present: true,
+      mission_claim_count: 1,
+      mission_claim_cap: 1,
+      ui_authority_bound: true,
+      nonclaims_preserved: true,
+      send_allowed: false,
+      external_effect_invoked: false,
+    });
+    expect(validateWelcomeAudioUiAttestedLiveClaimReceipt(claimed.redacted_receipt))
+      .toEqual({ ok: true, reason: null });
+    const armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    expect(armed.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.ARMED);
+    const evidence = await independentlyReadPendingEvidence(prepared.fixture);
+    expect(Object.keys(evidence.pending_snapshot)).not.toContain("manifest_sha256");
+    expect(Object.keys(evidence.pending_snapshot)).not.toContain("campaign_interval_sha256");
+    const hostBinding = {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      independently_read_pending_evidence: evidence,
+      expected_mission_id: prepared.authority.mission_id,
+      expected_operation_id: prepared.authority.operation_id,
+      expected_identity_anchor_sha256: prepared.authority.candidate_anchor_sha256,
+      expected_thread_anchor_sha256: prepared.authority.thread_anchor_sha256,
+      expected_audio_sha256: prepared.authority.approved_audio_asset_sha256,
+    };
+    expect(await consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce(hostBinding))
+      .toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.VALID);
+    expect(await consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce(hostBinding))
+      .toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+  });
+
+  test("dedupes concurrent/replayed UI claims and preserves the one-family cap", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const [left, right] = await Promise.all([
+      issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput),
+      issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput),
+    ]);
+    expect([left, right].filter((result) => result.private_claim_capability).length).toBe(1);
+    expect((await readdir(prepared.fixture.storeRoot)).filter(
+      (name) => /^claim-[a-f0-9]{64}\.json$/u.test(name),
+    )).toHaveLength(1);
+    const replay = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    expect(replay.private_claim_capability).toBeNull();
+    expect([
+      WELCOME_AUDIO_LIVE_CLAIM_DECISION.DUPLICATE,
+      WELCOME_AUDIO_LIVE_CLAIM_DECISION.UNKNOWN_TERMINAL,
+    ]).toContain(replay.redacted_receipt.decision);
+  });
+
+  test("enforces the UI family cap for a different identity without consuming sealed capacity", async () => {
+    const missionId = "synthetic_ui_attested_distinct_identity_cap";
+    const first = await setupUiAttestedLiveClaim({ missionId, sourceSuffix: "cap-identity-1" });
+    const second = await setupUiAttestedLiveClaim({ missionId, sourceSuffix: "cap-identity-2" });
+    expect((await issueWelcomeAudioUiAttestedLiveClaim(first.issueInput))
+      .private_claim_capability).not.toBeNull();
+    const capped = await issueWelcomeAudioUiAttestedLiveClaim({
+      ...second.issueInput,
+      private_store_capability: first.fixture.storeCapability,
+    });
+    expect(capped.private_claim_capability).toBeNull();
+    expect(capped.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CAP_REACHED,
+      mission_claim_count: 1,
+      mission_claim_cap: 1,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_CAP_REACHED],
+    });
+    await inspection(first.fixture, 1);
+    expect((await issue(first.fixture, 1)).private_claim_capability).not.toBeNull();
+  });
+
+  test("keeps cross-family dedupe while leaving sealed issuance available for another identity", async () => {
+    const prepared = await setupUiAttestedLiveClaim({ baseCount: 2 });
+    const uiClaim = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    expect(uiClaim.private_claim_capability).not.toBeNull();
+    const uiArmed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(uiClaim.private_claim_capability),
+    );
+    expect((await finalizeWelcomeAudioUiAttestedLiveAttempt({
+      private_terminal_capability: uiArmed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      private_attempt_evidence_capability: null,
+      private_visual_confirmation_capability: null,
+      synthetic_now_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+    })).redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+    );
+    await inspection(prepared.fixture, 1);
+    const sealed = await issue(prepared.fixture, 1);
+    expect(sealed.private_claim_capability).not.toBeNull();
+
+    const uiFirstSameIdentity = await setupUiAttestedLiveClaim({
+      baseCount: 1,
+      baseExactTargets: ["Synthetic.Ui.Target+live-claim-1"],
+      missionId: "synthetic_cross_family_ui_then_sealed_same_identity",
+    });
+    expect((await issueWelcomeAudioUiAttestedLiveClaim(uiFirstSameIdentity.issueInput))
+      .private_claim_capability).not.toBeNull();
+    await inspection(uiFirstSameIdentity.fixture, 1);
+    const sealedBlocked = await issue(uiFirstSameIdentity.fixture, 1);
+    expect(sealedBlocked.private_claim_capability).toBeNull();
+    expect(sealedBlocked.redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_LIVE_CLAIM_DECISION.DUPLICATE,
+    );
+
+    const sameIdentity = await setupUiAttestedLiveClaim({
+      baseCount: 1,
+      baseExactTargets: ["Synthetic.Ui.Target+live-claim-1"],
+      missionId: "synthetic_cross_family_same_identity",
+    });
+    await inspection(sameIdentity.fixture, 1);
+    const sealedFirst = await issue(sameIdentity.fixture, 1);
+    expect(sealedFirst.private_claim_capability).not.toBeNull();
+    const uiBlocked = await issueWelcomeAudioUiAttestedLiveClaim(sameIdentity.issueInput);
+    expect(uiBlocked.private_claim_capability).toBeNull();
+    expect(uiBlocked.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.DUPLICATE);
+  });
+
+  test("consumes the permanent claim on preparation and rejects PENDING substitution", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    expect(armed.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.ARMED);
+    const replay = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    expect(replay.private_actuation_capability).toBeNull();
+    const evidence = await independentlyReadPendingEvidence(prepared.fixture);
+    await writeFile(evidence.pending_path, `${JSON.stringify({ substituted: true })}\n`, {
+      mode: 0o600,
+    });
+    expect(await consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce({
+      private_host_pending_capability: armed.private_host_pending_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      independently_read_pending_evidence: evidence,
+      expected_mission_id: prepared.authority.mission_id,
+      expected_operation_id: prepared.authority.operation_id,
+      expected_identity_anchor_sha256: prepared.authority.candidate_anchor_sha256,
+      expected_thread_anchor_sha256: prepared.authority.thread_anchor_sha256,
+      expected_audio_sha256: prepared.authority.approved_audio_asset_sha256,
+    })).toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+  });
+
+  test("burns a permanent claim when the boundary timestamp is invalid", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const invalidTimestamp = prepared.boundaryInput(claimed.private_claim_capability);
+    invalidTimestamp.entered_at_ms = Number.NaN;
+    const blocked = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(invalidTimestamp);
+    expect(blocked.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID],
+      claim_capability_consumed: true,
+      retry_disposition: "terminal_no_retry",
+    });
+    const replay = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    expect(replay.private_actuation_capability).toBeNull();
+    expect(replay.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED);
+  });
+
+  test("burns a recognized permanent claim after an exact boundary binding mismatch", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const wrongBinding = prepared.boundaryInput(claimed.private_claim_capability);
+    wrongBinding.thread_anchor_sha256 = "f".repeat(64);
+    const blocked = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(wrongBinding);
+    expect(blocked.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.UNKNOWN_TERMINAL,
+      claim_capability_consumed: true,
+      retry_disposition: "terminal_no_retry",
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.ATTEMPT_BOUNDARY_INVALID],
+    });
+    const replay = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    expect(replay.private_actuation_capability).toBeNull();
+    expect(replay.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED);
+  });
+
+  test("durably finalizes invalid or ambiguous terminal evidence as UNKNOWN with no retry", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    const finalized = await finalizeWelcomeAudioUiAttestedLiveAttempt({
+      private_terminal_capability: armed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      private_attempt_evidence_capability: null,
+      private_visual_confirmation_capability: null,
+      synthetic_now_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+    });
+    expect(finalized.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+      terminal_record_present: true,
+      retry_disposition: "terminal_no_retry",
+      send_allowed: false,
+      external_effect_invoked: false,
+    });
+    expect((await readdir(prepared.fixture.storeRoot)).some(
+      (name) => /^terminal-[a-f0-9]{64}\.json$/u.test(name),
+    )).toBe(true);
+    expect((await readdir(prepared.fixture.storeRoot)).some(
+      (name) => /^pending-[a-f0-9]{64}\.json$/u.test(name),
+    )).toBe(false);
+    const replay = await finalizeWelcomeAudioUiAttestedLiveAttempt({
+      private_terminal_capability: armed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      private_attempt_evidence_capability: null,
+      private_visual_confirmation_capability: null,
+      synthetic_now_ms: UI_LIVE_CLAIM_NOW_MS + 5,
+    });
+    expect(replay.private_terminal_capability).toBeNull();
+  });
+
+  test("rejects parseable but noncanonical ISO timestamps in UI terminal evidence", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    await finalizeWelcomeAudioUiAttestedLiveAttempt({
+      private_terminal_capability: armed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      private_attempt_evidence_capability: null,
+      private_visual_confirmation_capability: null,
+      synthetic_now_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+    });
+    const terminalName = (await readdir(prepared.fixture.storeRoot)).find(
+      (name) => /^terminal-[a-f0-9]{64}\.json$/u.test(name),
+    );
+    if (!terminalName) throw new Error("synthetic UI terminal missing");
+    const terminalPath = join(prepared.fixture.storeRoot, terminalName);
+    const terminal = JSON.parse(await readFile(terminalPath, "utf8"));
+    terminal.entered_at = terminal.entered_at.replace("Z", "+00:00");
+    await writeFile(terminalPath, `${JSON.stringify(terminal)}\n`, { mode: 0o600 });
+
+    await inspection(prepared.fixture, 1);
+    const blocked = await issue(prepared.fixture, 1);
+    expect(blocked.private_claim_capability).toBeNull();
+    expect(blocked.redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_CLAIM_DECISION.BLOCKED);
+    expect(blocked.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.STORE_INVALID,
+    ]);
+  });
+
+  test("rejects wrong-family host and terminal APIs without consuming UI capabilities", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const claimed = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const armed = await enterWelcomeAudioUiAttestedLiveAttemptBoundary(
+      prepared.boundaryInput(claimed.private_claim_capability),
+    );
+    const evidence = await independentlyReadPendingEvidence(prepared.fixture);
+    const hostBinding = {
+      private_host_pending_capability: armed.private_host_pending_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      independently_read_pending_evidence: evidence,
+      expected_mission_id: prepared.authority.mission_id,
+      expected_operation_id: prepared.authority.operation_id,
+      expected_identity_anchor_sha256: prepared.authority.candidate_anchor_sha256,
+      expected_thread_anchor_sha256: prepared.authority.thread_anchor_sha256,
+      expected_audio_sha256: prepared.authority.approved_audio_asset_sha256,
+    };
+    expect(await consumeWelcomeAudioLiveHostPendingCapabilityOnce(hostBinding))
+      .toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.INVALID);
+    expect(await consumeWelcomeAudioUiAttestedLiveHostPendingCapabilityOnce(hostBinding))
+      .toBe(WELCOME_AUDIO_LIVE_HOST_PENDING_CAPABILITY_STATUS.VALID);
+
+    expect((await finalizeWelcomeAudioLiveAttempt({
+      private_terminal_capability: armed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      private_attempt_evidence_capability: null,
+      private_visual_confirmation_capability: null,
+      synthetic_now_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+    })).redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED);
+    expect((await finalizeWelcomeAudioLiveAttemptAsUnknown({
+      private_actuation_capability: armed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      outcome: WELCOME_AUDIO_LIVE_ATTEMPT_OUTCOME.UNKNOWN,
+      attachment_upload_entered: false,
+      send_control_actuation_count: 0,
+      attempted_at_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+      finalized_at_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+    })).redacted_receipt.decision).toBe(WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.BLOCKED);
+    expect((await finalizeWelcomeAudioUiAttestedLiveAttempt({
+      private_terminal_capability: armed.private_terminal_capability,
+      required_store_mode: WELCOME_AUDIO_LIVE_STORE_MODE.SYNTHETIC_TEMP_TEST_ONLY,
+      private_attempt_evidence_capability: null,
+      private_visual_confirmation_capability: null,
+      synthetic_now_ms: UI_LIVE_CLAIM_NOW_MS + 4,
+    })).redacted_receipt.decision).toBe(
+      WELCOME_AUDIO_LIVE_ATTEMPT_DECISION.FINALIZED_UNKNOWN,
+    );
+  });
+
+  test("fails closed on hostile claim envelopes without reading accessors", async () => {
+    let getterCount = 0;
+    const hostile: Record<string, unknown> = {};
+    Object.defineProperty(hostile, "mission_id", {
+      enumerable: true,
+      get() {
+        getterCount += 1;
+        throw new Error("hostile getter executed");
+      },
+    });
+    const blocked = await issueWelcomeAudioUiAttestedLiveClaim(hostile);
+    expect(blocked.private_claim_capability).toBeNull();
+    expect(blocked.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.INPUT_INVALID,
+    ]);
+    expect(getterCount).toBe(0);
+  });
+
+  test("binds duplicate and cap decisions to their exact receipt blockers", async () => {
+    const prepared = await setupUiAttestedLiveClaim();
+    const created = await issueWelcomeAudioUiAttestedLiveClaim(prepared.issueInput);
+    const base = created.redacted_receipt;
+    const duplicate = {
+      ...base,
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.DUPLICATE,
+      claim_created_by_current_invocation: false,
+      permanent_no_retry_claim_present: true,
+      cross_family_dedupe_clear_before_claim: false,
+      ui_authority_bound: false,
+      audio_asset_bound: false,
+      nonclaims_preserved: false,
+      private_claim_capability_issued: false,
+      retry_disposition: "terminal_no_retry",
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.DUPLICATE_IDENTITY],
+    };
+    expect(validateWelcomeAudioUiAttestedLiveClaimReceipt(duplicate))
+      .toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioUiAttestedLiveClaimReceipt({
+      ...duplicate,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_CAP_REACHED],
+    }).ok).toBe(false);
+
+    const capReached = {
+      ...duplicate,
+      decision: WELCOME_AUDIO_LIVE_CLAIM_DECISION.CAP_REACHED,
+      permanent_no_retry_claim_present: false,
+      retry_disposition: "blocked_family_cap_no_new_claim",
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.MISSION_CAP_REACHED],
+    };
+    expect(validateWelcomeAudioUiAttestedLiveClaimReceipt(capReached))
+      .toEqual({ ok: true, reason: null });
+    expect(validateWelcomeAudioUiAttestedLiveClaimReceipt({
+      ...capReached,
+      blocker_codes: [WELCOME_AUDIO_LIVE_CLAIM_BLOCKER.DUPLICATE_IDENTITY],
+    }).ok).toBe(false);
+  });
 });
 
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
@@ -790,15 +1364,19 @@ const uiAttestedOperationSnapshot = ({
   fixture,
   projection,
   ordinal = 1,
+  operationId = `synthetic_ui_attested_operation_${ordinal}`,
+  approvalPacketId = `synthetic_ui_attested_approval_${ordinal}`,
 }: {
   fixture: Fixture;
   projection: any;
   ordinal?: number;
+  operationId?: string;
+  approvalPacketId?: string;
 }) => {
   const operation = operationSnapshot({
     missionId: fixture.missionId,
-    operationId: `synthetic_ui_attested_operation_${ordinal}`,
-    approvalPacketId: `synthetic_ui_attested_approval_${ordinal}`,
+    operationId,
+    approvalPacketId,
     sourceSha: projection.anchors.source_evidence_anchor_sha256,
     profileSha: projection.anchors.profile_anchor_sha256,
     identitySha: projection.anchors.candidate_anchor_sha256,
