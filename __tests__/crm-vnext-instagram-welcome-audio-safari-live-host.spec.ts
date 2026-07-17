@@ -93,6 +93,7 @@ import {
   inspectInstalledComputerUseRuntimeBindingForTest,
   inspectInstalledComputerUseRuntimeReplacementResistanceForTest,
   inspectSyntheticLiveSafariStateForTest,
+  inspectSyntheticUiAttestedFlatSafariStateForTest,
   inspectSyntheticSafariDriverForTest,
   prepareWelcomeAudioSafariSyntheticTargetForTest as prepareWelcomeAudioSafariLiveTarget,
   runWelcomeAudioSafariSyntheticCompositeOnceForTest,
@@ -2274,6 +2275,359 @@ describe("strict Safari semantic parser", () => {
       exact_thread_bound: true,
       attachment_control_index: null,
       send_control_index: null,
+    });
+  });
+});
+
+describe("UI-attested real Computer Use flat-tree compatibility", () => {
+  const target = "synthetic.target";
+  const owner = "synthetic.owner";
+  const threadRef = "https://www.instagram.com/direct/t/000000000000000/";
+  const targetProfileRef = `instagram.com/${target}/`;
+  const audioPath = "/synthetic/private/approved-audio.m4a";
+
+  const authenticatedNavCluster = (firstIndex: number, exactOwner: string) => [
+    `      ${firstIndex} link root Instagram`,
+    `      ${firstIndex + 1} link navigation Home`,
+    `      ${firstIndex + 2} link navigation Reels`,
+    `      ${firstIndex + 3} link navigation Messages`,
+    `      ${firstIndex + 4} link navigation Search`,
+    `      ${firstIndex + 5} link navigation Notifications`,
+    `      ${firstIndex + 6} link navigation New post`,
+    `      ${firstIndex + 7} link navigation Professional dashboard`,
+    `      ${firstIndex + 8} link instagram.com/${exactOwner}/`,
+    `      ${firstIndex + 9} link navigation Settings`,
+    `      ${firstIndex + 10} link navigation Also from Meta`,
+  ];
+
+  const fixture = ({
+    composer = "    69 text entry area (settable, string) Placeholder: Message..., Value:",
+    attachmentLines = ["    71 button Add Photo or Video"],
+    historyEvidence = [] as string[],
+    actionEvidence = [] as string[],
+    sameDepthPrefixEvidence = [] as string[],
+    outsideEvidence = ["    33 text Voice message from you"],
+    extraRegularTabs = [] as string[],
+    duplicatePane = false,
+    includeNeutral = true,
+    includeOwner = true,
+    ownerOutsideSelector = false,
+    duplicateOwnerSelector = false,
+    includeTargetCluster = true,
+    duplicateHeaderCluster = false,
+    targetInstagramText = `${target} · Instagram`,
+    targetProfileValue = targetProfileRef,
+    sourcePinned = false,
+    sourceTabLabel = "Instagram",
+    addressLines = [`    12 text field (settable, string) Description: smart search field, Value: ${threadRef}, ID: WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD`],
+    privateBrowsing = false,
+  } = {}) => [
+    `application "Instagram • Direct"${privateBrowsing ? ", private browsing window" : ""}`,
+    "  1 tab group description: Safari tabs, value: tab-group?isSeparate=false",
+    "    2 tab Shared pinned tab, value: shared, tab?isPinned=true&isNarrow=true&isActive=false",
+    "    3 tab Second shared pinned tab, value: shared-two, tab?isPinned=true&isNarrow=true&isActive=false",
+    "    9 tab Third shared pinned tab, value: shared-three, tab?isPinned=true&isNarrow=true&isActive=false",
+    `    4 tab ${sourceTabLabel}, value: ${sourceTabLabel}, tab?isPinned=${sourcePinned ? "true" : "false"}&isNarrow=${sourcePinned ? "true" : "false"}&isActive=true`,
+    ...(sourcePinned
+      ? ["    5 tab Start Page, value: Start Page, tab?isPinned=false&isNarrow=false&isActive=false"]
+      : []),
+    ...(includeNeutral ? [
+      "    6 tab Neutral UI Preflight, value: Neutral UI Preflight, tab?isPinned=false&isNarrow=false&isActive=false",
+    ] : []),
+    ...extraRegularTabs,
+    "    7 tab page-level Primary lacking native metadata",
+    "  10 toolbar Safari toolbar",
+    ...addressLines,
+    "  20 group Instagram HTML content",
+    "    21 group first direct child navigation container",
+    ...authenticatedNavCluster(22, includeOwner ? owner : "different.owner"),
+    ...(ownerOutsideSelector ? [
+      "    34 list message content list",
+      `      35 button ${owner}`,
+    ] : []),
+    ...(duplicateOwnerSelector
+      ? authenticatedNavCluster(120, owner)
+      : []),
+    "  30 group Conversation sidebar",
+    ...outsideEvidence,
+    "  40 group Current direct-message pane",
+    ...sameDepthPrefixEvidence,
+    ...(includeTargetCluster ? [
+      "    60 heading target header, value: Synthetic Target",
+      "      61 text Synthetic Display Name",
+      `    62 text ${targetInstagramText}`,
+      `    63 link View profile, Value: ${targetProfileValue}`,
+    ] : []),
+    ...(duplicateHeaderCluster ? [
+      "    64 heading duplicate target header, value: Synthetic Target",
+      "      65 text Synthetic Display Name",
+      `    66 text ${target} · Instagram`,
+      `    67 link View profile, Value: ${targetProfileRef}`,
+    ] : []),
+    ...historyEvidence,
+    composer,
+    "    70 button composer Emoji",
+    ...attachmentLines,
+    "    72 button composer Sticker",
+    ...actionEvidence,
+    ...(duplicatePane ? [
+      "  80 group Duplicate current direct-message pane",
+      "    81 heading duplicate target header, value: Synthetic Target",
+      "      82 text Synthetic Display Name",
+      `    83 text ${target} · Instagram`,
+      `    84 link View profile, Value: ${targetProfileRef}`,
+      "    85 text entry area (settable, string) Placeholder: Message..., Value:",
+      "    86 button Add Photo or Video",
+    ] : []),
+  ].join("\n");
+
+  const parsed = (
+    rawText: string,
+    overrides: Partial<{
+      exact_target: string;
+      exact_bound_thread_reference: string;
+      exact_owner_account_reference: string;
+    }> = {},
+  ) => inspectSyntheticUiAttestedFlatSafariStateForTest({
+    raw_text: rawText,
+    exact_target: overrides.exact_target ?? target,
+    exact_bound_thread_reference:
+      overrides.exact_bound_thread_reference ?? threadRef,
+    exact_owner_account_reference:
+      overrides.exact_owner_account_reference ?? owner,
+    approved_audio_asset_path: audioPath,
+  });
+
+  test("binds the actual active-regular Safari shape and ignores page-level tabs", () => {
+    expect(parsed(fixture())).toMatchObject({
+      standard_safari: true,
+      isolated_surface: true,
+      private_browsing: false,
+      unrelated_regular_tabs_present: false,
+      exact_source_target_bound: true,
+      exact_thread_bound: true,
+      message_input_visible: true,
+      message_composer_empty: true,
+      attachment_control_index: 71,
+      attachment_preview_count: 0,
+      outgoing_audio_bubble_count: 0,
+      outgoing_audio_scope_proven: true,
+    });
+  });
+
+  test.each([
+    ["thread", { exact_bound_thread_reference: `${threadRef}wrong` }],
+    ["owner", { exact_owner_account_reference: `${owner}.wrong` }],
+    ["target", { exact_target: `${target}.wrong` }],
+  ])("requires byte-exact %s binding", (_label, overrides) => {
+    expect(parsed(fixture(), overrides)?.exact_thread_bound).toBe(false);
+  });
+
+  test.each([
+    ["wrong profile Value", { targetProfileValue: "instagram.com/different.target/" }],
+    ["wrong target text", { targetInstagramText: "different.target · Instagram" }],
+    ["duplicate target header", { duplicateHeaderCluster: true }],
+  ])("rejects a %s in the current target cluster", (_label, overrides) => {
+    expect(parsed(fixture(overrides))).toMatchObject({
+      exact_thread_bound: false,
+      attachment_control_index: null,
+      outgoing_audio_scope_proven: false,
+    });
+  });
+
+  test("requires one unique current pane segment", () => {
+    expect(parsed(fixture({ duplicatePane: true }))).toMatchObject({
+      exact_thread_bound: false,
+      attachment_control_index: null,
+      outgoing_audio_scope_proven: false,
+    });
+  });
+
+  test.each([
+    [
+      "non-empty",
+      "    69 text entry area (settable, string) Placeholder: Message..., Value: draft",
+    ],
+    [
+      "unindexed",
+      "    text entry area (settable, string) Placeholder: Message..., Value:",
+    ],
+    [
+      "quoted-empty but non-real",
+      "    69 text entry area (settable, string) Placeholder: Message..., Value: \"\"",
+    ],
+    ["inferred-empty", "    69 text Message... area explicitly empty"],
+  ])("rejects a %s composer instead of inferring emptiness", (_label, composer) => {
+    expect(parsed(fixture({ composer }))).toMatchObject({
+      exact_thread_bound: false,
+      message_input_visible: false,
+      message_composer_empty: false,
+    });
+  });
+
+  test("requires one indexed Add Photo or Video control after the composer", () => {
+    expect(parsed(fixture({ attachmentLines: [] }))?.attachment_control_index).toBeNull();
+    expect(parsed(fixture({ attachmentLines: [
+      "    71 button Add Photo or Video",
+      "    72 button Add Photo or Video",
+    ] }))?.attachment_control_index).toBeNull();
+    expect(parsed(fixture({
+      attachmentLines: ["    button Add Photo or Video"],
+    }))?.attachment_control_index).toBeNull();
+  });
+
+  test("rejects an attachment, preview, or Send decoy before the exact composer", () => {
+    for (const decoy of [
+      "    64 button Add Photo or Video",
+      "    64 text Attachment preview approved-audio.m4a",
+      "    64 button historical Send",
+    ]) {
+      expect(parsed(fixture({ historyEvidence: [decoy] }))).toMatchObject({
+        exact_thread_bound: false,
+        attachment_control_index: null,
+        send_control_index: null,
+      });
+    }
+  });
+
+  test("allows shared pinned tabs but rejects another regular tab or missing neutral standby", () => {
+    expect(parsed(fixture({ extraRegularTabs: [
+      "    8 tab Unrelated work, value: unrelated, tab?isPinned=false&isNarrow=false&isActive=false",
+    ] }))).toMatchObject({
+      isolated_surface: false,
+      unrelated_regular_tabs_present: true,
+      exact_thread_bound: false,
+    });
+    expect(parsed(fixture({ includeNeutral: false }))).toMatchObject({
+      isolated_surface: false,
+      unrelated_regular_tabs_present: true,
+      exact_thread_bound: false,
+    });
+  });
+
+  test("rejects an active pinned source even when its address is the exact thread", () => {
+    expect(parsed(fixture({ sourcePinned: true }))).toMatchObject({
+      isolated_surface: false,
+      exact_thread_bound: false,
+    });
+  });
+
+  test("requires exactly one address field with the byte-exact thread value", () => {
+    expect(parsed(fixture({ addressLines: [] }))).toMatchObject({
+      isolated_surface: false,
+      exact_thread_bound: false,
+    });
+    expect(parsed(fixture({ addressLines: [
+      `    12 text field (settable, string) Description: smart search field, Value: ${threadRef}, ID: WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD`,
+      `    13 text field (settable, string) Description: smart search field, Value: ${threadRef}, ID: WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD`,
+    ] }))).toMatchObject({
+      isolated_surface: false,
+      exact_thread_bound: false,
+    });
+  });
+
+  test("surfaces private browsing so the live isolation gate rejects it", () => {
+    expect(parsed(fixture({ privateBrowsing: true }))).toMatchObject({
+      isolated_surface: true,
+      private_browsing: true,
+      exact_thread_bound: true,
+    });
+  });
+
+  test("scopes preview, Send, outgoing audio, and status to the bound pane only", () => {
+    expect(parsed(fixture({ outsideEvidence: [
+      "    33 text Attachment preview approved-audio.m4a",
+      "    34 button Send",
+      "    35 text Outgoing audio message sent by you",
+      "    36 text Sent",
+    ] }))).toMatchObject({
+      exact_asset_preview_visible: false,
+      attachment_preview_count: 0,
+      send_control_index: null,
+      outgoing_audio_bubble_count: 0,
+      explicit_sent_marker_visible: false,
+    });
+    expect(parsed(fixture({
+      historyEvidence: ["    68 text Outgoing audio message sent by you"],
+      actionEvidence: [
+        "    73 text Attachment preview approved-audio.m4a",
+        "    74 button action Send",
+        "    76 text Sent",
+      ],
+    }))).toMatchObject({
+      exact_asset_preview_visible: true,
+      attachment_preview_count: 1,
+      send_control_index: 74,
+      outgoing_audio_bubble_count: 1,
+      outgoing_audio_scope_proven: true,
+      explicit_sent_marker_visible: false,
+    });
+  });
+
+  test("does not count a same-depth sidebar voice record before the target pane anchor", () => {
+    expect(parsed(fixture({ sameDepthPrefixEvidence: [
+      "    55 text Outgoing audio message sent by you",
+      "    56 text Sent",
+    ] }))).toMatchObject({
+      outgoing_audio_bubble_count: 0,
+      explicit_sent_marker_visible: false,
+    });
+  });
+
+  test("fails exact preview when another pane-scoped preview is present", () => {
+    expect(parsed(fixture({ actionEvidence: [
+      "    73 text Attachment preview approved-audio.m4a",
+      "    74 text Attachment preview other-audio.m4a",
+      "    75 button action Send",
+    ] }))).toMatchObject({
+      exact_asset_preview_visible: false,
+      attachment_preview_count: 2,
+      send_control_index: 75,
+    });
+  });
+
+  test("blocks when pane history contains an unrecognized voice or audio control", () => {
+    expect(parsed(fixture({ historyEvidence: [
+      "    68 button Play voice message",
+    ] }))).toMatchObject({
+      outgoing_audio_bubble_count: 0,
+      outgoing_audio_scope_proven: false,
+      explicit_sent_marker_visible: false,
+    });
+  });
+
+  test("allows generic prior thread text when no audio or voice evidence is present", () => {
+    expect(parsed(fixture({ historyEvidence: [
+      "    68 text ordinary prior thread activity",
+    ] }))).toMatchObject({
+      exact_thread_bound: true,
+      outgoing_audio_bubble_count: 0,
+      outgoing_audio_scope_proven: true,
+      attachment_control_index: 71,
+    });
+  });
+
+  test("requires one exact ordered authenticated top-nav cluster before the DM pane", () => {
+    expect(parsed(fixture({
+      includeOwner: false,
+      ownerOutsideSelector: true,
+    }))?.exact_thread_bound).toBe(false);
+    expect(parsed(fixture({ duplicateOwnerSelector: true }))?.exact_thread_bound).toBe(false);
+  });
+
+  test("does not bind a target that appears only in the sidebar/common region", () => {
+    expect(parsed(fixture({
+      includeTargetCluster: false,
+      outsideEvidence: [
+        "    32 heading sidebar target header",
+        "      33 text Synthetic Display Name",
+        `    34 text ${target} · Instagram`,
+        `    35 link View profile, Value: ${targetProfileRef}`,
+      ],
+    }))).toMatchObject({
+      exact_thread_bound: false,
+      attachment_control_index: null,
+      outgoing_audio_scope_proven: false,
     });
   });
 });

@@ -99,6 +99,37 @@ The sibling one-shot composite must preserve this order:
 9. confirm only a same-attempt, same-thread `+1` outgoing audio bubble with an
    approved strong marker strictly under five minutes.
 
+For the UI-attested live host, the real Computer Use flat serialization is an
+explicitly admitted sibling compatibility surface. Native Safari tabs are
+recognized only through `isPinned`/`isActive`; page-level Instagram tabs never
+count. The source must be the sole active unpinned tab, the only other unpinned
+tab must be the inactive `Neutral UI Preflight`, and any shared pinned tabs must
+remain inactive. Exactly one indexed Safari `(settable, string)` address field,
+with the smart-search description and browser address field ID, must carry the
+byte-exact thread reference.
+
+The owner must occupy the profile slot in one unique ordered authenticated
+top-navigation cluster before the DM pane, with byte-exact primary segment
+`instagram.com/<owner>/`. The current pane must have one
+unique target-header cluster: heading, exact sibling `<target> · Instagram`
+text, then a `View profile` link whose structured value is byte-exactly
+`instagram.com/<target>/`. Display-name heading children do not bind identity.
+Its one indexed
+`entry area (settable, string)` must carry the exact Message placeholder and an
+empty structured `Value`; its one indexed attachment control must be the exact
+`Add Photo or Video` button after that composer.
+
+Attachment, preview, and Send controls are post-composer only; pre-composer
+decoys block. Outgoing evidence is post-header/pre-composer history only.
+Generic non-audio thread activity is allowed, while an existing recognized
+outgoing welcome/audio blocks the zero baseline and any unrecognized audio or
+voice evidence makes scope unknown. Historical status text is never treated as
+a fresh marker. Post-Send confirmation must preserve the same private
+thread/owner/target binding and show a fresh same-pane `+1` outgoing-audio
+delta; it may use the established no-marker variant. Absent or unrecognized
+real serialization stays UNKNOWN and no-retry rather than being inferred as
+success.
+
 Compose reset, Sent/Seen alone, lack of an error, timeout, or an observation at
 exactly five minutes is not confirmation. Any attempted, uncertain, timed-out,
 or unknown outcome is durable terminal and has no retry.
@@ -151,3 +182,8 @@ and no unresolved P0-P2 finding.
 
 One serialized central integration completed with Git history authoritative
 for the final commit and zero live or private effect.
+
+The later real-surface compatibility mission adds only a repo-only parser and
+tests. It does not publish authority, issue a claim, open Safari, read private
+source state, upload a file, or actuate Send. A separately authorized live
+canary remains the only route to a real effect.

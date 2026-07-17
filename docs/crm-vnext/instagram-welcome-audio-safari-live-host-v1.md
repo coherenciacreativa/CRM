@@ -58,10 +58,11 @@ the canonical dynamic import.
    Send control in the exact active thread subtree.
 9. Mark one Send actuation before clicking Send exactly once. No resend or
    ambiguous retry exists.
-10. `CONFIRMED` requires a same-attempt, same-thread, strict-under-five-minute
-    `+1` outgoing audio bubble with an approved strong marker. Sent/Seen alone,
-    compose reset, no error, timeout, or equality at five minutes is not
-    confirmation.
+10. `CONFIRMED` requires a fresh post-Send observation with the same private
+    thread/owner/target binding and a same-attempt, same-pane,
+    strict-under-five-minute `+1` outgoing audio record with an approved strong
+    marker. Sent/Seen alone, compose reset, no error, timeout, evidence outside
+    the pane, or equality at five minutes is not confirmation.
 11. The claim issuer consumes the opaque attempt and visual capabilities,
     dynamically verifies them through this exact v2 module, publishes/fsyncs/
     rereads one v2 terminal, then atomically quarantines, revalidates, and
@@ -88,13 +89,51 @@ redacted deterministic state and restore any temporary test-only globals.
 
 ## Exact thread semantics
 
-The active/current/selected conversation root must be unique and bind the
+The sealed-manifest route keeps its original strict hierarchy parser unchanged.
+Its active/current/selected conversation root must be unique and bind the
 private target exactly and case-sensitively. The target heading, message
 history, empty composer, attachment control, preview, Send control, and outgoing
 audio bubble must all be descendants of that same role-bearing root. Sidebar
 rows, static text, lexical substrings, case variants, dedented siblings,
 duplicate roots, controls outside the subtree, incoming voice, outgoing text,
 and ambiguous controls fail closed.
+
+The UI-attested sibling may additionally consume the real Computer Use flat
+Safari serialization. That compatibility path is family-specific and requires
+all of the following on every fresh observation:
+
+- native Safari tab records are recognized only by their internal
+  `isPinned`/`isActive` metadata; page-level Instagram tabs do not count. There
+  must be exactly one active unpinned source tab and one inactive unpinned
+  `Neutral UI Preflight` tab. Shared pinned tabs may remain inactive;
+- exactly one indexed Safari address field must use the exact
+  `(settable, string)` shape, `smart search field` description, browser address
+  field ID, and byte-exact bound thread value;
+- the byte-exact owner reference must occupy the profile slot in one unique,
+  ordered authenticated top-navigation cluster, between `Professional
+  dashboard` and `Settings`, as the byte-exact primary segment
+  `instagram.com/<owner>/`; that cluster must precede the DM pane;
+- one and only one current-header cluster contains a heading followed at pane
+  depth by exact `<target> · Instagram` text and then a `View profile` link
+  whose structured `Value` is byte-exactly `instagram.com/<target>/`, before
+  the composer. The heading child is display-name text and is not an identity
+  anchor;
+- that pane contains one indexed `entry area (settable, string)` whose exact
+  Message placeholder has a structured empty `Value`, followed by one indexed
+  `Add Photo or Video` attachment control; and
+- another regular tab, an active pinned source, a duplicate binding, or private
+  browsing fails closed.
+
+Attachment, preview, and Send controls count only after that exact composer;
+pre-composer decoys fail closed. Outgoing-audio evidence counts only in the
+post-header, pre-composer history segment. Generic prior thread text is allowed,
+but an existing recognized outgoing welcome/audio blocks through the existing
+zero-baseline gate, and any unrecognized pane-local audio/voice evidence makes
+scope unknown and blocks. A historical Sent/Delivered/Seen label is never
+promoted to a marker; a fresh same-pane `+1` outgoing-audio delta may use the
+existing no-marker confirmation variant. The private thread/owner/target
+binding digest is retained only in ephemeral host state and must remain
+identical before chooser, preview, Send, and confirmation.
 
 Fresh accessibility state is required before every UI action. Private visual
 state, OCR, paths, targets, screenshots, anchors, and element indices are never
@@ -142,8 +181,13 @@ prepare throw/invalid receipt fail-closed claims, crash after durable PENDING,
 durable UNKNOWN, fatal UTF-8, metadata/path/inode/link tamper, strict five-minute
 boundaries, capability burn/replay, extra/class/accessor/Symbol/Proxy/revoked
 envelopes, wrong attempt/visual pairing, mode mismatch, stale clocks, exact
-thread parsing, no-prior-audio, empty composer, preview ambiguity, Send throw,
-and redacted receipt validation. Live execution remains separately gated by the
-mission contract and private owner-only artifacts.
+thread parsing, the real flat-tree UI sibling, native-metadata two-regular-tab
+plus pinned isolation, exact address/thread and ordered-navigation owner
+binding, unique target-header selection, structured-empty entry-area evidence,
+post-composer attachment/preview/Send scoping, history-scoped outgoing audio,
+audio ambiguity, generic non-audio history, no-prior-audio, preview ambiguity,
+Send throw, and redacted receipt validation.
+Live execution remains separately gated by the mission contract and private
+owner-only artifacts.
 It also covers proven pre-PENDING cancellation followed by a fresh confirmed
 retry, and terminal cleanup under an adversarial PENDING replacement.
