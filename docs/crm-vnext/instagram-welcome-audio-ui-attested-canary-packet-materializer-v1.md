@@ -145,3 +145,16 @@ surfaces are not invoked or modified. A later exact mission must freshly
 validate the then-current repo, source, manifest policy, audio, registry,
 dedupe, caps, surface, and CEO approval before it may create a separate live
 execution record.
+
+## Validated Source Artifact Input
+
+The separately versioned UI-attested follower-source artifact materializer may
+produce one immutable owner-only artifact containing this materializer's exact
+raw `ui_attested_input`. A private caller may pass that field unchanged into
+this pure function. This does not widen the trust boundary: the canary packet
+materializer still validates the input through the existing adapter and still
+returns only `prepared_no_live_unapproved`.
+
+The source artifact is not a packet draft, approval, claim, PENDING record,
+upload permit, or Send token. Its controlling contract is
+`docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-artifact-materializer-v1.md`.

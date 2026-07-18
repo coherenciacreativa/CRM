@@ -6717,7 +6717,7 @@ routing and completion pointer.
 
 - `next_action_id`:
   `crm_core_safari_real_ax_ui_attested_compat_no_live_v1_20260717`
-- `status`: `implemented_repo_only_no_live_independent_review_green`
+- `status`: `completed_green_centrally_integrated_repo_only_no_live`
 - `created_at`: `2026-07-17`
 - `updated_at`: `2026-07-17`
 - `approved_baseline`:
@@ -6751,7 +6751,54 @@ routing and completion pointer.
   tests; the complete 13-suite welcome-audio boundary is `700/700` green;
   Node syntax and diff checks are green.
 - `independent_review`: `green_no_unresolved_p0_p2`
-- `integration_status`: `ready_for_lane_commit_then_chief_architect_review`
+- `integration_status`: `completed_no_live_git_history_authoritative`
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_instagram_notifications_ui_attested_evidence_materializer_no_live_v1_20260717`
+- `status`: `implemented_repo_only_no_live_dual_independent_review_green`
+- `created_at`: `2026-07-17`
+- `updated_at`: `2026-07-17`
+- `approved_baseline`:
+  `dc7e3f333a2cff748cb38a1422b16f448d86dd49`
+- `source_branch`: `codex/crm-core-ui-attested-source-artifact-v1`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-notifications-evidence-materializer-no-live-v1.md`
+- `objective`: Convert one already supplied exact private Notifications
+  observation into the existing UI-attested follower-source input, validate it
+  through the unchanged adapter, and publish one immutable owner-only source
+  artifact that the existing no-live canary packet materializer can consume.
+- `architecture_boundary`: Add one local sibling writer only. Do not add an
+  API, browser backend, source family, authority family, generic builder,
+  scheduler, worker, or effect path.
+- `candidate_cap`: `1`
+- `inspection_ordinal_cap`: `8`
+- `freshness_minutes`: `5`
+- `allowed_scope`: Exact eight-file repo-only implementation, synthetic
+  owner-only temporary test roots, deterministic validation, one independent
+  review, one formal Chief Architect integration review, and at most one
+  serialized central integration if all gates are green.
+- `forbidden_scope`: Real Safari, Instagram, Computer Use, OCR, screenshots,
+  accessibility reads, fixed private artifact roots, private values, live
+  authority, claim, PENDING, attachment, upload, Send, text, follow-back,
+  MailerLite, CRM, campaign, Ads, API, proxy, browser, network, or any file
+  outside the exact allowlist.
+- `later_gate`: After green central integration, a separate live execution
+  boundary must freshly authorize and validate real observation, private
+  publication, exact downstream authority, claim-before-effect, one Send,
+  same-thread confirmation, and terminal no-retry ambiguity handling.
+- `validation_receipt`: Focused materializer `30/30`; post-fix repeated focused
+  concurrency runs under parallel load `20/20`; complete fourteen-suite welcome-audio boundary
+  `730/730`; Node syntax and diff checks green.
+- `review_status`: Dual independent rereview is green with no unresolved
+  P0-P2; formal Chief Architect integration review remains required before
+  central integration.
 - `live_flags`: `source_execution=false`, `canary_ready=false`,
   `production_ready=false`, `execution_approval_published=false`,
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
