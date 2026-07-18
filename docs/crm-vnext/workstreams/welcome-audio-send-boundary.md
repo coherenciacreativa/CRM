@@ -891,7 +891,7 @@
 - `mission_id`:
   `crm_core_instagram_notifications_ui_attested_evidence_materializer_no_live_v1_20260717`
 - `mode`: `proof`
-- `status`: `implemented_repo_only_no_live_dual_independent_review_green`
+- `status`: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 - `approved_baseline`:
   `dc7e3f333a2cff748cb38a1422b16f448d86dd49`
 - `source_branch`: `codex/crm-core-ui-attested-source-artifact-v1`
@@ -925,8 +925,12 @@
   post-fix concurrency runs under parallel load `20/20`; complete fourteen-suite welcome-audio boundary
   `730/730`; Node syntax and diff checks green.
 - `review_status`: Dual independent rereview is green with no unresolved
-  P0-P2; the lane may enter formal Chief Architect integration review after
-  its exact commit.
+  P0-P2. Formal Chief Architect integration review returned
+  `green_to_self_integrate`, `safe_to_self_integrate_now=true`, and
+  `ceo_decision_needed=false` from the redacted receipt. Central integration
+  completed under the Central Integration Lock; focused `30/30` and full
+  fourteen-suite `730/730` validation were green again on central.
+- `integration_status`: `completed_no_live_git_history_authoritative`.
 - `live_flags`: `source_execution=false`, `canary_ready=false`,
   `production_ready=false`, `execution_approval_published=false`,
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,

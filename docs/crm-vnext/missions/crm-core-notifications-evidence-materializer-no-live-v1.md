@@ -5,7 +5,7 @@ Date: 2026-07-17
 ```yaml
 mission_id: crm_core_instagram_notifications_ui_attested_evidence_materializer_no_live_v1_20260717
 contract_version: v1_20260717_repo_only_no_live
-implementation_status: implemented_repo_only_no_live_dual_independent_review_green
+implementation_status: completed_repo_only_no_live_formal_review_green_centrally_integrated
 business_outcome: >-
   Close the single missing local edge between an already supplied private
   Instagram Notifications observation and the existing integrated UI-attested
@@ -86,9 +86,9 @@ validation:
   git_diff_check: green
 integration:
   independent_review: dual_green_to_commit_no_unresolved_p0_p1_p2
-  chief_architect_review: required_after_lane_commit
+  chief_architect_review: green_to_self_integrate_safe_now_no_ceo_decision
   central_lock_required: true
-  integration_status: not_requested
+  integration_status: completed_no_live_git_history_authoritative
 ```
 
 Alejandro's `adelante` authorizes this exact repo-only implementation,
@@ -96,3 +96,11 @@ synthetic owner-only tests, safe repairs, one independent review, one formal
 Chief Architect integration review, and at most one serialized central
 integration if every gate is green. It does not authorize real Safari or
 Instagram access, private source-artifact publication, or a real send.
+
+The formal Chief Architect integration review returned
+`green_to_self_integrate`, `safe_to_self_integrate_now=true`, and
+`ceo_decision_needed=false` from the redacted receipt. The exact eight-file
+lane entered the central branch under the Central Integration Lock, with the
+focused `30/30` suite and the complete fourteen-suite `730/730` boundary green
+again on central. This integration is repo history only and grants no live,
+source, private-publication, claim, attachment, upload, or Send authority.

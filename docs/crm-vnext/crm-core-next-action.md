@@ -6762,7 +6762,7 @@ routing and completion pointer.
 
 - `next_action_id`:
   `crm_core_instagram_notifications_ui_attested_evidence_materializer_no_live_v1_20260717`
-- `status`: `implemented_repo_only_no_live_dual_independent_review_green`
+- `status`: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 - `created_at`: `2026-07-17`
 - `updated_at`: `2026-07-17`
 - `approved_baseline`:
@@ -6797,8 +6797,12 @@ routing and completion pointer.
   concurrency runs under parallel load `20/20`; complete fourteen-suite welcome-audio boundary
   `730/730`; Node syntax and diff checks green.
 - `review_status`: Dual independent rereview is green with no unresolved
-  P0-P2; formal Chief Architect integration review remains required before
-  central integration.
+  P0-P2. Formal Chief Architect integration review returned
+  `green_to_self_integrate`, `safe_to_self_integrate_now=true`, and
+  `ceo_decision_needed=false` from the redacted receipt; central integration
+  completed under the Central Integration Lock with focused `30/30` and full
+  fourteen-suite `730/730` validation green on central.
+- `integration_status`: `completed_no_live_git_history_authoritative`.
 - `live_flags`: `source_execution=false`, `canary_ready=false`,
   `production_ready=false`, `execution_approval_published=false`,
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
