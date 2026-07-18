@@ -298,6 +298,22 @@ mission needs a separate exact CEO approval bound to the integrated commit,
 source route, private input labels, candidate cap, UI actions, claim boundary,
 send boundary, and stop rules.
 
+## Owner-Only Observation Artifact Boundary
+
+A separately versioned follower-source artifact materializer may accept one
+already supplied private observation and translate it into this exact adapter
+input. It must preserve identity byte-for-byte, use only the two relationship
+modes defined above, enforce ordered five-minute-fresh observation times, and
+invoke this adapter unchanged before any publication.
+
+That sibling may publish one immutable owner-only artifact under its own fixed
+root with atomic no-overwrite semantics. The artifact remains source evidence,
+not live authority. Its redacted receipt must not expose identity, bucket,
+time, path, digest, anchor, OCR, screenshot, accessibility text, or payload.
+
+The controlling sibling contract is
+`docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-artifact-materializer-v1.md`.
+
 ## No-Live Canary Packet Draft Boundary
 
 A separately approved materializer may later accept exactly one already

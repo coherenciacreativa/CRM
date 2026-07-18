@@ -884,3 +884,51 @@
   integration union `14/14`.
 - `reviewer_verdict`: `green_to_self_integrate`
 - `integration_status`: `completed_no_live_git_history_authoritative`
+
+## Notifications UI-Attested Source Artifact Materializer No-Live Checkpoint
+
+- `checkpoint_date`: `2026-07-17`
+- `mission_id`:
+  `crm_core_instagram_notifications_ui_attested_evidence_materializer_no_live_v1_20260717`
+- `mode`: `proof`
+- `status`: `implemented_repo_only_no_live_dual_independent_review_green`
+- `approved_baseline`:
+  `dc7e3f333a2cff748cb38a1422b16f448d86dd49`
+- `source_branch`: `codex/crm-core-ui-attested-source-artifact-v1`
+- `objective`: Add the missing local writer that converts one already supplied
+  private Notifications observation into the existing UI-attested adapter
+  input and one immutable owner-only artifact.
+- `architecture_boundary`: One sibling materializer only; the adapter, canary
+  packet materializer, Safari host, authority publisher, claim issuer,
+  operation guard, MailerLite, and campaign routes remain unchanged.
+- `private_input_boundary`: One closed observation, ordinal `1..8`, exact
+  identity/thread/owner bindings, ordered five-minute-fresh evidence, one of
+  the two already integrated relationship modes, fresh clear dedupe, and the
+  three evidence non-claims fixed false.
+- `publication_boundary`: Dedicated fixed sibling root, mode `0700`; one
+  regular owner-only `0600` file with `nlink=1`; exclusive no-follow atomic
+  publication, stable reread, no overwrite, and exact-byte idempotency only.
+- `redaction_boundary`: Receipt contains no identity, bucket, time, path,
+  digest, anchor, OCR, screenshot, accessibility text, message, or payload.
+- `downstream_boundary`: The artifact's exact `ui_attested_input` may enter the
+  existing pure canary packet materializer and can produce only
+  `prepared_no_live_unapproved` until a separate live mission revalidates every
+  gate.
+- `forbidden_scope`: Real browser or source access, fixed private-root use in
+  development, private data, live authority, claim, PENDING, upload, Send,
+  text, follow-back, MailerLite, CRM, campaign, Ads, API, proxy, network, or
+  external effect.
+- `integration_gate`: Focused and full compatibility validation, syntax,
+  privacy, import-inertness, exact allowlist, one independent review, one
+  formal Chief Architect integration review, and Central Integration Lock.
+- `validation_receipt`: Focused materializer `30/30`; repeated focused
+  post-fix concurrency runs under parallel load `20/20`; complete fourteen-suite welcome-audio boundary
+  `730/730`; Node syntax and diff checks green.
+- `review_status`: Dual independent rereview is green with no unresolved
+  P0-P2; the lane may enter formal Chief Architect integration review after
+  its exact commit.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
