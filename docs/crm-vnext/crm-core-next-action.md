@@ -6611,6 +6611,109 @@ routing and completion pointer.
   `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
 
+## Active Next Action (Detailed Contract)
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718`
+- `status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `created_at`: `2026-07-18`
+- `updated_at`: `2026-07-18`
+- `approved_baseline`:
+  `feed2788fa0400b63483dd4b4e851a45f94b7bda`
+- `source_branch`:
+  `codex/crm-core-preclaim-builder-runner-v1-20260718`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-ui-attested-preclaim-builder-runner-no-live-v1.md`
+- `objective`: Close the missing production composition edge from one private
+  UI-attested draft and authorization seed to the existing fixed publisher,
+  authority loader, PRECLAIM operation context, and one-shot Safari composite,
+  without invoking any live or private boundary in this mission.
+- `why_now`: The existing integrated modules already own authority, claim,
+  PENDING, upload, one Send, and strong confirmation, but no production
+  component truthfully obtained the fresh preclaim Safari facts and built the
+  complete canonical operation snapshot. That gap blocked the authorized real
+  canary and encouraged unsafe reconstruction from synthetic fixtures.
+- `architecture_boundary`:
+  - one exact draft/recipient/audio/context-bound authorization seed is
+    structurally recognized and atomically burned before source read, including
+    on cross-draft mismatch; successful exact binding issues a module-private
+    opaque capability consumed once by the builder after observation;
+  - one zero-action observer validates the fixed production audio, clean
+    central-context, mission, active-next-action, empty owner-only authority
+    root, and claim-store gates before exactly one fresh Safari state read and
+    issues one opaque exact-bound one-use capability;
+  - the observation capability is burned before binding or freshness rejection
+    and its consumer returns only `observed_at`, `audio_validated_at`, and
+    `central_context_checked_at`;
+  - one effect-free builder validates the audio capability, consumes the
+    observation, closes the seven-position canonical-digest cycle, and
+    requires exact guard PRECLAIM eligibility;
+  - one fixed runner accepts only `private_draft` plus
+    `private_authorization_seed` and chains the existing fixed
+    publisher/open/context/composite seams;
+  - any attempted authority publication whose result is lost, malformed,
+    thrown, or followed by a zero-effect blocked state is terminal zero-effect
+    and permanently no-retry; and
+  - synthetic roots, driver, clocks, store, and fault injection exist only on
+    the `ForTest` entrypoint.
+- `allowed_scope`: Exact twelve-file repo-only implementation, fake-driver and
+  owner-only temporary-root tests, deterministic focused and sixteen-suite
+  compatibility validation, safe repairs within budget, one independent
+  adversarial review, one formal Chief Architect integration review, and one
+  serialized central integration only if all gates are green.
+- `expected_files`:
+  - `scripts/crm-vnext-instagram-welcome-audio-ui-attested-preclaim-builder.mjs`
+  - `scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-canary-runner.mjs`
+  - `scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs`
+  - `__tests__/crm-vnext-instagram-welcome-audio-ui-attested-preclaim-builder.spec.ts`
+  - `__tests__/crm-vnext-instagram-welcome-audio-ui-attested-live-canary-runner.spec.ts`
+  - `__tests__/crm-vnext-instagram-welcome-audio-safari-live-host.spec.ts`
+  - `docs/crm-vnext/instagram-welcome-audio-ui-attested-preclaim-builder-and-live-canary-runner-v1.md`
+  - `docs/crm-vnext/missions/crm-core-ui-attested-preclaim-builder-runner-no-live-v1.md`
+  - `docs/crm-vnext/instagram-welcome-audio-safari-live-host-v1.md`
+  - `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+- `forbidden_scope`: Real Safari, Instagram, Computer Use, private artifacts,
+  fixed roots, claim store, claim, PENDING, chooser, attachment, upload, Send,
+  text, follow-back, MailerLite, CRM, campaign, Ads, API, proxy, network,
+  caller-controlled live effect surfaces, a second Send path, `package.json`,
+  or any file outside the exact allowlist.
+- `validation_commands`:
+  - Node syntax for the builder, runner, and Safari host
+  - focused builder, runner, and Safari-host suites
+  - the exact existing fourteen welcome-audio suites plus the two new suites
+  - exact baseline-to-working-tree twelve-file allowlist
+  - `git diff --check`
+  - fresh-process import-inertness, replay, hostile-input, ambiguity, privacy,
+    and no-live assertions
+- `stop_conditions`: Any required thirteenth file; real/private/fixed-root
+  access; fabricated UI fact; caller-controlled live driver/root/store/clock/
+  callback/outcome; operation-guard weakening; alternate Send path; test
+  failure; unresolved P0-P2 review finding; incomplete Chief Architect verdict;
+  central drift, conflict, dirty worktree, or unavailable lock.
+- `validation_status`:
+  `focused_166_of_166_and_exact_sixteen_suite_759_of_759_green`
+- `validation_effects`: `no_live_browser_network_private_or_fixed_root_effects`
+- `review_status`: `green_no_unresolved_p0_p1_p2_p3`
+- `formal_chief_architect_integration_review`: `pending`
+- `integration_status`: `not_started`
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
+  `live_authority=false`, `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+- `resume_instruction`: Independent rereview is GREEN. Continue only inside
+  the isolated branch; commit/push the exact twelve-file delta, obtain formal
+  `green_to_self_integrate` with
+  `safe_to_self_integrate_now=true` and `ceo_decision_needed=false`, then use
+  one Central Integration Lock for the sole central integration.
+- `completion_definition`: Exact twelve-file allowlist, focused and
+  sixteen-suite compatibility checks, syntax, privacy, import-inertness, and
+  no-live gates are green; no unresolved P0-P2 remains; formal Chief Architect
+  integration review is green; one lock-gated central integration completes;
+  and every real-effect flag remains false.
+
 ## Previous Active Next Action
 
 - `next_action_id`:
@@ -6807,4 +6910,30 @@ routing and completion pointer.
   `production_ready=false`, `execution_approval_published=false`,
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
   `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+
+## Active Next Action
+
+- `next_action_id`:
+  `crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718`
+- `status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `updated_at`: `2026-07-18`
+- `approved_baseline`:
+  `feed2788fa0400b63483dd4b4e851a45f94b7bda`
+- `source_branch`:
+  `codex/crm-core-preclaim-builder-runner-v1-20260718`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-ui-attested-preclaim-builder-runner-no-live-v1.md`
+- `detailed_contract`: The earlier detailed section with this same exact
+  `next_action_id` is the authoritative twelve-file scope, validation, stop,
+  review, and integration contract.
+- `current_gate`: Focused `166/166` and exact sixteen-suite `759/759` repo-only
+  validation are green with no live/browser/network/private/fixed-root effect.
+  Independent adversarial rereview is GREEN with no unresolved P0-P3 finding;
+  obtain formal Chief Architect integration review before central integration.
+- `integration_status`: `not_started`
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
+  `live_authority=false`, `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.

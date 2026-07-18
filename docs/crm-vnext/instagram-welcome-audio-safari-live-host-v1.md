@@ -1,23 +1,39 @@
 # Instagram welcome-audio Safari live host
 
-Status: integrated host/issuer contract v2. The filename remains `v1` because
-it is the mission allowlisted documentation path. Only the schema families
-explicitly coordinated below were bumped to v2.
+Status: integrated host/issuer contract v2 plus repo-only UI-attested
+zero-action PRECLAIM observer v1 validation and independent rereview GREEN;
+formal Chief Architect integration review remains pending.
+The filename remains `v1`
+because it is the mission allowlisted documentation path. Only the schema
+families explicitly coordinated below were bumped to v2.
 
 ## Public boundary
 
-`runWelcomeAudioSafariLiveCompositeOnce` is the sole public live effectful
-entrypoint. It accepts the already-approved opaque preflight capabilities and
-private exact bindings, then owns the whole one-shot sequence from claim
-issuance through durable terminal publication. It does not accept a claim,
+`runWelcomeAudioSafariLiveCompositeOnce` and its separately versioned
+UI-attested sibling remain the sole host-level public live effectful
+entrypoints. They accept already-approved opaque preflight capabilities and
+private exact bindings, then own the whole one-shot sequence from claim
+issuance through durable terminal publication. They do not accept a claim,
 PENDING record, host capability, Computer Use client, driver, clock, callback,
 URL, selector, coordinate, command list, or caller-selected verifier.
 
-The raw prepare, post-PENDING execute, driver mint, host mint, and evidence
-consumer functions are private. Synthetic-only wrappers end in `ForTest` and
-cannot select live mode. The only other unsuffixed cross-module function is the
-narrow one-use terminal-evidence verifier consumed by the claim issuer through
-the canonical dynamic import.
+The UI-attested family additionally exposes
+`observeWelcomeAudioSafariUiAttestedPreclaimOnce`. That function is
+read-only and non-effectful: it first validates every fixed production start
+gate, then performs exactly one fresh state read and zero UI actions. A failed
+start gate performs no source read. A successful read returns one opaque
+one-use observation capability or a redacted blocker. It is consumed only by
+the separate PRECLAIM builder and is not a second execution or Send surface.
+
+The raw prepare, post-PENDING execute, driver mint, host mint, and effect
+evidence consumer functions are private. Synthetic-only wrappers end in
+`ForTest` and cannot select live mode. The PRECLAIM capability consumer is a
+narrow exact-binding function used only by the builder; it burns a recognized
+capability before binding or freshness rejection and exposes only three narrow
+timestamps, never a driver, identity, path, digest, element index, action, or
+raw state. The remaining unsuffixed evidence function
+is the narrow one-use terminal-evidence verifier consumed by the claim issuer
+through the canonical dynamic import.
 
 ## Exact order
 
@@ -86,6 +102,51 @@ validation and use. All calls hardcode `com.apple.Safari`.
 The live path exposes no runtime object, driver, host capability, element
 index, or generic action surface. Test inspectors return only booleans or
 redacted deterministic state and restore any temporary test-only globals.
+
+## Zero-Action UI-Attested PRECLAIM Observer
+
+The production observer owns the clock, installed runtime, fixed authority and
+claim-store locations, and central repository location. It hardcodes Safari.
+Before any `get_app_state` call it validates the exact approved-audio
+capability/path/digest; clean central HEAD, upstream, and tracked status; exact
+tracked live-admission mission digest; exact active-next-action id and digest;
+an empty owner-only fixed UI-authority root; and the fixed claim-store
+boundary. Failure returns `START_GATES_INVALID`, zero state reads, and zero UI
+actions.
+
+Only after those gates are green does it take the exact private target, thread,
+owner, and approved-audio path already present in the closed caller boundary
+and perform one `get_app_state` read. It performs no click, keypress, text,
+navigation, chooser, upload, or Send action.
+
+The one read must prove a standard non-private isolated Safari surface, exact
+target/thread/owner binding, a visible explicitly empty composer, one
+unambiguous attachment control, no attachment preview, proven absence of prior
+outgoing audio in the exact thread scope, and no challenge or error. Missing,
+duplicate, stale, mixed-window, ambiguous-audio, prior-audio, preview, or
+control evidence blocks before authority publication or claim.
+
+A READY result mints one opaque capability in module-private WeakMap state.
+The capability stores the closed observation privately, is bound to the exact
+target/thread/owner/audio path, and expires strictly under the existing
+five-minute freshness boundary. A recognized fresh capability is burned before
+binding and freshness checks. Wrong binding, stale use, replay, or a second
+consumption therefore returns no observation and cannot preserve authority.
+
+The consumer returns only `observed_at`, `audio_validated_at`, and
+`central_context_checked_at`. Those timestamps are derived from their distinct
+validated gates and are not interchangeable. No raw identity, thread, owner,
+path, digest, state, or receipt field crosses the consumer boundary.
+
+The injectable `ForTest` observer and consumer accept only a synthetic
+owner-only temporary authority root, synthetic store capability/root, fake
+driver, and deterministic clock. They never select live mode, bind the
+installed runtime, or access fixed roots.
+
+Its public receipt is aggregate-only: one state-read count, zero action count,
+fixed booleans, a fixed decision, and allowlisted blocker codes. It contains no
+identity, thread or owner reference, path, digest, timestamp, UI state,
+screenshot, accessibility text, or payload.
 
 ## Exact thread semantics
 
@@ -176,7 +237,7 @@ provider action.
 
 ## Verification matrix
 
-The synthetic matrix covers the sole-export namespace, confirmed composite,
+The synthetic matrix covers the live-effect namespace, confirmed composite,
 prepare throw/invalid receipt fail-closed claims, crash after durable PENDING,
 durable UNKNOWN, fatal UTF-8, metadata/path/inode/link tamper, strict five-minute
 boundaries, capability burn/replay, extra/class/accessor/Symbol/Proxy/revoked
@@ -187,7 +248,22 @@ binding, unique target-header selection, structured-empty entry-area evidence,
 post-composer attachment/preview/Send scoping, history-scoped outgoing audio,
 audio ambiguity, generic non-audio history, no-prior-audio, preview ambiguity,
 Send throw, and redacted receipt validation.
+The PRECLAIM observer extension additionally covers production start gates
+before the sole state read, zero reads on failed gates, exactly one state read,
+zero UI actions, installed-runtime binding, one-use burn-before-rejection
+semantics, expiry, binding mismatch, preview/prior-audio/challenge rejection,
+ambiguous attachment control, three-timestamp-only consumption, receipt
+privacy, and a synthetic-only fake-driver/temp-root wrapper.
 Live execution remains separately gated by the mission contract and private
 owner-only artifacts.
 It also covers proven pre-PENDING cancellation followed by a fresh confirmed
 retry, and terminal cleanup under an adversarial PENDING replacement.
+
+The current repo-only mission's focused builder/runner/host validation is
+`166/166` green and the exact sixteen-suite welcome-audio compatibility
+boundary is `759/759` green. A fresh-process inert-import test proves no
+installed-runtime getter read or filesystem creation at import. No real
+Safari, browser, network, private artifact, fixed root, claim, PENDING, upload,
+Send, or external effect occurred. Independent rereview is GREEN with no
+unresolved P0-P3 finding; formal Chief Architect integration review and central
+integration remain pending.

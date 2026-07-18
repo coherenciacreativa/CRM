@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { execFile as execFileCallback } from 'node:child_process';
 import { constants as FS_CONSTANTS } from 'node:fs';
 import {
   chmod,
@@ -15,7 +16,7 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { types as nodeUtilTypes } from 'node:util';
+import { promisify, types as nodeUtilTypes } from 'node:util';
 
 import {
   WELCOME_AUDIO_CONFIRMATION_MARKER,
@@ -75,6 +76,10 @@ const WELCOME_AUDIO_SAFARI_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_safari_live_composite_receipt_v2';
 const WELCOME_AUDIO_SAFARI_UI_ATTESTED_LIVE_COMPOSITE_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_safari_ui_attested_live_composite_receipt_v1';
+const WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_OBSERVER_CONTRACT_VERSION =
+  'crm_core_instagram_welcome_audio_safari_ui_attested_preclaim_observer_v1';
+const WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_RECEIPT_SCHEMA_VERSION =
+  'crm_core_instagram_welcome_audio_safari_ui_attested_preclaim_receipt_v1';
 const MAX_PENDING_RECORD_BYTES = 32 * 1024;
 const fatalUtf8Decoder = new TextDecoder('utf-8', { fatal: true });
 const FIXED_LIVE_CLAIM_STORE_ROOT = resolve(
@@ -85,6 +90,30 @@ const FIXED_LIVE_CLAIM_STORE_ROOT = resolve(
   'crm-core-welcome-audio-live-claim-store-v1',
 );
 const SYNTHETIC_CLAIM_STORE_PREFIX = 'crm-core-welcome-audio-live-claim-store-test-';
+const FIXED_CENTRAL_REPO_ROOT = '/Users/alejandrogomez/CRM-core';
+const FIXED_CENTRAL_BRANCH = 'codex/crm-core-reentry';
+const FIXED_UI_ATTESTED_MISSION_CONTRACT_PATH = join(
+  FIXED_CENTRAL_REPO_ROOT,
+  'docs',
+  'crm-vnext',
+  'instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md',
+);
+const FIXED_ACTIVE_NEXT_ACTION_PATH = join(
+  FIXED_CENTRAL_REPO_ROOT,
+  'docs',
+  'crm-vnext',
+  'crm-core-next-action.md',
+);
+const FIXED_UI_ATTESTED_AUTHORITY_ROOT = resolve(
+  homedir(),
+  'Documents',
+  'Mantis-Private-Source-Artifacts',
+  'instagram',
+  'crm-core-welcome-audio-ui-attested-live-authority-v1',
+);
+const SYNTHETIC_UI_ATTESTED_AUTHORITY_PREFIX =
+  'crm-core-welcome-audio-ui-attested-live-authority-test-';
+const execFile = promisify(execFileCallback);
 
 const WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE = Object.freeze({
   LIVE: 'live_computer_use_owner_only',
@@ -133,6 +162,39 @@ const WELCOME_AUDIO_SAFARI_LIVE_HOST_BLOCKER = Object.freeze({
   ORACLE_INVALID: 'blocked_live_host_deterministic_oracle_invalid',
 });
 
+const WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION = Object.freeze({
+  READY: 'preclaim_observation_ready_zero_action',
+  BLOCKED: 'preclaim_observation_blocked_zero_action',
+});
+
+const WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER = Object.freeze({
+  INPUT_INVALID: 'blocked_preclaim_observer_input_invalid',
+  START_GATES_INVALID: 'blocked_preclaim_observer_start_gates_invalid',
+  DRIVER_INVALID: 'blocked_preclaim_observer_driver_invalid',
+  FRESH_STATE_INVALID: 'blocked_preclaim_observer_fresh_state_invalid',
+  SURFACE_INVALID: 'blocked_preclaim_observer_safari_surface_not_standard_isolated',
+  BINDING_INVALID: 'blocked_preclaim_observer_exact_binding_not_proven',
+  COMPOSER_INVALID: 'blocked_preclaim_observer_composer_not_visible_and_empty',
+  ATTACHMENT_CONTROL_INVALID:
+    'blocked_preclaim_observer_attachment_control_missing_or_ambiguous',
+  ATTACHMENT_PREVIEW_PRESENT: 'blocked_preclaim_observer_attachment_preview_present',
+  PRIOR_AUDIO_PRESENT_OR_UNKNOWN:
+    'blocked_preclaim_observer_prior_audio_absence_not_proven_in_exact_thread',
+  CHALLENGE_OR_ERROR: 'blocked_preclaim_observer_challenge_or_error_visible',
+  CAPABILITY_INVALID: 'blocked_preclaim_observer_capability_invalid_or_used',
+  CAPABILITY_BINDING_MISMATCH: 'blocked_preclaim_observer_capability_binding_mismatch',
+});
+
+const WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_STATUS = Object.freeze({
+  SURFACE: 'standard_isolated_safari',
+  EXACT: 'exact',
+  COMPOSER: 'visible_and_explicitly_empty',
+  ATTACHMENT_CONTROL: 'present_and_usable',
+  ATTACHMENT_PREVIEW: 'absent',
+  PRIOR_OUTGOING_AUDIO: 'absent_in_exact_thread_scope_proven',
+  CHALLENGE: 'absent',
+});
+
 const WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST = Object.freeze({
   CONFIRMED_NEW_AUDIO_BUBBLE: 'confirmed_new_outgoing_audio_bubble',
   SENT_MARKER_ONLY: 'sent_marker_only_unknown',
@@ -147,6 +209,7 @@ const WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST = Object.freeze({
   SECOND_ATTACHMENT_PREVIEW: 'synthetic_second_attachment_preview_present',
   PRIOR_AUDIO_PRESENT: 'synthetic_prior_outgoing_audio_present',
   PRIOR_AUDIO_BEFORE_SEND: 'synthetic_outgoing_audio_appears_before_send',
+  AMBIGUOUS_ATTACHMENT_CONTROL: 'synthetic_ambiguous_attachment_control',
   MIXED_OR_PRIVATE_SURFACE: 'mixed_or_private_safari_surface',
 });
 
@@ -310,11 +373,39 @@ const RECEIPT_FIELDS = Object.freeze([
   'blocker_codes',
 ]);
 
+const UI_ATTESTED_PRECLAIM_RECEIPT_FIELDS = Object.freeze([
+  'receipt_schema_version',
+  'observer_contract_version',
+  'redaction_status',
+  'execution_mode',
+  'decision',
+  'start_gates_validated',
+  'state_read_count',
+  'ui_action_count',
+  'safari_standard_isolated',
+  'exact_binding_proven',
+  'composer_ready',
+  'attachment_control_unambiguous',
+  'attachment_preview_absent',
+  'prior_outgoing_audio_absence_proven',
+  'challenge_or_error_absent',
+  'observation_capability_issued',
+  'external_effect_possible',
+  'blocker_codes',
+]);
+
+const UI_ATTESTED_PRECLAIM_OBSERVATION_FIELDS = Object.freeze([
+  'observed_at',
+  'audio_validated_at',
+  'central_context_checked_at',
+]);
+
 const DRIVER_STATE = new WeakMap();
 const HOST_CAPABILITY_STATE = new WeakMap();
 const PREPARED_PERMIT_STATE = new WeakMap();
 const ATTEMPT_EVIDENCE_STATE = new WeakMap();
 const VISUAL_EVIDENCE_STATE = new WeakMap();
+const UI_ATTESTED_PRECLAIM_OBSERVATION_CAPABILITY_STATE = new WeakMap();
 
 const exactObjectKeys = (value, expected) => {
   if (
@@ -1203,7 +1294,12 @@ const syntheticObservation = ({
     exact_thread_bound: inThread && typeof exactTarget === 'string',
     message_input_visible: inThread,
     message_composer_empty: inThread && !draftText,
-    attachment_control_index: state.stage === 'thread' && inThread ? 41 : null,
+    attachment_control_index: state.stage === 'thread'
+      && inThread
+      && state.scenario
+        !== WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.AMBIGUOUS_ATTACHMENT_CONTROL
+      ? 41
+      : null,
     native_file_chooser_visible: [
       'chooser',
       'go_to_folder',
@@ -1608,6 +1704,713 @@ const getFreshDriverObservation = async ({
       : WELCOME_AUDIO_SAFARI_LIVE_PARSER_MODE.LEGACY_STRICT_HIERARCHY,
     exactBoundThreadReference,
     exactOwnerAccountReference,
+  });
+};
+
+const buildWelcomeAudioSafariUiAttestedPreclaimReceipt = ({
+  executionMode = WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.UNBOUND,
+  decision = WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.BLOCKED,
+  startGatesValidated = false,
+  stateReadCount = 0,
+  observation = null,
+  capabilityIssued = false,
+  blockerCodes = [],
+}) => Object.freeze({
+  receipt_schema_version:
+    WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_RECEIPT_SCHEMA_VERSION,
+  observer_contract_version:
+    WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_OBSERVER_CONTRACT_VERSION,
+  redaction_status:
+    'aggregate_only_no_targets_threads_owners_paths_ids_digests_times_state_or_payloads',
+  execution_mode: executionMode,
+  decision,
+  start_gates_validated: startGatesValidated,
+  state_read_count: stateReadCount,
+  ui_action_count: 0,
+  safari_standard_isolated: observation?.standard_safari === true
+    && observation?.isolated_surface === true
+    && observation?.private_browsing === false
+    && observation?.unrelated_regular_tabs_present === false,
+  exact_binding_proven: observation?.exact_source_target_bound === true
+    && observation?.exact_thread_bound === true
+    && isSha256(observation?.exact_binding_sha256),
+  composer_ready: observation?.message_input_visible === true
+    && observation?.message_composer_empty === true,
+  attachment_control_unambiguous:
+    Number.isSafeInteger(observation?.attachment_control_index)
+      && observation.attachment_control_index >= 0,
+  attachment_preview_absent: observation?.attachment_preview_count === 0,
+  prior_outgoing_audio_absence_proven:
+    observation?.outgoing_audio_scope_proven === true
+      && observation?.outgoing_audio_bubble_count === 0,
+  challenge_or_error_absent: observation?.challenge_or_error_visible === false,
+  observation_capability_issued: capabilityIssued,
+  external_effect_possible: false,
+  blocker_codes: Object.freeze([...new Set(blockerCodes)]),
+});
+
+const validateWelcomeAudioSafariUiAttestedPreclaimObserverReceipt = (value) => {
+  if (
+    !isPlainDataObject(value)
+    || !exactObjectKeys(value, UI_ATTESTED_PRECLAIM_RECEIPT_FIELDS)
+  ) return Object.freeze({
+    ok: false,
+    reason: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID,
+  });
+  const booleanFields = [
+    'start_gates_validated',
+    'safari_standard_isolated',
+    'exact_binding_proven',
+    'composer_ready',
+    'attachment_control_unambiguous',
+    'attachment_preview_absent',
+    'prior_outgoing_audio_absence_proven',
+    'challenge_or_error_absent',
+    'observation_capability_issued',
+    'external_effect_possible',
+  ];
+  const ready = value.decision
+    === WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.READY;
+  const blocked = value.decision
+    === WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.BLOCKED;
+  const commonValid = value.receipt_schema_version
+      === WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_RECEIPT_SCHEMA_VERSION
+    && value.observer_contract_version
+      === WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_OBSERVER_CONTRACT_VERSION
+    && value.redaction_status
+      === 'aggregate_only_no_targets_threads_owners_paths_ids_digests_times_state_or_payloads'
+    && Object.values(WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE)
+      .includes(value.execution_mode)
+    && Number.isInteger(value.state_read_count)
+    && [0, 1].includes(value.state_read_count)
+    && value.ui_action_count === 0
+    && booleanFields.every((field) => typeof value[field] === 'boolean')
+    && value.external_effect_possible === false
+    && Array.isArray(value.blocker_codes)
+    && value.blocker_codes.every((blocker) => (
+      Object.values(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER).includes(blocker)
+    ))
+    && new Set(value.blocker_codes).size === value.blocker_codes.length;
+  const readyValid = ready
+    && value.execution_mode !== WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.UNBOUND
+    && value.start_gates_validated
+    && value.state_read_count === 1
+    && value.safari_standard_isolated
+    && value.exact_binding_proven
+    && value.composer_ready
+    && value.attachment_control_unambiguous
+    && value.attachment_preview_absent
+    && value.prior_outgoing_audio_absence_proven
+    && value.challenge_or_error_absent
+    && value.observation_capability_issued
+    && value.blocker_codes.length === 0;
+  const blockedValid = blocked
+    && value.observation_capability_issued === false
+    && (value.start_gates_validated || value.state_read_count === 0)
+    && value.blocker_codes.length === 1;
+  return commonValid && (readyValid || blockedValid)
+    ? Object.freeze({ ok: true, reason: null })
+    : Object.freeze({
+      ok: false,
+      reason: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID,
+    });
+};
+
+const isExactInstagramAccountReference = (value) => (
+  typeof value === 'string'
+  && /^[A-Za-z0-9._]{1,64}$/u.test(value)
+);
+
+const isExactPrivateThreadReference = (value) => (
+  typeof value === 'string'
+  && value.length > 0
+  && value.length <= 2_048
+  && value.trim() === value
+  && !/[\u0000-\u001f\u007f]/u.test(value)
+);
+
+const isExactApprovedAssetPath = (value) => (
+  typeof value === 'string'
+  && value.length > 0
+  && value.length <= 4_096
+  && isAbsolute(value)
+  && basename(value).length > 0
+  && !value.includes('\u0000')
+);
+
+const isValidObservationNowMs = (value) => (
+  Number.isSafeInteger(value)
+  && value >= 0
+  && value <= 8_640_000_000_000_000
+);
+
+const expectedUiAttestedExactBindingSha256 = ({
+  exactTarget,
+  exactBoundThreadReference,
+  exactOwnerAccountReference,
+}) => sha256(JSON.stringify([
+  exactBoundThreadReference,
+  exactOwnerAccountReference,
+  exactTarget,
+]));
+
+const GIT_SHA = /^[a-f0-9]{40}$/u;
+
+const readStablePreclaimTrackedFile = async (filePath) => {
+  let handle;
+  try {
+    handle = await open(filePath, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW);
+    const before = await handle.stat();
+    if (
+      !before.isFile()
+      || before.isSymbolicLink()
+      || before.nlink !== 1
+      || before.size < 1
+      || before.size > 2 * 1024 * 1024
+      || (typeof process.getuid === 'function' && before.uid !== process.getuid())
+    ) throw new Error('invalid_tracked_file');
+    const bytes = await handle.readFile();
+    const after = await handle.stat();
+    if (!sameMetadata(after, before) || bytes.length !== after.size) {
+      throw new Error('changed_tracked_file');
+    }
+    return Object.freeze({ bytes, digest: sha256(bytes) });
+  } finally {
+    await handle?.close();
+  }
+};
+
+const parseFinalPreclaimActiveNextActionId = (bytes) => {
+  const text = fatalUtf8Decoder.decode(bytes);
+  const headings = [...text.matchAll(/^## Active Next Action$/gm)];
+  if (headings.length < 1) throw new Error('active_next_action_missing');
+  const selected = headings[headings.length - 1];
+  const tail = text.slice(selected.index + selected[0].length).replace(/^\r?\n/u, '');
+  const nextHeading = tail.search(/^## /m);
+  const section = nextHeading === -1 ? tail : tail.slice(0, nextHeading);
+  const ids = [...section.matchAll(
+    /^- `next_action_id`:\r?\n  `([A-Za-z0-9][A-Za-z0-9._:-]{0,191})`$/gm,
+  )];
+  if (ids.length !== 1) throw new Error('active_next_action_invalid');
+  return ids[0][1];
+};
+
+const readFixedPreclaimCentralState = async () => {
+  const options = { encoding: 'utf8', maxBuffer: 128 * 1024, timeout: 10_000 };
+  const git = async (...args) => (await execFile(
+    'git',
+    ['-C', FIXED_CENTRAL_REPO_ROOT, ...args],
+    options,
+  )).stdout.trim();
+  const [root, branch, head, upstream, status] = await Promise.all([
+    git('rev-parse', '--show-toplevel'),
+    git('symbolic-ref', '--quiet', '--short', 'HEAD'),
+    git('rev-parse', 'HEAD'),
+    git('rev-parse', '@{upstream}'),
+    git('status', '--porcelain=v1', '--untracked-files=all'),
+  ]);
+  if (
+    root !== FIXED_CENTRAL_REPO_ROOT
+    || branch !== FIXED_CENTRAL_BRANCH
+    || !GIT_SHA.test(head)
+    || head !== upstream
+    || status !== ''
+  ) throw new Error('central_context_invalid');
+  return Object.freeze({ head });
+};
+
+const validateFixedPreclaimCentralContext = async ({
+  expectedCentralRepoHead,
+  expectedMissionContractSha256,
+  expectedActiveNextActionId,
+  expectedActiveNextActionSha256,
+}) => {
+  const before = await readFixedPreclaimCentralState();
+  const [mission, nextAction] = await Promise.all([
+    readStablePreclaimTrackedFile(FIXED_UI_ATTESTED_MISSION_CONTRACT_PATH),
+    readStablePreclaimTrackedFile(FIXED_ACTIVE_NEXT_ACTION_PATH),
+  ]);
+  const after = await readFixedPreclaimCentralState();
+  if (
+    before.head !== after.head
+    || after.head !== expectedCentralRepoHead
+    || mission.digest !== expectedMissionContractSha256
+    || nextAction.digest !== expectedActiveNextActionSha256
+    || parseFinalPreclaimActiveNextActionId(nextAction.bytes) !== expectedActiveNextActionId
+  ) throw new Error('central_context_invalid');
+};
+
+const validatePreclaimContextBindingShape = ({
+  expectedCentralRepoHead,
+  expectedMissionContractSha256,
+  expectedActiveNextActionId,
+  expectedActiveNextActionSha256,
+}) => (
+  GIT_SHA.test(expectedCentralRepoHead)
+  && isSha256(expectedMissionContractSha256)
+  && isOpaqueId(expectedActiveNextActionId)
+  && isSha256(expectedActiveNextActionSha256)
+);
+
+const assertEmptyOwnerOnlyPreclaimAuthorityRoot = async ({
+  authorityRoot,
+  executionMode,
+}) => {
+  if (typeof authorityRoot !== 'string' || authorityRoot !== resolve(authorityRoot)) {
+    throw new Error('authority_root_invalid');
+  }
+  if (executionMode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE) {
+    if (authorityRoot !== FIXED_UI_ATTESTED_AUTHORITY_ROOT) {
+      throw new Error('authority_root_invalid');
+    }
+  } else if (executionMode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC) {
+    const canonicalTemp = await realpath(tmpdir());
+    if (
+      dirname(authorityRoot) !== canonicalTemp
+      || !basename(authorityRoot).startsWith(SYNTHETIC_UI_ATTESTED_AUTHORITY_PREFIX)
+    ) throw new Error('authority_root_invalid');
+  } else throw new Error('authority_root_invalid');
+  const before = await lstat(authorityRoot);
+  const canonical = await realpath(authorityRoot);
+  if (
+    canonical !== authorityRoot
+    || !before.isDirectory()
+    || before.isSymbolicLink()
+    || !exactMode(before, 0o700)
+    || (typeof process.getuid === 'function' && before.uid !== process.getuid())
+  ) throw new Error('authority_root_invalid');
+  const entries = await readdir(authorityRoot);
+  const after = await lstat(authorityRoot);
+  if (entries.length !== 0 || !sameMetadata(after, before)) {
+    throw new Error('authority_root_invalid');
+  }
+};
+
+const validateWelcomeAudioSafariUiAttestedPreclaimStartGates = async ({
+  executionMode,
+  nowMs,
+  privateAudioAssetCapability,
+  approvedAudioAssetPath,
+  expectedAudioSha256,
+  expectedCentralRepoHead,
+  expectedMissionContractSha256,
+  expectedActiveNextActionId,
+  expectedActiveNextActionSha256,
+  authorityRoot,
+  privateStoreCapability = null,
+  syntheticStoreRoot = null,
+}) => {
+  const gateNowMs = () => executionMode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE
+    ? Date.now()
+    : nowMs;
+  if (
+    !isValidObservationNowMs(nowMs)
+    || !isExactApprovedAssetPath(approvedAudioAssetPath)
+    || !isSha256(expectedAudioSha256)
+    || !validatePreclaimContextBindingShape({
+      expectedCentralRepoHead,
+      expectedMissionContractSha256,
+      expectedActiveNextActionId,
+      expectedActiveNextActionSha256,
+    })
+  ) return null;
+  if (await verifyApprovedWelcomeAudioAssetCapabilityPathBinding({
+    private_audio_asset_capability: privateAudioAssetCapability,
+    asset_path: approvedAudioAssetPath,
+    expected_audio_sha256: expectedAudioSha256,
+  }) !== WELCOME_AUDIO_LIVE_PREFLIGHT_CAPABILITY_STATUS.VALID) return null;
+  const audioValidatedAt = new Date(gateNowMs()).toISOString();
+  try {
+    if (executionMode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE) {
+      await validateFixedPreclaimCentralContext({
+        expectedCentralRepoHead,
+        expectedMissionContractSha256,
+        expectedActiveNextActionId,
+        expectedActiveNextActionSha256,
+      });
+    } else if (executionMode !== WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC) {
+      return null;
+    }
+    const centralContextCheckedAt = new Date(gateNowMs()).toISOString();
+    await assertEmptyOwnerOnlyPreclaimAuthorityRoot({ authorityRoot, executionMode });
+    if (executionMode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE) {
+      await openFixedWelcomeAudioLiveClaimStore();
+    } else if (!await verifySyntheticWelcomeAudioLiveClaimStoreRootBindingForTest({
+      private_store_capability: privateStoreCapability,
+      synthetic_store_root: syntheticStoreRoot,
+    })) return null;
+    return Object.freeze({ audioValidatedAt, centralContextCheckedAt });
+  } catch {
+    return null;
+  }
+};
+
+const observeWelcomeAudioSafariUiAttestedPreclaimInternal = async ({
+  driver,
+  executionMode,
+  nowMs,
+  audioValidatedAt,
+  centralContextCheckedAt,
+  exactTarget,
+  exactBoundThreadReference,
+  exactOwnerAccountReference,
+  approvedAudioAssetPath,
+  expectedAudioSha256,
+  expectedCentralRepoHead,
+  expectedMissionContractSha256,
+  expectedActiveNextActionId,
+  expectedActiveNextActionSha256,
+}) => {
+  let stateReadCount = 0;
+  let observation = null;
+  const blocked = (blocker) => Object.freeze({
+    private_preclaim_observation_capability: null,
+    redacted_receipt: buildWelcomeAudioSafariUiAttestedPreclaimReceipt({
+      executionMode,
+      startGatesValidated: true,
+      stateReadCount,
+      observation,
+      blockerCodes: [blocker],
+    }),
+  });
+  const driverState = DRIVER_STATE.get(driver);
+  const expectedDriverKind = executionMode
+      === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE
+    ? 'sky_live'
+    : executionMode === WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC
+      ? 'synthetic_test'
+      : null;
+  if (
+    !driverState
+    || driverState.kind !== expectedDriverKind
+    || driverState.revision !== 0
+    || (driverState.kind === 'synthetic_test'
+      && (driverState.action_count !== 0 || driverState.stage !== 'thread'))
+  ) return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.DRIVER_INVALID);
+  if (
+    !isValidObservationNowMs(nowMs)
+    || !isExactInstagramAccountReference(exactTarget)
+    || !isExactPrivateThreadReference(exactBoundThreadReference)
+    || !isExactInstagramAccountReference(exactOwnerAccountReference)
+    || !isExactApprovedAssetPath(approvedAudioAssetPath)
+  ) return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID);
+  try {
+    stateReadCount = 1;
+    observation = await getFreshDriverObservation({
+      driver,
+      authorityFamily: WELCOME_AUDIO_SAFARI_AUTHORITY_FAMILY.UI_ATTESTED,
+      exactTarget,
+      exactBoundThreadReference,
+      exactOwnerAccountReference,
+      approvedAssetPath: approvedAudioAssetPath,
+    });
+  } catch {
+    return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.FRESH_STATE_INVALID);
+  }
+  if (!observation || observation.revision !== 1) {
+    return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.FRESH_STATE_INVALID);
+  }
+  if (
+    observation.standard_safari !== true
+    || observation.isolated_surface !== true
+    || observation.private_browsing !== false
+    || observation.unrelated_regular_tabs_present !== false
+  ) return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.SURFACE_INVALID);
+  const expectedBindingSha256 = expectedUiAttestedExactBindingSha256({
+    exactTarget,
+    exactBoundThreadReference,
+    exactOwnerAccountReference,
+  });
+  if (
+    observation.exact_source_target_bound !== true
+    || observation.exact_thread_bound !== true
+    || observation.exact_binding_sha256 !== expectedBindingSha256
+  ) return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.BINDING_INVALID);
+  if (
+    observation.message_input_visible !== true
+    || observation.message_composer_empty !== true
+  ) return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.COMPOSER_INVALID);
+  if (
+    observation.outgoing_audio_scope_proven !== true
+    || observation.outgoing_audio_bubble_count !== 0
+  ) return blocked(
+    WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.PRIOR_AUDIO_PRESENT_OR_UNKNOWN,
+  );
+  if (observation.attachment_preview_count !== 0) {
+    return blocked(
+      WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.ATTACHMENT_PREVIEW_PRESENT,
+    );
+  }
+  if (
+    !Number.isSafeInteger(observation.attachment_control_index)
+    || observation.attachment_control_index < 0
+  ) return blocked(
+    WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.ATTACHMENT_CONTROL_INVALID,
+  );
+  if (observation.challenge_or_error_visible !== false) {
+    return blocked(WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.CHALLENGE_OR_ERROR);
+  }
+  const privateAttestation = Object.freeze({
+    observed_at: new Date(nowMs).toISOString(),
+    audio_validated_at: audioValidatedAt,
+    central_context_checked_at: centralContextCheckedAt,
+  });
+  const privateCapability = opaqueCapability(
+    'crm_core_welcome_audio_safari_ui_attested_preclaim_observation_capability',
+    'welcome_audio_safari_ui_attested_preclaim_observation_capability_not_serializable',
+  );
+  UI_ATTESTED_PRECLAIM_OBSERVATION_CAPABILITY_STATE.set(privateCapability, {
+    phase: 'fresh',
+    execution_mode: executionMode,
+    private_attestation: privateAttestation,
+    exact_target: exactTarget,
+    exact_bound_thread_reference: exactBoundThreadReference,
+    exact_owner_account_reference: exactOwnerAccountReference,
+    approved_audio_asset_path: approvedAudioAssetPath,
+    expected_audio_sha256: expectedAudioSha256,
+    expected_central_repo_head: expectedCentralRepoHead,
+    expected_mission_contract_sha256: expectedMissionContractSha256,
+    expected_active_next_action_id: expectedActiveNextActionId,
+    expected_active_next_action_sha256: expectedActiveNextActionSha256,
+    exact_binding_sha256: expectedBindingSha256,
+  });
+  return Object.freeze({
+    private_preclaim_observation_capability: privateCapability,
+    redacted_receipt: buildWelcomeAudioSafariUiAttestedPreclaimReceipt({
+      executionMode,
+      decision: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.READY,
+      startGatesValidated: true,
+      stateReadCount,
+      observation,
+      capabilityIssued: true,
+    }),
+  });
+};
+
+const UI_ATTESTED_PRECLAIM_OBSERVER_COMMON_FIELDS = Object.freeze([
+  'private_audio_asset_capability',
+  'exact_target',
+  'exact_bound_thread_reference',
+  'exact_owner_account_reference',
+  'approved_audio_asset_path',
+  'expected_audio_sha256',
+  'expected_central_repo_head',
+  'expected_mission_contract_sha256',
+  'expected_active_next_action_id',
+  'expected_active_next_action_sha256',
+]);
+
+const isValidUiAttestedPreclaimObserverCommonInput = (parameters) => (
+  isExactInstagramAccountReference(parameters.exact_target)
+  && isExactPrivateThreadReference(parameters.exact_bound_thread_reference)
+  && isExactInstagramAccountReference(parameters.exact_owner_account_reference)
+  && isExactApprovedAssetPath(parameters.approved_audio_asset_path)
+  && isSha256(parameters.expected_audio_sha256)
+  && validatePreclaimContextBindingShape({
+    expectedCentralRepoHead: parameters.expected_central_repo_head,
+    expectedMissionContractSha256: parameters.expected_mission_contract_sha256,
+    expectedActiveNextActionId: parameters.expected_active_next_action_id,
+    expectedActiveNextActionSha256: parameters.expected_active_next_action_sha256,
+  })
+);
+
+const blockedPreclaimObserver = ({
+  executionMode,
+  blocker,
+  startGatesValidated = false,
+}) => Object.freeze({
+  private_preclaim_observation_capability: null,
+  redacted_receipt: buildWelcomeAudioSafariUiAttestedPreclaimReceipt({
+    executionMode,
+    startGatesValidated,
+    blockerCodes: [blocker],
+  }),
+});
+
+const observeWelcomeAudioSafariUiAttestedPreclaimOnce = async (parameters = {}) => {
+  const executionMode = WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE;
+  if (
+    !exactObjectKeys(parameters, UI_ATTESTED_PRECLAIM_OBSERVER_COMMON_FIELDS)
+    || !isValidUiAttestedPreclaimObserverCommonInput(parameters)
+  ) return blockedPreclaimObserver({
+    executionMode,
+    blocker: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID,
+  });
+  const nowMs = Date.now();
+  const gates = await validateWelcomeAudioSafariUiAttestedPreclaimStartGates({
+    executionMode,
+    nowMs,
+    privateAudioAssetCapability: parameters.private_audio_asset_capability,
+    approvedAudioAssetPath: parameters.approved_audio_asset_path,
+    expectedAudioSha256: parameters.expected_audio_sha256,
+    expectedCentralRepoHead: parameters.expected_central_repo_head,
+    expectedMissionContractSha256: parameters.expected_mission_contract_sha256,
+    expectedActiveNextActionId: parameters.expected_active_next_action_id,
+    expectedActiveNextActionSha256: parameters.expected_active_next_action_sha256,
+    authorityRoot: FIXED_UI_ATTESTED_AUTHORITY_ROOT,
+  });
+  if (!gates) return blockedPreclaimObserver({
+    executionMode,
+    blocker: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.START_GATES_INVALID,
+  });
+  let driver;
+  try {
+    driver = createTrustedSkySafariDriverFromInstalledRuntime();
+  } catch {
+    return blockedPreclaimObserver({
+      executionMode,
+      blocker: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.DRIVER_INVALID,
+      startGatesValidated: true,
+    });
+  }
+  return observeWelcomeAudioSafariUiAttestedPreclaimInternal({
+    driver,
+    executionMode,
+    nowMs: Date.now(),
+    audioValidatedAt: gates.audioValidatedAt,
+    centralContextCheckedAt: gates.centralContextCheckedAt,
+    exactTarget: parameters.exact_target,
+    exactBoundThreadReference: parameters.exact_bound_thread_reference,
+    exactOwnerAccountReference: parameters.exact_owner_account_reference,
+    approvedAudioAssetPath: parameters.approved_audio_asset_path,
+    expectedAudioSha256: parameters.expected_audio_sha256,
+    expectedCentralRepoHead: parameters.expected_central_repo_head,
+    expectedMissionContractSha256: parameters.expected_mission_contract_sha256,
+    expectedActiveNextActionId: parameters.expected_active_next_action_id,
+    expectedActiveNextActionSha256: parameters.expected_active_next_action_sha256,
+  });
+};
+
+const observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest = async (parameters = {}) => {
+  const executionMode = WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC;
+  if (
+    !exactObjectKeys(parameters, [
+      ...UI_ATTESTED_PRECLAIM_OBSERVER_COMMON_FIELDS,
+      'authority_root',
+      'private_store_capability',
+      'synthetic_store_root',
+      'driver',
+      'now_ms',
+    ])
+    || !isValidUiAttestedPreclaimObserverCommonInput(parameters)
+    || !isValidObservationNowMs(parameters.now_ms)
+  ) return blockedPreclaimObserver({
+    executionMode,
+    blocker: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID,
+  });
+  const gates = await validateWelcomeAudioSafariUiAttestedPreclaimStartGates({
+    executionMode,
+    nowMs: parameters.now_ms,
+    privateAudioAssetCapability: parameters.private_audio_asset_capability,
+    approvedAudioAssetPath: parameters.approved_audio_asset_path,
+    expectedAudioSha256: parameters.expected_audio_sha256,
+    expectedCentralRepoHead: parameters.expected_central_repo_head,
+    expectedMissionContractSha256: parameters.expected_mission_contract_sha256,
+    expectedActiveNextActionId: parameters.expected_active_next_action_id,
+    expectedActiveNextActionSha256: parameters.expected_active_next_action_sha256,
+    authorityRoot: parameters.authority_root,
+    privateStoreCapability: parameters.private_store_capability,
+    syntheticStoreRoot: parameters.synthetic_store_root,
+  });
+  if (!gates) return blockedPreclaimObserver({
+    executionMode,
+    blocker: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.START_GATES_INVALID,
+  });
+  return observeWelcomeAudioSafariUiAttestedPreclaimInternal({
+    driver: parameters.driver,
+    executionMode,
+    nowMs: parameters.now_ms,
+    audioValidatedAt: gates.audioValidatedAt,
+    centralContextCheckedAt: gates.centralContextCheckedAt,
+    exactTarget: parameters.exact_target,
+    exactBoundThreadReference: parameters.exact_bound_thread_reference,
+    exactOwnerAccountReference: parameters.exact_owner_account_reference,
+    approvedAudioAssetPath: parameters.approved_audio_asset_path,
+    expectedAudioSha256: parameters.expected_audio_sha256,
+    expectedCentralRepoHead: parameters.expected_central_repo_head,
+    expectedMissionContractSha256: parameters.expected_mission_contract_sha256,
+    expectedActiveNextActionId: parameters.expected_active_next_action_id,
+    expectedActiveNextActionSha256: parameters.expected_active_next_action_sha256,
+  });
+};
+
+const UI_ATTESTED_PRECLAIM_CONSUMER_COMMON_FIELDS = Object.freeze([
+  'private_preclaim_observation_capability',
+  'expected_exact_target',
+  'expected_exact_bound_thread_reference',
+  'expected_exact_owner_account_reference',
+  'expected_approved_audio_asset_path',
+  'expected_audio_sha256',
+  'expected_central_repo_head',
+  'expected_mission_contract_sha256',
+  'expected_active_next_action_id',
+  'expected_active_next_action_sha256',
+]);
+
+const consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityInternal = ({
+  parameters,
+  expectedExecutionMode,
+  nowMs,
+}) => {
+  const state = UI_ATTESTED_PRECLAIM_OBSERVATION_CAPABILITY_STATE.get(
+    parameters.private_preclaim_observation_capability,
+  );
+  if (!state || state.phase !== 'fresh') return null;
+  // A known fresh capability is irrevocably burned before checking caller-supplied
+  // expectations or freshness. A mismatch cannot be used as an oracle or retried.
+  state.phase = 'consumed';
+  const attestation = state.private_attestation;
+  const observedAtMs = Date.parse(attestation?.observed_at ?? '');
+  if (
+    state.execution_mode !== expectedExecutionMode
+    || !attestation
+    || !exactObjectKeys(attestation, UI_ATTESTED_PRECLAIM_OBSERVATION_FIELDS)
+    || state.exact_target !== parameters.expected_exact_target
+    || state.exact_bound_thread_reference !== parameters.expected_exact_bound_thread_reference
+    || state.exact_owner_account_reference !== parameters.expected_exact_owner_account_reference
+    || state.approved_audio_asset_path !== parameters.expected_approved_audio_asset_path
+    || state.expected_audio_sha256 !== parameters.expected_audio_sha256
+    || state.expected_central_repo_head !== parameters.expected_central_repo_head
+    || state.expected_mission_contract_sha256
+      !== parameters.expected_mission_contract_sha256
+    || state.expected_active_next_action_id !== parameters.expected_active_next_action_id
+    || state.expected_active_next_action_sha256
+      !== parameters.expected_active_next_action_sha256
+    || !isValidObservationNowMs(nowMs)
+    || !Number.isFinite(observedAtMs)
+    || nowMs < observedAtMs
+    || nowMs - observedAtMs >= WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS
+    || state.exact_binding_sha256 !== expectedUiAttestedExactBindingSha256({
+      exactTarget: parameters.expected_exact_target,
+      exactBoundThreadReference: parameters.expected_exact_bound_thread_reference,
+      exactOwnerAccountReference: parameters.expected_exact_owner_account_reference,
+    })
+  ) return null;
+  return attestation;
+};
+
+const consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnce = (
+  parameters = {},
+) => {
+  if (!exactObjectKeys(parameters, UI_ATTESTED_PRECLAIM_CONSUMER_COMMON_FIELDS)) return null;
+  return consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityInternal({
+    parameters,
+    expectedExecutionMode: WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.LIVE,
+    nowMs: Date.now(),
+  });
+};
+
+const consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnceForTest = (
+  parameters = {},
+) => {
+  if (!exactObjectKeys(parameters, [
+    ...UI_ATTESTED_PRECLAIM_CONSUMER_COMMON_FIELDS,
+    'now_ms',
+  ])) return null;
+  return consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityInternal({
+    parameters,
+    expectedExecutionMode: WELCOME_AUDIO_SAFARI_LIVE_HOST_EXECUTION_MODE.SYNTHETIC,
+    nowMs: parameters.now_ms,
   });
 };
 
@@ -4382,7 +5185,14 @@ export {
   WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_SAFARI_TERMINAL_EVIDENCE_STATUS,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_OBSERVER_CONTRACT_VERSION,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_RECEIPT_SCHEMA_VERSION,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_STATUS,
   WELCOME_AUDIO_SAFARI_VISUAL_CONFIRMATION_STATUS,
+  consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnce,
+  consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnceForTest,
   consumeWelcomeAudioSafariSyntheticAttemptEvidenceCapabilityOnceForTest,
   consumeWelcomeAudioSafariSyntheticVisualConfirmationCapabilityOnceForTest,
   configureSyntheticSafariPendingModeTamperAfterFinalFreshStateForTest,
@@ -4394,6 +5204,8 @@ export {
   inspectSyntheticLiveSafariStateForTest,
   inspectSyntheticUiAttestedFlatSafariStateForTest,
   inspectSyntheticSafariDriverForTest,
+  observeWelcomeAudioSafariUiAttestedPreclaimOnce,
+  observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest,
   prepareWelcomeAudioSafariSyntheticTargetForTest,
   resolveWelcomeAudioSafariLiveHostDeterministicOracleForTest,
   runWelcomeAudioSafariLiveCompositeOnce,
@@ -4403,5 +5215,6 @@ export {
   validateWelcomeAudioSafariLiveCompositeReceipt,
   validateWelcomeAudioSafariLiveHostReceipt,
   validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt,
+  validateWelcomeAudioSafariUiAttestedPreclaimObserverReceipt,
   verifyAndConsumeWelcomeAudioSafariTerminalEvidenceOnce,
 };

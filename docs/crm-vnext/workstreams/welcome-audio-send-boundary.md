@@ -936,3 +936,100 @@
   `claim_issued=false`, `send_allowed=false`, `live_authority=false`,
   `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
+
+## UI-Attested PRECLAIM Builder/Runner No-Live Checkpoint
+
+- `checkpoint_date`: `2026-07-18`
+- `mission_id`:
+  `crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718`
+- `mode`: `proof`
+- `status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `approved_baseline`:
+  `feed2788fa0400b63483dd4b4e851a45f94b7bda`
+- `source_branch`:
+  `codex/crm-core-preclaim-builder-runner-v1-20260718`
+- `objective`: Close the missing production composition edge from one private
+  UI-attested draft and authorization seed into the existing fixed authority,
+  PRECLAIM, claim, Safari, PENDING, upload, one-Send, and confirmation rail,
+  without invoking any live boundary in this mission.
+- `authorization_boundary`: The exact seed binds central HEAD, mission and
+  active-next-action, approval interval, draft/projection, operation,
+  authorization, source evidence, candidate/thread/owner/dedupe, approved
+  audio, and nonce digests. Before source read, the seed is structurally
+  recognized, atomically burned, and exact-bound; cross-draft mismatch burns
+  it. Successful binding issues a module-private opaque admission capability
+  consumed once by the builder after observation.
+- `observer_boundary`: Before exactly one fresh state read, the production
+  Safari host validates the exact approved audio, clean central context,
+  tracked mission and active-next-action, empty owner-only fixed authority
+  root, and fixed claim-store gates. A failed gate performs zero reads. After
+  green gates it requires the exact target/thread/owner binding, a visible
+  empty composer, one unambiguous attachment control, no preview, proven
+  no-prior-outgoing-audio scope, and no challenge. It returns only one opaque
+  exact-bound fresh one-use capability and an aggregate receipt.
+- `observation_consumption_boundary`: A recognized observation capability is
+  burned before mismatch or freshness rejection. The consumer returns only
+  `observed_at`, `audio_validated_at`, and
+  `central_context_checked_at` for their distinct narrow attestations.
+- `audio_boundary`: After draft validation and atomic exact seed admission, the
+  runner validates the approved audio bytes and digest. The builder
+  independently verifies the resulting opaque audio capability against the
+  same canonical path and draft digest before consuming the Safari observation.
+- `builder_boundary`: The data-only effect-free builder creates the complete
+  operation snapshot, computes and binds the canonical digest through exactly
+  seven required positions, recomputes it, runs the unchanged operation guard,
+  and succeeds only at PRECLAIM with claim allowed and Send not ready or
+  allowed.
+  It also creates the exact publisher authorization bound to that same digest.
+- `runner_boundary`: The fixed live runner accepts only `private_draft` and
+  `private_authorization_seed`. It chains the existing fixed publisher,
+  authority loader, UI-attested operation-context validator, and one-shot
+  Safari composite. It does not implement or expose claim, PENDING, chooser,
+  upload, Send, or confirmation actions itself.
+- `single_send_boundary`: The existing composite remains the only Send path.
+  There is no fallback, direct click, text alternative, alternate adapter,
+  second Send, resend, or ambiguous retry. Any authority publication attempt
+  with a thrown, malformed, or lost result, later open/context failure, or
+  post-publication blocked zero-effect result is terminal zero-external-effect
+  and permanently no-retry. After a possible external boundary, any throw or
+  unproven result is terminal UNKNOWN and permanently no-retry.
+- `synthetic_boundary`: Only `ForTest` entrypoints accept a temporary authority
+  root, store capability/root, fake driver, deterministic clocks, and fault
+  scenario. They cannot select live mode or fixed roots. The live entry accepts
+  none of those fields. Imports are inert, proven in a fresh child process with
+  a poisoned runtime getter and isolated HOME.
+- `exact_allowlist`: `12/12` paths: two new production modules, one host edit,
+  two new specs, one host-spec edit, two new docs, and four coordinated docs.
+  `package.json`, publisher, operation guard, preflight, claim issuer, and
+  composite semantics remain outside scope and unchanged.
+- `validation_gate`: Node syntax; focused builder, runner, and Safari-host
+  suites; exact sixteen-suite welcome-audio compatibility; exact file
+  allowlist; `git diff --check`; fresh-process import-inertness, replay,
+  hostile-input, ambiguity, privacy, and no-live checks.
+- `review_gate`: One independent adversarial review with no unresolved P0-P2,
+  followed by one formal Chief Architect integration review requiring
+  `green_to_self_integrate`, `safe_to_self_integrate_now=true`,
+  `ceo_decision_needed=false`, and the exact response sentinel.
+- `integration_gate`: One dedicated Central Integration Worker, one Central
+  Integration Lock, fresh central HEAD/active-next-action revalidation, exact
+  twelve-file staged delta, all checks rerun on central, one central commit and
+  push, clean source-lane fast-forward, and lock release.
+- `current_validation_status`:
+  `focused_166_of_166_and_exact_sixteen_suite_759_of_759_green`
+- `independent_review_status`: `green_no_unresolved_p0_p1_p2_p3`
+- `formal_integration_review_status`: `pending`
+- `central_integration_status`: `not_started`
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
+  `live_authority=false`, `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+- `validation_effect_boundary`: No real Safari, browser, network, private
+  artifact, fixed authority root, fixed claim store, claim, PENDING, upload,
+  Send, or external effect occurred. Exact twelve-file allowlist, syntax,
+  replay, privacy, hostile-input, ambiguity, fresh-process inert import, and
+  diff checks are green.
+- `later_gate`: Only after green central integration may a separately fresh
+  one-recipient live authority invoke the fixed runner. This repo-only mission
+  itself authorizes no Safari read, fixed-root access, claim, PENDING, upload,
+  Send, MailerLite, CRM, campaign, Ads, proxy, network, or external effect.

@@ -27,6 +27,7 @@ import {
   computeWelcomeAudioSealedManifestSha256,
   createSyntheticWelcomeAudioLiveAuthorityCapability,
   createSyntheticWelcomeAudioUiAttestedLiveAuthorityCapability,
+  validateApprovedWelcomeAudioAsset,
   validateWelcomeAudioLiveOperationContext,
   validateWelcomeAudioUiAttestedLiveOperationContext,
 } from "../scripts/crm-vnext-instagram-welcome-audio-live-preflight.mjs";
@@ -83,7 +84,12 @@ import {
   WELCOME_AUDIO_SAFARI_LIVE_PARSER_SYNTHETIC_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST,
   WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION,
+  WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_OBSERVER_CONTRACT_VERSION,
   WELCOME_AUDIO_SAFARI_VISUAL_CONFIRMATION_STATUS,
+  consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnce,
+  consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnceForTest,
   consumeWelcomeAudioSafariSyntheticAttemptEvidenceCapabilityOnceForTest as consumeWelcomeAudioSafariAttemptEvidenceCapabilityOnce,
   consumeWelcomeAudioSafariSyntheticVisualConfirmationCapabilityOnceForTest as consumeWelcomeAudioSafariVisualConfirmationCapabilityOnce,
   configureSyntheticSafariPendingModeTamperAfterFinalFreshStateForTest,
@@ -95,6 +101,8 @@ import {
   inspectSyntheticLiveSafariStateForTest,
   inspectSyntheticUiAttestedFlatSafariStateForTest,
   inspectSyntheticSafariDriverForTest,
+  observeWelcomeAudioSafariUiAttestedPreclaimOnce,
+  observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest,
   prepareWelcomeAudioSafariSyntheticTargetForTest as prepareWelcomeAudioSafariLiveTarget,
   runWelcomeAudioSafariSyntheticCompositeOnceForTest,
   runWelcomeAudioSafariLiveCompositeOnce,
@@ -103,6 +111,7 @@ import {
   validateWelcomeAudioSafariLiveCompositeReceipt,
   validateWelcomeAudioSafariLiveHostReceipt,
   validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt,
+  validateWelcomeAudioSafariUiAttestedPreclaimObserverReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-safari-live-host.mjs";
 import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
@@ -143,6 +152,279 @@ afterEach(async () => {
     recursive: true,
     force: true,
   })));
+});
+
+describe("UI-attested Safari PRECLAIM observer", () => {
+  const exactBinding = Object.freeze({
+    exact_target: "synthetic.target",
+    exact_bound_thread_reference:
+      "https://www.instagram.com/direct/t/synthetic-thread/",
+    exact_owner_account_reference: "synthetic.owner",
+  });
+  const nowMs = Date.parse("2026-07-18T15:00:00.000Z");
+  const contextBinding = Object.freeze({
+    expected_central_repo_head: "1".repeat(40),
+    expected_mission_contract_sha256: "2".repeat(64),
+    expected_active_next_action_id: "synthetic_preclaim_observer_action_v1",
+    expected_active_next_action_sha256: "3".repeat(64),
+  });
+
+  const createObserverHarness = async (scenario =
+    WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE) => {
+    const authorityRoot = await realpath(await mkdtemp(join(
+      tmpdir(),
+      "crm-core-welcome-audio-ui-attested-live-authority-test-",
+    )));
+    const storeRoot = await realpath(await mkdtemp(join(
+      tmpdir(),
+      "crm-core-welcome-audio-live-claim-store-test-",
+    )));
+    const assetRoot = await realpath(await mkdtemp(
+      join(tmpdir(), "crm-core-preclaim-audio-test-"),
+    ));
+    cleanupPaths.push(authorityRoot, storeRoot, assetRoot);
+    await Promise.all([chmod(authorityRoot, 0o700), chmod(storeRoot, 0o700)]);
+    const assetPath = join(assetRoot, "approved.m4a");
+    const assetBytes = Buffer.from("synthetic-approved-audio", "utf8");
+    await writeFile(assetPath, assetBytes, { mode: 0o600 });
+    const expectedAudioSha256 = createHash("sha256").update(assetBytes).digest("hex");
+    const audio = await validateApprovedWelcomeAudioAsset({
+      asset_path: assetPath,
+      expected_audio_sha256: expectedAudioSha256,
+    });
+    expect(audio.private_capability).not.toBeNull();
+    const storeCapability = await createSyntheticWelcomeAudioLiveClaimStoreCapability({
+      store_root: storeRoot,
+    });
+    const driver = createSyntheticSafariDriverForTest({ scenario });
+    const input = Object.freeze({
+      private_audio_asset_capability: audio.private_capability,
+      ...exactBinding,
+      approved_audio_asset_path: assetPath,
+      expected_audio_sha256: expectedAudioSha256,
+      ...contextBinding,
+      authority_root: authorityRoot,
+      private_store_capability: storeCapability,
+      synthetic_store_root: storeRoot,
+      driver,
+      now_ms: nowMs,
+    });
+    return { driver, input, assetPath, expectedAudioSha256 };
+  };
+
+  const observe = async (scenario =
+    WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE) => {
+    const harness = await createObserverHarness(scenario);
+    const result = await observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest(harness.input);
+    return { ...harness, result };
+  };
+
+  const consume = (harness: Awaited<ReturnType<typeof observe>>, overrides = {}) => (
+    consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnceForTest({
+      private_preclaim_observation_capability:
+        harness.result.private_preclaim_observation_capability,
+      expected_exact_target: exactBinding.exact_target,
+      expected_exact_bound_thread_reference: exactBinding.exact_bound_thread_reference,
+      expected_exact_owner_account_reference: exactBinding.exact_owner_account_reference,
+      expected_approved_audio_asset_path: harness.assetPath,
+      expected_audio_sha256: harness.expectedAudioSha256,
+      ...contextBinding,
+      now_ms: nowMs,
+      ...overrides,
+    })
+  );
+
+  test("validates synthetic start gates before exactly one fresh read and zero actions", async () => {
+    const harness = await observe();
+    const { driver, result } = harness;
+    expect(validateWelcomeAudioSafariUiAttestedPreclaimObserverReceipt(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(result.redacted_receipt).toMatchObject({
+      observer_contract_version:
+        WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_OBSERVER_CONTRACT_VERSION,
+      decision: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.READY,
+      start_gates_validated: true,
+      state_read_count: 1,
+      ui_action_count: 0,
+      safari_standard_isolated: true,
+      exact_binding_proven: true,
+      composer_ready: true,
+      attachment_control_unambiguous: true,
+      attachment_preview_absent: true,
+      prior_outgoing_audio_absence_proven: true,
+      challenge_or_error_absent: true,
+      observation_capability_issued: true,
+      external_effect_possible: false,
+      blocker_codes: [],
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver })).toEqual({
+      stage: "thread",
+      action_count: 0,
+      state_read_count: 1,
+    });
+    expect(() => JSON.stringify(result.private_preclaim_observation_capability)).toThrow();
+
+    const attestation = consume(harness);
+    expect(Object.isFrozen(attestation)).toBe(true);
+    expect(attestation).toEqual({
+      observed_at: "2026-07-18T15:00:00.000Z",
+      audio_validated_at: "2026-07-18T15:00:00.000Z",
+      central_context_checked_at: "2026-07-18T15:00:00.000Z",
+    });
+    expect(Object.keys(attestation)).toEqual([
+      "observed_at",
+      "audio_validated_at",
+      "central_context_checked_at",
+    ]);
+    expect(JSON.stringify(attestation)).not.toContain(exactBinding.exact_target);
+    expect(consume(harness)).toBeNull();
+  });
+
+  test.each([
+    [
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.AMBIGUOUS_ATTACHMENT_CONTROL,
+      WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.ATTACHMENT_CONTROL_INVALID,
+    ],
+    [
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.PRIOR_AUDIO_PRESENT,
+      WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.PRIOR_AUDIO_PRESENT_OR_UNKNOWN,
+    ],
+    [
+      WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.MIXED_OR_PRIVATE_SURFACE,
+      WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.SURFACE_INVALID,
+    ],
+  ])("blocks %s with one read and no action", async (scenario, blocker) => {
+    const { driver, result } = await observe(scenario);
+    expect(result.private_preclaim_observation_capability).toBeNull();
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.BLOCKED,
+      start_gates_validated: true,
+      state_read_count: 1,
+      ui_action_count: 0,
+      observation_capability_issued: false,
+      external_effect_possible: false,
+      blocker_codes: [blocker],
+    });
+    expect(validateWelcomeAudioSafariUiAttestedPreclaimObserverReceipt(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(inspectSyntheticSafariDriverForTest({ driver })).toMatchObject({
+      stage: "thread",
+      action_count: 0,
+      state_read_count: 1,
+    });
+  });
+
+  test("burns before binding mismatch or stale freshness validation", async () => {
+    const first = await observe();
+    expect(consume(first, {
+      expected_exact_target: "tampered.target",
+    })).toBeNull();
+    expect(consume(first)).toBeNull();
+
+    const second = await observe();
+    expect(consume(second, {
+      now_ms: nowMs + WELCOME_AUDIO_CONFIRMATION_MAX_DELAY_MS,
+    })).toBeNull();
+    expect(consume(second)).toBeNull();
+  });
+
+  test("the production consumer owns its clock and rejects then burns synthetic capability", async () => {
+    const harness = await observe();
+    expect(consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnce({
+      private_preclaim_observation_capability:
+        harness.result.private_preclaim_observation_capability,
+      expected_exact_target: exactBinding.exact_target,
+      expected_exact_bound_thread_reference: exactBinding.exact_bound_thread_reference,
+      expected_exact_owner_account_reference: exactBinding.exact_owner_account_reference,
+      expected_approved_audio_asset_path: harness.assetPath,
+      expected_audio_sha256: harness.expectedAudioSha256,
+      ...contextBinding,
+    })).toBeNull();
+    expect(consume(harness)).toBeNull();
+  });
+
+  test("blocks failed start gates before any runtime read", async () => {
+    const harness = await createObserverHarness();
+    const result = await observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest({
+      ...harness.input,
+      expected_audio_sha256: "f".repeat(64),
+    });
+    expect(result.private_preclaim_observation_capability).toBeNull();
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.BLOCKED,
+      start_gates_validated: false,
+      state_read_count: 0,
+      blocker_codes: [
+        WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.START_GATES_INVALID,
+      ],
+    });
+    expect(validateWelcomeAudioSafariUiAttestedPreclaimObserverReceipt(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(inspectSyntheticSafariDriverForTest({ driver: harness.driver })).toMatchObject({
+      state_read_count: 0,
+      action_count: 0,
+    });
+  });
+
+  test("fails closed on hostile envelopes and rejects caller controls in live mode", async () => {
+    const harness = await createObserverHarness();
+    const getterEnvelope = Object.defineProperties({}, {
+      ...Object.fromEntries(Object.entries(harness.input).map(([key, value]) => [
+        key,
+        { value, enumerable: true },
+      ])),
+      exact_target: { get: () => exactBinding.exact_target, enumerable: true },
+    });
+    const hostile = await observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest(
+      getterEnvelope,
+    );
+    expect(hostile.private_preclaim_observation_capability).toBeNull();
+    expect(hostile.redacted_receipt.blocker_codes).toEqual([
+      WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID,
+    ]);
+    const liveShape = Object.fromEntries(
+      Object.entries(harness.input).filter(([key]) => ![
+        "authority_root",
+        "private_store_capability",
+        "synthetic_store_root",
+        "driver",
+        "now_ms",
+      ].includes(key)),
+    );
+    for (const liveInput of [
+      {},
+      { ...liveShape, driver: {} },
+      { ...liveShape, now_ms: nowMs },
+      { ...liveShape, callback: () => true },
+    ]) {
+      const result = await observeWelcomeAudioSafariUiAttestedPreclaimOnce(liveInput);
+      expect(result.private_preclaim_observation_capability).toBeNull();
+      expect(result.redacted_receipt).toMatchObject({
+        decision: WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_DECISION.BLOCKED,
+        state_read_count: 0,
+        ui_action_count: 0,
+        external_effect_possible: false,
+        blocker_codes: [WELCOME_AUDIO_SAFARI_UI_ATTESTED_PRECLAIM_BLOCKER.INPUT_INVALID],
+      });
+    }
+  });
+
+  test("redacted receipts contain no private values, paths, or binding digest", async () => {
+    const { result, assetPath } = await observe();
+    const serialized = JSON.stringify(result.redacted_receipt);
+    for (const secret of [...Object.values(exactBinding), assetPath]) {
+      expect(serialized).not.toContain(secret);
+    }
+    const expectedDigest = createHash("sha256").update(JSON.stringify([
+      exactBinding.exact_bound_thread_reference,
+      exactBinding.exact_owner_account_reference,
+      exactBinding.exact_target,
+    ])).digest("hex");
+    expect(serialized).not.toContain(expectedDigest);
+  });
 });
 
 describe("UI-attested Safari sibling composite", () => {
@@ -3727,6 +4009,11 @@ describe("driver and source confinement", () => {
       .toBeTypeOf("function");
     expect(namespace.validateWelcomeAudioSafariUiAttestedLiveCompositeReceipt)
       .toBeTypeOf("function");
+    expect(namespace.observeWelcomeAudioSafariUiAttestedPreclaimOnce).toBeTypeOf("function");
+    expect(namespace.observeWelcomeAudioSafariUiAttestedPreclaimOnceForTest)
+      .toBeTypeOf("function");
+    expect(namespace.consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnceForTest)
+      .toBeTypeOf("function");
     for (const forbidden of [
       "prepareWelcomeAudioSafariLiveTarget",
       "executeWelcomeAudioSafariLivePostPending",
@@ -3740,6 +4027,7 @@ describe("driver and source confinement", () => {
       && !name.endsWith("ForTest")
     ));
     expect(unsuffixedEffectful).toEqual([
+      "consumeWelcomeAudioSafariUiAttestedPreclaimObservationCapabilityOnce",
       "runWelcomeAudioSafariLiveCompositeOnce",
       "runWelcomeAudioSafariUiAttestedLiveCompositeOnce",
     ]);
@@ -3749,5 +4037,12 @@ describe("driver and source confinement", () => {
       && !/(?:_FOR_TEST|ForTest)$/u.test(name)
     ));
     expect(unsuffixedSyntheticScenarioOrFaultControls).toEqual([]);
+    const unsuffixedSourceReads = Object.keys(namespace).filter((name) => (
+      /^(?:observe|read|getFresh)/u.test(name)
+      && !name.endsWith("ForTest")
+    ));
+    expect(unsuffixedSourceReads).toEqual([
+      "observeWelcomeAudioSafariUiAttestedPreclaimOnce",
+    ]);
   });
 });

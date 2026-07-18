@@ -1,7 +1,7 @@
 # Instagram Welcome Audio UI-Attested Single-Recipient Live Admission v1
 
 Date: 2026-07-16
-Status: `repo_only_live_dispatch_seam_completed_green_centrally_integrated_no_live`
+Status: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
 
 ## Purpose
 
@@ -43,10 +43,71 @@ A later live admission may accept only closed owner-only records for:
 - an empty-or-valid fixed operation registry and claim store.
 
 No caller-selected browser driver, store root, clock, callback, URL, selector,
-coordinate, outcome, verifier, actuation result, or prebuilt live authority is
-accepted. The live composite accepts only the private exact binding
+coordinate, outcome, verifier, actuation result, operation snapshot, publisher
+authorization, or prebuilt live authority is accepted. The new fixed runner's
+entire public live input is the private draft plus a closed private
+authorization seed. It derives every later capability and value internally.
+The existing live composite continues to accept only the private exact binding
 capabilities and values plus the approved audio path already bound by the
 audio capability.
+
+The authorization seed is exact-bound to central HEAD, mission and active-next-
+action digests, approval reference and interval, canonical draft and projection
+digests, operation and authorization ids, source-evidence digest,
+candidate/thread/owner/dedupe anchors, approved audio path and digest, and a
+unique nonce digest. Before any source read, the runner structurally recognizes
+and atomically burns the seed, then exact-binds it. Cross-draft or
+cross-recipient mismatch burns the recognized seed, so mismatch cannot preserve
+it for its original binding. Successful binding issues a module-private opaque
+admission capability that remains unconsumed through observation and is
+consumed exactly once by the builder afterward.
+
+## PRECLAIM Builder and Fixed Runner
+
+The missing admission edge is split into three narrow responsibilities:
+
+1. the Safari host validates the exact audio, clean central context, tracked
+   mission and active-next-action, empty owner-only authority root, and fixed
+   claim-store start gates before one zero-action state read, then issues one
+   opaque exact-bound one-use observation capability only when the exact
+   thread, empty composer, unambiguous attachment control, zero preview, zero
+   prior outgoing audio, and no challenge are all proven;
+2. the effect-free PRECLAIM builder independently revalidates the approved
+   audio capability, consumes that observation, builds the complete operation
+   snapshot, computes and rebinds the canonical digest, reruns the operation
+   guard, and issues the exact private publisher authorization; and
+3. the fixed runner chains the existing fixed publisher, authority loader,
+   UI-attested operation-context validator, and one-shot Safari composite.
+
+The observation consumer burns a recognized capability before mismatch or
+freshness rejection and returns only `observed_at`, `audio_validated_at`, and
+`central_context_checked_at`. Each timestamp supplies only its corresponding
+narrow attestation.
+
+This closes the canonical-digest cycle that previously had to be reconstructed
+from synthetic test fixtures. The builder copies the same digest into exactly
+seven required positions, recomputes it, and succeeds only when the existing
+guard returns PRECLAIM eligibility with `claim_allowed=true`,
+`send_ready=false`, and `send_allowed=false`.
+
+After validating the draft and atomically admitting and burning the exact
+authorization seed, the runner validates the approved audio bytes and digest.
+It owns all live clocks, fixed roots, the installed Computer Use runtime, and
+the fixed claim store through the imported production seams. A caller cannot
+inject any of those surfaces. The only injectable sibling ends in `ForTest`
+and accepts temporary roots, a fake driver, deterministic clocks, and fault
+scenarios only for synthetic validation.
+
+The runner does not reimplement claim, PENDING, file selection, upload, Send,
+or confirmation. It invokes the existing UI-attested composite once. There is
+no alternate action adapter, text fallback, direct click, second Send, resend,
+or ambiguous retry path. Before authority publication is attempted, failure is
+blocked and pre-effect. Once publication is called, a thrown, malformed, or
+lost result, a later open/context failure, or a blocked zero-effect composite
+result is terminal zero-external-effect and permanently no-retry because the
+authority root may be occupied. A post-composite possible-effect throw or
+malformed/unconfirmed result is terminal UNKNOWN and permanently no-retry;
+success requires the existing same-thread strong confirmation.
 
 ## Separate Authority Schema
 
@@ -187,3 +248,21 @@ The later real-surface compatibility mission adds only a repo-only parser and
 tests. It does not publish authority, issue a claim, open Safari, read private
 source state, upload a file, or actuate Send. A separately authorized live
 canary remains the only route to a real effect.
+
+The current PRECLAIM builder/runner mission has implemented the remaining
+production composition edge on baseline
+`feed2788fa0400b63483dd4b4e851a45f94b7bda`. Focused validation is `166/166`
+green and the exact sixteen-suite compatibility boundary is `759/759` green.
+Tests use only fake drivers, synthetic owner-only temporary roots,
+deterministic clocks, synthetic fault scenarios, and a fresh process for inert
+import proof.
+
+Independent adversarial rereview is GREEN with no unresolved P0-P3 finding.
+Formal Chief Architect integration review and one serialized central
+integration are still pending. No fixed authority root, real private artifact,
+Safari state, claim store, browser, network, claim, PENDING, chooser, upload, or
+Send has been touched by this mission. Until its green integration completes,
+`canary_ready=false`, `production_ready=false`,
+`live_authority=false`, `claim_issued=false`, `send_allowed=false`,
+`browser_used=false`, `network_used=false`, and
+`external_effect_invoked=false` remain controlling.
