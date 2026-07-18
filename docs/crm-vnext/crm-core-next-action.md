@@ -6943,3 +6943,52 @@ routing and completion pointer.
   `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
   `live_authority=false`, `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
+
+## Active Repo-Only Native Binding Next Action
+
+- `next_action_id`:
+  `crm_core_native_notification_profile_binding_no_live_v1_20260718`
+- `status`:
+  `implemented_repo_only_no_live_independent_review_green_ready_for_lane_commit`
+- `created_at`: `2026-07-18`
+- `approved_baseline`:
+  `1093364cb17bd55879cc2e97fa68a16a7fc90d81`
+- `source_branch`:
+  `codex/crm-core-native-notification-profile-binding-v1-20260718`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md`
+- `objective`: Turn the already-proven native Notifications-row profile link
+  into deterministic, one-use proof for the existing owner-only source
+  materializer. Preparation selects only one indexed native link in the exact
+  follower-event row, binds its exact handle-shaped native label, and ignores
+  flattened `URL` or `Value` metadata. After that link is activated,
+  confirmation requires the same byte-exact target in the canonical loaded
+  profile address and one identity inside a positive profile header, without
+  case, Unicode, substring, OCR, or constructed-URL inference.
+- `architecture_boundary`: Add one pure sibling binder and version the source
+  artifact materializer so a legacy caller boolean or v1 artifact cannot claim
+  native provenance. Do not widen the completed zero-action PRECLAIM observer.
+- `approved_scope`: Exact seven-file repo-only allowlist, synthetic fixtures,
+  deterministic focused/full validation, independent adversarial review,
+  formal Chief Architect integration review, and one lock-gated central
+  integration only when every gate is green.
+- `forbidden_scope`: Browser or source access, private inputs or fixed artifacts,
+  authority, claim, PENDING, attachment, upload, Send, text, follow-back,
+  MailerLite, CRM, campaign, Ads, proxy, API, network, or any external effect.
+- `current_validation_status`:
+  `focused_four_suite_289_of_289_and_full_seventeen_suite_824_of_824_green`
+- `independent_review_status`:
+  `dual_green_no_unresolved_p0_p1_p2`
+- `current_gate`: The exact seven-file implementation, syntax, diff, privacy,
+  ambiguity, replay and compatibility checks are green. Create and push the
+  clean lane commit, then obtain the mandatory formal Chief Architect verdict
+  before any Central Integration Lock operation. No live or private boundary
+  has been entered.
+- `later_gate`: After green central integration, prepare a new one-recipient
+  live canary bound to the exact integrated commit; this repo-only lane grants
+  no live authority.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `execution_approval_published=false`,
+  `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
+  `live_authority=false`, `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.

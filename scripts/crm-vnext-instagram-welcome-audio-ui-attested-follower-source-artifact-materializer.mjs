@@ -31,29 +31,33 @@ import {
   validateWelcomeAudioUiAttestedFollowerSourceProjection,
   validateWelcomeAudioUiAttestedFollowerSourceReceipt,
 } from './crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs';
+import {
+  consumeWelcomeAudioNativeNotificationProfileBindingCapabilityOnce,
+  inspectWelcomeAudioNativeNotificationProfileBindingCapability,
+} from './crm-vnext-instagram-welcome-audio-native-notification-profile-binder.mjs';
 
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION =
-  'crm_core_instagram_welcome_audio_ui_attested_follower_source_artifact_materializer_v1';
+  'crm_core_instagram_welcome_audio_ui_attested_follower_source_artifact_materializer_v2';
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_OBSERVATION_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_ui_attested_private_observation_v1';
+  'crm_core_instagram_welcome_audio_ui_attested_private_observation_v2';
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_ui_attested_follower_source_artifact_v1';
+  'crm_core_instagram_welcome_audio_ui_attested_follower_source_artifact_v2';
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_RECEIPT_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_ui_attested_follower_source_artifact_receipt_v1';
+  'crm_core_instagram_welcome_audio_ui_attested_follower_source_artifact_receipt_v2';
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_FILE_NAME =
-  'ui-attested-follower-source-v1.json';
+  'ui-attested-follower-source-v2.json';
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_FIXED_ROOT = resolve(
   homedir(),
   'Documents',
   'Mantis-Private-Source-Artifacts',
   'instagram',
-  'crm-core-welcome-audio-ui-attested-follower-source-artifact-v1',
+  'crm-core-welcome-audio-ui-attested-follower-source-artifact-v2',
 );
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_FIXED_PARENT = dirname(
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_FIXED_ROOT,
 );
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_SYNTHETIC_PREFIX =
-  'crm-core-welcome-audio-ui-attested-source-artifact-test-';
+  'crm-core-welcome-audio-ui-attested-source-artifact-v2-test-';
 const MAX_ARTIFACT_BYTES = 256 * 1024;
 const CONCURRENT_WINNER_SETTLE_ATTEMPTS = 50;
 const CONCURRENT_WINNER_SETTLE_INTERVAL_MS = 10;
@@ -80,6 +84,7 @@ const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_DECISION = Object.freeze({
 const WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER = Object.freeze({
   INPUT_INVALID: 'blocked_source_artifact_input_invalid',
   OBSERVATION_INVALID: 'blocked_source_artifact_observation_invalid',
+  BINDING_CAPABILITY_INVALID: 'blocked_source_artifact_binding_capability_invalid_or_replayed',
   ADAPTER_BLOCKED: 'blocked_source_artifact_adapter_blocked',
   ARTIFACT_INVALID: 'blocked_source_artifact_contract_invalid',
   ROOT_INVALID: 'blocked_source_artifact_root_invalid',
@@ -102,7 +107,18 @@ const OBSERVATION_FIELDS = Object.freeze([
   'bound_thread_reference_utf8',
   'owner_account_reference_utf8',
   'notification_row_observed',
-  'notification_to_profile_binding_exact',
+  'private_notification_profile_binding_capability',
+  'profile_identity_observed_exact',
+  'relationship_evidence_observed_exact',
+  'profile_to_thread_binding_exact',
+  'owner_binding_observed_exact',
+  'no_explicit_relationship_contradiction_observed',
+  'no_prior_welcome_observed',
+  'no_prior_send_attempt_observed',
+]);
+
+const OBSERVATION_BOOLEAN_FIELDS = Object.freeze([
+  'notification_row_observed',
   'profile_identity_observed_exact',
   'relationship_evidence_observed_exact',
   'profile_to_thread_binding_exact',
@@ -154,6 +170,8 @@ const BLOCKED_PROGRESS_KEYS_BY_BLOCKER = Object.freeze({
     Object.freeze(['00000']),
   [WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.OBSERVATION_INVALID]:
     Object.freeze(['00000']),
+  [WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.BINDING_CAPABILITY_INVALID]:
+    Object.freeze(['11110']),
   [WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.ADAPTER_BLOCKED]:
     Object.freeze(['11000']),
   [WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.ARTIFACT_INVALID]:
@@ -284,8 +302,22 @@ const blockedResult = (blocker, progress = {}) => Object.freeze({
   }),
 });
 
+const nativeBindingMatchesObservation = (binding, observation) => Boolean(
+  binding
+  && binding.row_ordinal === observation.row_ordinal
+  && binding.exact_target_utf8 === observation.exact_target_utf8
+  && binding.visible_time_bucket_utf8 === observation.visible_time_bucket_utf8
+  && binding.notification_attested_at === observation.notification_attested_at
+  && binding.profile_attested_at === observation.profile_attested_at
+);
+
 const validateObservation = (observation, nowMs) => {
   const value = exactDataObject(observation, OBSERVATION_FIELDS);
+  const nativeBinding = value
+    ? inspectWelcomeAudioNativeNotificationProfileBindingCapability(
+      value.private_notification_profile_binding_capability,
+    )
+    : null;
   if (
     !value
     || value.schema_version
@@ -301,7 +333,8 @@ const validateObservation = (observation, nowMs) => {
     || !Object.values(
       WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_RELATIONSHIP_MODE,
     ).includes(value.relationship_mode)
-    || OBSERVATION_FIELDS.slice(13).some((field) => value[field] !== true)
+    || OBSERVATION_BOOLEAN_FIELDS.some((field) => value[field] !== true)
+    || !nativeBindingMatchesObservation(nativeBinding, value)
   ) return null;
   const times = [
     value.notification_attested_at,
@@ -925,6 +958,16 @@ const publishInternal = async ({ artifactRoot, mode, privateObservation, nowMs }
       { now_ms: nowMs },
     ).ok !== true) {
       return blockedResult(WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.ARTIFACT_INVALID);
+    }
+    const consumedBinding =
+      consumeWelcomeAudioNativeNotificationProfileBindingCapabilityOnce(
+        privateObservation.private_notification_profile_binding_capability,
+      );
+    if (!nativeBindingMatchesObservation(consumedBinding, privateObservation)) {
+      return blockedResult(
+        WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.BINDING_CAPABILITY_INVALID,
+        progress,
+      );
     }
     rootIdentity = await assertOwnerOnlyRoot({ artifactRoot, mode });
     progress.ownerOnlyRootVerified = true;

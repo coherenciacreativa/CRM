@@ -18,6 +18,10 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
+import {
+  confirmWelcomeAudioNativeNotificationProfileBindingForTest,
+  prepareWelcomeAudioNativeNotificationProfileBindingForTest,
+} from "../scripts/crm-vnext-instagram-welcome-audio-native-notification-profile-binder.mjs";
 import * as sourceArtifact from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-artifact-materializer.mjs";
 import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
@@ -25,7 +29,7 @@ import {
 import * as canaryMaterializer from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
 
 const NOW_MS = Date.parse("2026-07-17T15:00:00.000Z");
-const PRIVATE_TARGET = "Synthetic.Exact+Tag_é";
+const PRIVATE_TARGET = "Synthetic.Exact_Tag";
 const PRIVATE_THREAD = "synthetic-thread-reference/Exact+Case";
 const PRIVATE_OWNER = "synthetic-owner-reference/Exact+Case";
 const roots: string[] = [];
@@ -47,13 +51,70 @@ afterEach(async () => {
   })));
 });
 
-const observation = () => ({
+const safariTabs = (sourceLabel: string) => [
+  `application "${sourceLabel}"`,
+  "  1 tab group description: Safari tabs, value: tab-group?isSeparate=false",
+  `    4 tab ${sourceLabel}, value: ${sourceLabel}, tab?isPinned=false&isNarrow=false&isActive=true`,
+  "    6 tab Neutral UI Preflight, value: Neutral UI Preflight, tab?isPinned=false&isNarrow=false&isActive=false",
+  "  10 toolbar Safari toolbar",
+];
+
+const nativeBindingCapability = ({
+  target = PRIVATE_TARGET,
+  visibleTimeBucket = "4 d",
+  rowOrdinal = 1,
+  notificationAtMs = Date.parse("2026-07-17T14:59:00.000Z"),
+  profileAtMs = Date.parse("2026-07-17T14:59:10.000Z"),
+} = {}) => {
+  const nativeProfileReference = `https://www.instagram.com/${target}/`;
+  const notificationState = [
+    ...safariTabs("Instagram"),
+    "    12 text field (settable, string) Description: smart search field, Value: https://www.instagram.com/, ID: WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD",
+    "  20 group Instagram HTML content",
+    "    21 heading Notifications",
+    "    30 group Notifications list",
+    "      31 group follower notification row",
+    `        32 link ${target}, URL: ${nativeProfileReference}`,
+    `        33 text started following you. ${visibleTimeBucket}`,
+    "        34 button Follow",
+  ].join("\n");
+  const prepared = prepareWelcomeAudioNativeNotificationProfileBindingForTest({
+    raw_text: notificationState,
+    row_ordinal: rowOrdinal,
+    now_ms: notificationAtMs,
+  });
+  if (!prepared.private_activation_capability) {
+    throw new Error("synthetic native notification binding preparation failed");
+  }
+  const profileState = [
+    ...safariTabs(target),
+    `    12 text field (settable, string) Description: smart search field, Value: ${nativeProfileReference}, ID: WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD`,
+    "  20 group Instagram HTML content",
+    "    39 group Profile header",
+    `      40 heading ${target}`,
+  ].join("\n");
+  const confirmed = confirmWelcomeAudioNativeNotificationProfileBindingForTest({
+    private_activation_capability: prepared.private_activation_capability,
+    raw_text: profileState,
+    now_ms: profileAtMs,
+  });
+  if (!confirmed.private_binding_capability) {
+    throw new Error("synthetic native profile binding confirmation failed");
+  }
+  return confirmed.private_binding_capability;
+};
+
+const observation = ({
+  target = PRIVATE_TARGET,
+  visibleTimeBucket = "4 d",
+  rowOrdinal = 1,
+} = {}) => ({
   schema_version:
     sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_OBSERVATION_SCHEMA_VERSION,
   mission_id: "synthetic_notifications_source_materialization_mission_001",
-  row_ordinal: 1,
-  exact_target_utf8: PRIVATE_TARGET,
-  visible_time_bucket_utf8: "synthetic visible bucket 2 d",
+  row_ordinal: rowOrdinal,
+  exact_target_utf8: target,
+  visible_time_bucket_utf8: visibleTimeBucket,
   notification_attested_at: "2026-07-17T14:59:00.000Z",
   profile_attested_at: "2026-07-17T14:59:10.000Z",
   thread_attested_at: "2026-07-17T14:59:20.000Z",
@@ -65,7 +126,11 @@ const observation = () => ({
   bound_thread_reference_utf8: PRIVATE_THREAD,
   owner_account_reference_utf8: PRIVATE_OWNER,
   notification_row_observed: true,
-  notification_to_profile_binding_exact: true,
+  private_notification_profile_binding_capability: nativeBindingCapability({
+    target,
+    visibleTimeBucket,
+    rowOrdinal,
+  }),
   profile_identity_observed_exact: true,
   relationship_evidence_observed_exact: true,
   profile_to_thread_binding_exact: true,
@@ -153,8 +218,7 @@ describe("UI-attested follower source artifact materializer", () => {
 
   test("builds and publishes the bounded 3-to-7-day relationship mode", async () => {
     const root = await makeRoot();
-    const input = observation();
-    input.visible_time_bucket_utf8 = "4 días";
+    const input = observation({ visibleTimeBucket: "4 días" });
     input.relationship_mode = sourceArtifact
       .WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_RELATIONSHIP_MODE
       .RECENT_FOLLOW_EVENT_NO_EXPLICIT_CONTRADICTION_3_TO_7_DAY_BUCKET;
@@ -172,18 +236,17 @@ describe("UI-attested follower source artifact materializer", () => {
     )).toEqual({ ok: true, reason: null });
   });
 
-  test("preserves exact UTF-8 variants byte-for-byte without normalization", async () => {
+  test("preserves exact native handle variants byte-for-byte without normalization", async () => {
     const variants = [
-      "Synthetic.Exact+Tag_é",
-      "synthetic.exact+tag_é",
-      "SyntheticExact+Tag_é",
-      "Synthetic.Exact+Tag_e\u0301",
+      "Synthetic.Exact_Tag",
+      "synthetic.exact_tag",
+      "SyntheticExact_Tag",
+      "Synthetic.Exact.Tag",
     ];
     const seen: string[] = [];
     for (const exactTarget of variants) {
       const root = await makeRoot();
-      const input = observation();
-      input.exact_target_utf8 = exactTarget;
+      const input = observation({ target: exactTarget });
       const result = await publish(root, input);
       expect(result.private_artifact).not.toBeNull();
       seen.push(result.private_artifact!.ui_attested_input.notification_row.exact_target_utf8);
@@ -205,12 +268,39 @@ describe("UI-attested follower source artifact materializer", () => {
       artifact_stability_verified: true,
     });
 
-    const changed = observation();
-    changed.exact_target_utf8 = "Synthetic.Other+Tag_é";
+    const changed = observation({ target: "Synthetic.Other_Tag" });
     const conflict = await publish(root, changed);
     expect(conflict.private_artifact).toBeNull();
     expect(conflict.redacted_receipt.blocker_codes).toEqual([
       sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.TARGET_CONFLICT,
+    ]);
+  });
+
+  test("consumes the native binding capability once and rejects replay", async () => {
+    const root = await makeRoot();
+    const input = observation();
+    const first = await publish(root, input);
+    const replay = await publish(root, input);
+
+    expect(first.redacted_receipt.decision).toBe(
+      sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_DECISION.PUBLISHED,
+    );
+    expect(replay.private_artifact).toBeNull();
+    expect(replay.redacted_receipt.blocker_codes).toContain(
+      sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.OBSERVATION_INVALID,
+    );
+  });
+
+  test("rejects the legacy boolean-only provenance shape", async () => {
+    const root = await makeRoot();
+    const input = observation() as Record<string, unknown>;
+    delete input.private_notification_profile_binding_capability;
+    input.notification_to_profile_binding_exact = true;
+
+    const result = await publish(root, input as ReturnType<typeof observation>);
+    expect(result.private_artifact).toBeNull();
+    expect(result.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.OBSERVATION_INVALID,
     ]);
   });
 
@@ -269,6 +359,8 @@ describe("UI-attested follower source artifact materializer", () => {
         ["00000"], "11111"],
       [sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.OBSERVATION_INVALID,
         ["00000"], "11000"],
+      [sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.BINDING_CAPABILITY_INVALID,
+        ["11110"], "00000"],
       [sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.ADAPTER_BLOCKED,
         ["11000"], "11110"],
       [sourceArtifact.WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_BLOCKER.ARTIFACT_INVALID,
@@ -419,9 +511,7 @@ describe("UI-attested follower source artifact materializer", () => {
   test("blocks the loser of a concurrent conflicting publication", async () => {
     const root = await makeRoot();
     const changed = ["A", "B", "C"].map((suffix) => {
-      const candidate = observation();
-      candidate.exact_target_utf8 = `Synthetic.Other+Tag_${suffix}`;
-      return candidate;
+      return observation({ target: `Synthetic.Other_Tag_${suffix}` });
     });
     const results = await Promise.all([
       publish(root),
@@ -491,7 +581,9 @@ describe("UI-attested follower source artifact materializer", () => {
     ["ordinal zero", { row_ordinal: 0 }],
     ["ordinal over cap", { row_ordinal: 9 }],
     ["false row evidence", { notification_row_observed: false }],
-    ["false identity binding", { notification_to_profile_binding_exact: false }],
+    ["missing native binding capability", {
+      private_notification_profile_binding_capability: null,
+    }],
     ["false relationship evidence", { relationship_evidence_observed_exact: false }],
     ["explicit contradiction", { no_explicit_relationship_contradiction_observed: false }],
     ["prior welcome", { no_prior_welcome_observed: false }],

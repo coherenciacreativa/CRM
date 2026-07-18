@@ -1033,3 +1033,42 @@
   one-recipient live authority invoke the fixed runner. This repo-only mission
   itself authorizes no Safari read, fixed-root access, claim, PENDING, upload,
   Send, MailerLite, CRM, campaign, Ads, proxy, network, or external effect.
+
+## Native Notification-to-Profile Binding Checkpoint
+
+- `mission_id`:
+  `crm_core_native_notification_profile_binding_no_live_v1_20260718`
+- `status`:
+  `implemented_repo_only_no_live_independent_review_green_ready_for_lane_commit`
+- `baseline`: `1093364cb17bd55879cc2e97fa68a16a7fc90d81`
+- `problem_closed`: The v1 artifact materializer accepted a caller-supplied
+  `notification_to_profile_binding_exact` boolean. Internal consistency checks
+  could not prove that the identity came from the native link in the selected
+  Notifications row.
+- `new_boundary`: A pure sibling binder selects exactly one indexed native link
+  inside the selected follower-event row, binds its exact handle-shaped native
+  label and ignores flattened `URL` or `Value` metadata. After that link is
+  activated, it requires the same byte-exact target in the canonical loaded
+  profile address and one identity inside a positive profile-header subtree on
+  the unchanged isolated Safari surface.
+- `one_use_chain`: Preparation issues one opaque activation capability; any
+  confirmation attempt consumes it. A successful confirmation issues one
+  opaque binding capability; the versioned owner-only materializer consumes it
+  once before publication.
+- `legacy_boundary`: A boolean-only observation cannot publish v2. The v2
+  schema, filename and fixed root prevent an existing v1 artifact from being
+  reused as proof of native provenance.
+- `still_required`: This capability is only notification/profile evidence. The
+  complete materializer input still needs exact relationship, thread, owner,
+  no-prior-welcome and no-prior-attempt evidence inside the existing freshness
+  and dedupe gates.
+- `current_validation_status`:
+  `focused_four_suite_289_of_289_and_full_seventeen_suite_824_of_824_green`
+- `independent_review_status`:
+  `dual_green_no_unresolved_p0_p1_p2`
+- `forbidden_scope`: No browser/UI use, private artifact, authority, claim,
+  chooser, upload, Send, text, follow-back, MailerLite, CRM, campaign, Ads,
+  proxy, API, network, or external effect belongs to this repo-only mission.
+- `later_gate`: Green tests, independent review, formal Chief Architect green,
+  and serialized central integration are required before a separately fresh
+  live canary can use this proof chain.
