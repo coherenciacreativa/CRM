@@ -1,8 +1,8 @@
 # Instagram welcome-audio Safari live host
 
 Status: integrated host/issuer contract v2 plus repo-only UI-attested
-zero-action PRECLAIM observer v1 validation and independent rereview GREEN;
-formal Chief Architect integration review remains pending.
+zero-action PRECLAIM observer v1 validation, independent rereview GREEN, formal
+Chief Architect review GREEN, and serialized central integration complete.
 The filename remains `v1`
 because it is the mission allowlisted documentation path. Only the schema
 families explicitly coordinated below were bumped to v2.
@@ -265,5 +265,7 @@ boundary is `759/759` green. A fresh-process inert-import test proves no
 installed-runtime getter read or filesystem creation at import. No real
 Safari, browser, network, private artifact, fixed root, claim, PENDING, upload,
 Send, or external effect occurred. Independent rereview is GREEN with no
-unresolved P0-P3 finding; formal Chief Architect integration review and central
-integration remain pending.
+unresolved P0-P3 finding. Formal Chief Architect integration review returned
+`green_to_self_integrate`, `safe_to_self_integrate_now=true`, and
+`ceo_decision_needed=false`; central integration and the focused `166/166` plus
+exact sixteen-suite `759/759` validation completed green with no live effect.

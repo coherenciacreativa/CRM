@@ -6615,7 +6615,7 @@ routing and completion pointer.
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718`
-- `status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `status`: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 - `created_at`: `2026-07-18`
 - `updated_at`: `2026-07-18`
 - `approved_baseline`:
@@ -6696,18 +6696,18 @@ routing and completion pointer.
   `focused_166_of_166_and_exact_sixteen_suite_759_of_759_green`
 - `validation_effects`: `no_live_browser_network_private_or_fixed_root_effects`
 - `review_status`: `green_no_unresolved_p0_p1_p2_p3`
-- `formal_chief_architect_integration_review`: `pending`
-- `integration_status`: `not_started`
+- `formal_chief_architect_integration_review`: `green_to_self_integrate`;
+  `safe_to_self_integrate_now=true`; `ceo_decision_needed=false`
+- `integration_status`: `completed_under_central_integration_lock`
 - `live_flags`: `source_execution=false`, `canary_ready=false`,
   `production_ready=false`, `execution_approval_published=false`,
   `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
   `live_authority=false`, `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
-- `resume_instruction`: Independent rereview is GREEN. Continue only inside
-  the isolated branch; commit/push the exact twelve-file delta, obtain formal
-  `green_to_self_integrate` with
-  `safe_to_self_integrate_now=true` and `ceo_decision_needed=false`, then use
-  one Central Integration Lock for the sole central integration.
+- `resume_instruction`: This repo-only mission is complete. Any real
+  one-recipient canary must begin as a separately fresh live mission bound to
+  the resulting central commit and must revalidate every live gate; this
+  completion alone publishes no execution authority.
 - `completion_definition`: Exact twelve-file allowlist, focused and
   sixteen-suite compatibility checks, syntax, privacy, import-inertness, and
   no-live gates are green; no unresolved P0-P2 remains; formal Chief Architect
@@ -6916,7 +6916,7 @@ routing and completion pointer.
 
 - `next_action_id`:
   `crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718`
-- `status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `status`: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 - `updated_at`: `2026-07-18`
 - `approved_baseline`:
   `feed2788fa0400b63483dd4b4e851a45f94b7bda`
@@ -6929,9 +6929,15 @@ routing and completion pointer.
   review, and integration contract.
 - `current_gate`: Focused `166/166` and exact sixteen-suite `759/759` repo-only
   validation are green with no live/browser/network/private/fixed-root effect.
-  Independent adversarial rereview is GREEN with no unresolved P0-P3 finding;
-  obtain formal Chief Architect integration review before central integration.
-- `integration_status`: `not_started`
+  Independent adversarial rereview is GREEN with no unresolved P0-P3 finding.
+  Formal Chief Architect review returned `green_to_self_integrate`,
+  `safe_to_self_integrate_now=true`, and `ceo_decision_needed=false`; exact
+  fast-forward integration and central validation completed under the Central
+  Integration Lock.
+- `integration_status`: `completed_under_central_integration_lock`
+- `next_highest_leverage_action`: Prepare a separately fresh, explicitly
+  authorized one-recipient live canary bound to the resulting central commit;
+  this repo-only completion grants no live authority by itself.
 - `live_flags`: `source_execution=false`, `canary_ready=false`,
   `production_ready=false`, `execution_approval_published=false`,
   `authority_published=false`, `claim_issued=false`, `send_allowed=false`,

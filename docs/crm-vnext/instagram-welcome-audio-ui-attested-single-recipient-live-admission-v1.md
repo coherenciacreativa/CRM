@@ -1,7 +1,7 @@
 # Instagram Welcome Audio UI-Attested Single-Recipient Live Admission v1
 
 Date: 2026-07-16
-Status: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+Status: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 
 ## Purpose
 
@@ -258,10 +258,13 @@ deterministic clocks, synthetic fault scenarios, and a fresh process for inert
 import proof.
 
 Independent adversarial rereview is GREEN with no unresolved P0-P3 finding.
-Formal Chief Architect integration review and one serialized central
-integration are still pending. No fixed authority root, real private artifact,
-Safari state, claim store, browser, network, claim, PENDING, chooser, upload, or
-Send has been touched by this mission. Until its green integration completes,
+Formal Chief Architect integration review returned `green_to_self_integrate`,
+`safe_to_self_integrate_now=true`, and `ceo_decision_needed=false`; one
+serialized central integration and the focused `166/166` plus exact
+sixteen-suite `759/759` validation completed green. No fixed authority root,
+real private artifact, Safari state, claim store, browser, network, claim,
+PENDING, chooser, upload, or Send has been touched by this mission. Because
+this was repo-only,
 `canary_ready=false`, `production_ready=false`,
 `live_authority=false`, `claim_issued=false`, `send_allowed=false`,
 `browser_used=false`, `network_used=false`, and

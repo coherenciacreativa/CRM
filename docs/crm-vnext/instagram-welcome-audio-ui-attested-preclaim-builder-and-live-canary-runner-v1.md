@@ -1,7 +1,7 @@
 # Instagram Welcome Audio UI-Attested PRECLAIM Builder and Live Canary Runner v1
 
 Date: 2026-07-18
-Status: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+Status: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 
 ## Purpose
 
@@ -212,8 +212,11 @@ import, exact twelve-file allowlist, and diff checks are green.
 
 No live/browser/network/private-artifact/fixed-root effect occurred. Independent
 adversarial rereview is GREEN with no unresolved P0-P3 finding. Formal Chief
-Architect integration review and one serialized central integration remain
-pending. Until both are green and central integration completes,
+Architect integration review returned `green_to_self_integrate`,
+`safe_to_self_integrate_now=true`, and `ceo_decision_needed=false`. The exact
+source commit was fast-forwarded under the Central Integration Lock, and the
+focused `166/166` plus exact sixteen-suite `759/759` validation remained green
+on central. Because this result is repo-only,
 `canary_ready=false`, `production_ready=false`, `live_authority=false`,
 `claim_issued=false`, `send_allowed=false`, `browser_used=false`,
 `network_used=false`, and `external_effect_invoked=false` remain controlling.

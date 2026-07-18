@@ -943,7 +943,7 @@
 - `mission_id`:
   `crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718`
 - `mode`: `proof`
-- `status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `status`: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 - `approved_baseline`:
   `feed2788fa0400b63483dd4b4e851a45f94b7bda`
 - `source_branch`:
@@ -1017,8 +1017,8 @@
 - `current_validation_status`:
   `focused_166_of_166_and_exact_sixteen_suite_759_of_759_green`
 - `independent_review_status`: `green_no_unresolved_p0_p1_p2_p3`
-- `formal_integration_review_status`: `pending`
-- `central_integration_status`: `not_started`
+- `formal_integration_review_status`: `green_to_self_integrate`; `safe_to_self_integrate_now=true`; `ceo_decision_needed=false`
+- `central_integration_status`: `completed_under_central_integration_lock`
 - `live_flags`: `source_execution=false`, `canary_ready=false`,
   `production_ready=false`, `execution_approval_published=false`,
   `authority_published=false`, `claim_issued=false`, `send_allowed=false`,

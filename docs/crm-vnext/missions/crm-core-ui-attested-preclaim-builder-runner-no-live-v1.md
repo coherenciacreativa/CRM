@@ -5,7 +5,7 @@ Date: 2026-07-18
 ```yaml
 mission_id: crm_core_welcome_audio_ui_attested_preclaim_builder_runner_no_live_v1_20260718
 contract_version: v1_20260718_repo_only_no_live
-implementation_status: repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review
+implementation_status: completed_repo_only_no_live_formal_review_green_centrally_integrated
 business_outcome: >-
   Close the missing production composition edge from one private UI-attested
   canary draft to the already integrated fixed publisher, operation context,
@@ -158,7 +158,7 @@ central_integration_plan:
   source_branches:
     - codex/crm-core-preclaim-builder-runner-v1-20260718
   source_commits:
-    - to_be_derived_from_git_after_green_source_commit
+    - a3f4a7f7d4d1991709f9f1d7f510e04f61fa278b
   changed_file_allowlist:
     - scripts/crm-vnext-instagram-welcome-audio-ui-attested-preclaim-builder.mjs
     - scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-canary-runner.mjs
@@ -211,11 +211,11 @@ Any scope expansion or later live invocation remains separately gated.
 
 ## Current Checkpoint
 
-- `implementation_status`: `repo_only_validation_and_independent_rereview_green_pending_formal_chief_architect_review`
+- `implementation_status`: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 - `validation_status`: `focused_166_of_166_and_exact_sixteen_suite_759_of_759_green`
 - `independent_review_status`: `green_no_unresolved_p0_p1_p2_p3`
-- `formal_chief_architect_integration_review`: `pending`
-- `central_integration_status`: `not_started`
+- `formal_chief_architect_integration_review`: `green_to_self_integrate`; `safe_to_self_integrate_now=true`; `ceo_decision_needed=false`
+- `central_integration_status`: `completed_under_central_integration_lock`
 - `source_execution`: false
 - `canary_ready`: false
 - `production_ready`: false
@@ -232,5 +232,6 @@ The validation used synthetic fixtures, owner-only temporary roots, a fake
 driver, deterministic clocks, and a fresh child process for inert-import
 proof. It performed no live/browser/network/private-artifact/fixed-root action
 or effect. Exact twelve-file scope, syntax, replay, privacy, hostile-input,
-ambiguity, and `git diff --check` gates are green; formal review and integration
-remain pending.
+ambiguity, and `git diff --check` gates are green. The formal review, exact
+fast-forward integration, and central focused `166/166` plus exact sixteen-suite
+`759/759` validation completed green.
