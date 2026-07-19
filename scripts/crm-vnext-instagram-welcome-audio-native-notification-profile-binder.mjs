@@ -137,7 +137,6 @@ const parseRecords = (text) => {
   if (lines.length > WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_MAX_AX_RECORDS) return null;
   const records = [];
   const stack = [];
-  let hierarchyValid = true;
   for (let lineNumber = 0; lineNumber < lines.length; lineNumber += 1) {
     const raw = lines[lineNumber];
     if (raw.trim().length === 0) continue;
@@ -149,19 +148,20 @@ const parseRecords = (text) => {
     const match = rest.match(
       /^(?:(?:\[(\d+)\]|(\d+)(?:[.:])?)\s+)?(selected\s+tab|pinned\s+tab|tab|application|navigation|list|group|toolbar|link|button|image|heading|text)\b(.*)$/u,
     );
-    if (!match) {
-      while (stack.length > 0 && records[stack.at(-1)].depth >= depth) stack.pop();
-      if (depth > 0) hierarchyValid = false;
-      continue;
-    }
     while (stack.length > 0 && records[stack.at(-1)].depth >= depth) stack.pop();
-    const parsedIndex = Number.parseInt(match[1] ?? match[2] ?? '', 10);
-    const rolePhrase = match[3];
+    const unknownMatch = match === null
+      ? rest.match(/^(?:(?:\[(\d+)\]|(\d+)(?:[.:])?)\s+)?(.*)$/u)
+      : null;
+    const parsedIndex = Number.parseInt(
+      match?.[1] ?? match?.[2] ?? unknownMatch?.[1] ?? unknownMatch?.[2] ?? '',
+      10,
+    );
+    const rolePhrase = match?.[3] ?? null;
     const record = Object.freeze({
       line_number: lineNumber,
       depth,
-      role: rolePhrase.endsWith('tab') ? 'tab' : rolePhrase,
-      body: match[4].replace(/^\s+/u, ''),
+      role: rolePhrase?.endsWith('tab') ? 'tab' : rolePhrase,
+      body: (match?.[4] ?? unknownMatch?.[3] ?? rest).replace(/^\s+/u, ''),
       element_index: Number.isSafeInteger(parsedIndex) && parsedIndex >= 0
         ? parsedIndex
         : null,
@@ -170,7 +170,7 @@ const parseRecords = (text) => {
     records.push(record);
     stack.push(records.length - 1);
   }
-  if (!hierarchyValid || records.length === 0) return null;
+  if (records.length === 0) return null;
   const indexed = records.filter((record) => Number.isSafeInteger(record.element_index));
   if (new Set(indexed.map((record) => record.element_index)).size !== indexed.length) return null;
   return Object.freeze(records);
@@ -179,6 +179,13 @@ const parseRecords = (text) => {
 const primaryLabel = (record) => record.body
   .split(/,\s+(?:url|position|description|value|placeholder|enabled|selected|id)\b/iu, 1)[0]
   .trim();
+
+const unknownStaticTextLabel = (record) => {
+  if (record.role !== null) return null;
+  const match = record.body.match(/^(?:static\s+text|statictext)\b\s*(.*)$/iu);
+  const label = match?.[1]?.trim() ?? '';
+  return label.length > 0 ? label : null;
+};
 
 const structuredFieldValues = (record, field) => Object.freeze([
   ...record.body.matchAll(new RegExp(
@@ -208,6 +215,26 @@ const isAddressField = (record) => record.role === 'text'
   && /^field\s+\(settable, string\)(?:\s|$)/u.test(record.body)
   && structuredField(record, 'Description') === 'smart search field'
   && structuredField(record, 'ID') === 'WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD';
+
+const isCanonicalInstagramRootAddress = (value) => {
+  if (
+    typeof value !== 'string'
+    || !['https://www.instagram.com', 'https://www.instagram.com/'].includes(value)
+  ) return false;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'https:'
+      && parsed.hostname === 'www.instagram.com'
+      && parsed.port === ''
+      && parsed.pathname === '/'
+      && parsed.search === ''
+      && parsed.hash === ''
+      && parsed.username === ''
+      && parsed.password === '';
+  } catch {
+    return false;
+  }
+};
 
 const parseCanonicalInstagramProfileAddress = (value) => {
   if (typeof value !== 'string') return null;
@@ -257,8 +284,9 @@ const exactFollowerEventObservation = (record) => {
 };
 
 const hasAuthOrChallenge = (records) => records.some((record) => {
-  const label = primaryLabel(record);
-  return /^(?:Log in|Sign in|Iniciar sesi[oó]n|Challenge required|Checkpoint|Security code|Captcha|Try again)$/iu.test(label)
+  const labels = [primaryLabel(record), unknownStaticTextLabel(record)]
+    .filter((label) => label !== null);
+  return labels.some((label) => /^(?:Log in|Sign in|Iniciar sesi[oó]n|Challenge required|Checkpoint|Security code|Captcha|Try again)$/iu.test(label))
     || /(?:instagram\.com\/(?:accounts\/login|challenge|checkpoint)\/)/iu.test(record.body);
 });
 
@@ -279,13 +307,38 @@ const nearestParentPosition = (records, position, roles) => {
   return null;
 };
 
+const hasAncestorPosition = (records, position, ancestorPosition) => {
+  let parent = records[position].parent_position;
+  while (parent !== null) {
+    if (parent === ancestorPosition) return true;
+    parent = records[parent].parent_position;
+  }
+  return false;
+};
+
+const evidenceWithinSurfaceScope = (records, surface, positions) => (
+  surface.evidence_root_position === null
+  || positions.every((position) => hasAncestorPosition(
+    records,
+    position,
+    surface.evidence_root_position,
+  ))
+);
+
 const inspectSurface = (records, exactAddress = null) => {
   const applications = records.filter((record) => record.role === 'application');
-  const privateBrowsing = applications.some((record) => /private browsing/iu.test(record.body));
+  const realFlatWindows = records
+    .map((record, position) => ({ record, position }))
+    .filter(({ record }) => record.role === null && /^window\b/iu.test(record.body));
+  const privateBrowsing = applications.some((record) => /private browsing/iu.test(record.body))
+    || records.some((record) => record.role === null
+      && /^(?:window\b.*\bprivate browsing\b|private browsing\b.*\bwindow\b)/iu
+        .test(record.body));
   const nativeTabs = records
-    .map((record) => ({ record, state: nativeTabState(record) }))
+    .map((record, position) => ({ record, position, state: nativeTabState(record) }))
     .filter(({ state }) => state !== null);
   const regularTabs = nativeTabs.filter(({ state }) => state.pinned === false);
+  const activeNativeTabs = nativeTabs.filter(({ state }) => state.active === true);
   const activeRegularTabs = regularTabs.filter(({ state }) => state.active === true);
   const neutralTabs = regularTabs.filter(({ record, state }) => (
     state.active === false && isNeutralTab(record)
@@ -304,19 +357,60 @@ const inspectSurface = (records, exactAddress = null) => {
         return false;
       }
     })
-    : addressFields.filter((record) => structuredField(record, 'Value') === exactAddress);
-  const isolated = applications.length === 1
+    : addressFields.filter((record) => exactAddress === 'https://www.instagram.com/'
+      && isCanonicalInstagramRootAddress(structuredField(record, 'Value')));
+  const exactNativeTabAddressShape = nativeTabs.length >= 2
     && regularTabs.length === 2
-    && activeRegularTabs.length === 1
+    && activeNativeTabs.length === 1
+    && activeNativeTabs[0].state.pinned === false
     && neutralTabs.length === 1
     && addressFields.length === 1;
+  const nativeSurfaceWithinPosition = (position) => nativeTabs.every((nativeTab) => (
+    hasAncestorPosition(records, nativeTab.position, position)
+  )) && addressFields.every((record) => hasAncestorPosition(
+    records,
+    records.indexOf(record),
+    position,
+  ));
+  const singleWindowScopesNativeSurface = realFlatWindows.length === 1
+    && !privateBrowsing
+    && nativeSurfaceWithinPosition(realFlatWindows[0].position);
+  const zeroApplicationRealFlatSurface = applications.length === 0
+    && exactNativeTabAddressShape
+    && singleWindowScopesNativeSurface;
+  const applicationPosition = applications.length === 1
+    ? records.indexOf(applications[0])
+    : null;
+  const windowBackedApplicationSurface = applications.length === 1
+    && singleWindowScopesNativeSurface
+    && hasAncestorPosition(
+      records,
+      realFlatWindows[0].position,
+      applicationPosition,
+    );
+  const legacyApplicationSurface = applications.length === 1
+    && realFlatWindows.length === 0
+    && !privateBrowsing
+    && nativeSurfaceWithinPosition(applicationPosition);
+  const applicationBackedSurface = applications.length === 1
+    && exactNativeTabAddressShape
+    && (legacyApplicationSurface || windowBackedApplicationSurface);
+  const isolated = exactNativeTabAddressShape
+    && (applicationBackedSurface || zeroApplicationRealFlatSurface);
   return Object.freeze({
-    standard_safari: applications.length === 1 && nativeTabs.length >= 2,
+    standard_safari: (applicationBackedSurface && nativeTabs.length >= 2)
+      || zeroApplicationRealFlatSurface,
     private_browsing: privateBrowsing,
     isolated_surface: isolated,
     exact_address_bound: addressMatches.length === 1,
     active_tab_index: activeRegularTabs[0]?.record.element_index ?? null,
     neutral_tab_index: neutralTabs[0]?.record.element_index ?? null,
+    evidence_root_position: zeroApplicationRealFlatSurface
+      || windowBackedApplicationSurface
+      ? realFlatWindows[0].position
+      : legacyApplicationSurface
+        ? applicationPosition
+        : null,
   });
 };
 
@@ -353,6 +447,13 @@ const inspectNotificationAx = ({ rawText, rowOrdinal }) => {
     blocker: WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.NOTIFICATIONS_INVALID,
     surface,
   });
+  if (!evidenceWithinSurfaceScope(records, surface, [
+    notificationHeadings[0].position,
+    panelPosition,
+  ])) return Object.freeze({
+    blocker: WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.NOTIFICATIONS_INVALID,
+    surface,
+  });
   const panel = descendants(records, panelPosition);
   const panelOffset = records.indexOf(panel[0]);
   const rowGroups = panel
@@ -371,6 +472,11 @@ const inspectNotificationAx = ({ rawText, rowOrdinal }) => {
     notifications_heading_bound: true,
   });
   const selected = rowGroups[rowOrdinal - 1];
+  if (!evidenceWithinSurfaceScope(records, surface, [selected.position])) return Object.freeze({
+    blocker: WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.ROW_INVALID,
+    surface,
+    notifications_heading_bound: true,
+  });
   const rowRecords = descendants(records, selected.position);
   const nativeLinks = rowRecords.filter((record) => record.role === 'link');
   const selectedLink = nativeLinks.length === 1
@@ -379,6 +485,7 @@ const inspectNotificationAx = ({ rawText, rowOrdinal }) => {
   if (
     nativeLinks.length !== 1
     || !selectedLink
+    || !evidenceWithinSurfaceScope(records, surface, [records.indexOf(nativeLinks[0])])
   ) return Object.freeze({
     blocker: WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PROFILE_LINK_INVALID,
     surface,
@@ -400,11 +507,15 @@ const inspectNotificationAx = ({ rawText, rowOrdinal }) => {
     selected_row_bound: true,
     native_profile_link_bound: true,
   });
-  const followerEvents = rowRecords
-    .map(exactFollowerEventObservation)
-    .filter((value) => value !== null);
+  const followerEventRecords = rowRecords
+    .map((record) => ({ record, observation: exactFollowerEventObservation(record) }))
+    .filter(({ observation }) => observation !== null);
+  const followerEvents = followerEventRecords.map(({ observation }) => observation);
   if (
     followerEvents.length !== 1
+    || !evidenceWithinSurfaceScope(records, surface, [
+      records.indexOf(followerEventRecords[0]?.record),
+    ])
     || (followerEvents[0].optional_target_prefix !== null
       && followerEvents[0].optional_target_prefix !== selectedLink.exact_target)
   ) return Object.freeze({
@@ -437,11 +548,14 @@ const isPositiveProfileHeader = (record) => record.role === 'group'
   && /^(?:Profile header|Profile content|Instagram profile header|User profile|Perfil|Encabezado del perfil)$/iu
     .test(primaryLabel(record));
 
-const hasUnavailableProfileState = (records) => records.some((record) => (
-  ['text', 'heading'].includes(record.role)
-  && /^(?:(?:Sorry,\s*)?(?:This\s+)?(?:page|profile)\s+(?:isn['’]t|is not|not)\s+available|User\s+(?:not found|isn['’]t available|is not available)|(?:Esta\s+)?(?:p[aá]gina|perfil)\s+(?:no est[aá] disponible|no disponible)|Usuario no encontrado)\.?$/iu
-    .test(primaryLabel(record))
-));
+const hasUnavailableProfileState = (records) => records.some((record) => {
+  const label = ['text', 'heading'].includes(record.role)
+    ? primaryLabel(record)
+    : unknownStaticTextLabel(record);
+  return label !== null
+    && /^(?:(?:Sorry,\s*)?(?:This\s+)?(?:page|profile)\s+(?:isn['’]t|is not|not)\s+available|User\s+(?:not found|isn['’]t available|is not available)|(?:Esta\s+)?(?:p[aá]gina|perfil)\s+(?:no est[aá] disponible|no disponible)|Usuario no encontrado)\.?$/iu
+      .test(label);
+});
 
 const inspectProfileAx = ({ rawText, activationState }) => {
   const records = parseRecords(rawText);
@@ -488,12 +602,18 @@ const inspectProfileAx = ({ rawText, activationState }) => {
       .filter(({ record }) => isPositiveProfileHeader(record))
     : [];
   const identities = profileHeaders.length === 1
-    ? descendants(records, profileHeaders[0].position).filter((record) => exactPageIdentity(
-      record,
-      profileAddress.exact_target,
-    ))
+    ? descendants(records, profileHeaders[0].position)
+      .map((record) => ({ record, position: records.indexOf(record) }))
+      .filter(({ record }) => exactPageIdentity(record, profileAddress.exact_target))
     : [];
-  if (identities.length !== 1) return Object.freeze({
+  if (
+    identities.length !== 1
+    || !evidenceWithinSurfaceScope(records, surface, [
+      contentRoots[0]?.position,
+      profileHeaders[0]?.position,
+      identities[0]?.position,
+    ])
+  ) return Object.freeze({
     blocker: WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PROFILE_IDENTITY_INVALID,
     surface,
     exact_profile_address_bound: true,

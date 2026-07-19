@@ -105,6 +105,45 @@ const profileAx = ({
   ...extraLines,
 ].join("\n");
 
+const wrapInUnknownWindowHierarchy = (rawText: string) => rawText
+  .split("\n")
+  .flatMap((line, index) => index === 0
+    ? [line, "  window Redacted standard Safari window"]
+    : [`  ${line}`])
+  .join("\n");
+
+const replaceApplicationWithUnknownWindow = (rawText: string, label = "Redacted window") => (
+  rawText.replace("application Instagram", `window ${label}`)
+);
+
+const detachInstagramContentFromUnknownWindow = (rawText: string) => {
+  const lines = rawText.split("\n");
+  const contentIndex = lines.findIndex((line) => (
+    /20 group Instagram HTML content$/u.test(line)
+  ));
+  expect(contentIndex).toBeGreaterThanOrEqual(0);
+  return [
+    ...lines.slice(0, contentIndex),
+    ...lines.slice(contentIndex).map((line) => line.replace(/^  /u, "")),
+  ].join("\n");
+};
+
+const wrapRemainingChildrenInUnknownHierarchy = (
+  rawText: string,
+  parentLine: string,
+) => {
+  const lines = rawText.split("\n");
+  const parentIndex = lines.indexOf(parentLine);
+  expect(parentIndex).toBeGreaterThanOrEqual(0);
+  const parentIndent = parentLine.match(/^[ ]*/u)?.[0] ?? "";
+  return [
+    ...lines.slice(0, parentIndex + 1),
+    `${parentIndent}  190 split group Redacted structural wrapper`,
+    `${parentIndent}    191 scroll area Redacted structural wrapper`,
+    ...lines.slice(parentIndex + 1).map((line) => `    ${line}`),
+  ].join("\n");
+};
+
 const prepare = (
   rawText = notificationAx(),
   rowOrdinal = 1,
@@ -234,6 +273,246 @@ describe("native notification to exact profile binder", () => {
     expect(binder.inspectWelcomeAudioNativeNotificationProfileBindingCapability(
       confirmed.private_binding_capability,
     )).toMatchObject({ row_ordinal: 8, exact_target_utf8: target });
+  });
+
+  test("preserves binding through redacted unknown structural wrappers", () => {
+    const notification = wrapInUnknownWindowHierarchy(
+      wrapRemainingChildrenInUnknownHierarchy(
+        notificationAx(),
+        "    30 group notifications panel",
+      ),
+    );
+    const prepared = prepare(notification);
+    expect(prepared.private_activation_capability).not.toBeNull();
+
+    const profile = wrapInUnknownWindowHierarchy(
+      wrapRemainingChildrenInUnknownHierarchy(
+        profileAx(),
+        "  20 group Instagram HTML content",
+      ),
+    );
+    const confirmed = confirm(
+      prepared.private_activation_capability,
+      profile,
+    );
+    expect(binder.inspectWelcomeAudioNativeNotificationProfileBindingCapability(
+      confirmed.private_binding_capability,
+    )).toMatchObject({ exact_target_utf8: TARGET });
+  });
+
+  test("admits the exact zero-application real-flat Safari shape", () => {
+    const prepared = prepare(replaceApplicationWithUnknownWindow(notificationAx()));
+    expect(prepared.redacted_receipt).toMatchObject({
+      decision: binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_DECISION.PREPARED,
+      standard_safari: true,
+      isolated_surface: true,
+    });
+
+    const confirmed = confirm(
+      prepared.private_activation_capability,
+      replaceApplicationWithUnknownWindow(profileAx()),
+    );
+    expect(confirmed.private_binding_capability).not.toBeNull();
+    expect(confirmed.redacted_receipt).toMatchObject({
+      standard_safari: true,
+      isolated_surface: true,
+      exact_profile_address_bound: true,
+      unique_profile_identity_bound: true,
+    });
+  });
+
+  test.each([
+    [
+      "missing real-flat window",
+      notificationAx().split("\n").slice(1).join("\n"),
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "duplicate real-flat window",
+      `${replaceApplicationWithUnknownWindow(notificationAx())}\nwindow Redacted duplicate window`,
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "out-of-tree real-flat window",
+      `${notificationAx().split("\n").slice(1).join("\n")}\nwindow Redacted detached window`,
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "missing neutral tab",
+      replaceApplicationWithUnknownWindow(notificationAx({ surface: { neutral: false } })),
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "extra regular tab",
+      replaceApplicationWithUnknownWindow(notificationAx({ surface: {
+        extraRegularTab: "    8 tab Other work, value: other, tab?isPinned=false&isNarrow=false&isActive=false",
+      } })),
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "simultaneously active pinned tab",
+      replaceApplicationWithUnknownWindow(notificationAx()).replace(
+        "tab?isPinned=true&isNarrow=true&isActive=false",
+        "tab?isPinned=true&isNarrow=true&isActive=true",
+      ),
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "missing address field",
+      replaceApplicationWithUnknownWindow(notificationAx()).replace(
+        address("https://www.instagram.com/"),
+        "  12 static text Redacted non-address record",
+      ),
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "extra address field",
+      `${replaceApplicationWithUnknownWindow(notificationAx())}\n${address("https://www.instagram.com/", 13)}`,
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    ],
+    [
+      "private browsing wrapper",
+      replaceApplicationWithUnknownWindow(notificationAx(), "Private Browsing"),
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PRIVATE_BROWSING,
+    ],
+  ])("rejects zero-application surface with %s", (_label, rawText, expectedBlocker) => {
+    expect(blocker(prepare(rawText))).toBe(expectedBlocker);
+  });
+
+  test("rejects more than one application record", () => {
+    const rawText = `${notificationAx()}\napplication Redacted duplicate application`;
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    );
+  });
+
+  test("rejects zero-application notification evidence detached from its window", () => {
+    const rawText = detachInstagramContentFromUnknownWindow(
+      replaceApplicationWithUnknownWindow(notificationAx()),
+    );
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.NOTIFICATIONS_INVALID,
+    );
+  });
+
+  test("rejects zero-application profile evidence detached from its window", () => {
+    const prepared = prepare(replaceApplicationWithUnknownWindow(notificationAx()));
+    const rawText = detachInstagramContentFromUnknownWindow(
+      replaceApplicationWithUnknownWindow(profileAx()),
+    );
+    expect(blocker(confirm(prepared.private_activation_capability, rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PROFILE_IDENTITY_INVALID,
+    );
+  });
+
+  test("rejects duplicate windows in application-backed mode", () => {
+    const rawText = `${wrapInUnknownWindowHierarchy(notificationAx())}\n  window Redacted duplicate window`;
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    );
+  });
+
+  test("rejects application-backed notification evidence detached from its window", () => {
+    const rawText = detachInstagramContentFromUnknownWindow(
+      wrapInUnknownWindowHierarchy(notificationAx()),
+    );
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.NOTIFICATIONS_INVALID,
+    );
+  });
+
+  test("rejects application-backed profile evidence detached from its window", () => {
+    const prepared = prepare(wrapInUnknownWindowHierarchy(notificationAx()));
+    const rawText = detachInstagramContentFromUnknownWindow(
+      wrapInUnknownWindowHierarchy(profileAx()),
+    );
+    expect(blocker(confirm(prepared.private_activation_capability, rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PROFILE_IDENTITY_INVALID,
+    );
+  });
+
+  test("rejects legacy application evidence detached from the application tree", () => {
+    const rawText = detachInstagramContentFromUnknownWindow(notificationAx());
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.NOTIFICATIONS_INVALID,
+    );
+  });
+
+  test("rejects a window-backed surface detached from its application", () => {
+    const rawText = `${replaceApplicationWithUnknownWindow(notificationAx())}\napplication Redacted detached application`;
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
+    );
+  });
+
+  test("tolerates unique unknown indexed roles without treating them as evidence", () => {
+    const rawText = notificationAx({
+      outsideRow: [
+        "      190 scroll area Redacted passive wrapper",
+        "        191 progress indicator Redacted passive state",
+        "        192 menu button Redacted unrelated control",
+      ],
+    });
+    const prepared = prepare(rawText);
+    expect(prepared.private_activation_capability).not.toBeNull();
+    expect(confirm(prepared.private_activation_capability).private_binding_capability)
+      .not.toBeNull();
+  });
+
+  test("rejects duplicate element indices across known and unknown roles", () => {
+    const rawText = `${notificationAx()}\n      51 pop-up button Redacted duplicate index`;
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.AX_INVALID,
+    );
+  });
+
+  test("unknown roles cannot substitute for required exact evidence", () => {
+    const unknownHeading = notificationAx().replace(
+      "31 heading Notifications",
+      "31 split group Notifications",
+    );
+    expect(prepare(unknownHeading).private_activation_capability).toBeNull();
+
+    const prepared = prepare();
+    const unknownIdentity = profileAx({
+      identityLines: [`    30 static text ${TARGET}`],
+    });
+    expect(confirm(prepared.private_activation_capability, unknownIdentity)
+      .private_binding_capability).toBeNull();
+  });
+
+  test("unknown structural private-browsing wrappers contribute blocker evidence", () => {
+    const rawText = notificationAx().replace(
+      "application Instagram",
+      "application Instagram\n  199 window Private Browsing",
+    );
+    expect(blocker(prepare(rawText))).toBe(
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PRIVATE_BROWSING,
+    );
+  });
+
+  test.each([
+    [
+      "challenge",
+      "    199 static text Challenge required",
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.AUTH_OR_CHALLENGE,
+    ],
+    [
+      "unavailable profile",
+      "    199 static text Sorry, this page is not available.",
+      binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.PROFILE_IDENTITY_INVALID,
+    ],
+  ])("unknown static-text %s contributes blocker evidence", (
+    _label,
+    extraLine,
+    expectedBlocker,
+  ) => {
+    const prepared = prepare();
+    const result = confirm(
+      prepared.private_activation_capability,
+      profileAx({ extraLines: [extraLine] }),
+    );
+    expect(blocker(result)).toBe(expectedBlocker);
   });
 
   test.each([0, 9, 1.5, Number.NaN])("rejects invalid selected row ordinal %s", (rowOrdinal) => {
@@ -383,10 +662,22 @@ describe("native notification to exact profile binder", () => {
     "https://www.instagram.com/explore/",
     "https://www.instagram.com/?source=private",
     "https://www.instagram.com/#private",
+    "https://user@www.instagram.com/",
+    "https://www.instagram.com:444/",
+    "https://instagram.com/",
+    "https://www.instagram.example/",
   ])("requires the exact safe-start home address, not %s", (addressValue) => {
     expect(blocker(prepare(notificationAx({ addressValue })))).toBe(
       binder.WELCOME_AUDIO_NATIVE_NOTIFICATION_PROFILE_BINDER_BLOCKER.SURFACE_INVALID,
     );
+  });
+
+  test.each([
+    "https://www.instagram.com",
+    "https://www.instagram.com/",
+  ])("accepts canonical safe-start root serialization %s", (addressValue) => {
+    expect(prepare(notificationAx({ addressValue })).private_activation_capability)
+      .not.toBeNull();
   });
 
   test.each([
