@@ -55,13 +55,13 @@ architecture:
   historical_packet: separate_v3_family
   no_send_operator:
     stage_2: qualification_only_zero_complete_source_capabilities
-    stage_2_to_stage_3_handoff: opaque_one_use_same_process_only
-    repeated_stage_2_with_pending_handoff: blocked_before_source_and_original_handoff_preserved
-    stage_3: conditional_complete_source_to_v4_artifact_to_v3_packet_same_process
-    production_packet_binding: environment_owned_required_currently_fail_closed
-    synthetic_packet_binding: fixed_module_derived_test_fixture_only
+    command_surface: exact_stage_2_only
+    real_stage_2_entry: blocked_before_source_until_new_authorized_mission
+    stage_2_to_stage_3_handoff: absent
+    stage_3_command_or_path: absent
+    source_artifact_or_packet_preparation: forbidden
     capability_persistence_or_serialization: forbidden
-    final_draft_admission_capability: consumed_and_burned_before_return
+    capability_or_private_material_return: forbidden
     send_or_live_actuation: forbidden
 authority:
   safe_to_implement_repo_only_now: true
@@ -103,17 +103,17 @@ acceptance:
   - current_visible_follows_owner_required
   - policy_age_relation_tampering_fails_closed
   - production_test_and_cross_family_capabilities_are_one_use_and_disjoint
-  - stage_2_to_stage_3_operator_handoff_stays_in_one_process
-  - stage_3_handoff_time_is_not_before_issue_and_is_strictly_before_expiry
+  - operator_exports_exact_stage_2_command_only
+  - removed_stage_3_literal_rejected_before_runtime_or_source_use
+  - real_stage_2_entry_rejected_before_source_use_even_if_facade_is_available
+  - stage_2_success_holds_zero_handoffs_capabilities_or_private_material
+  - operator_imports_no_source_artifact_or_packet_materializer
   - unaccented_spanish_dia_or_dias_labels_are_rejected_by_all_three_layers
   - source_mode_is_bound_to_only_the_blockers_and_phases_that_mode_can_reach
   - zero_send_zero_live_zero_new_browser_runtime_zero_network_mutation_adversarial_test_green
   - source_read_usage_truthful_synthetic_false_production_attested_or_explicit_unknown
-  - stage_3_direct_invocation_without_same_process_stage_2_handoff_fails_closed
-  - repeated_stage_2_blocks_before_source_without_replacing_or_burning_first_handoff
-  - all_downstream_capabilities_consumed_before_aggregate_receipt_return
-  - every_blocker_validates_only_its_exact_reachable_capability_registry_matrix
-  - reset_failure_receipts_preserve_semantic_artifact_and_packet_progress_already_reached
+  - every_operator_receipt_requires_zero_downstream_capability_state
+  - reset_failure_receipts_preserve_only_stage_2_source_progress
   - receipts_are_aggregate_redacted_and_contain_no_raw_age_or_private_identity
   - exact_allowlist_and_git_diff_check_green
   - independent_review_has_no_unresolved_P0_P2
@@ -136,55 +136,47 @@ the capability; it never upgrades, translates, or retries it.
 
 ## Operator boundary
 
-The no-Send operator composes only the existing environment-owned facade and
-the historical capability chain. Its Stage 2 command proves qualification and
-issues no complete-source capability. Instead, a green Stage 2 creates one
-module-private, opaque, expiring, one-use handoff. Stage 3 is not directly
-callable: it consumes or terminally burns that handoff before any observation.
-It may then prepare one candidate through complete source, owner-only v4
-artifact, and inert v3 packet admission during the same process lifetime. The
-complete-source, artifact, and final draft-admission capabilities are all
-consumed before the aggregate Stage 3 receipt returns. No opaque capability may
-be written to disk, serialized, cloned, logged, or accepted back from a caller.
+The no-Send operator composes only the existing environment-owned facade with
+historical Stage 2 qualification. Its sole command proves two exact
+notification-to-profile pairs and issues no complete-source capability,
+handoff, artifact capability, packet capability, or private material. Every
+green Stage 2 receipt reports zero downstream capabilities and no active opaque
+registry. The operator has no Stage 3 command, no Stage 2-to-Stage 3 handoff,
+and no source-artifact or packet-materializer import.
 
-The synthetic proof path uses a fixed packet-request fixture derived inside the
-operator. Callers cannot supply commit, authorization, audio binding, policy,
-age, relationship, runtime, or browser truth. The production path accepts no
-packet request from a caller and remains fail-closed before Stage 3 observation
-until an environment-owned packet binding exists.
+The synthetic proof path exercises the Stage-2-only boundary with fixed source
+scenarios. Callers cannot supply identity, age, relationship, policy, runtime,
+browser, artifact root, packet request, authorization, commit, or audio-binding
+truth. The removed Stage 3 command literal and every extra input shape fail
+closed before runtime installation or source use. The production entry accepts
+only the exact Stage 2 command but always returns the explicit real-Stage-2
+authorization blocker before source use, even if an environment-owned facade
+is available.
 
-Only one Stage 2 handoff may be pending. A repeated Stage 2 call is rejected
-before any source action and leaves the original handoff intact for its single
-Stage 3 presentation. The presentation time must be at or after issuance and
-strictly before expiry; a backward or expired clock burns the handoff and fails
-closed. If two Stage 2 calls interleave during source qualification, the later
-handoff-issue failure reports and preserves the already-live prior handoff;
-cleanup burns it if cleanup itself fails. Every blocked receipt is validated
-against the exact
-capability issue, consume, hold, and registry state reachable at that blocker;
-generic or historically plausible counter combinations are not accepted. If
-test-runtime cleanup fails, the blocker receipt preserves every green phase
-already completed, including packet admission after a fully prepared Stage 3,
-while still burning any capability that cannot safely remain live.
+Every blocked receipt is validated against an exact Stage-2-only lifecycle. A
+test-runtime cleanup failure may preserve source qualification progress already
+observed, but it cannot claim or burn a handoff, artifact, packet, or any other
+downstream capability because none exists in this operator.
 
-Receipts distinguish synthetic proof from the production environment facade.
-Synthetic proof truthfully reports no browser or network use. Production
-source reads report the attested browser/read-only facts and leave network use
-explicitly unknown when the facade does not attest it; they never publish a
-guessed `false`. Internal opaque registries and aggregate capability
-issue/consume/conditional-hold counts are reported separately from the
-unchanged fact that no external operation registry, claim, PRECLAIM, send, or
-mutation was written.
+Receipts distinguish synthetic proof from the blocked production entry.
+Synthetic proof truthfully reports no browser or network use. The production
+entry reports no source attempt and leaves browser and network use explicitly
+unknown; it never publishes a guessed `false`. All downstream capability
+counts remain exactly zero, alongside the unchanged fact that no external
+operation registry, claim, PRECLAIM, send, or mutation was written.
 
-This repository mission does not authorize invoking either real stage. It adds
-composition and deterministic synthetic proof only. A missing environment
-facade or environment-owned packet binding fails closed and does not justify a
-new runtime or browser fallback.
+This repository mission does not authorize invoking real Stage 2. It adds the
+Stage-2-only composition and deterministic synthetic proof only. Real Stage 2
+requires a new mission that adds and reviews an environment-owned authority
+gate; facade availability alone can never authorize a read. No Stage 3
+implementation is present in the operator.
 
 ## Review and later authority
 
 A green implementation remains isolated. It requires independent adversarial
 review and a later formal Chief Architect integration verdict before any
-central integration. After integration, the CEO must separately authorize a
-real Stage 2 observation. Stage 3 requires a fresh, conditional authorization
-after Stage 2; Send remains another separate future boundary.
+central integration. After integration, real Stage 2 still requires a new
+mission, implementation, independent and formal review, and fresh CEO
+authorization. Any future Stage 3 requires its own new mission, implementation,
+review, and fresh conditional CEO authorization after Stage 2. Send remains
+another separate future boundary.

@@ -324,22 +324,24 @@ excluded from this mission. Current state remains `canary_ready=false`,
 
 ## 2026-07-22 Historical Catch-Up No-Live Boundary
 
-The historical catch-up repo-only mission adds a separate source policy,
-owner-only v4 artifact, inert packet v3, and a same-process no-Send operator.
-It does not change this live admission contract or the Safari actuation rail.
+The historical catch-up repo-only mission adds a separate source policy and
+independent owner-only v4 artifact and inert packet v3 primitives. Its no-Send
+operator is strictly Stage-2-only and does not change this live admission
+contract or the Safari actuation rail.
 
-The operator's Stage 2 command is qualification-only and issues zero complete
-source capabilities. Its Stage 3 command may compose at most one historical
-candidate through complete source, v4 artifact, and v3 packet admission while
-the process is alive. No opaque capability may be persisted, serialized,
-cloned, logged, or supplied back by a caller. The operator accepts no caller
-identity, age, policy, relationship, runtime, or browser truth.
+The operator's sole command is qualification-only and issues zero complete
+source capabilities. It has no Stage 2-to-Stage 3 handoff, Stage 3 command,
+source-artifact import, packet-materializer import, private-material return, or
+downstream capability state. The removed Stage 3 literal and every downstream
+input shape fail closed before runtime installation or source use.
 
-Real Stage 2, real Stage 3, integration, PRECLAIM, claim, PENDING, chooser,
-upload, preview, and Send all remain unauthorized. A later integration review
-must explicitly admit the historical v3 capability into any live composition.
-After integration, Stage 2 requires fresh CEO authorization; Stage 3 requires
-a separate conditional authorization; Send remains a further one-shot
+Real Stage 2, any future Stage 3, integration, PRECLAIM, claim, PENDING,
+chooser, upload, preview, and Send all remain unauthorized. After integration,
+Stage 2 still requires a new mission that implements and reviews an
+environment-owned authority gate plus fresh CEO authorization; facade
+availability alone is never authority. Stage 3 is not prebuilt in the operator:
+it requires a new mission, implementation, independent and formal review, and
+separate conditional CEO authorization. Send remains a further one-shot
 boundary. Until then, `canary_ready=false`, `production_ready=false`,
 `send_allowed=false`, `browser_used=false`, `network_used=false`, and
 `external_effect_invoked=false` are controlling.
