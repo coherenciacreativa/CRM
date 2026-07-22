@@ -321,3 +321,25 @@ The separately reviewed real-AX tolerance commit
 `e9545637c88e6e1cab8ac7be34d9725410a363ec` is not central and is explicitly
 excluded from this mission. Current state remains `canary_ready=false`,
 `production_ready=false`, `send_allowed=false` and `external_effect_invoked=false`.
+
+## 2026-07-22 Historical Catch-Up No-Live Boundary
+
+The historical catch-up repo-only mission adds a separate source policy,
+owner-only v4 artifact, inert packet v3, and a same-process no-Send operator.
+It does not change this live admission contract or the Safari actuation rail.
+
+The operator's Stage 2 command is qualification-only and issues zero complete
+source capabilities. Its Stage 3 command may compose at most one historical
+candidate through complete source, v4 artifact, and v3 packet admission while
+the process is alive. No opaque capability may be persisted, serialized,
+cloned, logged, or supplied back by a caller. The operator accepts no caller
+identity, age, policy, relationship, runtime, or browser truth.
+
+Real Stage 2, real Stage 3, integration, PRECLAIM, claim, PENDING, chooser,
+upload, preview, and Send all remain unauthorized. A later integration review
+must explicitly admit the historical v3 capability into any live composition.
+After integration, Stage 2 requires fresh CEO authorization; Stage 3 requires
+a separate conditional authorization; Send remains a further one-shot
+boundary. Until then, `canary_ready=false`, `production_ready=false`,
+`send_allowed=false`, `browser_used=false`, `network_used=false`, and
+`external_effect_invoked=false` are controlling.

@@ -33,6 +33,7 @@ import {
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST,
   installWelcomeAudioIabSemanticRuntimeFacadeForTest,
   observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest,
+  observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest,
   resetWelcomeAudioIabSemanticRuntimeFacadeForTest,
 } from "../scripts/crm-vnext-instagram-welcome-audio-iab-semantic-follower-source-host.mjs";
 
@@ -71,6 +72,17 @@ const makeV3Root = async () => {
   return root;
 };
 
+const makeV4Root = async () => {
+  const root = await mkdtemp(join(
+    tmpdir(),
+    sourceArtifact
+      .WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V4,
+  ));
+  await chmod(root, 0o700);
+  roots.push(root);
+  return root;
+};
+
 const completeSourceCapability = async () => {
   const nowMs = Date.now();
   expect(installWelcomeAudioIabSemanticRuntimeFacadeForTest({
@@ -83,6 +95,30 @@ const completeSourceCapability = async () => {
   const observed = await observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({
     now_ms: nowMs,
   });
+  expect(observed.private_complete_source_capability).not.toBeNull();
+  expect(resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
+  return {
+    nowMs,
+    capability: observed.private_complete_source_capability,
+  };
+};
+
+const historicalCompleteSourceCapability = async (
+  observationScenario =
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_8D,
+) => {
+  const nowMs = Date.now();
+  expect(installWelcomeAudioIabSemanticRuntimeFacadeForTest({
+    qualification_scenario:
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST
+        .HISTORICAL_EXACT_TWO_PAIRS,
+    observation_scenario: observationScenario,
+    finalize_scenario: "exact",
+  })).toBe(true);
+  const observed = await
+    observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest({
+      now_ms: nowMs,
+    });
   expect(observed.private_complete_source_capability).not.toBeNull();
   expect(resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
   return {
@@ -108,6 +144,31 @@ const realignV3DerivedEvidence = (artifactInput: unknown, nowMs: number) => {
     completeSource.exact_thread_reference;
   artifact.ui_attested_input.dedupe.owner_account_reference_utf8 =
     completeSource.exact_owner_account_reference;
+  const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
+    artifact.ui_attested_input,
+    { nowMs },
+  );
+  expect(adapted.private_projection).not.toBeNull();
+  artifact.source_evidence_sha256 = adapted.private_projection!.source_evidence_sha256;
+  return artifact;
+};
+
+const realignV4AgeEvidence = (
+  artifactInput: unknown,
+  nowMs: number,
+  raw: string,
+  kind: "displayed_day" | "coarse_week",
+  bucket: number,
+) => {
+  const artifact: any = structuredClone(artifactInput);
+  artifact.complete_source.visible_time_bucket_utf8 = raw;
+  artifact.complete_source.age_evidence_raw = raw;
+  artifact.complete_source.age_evidence_kind = kind;
+  artifact.complete_source.age_bucket = bucket;
+  artifact.age_evidence_raw = raw;
+  artifact.age_evidence_kind = kind;
+  artifact.age_bucket = bucket;
+  artifact.ui_attested_input.notification_row.time_bucket_utf8 = raw;
   const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
     artifact.ui_attested_input,
     { nowMs },
@@ -1318,5 +1379,331 @@ describe("IAB semantic follower source artifact v3", () => {
     expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
       opened.redacted_receipt,
     )).toEqual({ ok: true, reason: null });
+  });
+});
+
+describe("IAB semantic historical follower source artifact v4", () => {
+  test.each([
+    [
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_8D,
+      "8d",
+      "displayed_day",
+      8,
+    ],
+    [
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_30D,
+      "30d",
+      "displayed_day",
+      30,
+    ],
+    [
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_1W,
+      "1w",
+      "coarse_week",
+      1,
+    ],
+    [
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_4W,
+      "4w",
+      "coarse_week",
+      4,
+    ],
+  ])(
+    "publishes boundary scenario %s in a separate owner-only v4 family",
+    async (scenario, raw, kind, bucket) => {
+      const root = await makeV4Root();
+      const issued = await historicalCompleteSourceCapability(scenario);
+      const result = await sourceArtifact
+        .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+          artifact_root: root,
+          private_complete_source_capability: issued.capability,
+          now_ms: issued.nowMs,
+        });
+
+      expect(result.private_artifact).toMatchObject({
+        schema_version: sourceArtifact
+          .WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SCHEMA_VERSION_V4,
+        selection_policy: "historical_catchup_pilot_v1",
+        age_evidence_raw: raw,
+        age_evidence_kind: kind,
+        age_bucket: bucket,
+        actual_elapsed_age_claimed: false,
+        complete_source: {
+          visible_time_bucket_utf8: raw,
+          age_evidence_raw: raw,
+          age_evidence_kind: kind,
+          age_bucket: bucket,
+          relationship_binding: "follows_owner",
+          actual_elapsed_age_claimed: false,
+          campaign_membership_claimed: false,
+        },
+      });
+      expect(result.private_artifact!.ui_attested_input.notification_row.time_bucket_utf8)
+        .toBe(raw);
+      expect(result.private_source_artifact_capability).not.toBeNull();
+      expect(result.redacted_receipt).toMatchObject({
+        decision: sourceArtifact
+          .WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.PUBLISHED,
+        operation: "materialize",
+        artifact_count: 1,
+        live_authority: false,
+        claim_issued: false,
+        pending_effect_recorded: false,
+        send_allowed: false,
+        browser_used: false,
+        network_used: false,
+        external_effect_invoked: false,
+      });
+      expect(sourceArtifact
+        .validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4(
+          result.private_artifact,
+          { now_ms: issued.nowMs },
+        )).toEqual({ ok: true, reason: null });
+      expect(sourceArtifact
+        .validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactReceiptV4(
+          result.redacted_receipt,
+        )).toEqual({ ok: true, reason: null });
+      const metadata = await lstat(result.artifact_path!);
+      expect(metadata.mode & 0o7777).toBe(0o600);
+      expect(metadata.nlink).toBe(1);
+      expect(await readdir(root)).toEqual([
+        sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FILE_NAME_V4,
+      ]);
+      expect(JSON.stringify(result.redacted_receipt)).not.toContain(raw);
+    },
+  );
+
+  test("revalidates exact historical grammar without normalizing the raw label", async () => {
+    const root = await makeV4Root();
+    const issued = await historicalCompleteSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    expect(published.private_artifact).not.toBeNull();
+
+    const accepted: Array<[string, "displayed_day" | "coarse_week", number]> = [
+      ["8 DÍAS", "displayed_day", 8],
+      ["30 days", "displayed_day", 30],
+      ["1 week", "coarse_week", 1],
+      ["4 semanas", "coarse_week", 4],
+    ];
+    for (const [raw, kind, bucket] of accepted) {
+      const artifact = realignV4AgeEvidence(
+        published.private_artifact,
+        issued.nowMs,
+        raw,
+        kind,
+        bucket,
+      );
+      expect(sourceArtifact
+        .validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4(
+          artifact,
+          { now_ms: issued.nowMs },
+        )).toEqual({ ok: true, reason: null });
+      expect(artifact.age_evidence_raw).toBe(raw);
+      expect(artifact.complete_source.age_evidence_raw).toBe(raw);
+    }
+
+    const rejected = [
+      "7d",
+      "31d",
+      "5w",
+      "1wk",
+      "4wks",
+      "8 dia",
+      "8 dias",
+      "1.5 weeks",
+      "8-10 days",
+      "about 2 weeks",
+      " 8d",
+      "8d ",
+    ];
+    for (const raw of rejected) {
+      const artifact = realignV4AgeEvidence(
+        published.private_artifact,
+        issued.nowMs,
+        raw,
+        raw.includes("w") ? "coarse_week" : "displayed_day",
+        Number.parseInt(raw, 10) || 1,
+      );
+      expect(sourceArtifact
+        .validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4(
+          artifact,
+          { now_ms: issued.nowMs },
+        ).ok).toBe(false);
+    }
+  });
+
+  test("blocks policy, age, nonclaim, and current relationship tampering", async () => {
+    const root = await makeV4Root();
+    const issued = await historicalCompleteSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    const mutations = [
+      (artifact: any) => { artifact.selection_policy = "ordinary_recent_v1"; },
+      (artifact: any) => { artifact.complete_source.selection_policy = "ordinary_recent_v1"; },
+      (artifact: any) => { artifact.age_evidence_raw = "9d"; },
+      (artifact: any) => { artifact.age_evidence_kind = "coarse_week"; },
+      (artifact: any) => { artifact.age_bucket = 9; },
+      (artifact: any) => { artifact.actual_elapsed_age_claimed = true; },
+      (artifact: any) => { artifact.complete_source.actual_elapsed_age_claimed = true; },
+      (artifact: any) => { artifact.complete_source.campaign_membership_claimed = true; },
+      (artifact: any) => { artifact.complete_source.relationship_binding = "unknown"; },
+      (artifact: any) => {
+        artifact.ui_attested_input.profile.follows_owner_evidence =
+          "recent_follow_event_no_explicit_contradiction";
+      },
+    ];
+    for (const mutate of mutations) {
+      const artifact: any = structuredClone(published.private_artifact);
+      mutate(artifact);
+      expect(sourceArtifact
+        .validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4(
+          artifact,
+          { now_ms: issued.nowMs },
+        ).ok).toBe(false);
+    }
+  });
+
+  test("burns ordinary and historical capabilities on cross-family presentation", async () => {
+    const historicalRoot = await makeV4Root();
+    const historicalIssued = await historicalCompleteSourceCapability();
+    const historical = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: historicalRoot,
+        private_complete_source_capability: historicalIssued.capability,
+        now_ms: historicalIssued.nowMs,
+      });
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability:
+          historical.private_source_artifact_capability,
+      })).toBeNull();
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability:
+          historical.private_source_artifact_capability,
+      })).toBeNull();
+
+    const ordinaryRoot = await makeV3Root();
+    const ordinaryIssued = await completeSourceCapability();
+    const ordinary = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: ordinaryRoot,
+        private_complete_source_capability: ordinaryIssued.capability,
+        now_ms: ordinaryIssued.nowMs,
+      });
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: ordinary.private_source_artifact_capability,
+      })).toBeNull();
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: ordinary.private_source_artifact_capability,
+      })).toBeNull();
+  });
+
+  test("historical capability is opaque, one-use, burn-first, and stale-safe", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-22T15:00:00.000Z"));
+    const root = await makeV4Root();
+    const issued = await historicalCompleteSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    const capability = published.private_source_artifact_capability!;
+    expect(() => JSON.stringify(capability)).toThrow("not_serializable");
+    expect(() => structuredClone(capability)).toThrow();
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: capability,
+      })?.private_artifact).toEqual(published.private_artifact);
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: capability,
+      })).toBeNull();
+
+    const staleRoot = await makeV4Root();
+    const staleIssued = await historicalCompleteSourceCapability();
+    const stale = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: staleRoot,
+        private_complete_source_capability: staleIssued.capability,
+        now_ms: staleIssued.nowMs,
+      });
+    vi.setSystemTime(Date.parse(stale.private_artifact!.source_expires_at));
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: stale.private_source_artifact_capability,
+      })).toBeNull();
+    vi.setSystemTime(staleIssued.nowMs);
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: stale.private_source_artifact_capability,
+      })).toBeNull();
+  });
+
+  test("blocks foreign capabilities, caller facts, and unsafe roots with inert receipts", async () => {
+    const root = await makeV4Root();
+    const foreign = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: root,
+        private_complete_source_capability: Object.freeze({}),
+        now_ms: Date.now(),
+      });
+    expect(foreign.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .COMPLETE_SOURCE_CAPABILITY_INVALID,
+    ]);
+    expect(sourceArtifact
+      .validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactReceiptV4(
+        foreign.redacted_receipt,
+      )).toEqual({ ok: true, reason: null });
+
+    const callerIssued = await historicalCompleteSourceCapability();
+    const callerFact = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: root,
+        private_complete_source_capability: callerIssued.capability,
+        now_ms: callerIssued.nowMs,
+        age_evidence_raw: "8d",
+      } as never);
+    expect(callerFact.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .INPUT_INVALID,
+    ]);
+
+    const unsafeRoot = await makeV4Root();
+    await chmod(unsafeRoot, 0o755);
+    const unsafeIssued = await historicalCompleteSourceCapability();
+    const unsafe = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest({
+        artifact_root: unsafeRoot,
+        private_complete_source_capability: unsafeIssued.capability,
+        now_ms: unsafeIssued.nowMs,
+      });
+    expect(unsafe.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .ROOT_INVALID,
+    ]);
+    expect(unsafe.redacted_receipt).toMatchObject({
+      live_authority: false,
+      claim_issued: false,
+      pending_effect_recorded: false,
+      send_allowed: false,
+      browser_used: false,
+      network_used: false,
+      external_effect_invoked: false,
+    });
   });
 });

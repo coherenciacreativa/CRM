@@ -259,15 +259,22 @@ booleans, fixed false live/effect flags, and one blocker code. It never exposes
 identity, references, bucket, observation time, expiry, path, digest, audio
 binding, message, DOM, screenshot, credential, or payload.
 
-`source_artifact_capability_consumed` is a monotonic statement of actual v2
-progress, independent of the final decision. It is false when the outer wrapper
-is rejected before internal entry or when the source-artifact consumer rejects,
-throws, returns no private artifact, or detects a foreign, stale, or replayed
-capability. Once that consumer successfully returns `private_artifact`, the
-field remains true in every later blocked receipt, including invalid internal
-clock, stale or malformed artifact, request mismatch, source projection or
-mission-binding failure, draft failure, admission-capability failure, and
-receipt failure. No later blocker may reset it to false.
+`source_artifact_capability_consumed` is a monotonic statement that the expected
+source-artifact consumer actually returned `private_artifact`; it does not mean
+merely that a capability was presented. It is false when the outer wrapper is
+rejected before internal entry or when the consumer rejects, throws, returns no
+private artifact, or detects a foreign, stale, replayed, wrong-mode, or
+wrong-family capability. Once the consumer returns `private_artifact`, the field
+remains true in every later blocked receipt. No later blocker may reset it.
+
+The ordinary v2 receipt shape remains unchanged and has no separate terminal-
+retirement field. A recognized same-module wrong-family or cross-mode
+presentation can therefore report `source_artifact_capability_consumed=false`
+even though the one-use consumer has terminally burned that known authority.
+That burn is proven by the consumer's replay rejection, not by reinterpreting
+the existing consumption field or adding a key to the ordinary contract. An
+unknown capability or one from a separate module instance carries no such
+retirement claim and may remain usable by its own issuer.
 
 Prepared receipts require this consumption field true. `INPUT_SCHEMA` is now
 reserved for rejection of the exact outer wrapper before internal entry and
@@ -305,3 +312,47 @@ authority, browser path, source access, Stage 2/3 permission, integration
 permission, or live effect. The Chief Architect authorization for this closure
 permits implementation and repository validation only; a later integration or
 real-stage decision remains separate.
+
+## 2026-07-22 Historical v3 Packet Amendment
+
+Historical source admission uses a separate packet v3 family. Packet v2 keeps
+its ordinary behavior unchanged and accepts only the ordinary source-artifact
+v3 capability. Packet v3 accepts only the historical source-artifact v4
+capability. A cross-family capability recognized by the same artifact-module
+instance is burned and cannot be retried through the other consumer; the replay
+test proves that behavior. A capability issued by a separate module instance is
+only foreign to this consumer and can remain usable by its original issuer, so
+the packet receipt must not infer retirement from a null consumer result.
+
+Historical v3 adds the separate aggregate field
+`source_artifact_capability_retirement_attested`. It is a conservative
+attestation, not a guess about a foreign registry: it is true only when the
+expected consumer returned `private_artifact`, and it remains true through all
+later blocked phases. Whenever the consumer returns null—including foreign,
+wrong-family, stale, or replayed presentation—the receipt reports
+`consumed=false` and `retirement_attested=false`. Pre-entry input rejection also
+keeps both false. Same-module cross-family burn is evidenced separately by
+replay rejection; a separate-module capability remains consumable by its
+issuer. This new field belongs only to the historical v3 receipt; it does not
+alter ordinary v2 keys or validation. The v3 draft binds all existing exact
+source and approved-audio fields plus:
+
+- `selection_policy=historical_catchup_pilot_v1`;
+- exact private `age_evidence_raw`;
+- `age_evidence_kind`;
+- `age_bucket`;
+- `actual_elapsed_age_claimed=false`; and
+- the historical v4 artifact schema and inherited source expiry.
+
+These fields participate in deterministic operation identity and draft
+validation. Policy, age evidence, classification, expiry, or relationship
+tampering fails closed after source-artifact capability consumption. The
+packet does not derive an exact elapsed age, follow timestamp, or campaign
+membership claim.
+
+The v3 result remains inert: readiness, approval publication, registry write,
+claim, PRECLAIM, pending effect, Send, live authority, browser, network, and
+external effect are fixed false. Its draft-admission capability is opaque,
+noncloneable, nonserializable, process-local, and one-use, with production and
+test registries kept disjoint. This amendment grants no runner or live
+authority.

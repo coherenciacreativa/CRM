@@ -270,3 +270,38 @@ direct caller-payload capability publisher, and the production consumer never
 admits that synthetic capability.
 
 No `ForTest` hook grants live authority.
+
+## 2026-07-22 Historical Catch-Up Policy Amendment
+
+The ordinary source contract remains `ordinary_recent_v1` and keeps its
+existing 3-to-7-day grammar and behavior unchanged. A separate policy named
+`historical_catchup_pilot_v1` is admitted only through its own versioned host
+entrypoints and opaque capability family.
+
+Historical mode accepts an exact visible integer label only when it is:
+
+- 8 through 30 with `d`, `day`, `days`, `día`, or `días`; or
+- 1 through 4 with `w`, `week`, `weeks`, `sem`, `semana`, or `semanas`.
+
+Day labels are classified as `displayed_day`; week labels are classified as
+`coarse_week`. The exact visible label remains private and byte-preserved as
+`age_evidence_raw`. The host also binds `selection_policy`,
+`age_evidence_kind`, `age_bucket`, and
+`actual_elapsed_age_claimed=false`. It never converts a displayed label into
+an exact duration or follow timestamp and never claims campaign membership.
+
+Historical mode rejects the ordinary 3-to-7-day labels, day 31 or greater,
+week 5 or greater, decimals, approximate forms, ranges, inequalities, mixed
+units, and unknown or ambiguous labels. The caller cannot provide the policy,
+parsed age, relationship truth, identity, runtime, or browser facts. The
+policy is selected inside the approved host path and the existing
+environment-owned facade supplies the observation.
+
+A current visible `follows_owner` signal remains the primary relationship
+gate. An old notification label alone is never eligibility evidence. The
+historical payload travels only through its separate opaque, one-use,
+nonserializable family; ordinary and historical consumers burn and reject one
+another's capabilities.
+
+This amendment is repo-only. It authorizes no real Stage 2 or Stage 3 source
+access, browser action, live execution, integration, or Send.

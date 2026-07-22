@@ -506,6 +506,247 @@ describe('IAB semantic notification/profile qualification', () => {
   });
 });
 
+describe('historical catch-up pilot source selection', () => {
+  it('keeps ordinary_recent_v1 behavior and payload shape unchanged', async () => {
+    expect(install()).toBe(true);
+    const ordinary = await host.observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({
+      now_ms: Date.now(),
+    });
+    const ordinaryPayload = host.consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest(
+      ordinary.private_complete_source_capability,
+    );
+
+    expect(ordinary.redacted_receipt.decision).toBe(
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_DECISION.READY,
+    );
+    expect(Object.keys(ordinaryPayload ?? {})).toEqual(
+      host.WELCOME_AUDIO_IAB_SEMANTIC_COMPLETE_SOURCE_PAYLOAD_FIELDS,
+    );
+    expect(ordinaryPayload).not.toHaveProperty('selection_policy');
+    expect(ordinaryPayload).not.toHaveProperty('age_evidence_raw');
+    expect(ordinaryPayload).not.toHaveProperty('age_evidence_kind');
+    expect(ordinaryPayload).not.toHaveProperty('age_bucket');
+    expect(host.resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
+
+    expect(install({
+      observation:
+        host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_8D,
+    })).toBe(true);
+    const historicalLabelOnOrdinaryRoute = await host
+      .observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({ now_ms: NOW });
+    expect(historicalLabelOnOrdinaryRoute.private_complete_source_capability).toBeNull();
+    expect(historicalLabelOnOrdinaryRoute.redacted_receipt.blocker_codes).toEqual([
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.COMPLETE_BINDING_INVALID,
+    ]);
+  });
+
+  it('qualifies only the historical policy pair grammar on its separate route', async () => {
+    expect(install({
+      qualification:
+        host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST
+          .HISTORICAL_EXACT_TWO_PAIRS,
+    })).toBe(true);
+    const historical = await host
+      .qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnceForTest({
+        now_ms: NOW,
+      });
+    expect(historical.redacted_receipt).toMatchObject({
+      decision: host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_DECISION.QUALIFIED,
+      notification_profile_pairs_qualified: 2,
+      distinct_pairs_proven: true,
+      blocker_codes: [],
+    });
+    expect(
+      host.validateWelcomeAudioIabSemanticNotificationProfileQualificationReceipt(
+        historical.redacted_receipt,
+      ),
+    ).toEqual({ ok: true, reason: null });
+    expect(host.resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
+
+    expect(install()).toBe(true);
+    const ordinaryLabelsOnHistoricalRoute = await host
+      .qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnceForTest({
+        now_ms: NOW,
+      });
+    expect(ordinaryLabelsOnHistoricalRoute.redacted_receipt.blocker_codes).toEqual([
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.QUALIFICATION_REPORT_INVALID,
+    ]);
+  });
+
+  it.each([
+    [
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_8D,
+      '8d',
+      'displayed_day',
+      8,
+    ],
+    [
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_30D,
+      '30d',
+      'displayed_day',
+      30,
+    ],
+    [
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_1W,
+      '1w',
+      'coarse_week',
+      1,
+    ],
+    [
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_4W,
+      '4w',
+      'coarse_week',
+      4,
+    ],
+  ])('admits explicit historical boundary label %s without claiming chronology', async (
+    scenario,
+    ageEvidenceRaw,
+    ageEvidenceKind,
+    ageBucket,
+  ) => {
+    expect(install({ observation: scenario })).toBe(true);
+    const result = await host
+      .observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest({
+        now_ms: Date.now(),
+      });
+
+    expect(result.redacted_receipt.decision).toBe(
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_DECISION.READY,
+    );
+    expect(
+      host.validateWelcomeAudioIabSemanticFollowerCandidateReceipt(result.redacted_receipt),
+    ).toEqual({ ok: true, reason: null });
+    expect(JSON.stringify(result.redacted_receipt)).not.toContain('private_candidate');
+    const payload = host
+      .consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest(
+        result.private_complete_source_capability,
+      );
+    expect(Object.keys(payload ?? {})).toEqual(
+      host.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2,
+    );
+    expect(payload).toMatchObject({
+      source_contract_version:
+        host.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2,
+      source_mission_id: host.WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID,
+      selection_policy:
+        host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.HISTORICAL_CATCHUP_PILOT_V1,
+      visible_time_bucket_utf8: ageEvidenceRaw,
+      age_evidence_raw: ageEvidenceRaw,
+      age_evidence_kind: ageEvidenceKind,
+      age_bucket: ageBucket,
+      relationship_binding: 'follows_owner',
+      actual_elapsed_age_claimed: false,
+      campaign_membership_claimed: false,
+    });
+    expect(Object.isFrozen(payload)).toBe(true);
+    expect(Reflect.set(payload as object, 'age_bucket', 999)).toBe(false);
+    expect(
+      host.consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest(
+        result.private_complete_source_capability,
+      ),
+    ).toBeNull();
+  });
+
+  it.each([
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_7D,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_31D,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_5W,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_1WK,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_4WKS,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+      .HISTORICAL_8_DIA_UNACCENTED,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+      .HISTORICAL_8_DIAS_UNACCENTED,
+    host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_AMBIGUOUS,
+  ])('rejects out-of-policy or ambiguous historical label %s', async (scenario) => {
+    expect(install({ observation: scenario })).toBe(true);
+    const result = await host
+      .observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest({
+        now_ms: NOW,
+      });
+
+    expect(result.private_complete_source_capability).toBeNull();
+    expect(result.redacted_receipt.blocker_codes).toEqual([
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.COMPLETE_BINDING_INVALID,
+    ]);
+  });
+
+  it('still requires a current visible follows-owner relationship', async () => {
+    expect(install({
+      observation: host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+        .HISTORICAL_RELATIONSHIP_UNKNOWN,
+    })).toBe(true);
+    const result = await host
+      .observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest({
+        now_ms: NOW,
+      });
+
+    expect(result.private_complete_source_capability).toBeNull();
+    expect(result.redacted_receipt.blocker_codes).toEqual([
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.RELATIONSHIP_INVALID,
+    ]);
+  });
+
+  it('keeps policy, age, and relationship outside productive caller control', async () => {
+    const qualification = await host
+      .qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnce({
+        selection_policy: 'historical_catchup_pilot_v1',
+      });
+    const observations = await Promise.all([
+      host.observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnce({
+        visible_time_bucket_utf8: '8d',
+      }),
+      host.observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnce({
+        relationship_binding: 'follows_owner',
+      }),
+      host.observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnce({
+        age_evidence_raw: '8d',
+        age_evidence_kind: 'displayed_day',
+        age_bucket: 8,
+      }),
+    ]);
+
+    expect(qualification.redacted_receipt.blocker_codes).toEqual([
+      host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
+    ]);
+    for (const observation of observations) {
+      expect(observation.private_complete_source_capability).toBeNull();
+      expect(observation.redacted_receipt.blocker_codes).toEqual([
+        host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
+      ]);
+    }
+  });
+
+  it('burns capabilities on every ordinary/historical family mismatch', async () => {
+    expect(install({
+      observation:
+        host.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_8D,
+    })).toBe(true);
+    const historical = await host
+      .observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest({
+        now_ms: Date.now(),
+      });
+    expect(host.consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest(
+      historical.private_complete_source_capability,
+    )).toBeNull();
+    expect(host.consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest(
+      historical.private_complete_source_capability,
+    )).toBeNull();
+    expect(host.resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
+
+    expect(install()).toBe(true);
+    const ordinary = await host.observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({
+      now_ms: Date.now(),
+    });
+    expect(host.consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest(
+      ordinary.private_complete_source_capability,
+    )).toBeNull();
+    expect(host.consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest(
+      ordinary.private_complete_source_capability,
+    )).toBeNull();
+  });
+});
+
 describe('IAB semantic complete candidate observation', () => {
   it('issues one opaque capability only after complete binding and exact finalization', async () => {
     expect(install()).toBe(true);

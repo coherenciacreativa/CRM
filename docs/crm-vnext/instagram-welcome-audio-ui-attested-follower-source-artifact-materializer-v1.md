@@ -278,3 +278,36 @@ private fixed-root publication, fresh downstream packet and authority creation,
 claim-before-effect boundary, exact audio attachment, one Send, strong
 same-thread confirmation, and terminal no-retry ambiguity handling. This
 contract alone authorizes none of those actions.
+
+## 2026-07-22 Historical v4 Artifact Amendment
+
+The historical catch-up path uses a separate owner-only v4 artifact family.
+It does not widen, reinterpret, or reuse the ordinary IAB v3 artifact. Its
+root, filename, schema, materializer contract, production/test registries, and
+opaque source-artifact capabilities are all disjoint from v3.
+
+The v4 materializer consumes only the historical complete-source capability
+and independently revalidates:
+
+- `selection_policy=historical_catchup_pilot_v1`;
+- exact private `age_evidence_raw` in the closed 8-to-30-day or 1-to-4-week
+  grammar;
+- the matching `displayed_day` or `coarse_week` evidence kind and bounded age
+  bucket;
+- `actual_elapsed_age_claimed=false` and no campaign-membership claim; and
+- the current visible `follows_owner` relationship plus the existing exact
+  notification, profile, thread, owner, dedupe, composer, attachment, and
+  challenge gates.
+
+The raw age label remains only in the owner-only artifact and opaque chain.
+Aggregate receipts never contain it, an identity, a reference, a timestamp,
+or a path. Policy, raw label, classification, or relationship tampering blocks
+after one-use consumption. Presenting v3 to v4 or v4 to v3 burns and rejects
+the offered capability.
+
+Same-process owner-only v4 publication and one-use capability consumption retain
+the existing no-follow, stable-byte, no-overwrite, five-minute-expiry, and
+aggregate-receipt disciplines. No v4 reopen API is introduced by this
+amendment. Every live, claim, pending, Send, browser, network, and
+external-effect field remains false. This repo-only amendment authorizes no
+fixed-root operation or live source access.

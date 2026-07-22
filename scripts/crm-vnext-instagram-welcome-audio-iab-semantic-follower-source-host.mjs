@@ -4,6 +4,10 @@ const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_CONTRACT_VERSION =
   'crm_core_instagram_welcome_audio_iab_semantic_follower_source_host_v1';
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_MISSION_ID =
   'crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719';
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2 =
+  'crm_core_instagram_welcome_audio_iab_semantic_historical_catchup_source_host_v2';
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID =
+  'crm_core_historical_catchup_pilot_no_live_v1_20260722';
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BACKEND =
   'codex_in_app_browser_semantic_read_only_v1';
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_RUNTIME_SLOT =
@@ -14,6 +18,11 @@ const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_RUNTIME_BRAND =
   'crm_core_iab_semantic_source_runtime_facade_v1';
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_CAPABILITY_TTL_MS = 5 * 60 * 1000;
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_MAX_ROWS = 8;
+
+const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY = Object.freeze({
+  ORDINARY_RECENT_V1: 'ordinary_recent_v1',
+  HISTORICAL_CATCHUP_PILOT_V1: 'historical_catchup_pilot_v1',
+});
 
 const RUNTIME_SYMBOL = Symbol.for(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_RUNTIME_SLOT);
 
@@ -149,6 +158,16 @@ const COMPLETE_SOURCE_PAYLOAD_FIELDS = Object.freeze([
   'isolated_tab_finalized',
 ]);
 
+const HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2 = Object.freeze([
+  ...COMPLETE_SOURCE_PAYLOAD_FIELDS,
+  'selection_policy',
+  'age_evidence_raw',
+  'age_evidence_kind',
+  'age_bucket',
+  'actual_elapsed_age_claimed',
+  'campaign_membership_claimed',
+]);
+
 const RUNTIME_FACADE_FIELDS = Object.freeze([
   'brand',
   'open_isolated_instagram_tab_once',
@@ -267,10 +286,14 @@ const OBSERVATION_ALLOWED_BLOCKERS = new Set([
 ]);
 const PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES = new WeakMap();
 const TEST_COMPLETE_SOURCE_CAPABILITY_STATES = new WeakMap();
+const HISTORICAL_PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES = new WeakMap();
+const HISTORICAL_TEST_COMPLETE_SOURCE_CAPABILITY_STATES = new WeakMap();
 
 const COMPLETE_SOURCE_CAPABILITY_FAMILY = Object.freeze({
   PRODUCTION: 'production_iab_semantic_source',
   TEST: 'synthetic_iab_semantic_source_for_test',
+  HISTORICAL_PRODUCTION: 'historical_catchup_production_iab_semantic_source_v2',
+  HISTORICAL_TEST: 'historical_catchup_synthetic_iab_semantic_source_for_test_v2',
 });
 
 let installedTestRuntimeBinding = null;
@@ -386,6 +409,46 @@ const exactVisibleTimeBucket = (value) => typeof value === 'string'
   && value.length <= 80
   && !/[\u0000-\u001f\u007f]/u.test(value)
   && /^(?:3|4|5|6|7)\s*(?:d|day|days|d[ií]a|d[ií]as)$/iu.test(value);
+
+const HISTORICAL_DAY_LABEL =
+  /^(?:[89]|[12][0-9]|30)\s*(?:d|day|days|día|días)$/iu;
+const HISTORICAL_WEEK_LABEL =
+  /^[1-4]\s*(?:w|week|weeks|sem|semana|semanas)$/iu;
+
+const classifyHistoricalAgeEvidence = (value) => {
+  if (
+    typeof value !== 'string'
+    || value.length < 1
+    || value.length > 80
+    || /[\u0000-\u001f\u007f]/u.test(value)
+  ) return null;
+  const ageEvidenceKind = HISTORICAL_DAY_LABEL.test(value)
+    ? 'displayed_day'
+    : HISTORICAL_WEEK_LABEL.test(value)
+      ? 'coarse_week'
+      : null;
+  if (ageEvidenceKind === null) return null;
+  const ageBucket = Number.parseInt(value, 10);
+  if (!Number.isSafeInteger(ageBucket)) return null;
+  return Object.freeze({
+    age_evidence_raw: value,
+    age_evidence_kind: ageEvidenceKind,
+    age_bucket: ageBucket,
+  });
+};
+
+const exactHistoricalVisibleTimeBucket = (value) => (
+  classifyHistoricalAgeEvidence(value) !== null
+);
+
+const exactVisibleTimeBucketForPolicy = (value, selectionPolicy) => (
+  selectionPolicy === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY
+    .HISTORICAL_CATCHUP_PILOT_V1
+    ? exactHistoricalVisibleTimeBucket(value)
+    : selectionPolicy === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.ORDINARY_RECENT_V1
+      ? exactVisibleTimeBucket(value)
+      : false
+);
 
 const opaqueCapability = () => {
   const capability = Object.create(null);
@@ -597,7 +660,10 @@ const safeObservedCount = (value) => (
   Number.isSafeInteger(value) && value >= 0 ? value : 0
 );
 
-const inspectQualificationReport = (value) => {
+const inspectQualificationReport = (
+  value,
+  selectionPolicy = WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.ORDINARY_RECENT_V1,
+) => {
   const report = exactDataObject(value, QUALIFICATION_REPORT_FIELDS);
   if (!report) return Object.freeze({
     blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.QUALIFICATION_REPORT_INVALID,
@@ -626,7 +692,7 @@ const inspectQualificationReport = (value) => {
     && exactPrivateReference(pair.notification_reference)
     && exactPrivateReference(pair.profile_reference)
     && pair.notification_reference !== pair.profile_reference
-    && exactVisibleTimeBucket(pair.visible_time_bucket_utf8)
+    && exactVisibleTimeBucketForPolicy(pair.visible_time_bucket_utf8, selectionPolicy)
     && pair.notification_profile_binding === 'exact'
     && pair.follower_event_binding === 'started_following_owner';
   if (pairs !== null) {
@@ -697,7 +763,10 @@ const inspectQualificationReport = (value) => {
   return result(null);
 };
 
-const inspectObservationReport = (value) => {
+const inspectObservationReport = (
+  value,
+  selectionPolicy = WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.ORDINARY_RECENT_V1,
+) => {
   const report = exactDataObject(value, OBSERVATION_REPORT_FIELDS);
   if (!report) return Object.freeze({
     blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CANDIDATE_REPORT_INVALID,
@@ -744,7 +813,10 @@ const inspectObservationReport = (value) => {
         && report.preopen_unread_inbound === 'explicit_none'
       )
     );
-  const visibleTimeBucketValid = exactVisibleTimeBucket(report.visible_time_bucket_utf8);
+  const visibleTimeBucketValid = exactVisibleTimeBucketForPolicy(
+    report.visible_time_bucket_utf8,
+    selectionPolicy,
+  );
   const progress = Object.freeze({
     rows_scanned: safeObservedCount(report.rows_scanned),
     notification_profile_bound: notificationProfileBound,
@@ -825,7 +897,11 @@ const inspectObservationReport = (value) => {
   return Object.freeze({ blocker: null, report, progress });
 };
 
-const runQualificationInternal = async ({ nowMs, runtimeBinding }) => {
+const runQualificationInternal = async ({
+  nowMs,
+  runtimeBinding,
+  selectionPolicy = WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.ORDINARY_RECENT_V1,
+}) => {
   if (!validNow(nowMs)) return blockedQualificationResult({
     blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
   });
@@ -870,7 +946,10 @@ const runQualificationInternal = async ({ nowMs, runtimeBinding }) => {
       progress.isolated_tab_opened = true;
       progress.read_only_source_action_performed = true;
       phase = 'qualification_pending';
-      inspection = inspectQualificationReport(await binding.methods.qualify());
+      inspection = inspectQualificationReport(
+        await binding.methods.qualify(),
+        selectionPolicy,
+      );
       phase = 'qualification_returned';
       Object.assign(progress, inspection.progress ?? {});
       if (inspection.blocker !== null) setPrimaryBlocker(inspection.blocker);
@@ -902,7 +981,12 @@ const runQualificationInternal = async ({ nowMs, runtimeBinding }) => {
   });
 };
 
-const runObservationInternal = async ({ nowMs, runtimeBinding, capabilityFamily }) => {
+const runObservationInternal = async ({
+  nowMs,
+  runtimeBinding,
+  capabilityFamily,
+  selectionPolicy = WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.ORDINARY_RECENT_V1,
+}) => {
   if (!validNow(nowMs)) return blockedObservationResult({
     blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
   });
@@ -944,7 +1028,10 @@ const runObservationInternal = async ({ nowMs, runtimeBinding, capabilityFamily 
       progress.isolated_tab_opened = true;
       progress.read_only_source_action_performed = true;
       phase = 'observation_pending';
-      inspection = inspectObservationReport(await binding.methods.observe());
+      inspection = inspectObservationReport(
+        await binding.methods.observe(),
+        selectionPolicy,
+      );
       phase = 'observation_returned';
       Object.assign(progress, inspection.progress ?? {});
       if (inspection.blocker !== null) setPrimaryBlocker(inspection.blocker);
@@ -978,10 +1065,25 @@ const runObservationInternal = async ({ nowMs, runtimeBinding, capabilityFamily 
   }
   const observedAt = new Date(nowMs).toISOString();
   const expiresAtMs = nowMs + WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_CAPABILITY_TTL_MS;
-  const payload = Object.freeze({
-    source_contract_version: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_CONTRACT_VERSION,
+  const historicalCatchup = selectionPolicy
+    === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.HISTORICAL_CATCHUP_PILOT_V1;
+  const historicalAgeEvidence = historicalCatchup
+    ? classifyHistoricalAgeEvidence(inspection.report.visible_time_bucket_utf8)
+    : null;
+  if (historicalCatchup && historicalAgeEvidence === null) {
+    return blockedObservationResult({
+      blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.COMPLETE_BINDING_INVALID,
+      progress,
+    });
+  }
+  const payloadBase = {
+    source_contract_version: historicalCatchup
+      ? WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2
+      : WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_CONTRACT_VERSION,
     source_backend: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BACKEND,
-    source_mission_id: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_MISSION_ID,
+    source_mission_id: historicalCatchup
+      ? WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID
+      : WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_MISSION_ID,
     source_observed_at: observedAt,
     source_expires_at: new Date(expiresAtMs).toISOString(),
     source_row_ordinal: inspection.report.source_row_ordinal,
@@ -1004,16 +1106,41 @@ const runObservationInternal = async ({ nowMs, runtimeBinding, capabilityFamily 
     attachment_control_status: 'visible_and_usable',
     challenge_or_error_status: 'absent',
     isolated_tab_finalized: 'exactly_once',
-  });
+  };
+  const payload = Object.freeze(historicalCatchup
+    ? {
+        ...payloadBase,
+        selection_policy: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY
+          .HISTORICAL_CATCHUP_PILOT_V1,
+        ...historicalAgeEvidence,
+        actual_elapsed_age_claimed: false,
+        campaign_membership_claimed: false,
+      }
+    : payloadBase);
   const capabilityRegistry = capabilityFamily === COMPLETE_SOURCE_CAPABILITY_FAMILY.PRODUCTION
     ? PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES
     : capabilityFamily === COMPLETE_SOURCE_CAPABILITY_FAMILY.TEST
       ? TEST_COMPLETE_SOURCE_CAPABILITY_STATES
-      : null;
-  if (capabilityRegistry === null) return blockedObservationResult({
-    blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CANDIDATE_REPORT_INVALID,
-    progress,
-  });
+      : capabilityFamily === COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_PRODUCTION
+        ? HISTORICAL_PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES
+        : capabilityFamily === COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_TEST
+          ? HISTORICAL_TEST_COMPLETE_SOURCE_CAPABILITY_STATES
+          : null;
+  const capabilityFamilyMatchesPolicy = historicalCatchup
+    ? [
+        COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_PRODUCTION,
+        COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_TEST,
+      ].includes(capabilityFamily)
+    : [
+        COMPLETE_SOURCE_CAPABILITY_FAMILY.PRODUCTION,
+        COMPLETE_SOURCE_CAPABILITY_FAMILY.TEST,
+      ].includes(capabilityFamily);
+  if (capabilityRegistry === null || !capabilityFamilyMatchesPolicy) {
+    return blockedObservationResult({
+      blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CANDIDATE_REPORT_INVALID,
+      progress,
+    });
+  }
   const privateCompleteSourceCapability = opaqueCapability();
   capabilityRegistry.set(privateCompleteSourceCapability, {
     consumed: false,
@@ -1048,21 +1175,80 @@ const observeWelcomeAudioIabSemanticFollowerCandidateOnce = async (...args) => {
   });
 };
 
-const consumeCompleteSourceCapabilityStateOnce = ({ state, expectedFamily }) => {
+const qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnce = async (
+  ...args
+) => {
+  if (args.length !== 0) return blockedQualificationResult({
+    blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
+  });
+  return runQualificationInternal({
+    nowMs: Date.now(),
+    selectionPolicy: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY
+      .HISTORICAL_CATCHUP_PILOT_V1,
+  });
+};
+
+const observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnce = async (...args) => {
+  if (args.length !== 0) return blockedObservationResult({
+    blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
+  });
+  return runObservationInternal({
+    nowMs: Date.now(),
+    capabilityFamily: COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_PRODUCTION,
+    selectionPolicy: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY
+      .HISTORICAL_CATCHUP_PILOT_V1,
+  });
+};
+
+const consumeCompleteSourceCapabilityStateOnce = ({
+  state,
+  expectedFamily,
+  payloadFields = COMPLETE_SOURCE_PAYLOAD_FIELDS,
+  payloadValidator = () => true,
+}) => {
   if (!state || state.consumed) return null;
   state.consumed = true;
   const nowMs = Date.now();
+  const inspectedPayload = exactDataObject(state.payload, payloadFields);
   if (
     state.family !== expectedFamily
     || !validNow(nowMs)
     || nowMs < state.issued_at_ms
     || nowMs >= state.expires_at_ms
-    || !exactDataObject(state.payload, COMPLETE_SOURCE_PAYLOAD_FIELDS)
-    || !exactIso(state.payload.source_observed_at)
-    || !exactIso(state.payload.source_expires_at)
-    || Date.parse(state.payload.source_expires_at) !== state.expires_at_ms
+    || !inspectedPayload
+    || !exactIso(inspectedPayload.source_observed_at)
+    || !exactIso(inspectedPayload.source_expires_at)
+    || Date.parse(inspectedPayload.source_expires_at) !== state.expires_at_ms
+    || !payloadValidator(inspectedPayload)
   ) return null;
   return state.payload;
+};
+
+const validHistoricalCompleteSourcePayload = (payload) => {
+  const classifiedAgeEvidence = classifyHistoricalAgeEvidence(
+    payload.visible_time_bucket_utf8,
+  );
+  return classifiedAgeEvidence !== null
+    && payload.source_contract_version
+      === WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2
+    && payload.source_backend === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BACKEND
+    && payload.source_mission_id === WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID
+    && payload.selection_policy
+      === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.HISTORICAL_CATCHUP_PILOT_V1
+    && payload.age_evidence_raw === payload.visible_time_bucket_utf8
+    && payload.age_evidence_raw === classifiedAgeEvidence.age_evidence_raw
+    && payload.age_evidence_kind === classifiedAgeEvidence.age_evidence_kind
+    && payload.age_bucket === classifiedAgeEvidence.age_bucket
+    && payload.actual_elapsed_age_claimed === false
+    && payload.campaign_membership_claimed === false
+    && payload.relationship_binding === 'follows_owner';
+};
+
+const burnCompleteSourceCapabilityStates = (states) => {
+  for (let index = 0; index < states.length; index += 1) {
+    const state = states[index];
+    if (state && !state.consumed) state.consumed = true;
+  }
 };
 
 const consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnce = (capability) => {
@@ -1074,6 +1260,10 @@ const consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnce = (capability) 
   });
   const testState = TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability);
   if (testState && !testState.consumed) testState.consumed = true;
+  burnCompleteSourceCapabilityStates([
+    HISTORICAL_PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+    HISTORICAL_TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+  ]);
   return null;
 };
 
@@ -1086,6 +1276,49 @@ const consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest = (capab
   });
   const productionState = PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability);
   if (productionState && !productionState.consumed) productionState.consumed = true;
+  burnCompleteSourceCapabilityStates([
+    HISTORICAL_PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+    HISTORICAL_TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+  ]);
+  return null;
+};
+
+const consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnce = (
+  capability,
+) => {
+  if (capability === null || typeof capability !== 'object') return null;
+  const historicalProductionState = HISTORICAL_PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES
+    .get(capability);
+  if (historicalProductionState) return consumeCompleteSourceCapabilityStateOnce({
+    state: historicalProductionState,
+    expectedFamily: COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_PRODUCTION,
+    payloadFields: HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2,
+    payloadValidator: validHistoricalCompleteSourcePayload,
+  });
+  burnCompleteSourceCapabilityStates([
+    PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+    TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+    HISTORICAL_TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+  ]);
+  return null;
+};
+
+const consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest = (
+  capability,
+) => {
+  if (capability === null || typeof capability !== 'object') return null;
+  const historicalTestState = HISTORICAL_TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability);
+  if (historicalTestState) return consumeCompleteSourceCapabilityStateOnce({
+    state: historicalTestState,
+    expectedFamily: COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_TEST,
+    payloadFields: HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2,
+    payloadValidator: validHistoricalCompleteSourcePayload,
+  });
+  burnCompleteSourceCapabilityStates([
+    PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+    TEST_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+    HISTORICAL_PRODUCTION_COMPLETE_SOURCE_CAPABILITY_STATES.get(capability),
+  ]);
   return null;
 };
 
@@ -1543,6 +1776,7 @@ const validateWelcomeAudioIabSemanticFollowerCandidateReceipt = (value) => (
 
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST = Object.freeze({
   EXACT_TWO_PAIRS: 'exact_two_pairs',
+  HISTORICAL_EXACT_TWO_PAIRS: 'historical_exact_two_pairs',
   ONE_PAIR: 'one_pair',
   ONE_PAIR_THREAD_OPENED: 'one_pair_thread_opened',
   DUPLICATE_PAIR: 'duplicate_pair',
@@ -1558,6 +1792,19 @@ const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST = Object
 
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST = Object.freeze({
   EXACT_CANDIDATE: 'exact_candidate',
+  HISTORICAL_8D: 'historical_8d',
+  HISTORICAL_30D: 'historical_30d',
+  HISTORICAL_1W: 'historical_1w',
+  HISTORICAL_4W: 'historical_4w',
+  HISTORICAL_7D: 'historical_7d',
+  HISTORICAL_31D: 'historical_31d',
+  HISTORICAL_5W: 'historical_5w',
+  HISTORICAL_1WK: 'historical_1wk',
+  HISTORICAL_4WKS: 'historical_4wks',
+  HISTORICAL_8_DIA_UNACCENTED: 'historical_8_dia_unaccented',
+  HISTORICAL_8_DIAS_UNACCENTED: 'historical_8_dias_unaccented',
+  HISTORICAL_AMBIGUOUS: 'historical_ambiguous',
+  HISTORICAL_RELATIONSHIP_UNKNOWN: 'historical_relationship_unknown',
   TOO_MANY_ROWS: 'too_many_rows',
   ROW_CAP_WITH_INVALID_THREAD_COUNT: 'row_cap_with_invalid_thread_count',
   UNREAD_PRESENT: 'unread_present',
@@ -1587,7 +1834,11 @@ const buildTestQualificationReport = (scenario) => {
     profile_identity_utf8: identity,
     notification_reference: `private-notification-${ordinal}`,
     profile_reference: `private-profile-${ordinal}`,
-    visible_time_bucket_utf8: `${ordinal + 2}d`,
+    visible_time_bucket_utf8: scenario
+      === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST
+        .HISTORICAL_EXACT_TWO_PAIRS
+      ? ordinal === 1 ? '8d' : '1w'
+      : `${ordinal + 2}d`,
     notification_profile_binding: 'exact',
     follower_event_binding: 'started_following_owner',
   });
@@ -1659,6 +1910,25 @@ const buildTestObservationReport = (scenario) => {
   if (scenario === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.ACTION_THROWS) {
     throw new TypeError('synthetic_runtime_action_failed');
   }
+  const historicalVisibleTimeBuckets = Object.freeze({
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_8D]: '8d',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_30D]: '30d',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_1W]: '1w',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_4W]: '4w',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_7D]: '7d',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_31D]: '31d',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_5W]: '5w',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_1WK]: '1wk',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.HISTORICAL_4WKS]: '4wks',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+      .HISTORICAL_8_DIA_UNACCENTED]: '8 dia',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+      .HISTORICAL_8_DIAS_UNACCENTED]: '8 dias',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+      .HISTORICAL_AMBIGUOUS]: 'about 2 weeks',
+    [WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+      .HISTORICAL_RELATIONSHIP_UNKNOWN]: '8d',
+  });
   const report = Object.freeze({
     rows_scanned: scenario
       === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.TOO_MANY_ROWS
@@ -1673,7 +1943,7 @@ const buildTestObservationReport = (scenario) => {
     exact_profile_reference: 'private-profile-1',
     exact_thread_reference: 'private-thread-1',
     exact_owner_account_reference: 'private.owner.1',
-    visible_time_bucket_utf8: '3d',
+    visible_time_bucket_utf8: historicalVisibleTimeBuckets[scenario] ?? '3d',
     notification_profile_binding: 'exact',
     profile_thread_binding: scenario
       === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.BINDING_INCOMPLETE
@@ -1682,6 +1952,9 @@ const buildTestObservationReport = (scenario) => {
     owner_account_binding: 'exact',
     relationship_binding: scenario
       === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.RELATIONSHIP_UNKNOWN
+      || scenario
+        === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST
+          .HISTORICAL_RELATIONSHIP_UNKNOWN
       ? 'unknown'
       : 'follows_owner',
     preopen_unread_inbound: scenario
@@ -1874,14 +2147,48 @@ const observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest = async (
   });
 };
 
+const qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnceForTest = async (
+  parameters = {},
+) => {
+  const input = exactDataObject(parameters, ['now_ms']);
+  if (!input) return blockedQualificationResult({
+    blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
+  });
+  return runQualificationInternal({
+    nowMs: input.now_ms,
+    runtimeBinding: installedTestRuntimeBinding,
+    selectionPolicy: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY
+      .HISTORICAL_CATCHUP_PILOT_V1,
+  });
+};
+
+const observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest = async (
+  parameters = {},
+) => {
+  const input = exactDataObject(parameters, ['now_ms']);
+  if (!input) return blockedObservationResult({
+    blocker: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER.CALLER_INPUT_FORBIDDEN,
+  });
+  return runObservationInternal({
+    nowMs: input.now_ms,
+    runtimeBinding: installedTestRuntimeBinding,
+    capabilityFamily: COMPLETE_SOURCE_CAPABILITY_FAMILY.HISTORICAL_TEST,
+    selectionPolicy: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY
+      .HISTORICAL_CATCHUP_PILOT_V1,
+  });
+};
+
 export {
   COMPLETE_SOURCE_PAYLOAD_FIELDS as WELCOME_AUDIO_IAB_SEMANTIC_COMPLETE_SOURCE_PAYLOAD_FIELDS,
+  HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2 as WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2,
   OBSERVATION_RECEIPT_FIELDS as WELCOME_AUDIO_IAB_SEMANTIC_OBSERVATION_RECEIPT_FIELDS,
   QUALIFICATION_RECEIPT_FIELDS as WELCOME_AUDIO_IAB_SEMANTIC_QUALIFICATION_RECEIPT_FIELDS,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BACKEND,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BLOCKER,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_CAPABILITY_TTL_MS,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_DECISION,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_CONTRACT_VERSION,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_HOST_MISSION_ID,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_MAX_ROWS,
@@ -1892,14 +2199,21 @@ export {
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_RUNTIME_ALIAS,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_RUNTIME_BRAND,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_RUNTIME_SLOT,
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY,
   WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_STAGE,
   consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnce,
   consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest,
+  consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnce,
+  consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest,
   installWelcomeAudioIabSemanticRuntimeFacadeForTest,
   observeWelcomeAudioIabSemanticFollowerCandidateOnce,
   observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest,
+  observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnce,
+  observeWelcomeAudioIabSemanticHistoricalCatchupFollowerCandidateOnceForTest,
   qualifyWelcomeAudioIabSemanticNotificationProfilePairOnce,
   qualifyWelcomeAudioIabSemanticNotificationProfilePairOnceForTest,
+  qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnce,
+  qualifyWelcomeAudioIabSemanticHistoricalCatchupNotificationProfilePairOnceForTest,
   resetWelcomeAudioIabSemanticRuntimeFacadeForTest,
   validateWelcomeAudioIabSemanticFollowerCandidateReceipt,
   validateWelcomeAudioIabSemanticNotificationProfileQualificationReceipt,

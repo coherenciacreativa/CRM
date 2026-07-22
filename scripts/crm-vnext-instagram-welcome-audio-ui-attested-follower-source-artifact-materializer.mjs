@@ -36,8 +36,14 @@ import {
   inspectWelcomeAudioNativeNotificationProfileBindingCapability,
 } from './crm-vnext-instagram-welcome-audio-native-notification-profile-binder.mjs';
 import {
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID,
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY,
   consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnce,
   consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest,
+  consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnce,
+  consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest,
 } from './crm-vnext-instagram-welcome-audio-iab-semantic-follower-source-host.mjs';
 
 const WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V3 =
@@ -165,6 +171,130 @@ const IAB_SOURCE_ARTIFACT_RECEIPT_FIELDS_V3 = Object.freeze([
 
 const IAB_SOURCE_ARTIFACT_CAPABILITY_STATES_V3 = new WeakMap();
 const IAB_SOURCE_ARTIFACT_CAPABILITY_STATES_V3_FOR_TEST = new WeakMap();
+const IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4 = new WeakMap();
+const IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4_FOR_TEST = new WeakMap();
+
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V4 =
+  'crm_core_instagram_welcome_audio_iab_semantic_historical_follower_source_artifact_materializer_v4';
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SCHEMA_VERSION_V4 =
+  'crm_core_instagram_welcome_audio_iab_semantic_historical_follower_source_artifact_v4';
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_SCHEMA_VERSION_V4 =
+  'crm_core_instagram_welcome_audio_iab_semantic_historical_follower_source_artifact_receipt_v4';
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FILE_NAME_V4 =
+  'iab-semantic-historical-follower-source-v4.json';
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_ROOT_V4 = resolve(
+  homedir(),
+  'Documents',
+  'Mantis-Private-Source-Artifacts',
+  'instagram',
+  'crm-core-welcome-audio-iab-semantic-historical-follower-source-artifact-v4',
+);
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_PARENT_V4 = dirname(
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_ROOT_V4,
+);
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V4 =
+  'crm-core-welcome-audio-iab-semantic-historical-source-artifact-v4-test-';
+const V4_TEMPORARY_FILE_PATTERN =
+  /^\.iab-semantic-historical-source-[1-9][0-9]*-[a-f0-9]{32}\.tmp$/u;
+
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MODE_V4 = Object.freeze({
+  FIXED_OWNER_ONLY: 'fixed_owner_only_historical_v4',
+  SYNTHETIC_TEMP_TEST_ONLY: 'synthetic_temp_test_only_historical_v4',
+});
+
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4 = Object.freeze({
+  PUBLISHED: 'published_owner_only_iab_semantic_historical_source_artifact_v4',
+  REUSED: 'reused_exact_owner_only_iab_semantic_historical_source_artifact_v4',
+  BLOCKED: 'blocked_owner_only_iab_semantic_historical_source_artifact_v4',
+});
+
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_OPERATION_V4 =
+  Object.freeze({
+    MATERIALIZE: 'materialize',
+  });
+
+const WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4 = Object.freeze({
+  INPUT_INVALID: 'blocked_iab_historical_source_artifact_v4_input_invalid',
+  COMPLETE_SOURCE_CAPABILITY_INVALID:
+    'blocked_iab_historical_source_artifact_v4_complete_source_capability_invalid_or_replayed',
+  COMPLETE_SOURCE_INVALID:
+    'blocked_iab_historical_source_artifact_v4_complete_source_invalid',
+  ARTIFACT_INVALID: 'blocked_iab_historical_source_artifact_v4_contract_invalid',
+  ARTIFACT_CAPABILITY_INVALID:
+    'blocked_iab_historical_source_artifact_v4_capability_invalid_stale_or_replayed',
+  ROOT_INVALID: 'blocked_iab_historical_source_artifact_v4_root_invalid',
+  TARGET_CONFLICT: 'blocked_iab_historical_source_artifact_v4_target_conflict',
+  PUBLICATION_FAILED: 'blocked_iab_historical_source_artifact_v4_publication_failed',
+});
+
+const IAB_HISTORICAL_SOURCE_ARTIFACT_FIELDS_V4 = Object.freeze([
+  'schema_version',
+  'materializer_contract_version',
+  'status',
+  'source_expires_at',
+  'selection_policy',
+  'age_evidence_raw',
+  'age_evidence_kind',
+  'age_bucket',
+  'actual_elapsed_age_claimed',
+  'complete_source',
+  'ui_attested_input',
+  'source_evidence_sha256',
+]);
+
+const IAB_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_FIELDS_V4 = Object.freeze([
+  ...IAB_SOURCE_ARTIFACT_RECEIPT_FIELDS_V3,
+]);
+
+const opaqueIabSemanticHistoricalSourceArtifactCapabilityV4 = () => {
+  const capability = Object.create(null);
+  Object.defineProperties(capability, {
+    [Symbol('crm_core_iab_semantic_historical_source_artifact_capability_v4')]: {
+      value: true,
+      enumerable: false,
+    },
+    toJSON: {
+      value: () => {
+        throw new TypeError('historical_source_artifact_capability_not_serializable');
+      },
+      enumerable: false,
+    },
+    clone_guard: {
+      value: Symbol('opaque_historical_source_artifact_capability_v4'),
+      enumerable: true,
+    },
+  });
+  return Object.freeze(capability);
+};
+
+const IAB_SOURCE_ARTIFACT_IO_CONFIG_V3 = Object.freeze({
+  blockers: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3,
+  fixedMode: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_MODE_V3.FIXED_OWNER_ONLY,
+  syntheticMode:
+    WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_MODE_V3.SYNTHETIC_TEMP_TEST_ONLY,
+  fixedRoot: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FIXED_ROOT_V3,
+  fixedParent: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FIXED_PARENT_V3,
+  syntheticPrefix: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V3,
+  fileName: WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FILE_NAME_V3,
+  temporaryPattern: V3_TEMPORARY_FILE_PATTERN,
+  temporaryPrefix: '.iab-semantic-source-',
+});
+
+const IAB_SOURCE_ARTIFACT_IO_CONFIG_V4 = Object.freeze({
+  blockers: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4,
+  fixedMode:
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MODE_V4.FIXED_OWNER_ONLY,
+  syntheticMode:
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MODE_V4
+      .SYNTHETIC_TEMP_TEST_ONLY,
+  fixedRoot: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_ROOT_V4,
+  fixedParent: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_PARENT_V4,
+  syntheticPrefix:
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V4,
+  fileName: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FILE_NAME_V4,
+  temporaryPattern: V4_TEMPORARY_FILE_PATTERN,
+  temporaryPrefix: '.iab-semantic-historical-source-',
+});
 
 const opaqueIabSemanticSourceArtifactCapabilityV3 = () => {
   const capability = Object.create(null);
@@ -1200,6 +1330,33 @@ const isExactIabVisibleTimeBucketV3 = (value) => typeof value === 'string'
   && !/[\u0000-\u001f\u007f]/u.test(value)
   && /^(?:3|4|5|6|7)\s*(?:d|day|days|d[ií]a|d[ií]as)$/iu.test(value);
 
+const IAB_HISTORICAL_DAY_LABEL_V4 =
+  /^(?:[89]|[12][0-9]|30)\s*(?:d|day|days|día|días)$/iu;
+const IAB_HISTORICAL_WEEK_LABEL_V4 =
+  /^[1-4]\s*(?:w|week|weeks|sem|semana|semanas)$/iu;
+
+const classifyIabHistoricalAgeEvidenceV4 = (value) => {
+  if (
+    typeof value !== 'string'
+    || value.length < 1
+    || value.length > 80
+    || /[\u0000-\u001f\u007f]/u.test(value)
+  ) return null;
+  let ageEvidenceKind;
+  if (IAB_HISTORICAL_DAY_LABEL_V4.test(value)) {
+    ageEvidenceKind = 'displayed_day';
+  } else if (IAB_HISTORICAL_WEEK_LABEL_V4.test(value)) {
+    ageEvidenceKind = 'coarse_week';
+  } else return null;
+  const ageBucket = Number.parseInt(value, 10);
+  if (!Number.isSafeInteger(ageBucket)) return null;
+  return Object.freeze({
+    age_evidence_raw: value,
+    age_evidence_kind: ageEvidenceKind,
+    age_bucket: ageBucket,
+  });
+};
+
 const snapshotV3PlainData = (value, seen = new WeakSet(), budget = { count: 0 }) => {
   if (
     value === null
@@ -1455,6 +1612,178 @@ const validateWelcomeAudioIabSemanticFollowerSourceArtifactV3 = (
   }
 };
 
+const validateIabHistoricalCompleteSourceV4 = (input, nowMs) => {
+  let source;
+  try {
+    source = exactDataObject(
+      snapshotV3PlainData(input),
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_COMPLETE_SOURCE_PAYLOAD_FIELDS_V2,
+    );
+  } catch {
+    return null;
+  }
+  const observedAtMs = parseExactIsoTimestamp(source?.source_observed_at);
+  const expiresAtMs = parseExactIsoTimestamp(source?.source_expires_at);
+  const exactReferences = source ? [
+    source.exact_notification_reference,
+    source.exact_profile_reference,
+    source.exact_thread_reference,
+    source.exact_owner_account_reference,
+  ] : [];
+  const ageEvidence = classifyIabHistoricalAgeEvidenceV4(
+    source?.age_evidence_raw,
+  );
+  if (
+    !source
+    || !ageEvidence
+    || !isValidV3NowMs(nowMs)
+    || source.source_contract_version
+      !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_CONTRACT_VERSION_V2
+    || source.source_backend !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_BACKEND
+    || source.source_mission_id
+      !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_HOST_MISSION_ID
+    || source.selection_policy
+      !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_SELECTION_POLICY.HISTORICAL_CATCHUP_PILOT_V1
+    || source.age_evidence_raw !== source.visible_time_bucket_utf8
+    || source.age_evidence_kind !== ageEvidence.age_evidence_kind
+    || source.age_bucket !== ageEvidence.age_bucket
+    || source.actual_elapsed_age_claimed !== false
+    || source.campaign_membership_claimed !== false
+    || observedAtMs === null
+    || expiresAtMs === null
+    || observedAtMs > nowMs
+    || expiresAtMs <= nowMs
+    || expiresAtMs - observedAtMs !== WELCOME_AUDIO_UI_ATTESTED_SOURCE_FRESHNESS_MS
+    || !Number.isInteger(source.source_row_ordinal)
+    || source.source_row_ordinal < 1
+    || source.source_row_ordinal > 8
+    || !isExactIabTargetV3(source.exact_target_utf8)
+    || exactReferences.some((value) => !isExactIabPrivateReferenceV3(value))
+    || new Set(exactReferences).size !== 4
+    || source.notification_profile_binding !== 'exact'
+    || source.profile_thread_binding !== 'exact'
+    || source.owner_account_binding !== 'exact'
+    || source.relationship_binding !== 'follows_owner'
+    || source.preopen_unread_inbound !== 'explicit_none'
+    || source.seen_transition !== 'absent'
+    || source.prior_welcome_audio !== 'explicit_none'
+    || source.prior_welcome_attempt !== 'explicit_none'
+    || source.dedupe_status !== 'clear'
+    || source.composer_status !== 'visible'
+    || source.attachment_control_status !== 'visible_and_usable'
+    || source.challenge_or_error_status !== 'absent'
+    || source.isolated_tab_finalized !== 'exactly_once'
+  ) return null;
+  return Object.freeze({
+    source: deepFreezeV3(source),
+    ageEvidence,
+  });
+};
+
+const buildIabSemanticHistoricalSourceArtifactV4 = (completeSource, nowMs) => {
+  const validated = validateIabHistoricalCompleteSourceV4(completeSource, nowMs);
+  if (!validated) throw new Error(
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+      .COMPLETE_SOURCE_INVALID,
+  );
+  const { source, ageEvidence } = validated;
+  const uiAttestedInput = buildUiAttestedInputFromIabCompleteSourceV3(source);
+  const adapted = adaptWelcomeAudioUiAttestedFollowerSource(uiAttestedInput, { nowMs });
+  if (
+    adapted.private_projection === null
+    || adapted.redacted_receipt.decision !== WELCOME_AUDIO_UI_ATTESTED_SOURCE_DECISION.READY
+    || validateWelcomeAudioUiAttestedFollowerSourceReceipt(
+      adapted.redacted_receipt,
+    ).ok !== true
+    || validateWelcomeAudioUiAttestedFollowerSourceProjection(
+      adapted.private_projection,
+      { nowMs },
+    ).ok !== true
+    || adapted.private_projection.profile?.follows_owner_evidence
+      !== WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE.CURRENT_VISIBLE_FOLLOWS_OWNER
+    || adapted.private_projection.campaign_membership_claimed !== false
+  ) throw new Error(
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+      .COMPLETE_SOURCE_INVALID,
+  );
+  return deepFreezeV3({
+    schema_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SCHEMA_VERSION_V4,
+    materializer_contract_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V4,
+    status: 'validated_owner_only_iab_semantic_historical_complete_source_v4',
+    source_expires_at: source.source_expires_at,
+    selection_policy: source.selection_policy,
+    ...ageEvidence,
+    actual_elapsed_age_claimed: false,
+    complete_source: source,
+    ui_attested_input: uiAttestedInput,
+    source_evidence_sha256: adapted.private_projection.source_evidence_sha256,
+  });
+};
+
+const validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4 = (
+  artifact,
+  options = {},
+) => {
+  const invalid = () => Object.freeze({
+    ok: false,
+    reason:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.ARTIFACT_INVALID,
+  });
+  try {
+    const root = exactDataObject(
+      snapshotV3PlainData(artifact),
+      IAB_HISTORICAL_SOURCE_ARTIFACT_FIELDS_V4,
+    );
+    const safeOptions = exactDataObject(options, ['now_ms']);
+    if (!root || !safeOptions || !isValidV3NowMs(safeOptions.now_ms)) return invalid();
+    const validated = validateIabHistoricalCompleteSourceV4(
+      root.complete_source,
+      safeOptions.now_ms,
+    );
+    if (!validated) return invalid();
+    const { source, ageEvidence } = validated;
+    if (
+      root.schema_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SCHEMA_VERSION_V4
+      || root.materializer_contract_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V4
+      || root.status !== 'validated_owner_only_iab_semantic_historical_complete_source_v4'
+      || root.source_expires_at !== source.source_expires_at
+      || root.selection_policy !== source.selection_policy
+      || root.age_evidence_raw !== ageEvidence.age_evidence_raw
+      || root.age_evidence_kind !== ageEvidence.age_evidence_kind
+      || root.age_bucket !== ageEvidence.age_bucket
+      || root.actual_elapsed_age_claimed !== false
+      || !/^[a-f0-9]{64}$/u.test(root.source_evidence_sha256)
+    ) return invalid();
+    const expectedInput = buildUiAttestedInputFromIabCompleteSourceV3(source);
+    if (!canonicalBytes(root.ui_attested_input).equals(canonicalBytes(expectedInput))) {
+      return invalid();
+    }
+    const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
+      root.ui_attested_input,
+      { nowMs: safeOptions.now_ms },
+    );
+    if (
+      adapted.private_projection === null
+      || validateWelcomeAudioUiAttestedFollowerSourceProjection(
+        adapted.private_projection,
+        { nowMs: safeOptions.now_ms },
+      ).ok !== true
+      || adapted.private_projection.profile?.follows_owner_evidence
+        !== WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE.CURRENT_VISIBLE_FOLLOWS_OWNER
+      || adapted.private_projection.campaign_membership_claimed !== false
+      || adapted.private_projection.source_evidence_sha256
+        !== root.source_evidence_sha256
+    ) return invalid();
+    return Object.freeze({ ok: true, reason: null });
+  } catch {
+    return invalid();
+  }
+};
+
 const IAB_SOURCE_ARTIFACT_PROGRESS_FIELDS_V3 = Object.freeze([
   'complete_source_capability_consumed',
   'complete_source_validated',
@@ -1654,30 +1983,28 @@ const blockedIabSemanticSourceArtifactV3 = (
   }),
 });
 
-const assertIabSemanticSourceArtifactRootV3 = async ({ artifactRoot, mode }) => {
+const assertIabSemanticSourceArtifactRootV3 = async ({
+  artifactRoot,
+  mode,
+  ioConfig = IAB_SOURCE_ARTIFACT_IO_CONFIG_V3,
+}) => {
   if (!isAbsoluteCleanPath(artifactRoot)) {
-    throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
+    throw new Error(ioConfig.blockers.ROOT_INVALID);
   }
   let expectedCanonical;
-  if (mode === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_MODE_V3.FIXED_OWNER_ONLY) {
-    if (artifactRoot !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FIXED_ROOT_V3) {
-      throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
+  if (mode === ioConfig.fixedMode) {
+    if (artifactRoot !== ioConfig.fixedRoot) {
+      throw new Error(ioConfig.blockers.ROOT_INVALID);
     }
-    const parentMetadata = await lstat(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FIXED_PARENT_V3,
-    );
-    const parentCanonical = await realpath(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FIXED_PARENT_V3,
-    );
+    const parentMetadata = await lstat(ioConfig.fixedParent);
+    const parentCanonical = await realpath(ioConfig.fixedParent);
     if (
-      parentCanonical !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FIXED_PARENT_V3
+      parentCanonical !== ioConfig.fixedParent
       || !parentMetadata.isDirectory()
       || parentMetadata.isSymbolicLink()
       || (typeof process.getuid === 'function'
         && parentMetadata.uid !== process.getuid())
-    ) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID,
-    );
+    ) throw new Error(ioConfig.blockers.ROOT_INVALID);
     try {
       await mkdir(artifactRoot, { mode: 0o700 });
     } catch (error) {
@@ -1685,23 +2012,16 @@ const assertIabSemanticSourceArtifactRootV3 = async ({ artifactRoot, mode }) => 
     }
     expectedCanonical = artifactRoot;
   } else if (
-    mode === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_MODE_V3
-      .SYNTHETIC_TEMP_TEST_ONLY
+    mode === ioConfig.syntheticMode
   ) {
     const unresolvedTemp = resolve(tmpdir());
     const canonicalTemp = await realpath(tmpdir());
     if (
       ![unresolvedTemp, canonicalTemp].includes(dirname(artifactRoot))
-      || !basename(artifactRoot).startsWith(
-        WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V3,
-      )
-    ) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID,
-    );
+      || !basename(artifactRoot).startsWith(ioConfig.syntheticPrefix)
+    ) throw new Error(ioConfig.blockers.ROOT_INVALID);
     expectedCanonical = join(canonicalTemp, basename(artifactRoot));
-  } else throw new Error(
-    WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID,
-  );
+  } else throw new Error(ioConfig.blockers.ROOT_INVALID);
   const unresolved = await lstat(artifactRoot);
   const canonical = await realpath(artifactRoot);
   if (
@@ -1710,26 +2030,29 @@ const assertIabSemanticSourceArtifactRootV3 = async ({ artifactRoot, mode }) => 
     || unresolved.isSymbolicLink()
     || (unresolved.mode & 0o7777) !== 0o700
     || (typeof process.getuid === 'function' && unresolved.uid !== process.getuid())
-  ) throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
+  ) throw new Error(ioConfig.blockers.ROOT_INVALID);
   const entries = await readdir(canonical);
   if (
     entries.length > MAX_CONCURRENT_MODULE_TEMPORARIES + 1
-    || entries.some((entry) => entry !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FILE_NAME_V3
-      && !V3_TEMPORARY_FILE_PATTERN.test(entry))
-  ) throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
-  for (const entry of entries.filter((name) => V3_TEMPORARY_FILE_PATTERN.test(name))) {
+    || entries.some((entry) => entry !== ioConfig.fileName
+      && !ioConfig.temporaryPattern.test(entry))
+  ) throw new Error(ioConfig.blockers.ROOT_INVALID);
+  for (const entry of entries.filter((name) => ioConfig.temporaryPattern.test(name))) {
     const metadata = await lstat(join(canonical, entry));
     if (
       !metadata.isFile()
       || (metadata.mode & 0o7777) !== 0o600
       || metadata.size > MAX_ARTIFACT_BYTES
       || (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
-    ) throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
+    ) throw new Error(ioConfig.blockers.ROOT_INVALID);
   }
   return Object.freeze({ path: canonical, metadata: unresolved });
 };
 
-const syncIabSemanticSourceArtifactRootV3 = async (rootIdentity) => {
+const syncIabSemanticSourceArtifactRootV3 = async (
+  rootIdentity,
+  ioConfig = IAB_SOURCE_ARTIFACT_IO_CONFIG_V3,
+) => {
   let handle;
   try {
     handle = await open(
@@ -1743,9 +2066,7 @@ const syncIabSemanticSourceArtifactRootV3 = async (rootIdentity) => {
       || opened.ino !== rootIdentity.metadata.ino
       || opened.uid !== rootIdentity.metadata.uid
       || opened.mode !== rootIdentity.metadata.mode
-    ) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.PUBLICATION_FAILED,
-    );
+    ) throw new Error(ioConfig.blockers.PUBLICATION_FAILED);
     await handle.sync();
     const rootAfter = await lstat(rootIdentity.path);
     if (
@@ -1754,9 +2075,7 @@ const syncIabSemanticSourceArtifactRootV3 = async (rootIdentity) => {
       || rootAfter.ino !== rootIdentity.metadata.ino
       || rootAfter.uid !== rootIdentity.metadata.uid
       || rootAfter.mode !== rootIdentity.metadata.mode
-    ) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.PUBLICATION_FAILED,
-    );
+    ) throw new Error(ioConfig.blockers.PUBLICATION_FAILED);
   } finally {
     await handle?.close();
   }
@@ -1765,6 +2084,7 @@ const syncIabSemanticSourceArtifactRootV3 = async (rootIdentity) => {
 const readStableIabSemanticSourceArtifactBytesV3 = async ({
   targetPath,
   rootIdentity,
+  ioConfig = IAB_SOURCE_ARTIFACT_IO_CONFIG_V3,
 }) => {
   for (let attempt = 0; attempt < CONCURRENT_WINNER_SETTLE_ATTEMPTS; attempt += 1) {
     let handle;
@@ -1777,10 +2097,8 @@ const readStableIabSemanticSourceArtifactBytesV3 = async ({
         || beforePath.size < 2
         || beforePath.size > MAX_ARTIFACT_BYTES
         || (typeof process.getuid === 'function' && beforePath.uid !== process.getuid())
-      ) throw new Error(
-        WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ARTIFACT_INVALID,
-      );
-      if (beforePath.nlink !== 1) throw new Error('transient_iab_v3_link_settle');
+      ) throw new Error(ioConfig.blockers.ARTIFACT_INVALID);
+      if (beforePath.nlink !== 1) throw new Error('transient_iab_artifact_link_settle');
       handle = await open(
         targetPath,
         FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW | FS_CONSTANTS.O_NONBLOCK,
@@ -1794,13 +2112,11 @@ const readStableIabSemanticSourceArtifactBytesV3 = async ({
         || !sameFile(beforePath, before)
         || !sameFile(before, after)
         || !sameFile(after, afterPath)
-      ) throw new Error(
-        WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ARTIFACT_INVALID,
-      );
+      ) throw new Error(ioConfig.blockers.ARTIFACT_INVALID);
       return bytes;
     } catch (error) {
       if (
-        error?.message !== 'transient_iab_v3_link_settle'
+        error?.message !== 'transient_iab_artifact_link_settle'
         || attempt + 1 >= CONCURRENT_WINNER_SETTLE_ATTEMPTS
       ) throw error;
     } finally {
@@ -1811,21 +2127,24 @@ const readStableIabSemanticSourceArtifactBytesV3 = async ({
       CONCURRENT_WINNER_SETTLE_INTERVAL_MS,
     ));
   }
-  throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ARTIFACT_INVALID);
+  throw new Error(ioConfig.blockers.ARTIFACT_INVALID);
 };
 
-const settleIabSemanticSourceArtifactRootV3 = async (rootIdentity) => {
+const settleIabSemanticSourceArtifactRootV3 = async (
+  rootIdentity,
+  ioConfig = IAB_SOURCE_ARTIFACT_IO_CONFIG_V3,
+) => {
   for (let attempt = 0; attempt < CONCURRENT_WINNER_SETTLE_ATTEMPTS; attempt += 1) {
     const entries = await readdir(rootIdentity.path);
     if (
       entries.length === 1
-      && entries[0] === WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FILE_NAME_V3
+      && entries[0] === ioConfig.fileName
     ) return;
     if (
-      entries.some((entry) => entry !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FILE_NAME_V3
-        && !V3_TEMPORARY_FILE_PATTERN.test(entry))
+      entries.some((entry) => entry !== ioConfig.fileName
+        && !ioConfig.temporaryPattern.test(entry))
       || entries.length > MAX_CONCURRENT_MODULE_TEMPORARIES + 1
-    ) throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
+    ) throw new Error(ioConfig.blockers.ROOT_INVALID);
     if (attempt + 1 < CONCURRENT_WINNER_SETTLE_ATTEMPTS) {
       await new Promise((resolvePromise) => setTimeout(
         resolvePromise,
@@ -1833,33 +2152,30 @@ const settleIabSemanticSourceArtifactRootV3 = async (rootIdentity) => {
       ));
     }
   }
-  throw new Error(WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID);
+  throw new Error(ioConfig.blockers.ROOT_INVALID);
 };
 
 const publishIabSemanticSourceArtifactBytesExclusiveV3 = async ({
   rootIdentity,
   bytes,
+  ioConfig = IAB_SOURCE_ARTIFACT_IO_CONFIG_V3,
 }) => {
-  const targetPath = join(
-    rootIdentity.path,
-    WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FILE_NAME_V3,
-  );
+  const targetPath = join(rootIdentity.path, ioConfig.fileName);
   try {
     const existing = await readStableIabSemanticSourceArtifactBytesV3({
       targetPath,
       rootIdentity,
+      ioConfig,
     });
-    if (!existing.equals(bytes)) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.TARGET_CONFLICT,
-    );
-    await syncIabSemanticSourceArtifactRootV3(rootIdentity);
+    if (!existing.equals(bytes)) throw new Error(ioConfig.blockers.TARGET_CONFLICT);
+    await syncIabSemanticSourceArtifactRootV3(rootIdentity, ioConfig);
     return Object.freeze({ targetPath, reused: true });
   } catch (error) {
     if (error?.code !== 'ENOENT') throw error;
   }
   let temporaryPath = join(
     rootIdentity.path,
-    `.iab-semantic-source-${process.pid}-${randomBytes(16).toString('hex')}.tmp`,
+    `${ioConfig.temporaryPrefix}${process.pid}-${randomBytes(16).toString('hex')}.tmp`,
   );
   let handle;
   try {
@@ -1880,9 +2196,7 @@ const publishIabSemanticSourceArtifactBytesExclusiveV3 = async ({
       || (metadata.mode & 0o7777) !== 0o600
       || metadata.size !== bytes.length
       || metadata.size > MAX_ARTIFACT_BYTES
-    ) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.PUBLICATION_FAILED,
-    );
+    ) throw new Error(ioConfig.blockers.PUBLICATION_FAILED);
     await handle.close();
     handle = null;
     try {
@@ -1894,25 +2208,23 @@ const publishIabSemanticSourceArtifactBytesExclusiveV3 = async ({
       const winner = await readStableIabSemanticSourceArtifactBytesV3({
         targetPath,
         rootIdentity,
+        ioConfig,
       });
-      if (!winner.equals(bytes)) throw new Error(
-        WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.TARGET_CONFLICT,
-      );
-      await settleIabSemanticSourceArtifactRootV3(rootIdentity);
-      await syncIabSemanticSourceArtifactRootV3(rootIdentity);
+      if (!winner.equals(bytes)) throw new Error(ioConfig.blockers.TARGET_CONFLICT);
+      await settleIabSemanticSourceArtifactRootV3(rootIdentity, ioConfig);
+      await syncIabSemanticSourceArtifactRootV3(rootIdentity, ioConfig);
       return Object.freeze({ targetPath, reused: true });
     }
     await unlink(temporaryPath);
     temporaryPath = null;
-    await settleIabSemanticSourceArtifactRootV3(rootIdentity);
-    await syncIabSemanticSourceArtifactRootV3(rootIdentity);
+    await settleIabSemanticSourceArtifactRootV3(rootIdentity, ioConfig);
+    await syncIabSemanticSourceArtifactRootV3(rootIdentity, ioConfig);
     const published = await readStableIabSemanticSourceArtifactBytesV3({
       targetPath,
       rootIdentity,
+      ioConfig,
     });
-    if (!published.equals(bytes)) throw new Error(
-      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.PUBLICATION_FAILED,
-    );
+    if (!published.equals(bytes)) throw new Error(ioConfig.blockers.PUBLICATION_FAILED);
     return Object.freeze({ targetPath, reused: false });
   } finally {
     await handle?.close();
@@ -1954,6 +2266,19 @@ const consumeIabSemanticFollowerSourceArtifactCapabilityOnceV3Internal = (
   const capability = root.private_source_artifact_capability;
   const state = registry.get(capability);
   const crossModeState = crossModeRegistry.get(capability);
+  const historicalState = (requiredSyntheticMode
+    ? IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4_FOR_TEST
+    : IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4).get(capability);
+  const historicalCrossModeState = (requiredSyntheticMode
+    ? IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4
+    : IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4_FOR_TEST).get(capability);
+  if (!state && (historicalState || historicalCrossModeState)) {
+    if (historicalState && !historicalState.consumed) historicalState.consumed = true;
+    if (historicalCrossModeState && !historicalCrossModeState.consumed) {
+      historicalCrossModeState.consumed = true;
+    }
+    return null;
+  }
   if (!state && crossModeState && !crossModeState.consumed) {
     crossModeState.consumed = true;
     return null;
@@ -2238,6 +2563,369 @@ const openSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest = asyn
   });
 };
 
+const buildIabSemanticHistoricalSourceArtifactReceiptV4 = ({
+  decision,
+  blockerCodes = [],
+  completeSourceCapabilityConsumed = false,
+  completeSourceValidated = false,
+  sourceExpiryInherited = false,
+  ownerOnlyRootVerified = false,
+  artifactStabilityVerified = false,
+} = {}) => {
+  const published = decision
+    === WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.PUBLISHED;
+  const reused = decision
+    === WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.REUSED;
+  const ready = published || reused;
+  return Object.freeze({
+    receipt_schema_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_SCHEMA_VERSION_V4,
+    materializer_contract_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V4,
+    redaction_status:
+      'aggregate_allowlist_only_no_private_values_times_buckets_paths_references_digests_or_payloads',
+    decision,
+    operation:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_OPERATION_V4.MATERIALIZE,
+    complete_source_capability_consumed:
+      ready || completeSourceCapabilityConsumed,
+    complete_source_validated: ready || completeSourceValidated,
+    source_expiry_inherited: ready || sourceExpiryInherited,
+    owner_only_root_verified: ready || ownerOnlyRootVerified,
+    artifact_published: published,
+    existing_artifact_reused: reused,
+    artifact_opened: false,
+    artifact_stability_verified: ready || artifactStabilityVerified,
+    private_artifact_capability_issued: ready,
+    artifact_count: ready ? 1 : 0,
+    artifact_cap: 1,
+    live_authority: false,
+    claim_issued: false,
+    pending_effect_recorded: false,
+    send_allowed: false,
+    browser_used: false,
+    network_used: false,
+    external_effect_invoked: false,
+    blocker_codes: Object.freeze([...blockerCodes]),
+  });
+};
+
+const validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactReceiptV4 = (
+  receipt,
+) => {
+  const invalid = () => Object.freeze({
+    ok: false,
+    reason: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+      .INPUT_INVALID,
+  });
+  try {
+    const root = exactDataObject(
+      snapshotV3PlainData(receipt),
+      IAB_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_FIELDS_V4,
+    );
+    if (!root || !Array.isArray(root.blocker_codes)) return invalid();
+    const ready = [
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.PUBLISHED,
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.REUSED,
+    ].includes(root.decision);
+    const booleanFields = IAB_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_FIELDS_V4.filter(
+      (field) => ![
+        'receipt_schema_version',
+        'materializer_contract_version',
+        'redaction_status',
+        'decision',
+        'operation',
+        'artifact_count',
+        'artifact_cap',
+        'blocker_codes',
+      ].includes(field),
+    );
+    const blockerSet = new Set(Object.values(
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4,
+    ));
+    const blocker = root.blocker_codes[0];
+    const progress = iabSourceArtifactProgressSignatureV3(root);
+    const progressMatrix = Object.freeze({
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.INPUT_INVALID]:
+        Object.freeze(['00000']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .COMPLETE_SOURCE_CAPABILITY_INVALID]: Object.freeze(['00000']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .COMPLETE_SOURCE_INVALID]: Object.freeze(['10000']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.ROOT_INVALID]:
+        Object.freeze(['11100', '11110']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .ARTIFACT_INVALID]: Object.freeze(['11110']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .TARGET_CONFLICT]: Object.freeze(['11110']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .PUBLICATION_FAILED]: Object.freeze(['11110']),
+      [WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .ARTIFACT_CAPABILITY_INVALID]: Object.freeze(['11111']),
+    });
+    if (
+      root.receipt_schema_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_SCHEMA_VERSION_V4
+      || root.materializer_contract_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V4
+      || root.redaction_status
+        !== 'aggregate_allowlist_only_no_private_values_times_buckets_paths_references_digests_or_payloads'
+      || !Object.values(
+        WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4,
+      ).includes(root.decision)
+      || root.operation
+        !== WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_OPERATION_V4.MATERIALIZE
+      || booleanFields.some((field) => typeof root[field] !== 'boolean')
+      || root.artifact_cap !== 1
+      || root.artifact_count !== (ready ? 1 : 0)
+      || root.artifact_published !== (
+        root.decision
+          === WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.PUBLISHED
+      )
+      || root.existing_artifact_reused !== (
+        root.decision
+          === WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.REUSED
+      )
+      || root.artifact_opened !== false
+      || root.private_artifact_capability_issued !== ready
+      || root.live_authority !== false
+      || root.claim_issued !== false
+      || root.pending_effect_recorded !== false
+      || root.send_allowed !== false
+      || root.browser_used !== false
+      || root.network_used !== false
+      || root.external_effect_invoked !== false
+      || root.blocker_codes.length !== (ready ? 0 : 1)
+      || root.blocker_codes.some((code) => !blockerSet.has(code))
+      || new Set(root.blocker_codes).size !== root.blocker_codes.length
+      || (ready && progress !== '11111')
+      || (!ready && !progressMatrix[blocker]?.includes(progress))
+    ) return invalid();
+    return Object.freeze({ ok: true, reason: null });
+  } catch {
+    return invalid();
+  }
+};
+
+const blockedIabSemanticHistoricalSourceArtifactV4 = (
+  blocker,
+  progress = {},
+) => Object.freeze({
+  private_artifact: null,
+  private_source_artifact_capability: null,
+  artifact_path: null,
+  redacted_receipt: buildIabSemanticHistoricalSourceArtifactReceiptV4({
+    decision:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.BLOCKED,
+    blockerCodes: [blocker],
+    ...progress,
+  }),
+});
+
+const issueIabSemanticHistoricalSourceArtifactCapabilityV4 = ({
+  artifact,
+  nowMs,
+  synthetic,
+}) => {
+  const expiresAtMs = parseExactIsoTimestamp(artifact.source_expires_at);
+  if (expiresAtMs === null || expiresAtMs <= nowMs) return null;
+  const capability = opaqueIabSemanticHistoricalSourceArtifactCapabilityV4();
+  const registry = synthetic
+    ? IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4_FOR_TEST
+    : IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4;
+  registry.set(capability, {
+    artifact,
+    consumed: false,
+    expiresAtMs,
+  });
+  return capability;
+};
+
+const consumeIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceV4Internal = (
+  parameters,
+  requiredSyntheticMode,
+) => {
+  const root = exactDataObject(parameters, ['private_source_artifact_capability']);
+  if (!root) return null;
+  const registry = requiredSyntheticMode
+    ? IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4_FOR_TEST
+    : IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4;
+  const crossModeRegistry = requiredSyntheticMode
+    ? IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4
+    : IAB_HISTORICAL_SOURCE_ARTIFACT_CAPABILITY_STATES_V4_FOR_TEST;
+  const capability = root.private_source_artifact_capability;
+  const state = registry.get(capability);
+  const crossModeState = crossModeRegistry.get(capability);
+  const ordinaryState = (requiredSyntheticMode
+    ? IAB_SOURCE_ARTIFACT_CAPABILITY_STATES_V3_FOR_TEST
+    : IAB_SOURCE_ARTIFACT_CAPABILITY_STATES_V3).get(capability);
+  const ordinaryCrossModeState = (requiredSyntheticMode
+    ? IAB_SOURCE_ARTIFACT_CAPABILITY_STATES_V3
+    : IAB_SOURCE_ARTIFACT_CAPABILITY_STATES_V3_FOR_TEST).get(capability);
+  if (!state && (ordinaryState || ordinaryCrossModeState)) {
+    if (ordinaryState && !ordinaryState.consumed) ordinaryState.consumed = true;
+    if (ordinaryCrossModeState && !ordinaryCrossModeState.consumed) {
+      ordinaryCrossModeState.consumed = true;
+    }
+    return null;
+  }
+  if (!state && crossModeState && !crossModeState.consumed) {
+    crossModeState.consumed = true;
+    return null;
+  }
+  if (!state || state.consumed) return null;
+  state.consumed = true;
+  const nowMs = Date.now();
+  if (
+    state.expiresAtMs <= nowMs
+    || validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4(
+      state.artifact,
+      { now_ms: nowMs },
+    ).ok !== true
+  ) return null;
+  return Object.freeze({ private_artifact: state.artifact });
+};
+
+const consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnce = (
+  parameters = {},
+) => consumeIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceV4Internal(
+  parameters,
+  false,
+);
+
+const consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest = (
+  parameters = {},
+) => consumeIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceV4Internal(
+  parameters,
+  true,
+);
+
+const publishIabSemanticHistoricalSourceArtifactV4Internal = async ({
+  artifactRoot,
+  mode,
+  privateCompleteSourceCapability,
+  nowMs,
+  synthetic,
+}) => {
+  const progress = {
+    completeSourceCapabilityConsumed: false,
+    completeSourceValidated: false,
+    sourceExpiryInherited: false,
+    ownerOnlyRootVerified: false,
+    artifactStabilityVerified: false,
+  };
+  if (!isValidV3NowMs(nowMs)) return blockedIabSemanticHistoricalSourceArtifactV4(
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.INPUT_INVALID,
+  );
+  let completeSource;
+  try {
+    completeSource = synthetic
+      ? consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnceForTest(
+        privateCompleteSourceCapability,
+      )
+      : consumeWelcomeAudioIabSemanticHistoricalCatchupCompleteSourceCapabilityOnce(
+        privateCompleteSourceCapability,
+      );
+  } catch {
+    completeSource = null;
+  }
+  if (!completeSource) return blockedIabSemanticHistoricalSourceArtifactV4(
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+      .COMPLETE_SOURCE_CAPABILITY_INVALID,
+  );
+  progress.completeSourceCapabilityConsumed = true;
+  try {
+    const artifact = buildIabSemanticHistoricalSourceArtifactV4(completeSource, nowMs);
+    progress.completeSourceValidated = true;
+    progress.sourceExpiryInherited = true;
+    const rootIdentity = await assertIabSemanticSourceArtifactRootV3({
+      artifactRoot,
+      mode,
+      ioConfig: IAB_SOURCE_ARTIFACT_IO_CONFIG_V4,
+    });
+    progress.ownerOnlyRootVerified = true;
+    const publication = await publishIabSemanticSourceArtifactBytesExclusiveV3({
+      rootIdentity,
+      bytes: canonicalBytes(artifact),
+      ioConfig: IAB_SOURCE_ARTIFACT_IO_CONFIG_V4,
+    });
+    progress.artifactStabilityVerified = true;
+    const capability = issueIabSemanticHistoricalSourceArtifactCapabilityV4({
+      artifact,
+      nowMs,
+      synthetic,
+    });
+    if (!capability) throw new Error(
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+        .ARTIFACT_CAPABILITY_INVALID,
+    );
+    return Object.freeze({
+      private_artifact: artifact,
+      private_source_artifact_capability: capability,
+      artifact_path: publication.targetPath,
+      redacted_receipt: buildIabSemanticHistoricalSourceArtifactReceiptV4({
+        decision: publication.reused
+          ? WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.REUSED
+          : WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4.PUBLISHED,
+      }),
+    });
+  } catch (error) {
+    const blockerSet = new Set(Object.values(
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4,
+    ));
+    const blocker = blockerSet.has(error?.message)
+      ? error.message
+      : !progress.completeSourceValidated
+        ? WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+          .COMPLETE_SOURCE_INVALID
+        : !progress.ownerOnlyRootVerified
+          ? WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.ROOT_INVALID
+          : progress.artifactStabilityVerified
+            ? WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+              .ARTIFACT_CAPABILITY_INVALID
+            : WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4
+              .PUBLICATION_FAILED;
+    return blockedIabSemanticHistoricalSourceArtifactV4(blocker, progress);
+  }
+};
+
+const publishFixedWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4 = async (
+  parameters = {},
+) => {
+  const root = exactDataObject(parameters, ['private_complete_source_capability']);
+  if (!root) return blockedIabSemanticHistoricalSourceArtifactV4(
+    WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.INPUT_INVALID,
+  );
+  return publishIabSemanticHistoricalSourceArtifactV4Internal({
+    artifactRoot: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_ROOT_V4,
+    mode:
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MODE_V4.FIXED_OWNER_ONLY,
+    privateCompleteSourceCapability: root.private_complete_source_capability,
+    nowMs: Date.now(),
+    synthetic: false,
+  });
+};
+
+const publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest =
+  async (parameters = {}) => {
+    const root = exactDataObject(parameters, [
+      'artifact_root',
+      'private_complete_source_capability',
+      'now_ms',
+    ]);
+    if (!root) return blockedIabSemanticHistoricalSourceArtifactV4(
+      WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4.INPUT_INVALID,
+    );
+    return publishIabSemanticHistoricalSourceArtifactV4Internal({
+      artifactRoot: root.artifact_root,
+      mode: WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MODE_V4
+        .SYNTHETIC_TEMP_TEST_ONLY,
+      privateCompleteSourceCapability: root.private_complete_source_capability,
+      nowMs: root.now_ms,
+      synthetic: true,
+    });
+  };
+
 export {
   ARTIFACT_FIELDS as WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_FIELDS,
   OBSERVATION_FIELDS as WELCOME_AUDIO_UI_ATTESTED_SOURCE_OBSERVATION_FIELDS,
@@ -2278,4 +2966,21 @@ export {
   publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest,
   validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3,
   validateWelcomeAudioIabSemanticFollowerSourceArtifactV3,
+  IAB_HISTORICAL_SOURCE_ARTIFACT_FIELDS_V4 as WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIELDS_V4,
+  IAB_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_FIELDS_V4 as WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_FIELDS_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_BLOCKER_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_DECISION_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FILE_NAME_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_FIXED_ROOT_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MATERIALIZER_CONTRACT_VERSION_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_MODE_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_RECEIPT_SCHEMA_VERSION_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SCHEMA_VERSION_V4,
+  WELCOME_AUDIO_IAB_SEMANTIC_HISTORICAL_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V4,
+  consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnce,
+  consumeWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactCapabilityOnceForTest,
+  publishFixedWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4,
+  publishSyntheticWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4ForTest,
+  validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactReceiptV4,
+  validateWelcomeAudioIabSemanticHistoricalFollowerSourceArtifactV4,
 };
