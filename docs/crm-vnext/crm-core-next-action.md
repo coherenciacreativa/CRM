@@ -6704,6 +6704,8 @@ routing and completion pointer.
   `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
   `live_authority=false`, `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
+
+
 - `resume_instruction`: This repo-only mission is complete. Any real
   one-recipient canary must begin as a separately fresh live mission bound to
   the resulting central commit and must revalidate every live gate; this
@@ -6992,3 +6994,80 @@ routing and completion pointer.
   `authority_published=false`, `claim_issued=false`, `send_allowed=false`,
   `live_authority=false`, `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
+
+## Active IAB Semantic Source to Safari Handoff Next Action
+
+- `next_action_id`:
+  `crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719`
+- `status`: `approved_repo_only_implementation_in_progress_no_live`
+- `created_at`: `2026-07-19`
+- `approved_baseline`:
+  `efddb21ef6c598e1452ea2a9912235dea431e2ef`
+- `source_branch`:
+  `codex/crm-core-iab-semantic-source-to-safari-handoff-v1`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md`
+- `objective`: Give CRM Core a semantic read-only IAB source that can bind one
+  recent follower through notification, profile, thread, owner and dedupe
+  evidence, pass only opaque one-use provenance downstream, and leave Safari
+  as the sole actuator on the existing fixed rail.
+- `production_chain`:
+  `private_complete_source_capability -> private_source_artifact_capability -> private_draft_admission_capability -> fixed_live_canary_runner`.
+- `runner_boundary`: The productive live export accepts exactly
+  `draft_admission_capability` and `private_authorization_seed`. Raw drafts,
+  legacy v1 materializer outputs, drivers, URLs, selectors, identity, thread,
+  owner, clocks and evidence booleans are rejected. The synthetic export keeps
+  its existing `ForTest` name but also consumes a capability from a separate
+  registry; no runner accepts a caller raw draft. Wrong-mode use burns and
+  rejects before Safari and cannot be replayed through the other consumer.
+- `backend_boundary`: IAB is read-only source; Safari is sole actuator; Chrome,
+  Safari-as-source, OCR/screenshot/coordinate fallback and silent backend
+  switching are forbidden.
+- `stage_2_gate`: Fresh exact approval; at most eight rows; exactly two distinct
+  notification-to-profile traversals; zero threads, capabilities, seen
+  transitions or effects.
+- `stage_3_gate`: Fresh exact approval; at most eight rows and one candidate;
+  at most one thread; zero upload, preview or Send; unread/unknown inbound state
+  blocks before opening the thread.
+- `correction_budget`: Two implementation corrections after first build; each
+  real stage permits one normal attempt plus one bounded recovery; the same
+  repeated cause requires abandoning and replanning the route.
+- `integration_gate`: Focused and full tests, both real no-effect stages on the
+  frozen commit, independent adversarial review, formal Chief Architect
+  integration review, then one serialized central integration under separate
+  authority.
+- `central_status_correction`: Central is
+  `efddb21ef6c598e1452ea2a9912235dea431e2ef` at mission start. The initial
+  native binder is present there. The later real-AX tolerance commit
+  `e9545637c88e6e1cab8ac7be34d9725410a363ec` remains isolated, is not central,
+  and is explicitly excluded from this mission. The earlier native-lane text
+  that described a pending lane commit is historical rather than active.
+- `forbidden_scope`: Any live Browser/Safari action without fresh stage
+  approval; attachment, chooser, upload, preview, Send, text, follow-back,
+  MailerLite, CRM, campaign, Ads, proxy, fallback backend or external effect.
+- `live_flags`: `source_execution=false`, `stage_2=false`, `stage_3=false`,
+  `canary_ready=false`, `production_ready=false`,
+  `execution_approval_published=false`, `authority_published=false`,
+  `claim_issued=false`, `send_allowed=false`, `browser_used=false`,
+  `network_used=false`, and `external_effect_invoked=false`.
+
+### Active Atomic Truthfulness Closure
+
+- `closure_id`:
+  `crm_core_iab_semantic_handoff_atomic_truthfulness_closure_v1_20260719`
+- `status`: `repo_only_implementation_in_progress_no_live_no_integration`
+- `packet_edge`: `INPUT_SCHEMA` is pre-consumption only; invalid test clocks
+  after a successful source-artifact admission use a distinct blocker and can
+  never erase the completed consumption milestone.
+- `runner_edge`: receipt validation is an exact blocker/decision lifecycle
+  table. `DRAFT_ADMISSION_INVALID` and every early blocker require zero later
+  milestones; post-publication states remain terminal permanent-no-retry.
+- `validation_gate`: focused packet and runner tests, syntax for both scripts,
+  exact eighteen-file final-diff allowlist, diff check, and independent
+  no-unresolved-P0–P2 review.
+- `chief_architect_boundary`: one bounded repo-only correction round;
+  `safe_to_self_integrate_now=false`; no Stage 2, Stage 3, source execution,
+  central integration, live invocation, or effect authority.
+- `stop_condition`: any new file, productive export, backend, capability,
+  authority, browser route, or live behavior requires stopping and replanning
+  rather than silently widening this closure.

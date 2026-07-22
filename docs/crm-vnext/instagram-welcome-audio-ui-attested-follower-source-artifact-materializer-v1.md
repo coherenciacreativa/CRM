@@ -154,6 +154,123 @@ Every receipt fixes `live_authority=false`, `claim_issued=false`,
 `network_used=false`, and `external_effect_invoked=false` for the materializer
 invocation itself.
 
+## Controlling IAB Semantic Artifact v3 Extension — 2026-07-19
+
+The productive provenance route is now the separately versioned IAB semantic
+artifact v3. The v1/v2 observation route above remains compatibility-only and
+cannot issue the capability admitted by the v3 canary chain.
+
+Exact v3 labels are:
+
+- contract:
+  `crm_core_instagram_welcome_audio_iab_semantic_follower_source_artifact_materializer_v3`;
+- artifact:
+  `crm_core_instagram_welcome_audio_iab_semantic_follower_source_artifact_v3`;
+- receipt:
+  `crm_core_instagram_welcome_audio_iab_semantic_follower_source_artifact_receipt_v3`;
+- fixed filename: `iab-semantic-follower-source-v3.json`; and
+- a dedicated fixed root ending in
+  `crm-core-welcome-audio-iab-semantic-follower-source-artifact-v3`.
+
+### Capability-Only Productive Input
+
+`publishFixedWelcomeAudioIabSemanticFollowerSourceArtifactV3` accepts exactly
+`private_complete_source_capability`. It calls only
+`consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnce` and never accepts
+caller-provided identity, notification, profile, thread, owner, UI bucket,
+dedupe, time, reference, selector, URL, driver, or truth boolean.
+
+The host capability is burned before v3 validation or filesystem publication.
+Replay, clone, foreign-module capability, stale source, malformed payload, or a
+later publication failure cannot restore it. The accepted host payload must
+preserve all 25 exact source fields, including exact notification/profile,
+profile/thread and owner bindings; `preopen_unread_inbound=explicit_none`;
+`seen_transition=absent`; no prior audio or attempt; clear dedupe; visible
+composer; usable attachment control; no challenge; and exactly-once isolated
+tab finalization.
+
+The materializer derives the existing immutable UI-attested adapter input
+itself and stores both the complete source and that derived input. It does not
+accept a caller-created adapter input or projection. The artifact keeps the
+host's exact `source_expires_at`. The expiry must remain exactly five minutes
+after `source_observed_at`; publication, reuse, open, and downstream
+materialization never renew it.
+
+Persisted v3 bytes are revalidated against the exact host provenance grammar,
+not merely the weaker fields projected into the compatibility adapter. The
+target must remain an exact Instagram handle, the visible relative-time bucket
+must remain inside the approved 3-to-7-day forms, each notification, profile,
+thread, and owner reference must remain a bounded private reference, and all
+four references must be globally distinct. This validation applies equally at
+initial materialization, stable reopen, and capability consumption. No new
+digest or caller-provided provenance field is introduced; the v3 payload shape
+remains unchanged.
+
+### Owner-Only v3 Publication and Open
+
+The v3 fixed root is separate from the v2 artifact, live authority, claim,
+PENDING, terminal, and audio roots. Its directory must be canonical,
+owner-controlled, non-symlink `0700`. The artifact must be an owner-owned,
+single-link regular `0600` file. Publication uses an exclusive
+`O_NOFOLLOW` temporary file, file `fsync`, same-filesystem hard-link
+no-overwrite barrier, directory `fsync`, stable path/handle identity checks,
+bounded concurrent-winner settling, and exact byte reread. A different winner,
+malformed target, unsafe temporary, extra entry, link, FIFO, directory, stale
+artifact, or changed root fails closed.
+
+`openFixedWelcomeAudioIabSemanticFollowerSourceArtifactV3` owns root and clock.
+It may open only the exact stable v3 artifact while the inherited source expiry
+is still live. Fixed publish/open issue an opaque WeakMap-backed private source
+artifact capability. Synthetic roots and clocks are available only through
+the exact `...ForTest` exports.
+
+`consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnce` accepts
+exactly `{ private_source_artifact_capability }`. It burns authority before
+expiry and artifact validation and returns the private artifact only once.
+Serialization, cloning, replay, foreign capability, stale expiry, or cross
+module use yields no artifact.
+
+Synthetic and productive capability modes are intentionally disjoint. The
+productive consumer burns and rejects a synthetic capability. Only
+`consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest`
+may consume a synthetic v3 capability, and it burns and rejects productive
+capabilities. A capability rejected at the wrong mode cannot later be retried
+through the other consumer.
+
+The same split begins at host ingestion. The synthetic publisher calls only
+`consumeWelcomeAudioIabSemanticCompleteSourceCapabilityOnceForTest`; the fixed
+publisher calls only the productive host consumer. Neither path may consume a
+complete-source capability issued in the other mode. Artifact capabilities
+also contain only a payload-free clone guard: `structuredClone` and JSON
+serialization fail without revealing the private artifact.
+
+### v3 Aggregate Receipt
+
+The v3 receipt reports only closed decisions and progress booleans. It never
+contains identity, references, source time or expiry, bucket text, paths,
+digests, screenshots, DOM, messages, credentials, or payloads. Successful
+publish, exact reuse, and exact open each issue one capability; blocked results
+issue none. Every result keeps all live, claim, pending, send, browser, network,
+and external-effect flags false.
+
+Every receipt also carries the mandatory aggregate operation
+`materialize|open`. A successful publish or reuse is valid only for
+`operation=materialize`; a successful reopen is valid only for
+`operation=open`. Blocked receipts are checked against separate operation-aware
+milestone matrices in the fixed order: complete-source capability consumed,
+complete source validated, source expiry inherited, owner-only root verified,
+and stable artifact bytes verified. A blocker cannot claim a milestone that its
+operation could not have reached, and a later blocker cannot erase a milestone
+already completed.
+
+The open path accumulates those milestones before each fallible step and returns
+the accumulated state from its catch boundary. In particular, invalid persisted
+bytes found after a stable owner-only read preserve root and stability progress
+while keeping complete-source validation, inherited-expiry confirmation, and
+capability issuance false. Root failures before and after root verification are
+distinguished by their truthful reachable milestone signature without exposing
+any private path or reference.
+
 ## Later Live Gate
 
 A later exact mission must separately authorize the live Safari observation,

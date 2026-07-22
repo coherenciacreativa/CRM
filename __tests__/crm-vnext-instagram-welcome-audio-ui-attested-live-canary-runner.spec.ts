@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import {
   WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST,
@@ -24,22 +24,30 @@ import {
   computeWelcomeAudioUiAttestedLiveAuthorityProjectionSha256,
 } from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-authority-publisher.mjs";
 import {
-  WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION,
-  materializeWelcomeAudioUiAttestedCanaryPacketDraft,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2,
+  materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest,
 } from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
 import {
-  WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
-  WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
-} from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST,
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST,
+  installWelcomeAudioIabSemanticRuntimeFacadeForTest,
+  observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest,
+  resetWelcomeAudioIabSemanticRuntimeFacadeForTest,
+} from "../scripts/crm-vnext-instagram-welcome-audio-iab-semantic-follower-source-host.mjs";
+import {
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V3,
+  publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest,
+} from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-artifact-materializer.mjs";
 import {
   WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION,
   WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_FAULT_SCENARIO_FOR_TEST,
   runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce,
-  runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest,
+  runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest as
+    runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTestWithoutClockHarness,
   validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt,
 } from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-live-canary-runner.mjs";
 
-const NOW_MS = Date.parse("2026-07-18T15:00:00.000Z");
+const NOW_MS = Date.now();
 const TARGET = "synthetic.target_02";
 const THREAD = "synthetic-thread-reference-02";
 const OWNER = "synthetic.owner_02";
@@ -54,63 +62,6 @@ afterEach(async () => {
   })));
 });
 
-const sourceInput = (suffix = "") => {
-  const target = suffix ? `${TARGET}.${suffix}` : TARGET;
-  const thread = suffix ? `${THREAD}.${suffix}` : THREAD;
-  const owner = suffix ? `${OWNER}.${suffix}` : OWNER;
-  return ({
-  schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
-  source_class: WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
-  mission_id: "synthetic_runner_source_mission_001",
-  notification_row: {
-    row_ordinal: 1,
-    exact_target_utf8: target,
-    notification_evidence: "explicit_recent_follower_notification_row",
-    follower_signal: "started_following_owner",
-    time_bucket_utf8: "today",
-    time_bucket_evidence: "explicit_visible_relative_time_label",
-    attested_at: "2026-07-18T14:59:00.000Z",
-    inference_status: "explicit_not_inferred",
-  },
-  profile: {
-    exact_target_utf8: target,
-    notification_to_profile_binding: "exact",
-    profile_identity_evidence: "exact_private_visual_profile_identity",
-    follows_owner: "confirmed",
-    follows_owner_evidence: "explicit_visible_follows_owner_signal",
-    attested_at: "2026-07-18T14:59:10.000Z",
-    inference_status: "explicit_not_inferred",
-  },
-  thread: {
-    bound_thread_reference_utf8: thread,
-    profile_to_thread_binding: "exact",
-    thread_binding_evidence: "exact_bound_thread_observed",
-    attested_at: "2026-07-18T14:59:20.000Z",
-    inference_status: "explicit_not_inferred",
-  },
-  owner: {
-    owner_account_reference_utf8: owner,
-    owner_binding_evidence: "exact_owner_account_observed",
-    attested_at: "2026-07-18T14:59:30.000Z",
-    inference_status: "explicit_not_inferred",
-  },
-  dedupe: {
-    status: "clear_no_prior_welcome_or_attempt",
-    already_welcomed_status: "not_found",
-    send_history_status: "no_prior_attempt",
-    exact_target_utf8: target,
-    bound_thread_reference_utf8: thread,
-    owner_account_reference_utf8: owner,
-    checked_at: "2026-07-18T14:59:40.000Z",
-    dedupe_evidence: "exact_bound_thread_history_observed",
-    inference_status: "explicit_not_inferred",
-  },
-  exact_follow_timestamp_claimed: false,
-  provider_event_id_claimed: false,
-  campaign_membership_claimed: false,
-  });
-};
-
 const createHarness = async (
   scenario = WELCOME_AUDIO_SAFARI_SYNTHETIC_SCENARIO_FOR_TEST.CONFIRMED_NEW_AUDIO_BUBBLE,
   sourceSuffix = "",
@@ -124,28 +75,65 @@ const createHarness = async (
   await writeFile(assetPath, audioBytes, { mode: 0o600 });
   await chmod(assetPath, 0o600);
   const audioSha256 = createHash("sha256").update(audioBytes).digest("hex");
-  const source = sourceInput(sourceSuffix);
-  const materialized = materializeWelcomeAudioUiAttestedCanaryPacketDraft({
-    ui_attested_input: source,
-    packet_request: {
-      schema_version: WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION,
-      status: "approved_for_no_live_materialization_only",
-      mission_id: "synthetic_runner_mission_001",
-      contract_version: "synthetic_runner_contract_v1",
-      central_repo_head: "7".repeat(40),
-      authorization_id: "synthetic_runner_authorization_001",
-      expected_source_mission_id: source.mission_id,
-      candidate_cap: 1,
-      future_attempt_cap: 1,
-      approved_audio_asset_id: "synthetic_runner_audio_001",
-      approved_audio_sha256: audioSha256,
-      approved_audio_binding_evidence: "exact_approved_audio_binding_revalidated",
-      execution_approval_authorized: false,
-      external_effect_authorized: false,
-    },
-    now_ms: NOW_MS,
-  });
+  let observed;
+  let materialized;
+  vi.useFakeTimers();
+  vi.setSystemTime(NOW_MS);
+  try {
+    installWelcomeAudioIabSemanticRuntimeFacadeForTest({
+      qualification_scenario:
+        WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST.EXACT_TWO_PAIRS,
+      observation_scenario:
+        WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.EXACT_CANDIDATE,
+      finalize_scenario: "exact",
+    });
+    try {
+      observed = await observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({
+        now_ms: NOW_MS,
+      });
+    } finally {
+      resetWelcomeAudioIabSemanticRuntimeFacadeForTest();
+    }
+    expect(observed.private_complete_source_capability).not.toBeNull();
+    const artifactRoot = await realpath(await mkdtemp(join(
+      tmpdir(),
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V3,
+    )));
+    cleanupPaths.push(artifactRoot);
+    await chmod(artifactRoot, 0o700);
+    const artifact = await publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+      artifact_root: artifactRoot,
+      private_complete_source_capability: observed.private_complete_source_capability,
+      now_ms: NOW_MS,
+    });
+    expect(artifact.private_source_artifact_capability).not.toBeNull();
+    materialized = materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: artifact.private_source_artifact_capability,
+      packet_request: {
+        schema_version: WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2,
+        status: "approved_for_no_live_materialization_only",
+        mission_id: "synthetic_iab_canary_mission_001",
+        contract_version: "synthetic_iab_canary_contract_v2",
+        central_repo_head: "7".repeat(40),
+        authorization_id: `synthetic_iab_authorization_${sourceSuffix || harnessOrdinal}`,
+        expected_source_mission_id:
+          "crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719",
+        candidate_cap: 1,
+        future_attempt_cap: 1,
+        approved_audio_asset_id: "synthetic_runner_audio_001",
+        approved_audio_sha256: audioSha256,
+        approved_audio_binding_evidence: "exact_approved_audio_binding_revalidated",
+        execution_approval_authorized: false,
+        external_effect_authorized: false,
+      },
+      now_ms: NOW_MS,
+    });
+  } finally {
+    resetWelcomeAudioIabSemanticRuntimeFacadeForTest();
+    vi.useRealTimers();
+  }
   expect(materialized.private_draft).not.toBeNull();
+  expect(materialized.private_draft_admission_capability).not.toBeNull();
   const draft = materialized.private_draft!;
   const seed = {
     schema_version: "crm_core_instagram_welcome_audio_ui_attested_live_authorization_seed_v1",
@@ -171,8 +159,8 @@ const createHarness = async (
     expected_owner_anchor_sha256: draft.source_projection.anchors.owner_anchor_sha256,
     expected_dedupe_anchor_sha256: draft.source_projection.anchors.dedupe_anchor_sha256,
     expected_audio_sha256: draft.approved_audio_sha256,
-    approved_at: "2026-07-18T14:59:45.000Z",
-    expires_at: "2026-07-18T15:04:45.000Z",
+    approved_at: new Date(NOW_MS - 15_000).toISOString(),
+    expires_at: new Date(NOW_MS + 285_000).toISOString(),
   };
   const authorityRoot = await realpath(await mkdtemp(join(
     tmpdir(),
@@ -196,6 +184,7 @@ const createHarness = async (
     authorityRoot,
     claimRoot,
     draft,
+    draftAdmissionCapability: materialized.private_draft_admission_capability,
     driver,
     seed,
     storeCapability,
@@ -203,7 +192,7 @@ const createHarness = async (
 };
 
 const syntheticInput = (item: Awaited<ReturnType<typeof createHarness>>) => ({
-  private_draft: item.draft,
+  draft_admission_capability: item.draftAdmissionCapability,
   private_authorization_seed: item.seed,
   authority_root: item.authorityRoot,
   private_store_capability: item.storeCapability,
@@ -224,8 +213,22 @@ const syntheticInput = (item: Awaited<ReturnType<typeof createHarness>>) => ({
     WELCOME_AUDIO_SAFARI_SYNTHETIC_COMPOSITE_FAULT_SCENARIO_FOR_TEST.NONE,
 });
 
+const runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest = async (
+  input: ReturnType<typeof syntheticInput>,
+) => {
+  vi.useFakeTimers();
+  vi.setSystemTime(input.now_ms);
+  try {
+    return await runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTestWithoutClockHarness(
+      input,
+    );
+  } finally {
+    vi.useRealTimers();
+  }
+};
+
 describe("UI-attested one-shot live canary runner", () => {
-  test("imports inertly and exposes a two-field live namespace", async () => {
+  test("imports inertly and exposes only the capability-plus-seed live namespace", async () => {
     const isolatedHome = await realpath(await mkdtemp(join(tmpdir(), "runner-inert-home-")));
     cleanupPaths.push(isolatedHome);
     await chmod(isolatedHome, 0o700);
@@ -274,6 +277,162 @@ describe("UI-attested one-shot live canary runner", () => {
       ...result.redacted_receipt,
       external_effect_possible: true,
     })).toEqual({ ok: false });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual({
+      stage: "thread",
+      action_count: 0,
+      state_read_count: 0,
+    });
+  });
+
+  test("keeps the legacy raw draft path nonproductive in the live export", async () => {
+    const item = await createHarness();
+    const result = await runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce({
+      private_draft: item.draft,
+      private_authorization_seed: item.seed,
+    } as any);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED,
+      blocker_codes: ["blocked_live_canary_runner_input_invalid"],
+      preclaim_start_gates_validated: false,
+      external_effect_possible: false,
+      retry_forbidden_permanently: false,
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual({
+      stage: "thread",
+      action_count: 0,
+      state_read_count: 0,
+    });
+  });
+
+  test("rejects forged draft-admission capabilities before any live source read", async () => {
+    const item = await createHarness();
+    const result = await runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce({
+      draft_admission_capability: Object.freeze({}),
+      private_authorization_seed: item.seed,
+    });
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED,
+      blocker_codes: ["blocked_live_canary_runner_draft_admission_invalid"],
+      preclaim_start_gates_validated: false,
+      authority_publication_attempted: false,
+      external_effect_possible: false,
+      retry_forbidden_permanently: false,
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual({
+      stage: "thread",
+      action_count: 0,
+      state_read_count: 0,
+    });
+  });
+
+  test.each([
+    "audio_validated",
+    "preclaim_start_gates_validated",
+    "preclaim_observed",
+    "preclaim_built",
+    "authority_publication_attempted",
+    "authority_published",
+    "authority_opened",
+    "operation_context_validated",
+    "composite_invoked",
+    "confirmation_proven",
+    "external_effect_possible",
+    "retry_forbidden_permanently",
+  ])("DRAFT_ADMISSION_INVALID rejects impossible progress at %s", async (field) => {
+    const item = await createHarness();
+    const result = await runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce({
+      draft_admission_capability: Object.freeze({}),
+      private_authorization_seed: item.seed,
+    });
+    expect(validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt({
+      ...result.redacted_receipt,
+      [field]: true,
+    })).toEqual({ ok: false });
+  });
+
+  test("receipt decisions reject blockers from unreachable lifecycle phases", async () => {
+    const item = await createHarness();
+    const early = await runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce({
+      draft_admission_capability: Object.freeze({}),
+      private_authorization_seed: item.seed,
+    });
+    expect(validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt({
+      ...early.redacted_receipt,
+      decision:
+        WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.TERMINAL_ZERO_EFFECT,
+      authority_publication_attempted: true,
+      retry_forbidden_permanently: true,
+    })).toEqual({ ok: false });
+
+    const publicationItem = await createHarness();
+    const terminal = await runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest({
+      ...syntheticInput(publicationItem),
+      synthetic_runner_fault_scenario:
+        WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_FAULT_SCENARIO_FOR_TEST
+          .AUTHORITY_PUBLICATION_RESULT_LOST,
+    });
+    expect(validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt({
+      ...terminal.redacted_receipt,
+      decision: WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED,
+      authority_publication_attempted: false,
+      retry_forbidden_permanently: false,
+    })).toEqual({ ok: false });
+  });
+
+  test("the fixed runner burns and rejects a synthetic admission capability", async () => {
+    const item = await createHarness();
+    const fixed = await runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce({
+      draft_admission_capability: item.draftAdmissionCapability,
+      private_authorization_seed: item.seed,
+    });
+    expect(fixed.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED,
+      blocker_codes: ["blocked_live_canary_runner_draft_admission_invalid"],
+      preclaim_start_gates_validated: false,
+      authority_publication_attempted: false,
+      external_effect_possible: false,
+    });
+    const replay = await runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest(
+      syntheticInput(item),
+    );
+    expect(replay.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED,
+      blocker_codes: ["blocked_live_canary_runner_draft_admission_invalid"],
+      preclaim_start_gates_validated: false,
+      authority_publication_attempted: false,
+      external_effect_possible: false,
+    });
+    expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual({
+      stage: "thread",
+      action_count: 0,
+      state_read_count: 0,
+    });
+  });
+
+  test.each([
+    ["driver", Object.freeze({})],
+    ["url", "https://example.invalid/"],
+    ["selector", "synthetic-selector"],
+    ["identity", "synthetic-identity"],
+    ["thread", "synthetic-thread"],
+    ["owner", "synthetic-owner"],
+    ["now_ms", NOW_MS],
+    ["profile_to_thread_binding", true],
+    ["follows_owner", true],
+  ])("rejects caller-controlled live field %s", async (field, value) => {
+    const item = await createHarness();
+    const result = await runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce({
+      draft_admission_capability: Object.freeze({}),
+      private_authorization_seed: item.seed,
+      [field]: value,
+    } as any);
+    expect(result.redacted_receipt).toMatchObject({
+      decision: WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED,
+      blocker_codes: ["blocked_live_canary_runner_input_invalid"],
+      preclaim_start_gates_validated: false,
+      authority_publication_attempted: false,
+      external_effect_possible: false,
+    });
     expect(inspectSyntheticSafariDriverForTest({ driver: item.driver })).toEqual({
       stage: "thread",
       action_count: 0,

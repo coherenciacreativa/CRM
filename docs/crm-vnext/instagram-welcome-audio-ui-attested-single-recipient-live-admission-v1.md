@@ -3,6 +3,11 @@
 Date: 2026-07-16
 Status: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 
+The status above describes the 2026-07-18 Safari admission rail. The
+2026-07-19 semantic-source amendment below is
+`approved_repo_only_implementation_in_progress_no_live` and is not centrally
+integrated.
+
 ## Purpose
 
 Define a sibling admission path that can later convert one freshly revalidated
@@ -13,10 +18,14 @@ provider event identity, or campaign membership.
 
 ## Source and Draft Boundary
 
-Admission accepts exactly one draft with schema
+The legacy compatibility surface recognizes one draft with schema
 `crm_core_instagram_welcome_audio_ui_attested_canary_packet_draft_v1` and status
-`prepared_no_live_unapproved`. The integrated materializer validator must pass
-at the admission time. The projection must retain:
+`prepared_no_live_unapproved`, but that raw-data path is no-live and cannot
+enter the fixed production runner. Productive admission requires the v2 draft
+minted from the one-use IAB semantic source-artifact capability and delivered
+to the runner only through its one-use private draft-admission capability. The
+integrated dispatching validator must pass at admission time. The projection
+must retain:
 
 - `exact_follow_timestamp_claimed=false`;
 - `provider_event_id_claimed=false`; and
@@ -45,8 +54,12 @@ A later live admission may accept only closed owner-only records for:
 No caller-selected browser driver, store root, clock, callback, URL, selector,
 coordinate, outcome, verifier, actuation result, operation snapshot, publisher
 authorization, or prebuilt live authority is accepted. The new fixed runner's
-entire public live input is the private draft plus a closed private
-authorization seed. It derives every later capability and value internally.
+entire public live input is `draft_admission_capability` plus a closed private
+authorization seed. It consumes the capability to recover the authenticated v2
+draft internally; a raw draft, v1 draft, legacy materializer result, source
+artifact, identity, thread, owner, truth boolean, URL, selector, or clock cannot
+be supplied to that live export. It derives every later capability and value
+internally.
 The existing live composite continues to accept only the private exact binding
 capabilities and values plus the approved audio path already bound by the
 audio capability.
@@ -90,8 +103,9 @@ seven required positions, recomputes it, and succeeds only when the existing
 guard returns PRECLAIM eligibility with `claim_allowed=true`,
 `send_ready=false`, and `send_allowed=false`.
 
-After validating the draft and atomically admitting and burning the exact
-authorization seed, the runner validates the approved audio bytes and digest.
+After atomically consuming the draft-admission capability, validating its v2
+draft, and admitting and burning the exact authorization seed, the runner
+validates the approved audio bytes and digest.
 It owns all live clocks, fixed roots, the installed Computer Use runtime, and
 the fixed claim store through the imported production seams. A caller cannot
 inject any of those surfaces. The only injectable sibling ends in `ForTest`
@@ -269,3 +283,41 @@ this was repo-only,
 `live_authority=false`, `claim_issued=false`, `send_allowed=false`,
 `browser_used=false`, `network_used=false`, and
 `external_effect_invoked=false` remain controlling.
+
+## 2026-07-19 Semantic Source-to-Safari Amendment
+
+The controlling discovery architecture for the next proof mission is now:
+
+1. the Codex In-App Browser is the only admitted semantic, read-only follower
+   source;
+2. the source host owns its isolated tab, exact routes, bounded semantic
+   queries and finalization, and emits only opaque one-use capabilities;
+3. the source-artifact materializer and v2 packet materializer preserve that
+   provenance without accepting caller truth booleans or raw identity data;
+4. the fixed runner consumes `draft_admission_capability` plus the existing
+   exact authorization seed and emits only its v2 aggregate receipt; and
+5. Safari remains the sole actuator through the already integrated PRECLAIM,
+   claim, PENDING, chooser, one-Send and strong-confirmation rail.
+
+Chrome is not a fallback. Safari is not a fallback source. OCR, screenshots,
+coordinates, caller-selected URLs/selectors and the legacy raw v1 draft path
+are not productive admission paths.
+
+The synthetic runner retains its established `ForTest` export name but now
+consumes a one-use capability from a registry separate from production. A
+synthetic capability offered to the fixed runner is burned and rejected before
+Safari, and replay through the synthetic consumer then also fails closed. No
+runner path accepts a caller raw draft.
+
+Stage 2 must prove two distinct notification-to-profile traversals with at
+most eight rows, zero thread opens and zero capabilities. Stage 3 may qualify
+at most one complete candidate and open at most one thread, but must perform
+zero upload, preview or Send. Both stages require fresh exact approval and a
+frozen commit. This repo-only amendment grants neither stage authority nor any
+live effect.
+
+Mission baseline is central `efddb21ef6c598e1452ea2a9912235dea431e2ef`.
+The separately reviewed real-AX tolerance commit
+`e9545637c88e6e1cab8ac7be34d9725410a363ec` is not central and is explicitly
+excluded from this mission. Current state remains `canary_ready=false`,
+`production_ready=false`, `send_allowed=false` and `external_effect_invoked=false`.

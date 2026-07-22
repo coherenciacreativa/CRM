@@ -158,3 +158,150 @@ returns only `prepared_no_live_unapproved`.
 The source artifact is not a packet draft, approval, claim, PENDING record,
 upload permit, or Send token. Its controlling contract is
 `docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-artifact-materializer-v1.md`.
+
+## Controlling IAB Semantic Draft v2 Extension — 2026-07-19
+
+The productive downstream provenance edge is now the IAB semantic canary
+packet materializer v2. The v1 raw `ui_attested_input` API above remains
+compatibility-only, always no-live, and never emits a draft-admission
+capability.
+
+Exact v2 labels are:
+
+- contract:
+  `crm_core_instagram_welcome_audio_iab_semantic_canary_packet_materializer_v2`;
+- request:
+  `crm_core_instagram_welcome_audio_iab_semantic_canary_packet_request_v2`;
+- draft: `crm_core_instagram_welcome_audio_iab_semantic_canary_packet_draft_v2`;
+  and
+- receipt:
+  `crm_core_instagram_welcome_audio_iab_semantic_canary_packet_materializer_receipt_v2`.
+
+### Exact Productive Input
+
+`materializeWelcomeAudioIabSemanticCanaryPacketDraftOnce` accepts exactly:
+
+- `private_source_artifact_capability`; and
+- `packet_request`.
+
+The capability is the only permitted source of identity, notification,
+profile, thread, owner, time bucket, relationship, dedupe, history, composer,
+attachment, challenge, and source-expiry evidence. The packet request retains
+only the non-source metadata required by the existing downstream rail:
+mission, contract, repository HEAD, authorization reference, caps, and approved
+audio binding. It cannot supply or override any source fact.
+
+The source artifact capability is consumed burn-first, before request
+validation. A bad request, cross-mission request, later projection failure, or
+draft failure cannot restore or replay it. The request fixes candidate and
+future-attempt caps to one and keeps both execution and external-effect
+authorization false.
+
+Production owns the clock. `now_ms` exists only on
+`materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest` and cannot be
+used by the production entrypoint.
+
+### Draft v2 and Original Expiry
+
+The v2 materializer internally re-adapts the exact v3 artifact input, validates
+the resulting projection, and creates one immutable draft. The draft preserves
+all existing downstream v1 fields and adds exactly:
+
+- `source_artifact_schema_version`, fixed to the IAB semantic artifact v3; and
+- `source_expires_at`, copied exactly from that artifact.
+
+The materializer never extends, resets, rounds, or replaces the source expiry.
+It must still be in the future when the draft is built and consumed. Both new
+fields enter the deterministic operation hash, so changing or purportedly
+renewing expiry invalidates the draft.
+
+The existing general draft validator dispatches by exact schema and accepts v1
+or v2. This permits the unchanged downstream hashing and PRECLAIM components to
+validate the complete v2 draft. It does not permit raw v2 construction into
+the fixed runner: the productive runner accepts only the opaque admission
+capability below.
+
+### One-Use Draft Admission
+
+A successful v2 result contains the owner-only private draft, aggregate
+receipt, and one opaque
+`private_draft_admission_capability`. The capability is WeakMap-backed,
+one-use, and carries the exact draft plus the inherited expiry without
+serializing either.
+
+`consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce` accepts
+exactly `{ private_draft_admission_capability }`. It burns authority before
+checking expiry or revalidating the complete draft. It returns exactly
+`{ private_draft }` once or `null`. Replay, clone, foreign capability, stale
+expiry, tampering, malformed wrapper, or cross-module use returns `null`.
+
+Synthetic and productive admission modes are disjoint. The productive
+consumer burns and rejects a synthetic admission. The explicit
+`consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest`
+consumer accepts only synthetic admissions and burns and rejects productive
+ones. A wrong-mode attempt is terminal for that capability; it cannot be
+retried through the other consumer.
+
+Admission capabilities expose only a payload-free clone guard. They are
+literally noncloneable and nonserializable: `structuredClone` and JSON
+serialization fail without revealing the private draft or its inherited
+source facts.
+
+The fixed runner separately requires its existing private authorization seed.
+The admission capability does not contain, replace, or mint that seed. It is
+source-provenance admission only and remains insufficient for live authority,
+claim, PENDING, upload, or Send.
+
+### v2 Receipt and Non-Effects
+
+The aggregate receipt reports only decision, count/cap, closed progress
+booleans, fixed false live/effect flags, and one blocker code. It never exposes
+identity, references, bucket, observation time, expiry, path, digest, audio
+binding, message, DOM, screenshot, credential, or payload.
+
+`source_artifact_capability_consumed` is a monotonic statement of actual v2
+progress, independent of the final decision. It is false when the outer wrapper
+is rejected before internal entry or when the source-artifact consumer rejects,
+throws, returns no private artifact, or detects a foreign, stale, or replayed
+capability. Once that consumer successfully returns `private_artifact`, the
+field remains true in every later blocked receipt, including invalid internal
+clock, stale or malformed artifact, request mismatch, source projection or
+mission-binding failure, draft failure, admission-capability failure, and
+receipt failure. No later blocker may reset it to false.
+
+Prepared receipts require this consumption field true. `INPUT_SCHEMA` is now
+reserved for rejection of the exact outer wrapper before internal entry and
+therefore requires the field false. The source-artifact-capability blocker also
+requires false because no private artifact was admitted. A malformed synthetic
+clock discovered after successful capability admission uses the distinct
+`CLOCK_INVALID_AFTER_SOURCE_ARTIFACT_CONSUMPTION` blocker and requires the
+field true. Every other downstream blocker likewise requires true; no later
+validation may erase the completed admission.
+
+The test-only clock must be a safe integer inside the JavaScript Date range.
+Negative, fractional, non-finite, or out-of-range values are post-consumption
+clock failures, never pre-entry input failures. Replaying the same capability
+after such a failure returns the source-artifact-capability blocker and cannot
+re-enter the chain.
+
+All other completion milestones remain false for every blocked decision and
+true only for a prepared decision. The receipt validator is blocker-aware: a
+pre-consumption blocker with consumption true, a post-consumption blocker with
+consumption false, or any promoted completion/live flag is invalid. This v2
+receipt refinement does not alter any legacy v1 input, receipt, validation, or
+no-live behavior.
+
+Every v2 materialization fixes source execution, canary readiness, production
+readiness, approval publication, registry write, claim, pending effect, Send,
+live authority, browser, network, and external effect false. It performs no
+Browser or Safari action, reads no live source, writes no registry, opens no
+file chooser, and invokes no external effect.
+
+### Atomic Truthfulness Closure Boundary
+
+This correction belongs to the single repo-only truthfulness closure approved
+for the IAB semantic handoff branch. It adds no export, backend, capability,
+authority, browser path, source access, Stage 2/3 permission, integration
+permission, or live effect. The Chief Architect authorization for this closure
+permits implementation and repository validation only; a later integration or
+real-stage decision remains separate.

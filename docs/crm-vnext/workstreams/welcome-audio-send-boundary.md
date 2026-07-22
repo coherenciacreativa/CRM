@@ -1072,3 +1072,71 @@
 - `later_gate`: Green tests, independent review, formal Chief Architect green,
   and serialized central integration are required before a separately fresh
   live canary can use this proof chain.
+
+## IAB Semantic Source to Safari Handoff Checkpoint
+
+- `mission_id`:
+  `crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719`
+- `status`: `approved_repo_only_implementation_in_progress_no_live`
+- `baseline`: `efddb21ef6c598e1452ea2a9912235dea431e2ef`
+- `source_boundary`: The Codex In-App Browser is the sole semantic read-only
+  source. Its environment-owned same-process facade owns an isolated tab,
+  fixed Instagram routes, bounded semantic queries/clicks and finalization.
+  It exposes no raw tab, locator, screenshot, coordinate, evaluate callback,
+  network surface or caller-selected backend.
+- `provenance_boundary`: Production passes only opaque nonserializable one-use
+  capabilities from complete source to source artifact to v2 draft admission.
+  Burn occurs before mismatch, staleness or later validation. Replay, clone,
+  foreign capability, UNKNOWN dedupe and cross-mission use fail closed.
+- `runner_boundary`: The fixed live runner accepts exactly
+  `draft_admission_capability` and `private_authorization_seed`; a raw draft or
+  legacy materializer result cannot enter the production rail. The synthetic
+  sibling keeps its `ForTest` name but consumes a capability from a disjoint
+  registry; no runner accepts a raw draft. A synthetic capability offered to
+  production is burned and rejected before Safari, then cannot be replayed.
+- `actuator_boundary`: Safari remains the sole actuator through the unchanged
+  PRECLAIM, claim-before-effect, PENDING, native chooser, one-Send and strong
+  same-thread confirmation sequence.
+- `fallback_boundary`: Chrome, Safari-as-source, OCR, screenshots, coordinates,
+  caller driver/URL/selector/identity/thread/owner/clock/truth booleans and
+  silent runtime fallback are forbidden.
+- `stage_2_no_effect_gate`: Exactly two distinct notification-to-profile
+  traversals, at most eight rows, zero thread opens, capabilities, seen
+  transitions, uploads, previews or sends, under fresh exact approval.
+- `stage_3_no_effect_gate`: At most eight rows, one candidate and one thread;
+  zero uploads, previews or sends. Unread or unknown inbound state blocks
+  before opening the thread. Fresh exact approval and a frozen commit are
+  mandatory.
+- `native_lane_correction`: Central contains the initial native binder at
+  `efddb21ef6c598e1452ea2a9912235dea431e2ef`. The separate real-AX tolerance
+  commit `e9545637c88e6e1cab8ac7be34d9725410a363ec` is not central and is
+  excluded from this mission; it must not be described as silently integrated.
+- `integration_gate`: Repo tests, Stage 2, Stage 3, independent adversarial
+  review and formal Chief Architect integration review must all be green before
+  one separately authorized serialized central integration.
+- `live_flags`: `source_execution=false`, `canary_ready=false`,
+  `production_ready=false`, `claim_issued=false`, `send_allowed=false`,
+  `browser_used=false`, `network_used=false`, and
+  `external_effect_invoked=false`.
+
+## Atomic IAB Handoff Truthfulness Closure
+
+- `closure_id`:
+  `crm_core_iab_semantic_handoff_atomic_truthfulness_closure_v1_20260719`
+- `scope`: Existing packet-v2 and runner-v2 receipt semantics plus their
+  focused tests and controlling documentation; no new productive surface.
+- `packet_invariant`: Outer input rejection occurs before capability
+  consumption. An invalid test clock found after successful admission has its
+  own blocker, records consumption true, and permanently burns the capability.
+  Every later blocker preserves that true milestone.
+- `runner_invariant`: A receipt is valid only when its progress signature is
+  reachable for its exact blocker and decision. Draft-admission failure cannot
+  claim any audio, PRECLAIM, publication, composite, effect, or retry state.
+  Once publication is attempted the existing permanent-no-retry terminal
+  boundary remains intact.
+- `validation_only`: The closure runs synthetic packet/runner tests and static
+  repository checks. It performs no source observation, Safari action, fixed
+  production-root access, claim, PENDING, chooser, upload, preview or Send.
+- `chief_architect_limit`: Repo-only correction authority does not grant Stage
+  2/3, central integration, or live authority; green code remains isolated
+  until a later formal verdict.

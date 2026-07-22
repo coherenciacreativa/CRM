@@ -1,4 +1,8 @@
-import { describe, expect, test } from "vitest";
+import { chmod, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import {
   WELCOME_AUDIO_UI_ATTESTED_RELATIONSHIP_EVIDENCE,
@@ -7,6 +11,14 @@ import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
 } from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
 import * as materializer from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
+import * as sourceArtifact from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-artifact-materializer.mjs";
+import {
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST,
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST,
+  installWelcomeAudioIabSemanticRuntimeFacadeForTest,
+  observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest,
+  resetWelcomeAudioIabSemanticRuntimeFacadeForTest,
+} from "../scripts/crm-vnext-instagram-welcome-audio-iab-semantic-follower-source-host.mjs";
 
 const NOW_MS = Date.parse("2026-07-16T15:00:00.000Z");
 const MATERIALIZER_MISSION_ID = "synthetic_ui_attested_materializer_mission_001";
@@ -15,6 +27,16 @@ const PRIVATE_TARGET = "Synthetic.Exact+Tag_é";
 const PRIVATE_THREAD = "synthetic-thread-reference/Exact+Case";
 const PRIVATE_OWNER = "synthetic-owner-reference/Exact+Case";
 const AUDIO_SHA = "a".repeat(64);
+const roots: string[] = [];
+
+afterEach(async () => {
+  vi.useRealTimers();
+  resetWelcomeAudioIabSemanticRuntimeFacadeForTest();
+  await Promise.all(roots.splice(0).map((root) => rm(root, {
+    recursive: true,
+    force: true,
+  })));
+});
 
 const sourceInput = () => ({
   schema_version: WELCOME_AUDIO_UI_ATTESTED_SOURCE_INPUT_SCHEMA_VERSION,
@@ -84,6 +106,70 @@ const request = () => ({
   execution_approval_authorized: false,
   external_effect_authorized: false,
 });
+
+const iabRequestV2 = () => ({
+  ...request(),
+  schema_version: materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2,
+  mission_id: "synthetic_iab_semantic_canary_mission_001",
+  contract_version: "synthetic_iab_semantic_canary_contract_v2",
+  authorization_id: "synthetic_iab_semantic_authorization_001",
+  expected_source_mission_id:
+    "crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719",
+});
+
+const expectBlockedV2ConsumptionProgress = (
+  receipt: Record<string, unknown>,
+  sourceArtifactCapabilityConsumed: boolean,
+) => {
+  expect(receipt).toMatchObject({
+    decision: materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.BLOCKED,
+    source_artifact_capability_consumed: sourceArtifactCapabilityConsumed,
+    source_artifact_validated: false,
+    source_expiry_inherited: false,
+    projection_validated: false,
+    exact_binding_preserved: false,
+    nonclaims_preserved: false,
+    draft_issued: false,
+    draft_admission_capability_issued: false,
+  });
+  expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2(
+    receipt,
+  )).toEqual({ ok: true, reason: null });
+};
+
+const iabArtifactCapability = async () => {
+  const nowMs = Date.now();
+  expect(installWelcomeAudioIabSemanticRuntimeFacadeForTest({
+    open_scenario: "exact",
+    qualification_scenario:
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST.EXACT_TWO_PAIRS,
+    observation_scenario:
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.EXACT_CANDIDATE,
+    finalize_scenario: "exact",
+  })).toBe(true);
+  const observed = await observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({
+    now_ms: nowMs,
+  });
+  expect(resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
+  const root = await mkdtemp(join(
+    tmpdir(),
+    sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V3,
+  ));
+  await chmod(root, 0o700);
+  roots.push(root);
+  const published = await sourceArtifact
+    .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+      artifact_root: root,
+      private_complete_source_capability: observed.private_complete_source_capability,
+      now_ms: nowMs,
+    });
+  expect(published.private_source_artifact_capability).not.toBeNull();
+  return {
+    nowMs,
+    artifact: published.private_artifact,
+    capability: published.private_source_artifact_capability,
+  };
+};
 
 const run = (input = sourceInput(), packetRequest = request(), nowMs = NOW_MS) => (
   materializer.materializeWelcomeAudioUiAttestedCanaryPacketDraft({
@@ -369,9 +455,386 @@ describe("UI-attested canary packet materializer", () => {
       "WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION",
       "WELCOME_AUDIO_UI_ATTESTED_CANARY_RECEIPT_SCHEMA_VERSION",
       "WELCOME_AUDIO_UI_ATTESTED_CANARY_REQUEST_SCHEMA_VERSION",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_FIELDS_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_SCHEMA_VERSION_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_FIELDS_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_SCHEMA_VERSION_V2",
+      "WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2",
+      "consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce",
+      "consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest",
+      "materializeWelcomeAudioIabSemanticCanaryPacketDraftOnce",
+      "materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest",
       "materializeWelcomeAudioUiAttestedCanaryPacketDraft",
+      "validateWelcomeAudioIabSemanticCanaryPacketDraftV2",
+      "validateWelcomeAudioIabSemanticCanaryPacketReceiptV2",
       "validateWelcomeAudioUiAttestedCanaryPacketDraft",
       "validateWelcomeAudioUiAttestedCanaryPacketReceipt",
     ].sort());
+  });
+});
+
+describe("IAB semantic canary packet draft v2 admission", () => {
+  test("materializes one v2 draft from only the source artifact capability and preserves expiry", async () => {
+    const source = await iabArtifactCapability();
+    const result = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+
+    expect(result.private_draft).not.toBeNull();
+    expect(result.private_draft_admission_capability).not.toBeNull();
+    expect(result.private_draft!.source_expires_at).toBe(source.artifact!.source_expires_at);
+    expect(result.private_draft).toMatchObject({
+      schema_version: materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_SCHEMA_VERSION_V2,
+      source_artifact_schema_version:
+        sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SCHEMA_VERSION_V3,
+      source_mission_id:
+        "crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719",
+      candidate_cap: 1,
+      future_attempt_cap: 1,
+      source_execution: false,
+      canary_ready: false,
+      production_ready: false,
+      execution_approval_published: false,
+      claim_issued: false,
+      pending_effect_recorded: false,
+      send_allowed: false,
+      live_authority: false,
+      browser_used: false,
+      network_used: false,
+      external_effect_invoked: false,
+    });
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketDraftV2(
+      result.private_draft,
+      { now_ms: source.nowMs },
+    )).toEqual({ ok: true, reason: null });
+    expect(materializer.validateWelcomeAudioUiAttestedCanaryPacketDraft(
+      result.private_draft,
+      { now_ms: source.nowMs },
+    )).toEqual({ ok: true, reason: null });
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(result.redacted_receipt).toMatchObject({
+      decision: materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.PREPARED,
+      source_artifact_capability_consumed: true,
+      source_artifact_validated: true,
+      source_expiry_inherited: true,
+      draft_issued: true,
+      draft_admission_capability_issued: true,
+    });
+    const receiptText = JSON.stringify(result.redacted_receipt);
+    expect(receiptText).not.toMatch(
+      /private_candidate|private-thread|private-owner|2026-|[a-f0-9]{64}|\/Users\//,
+    );
+  });
+
+  test("draft admission capability is opaque, one-use, and rejects replay or clone", async () => {
+    const source = await iabArtifactCapability();
+    const result = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    const capability = result.private_draft_admission_capability!;
+    expect(() => JSON.stringify(capability)).toThrow("not_serializable");
+    expect(Object.keys(capability)).toEqual(["clone_guard"]);
+    expect(() => structuredClone(capability)).toThrow();
+    expect(materializer.consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce({
+      private_draft_admission_capability: { ...capability },
+    })).toBeNull();
+    expect(materializer.consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce({
+      private_draft_admission_capability: capability,
+    })).toBeNull();
+    expect(materializer
+      .consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest({
+        private_draft_admission_capability: capability,
+      })).toBeNull();
+
+    const validSource = await iabArtifactCapability();
+    const valid = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: validSource.capability,
+      packet_request: iabRequestV2(),
+      now_ms: validSource.nowMs,
+    });
+    const consumed = materializer
+      .consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest({
+        private_draft_admission_capability: valid.private_draft_admission_capability,
+      });
+    expect(consumed?.private_draft).toEqual(valid.private_draft);
+    expect(materializer
+      .consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest({
+        private_draft_admission_capability: valid.private_draft_admission_capability,
+      })).toBeNull();
+  });
+
+  test("burns source artifact capability before request mismatch and rejects reuse", async () => {
+    const source = await iabArtifactCapability();
+    const invalidRequest = { ...iabRequestV2(), candidate_cap: 2 };
+    const blocked = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: invalidRequest,
+      now_ms: source.nowMs,
+    });
+    expect(blocked.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.REQUEST_SCHEMA,
+    ]);
+    expectBlockedV2ConsumptionProgress(blocked.redacted_receipt, true);
+    const replay = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    expect(replay.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .SOURCE_ARTIFACT_CAPABILITY,
+    ]);
+    expectBlockedV2ConsumptionProgress(replay.redacted_receipt, false);
+  });
+
+  test("stale inherited source expiry blocks without renewal and burns the capability", async () => {
+    const source = await iabArtifactCapability();
+    const expiresAtMs = Date.parse(source.artifact!.source_expires_at);
+    const stale = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: expiresAtMs,
+    });
+    expect(stale.private_draft).toBeNull();
+    expect(stale.private_draft_admission_capability).toBeNull();
+    expect(stale.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_ARTIFACT,
+    ]);
+    expectBlockedV2ConsumptionProgress(stale.redacted_receipt, true);
+    const replay = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    expect(replay.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .SOURCE_ARTIFACT_CAPABILITY,
+    ]);
+    expectBlockedV2ConsumptionProgress(replay.redacted_receipt, false);
+  });
+
+  test("records consumption before a source mission binding mismatch", async () => {
+    const source = await iabArtifactCapability();
+    const blocked = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: {
+        ...iabRequestV2(),
+        expected_source_mission_id: "synthetic_other_source_mission_002",
+      },
+      now_ms: source.nowMs,
+    });
+
+    expect(blocked.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_BINDING,
+    ]);
+    expectBlockedV2ConsumptionProgress(blocked.redacted_receipt, true);
+  });
+
+  test.each([
+    ["negative", -1],
+    ["fractional", 0.5],
+    ["NaN", Number.NaN],
+    ["infinite", Number.POSITIVE_INFINITY],
+    ["outside Date range", 8_640_000_000_000_001],
+  ])("records consumption before rejecting an invalid internal clock: %s", async (
+    _label,
+    invalidNowMs,
+  ) => {
+    const source = await iabArtifactCapability();
+    const blocked = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: invalidNowMs,
+    });
+
+    expect(blocked.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .CLOCK_INVALID_AFTER_SOURCE_ARTIFACT_CONSUMPTION,
+    ]);
+    expectBlockedV2ConsumptionProgress(blocked.redacted_receipt, true);
+    const replay = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    expect(replay.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .SOURCE_ARTIFACT_CAPABILITY,
+    ]);
+    expectBlockedV2ConsumptionProgress(replay.redacted_receipt, false);
+  });
+
+  test("malformed pre-internal wrapper reports no consumption and leaves capability usable", async () => {
+    const source = await iabArtifactCapability();
+    const malformed = materializer
+      .materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+        private_source_artifact_capability: source.capability,
+        packet_request: iabRequestV2(),
+        now_ms: source.nowMs,
+        unexpected_source_field: "rejected_before_internal_entry",
+      } as never);
+
+    expect(malformed.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.INPUT_SCHEMA,
+    ]);
+    expectBlockedV2ConsumptionProgress(malformed.redacted_receipt, false);
+
+    const valid = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    expect(valid.private_draft).not.toBeNull();
+  });
+
+  test("prepared receipt cannot hide source artifact capability consumption", async () => {
+    const source = await iabArtifactCapability();
+    const prepared = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    const tampered = structuredClone(prepared.redacted_receipt);
+    tampered.source_artifact_capability_consumed = false;
+
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2(
+      tampered,
+    )).toEqual({
+      ok: false,
+      reason: materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.RECEIPT_CONTRACT,
+    });
+  });
+
+  test("receipt validation binds consumption truth to the exact blocker phase", async () => {
+    const preInternalSource = await iabArtifactCapability();
+    const preInternal = materializer
+      .materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+        private_source_artifact_capability: preInternalSource.capability,
+        packet_request: iabRequestV2(),
+        now_ms: preInternalSource.nowMs,
+        unexpected_source_field: "rejected_before_internal_entry",
+      } as never);
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2({
+      ...preInternal.redacted_receipt,
+      source_artifact_capability_consumed: true,
+    }).ok).toBe(false);
+
+    const clockSource = await iabArtifactCapability();
+    const clockBlocked = materializer
+      .materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+        private_source_artifact_capability: clockSource.capability,
+        packet_request: iabRequestV2(),
+        now_ms: -1,
+      });
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2({
+      ...clockBlocked.redacted_receipt,
+      source_artifact_capability_consumed: false,
+    }).ok).toBe(false);
+
+    const foreign = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: Object.freeze({}),
+      packet_request: iabRequestV2(),
+      now_ms: Date.now(),
+    });
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2({
+      ...foreign.redacted_receipt,
+      source_artifact_capability_consumed: true,
+    }).ok).toBe(false);
+
+    const downstreamSource = await iabArtifactCapability();
+    const downstream = materializer
+      .materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+        private_source_artifact_capability: downstreamSource.capability,
+        packet_request: { ...iabRequestV2(), candidate_cap: 2 },
+        now_ms: downstreamSource.nowMs,
+      });
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketReceiptV2({
+      ...downstream.redacted_receipt,
+      source_artifact_capability_consumed: false,
+    }).ok).toBe(false);
+  });
+
+  test("draft admission expires at the inherited instant and stale consumption burns replay", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-19T18:00:00.000Z"));
+    const source = await iabArtifactCapability();
+    const result = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    const expiresAtMs = Date.parse(result.private_draft!.source_expires_at);
+    vi.setSystemTime(expiresAtMs);
+    expect(materializer
+      .consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest({
+        private_draft_admission_capability: result.private_draft_admission_capability,
+      })).toBeNull();
+    vi.setSystemTime(source.nowMs);
+    expect(materializer
+      .consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest({
+        private_draft_admission_capability: result.private_draft_admission_capability,
+      })).toBeNull();
+  });
+
+  test("blocks foreign artifact capability and caller-supplied source facts", () => {
+    const foreign = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: Object.freeze({}),
+      packet_request: iabRequestV2(),
+      now_ms: Date.now(),
+    });
+    expect(foreign.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .SOURCE_ARTIFACT_CAPABILITY,
+    ]);
+    expectBlockedV2ConsumptionProgress(foreign.redacted_receipt, false);
+    const callerSource = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnce({
+      private_source_artifact_capability: Object.freeze({}),
+      packet_request: iabRequestV2(),
+      exact_target_utf8: "caller_fabricated",
+    } as never);
+    expect(callerSource.redacted_receipt.blocker_codes).toEqual([
+      materializer.WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.INPUT_SCHEMA,
+    ]);
+    expectBlockedV2ConsumptionProgress(callerSource.redacted_receipt, false);
+  });
+
+  test("rejects tampered v2 expiry and operation binding", async () => {
+    const source = await iabArtifactCapability();
+    const result = materializer.materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest({
+      private_source_artifact_capability: source.capability,
+      packet_request: iabRequestV2(),
+      now_ms: source.nowMs,
+    });
+    const renewed = structuredClone(result.private_draft);
+    renewed.source_expires_at = new Date(Date.parse(renewed.source_expires_at) + 60_000)
+      .toISOString();
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketDraftV2(
+      renewed,
+      { now_ms: source.nowMs },
+    ).ok).toBe(false);
+    const tampered = structuredClone(result.private_draft);
+    tampered.operation_id = `iab_semantic_canary_draft_v2_${"0".repeat(64)}`;
+    expect(materializer.validateWelcomeAudioIabSemanticCanaryPacketDraftV2(
+      tampered,
+      { now_ms: source.nowMs },
+    ).ok).toBe(false);
+  });
+
+  test("legacy raw ui_attested_input remains compatibility-only and emits no admission", () => {
+    const legacy = run();
+    expect(legacy.private_draft).not.toBeNull();
+    expect("private_draft_admission_capability" in legacy).toBe(false);
+    expect(legacy.private_draft!.schema_version).toBe(
+      materializer.WELCOME_AUDIO_UI_ATTESTED_CANARY_DRAFT_SCHEMA_VERSION,
+    );
   });
 });

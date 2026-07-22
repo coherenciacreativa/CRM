@@ -13,6 +13,11 @@ import {
   adaptWelcomeAudioUiAttestedFollowerSource,
   validateWelcomeAudioUiAttestedFollowerSourceProjection,
 } from './crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs';
+import {
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SCHEMA_VERSION_V3,
+  consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnce,
+  consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest,
+} from './crm-vnext-instagram-welcome-audio-ui-attested-follower-source-artifact-materializer.mjs';
 
 const WELCOME_AUDIO_UI_ATTESTED_CANARY_MATERIALIZER_CONTRACT_VERSION =
   'crm_core_instagram_welcome_audio_ui_attested_canary_packet_materializer_v1';
@@ -23,6 +28,60 @@ const WELCOME_AUDIO_UI_ATTESTED_CANARY_DRAFT_SCHEMA_VERSION =
 const WELCOME_AUDIO_UI_ATTESTED_CANARY_RECEIPT_SCHEMA_VERSION =
   'crm_core_instagram_welcome_audio_ui_attested_canary_packet_materializer_receipt_v1';
 const WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP = 1;
+
+const WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2 =
+  'crm_core_instagram_welcome_audio_iab_semantic_canary_packet_materializer_v2';
+const WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2 =
+  'crm_core_instagram_welcome_audio_iab_semantic_canary_packet_request_v2';
+const WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_SCHEMA_VERSION_V2 =
+  'crm_core_instagram_welcome_audio_iab_semantic_canary_packet_draft_v2';
+const WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_SCHEMA_VERSION_V2 =
+  'crm_core_instagram_welcome_audio_iab_semantic_canary_packet_materializer_receipt_v2';
+
+const WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2 = Object.freeze({
+  PREPARED: 'prepared_iab_semantic_no_live_unapproved_v2',
+  BLOCKED: 'blocked_iab_semantic_no_live_unapproved_v2',
+});
+
+const WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2 = Object.freeze({
+  INPUT_SCHEMA: 'blocked_iab_canary_v2_input_schema',
+  SOURCE_ARTIFACT_CAPABILITY:
+    'blocked_iab_canary_v2_source_artifact_capability_invalid_stale_or_replayed',
+  CLOCK_INVALID_AFTER_SOURCE_ARTIFACT_CONSUMPTION:
+    'blocked_iab_canary_v2_clock_invalid_after_source_artifact_consumption',
+  SOURCE_ARTIFACT: 'blocked_iab_canary_v2_source_artifact_invalid',
+  REQUEST_SCHEMA: 'blocked_iab_canary_v2_request_schema',
+  SOURCE_PROJECTION: 'blocked_iab_canary_v2_source_projection',
+  SOURCE_BINDING: 'blocked_iab_canary_v2_source_binding',
+  DRAFT_CONTRACT: 'blocked_iab_canary_v2_draft_contract',
+  DRAFT_ADMISSION_CAPABILITY:
+    'blocked_iab_canary_v2_draft_admission_capability_invalid_stale_or_replayed',
+  RECEIPT_CONTRACT: 'blocked_iab_canary_v2_receipt_contract',
+});
+
+const IAB_CANARY_DRAFT_ADMISSION_STATES_V2 = new WeakMap();
+const IAB_CANARY_DRAFT_ADMISSION_STATES_V2_FOR_TEST = new WeakMap();
+
+const opaqueIabSemanticCanaryDraftAdmissionCapabilityV2 = () => {
+  const capability = Object.create(null);
+  Object.defineProperties(capability, {
+    [Symbol('crm_core_iab_semantic_canary_draft_admission_capability_v2')]: {
+      value: true,
+      enumerable: false,
+    },
+    toJSON: {
+      value: () => {
+        throw new TypeError('canary_draft_admission_capability_not_serializable');
+      },
+      enumerable: false,
+    },
+    clone_guard: {
+      value: Symbol('opaque_canary_draft_admission_capability_v2'),
+      enumerable: true,
+    },
+  });
+  return Object.freeze(capability);
+};
 
 const WELCOME_AUDIO_UI_ATTESTED_CANARY_DECISION = Object.freeze({
   PREPARED: 'prepared_no_live_unapproved',
@@ -317,6 +376,11 @@ const validateWelcomeAudioUiAttestedCanaryPacketDraft = (draft, options = {}) =>
     reason: WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER.DRAFT_CONTRACT,
   });
   try {
+    const v2Result = validateWelcomeAudioIabSemanticCanaryPacketDraftV2(
+      draft,
+      options,
+    );
+    if (v2Result.ok === true) return v2Result;
     const root = exactObject(draft, DRAFT_FIELDS);
     const safeOptions = exactObject(options, ['now_ms']);
     const nowMs = safeOptions?.now_ms;
@@ -465,6 +529,493 @@ const materializeWelcomeAudioUiAttestedCanaryPacketDraft = (input) => {
   }
 };
 
+const IAB_CANARY_DRAFT_FIELDS_V2 = Object.freeze([
+  ...DRAFT_FIELDS,
+  'source_artifact_schema_version',
+  'source_expires_at',
+]);
+
+const IAB_CANARY_RECEIPT_FIELDS_V2 = Object.freeze([
+  'receipt_schema_version',
+  'materializer_contract_version',
+  'redaction_status',
+  'decision',
+  'candidate_count',
+  'candidate_cap',
+  'source_artifact_capability_consumed',
+  'source_artifact_validated',
+  'source_expiry_inherited',
+  'projection_validated',
+  'exact_binding_preserved',
+  'nonclaims_preserved',
+  'draft_issued',
+  'draft_admission_capability_issued',
+  'source_execution',
+  'canary_ready',
+  'production_ready',
+  'execution_approval_published',
+  'registry_written',
+  'claim_issued',
+  'pending_effect_recorded',
+  'send_allowed',
+  'live_authority',
+  'browser_used',
+  'network_used',
+  'external_effect_invoked',
+  'blocker_codes',
+]);
+
+const isExactIsoV2 = (value) => {
+  if (typeof value !== 'string') return false;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) && new Date(parsed).toISOString() === value;
+};
+
+const isValidNowMsV2 = (value) => Number.isSafeInteger(value)
+  && value >= 0
+  && value <= 8_640_000_000_000_000;
+
+const validateIabSemanticCanaryRequestV2 = (value) => {
+  const request = exactObject(value, REQUEST_FIELDS);
+  if (!request) return null;
+  const stringsValid = [
+    request.mission_id,
+    request.contract_version,
+    request.authorization_id,
+    request.expected_source_mission_id,
+    request.approved_audio_asset_id,
+    request.approved_audio_binding_evidence,
+  ].every(isCleanString);
+  if (
+    request.schema_version !== WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2
+    || request.status !== 'approved_for_no_live_materialization_only'
+    || !stringsValid
+    || typeof request.central_repo_head !== 'string'
+    || !GIT_SHA.test(request.central_repo_head)
+    || !OPAQUE_ID.test(request.authorization_id)
+    || request.candidate_cap !== WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP
+    || request.future_attempt_cap !== 1
+    || typeof request.approved_audio_sha256 !== 'string'
+    || !SHA256.test(request.approved_audio_sha256)
+    || request.approved_audio_binding_evidence
+      !== 'exact_approved_audio_binding_revalidated'
+    || request.execution_approval_authorized !== false
+    || request.external_effect_authorized !== false
+  ) return null;
+  return request;
+};
+
+const operationIdForIabSemanticDraftV2 = (draftWithoutOperationId) => (
+  `iab_semantic_canary_draft_v2_${sha256(canonicalJson(draftWithoutOperationId))}`
+);
+
+const validateWelcomeAudioIabSemanticCanaryPacketDraftV2 = (
+  draft,
+  options = {},
+) => {
+  const invalid = () => Object.freeze({
+    ok: false,
+    reason: WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.DRAFT_CONTRACT,
+  });
+  try {
+    const safeDraft = snapshotPlainData(draft);
+    const root = exactObject(safeDraft, IAB_CANARY_DRAFT_FIELDS_V2);
+    const safeOptions = exactObject(options, ['now_ms']);
+    const nowMs = safeOptions?.now_ms;
+    const expiresAtMs = Date.parse(root?.source_expires_at ?? '');
+    if (
+      !root
+      || !safeOptions
+      || !Number.isSafeInteger(nowMs)
+      || nowMs < 0
+      || !isExactIsoV2(root.source_expires_at)
+      || expiresAtMs <= nowMs
+      || root.schema_version !== WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_SCHEMA_VERSION_V2
+      || root.materializer_contract_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2
+      || root.status !== WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.PREPARED
+      || root.source_artifact_schema_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SCHEMA_VERSION_V3
+      || !isCleanString(root.mission_id)
+      || !isCleanString(root.contract_version)
+      || typeof root.central_repo_head !== 'string'
+      || !GIT_SHA.test(root.central_repo_head)
+      || typeof root.authorization_id !== 'string'
+      || !OPAQUE_ID.test(root.authorization_id)
+      || root.candidate_cap !== 1
+      || root.future_attempt_cap !== 1
+      || !isCleanString(root.approved_audio_asset_id)
+      || typeof root.approved_audio_sha256 !== 'string'
+      || !SHA256.test(root.approved_audio_sha256)
+      || root.approved_audio_binding_evidence
+        !== 'exact_approved_audio_binding_revalidated'
+      || root.registry_precondition
+        !== 'empty_or_valid_revalidate_in_later_live_mission'
+      || Object.entries(fixedFalseFlags).some(([key, value]) => root[key] !== value)
+      || !isCleanString(root.source_mission_id)
+      || validateWelcomeAudioUiAttestedFollowerSourceProjection(
+        root.source_projection,
+        { nowMs },
+      ).ok !== true
+    ) return invalid();
+    const projection = snapshotPlainData(root.source_projection);
+    if (
+      projection.mission_id !== root.source_mission_id
+      || projection.exact_follow_timestamp_claimed !== false
+      || projection.provider_event_id_claimed !== false
+      || projection.campaign_membership_claimed !== false
+    ) return invalid();
+    const { operation_id: operationId, ...withoutOperationIdRaw } = root;
+    if (typeof operationId !== 'string') return invalid();
+    const withoutOperationId = {
+      ...withoutOperationIdRaw,
+      source_projection: projection,
+    };
+    if (operationId !== operationIdForIabSemanticDraftV2(withoutOperationId)) {
+      return invalid();
+    }
+    return Object.freeze({ ok: true, reason: null });
+  } catch {
+    return invalid();
+  }
+};
+
+const buildIabSemanticCanaryReceiptV2 = ({
+  prepared = false,
+  sourceArtifactCapabilityConsumed = false,
+  blockerCodes = [],
+} = {}) => (
+  Object.freeze({
+    receipt_schema_version: WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_SCHEMA_VERSION_V2,
+    materializer_contract_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2,
+    redaction_status:
+      'aggregate_allowlist_only_no_private_values_times_buckets_paths_references_digests_or_payloads',
+    decision: prepared
+      ? WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.PREPARED
+      : WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.BLOCKED,
+    candidate_count: prepared ? 1 : 0,
+    candidate_cap: 1,
+    source_artifact_capability_consumed:
+      prepared || sourceArtifactCapabilityConsumed === true,
+    source_artifact_validated: prepared,
+    source_expiry_inherited: prepared,
+    projection_validated: prepared,
+    exact_binding_preserved: prepared,
+    nonclaims_preserved: prepared,
+    draft_issued: prepared,
+    draft_admission_capability_issued: prepared,
+    ...fixedFalseFlags,
+    blocker_codes: Object.freeze([...new Set(blockerCodes)]),
+  })
+);
+
+const validateWelcomeAudioIabSemanticCanaryPacketReceiptV2 = (receipt) => {
+  const invalid = () => Object.freeze({
+    ok: false,
+    reason: WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.RECEIPT_CONTRACT,
+  });
+  try {
+    const root = exactObject(
+      snapshotPlainData(receipt),
+      IAB_CANARY_RECEIPT_FIELDS_V2,
+    );
+    if (!root || !Array.isArray(root.blocker_codes)) return invalid();
+    const prepared = root.decision
+      === WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.PREPARED;
+    const blockerSet = new Set(Object.values(WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2));
+    const booleans = IAB_CANARY_RECEIPT_FIELDS_V2.filter((field) => ![
+      'receipt_schema_version',
+      'materializer_contract_version',
+      'redaction_status',
+      'decision',
+      'candidate_count',
+      'candidate_cap',
+      'blocker_codes',
+    ].includes(field));
+    const completedMilestoneBooleans = [
+      'source_artifact_validated',
+      'source_expiry_inherited',
+      'projection_validated',
+      'exact_binding_preserved',
+      'nonclaims_preserved',
+      'draft_issued',
+      'draft_admission_capability_issued',
+    ];
+    const blocker = root.blocker_codes[0];
+    const preConsumptionBlocker = blocker
+      === WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.INPUT_SCHEMA
+      || blocker === WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .SOURCE_ARTIFACT_CAPABILITY;
+    const consumptionProgressValid = root.source_artifact_capability_consumed
+      === (prepared || !preConsumptionBlocker);
+    if (
+      root.receipt_schema_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_SCHEMA_VERSION_V2
+      || root.materializer_contract_version
+        !== WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2
+      || root.redaction_status
+        !== 'aggregate_allowlist_only_no_private_values_times_buckets_paths_references_digests_or_payloads'
+      || !Object.values(WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2)
+        .includes(root.decision)
+      || root.candidate_count !== (prepared ? 1 : 0)
+      || root.candidate_cap !== 1
+      || booleans.some((field) => typeof root[field] !== 'boolean')
+      || !consumptionProgressValid
+      || completedMilestoneBooleans.some((field) => root[field] !== prepared)
+      || Object.entries(fixedFalseFlags).some(([key, value]) => root[key] !== value)
+      || root.blocker_codes.length !== (prepared ? 0 : 1)
+      || root.blocker_codes.some((code) => !blockerSet.has(code))
+      || new Set(root.blocker_codes).size !== root.blocker_codes.length
+    ) return invalid();
+    return Object.freeze({ ok: true, reason: null });
+  } catch {
+    return invalid();
+  }
+};
+
+const blockedIabSemanticCanaryV2 = (
+  blocker,
+  { sourceArtifactCapabilityConsumed = false } = {},
+) => Object.freeze({
+  private_draft: null,
+  private_draft_admission_capability: null,
+  redacted_receipt: buildIabSemanticCanaryReceiptV2({
+    sourceArtifactCapabilityConsumed,
+    blockerCodes: [blocker],
+  }),
+});
+
+const issueIabSemanticCanaryDraftAdmissionCapabilityV2 = ({
+  privateDraft,
+  expiresAtMs,
+  nowMs,
+  synthetic,
+}) => {
+  if (expiresAtMs <= nowMs) return null;
+  const capability = opaqueIabSemanticCanaryDraftAdmissionCapabilityV2();
+  const registry = synthetic
+    ? IAB_CANARY_DRAFT_ADMISSION_STATES_V2_FOR_TEST
+    : IAB_CANARY_DRAFT_ADMISSION_STATES_V2;
+  registry.set(capability, {
+    consumed: false,
+    privateDraft,
+    expiresAtMs,
+  });
+  return capability;
+};
+
+const materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceInternal = ({
+  privateSourceArtifactCapability,
+  packetRequest,
+  nowMs,
+  synthetic,
+}) => {
+  let consumed;
+  try {
+    const consumeArtifactCapability = synthetic
+      ? consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest
+      : consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnce;
+    consumed = consumeArtifactCapability({
+      private_source_artifact_capability: privateSourceArtifactCapability,
+    });
+  } catch {
+    consumed = null;
+  }
+  if (!consumed?.private_artifact) return blockedIabSemanticCanaryV2(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_ARTIFACT_CAPABILITY,
+  );
+  const blockedAfterSourceArtifactConsumption = (blocker) => (
+    blockedIabSemanticCanaryV2(blocker, {
+      sourceArtifactCapabilityConsumed: true,
+    })
+  );
+  if (!isValidNowMsV2(nowMs)) {
+    return blockedAfterSourceArtifactConsumption(
+      WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2
+        .CLOCK_INVALID_AFTER_SOURCE_ARTIFACT_CONSUMPTION,
+    );
+  }
+  let artifact;
+  try {
+    artifact = snapshotPlainData(consumed.private_artifact);
+  } catch {
+    return blockedAfterSourceArtifactConsumption(
+      WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_ARTIFACT,
+    );
+  }
+  if (
+    artifact?.schema_version !== WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SCHEMA_VERSION_V3
+    || !isExactIsoV2(artifact?.source_expires_at)
+    || Date.parse(artifact.source_expires_at) <= nowMs
+  ) return blockedAfterSourceArtifactConsumption(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_ARTIFACT,
+  );
+  const request = validateIabSemanticCanaryRequestV2(packetRequest);
+  if (!request) return blockedAfterSourceArtifactConsumption(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.REQUEST_SCHEMA,
+  );
+  let source;
+  try {
+    source = adaptWelcomeAudioUiAttestedFollowerSource(
+      snapshotPlainData(artifact.ui_attested_input),
+      { nowMs },
+    );
+  } catch {
+    source = null;
+  }
+  if (
+    !source?.private_projection
+    || validateWelcomeAudioUiAttestedFollowerSourceProjection(
+      source.private_projection,
+      { nowMs },
+    ).ok !== true
+  ) return blockedAfterSourceArtifactConsumption(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_PROJECTION,
+  );
+  const projection = source.private_projection;
+  if (projection.mission_id !== request.expected_source_mission_id) {
+    return blockedAfterSourceArtifactConsumption(
+      WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.SOURCE_BINDING,
+    );
+  }
+  const draftWithoutOperationId = {
+    schema_version: WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_SCHEMA_VERSION_V2,
+    materializer_contract_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2,
+    status: WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2.PREPARED,
+    mission_id: request.mission_id,
+    contract_version: request.contract_version,
+    central_repo_head: request.central_repo_head,
+    authorization_id: request.authorization_id,
+    source_mission_id: request.expected_source_mission_id,
+    candidate_cap: request.candidate_cap,
+    future_attempt_cap: request.future_attempt_cap,
+    source_projection: projection,
+    approved_audio_asset_id: request.approved_audio_asset_id,
+    approved_audio_sha256: request.approved_audio_sha256,
+    approved_audio_binding_evidence: request.approved_audio_binding_evidence,
+    registry_precondition: 'empty_or_valid_revalidate_in_later_live_mission',
+    ...fixedFalseFlags,
+    source_artifact_schema_version:
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SCHEMA_VERSION_V3,
+    source_expires_at: artifact.source_expires_at,
+  };
+  const draft = deepFreeze({
+    ...draftWithoutOperationId,
+    operation_id: operationIdForIabSemanticDraftV2(draftWithoutOperationId),
+  });
+  if (validateWelcomeAudioIabSemanticCanaryPacketDraftV2(
+    draft,
+    { now_ms: nowMs },
+  ).ok !== true) return blockedAfterSourceArtifactConsumption(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.DRAFT_CONTRACT,
+  );
+  const capability = issueIabSemanticCanaryDraftAdmissionCapabilityV2({
+    privateDraft: draft,
+    expiresAtMs: Date.parse(artifact.source_expires_at),
+    nowMs,
+    synthetic,
+  });
+  if (!capability) return blockedAfterSourceArtifactConsumption(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.DRAFT_ADMISSION_CAPABILITY,
+  );
+  const receipt = buildIabSemanticCanaryReceiptV2({ prepared: true });
+  if (validateWelcomeAudioIabSemanticCanaryPacketReceiptV2(receipt).ok !== true) {
+    return blockedAfterSourceArtifactConsumption(
+      WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.RECEIPT_CONTRACT,
+    );
+  }
+  return Object.freeze({
+    private_draft: draft,
+    private_draft_admission_capability: capability,
+    redacted_receipt: receipt,
+  });
+};
+
+const materializeWelcomeAudioIabSemanticCanaryPacketDraftOnce = (
+  parameters = {},
+) => {
+  const root = exactObject(parameters, [
+    'private_source_artifact_capability',
+    'packet_request',
+  ]);
+  if (!root) return blockedIabSemanticCanaryV2(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.INPUT_SCHEMA,
+  );
+  return materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceInternal({
+    privateSourceArtifactCapability: root.private_source_artifact_capability,
+    packetRequest: root.packet_request,
+    nowMs: Date.now(),
+    synthetic: false,
+  });
+};
+
+const materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest = (
+  parameters = {},
+) => {
+  const root = exactObject(parameters, [
+    'private_source_artifact_capability',
+    'packet_request',
+    'now_ms',
+  ]);
+  if (!root) return blockedIabSemanticCanaryV2(
+    WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2.INPUT_SCHEMA,
+  );
+  return materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceInternal({
+    privateSourceArtifactCapability: root.private_source_artifact_capability,
+    packetRequest: root.packet_request,
+    nowMs: root.now_ms,
+    synthetic: true,
+  });
+};
+
+const consumeIabSemanticCanaryDraftAdmissionCapabilityOnceInternal = (
+  parameters,
+  requiredSyntheticMode,
+) => {
+  const root = exactObject(parameters, ['private_draft_admission_capability']);
+  if (!root) return null;
+  const registry = requiredSyntheticMode
+    ? IAB_CANARY_DRAFT_ADMISSION_STATES_V2_FOR_TEST
+    : IAB_CANARY_DRAFT_ADMISSION_STATES_V2;
+  const crossModeRegistry = requiredSyntheticMode
+    ? IAB_CANARY_DRAFT_ADMISSION_STATES_V2
+    : IAB_CANARY_DRAFT_ADMISSION_STATES_V2_FOR_TEST;
+  const capability = root.private_draft_admission_capability;
+  const state = registry.get(capability);
+  const crossModeState = crossModeRegistry.get(capability);
+  if (!state && crossModeState && !crossModeState.consumed) {
+    crossModeState.consumed = true;
+    return null;
+  }
+  if (!state || state.consumed) return null;
+  state.consumed = true;
+  const nowMs = Date.now();
+  if (
+    state.expiresAtMs <= nowMs
+    || validateWelcomeAudioIabSemanticCanaryPacketDraftV2(
+      state.privateDraft,
+      { now_ms: nowMs },
+    ).ok !== true
+  ) return null;
+  return Object.freeze({ private_draft: state.privateDraft });
+};
+
+const consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce = (
+  parameters = {},
+) => consumeIabSemanticCanaryDraftAdmissionCapabilityOnceInternal(
+  parameters,
+  false,
+);
+
+const consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest = (
+  parameters = {},
+) => consumeIabSemanticCanaryDraftAdmissionCapabilityOnceInternal(
+  parameters,
+  true,
+);
+
 export {
   WELCOME_AUDIO_UI_ATTESTED_CANARY_BLOCKER,
   WELCOME_AUDIO_UI_ATTESTED_CANARY_CANDIDATE_CAP,
@@ -476,4 +1027,18 @@ export {
   materializeWelcomeAudioUiAttestedCanaryPacketDraft,
   validateWelcomeAudioUiAttestedCanaryPacketDraft,
   validateWelcomeAudioUiAttestedCanaryPacketReceipt,
+  IAB_CANARY_DRAFT_FIELDS_V2 as WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_FIELDS_V2,
+  IAB_CANARY_RECEIPT_FIELDS_V2 as WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_FIELDS_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_BLOCKER_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DECISION_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_DRAFT_SCHEMA_VERSION_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_MATERIALIZER_CONTRACT_VERSION_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_RECEIPT_SCHEMA_VERSION_V2,
+  WELCOME_AUDIO_IAB_SEMANTIC_CANARY_REQUEST_SCHEMA_VERSION_V2,
+  consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce,
+  consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest,
+  materializeWelcomeAudioIabSemanticCanaryPacketDraftOnce,
+  materializeWelcomeAudioIabSemanticCanaryPacketDraftOnceForTest,
+  validateWelcomeAudioIabSemanticCanaryPacketDraftV2,
+  validateWelcomeAudioIabSemanticCanaryPacketReceiptV2,
 };

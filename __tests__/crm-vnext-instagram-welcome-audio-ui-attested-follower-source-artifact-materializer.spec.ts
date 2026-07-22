@@ -16,7 +16,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import {
   confirmWelcomeAudioNativeNotificationProfileBindingForTest,
@@ -25,8 +25,16 @@ import {
 import * as sourceArtifact from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-artifact-materializer.mjs";
 import {
   WELCOME_AUDIO_UI_ATTESTED_SOURCE_CLASS,
+  adaptWelcomeAudioUiAttestedFollowerSource,
 } from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-follower-source-adapter.mjs";
 import * as canaryMaterializer from "../scripts/crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs";
+import {
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST,
+  WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST,
+  installWelcomeAudioIabSemanticRuntimeFacadeForTest,
+  observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest,
+  resetWelcomeAudioIabSemanticRuntimeFacadeForTest,
+} from "../scripts/crm-vnext-instagram-welcome-audio-iab-semantic-follower-source-host.mjs";
 
 const NOW_MS = Date.parse("2026-07-17T15:00:00.000Z");
 const PRIVATE_TARGET = "Synthetic.Exact_Tag";
@@ -45,11 +53,69 @@ const makeRoot = async () => {
 };
 
 afterEach(async () => {
+  vi.useRealTimers();
+  resetWelcomeAudioIabSemanticRuntimeFacadeForTest();
   await Promise.all(roots.splice(0).map((root) => rm(root, {
     recursive: true,
     force: true,
   })));
 });
+
+const makeV3Root = async () => {
+  const root = await mkdtemp(join(
+    tmpdir(),
+    sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_SYNTHETIC_PREFIX_V3,
+  ));
+  await chmod(root, 0o700);
+  roots.push(root);
+  return root;
+};
+
+const completeSourceCapability = async () => {
+  const nowMs = Date.now();
+  expect(installWelcomeAudioIabSemanticRuntimeFacadeForTest({
+    qualification_scenario:
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_QUALIFICATION_SCENARIO_FOR_TEST.EXACT_TWO_PAIRS,
+    observation_scenario:
+      WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_OBSERVATION_SCENARIO_FOR_TEST.EXACT_CANDIDATE,
+    finalize_scenario: "exact",
+  })).toBe(true);
+  const observed = await observeWelcomeAudioIabSemanticFollowerCandidateOnceForTest({
+    now_ms: nowMs,
+  });
+  expect(observed.private_complete_source_capability).not.toBeNull();
+  expect(resetWelcomeAudioIabSemanticRuntimeFacadeForTest()).toBe(true);
+  return {
+    nowMs,
+    capability: observed.private_complete_source_capability,
+  };
+};
+
+const realignV3DerivedEvidence = (artifactInput: unknown, nowMs: number) => {
+  const artifact: any = structuredClone(artifactInput);
+  const completeSource = artifact.complete_source;
+  artifact.ui_attested_input.notification_row.exact_target_utf8 =
+    completeSource.exact_target_utf8;
+  artifact.ui_attested_input.notification_row.time_bucket_utf8 =
+    completeSource.visible_time_bucket_utf8;
+  artifact.ui_attested_input.profile.exact_target_utf8 = completeSource.exact_target_utf8;
+  artifact.ui_attested_input.thread.bound_thread_reference_utf8 =
+    completeSource.exact_thread_reference;
+  artifact.ui_attested_input.owner.owner_account_reference_utf8 =
+    completeSource.exact_owner_account_reference;
+  artifact.ui_attested_input.dedupe.exact_target_utf8 = completeSource.exact_target_utf8;
+  artifact.ui_attested_input.dedupe.bound_thread_reference_utf8 =
+    completeSource.exact_thread_reference;
+  artifact.ui_attested_input.dedupe.owner_account_reference_utf8 =
+    completeSource.exact_owner_account_reference;
+  const adapted = adaptWelcomeAudioUiAttestedFollowerSource(
+    artifact.ui_attested_input,
+    { nowMs },
+  );
+  expect(adapted.private_projection).not.toBeNull();
+  artifact.source_evidence_sha256 = adapted.private_projection!.source_evidence_sha256;
+  return artifact;
+};
 
 const safariTabs = (sourceLabel: string) => [
   `application "${sourceLabel}"`,
@@ -743,5 +809,514 @@ describe("UI-attested follower source artifact materializer", () => {
     expect(settleImplementation).toContain(
       "entries[0] === WELCOME_AUDIO_UI_ATTESTED_SOURCE_ARTIFACT_FILE_NAME",
     );
+  });
+});
+
+describe("IAB semantic follower source artifact v3", () => {
+  test("publishes one owner-only v3 artifact and preserves original source expiry", async () => {
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const result = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+
+    expect(result.private_artifact).not.toBeNull();
+    expect(result.private_source_artifact_capability).not.toBeNull();
+    expect(result.redacted_receipt.decision).toBe(
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.PUBLISHED,
+    );
+    expect(result.redacted_receipt.operation).toBe("materialize");
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactV3(
+      result.private_artifact,
+      { now_ms: issued.nowMs },
+    )).toEqual({ ok: true, reason: null });
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+      result.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+    expect(Date.parse(result.private_artifact!.source_expires_at)).toBe(
+      Date.parse(result.private_artifact!.complete_source.source_observed_at) + 300_000,
+    );
+    expect(result.private_artifact!.source_expires_at).toBe(
+      result.private_artifact!.complete_source.source_expires_at,
+    );
+    expect(result.private_artifact!.complete_source).toMatchObject({
+      preopen_unread_inbound: "explicit_none",
+      seen_transition: "absent",
+      prior_welcome_audio: "explicit_none",
+      prior_welcome_attempt: "explicit_none",
+      dedupe_status: "clear",
+      composer_status: "visible",
+      attachment_control_status: "visible_and_usable",
+      challenge_or_error_status: "absent",
+      isolated_tab_finalized: "exactly_once",
+    });
+    const metadata = await lstat(result.artifact_path!);
+    expect(metadata.isFile()).toBe(true);
+    expect(metadata.nlink).toBe(1);
+    expect(metadata.mode & 0o7777).toBe(0o600);
+    expect(await readdir(root)).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_FILE_NAME_V3,
+    ]);
+    expect(JSON.parse(await readFile(result.artifact_path!, "utf8")))
+      .toEqual(result.private_artifact);
+    expect(JSON.stringify(result.redacted_receipt)).not.toContain("private_candidate_a");
+    expect(JSON.stringify(result.redacted_receipt)).not.toMatch(
+      /private-thread|private-owner|2026-|[a-f0-9]{64}|\/Users\//,
+    );
+  });
+
+  test("artifact capability is opaque, one-use, burn-first, and rejects replay or clones", async () => {
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const result = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+    });
+    const capability = result.private_source_artifact_capability!;
+    expect(() => JSON.stringify(capability)).toThrow("not_serializable");
+    expect(Object.keys(capability)).toEqual(["clone_guard"]);
+    expect(() => structuredClone(capability)).toThrow();
+    expect(sourceArtifact.consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnce({
+      private_source_artifact_capability: { ...capability },
+    })).toBeNull();
+    expect(sourceArtifact.consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnce({
+      private_source_artifact_capability: capability,
+    })).toBeNull();
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: capability,
+      })).toBeNull();
+
+    const validRoot = await makeV3Root();
+    const validIssued = await completeSourceCapability();
+    const valid = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: validRoot,
+        private_complete_source_capability: validIssued.capability,
+        now_ms: validIssued.nowMs,
+      });
+    const first = sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: valid.private_source_artifact_capability,
+      });
+    expect(first?.private_artifact).toEqual(valid.private_artifact);
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: valid.private_source_artifact_capability,
+      })).toBeNull();
+
+    const replayRoot = await makeV3Root();
+    const replay = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: replayRoot,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    expect(replay.private_artifact).toBeNull();
+    expect(replay.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3
+        .COMPLETE_SOURCE_CAPABILITY_INVALID,
+    ]);
+  });
+
+  test("opens the exact persisted artifact without renewing expiry and blocks stale open", async () => {
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    const opened = await sourceArtifact
+      .openSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        now_ms: issued.nowMs + 1,
+      });
+    expect(opened.private_artifact?.source_expires_at).toBe(
+      published.private_artifact?.source_expires_at,
+    );
+    expect(opened.redacted_receipt.decision).toBe(
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.OPENED,
+    );
+    expect(opened.redacted_receipt.operation).toBe("open");
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+      opened.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+
+    const stale = await sourceArtifact
+      .openSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        now_ms: Date.parse(published.private_artifact!.source_expires_at),
+      });
+    expect(stale.private_artifact).toBeNull();
+    expect(stale.private_source_artifact_capability).toBeNull();
+    expect(stale.redacted_receipt).toMatchObject({
+      operation: "open",
+      complete_source_capability_consumed: false,
+      complete_source_validated: false,
+      source_expiry_inherited: false,
+      owner_only_root_verified: true,
+      artifact_stability_verified: true,
+    });
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+      stale.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
+  });
+
+  test("artifact capability expires at the original instant and stale consumption burns replay", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-19T18:00:00.000Z"));
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    vi.setSystemTime(Date.parse(published.private_artifact!.source_expires_at));
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: published.private_source_artifact_capability,
+      })).toBeNull();
+    vi.setSystemTime(issued.nowMs);
+    expect(sourceArtifact
+      .consumeWelcomeAudioIabSemanticFollowerSourceArtifactCapabilityOnceForTest({
+        private_source_artifact_capability: published.private_source_artifact_capability,
+      })).toBeNull();
+  });
+
+  test("v3 publication rejects caller facts, unsafe roots, and foreign capabilities", async () => {
+    const root = await makeV3Root();
+    const foreign = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: Object.freeze({}),
+        now_ms: Date.now(),
+      });
+    expect(foreign.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3
+        .COMPLETE_SOURCE_CAPABILITY_INVALID,
+    ]);
+
+    const issued = await completeSourceCapability();
+    const withCallerFact = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+        exact_target_utf8: "caller_fabricated",
+      } as never);
+    expect(withCallerFact.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.INPUT_INVALID,
+    ]);
+
+    const wrongModeRoot = await makeV3Root();
+    await chmod(wrongModeRoot, 0o755);
+    const issuedForRoot = await completeSourceCapability();
+    const wrongMode = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: wrongModeRoot,
+        private_complete_source_capability: issuedForRoot.capability,
+        now_ms: issuedForRoot.nowMs,
+      });
+    expect(wrongMode.redacted_receipt.blocker_codes).toEqual([
+      sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.ROOT_INVALID,
+    ]);
+  });
+
+  test("revalidates persisted handle, 3-to-7-day bucket, and four globally distinct references", async () => {
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    expect(published.private_artifact).not.toBeNull();
+
+    const invalidTarget: any = structuredClone(published.private_artifact);
+    invalidTarget.complete_source.exact_target_utf8 = "invalid-handle!";
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactV3(
+      realignV3DerivedEvidence(invalidTarget, issued.nowMs),
+      { now_ms: issued.nowMs },
+    ).ok).toBe(false);
+
+    const invalidBucket: any = structuredClone(published.private_artifact);
+    invalidBucket.complete_source.visible_time_bucket_utf8 = "recent";
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactV3(
+      realignV3DerivedEvidence(invalidBucket, issued.nowMs),
+      { now_ms: issued.nowMs },
+    ).ok).toBe(false);
+
+    const referenceFields = [
+      "exact_notification_reference",
+      "exact_profile_reference",
+      "exact_thread_reference",
+      "exact_owner_account_reference",
+    ];
+    for (let left = 0; left < referenceFields.length; left += 1) {
+      for (let right = left + 1; right < referenceFields.length; right += 1) {
+        const collision: any = structuredClone(published.private_artifact);
+        collision.complete_source[referenceFields[right]] =
+          collision.complete_source[referenceFields[left]];
+        const aligned = realignV3DerivedEvidence(collision, issued.nowMs);
+        expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactV3(
+          aligned,
+          { now_ms: issued.nowMs },
+        ).ok).toBe(false);
+      }
+    }
+  });
+
+  test("requires receipt operation and exact operation-specific blocker progress", async () => {
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    const base: any = published.redacted_receipt;
+    const progressFields = [
+      "complete_source_capability_consumed",
+      "complete_source_validated",
+      "source_expiry_inherited",
+      "owner_only_root_verified",
+      "artifact_stability_verified",
+    ];
+    const blockedReceipt = (operation: "materialize" | "open", blocker: string, signature: string) => {
+      const receipt: any = structuredClone(base);
+      receipt.decision = sourceArtifact
+        .WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.BLOCKED;
+      receipt.operation = operation;
+      progressFields.forEach((field, index) => {
+        receipt[field] = signature[index] === "1";
+      });
+      receipt.artifact_published = false;
+      receipt.existing_artifact_reused = false;
+      receipt.artifact_opened = false;
+      receipt.private_artifact_capability_issued = false;
+      receipt.artifact_count = 0;
+      receipt.blocker_codes = [blocker];
+      return receipt;
+    };
+    const B = sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3;
+    const validCases: Array<["materialize" | "open", string, string]> = [
+      ["materialize", B.INPUT_INVALID, "00000"],
+      ["materialize", B.COMPLETE_SOURCE_CAPABILITY_INVALID, "00000"],
+      ["materialize", B.COMPLETE_SOURCE_INVALID, "10000"],
+      ["materialize", B.ROOT_INVALID, "11100"],
+      ["materialize", B.ROOT_INVALID, "11110"],
+      ["materialize", B.ARTIFACT_INVALID, "11110"],
+      ["materialize", B.TARGET_CONFLICT, "11110"],
+      ["materialize", B.PUBLICATION_FAILED, "11110"],
+      ["materialize", B.ARTIFACT_CAPABILITY_INVALID, "11111"],
+      ["open", B.INPUT_INVALID, "00000"],
+      ["open", B.ROOT_INVALID, "00000"],
+      ["open", B.ROOT_INVALID, "00010"],
+      ["open", B.ARTIFACT_INVALID, "00010"],
+      ["open", B.ARTIFACT_INVALID, "00011"],
+      ["open", B.ARTIFACT_CAPABILITY_INVALID, "01111"],
+    ];
+    for (const [operation, blocker, signature] of validCases) {
+      expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+        blockedReceipt(operation, blocker, signature),
+      )).toEqual({ ok: true, reason: null });
+    }
+
+    const invalidCases = [
+      blockedReceipt("materialize", B.COMPLETE_SOURCE_INVALID, "00000"),
+      blockedReceipt("materialize", B.ARTIFACT_INVALID, "00011"),
+      blockedReceipt("open", B.COMPLETE_SOURCE_INVALID, "10000"),
+      blockedReceipt("open", B.ARTIFACT_CAPABILITY_INVALID, "11111"),
+    ];
+    const missingOperation: any = structuredClone(base);
+    delete missingOperation.operation;
+    invalidCases.push(missingOperation);
+    const wrongSuccessOperation: any = structuredClone(base);
+    wrongSuccessOperation.operation = "open";
+    invalidCases.push(wrongSuccessOperation);
+    for (const receipt of invalidCases) {
+      expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+        receipt,
+      ).ok).toBe(false);
+    }
+  });
+
+  test("binds every v3 receipt decision to its exact flag and operation truth table", async () => {
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    const base: any = published.redacted_receipt;
+    const flags = [
+      "artifact_published",
+      "existing_artifact_reused",
+      "artifact_opened",
+    ] as const;
+    const operations = ["materialize", "open"] as const;
+    const decisions = [
+      {
+        decision: sourceArtifact
+          .WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.PUBLISHED,
+        flagMask: 0b001,
+        operation: "materialize",
+      },
+      {
+        decision: sourceArtifact
+          .WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.REUSED,
+        flagMask: 0b010,
+        operation: "materialize",
+      },
+      {
+        decision: sourceArtifact
+          .WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.OPENED,
+        flagMask: 0b100,
+        operation: "open",
+      },
+    ] as const;
+    const readyReceipt = (
+      decision: string,
+      flagMask: number,
+      operation: typeof operations[number],
+    ) => {
+      const receipt: any = structuredClone(base);
+      receipt.decision = decision;
+      receipt.operation = operation;
+      flags.forEach((flag, index) => {
+        receipt[flag] = (flagMask & (1 << index)) !== 0;
+      });
+      receipt.complete_source_capability_consumed = operation === "materialize";
+      receipt.complete_source_validated = true;
+      receipt.source_expiry_inherited = true;
+      receipt.owner_only_root_verified = true;
+      receipt.artifact_stability_verified = true;
+      return receipt;
+    };
+
+    for (const expected of decisions) {
+      for (let flagMask = 0; flagMask < 8; flagMask += 1) {
+        for (const operation of operations) {
+          const validation = sourceArtifact
+            .validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+              readyReceipt(expected.decision, flagMask, operation),
+            );
+          expect(validation.ok).toBe(
+            flagMask === expected.flagMask && operation === expected.operation,
+          );
+        }
+      }
+
+      const valid = readyReceipt(
+        expected.decision,
+        expected.flagMask,
+        expected.operation,
+      );
+      expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+        valid,
+      )).toEqual({ ok: true, reason: null });
+      for (const flag of flags) {
+        const oneFlagMutation: any = structuredClone(valid);
+        oneFlagMutation[flag] = !oneFlagMutation[flag];
+        expect(sourceArtifact
+          .validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+            oneFlagMutation,
+          ).ok).toBe(false);
+      }
+    }
+
+    const coordinatedInvalidMutations = [
+      readyReceipt(
+        sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.PUBLISHED,
+        0b010,
+        "materialize",
+      ),
+      readyReceipt(
+        sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.OPENED,
+        0b001,
+        "materialize",
+      ),
+      readyReceipt(
+        sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.REUSED,
+        0b100,
+        "open",
+      ),
+    ];
+    for (const receipt of coordinatedInvalidMutations) {
+      expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+        receipt,
+      ).ok).toBe(false);
+    }
+
+    for (const operation of operations) {
+      for (let flagMask = 0; flagMask < 8; flagMask += 1) {
+        const blocked: any = structuredClone(base);
+        blocked.decision = sourceArtifact
+          .WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_DECISION_V3.BLOCKED;
+        blocked.operation = operation;
+        flags.forEach((flag, index) => {
+          blocked[flag] = (flagMask & (1 << index)) !== 0;
+        });
+        blocked.complete_source_capability_consumed = false;
+        blocked.complete_source_validated = false;
+        blocked.source_expiry_inherited = false;
+        blocked.owner_only_root_verified = false;
+        blocked.artifact_stability_verified = false;
+        blocked.private_artifact_capability_issued = false;
+        blocked.artifact_count = 0;
+        blocked.blocker_codes = [
+          sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3.INPUT_INVALID,
+        ];
+        expect(sourceArtifact
+          .validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(blocked).ok)
+          .toBe(flagMask === 0);
+      }
+    }
+  });
+
+  test("open preserves root and stable-read progress when persisted bytes are invalid", async () => {
+    const B = sourceArtifact.WELCOME_AUDIO_IAB_SEMANTIC_SOURCE_ARTIFACT_BLOCKER_V3;
+    const root = await makeV3Root();
+    const issued = await completeSourceCapability();
+    const published = await sourceArtifact
+      .publishSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        private_complete_source_capability: issued.capability,
+        now_ms: issued.nowMs,
+      });
+    await writeFile(published.artifact_path!, "{}");
+
+    const opened = await sourceArtifact
+      .openSyntheticWelcomeAudioIabSemanticFollowerSourceArtifactV3ForTest({
+        artifact_root: root,
+        now_ms: issued.nowMs + 1,
+      });
+    expect(opened.private_artifact).toBeNull();
+    expect(opened.private_source_artifact_capability).toBeNull();
+    expect(opened.redacted_receipt).toMatchObject({
+      operation: "open",
+      complete_source_capability_consumed: false,
+      complete_source_validated: false,
+      source_expiry_inherited: false,
+      owner_only_root_verified: true,
+      artifact_stability_verified: true,
+      blocker_codes: [B.ARTIFACT_INVALID],
+    });
+    expect(sourceArtifact.validateWelcomeAudioIabSemanticFollowerSourceArtifactReceiptV3(
+      opened.redacted_receipt,
+    )).toEqual({ ok: true, reason: null });
   });
 });

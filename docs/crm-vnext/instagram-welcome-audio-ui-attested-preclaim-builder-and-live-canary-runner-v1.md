@@ -3,6 +3,11 @@
 Date: 2026-07-18
 Status: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 
+The status above describes the integrated Safari PRECLAIM/actuation rail. The
+2026-07-19 source-provenance closure below is
+`approved_repo_only_implementation_in_progress_no_live` and is not centrally
+integrated.
+
 ## Purpose
 
 Close the production orchestration gap between one already prepared private
@@ -24,8 +29,14 @@ not invoke the live entrypoint.
 
 `runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce` accepts exactly:
 
-- `private_draft`; and
+- `draft_admission_capability`; and
 - `private_authorization_seed`.
+
+The capability is the only productive bridge from the IAB semantic source
+chain. The runner burns it once and obtains the validated v2 private draft
+internally. A raw `private_draft`, v1 compatibility draft, legacy materializer
+output or caller-supplied identity/thread/owner/evidence field is rejected
+before any Safari read.
 
 The live caller cannot provide a browser driver, Computer Use runtime, root,
 claim store, clock, selector, coordinate, callback, outcome, confirmation,
@@ -134,9 +145,10 @@ a claim, open a chooser, upload bytes, or invoke Send.
 
 The live runner owns the following uninterrupted order:
 
-1. validate the exact draft, structurally recognize and atomically burn the
-   authorization seed, exact-bind it, and issue one module-private opaque
-   admission capability;
+1. atomically consume the one-use draft-admission capability, validate the
+   exact v2 draft, structurally recognize and atomically burn the authorization
+   seed, exact-bind it, and issue the existing module-private seed-admission
+   capability;
 2. validate the approved audio bytes and mint the opaque audio capability;
 3. validate all fixed production start gates, then perform the single
    zero-action Safari observation;
@@ -223,3 +235,71 @@ on central. Because this result is repo-only,
 
 A later live invocation still requires its own exact, fresh execution authority
 bound to the resulting central commit and private one-recipient inputs.
+
+## 2026-07-19 Source-Provenance Closure
+
+This runner remains the existing Safari actuation orchestrator; it is not a
+second source implementation. Its production namespace is now closed to raw
+drafts and consumes only the one-use `draft_admission_capability` emitted by the
+IAB semantic source-to-artifact-to-v2-draft chain, together with the existing
+closed authorization seed. Its runner contract and aggregate receipt labels
+advance to v2 so a legacy raw-draft-era receipt cannot be mistaken for this
+source-authenticated boundary. The synthetic export keeps its existing name,
+but now consumes a capability from a separate `ForTest` registry rather than a
+raw draft.
+
+Production and test admission registries are disjoint. Offering a synthetic
+capability to the fixed runner burns it and fails closed before Safari; it
+cannot then be replayed through the test consumer. Conversely, the test
+consumer cannot turn a production capability into a synthetic admission.
+
+The next proof mission uses IAB only for read-only discovery and Safari only
+for actuation. Chrome, Safari-as-source, OCR/screenshot/coordinate navigation,
+runtime fallback and caller-selected driver, URL, selector, identity, thread,
+owner, clock or evidence booleans are forbidden.
+
+Before any canary can be described as ready, Stage 2 must complete two distinct
+notification-to-profile traversals with zero thread opens and zero capability
+issuance, and Stage 3 must qualify one complete source candidate with no upload,
+preview or Send. Those real read-only stages need fresh exact approval and must
+run on the frozen implementation commit. Repo-only tests do not satisfy them.
+
+This amendment starts from central
+`efddb21ef6c598e1452ea2a9912235dea431e2ef`. Commit
+`e9545637c88e6e1cab8ac7be34d9725410a363ec` remains outside central and is
+excluded, rather than silently folded into this lane. No source access, Safari
+action, claim, upload or Send is authorized by this document.
+
+## 2026-07-19 Atomic Runner Receipt Truthfulness Closure
+
+The runner v2 receipt validator now accepts only lifecycle states that the
+fixed orchestrator can actually produce. Early blockers — input, draft
+admission, draft contract, authorization seed, and audio — require every
+reported execution milestone false. In particular,
+`DRAFT_ADMISSION_INVALID` cannot claim audio validation, PRECLAIM work,
+authority publication, composite entry, possible external effect, or permanent
+no-retry.
+
+The remaining blockers use exact reachable prefixes:
+
+- observation invalid: audio true, with start gates either false or true;
+- builder invalid: audio, start gates, and observation true;
+- publication invalid: built plus publication-attempted and permanent no-retry;
+- authority open invalid: additionally publication known true;
+- operation context invalid: additionally authority opened;
+- composite blocked-zero-effect: additionally context and composite invoked;
+- confirmed: every milestone including strong confirmation, external-effect
+  possibility, and permanent no-retry true, with no blocker; and
+- unknown: the same terminal prefix without confirmation, with no blocker.
+
+A blocker from an earlier phase cannot be paired with a later prefix. A
+post-publication blocker cannot be downgraded to an ordinary pre-effect block.
+CONFIRMED or UNKNOWN cannot carry a blocker, and terminal zero-effect cannot
+carry an early blocker. This is receipt-validation hardening only; the runner's
+productive input, capability chain, Safari-only actuator, effect implementation
+and no-retry boundary are unchanged.
+
+This work is one part of the single repo-only atomic truthfulness closure. It
+authorizes no production invocation, source observation, Stage 2/3, central
+integration, claim, upload, preview, Send, or other external effect. Any such
+step still requires its separately controlling approval after formal review.

@@ -3,7 +3,8 @@
  *
  * The live namespace owns the fixed authority root, fixed claim store,
  * installed Computer Use runtime, Safari driver, and every clock. Callers can
- * supply only the already-private draft and the exact authorization seed.
+ * supply only the one-use private draft-admission capability and the exact
+ * authorization seed. A raw draft is never a productive live input.
  * The synthetic sibling is test-only and is the sole injectable surface.
  */
 
@@ -41,13 +42,15 @@ import {
   validateWelcomeAudioUiAttestedPreclaimBuilderReceipt,
 } from './crm-vnext-instagram-welcome-audio-ui-attested-preclaim-builder.mjs';
 import {
+  consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce,
+  consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest,
   validateWelcomeAudioUiAttestedCanaryPacketDraft,
 } from './crm-vnext-instagram-welcome-audio-ui-attested-canary-packet-materializer.mjs';
 
 const WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_CONTRACT_VERSION =
-  'crm_core_instagram_welcome_audio_ui_attested_live_canary_runner_v1';
+  'crm_core_instagram_welcome_audio_ui_attested_live_canary_runner_v2';
 const WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_RECEIPT_SCHEMA_VERSION =
-  'crm_core_instagram_welcome_audio_ui_attested_live_canary_runner_receipt_v1';
+  'crm_core_instagram_welcome_audio_ui_attested_live_canary_runner_receipt_v2';
 
 const WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION = Object.freeze({
   CONFIRMED: 'terminal_confirmed_exactly_once',
@@ -64,6 +67,7 @@ const WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_FAULT_SCENARIO_FOR_TEST = Obj
 
 const WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER = Object.freeze({
   INPUT_INVALID: 'blocked_live_canary_runner_input_invalid',
+  DRAFT_ADMISSION_INVALID: 'blocked_live_canary_runner_draft_admission_invalid',
   DRAFT_INVALID: 'blocked_live_canary_runner_draft_invalid',
   AUTHORIZATION_SEED_INVALID: 'blocked_live_canary_runner_authorization_seed_invalid',
   AUDIO_INVALID: 'blocked_live_canary_runner_audio_invalid',
@@ -76,12 +80,12 @@ const WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER = Object.freeze({
 });
 
 const LIVE_FIELDS = Object.freeze([
-  'private_draft',
+  'draft_admission_capability',
   'private_authorization_seed',
 ]);
 
 const SYNTHETIC_FIELDS = Object.freeze([
-  'private_draft',
+  'draft_admission_capability',
   'private_authorization_seed',
   'authority_root',
   'private_store_capability',
@@ -125,6 +129,106 @@ const RECEIPT_FIELDS = Object.freeze([
 ]);
 
 const BLOCKERS = new Set(Object.values(WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER));
+
+const RECEIPT_PROGRESS_FIELDS = Object.freeze([
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'authority_published',
+  'authority_opened',
+  'operation_context_validated',
+  'composite_invoked',
+  'confirmation_proven',
+  'external_effect_possible',
+  'retry_forbidden_permanently',
+]);
+
+const receiptProgressSignature = (...trueFields) => Object.freeze(Object.fromEntries(
+  RECEIPT_PROGRESS_FIELDS.map((field) => [field, trueFields.includes(field)]),
+));
+
+const receiptProgressMatches = (value, signature) => RECEIPT_PROGRESS_FIELDS.every(
+  (field) => value[field] === signature[field],
+);
+
+const ZERO_PROGRESS_SIGNATURE = receiptProgressSignature();
+const OBSERVATION_BLOCKED_SIGNATURES = Object.freeze([
+  receiptProgressSignature('audio_validated'),
+  receiptProgressSignature('audio_validated', 'preclaim_start_gates_validated'),
+]);
+const BUILDER_BLOCKED_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+);
+const AUTHORITY_PUBLICATION_TERMINAL_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'retry_forbidden_permanently',
+);
+const AUTHORITY_OPEN_TERMINAL_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'authority_published',
+  'retry_forbidden_permanently',
+);
+const OPERATION_CONTEXT_TERMINAL_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'authority_published',
+  'authority_opened',
+  'retry_forbidden_permanently',
+);
+const COMPOSITE_ZERO_EFFECT_TERMINAL_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'authority_published',
+  'authority_opened',
+  'operation_context_validated',
+  'composite_invoked',
+  'retry_forbidden_permanently',
+);
+const CONFIRMED_TERMINAL_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'authority_published',
+  'authority_opened',
+  'operation_context_validated',
+  'composite_invoked',
+  'confirmation_proven',
+  'external_effect_possible',
+  'retry_forbidden_permanently',
+);
+const UNKNOWN_TERMINAL_SIGNATURE = receiptProgressSignature(
+  'audio_validated',
+  'preclaim_start_gates_validated',
+  'preclaim_observed',
+  'preclaim_built',
+  'authority_publication_attempted',
+  'authority_published',
+  'authority_opened',
+  'operation_context_validated',
+  'composite_invoked',
+  'external_effect_possible',
+  'retry_forbidden_permanently',
+);
 
 const isPlainObject = (value) => value !== null
   && typeof value === 'object'
@@ -257,7 +361,7 @@ const terminalZeroEffect = (blocker, flags = {}) => Object.freeze({
 
 const validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt = (receipt) => {
   try {
-    const value = exactObject(receipt, RECEIPT_FIELDS);
+    const value = exactObject(snapshotPlainData(receipt), RECEIPT_FIELDS);
     if (!value || !Array.isArray(value.blocker_codes)) return Object.freeze({ ok: false });
     const confirmed = value.decision
       === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.CONFIRMED;
@@ -267,6 +371,61 @@ const validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt = (receipt) => {
       === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.TERMINAL_ZERO_EFFECT;
     const blockedDecision = value.decision
       === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_DECISION.BLOCKED;
+    const blocker = value.blocker_codes.length === 1 ? value.blocker_codes[0] : null;
+    const earlyZeroBlockers = new Set([
+      WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.INPUT_INVALID,
+      WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.DRAFT_ADMISSION_INVALID,
+      WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.DRAFT_INVALID,
+      WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.AUTHORIZATION_SEED_INVALID,
+      WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.AUDIO_INVALID,
+    ]);
+    const exactDecisionState = confirmed
+      ? value.blocker_codes.length === 0
+        && receiptProgressMatches(value, CONFIRMED_TERMINAL_SIGNATURE)
+      : unknown
+        ? value.blocker_codes.length === 0
+          && receiptProgressMatches(value, UNKNOWN_TERMINAL_SIGNATURE)
+        : terminalZeroDecision
+          ? value.blocker_codes.length === 1
+            && BLOCKERS.has(blocker)
+            && (
+              (blocker
+                === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER
+                  .AUTHORITY_PUBLICATION_INVALID
+                && receiptProgressMatches(
+                  value,
+                  AUTHORITY_PUBLICATION_TERMINAL_SIGNATURE,
+                ))
+              || (blocker
+                === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER
+                  .AUTHORITY_OPEN_INVALID
+                && receiptProgressMatches(value, AUTHORITY_OPEN_TERMINAL_SIGNATURE))
+              || (blocker
+                === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER
+                  .OPERATION_CONTEXT_INVALID
+                && receiptProgressMatches(value, OPERATION_CONTEXT_TERMINAL_SIGNATURE))
+              || (blocker
+                === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.COMPOSITE_INVALID
+                && receiptProgressMatches(
+                  value,
+                  COMPOSITE_ZERO_EFFECT_TERMINAL_SIGNATURE,
+                ))
+            )
+          : blockedDecision
+            && value.blocker_codes.length === 1
+            && BLOCKERS.has(blocker)
+            && (
+              (earlyZeroBlockers.has(blocker)
+                && receiptProgressMatches(value, ZERO_PROGRESS_SIGNATURE))
+              || (blocker
+                === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.OBSERVATION_INVALID
+                && OBSERVATION_BLOCKED_SIGNATURES.some((signature) => (
+                  receiptProgressMatches(value, signature)
+                )))
+              || (blocker
+                === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.BUILDER_INVALID
+                && receiptProgressMatches(value, BUILDER_BLOCKED_SIGNATURE))
+            );
     const valid = value.receipt_schema_version
         === WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_RECEIPT_SCHEMA_VERSION
       && value.runner_contract_version
@@ -274,64 +433,14 @@ const validateWelcomeAudioUiAttestedLiveCanaryRunnerReceipt = (receipt) => {
       && value.redaction_status
         === 'aggregate_allowlist_only_no_private_values_paths_ids_anchors_digests_or_timestamps'
       && (confirmed || unknown || terminalZeroDecision || blockedDecision)
-      && [
-        'audio_validated',
-        'preclaim_start_gates_validated',
-        'preclaim_observed',
-        'preclaim_built',
-        'authority_publication_attempted',
-        'authority_published',
-        'authority_opened',
-        'operation_context_validated',
-        'composite_invoked',
-        'confirmation_proven',
-        'external_effect_possible',
-        'retry_forbidden_permanently',
-      ].every((field) => typeof value[field] === 'boolean')
+      && RECEIPT_PROGRESS_FIELDS.every((field) => typeof value[field] === 'boolean')
       && [
         'text_sent',
         'follow_back_invoked',
         'mailerlite_invoked',
         'campaign_touched',
       ].every((field) => value[field] === false)
-      && (!value.preclaim_start_gates_validated || value.audio_validated)
-      && (!value.preclaim_observed || value.preclaim_start_gates_validated)
-      && (!value.preclaim_built || value.preclaim_observed)
-      && (!value.authority_publication_attempted || value.preclaim_built)
-      && (!value.authority_published || value.authority_publication_attempted)
-      && (!value.authority_opened || value.authority_published)
-      && (!value.operation_context_validated || value.authority_opened)
-      && (!value.composite_invoked || value.operation_context_validated)
-      && (!value.confirmation_proven || value.composite_invoked)
-      && (!confirmed || (
-        value.confirmation_proven
-        && value.external_effect_possible
-        && value.retry_forbidden_permanently
-        && value.blocker_codes.length === 0
-      ))
-      && (!unknown || (
-        !value.confirmation_proven
-        && value.composite_invoked
-        && value.external_effect_possible
-        && value.retry_forbidden_permanently
-        && value.blocker_codes.length === 0
-      ))
-      && (!terminalZeroDecision || (
-        !value.confirmation_proven
-        && value.authority_publication_attempted
-        && !value.external_effect_possible
-        && value.retry_forbidden_permanently
-        && value.blocker_codes.length === 1
-        && value.blocker_codes.every((code) => BLOCKERS.has(code))
-      ))
-      && (!blockedDecision || (
-        !value.confirmation_proven
-        && !value.authority_publication_attempted
-        && !value.external_effect_possible
-        && !value.retry_forbidden_permanently
-        && value.blocker_codes.length === 1
-        && value.blocker_codes.every((code) => BLOCKERS.has(code))
-      ));
+      && exactDecisionState;
     return Object.freeze({ ok: valid });
   } catch {
     return Object.freeze({ ok: false });
@@ -390,12 +499,12 @@ const commonCompositeInput = ({ draft, seed, bundle, opened, context }) => {
   };
 };
 
-const runInternal = async ({ input, synthetic }) => {
+const runInternal = async ({ input, synthetic, admittedDraft }) => {
   const nowMs = synthetic ? input.now_ms : Date.now();
   let draft;
   let seed;
   try {
-    draft = snapshotPlainData(input.private_draft);
+    draft = snapshotPlainData(admittedDraft);
     seed = snapshotPlainData(input.private_authorization_seed);
   } catch {
     return blocked(WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.INPUT_INVALID);
@@ -691,8 +800,8 @@ const runInternal = async ({ input, synthetic }) => {
     operationContextValidated: true,
     compositeInvoked: true,
     confirmationProven: confirmed,
-    externalEffectPossible: composite.redacted_receipt.external_effect_possible,
-    retryForbiddenPermanently: composite.redacted_receipt.retry_forbidden_permanently,
+    externalEffectPossible: true,
+    retryForbiddenPermanently: true,
   });
   return Object.freeze({ redacted_receipt: resultReceipt });
 };
@@ -702,7 +811,22 @@ const runFixedWelcomeAudioUiAttestedSingleRecipientCanaryOnce = async (parameter
   if (!input) return blocked(
     WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.INPUT_INVALID,
   );
-  return runInternal({ input, synthetic: false });
+  let admission;
+  try {
+    admission = consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnce({
+      private_draft_admission_capability: input.draft_admission_capability,
+    });
+  } catch {
+    admission = null;
+  }
+  if (!admission?.private_draft) return blocked(
+    WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.DRAFT_ADMISSION_INVALID,
+  );
+  return runInternal({
+    input,
+    synthetic: false,
+    admittedDraft: admission.private_draft,
+  });
 };
 
 const runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest = async (
@@ -719,7 +843,22 @@ const runSyntheticWelcomeAudioUiAttestedSingleRecipientCanaryOnceForTest = async
   ) return blocked(
     WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.INPUT_INVALID,
   );
-  return runInternal({ input, synthetic: true });
+  let admission;
+  try {
+    admission = consumeWelcomeAudioIabSemanticCanaryDraftAdmissionCapabilityOnceForTest({
+      private_draft_admission_capability: input.draft_admission_capability,
+    });
+  } catch {
+    admission = null;
+  }
+  if (!admission?.private_draft) return blocked(
+    WELCOME_AUDIO_UI_ATTESTED_LIVE_CANARY_RUNNER_BLOCKER.DRAFT_ADMISSION_INVALID,
+  );
+  return runInternal({
+    input,
+    synthetic: true,
+    admittedDraft: admission.private_draft,
+  });
 };
 
 export {

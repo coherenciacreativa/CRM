@@ -433,3 +433,37 @@ campaign actions, or any other live effect. The campaign remains paused by the
 CEO's report and outside CRM Core authority. A later execution approval must
 identify this exact amended contract version, the fresh canonical
 post-integration SHA, outcome, recipient scope, effects, and stop rules.
+
+## 2026-07-19 Source Architecture Clarification
+
+The later mission
+`crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719` supersedes
+this planning contract only for source acquisition and provenance. It does not
+grant execution authority or widen any effect.
+
+- The Codex In-App Browser is the only source backend admitted for the next
+  proof, and it is read-only.
+- Safari remains the sole actuator. The already integrated PRECLAIM, claim,
+  PENDING, native chooser, one-Send and same-thread confirmation rail remains
+  unchanged.
+- Chrome is forbidden as fallback. Safari source discovery, OCR, screenshots,
+  coordinates, caller-provided URLs/selectors and legacy raw draft inputs are
+  nonproductive.
+- Production provenance must flow through opaque one-use capabilities:
+  complete source, source artifact, v2 draft admission, then the fixed runner.
+- Production and synthetic draft-admission registries are separate. Wrong-mode
+  use burns and rejects the capability, and neither runner accepts a raw draft.
+- Stage 2 is a no-effect proof of two distinct notification-to-profile
+  traversals, at most eight rows, zero thread opens and zero capabilities.
+- Stage 3 is a no-effect proof of at most one complete candidate and one thread
+  open, with zero upload, preview or Send. Unread or unknown inbound state
+  blocks before opening a thread.
+- Each real stage requires fresh exact CEO approval and a frozen commit. Repo
+  tests, prior UI observations or a previous authorization cannot substitute.
+
+The current implementation mission starts from central
+`efddb21ef6c598e1452ea2a9912235dea431e2ef`. The isolated real-AX tolerance
+commit `e9545637c88e6e1cab8ac7be34d9725410a363ec` was not centrally integrated
+and is explicitly excluded. Therefore this clarification leaves
+`canary_ready=false`, `production_ready=false`, `send_allowed=false` and all
+live-effect counts at zero.

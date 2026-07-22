@@ -330,3 +330,73 @@ from every execution approval and remains unusable by the live runtime.
 
 The controlling downstream contract is
 `docs/crm-vnext/instagram-welcome-audio-ui-attested-canary-packet-materializer-v1.md`.
+
+## Controlling IAB Semantic Source Extension — 2026-07-19
+
+The productive source family for the new provenance chain is
+`codex_in_app_browser_semantic_read_only_v1`. It is distinct from the synthetic
+plain-data and Safari accessibility routes documented above. Those legacy
+routes remain available for compatibility and regression testing but cannot
+issue productive v3 artifact or draft-admission capabilities.
+
+### Split Source and Actuator Architecture
+
+The In-App Browser is the sole source backend for this extension. It may
+perform only the bounded semantic read-only source traversal. Safari remains
+the sole possible later actuator. Chrome, Safari-as-source, OCR, screenshot,
+coordinates, raw DOM snapshots, arbitrary evaluation, caller callbacks,
+network APIs, and silent source-backend fallback are forbidden.
+
+The environment-owned same-process runtime facade owns its isolated tab,
+approved routes, bounded queries and clicks, and exactly-once finalization. The
+repo host accepts no driver, tab, locator, URL, selector, timestamp, identity,
+thread, owner, dedupe result, DOM snapshot, or truth boolean from its caller.
+
+### Complete Source Capability
+
+Stage 3 may issue one capability only after the host has established all of the
+following in one exact candidate traversal:
+
+- at most eight recent rows were considered and exactly one row ordinal was
+  selected;
+- notification to profile, profile to thread, and thread to owner-account
+  bindings are exact;
+- the relationship binding is `follows_owner`;
+- pre-open unread inbound state is `explicit_none`, so opening the one bound
+  thread cannot create an unauthorized Seen transition;
+- `seen_transition=absent`;
+- prior welcome audio and prior welcome attempt are each `explicit_none`;
+- dedupe is `clear`;
+- composer is visible and the attachment control is visible and usable;
+- no challenge or error is present; and
+- the isolated source tab was finalized exactly once.
+
+The resulting private payload has the exact host contract and mission labels,
+source backend, original observation and expiry timestamps, ordinal, exact
+private identity and four surface references, preserved visible time bucket,
+and the closed evidence values above. It remains private and is never emitted
+in a receipt.
+
+The capability is opaque, WeakMap-backed, one-use, non-authoritative after
+serialization or cloning, and valid for less than five minutes. Consumption
+burns it before checking freshness or payload shape. No consumer may renew its
+original `source_expires_at`.
+
+### Productive Provenance Chain
+
+The only productive ordering is:
+
+1. `private_complete_source_capability` from the semantic source host;
+2. immutable owner-only IAB semantic source artifact v3 plus
+   `private_source_artifact_capability`;
+3. immutable IAB semantic canary draft v2 plus
+   `private_draft_admission_capability`; and
+4. the fixed live canary runner, which separately requires the existing
+   private authorization seed and every later Safari/live gate.
+
+No plain object, persisted capability, copied artifact, caller-built adapter
+input, caller-built projection, or legacy raw `ui_attested_input` can enter
+that chain. Stage 1 implementation and tests create no source or live action.
+Stage 2 and Stage 3 read-only rehearsals require their own fresh exact approval.
+This extension itself grants no attachment, upload, preview, Send, text,
+follow-back, MailerLite, CRM, campaign, Ads, proxy, or other effect authority.
