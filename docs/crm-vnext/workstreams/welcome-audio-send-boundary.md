@@ -1140,3 +1140,37 @@
 - `chief_architect_limit`: Repo-only correction authority does not grant Stage
   2/3, central integration, or live authority; green code remains isolated
   until a later formal verdict.
+
+## 2026-07-22 Combined Repo-Only Foundation Closure
+
+- `supersession_scope`: The earlier requirement for real Stage 2 and real
+  Stage 3 before integration is superseded only for this combined repo-only
+  integration.
+- `pinned_reviewed_implementation_subrange`: From
+  `efddb21ef6c598e1452ea2a9912235dea431e2ef` through
+  `fb2a40497b24938f1a2dcc818b8fedab7d0d82c2`, exactly 3 commits across 21
+  files.
+- `docs_only_closeout_accounting`: The subsequent docs-only closeout commit is
+  outside that pinned implementation subrange and must be counted and
+  identified separately in the fresh integration packet, which must report the
+  complete final integration range.
+- `unchanged_integration_gates`: focused and compatibility validation,
+  independent no-P0–P2 review, formal Chief Architect integration review, and
+  serialized Central Integration Lock handling.
+- `repo_only_implementation_status`: `closed_complete_no_live`.
+- `semantic_bridge_role`: no-live foundation only; it creates no live or
+  source authority.
+- `historical_v3_to_live_v2`: The productive live v2 consumer burns and
+  rejects any historical v3 draft-admission capability, so it is never
+  admitted to the runner or the Safari actuation rail.
+- `real_stage_2_executed`: false
+- `real_stage_3_executed`: false
+- `source_actions`: 0
+- `canary_ready`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `future_stage_boundaries`: Productive Stage 2 authority requires a separate
+  future mission, implementation, and review. Real Stage 3 requires another
+  later mission after Stage 2 evidence.
+- `sole_next_boundary`: design and review of productive Stage 2 authority.

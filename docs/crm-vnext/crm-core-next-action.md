@@ -7071,3 +7071,39 @@ routing and completion pointer.
 - `stop_condition`: any new file, productive export, backend, capability,
   authority, browser route, or live behavior requires stopping and replanning
   rather than silently widening this closure.
+
+## Active Next Action — Productive Stage 2 Authority Design and Review
+
+- `supersession_scope`: For this combined repo-only integration only, this
+  section supersedes the prior requirement to execute real Stage 2 and real
+  Stage 3 before integration. It changes no live or source gate outside this
+  integration.
+- `pinned_reviewed_implementation_subrange`: From
+  `efddb21ef6c598e1452ea2a9912235dea431e2ef` through
+  `fb2a40497b24938f1a2dcc818b8fedab7d0d82c2`, exactly 3 commits across 21
+  files.
+- `docs_only_closeout_accounting`: The subsequent docs-only closeout commit is
+  outside the pinned 3-commit/21-file implementation subrange and must be
+  counted and identified separately in the fresh integration packet, which
+  must report the complete final integration range.
+- `repo_only_implementation_status`: `closed_complete_no_live`.
+- `semantic_bridge_role`: no-live foundation only; not canary-ready and not
+  production-ready.
+- `historical_v3_boundary`: A historical v3 draft-admission capability
+  presented to the productive live v2 consumer is burned and rejected and is
+  never admitted to the runner or Safari rail.
+- `real_stage_2_executed`: false
+- `real_stage_3_executed`: false
+- `source_actions`: 0
+- `canary_ready`: false
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `integration_closeout`: The combined repo-only range may pass through the
+  unchanged test, independent-review, formal Chief Architect review, and
+  serialized central-integration gates without executing either real stage.
+- `sole_next_boundary`: Design and review a separate productive Stage 2
+  authority mission. That future mission must define its own environment-owned
+  authority gate and exact source-action approval before execution.
+- `later_stage_3_boundary`: A separate later mission may be designed only
+  after Stage 2 evidence; it is not implemented or authorized here.

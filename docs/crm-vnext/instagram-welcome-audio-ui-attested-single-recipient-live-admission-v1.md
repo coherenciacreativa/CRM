@@ -343,5 +343,40 @@ availability alone is never authority. Stage 3 is not prebuilt in the operator:
 it requires a new mission, implementation, independent and formal review, and
 separate conditional CEO authorization. Send remains a further one-shot
 boundary. Until then, `canary_ready=false`, `production_ready=false`,
-`send_allowed=false`, `browser_used=false`, `network_used=false`, and
-`external_effect_invoked=false` are controlling.
+`send_allowed=false`, and `external_effect_invoked=false` are controlling.
+Only synthetic proof may report `browser_used=false` and `network_used=false`.
+The blocked productive entry must instead report zero source attempt and zero
+source progress while leaving browser and network use explicitly unknown; it
+must never guess either value as `false`.
+
+## 2026-07-22 Combined Repo-Only Integration Supersession
+
+Only for this combined repo-only integration is the earlier requirement to run
+real Stage 2 and real Stage 3 before integration superseded. The pinned
+reviewed implementation subrange runs from
+`efddb21ef6c598e1452ea2a9912235dea431e2ef` through
+`fb2a40497b24938f1a2dcc818b8fedab7d0d82c2` and is exactly 3 commits across 21
+files. Tests, independent review, formal Chief Architect review, and serialized
+integration remain mandatory; this exception does not extend to any future
+source or live mission.
+
+The subsequent docs-only closeout commit is outside that pinned
+3-commit/21-file implementation subrange. It must be counted and identified
+separately in the fresh integration packet, which must report the complete
+final integration range.
+
+The semantic bridge is a no-live foundation only. Repo-only implementation is
+closed complete with `real_stage_2_executed=false`,
+`real_stage_3_executed=false`, `source_actions=0`, `canary_ready=false`,
+`production_ready=false`, `send_allowed=false`, and `live_authority=false`.
+
+Historical packet v3 cannot enter the productive live v2 rail. Presentation of
+a historical v3 draft-admission capability to the live v2 consumer burns and
+rejects it, and the historical draft is never admitted to the runner or to
+Safari.
+
+Productive Stage 2 authority must be created under a separate future mission
+and reviewed before any source action. Real Stage 3 must be a separate later
+mission after Stage 2 evidence. The sole next product boundary is design and
+review of productive Stage 2 authority; this live-admission contract remains
+closed.

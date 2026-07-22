@@ -111,7 +111,7 @@ acceptance:
   - unaccented_spanish_dia_or_dias_labels_are_rejected_by_all_three_layers
   - source_mode_is_bound_to_only_the_blockers_and_phases_that_mode_can_reach
   - zero_send_zero_live_zero_new_browser_runtime_zero_network_mutation_adversarial_test_green
-  - source_read_usage_truthful_synthetic_false_production_attested_or_explicit_unknown
+  - source_read_usage_truthful_synthetic_false_production_zero_source_attempt_and_progress_with_browser_and_network_explicit_unknown
   - every_operator_receipt_requires_zero_downstream_capability_state
   - reset_failure_receipts_preserve_only_stage_2_source_progress
   - receipts_are_aggregate_redacted_and_contain_no_raw_age_or_private_identity
@@ -180,3 +180,37 @@ mission, implementation, independent and formal review, and fresh CEO
 authorization. Any future Stage 3 requires its own new mission, implementation,
 review, and fresh conditional CEO authorization after Stage 2. Send remains
 another separate future boundary.
+
+## Combined Repo-Only Integration Closure — 2026-07-22
+
+This controlling closure supersedes the prior Stage-2-and-Stage-3-before-
+integration requirement only for this combined repo-only integration. Its
+pinned reviewed implementation subrange runs from
+`efddb21ef6c598e1452ea2a9912235dea431e2ef` through
+`fb2a40497b24938f1a2dcc818b8fedab7d0d82c2`. That pinned subrange is exactly
+3 commits across 21 files. All remaining test, independent-review,
+formal Chief Architect review, and serialized central-integration gates remain
+in force.
+
+The subsequent docs-only closeout commit is not part of that pinned
+3-commit/21-file implementation subrange. The fresh integration packet must
+count and identify the docs-only commit separately and report the complete
+final integration range.
+
+The historical catch-up repo-only implementation is closed as complete and
+no-live. Its controlling state is `real_stage_2_executed=false`,
+`real_stage_3_executed=false`, `source_actions=0`, `canary_ready=false`,
+`production_ready=false`, `send_allowed=false`, and `live_authority=false`.
+The semantic bridge is foundation only and is not a canary or production
+admission.
+
+The historical v3 draft-admission capability is disjoint from productive live
+v2 admission. If it is presented to the live v2 consumer, that capability is
+burned and rejected; no historical v3 draft is admitted to the runner or to
+the Safari actuation rail.
+
+Real Stage 2 now belongs exclusively to a separate future productive-authority
+mission with its own implementation and reviews. Real Stage 3 belongs to a
+separate later mission after Stage 2 evidence. The sole next product boundary
+is design and review of productive Stage 2 authority, with zero source action
+under this mission.

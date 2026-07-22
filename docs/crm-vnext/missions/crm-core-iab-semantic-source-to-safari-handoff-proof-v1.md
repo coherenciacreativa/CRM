@@ -216,3 +216,35 @@ This closure grants no Stage 2, Stage 3, source access, central integration,
 live invocation, browser authority, or external effect. Stage 2 remains blocked
 until this closure is complete and still requires its separate fresh exact
 approval under the existing mission contract.
+
+## Combined Repo-Only Integration Gate Supersession — 2026-07-22
+
+For this combined repo-only integration only, the earlier requirement to
+execute real Stage 2 and real Stage 3 before central integration is explicitly
+superseded. The pinned reviewed implementation subrange runs from central
+baseline `efddb21ef6c598e1452ea2a9912235dea431e2ef` through corrective
+checkpoint `fb2a40497b24938f1a2dcc818b8fedab7d0d82c2` and comprises exactly 3
+commits across 21 files. This narrow supersession does not waive any test,
+independent-review, formal Chief Architect review, or serialized-integration
+gate, and it grants no source or live authority.
+
+The subsequent docs-only closeout commit is outside that 3-commit/21-file
+implementation subrange. A fresh integration packet must count and identify it
+separately while still reporting the complete final integration range.
+
+The semantic source-to-Safari bridge in that range is a no-live foundation
+only. Repo-only implementation is closed as complete with
+`real_stage_2_executed=false`, `real_stage_3_executed=false`,
+`source_actions=0`, `canary_ready=false`, `production_ready=false`,
+`send_allowed=false`, and `live_authority=false`.
+
+A historical v3 draft-admission capability presented to the productive live
+v2 consumer is burned and rejected. It is never admitted to the runner or to
+the Safari actuation rail.
+
+Productive Stage 2 authority must be designed and reviewed under a separate
+future mission before any real source action. Any real Stage 3 must likewise
+be introduced by its own later mission after Stage 2 evidence exists. The sole
+next product boundary after this repo-only integration closeout is the design
+and review of that productive Stage 2 authority; neither real stage is part of
+this combined integration.
