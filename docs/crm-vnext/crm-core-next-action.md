@@ -6995,11 +6995,12 @@ routing and completion pointer.
   `live_authority=false`, `browser_used=false`, `network_used=false`, and
   `external_effect_invoked=false`.
 
-## Active IAB Semantic Source to Safari Handoff Next Action
+## Historical — IAB Semantic Source to Safari Handoff
 
 - `next_action_id`:
   `crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719`
-- `status`: `approved_repo_only_implementation_in_progress_no_live`
+- `status`: `closed_complete_centrally_integrated_no_live`
+- `superseded_by`: `2026-07-22 Combined Repo-Only Foundation Closure`
 - `created_at`: `2026-07-19`
 - `approved_baseline`:
   `efddb21ef6c598e1452ea2a9912235dea431e2ef`
@@ -7051,11 +7052,12 @@ routing and completion pointer.
   `claim_issued=false`, `send_allowed=false`, `browser_used=false`,
   `network_used=false`, and `external_effect_invoked=false`.
 
-### Active Atomic Truthfulness Closure
+### Historical — Atomic Truthfulness Closure
 
 - `closure_id`:
   `crm_core_iab_semantic_handoff_atomic_truthfulness_closure_v1_20260719`
-- `status`: `repo_only_implementation_in_progress_no_live_no_integration`
+- `status`: `closed_complete_centrally_integrated_no_live`
+- `superseded_by`: `2026-07-22 Combined Repo-Only Foundation Closure`
 - `packet_edge`: `INPUT_SCHEMA` is pre-consumption only; invalid test clocks
   after a successful source-artifact admission use a distinct blocker and can
   never erase the completed consumption milestone.
@@ -7074,24 +7076,50 @@ routing and completion pointer.
 
 ## Active Next Action — Productive Stage 2 Authority Design and Review
 
-- `supersession_scope`: For this combined repo-only integration only, this
-  section supersedes the prior requirement to execute real Stage 2 and real
-  Stage 3 before integration. It changes no live or source gate outside this
-  integration.
-- `pinned_reviewed_implementation_subrange`: From
-  `efddb21ef6c598e1452ea2a9912235dea431e2ef` through
-  `fb2a40497b24938f1a2dcc818b8fedab7d0d82c2`, exactly 3 commits across 21
-  files.
-- `docs_only_closeout_accounting`: The subsequent docs-only closeout commit is
-  outside the pinned 3-commit/21-file implementation subrange and must be
-  counted and identified separately in the fresh integration packet, which
-  must report the complete final integration range.
-- `repo_only_implementation_status`: `closed_complete_no_live`.
-- `semantic_bridge_role`: no-live foundation only; not canary-ready and not
-  production-ready.
-- `historical_v3_boundary`: A historical v3 draft-admission capability
-  presented to the productive live v2 consumer is burned and rejected and is
-  never admitted to the runner or Safari rail.
+- `next_action_id`:
+  `crm_core_historical_catchup_productive_stage2_authority_gate_repo_only_v1_20260722`
+- `status`:
+  `isolated_repo_only_implementation_complete_validation_and_independent_review_green_formal_ratification_and_central_integration_pending_no_live`
+- `central_baseline`:
+  `a746c6faba706b6331e86268f4edb4ab78d218e9`
+- `contract_commit`:
+  `57bda2a8504c5fb38d52dab8040d781aa828adf3`
+- `source_branch`:
+  `codex/crm-core-productive-stage2-authority-design-v1-20260722`
+- `mission_contract`:
+  `docs/crm-vnext/missions/crm-core-historical-catchup-productive-stage2-authority-v1.md`
+- `objective`: Add and review one dedicated environment-owned, same-process,
+  one-use Stage 2 authority gate, then compose it with the existing historical
+  no-Send operator and existing zero-argument productive source-host entry.
+- `gate_location`: The implemented gate is a dedicated sibling module, not logic
+  embedded in the operator and not a new browser, source, artifact, packet,
+  Stage 3, runner, or Safari subsystem.
+- `implementation_scope`: Exactly the eight files allowlisted by the committed
+  mission contract. The implementation is complete in the isolated worktree;
+  no source host, backend, materializer, packet, Stage 3, runner, or Safari
+  subsystem was added or changed.
+- `authority_boundary`: The operator continues to accept only its exact
+  command. Authority is environment-owned, one-use, mission-wide deduped,
+  consumed before source use, and bound to the current clean integrated commit,
+  approval, owner-account anchor, historical policy, Stage 2 caps, and a
+  five-minute interval.
+- `truth_boundary`: Stage 2 proves only the bounded notification-to-profile
+  mechanism. It does not establish candidate eligibility, current relationship,
+  thread binding, dedupe, prior-welcome absence, composer availability, exact
+  elapsed age, or campaign membership.
+- `repo_only_implementation_status`: `complete_isolated_focused_tests_green`.
+- `preimplementation_review`: The canonical Chief Architect response was
+  favorable advisory input, but it omitted the required structured fields and
+  sentinel. `preimplementation_review_complete=false`; it is not formal
+  integration authority and grants no source or live authority.
+- `validation`: Gate, operator, and source are `169/169` green; the exact
+  five-suite boundary is `259/259` green. The full welcome-audio lane has
+  `1071` green tests and only the exact three known central failures with the
+  matching `EMFILE` fingerprint.
+- `independent_implementation_review`: green; no residual P0-P2.
+- `formal_integration_review`: pending complete Chief Architect ratification
+  tied to the implementation commit.
+- `central_integration`: pending.
 - `real_stage_2_executed`: false
 - `real_stage_3_executed`: false
 - `source_actions`: 0
@@ -7099,11 +7127,17 @@ routing and completion pointer.
 - `production_ready`: false
 - `send_allowed`: false
 - `live_authority`: false
-- `integration_closeout`: The combined repo-only range may pass through the
-  unchanged test, independent-review, formal Chief Architect review, and
-  serialized central-integration gates without executing either real stage.
-- `sole_next_boundary`: Design and review a separate productive Stage 2
-  authority mission. That future mission must define its own environment-owned
-  authority gate and exact source-action approval before execution.
+- `current_authority`: The central baseline still blocks before the productive
+  source-host export. Only the isolated implementation consumes and validates
+  the new gate before the unchanged source-host entry. Neither state authorizes
+  a real authority installation, browser/source action, private artifact,
+  network use, or external effect.
+- `integration_gate`: Focused and compatibility validation, independent review
+  with no unresolved P0–P2, a separate formal Chief Architect integration
+  verdict, and one serialized central integration remain mandatory.
+- `later_real_stage_2_gate`: Only after central integration and a formal
+  `safe_to_execute_later_real_stage2_under_fresh_ceo_approval=true` finding may
+  a fresh exact CEO approval bound to the final commit authorize one private
+  Stage 2 authority installation and one bounded source invocation.
 - `later_stage_3_boundary`: A separate later mission may be designed only
   after Stage 2 evidence; it is not implemented or authorized here.

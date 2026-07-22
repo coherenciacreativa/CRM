@@ -1073,11 +1073,12 @@
   and serialized central integration are required before a separately fresh
   live canary can use this proof chain.
 
-## IAB Semantic Source to Safari Handoff Checkpoint
+## Historical — IAB Semantic Source to Safari Handoff Checkpoint
 
 - `mission_id`:
   `crm_core_iab_semantic_source_to_safari_handoff_proof_v1_20260719`
-- `status`: `approved_repo_only_implementation_in_progress_no_live`
+- `status`: `closed_complete_centrally_integrated_no_live`
+- `superseded_by`: `2026-07-22 Combined Repo-Only Foundation Closure`
 - `baseline`: `efddb21ef6c598e1452ea2a9912235dea431e2ef`
 - `source_boundary`: The Codex In-App Browser is the sole semantic read-only
   source. Its environment-owned same-process facade owns an isolated tab,
@@ -1174,3 +1175,56 @@
   future mission, implementation, and review. Real Stage 3 requires another
   later mission after Stage 2 evidence.
 - `sole_next_boundary`: design and review of productive Stage 2 authority.
+
+## 2026-07-22 Productive Stage 2 Authority Gate Design Checkpoint
+
+- `mission_id`:
+  `crm_core_historical_catchup_productive_stage2_authority_gate_repo_only_v1_20260722`
+- `central_baseline`:
+  `a746c6faba706b6331e86268f4edb4ab78d218e9`
+- `contract_commit`:
+  `57bda2a8504c5fb38d52dab8040d781aa828adf3`
+- `status`:
+  `isolated_repo_only_implementation_complete_validation_and_independent_review_green_formal_ratification_and_central_integration_pending_no_live`
+- `contract_scope`: The exact eight-file repo-only implementation is complete
+  in the isolated worktree and its focused synthetic tests are green. No source
+  host, backend, materializer, packet, Stage 3, runner, or Safari subsystem was
+  added or changed.
+- `authority_design`: One dedicated sibling authority-gate module, owned by the
+  environment in the same process, with a disjoint test seam and mission-wide
+  one-use approval claim. The gate is not embedded in the operator and creates
+  no new browser backend, source family, materializer, packet, Stage 3, runner,
+  or Safari rail.
+- `operator_boundary`: The existing operator retains its exact Stage-2-only
+  command and may call the existing productive historical source-host entry
+  exactly once only after the new authority has been captured, claimed,
+  consumed, and validated.
+- `central_vs_isolated_truth`: The central baseline still blocks before the
+  productive source-host export. Only the isolated implementation consumes and
+  validates the new gate before the unchanged source-host entry.
+- `stage_2_truth_boundary`: Mechanism health only: at most eight rows, exactly
+  two distinct notification-to-profile traversals, zero threads, Seen
+  transitions, or capabilities, and an aggregate redacted receipt only.
+- `repo_only_implementation_complete`: true
+- `preimplementation_review_complete`: false
+- `preimplementation_advisory`: The canonical Chief Architect response was
+  favorable, but structurally incomplete and therefore not formal integration
+  authority, source authority, or live authority.
+- `focused_synthetic_tests_green`: true
+- `focused_gate_operator_source_tests`: `169_of_169_green`
+- `exact_five_suite_boundary_tests`: `259_of_259_green`
+- `full_welcome_audio_comparison`:
+  `1071_green_plus_exact_three_known_central_failures_and_matching_emfile_fingerprint`
+- `independent_review_complete`: true; no residual P0-P2
+- `formal_integration_review_complete`: false
+- `central_integration_complete`: false
+- `real_stage_2_executed`: false
+- `source_actions`: 0
+- `real_authority_installed`: false
+- `browser_used`: false
+- `network_used`: false
+- `external_effect_invoked`: false
+- `later_execution_gate`: Even a green integrated implementation remains
+  non-live. One real Stage 2 proof requires a later formal safety finding plus
+  fresh exact CEO approval bound to the final integrated commit and contract.
+- `stage_3_and_send_boundary`: Both remain separate, later, and unauthorized.

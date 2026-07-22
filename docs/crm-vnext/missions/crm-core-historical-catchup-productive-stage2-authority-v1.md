@@ -5,7 +5,7 @@ Date: 2026-07-22
 ```yaml
 mission_id: crm_core_historical_catchup_productive_stage2_authority_gate_repo_only_v1_20260722
 contract_version: v1_preimplementation_chief_architect_review_no_live
-status: proposed_for_chief_architect_review_no_live
+status: isolated_repo_only_implementation_complete_validation_and_independent_review_green_formal_ratification_and_central_integration_pending_no_live
 mode: proof
 central_baseline: a746c6faba706b6331e86268f4edb4ab78d218e9
 target_branch: codex/crm-core-reentry
@@ -30,8 +30,10 @@ observable_success:
     - aggregate_redacted_receipt_only
 approval_gate:
   contract_review_authorized: true
-  repo_only_implementation_requested_after_chief_architect_green: true
+  repo_only_implementation_requested: true
   chief_architect_preimplementation_verdict_required: green_to_execute_repo_only_implementation
+  chief_architect_preimplementation_advisory: favorable_but_structurally_incomplete_not_formal_authority
+  preimplementation_review_complete: false
   real_stage_2_execution_explicitly_approved: false
   stage_3_execution_explicitly_approved: false
   send_explicitly_approved: false
@@ -448,7 +450,7 @@ stop_conditions:
   - any claim that Stage 2 proves candidate eligibility owner identity or current relationship
 central_integration_plan:
   target_branch: codex/crm-core-reentry
-  source_commits: pending_after_repo_only_implementation
+  source_commits: pending_until_implementation_commit
   changed_file_allowlist: exact_proposed_eight_files
   deterministic_checks: exact_validation_plan_above
   integration_packet_id: pending_after_implementation
@@ -472,6 +474,24 @@ later_real_stage_2_gate:
 later_stage_3_boundary:
   separate_mission_after_real_stage_2_evidence: true
   explicitly_not_authorized_here: true
+implementation_checkpoint:
+  isolated_repo_only_implementation_complete: true
+  focused_synthetic_tests_green: true
+  focused_gate_operator_source_tests: 169_of_169_green
+  exact_five_suite_boundary_tests: 259_of_259_green
+  full_welcome_audio_comparison: 1071_green_plus_exact_three_known_central_failures_and_matching_emfile_fingerprint
+  independent_final_review_complete: true
+  independent_final_review_verdict: green_no_residual_P0_P1_P2
+  formal_chief_architect_ratification_complete: false
+  central_integration_complete: false
+  real_stage_2_executed: false
+  source_actions: 0
+  real_authority_installed: false
+  browser_used: false
+  network_used: false
+  external_effect_invoked: false
+  stage_3_authorized: false
+  live_authority: false
 final_ceo_brief_fields:
   - outcome_and_evidence
   - technical_progress_vs_product_outcome
@@ -487,18 +507,24 @@ final_ceo_brief_fields:
 ## Controlling interpretation
 
 The current source host and its productive historical Stage 2 export are
-already integrated. The current operator blocks before that export on purpose.
-This mission adds only the missing authority boundary and a receipt state that
-can truthfully describe a real, bounded, read-only qualification later.
+already integrated. On the central baseline, the operator still blocks before
+that export on purpose. In the isolated implementation, the operator consumes
+the new authority gate before it can invoke the unchanged productive source
+host. This mission adds only that missing authority boundary and a receipt
+state that can truthfully describe a real, bounded, read-only qualification
+later.
 
 Stage 2 is deliberately a mechanism proof. It does not produce an eligible
 candidate and cannot flow into Stage 3. A green repo-only implementation still
 performs zero source actions. A later real Stage 2 invocation remains a
 separate, fresh approval boundary tied to the final integrated commit.
 
-The Chief Architect is asked to review this contract before code specifically
-for the fixed authority shape, burn order, commit and approval binding, receipt
-truthfulness, exact eight-file allowlist, and whether the explicit
-mechanism-only truth boundary is sufficient. Any requested host, backend,
-materializer, packet, Stage 3, runner, or Safari expansion returns this mission
-to HOLD rather than widening it silently.
+The canonical Chief Architect returned a favorable initial advisory response,
+but it omitted the required structured fields and sentinel. It is therefore
+not a completed preimplementation review, formal integration authority, or
+live/source authority. The isolated repo-only implementation, validation, and
+independent final review are complete and green with no residual P0-P2. A
+complete formal Chief Architect ratification tied to the implementation commit
+and central integration remain pending. Any requested host, backend, materializer,
+packet, Stage 3, runner, or Safari expansion returns this mission to HOLD rather
+than widening it silently.

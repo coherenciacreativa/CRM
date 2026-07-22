@@ -4,9 +4,9 @@ Date: 2026-07-16
 Status: `completed_repo_only_no_live_formal_review_green_centrally_integrated`
 
 The status above describes the 2026-07-18 Safari admission rail. The
-2026-07-19 semantic-source amendment below is
-`approved_repo_only_implementation_in_progress_no_live` and is not centrally
-integrated.
+2026-07-19 semantic-source amendment below is historical and was closed by the
+2026-07-22 combined repo-only integration as
+`closed_complete_centrally_integrated_no_live`.
 
 ## Purpose
 
@@ -380,3 +380,41 @@ and reviewed before any source action. Real Stage 3 must be a separate later
 mission after Stage 2 evidence. The sole next product boundary is design and
 review of productive Stage 2 authority; this live-admission contract remains
 closed.
+
+## 2026-07-22 Productive Stage 2 Authority Gate Design Boundary
+
+This section supersedes only the prospective wording above: the separate
+productive Stage 2 authority mission now exists as a committed repo-only
+contract at `57bda2a8504c5fb38d52dab8040d781aa828adf3`, based on integrated central
+`a746c6faba706b6331e86268f4edb4ab78d218e9`. It does not supersede any no-live,
+Stage 3, Send, review, or integration gate.
+
+The committed design places the authority check in one dedicated sibling
+module rather than embedding it in the historical operator. The environment
+owns the same-process, one-use authority and its mission-wide approval claim;
+the operator continues to accept only its exact Stage-2 command and may invoke
+the existing productive historical source-host entry only after that authority
+has been irreversibly claimed, consumed, and validated. No new source host,
+browser backend, materializer, packet, runner, or Safari path is admitted.
+
+The exact eight-file repo-only implementation is complete in the isolated
+worktree and its focused synthetic tests are green. The central baseline still
+blocks before the productive source-host export; only the isolated
+implementation consumes and validates the new gate before the unchanged source
+host. The canonical Chief Architect's initial response was favorable advisory
+input, but it omitted the required structured fields and sentinel, so
+`preimplementation_review_complete=false` and it is not formal integration,
+source, or live authority. Focused validation is green (`169/169` for
+gate-operator-source and `259/259` across the exact five-suite boundary), and
+independent final review is green with no residual P0-P2. Complete formal Chief
+Architect ratification tied to the implementation commit and central
+integration remain pending. No real authority has been installed, no source
+action has occurred, and `real_stage_2_executed=false`, `source_actions=0`,
+`canary_ready=false`, `production_ready=false`, `send_allowed=false`, and
+`live_authority=false` remain controlling.
+
+Even after a later green integration, real Stage 2 requires a separate formal
+safety finding and fresh exact CEO approval bound to the final integrated
+commit and contract. It proves mechanism health only and cannot enter Stage 3,
+the live v2 runner, or the Safari actuation rail. Stage 3 and Send remain
+separate future missions.
