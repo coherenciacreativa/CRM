@@ -33,6 +33,27 @@ Do not reconstruct the route from chat memory, historical lane branches, or a
 single result document. After this profile, hydrate the following central
 sources in order:
 
+Before any browser selection or source read, run:
+
+```text
+node scripts/crm-vnext-welcome-audio-route-preflight.mjs
+```
+
+Proceed only when its aggregate result states all of:
+
+```text
+source_surface=iab_semantic_notifications
+actuator_surface=safari_standard_isolated_native_picker
+safari_as_source=false
+route_preflight_status=green
+head_matches_upstream=true
+worktree_clean=true
+```
+
+This executable gate is mandatory across fresh starts, resumptions,
+compactions, and lower-effort runs. A blocked or missing result stops the
+operator before browser selection. It grants no source read or live authority.
+
 1. `docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md`
 2. `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
 3. `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`

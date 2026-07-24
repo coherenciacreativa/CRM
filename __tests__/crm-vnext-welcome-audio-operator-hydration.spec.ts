@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
+import { evaluateWelcomeAudioRoutePreflight } from "../scripts/crm-vnext-welcome-audio-route-preflight.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const profilePath = resolve(
@@ -29,6 +30,90 @@ const authoritativeReadOrder = [
 const normalizeWhitespace = (value: string) => value.replace(/\s+/g, " ");
 
 describe("CRM Core welcome-audio cold-start hydration", () => {
+  test("requires the executable source/actuator route gate before browser selection", async () => {
+    const profile = await readFile(profilePath, "utf8");
+
+    expect(profile).toContain(
+      "node scripts/crm-vnext-welcome-audio-route-preflight.mjs",
+    );
+    expect(profile).toContain(
+      "source_surface=iab_semantic_notifications",
+    );
+    expect(profile).toContain(
+      "actuator_surface=safari_standard_isolated_native_picker",
+    );
+    expect(profile).toContain("safari_as_source=false");
+    expect(profile).toContain("route_preflight_status=green");
+    expect(profile).toContain("head_matches_upstream=true");
+    expect(profile).toContain("worktree_clean=true");
+    expect(profile).toContain("before browser selection");
+  });
+
+  test("fails closed when Git or the central route contracts drift", () => {
+    const greenInput = {
+      head: "same",
+      upstreamHead: "same",
+      worktreeStatus: "",
+      profile: [
+        "## Welcome-Audio Operator Hydration",
+        "docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md",
+        "docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md",
+        "must stop before source use",
+      ].join("\n"),
+      handoff: [
+        "The In-App Browser is a read-only source in this mission.",
+        "Safari remains the only possible actuator.",
+      ].join("\n"),
+      adapter: [
+        "standard isolated Safari window",
+        "native file picker",
+      ].join("\n"),
+    };
+
+    expect(evaluateWelcomeAudioRoutePreflight(greenInput)).toMatchObject({
+      source_surface: "iab_semantic_notifications",
+      actuator_surface: "safari_standard_isolated_native_picker",
+      safari_as_source: false,
+      route_preflight_status: "green",
+      head_matches_upstream: true,
+      worktree_clean: true,
+      central_contracts_green: true,
+      source_actions: 0,
+      browser_actions: 0,
+      real_effects: 0,
+    });
+
+    expect(
+      evaluateWelcomeAudioRoutePreflight({
+        ...greenInput,
+        upstreamHead: "different",
+      }),
+    ).toMatchObject({
+      route_preflight_status: "blocked",
+      head_matches_upstream: false,
+    });
+
+    expect(
+      evaluateWelcomeAudioRoutePreflight({
+        ...greenInput,
+        worktreeStatus: " M tracked-file",
+      }),
+    ).toMatchObject({
+      route_preflight_status: "blocked",
+      worktree_clean: false,
+    });
+
+    expect(
+      evaluateWelcomeAudioRoutePreflight({
+        ...greenInput,
+        handoff: "route contract missing",
+      }),
+    ).toMatchObject({
+      route_preflight_status: "blocked",
+      central_contracts_green: false,
+    });
+  });
+
   test("routes a lower-effort agent through the central contracts in order", async () => {
     const profile = await readFile(profilePath, "utf8");
 
