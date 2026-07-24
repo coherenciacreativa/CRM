@@ -7141,3 +7141,63 @@ routing and completion pointer.
   Stage 2 authority installation and one bounded source invocation.
 - `later_stage_3_boundary`: A separate later mission may be designed only
   after Stage 2 evidence; it is not implemented or authorized here.
+
+## Active Next Action — Welcome Audio Privacy Output Runtime Hardening
+
+- `next_action_id`:
+  `crm_core_welcome_audio_privacy_output_runtime_hardening_repo_only_v1_20260724`
+- `status`: `active`
+- `created_at`: `2026-07-24`
+- `updated_at`: `2026-07-24`
+- `objective`: Implement and prove the smallest runtime enforcement that keeps
+  private browser-derived profile text and callback state out of tool output,
+  while preserving the already documented welcome-audio route unchanged.
+- `why_now`: One real welcome-audio send is confirmed and the route is
+  hydrated centrally, but the canary result records
+  `privacy_output_runtime_proven=false`. Another canary cannot be considered
+  until this gap is closed.
+- `canonical_baseline`:
+  `fe3a9fd9a1c59d1b230012f58413ec91a45f909c`
+- `allowed_scope`:
+  - design one bounded repo-only mission contract;
+  - identify the exact browser-facing output boundaries already used by the
+    route;
+  - implement suppression or redaction without changing source selection,
+    identity, relationship, thread, claim, picker, upload, Send, or
+    confirmation semantics;
+  - add focused synthetic tests and documentation;
+  - run independent review and formal integration review before any central
+    integration.
+- `forbidden_scope`:
+  - no Instagram, Safari, Chrome source use, notifications, profiles, DMs, or
+    threads;
+  - no picker, attachment, upload, audio, text, Send, follow-back, or retry;
+  - no MailerLite, CRM, campaign, Ads, proxy, API, or network mutation;
+  - no private artifact contents in tracked files or tool output;
+  - no new backend, bridge, source family, capability family, authority, or
+    alternate browser route;
+  - no standing live authority and no second canary authority.
+- `expected_outcome`: Focused tests demonstrate that representative private
+  profile text and callback state cannot cross the runtime output boundary,
+  while aggregate receipts and existing route behavior remain intact.
+- `stop_conditions`:
+  - the fix requires a new productive surface or browser backend;
+  - exact runtime ownership cannot be established;
+  - suppression would hide required aggregate success or failure state;
+  - any source or live action would be needed for validation;
+  - unresolved P0-P2 remains after independent review.
+- `resume_instruction`: Start from the canonical baseline, hydrate through
+  `docs/crm-vnext/crm-core-codex-profile.md`, inspect the existing output
+  boundary read-only, and prepare one compact repo-only mission before code.
+- `completion_definition`: Runtime privacy-output enforcement and focused
+  tests are green, independent review has no unresolved P0-P2, formal
+  integration review is green, and one serialized central integration
+  completes with source actions and external effects both zero.
+- `current_product_state`:
+  - `technical_foundation`: true
+  - `bootstrap_ready`: true
+  - `source_qualified`: true for the completed one-recipient proof only
+  - `candidate_handoff_ready`: true for the completed proof only
+  - `send_ready`: false for future recipients
+  - `canary_confirmed`: true
+  - `production_ready`: false

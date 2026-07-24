@@ -2176,6 +2176,54 @@ No lane outputs in review at creation.
   source, upload, send, MailerLite, campaign, or other external effect during
   validation.
 
+## crm_core_welcome_route_consolidation_ratification_2026_07_24
+
+- `source_workstream`: `welcome-audio-send-boundary` and `integration`
+- `source_branch`: `codex/crm-core-reentry`
+- `source_commit`: `fe3a9fd9a1c59d1b230012f58413ec91a45f909c`
+- `status`:
+  `formal_integration_review_green_existing_central_commit_ratified_in_place_coordination_closeout_only_no_live`
+- `files_changed_in_ratified_commit`:
+  - `docs/crm-vnext/crm-core-codex-profile.md`
+  - `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+  - `__tests__/crm-vnext-welcome-audio-operator-hydration.spec.ts`
+  - `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
+- `summary`: The canonical hydration entrypoint, bounded Safari adapter delta,
+  aggregate-only one-recipient canary result, and documentation-contract test
+  were independently reviewed. The commit was already present on the central
+  branch when formal integration review ran; the Chief Architect acknowledged
+  that state, ratified the commit in place, required no history rewrite, and
+  authorized one coordination-only locked closeout.
+- `artifact_review`: `green_to_commit_later`; full sanitized diff reviewed;
+  no attributable P0-P2 findings; `safe_to_commit_later=true`
+- `formal_integration_review`: `green_to_self_integrate`;
+  `safe_to_self_integrate_now=true`; `ceo_decision_needed=false`
+- `central_truth`: HEAD and upstream matched at the ratified commit before the
+  coordination closeout. No merge remained to perform.
+- `validation`: focused hydration contract `5/5` green; `git diff --check`
+  green. The earlier full welcome-audio run remained `1075/1078`; its three
+  failures were reproduced in unchanged runtime suites and were classified as
+  non-blocking for the four-file docs/static-test patch, not accepted as a
+  resolved baseline.
+- `empirical_product_proof`: one current welcome-audio send was confirmed with
+  a visible sent marker and new audio control in the same thread. No retry,
+  text, follow-back, MailerLite, CRM, or campaign effect occurred.
+- `privacy_boundary`: the contract forbids private browser-derived values in
+  tool output, but runtime suppression remains unimplemented and unproven.
+- `private_artifacts_touched`: owner-only consultant responses and redacted
+  relay telemetry only; none integrated
+- `source_actions_executed_during_integration`: 0
+- `external_effects_during_integration`: 0
+- `central_integration_lock_used`: true
+- `production_ready`: false
+- `send_allowed`: false
+- `standing_live_authority`: false
+- `decision_needed`: none for this coordination closeout. Any later source or
+  live action remains separately gated.
+- `integration_recommendation`: Preserve the confirmed canary as empirical
+  proof and run one bounded repo-only privacy-output runtime hardening mission
+  before considering another canary.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

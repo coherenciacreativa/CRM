@@ -1346,3 +1346,42 @@
 - `next_gate`: Run only the already approved bounded Safari read-only bootstrap.
   Stop without a final bundle on the first missing, inferred, stale, or
   ambiguous exact binding. The source phase cannot authorize a live canary.
+
+## Welcome Audio Route Consolidation In-Place Ratification — 2026-07-24
+
+- `integration_packet_id`:
+  `crm_core_welcome_route_consolidation_integration_review_fe3a9fd_20260724`
+- `ratified_commit`: `fe3a9fd9a1c59d1b230012f58413ec91a45f909c`
+- `central_branch`: `codex/crm-core-reentry`
+- `central_head_already_contained_delta`: true
+- `chief_architect_acknowledged_existing_central_state`: true
+- `chief_architect_verdict`: `green_to_self_integrate`
+- `safe_to_self_integrate_now`: true
+- `central_commit_ratified_in_place`: true
+- `no_history_rewrite_required`: true
+- `coordination_only_closeout_required`: true
+- `ceo_decision_needed`: false
+- `central_integration_lock_used`: true
+- `merge_performed`: false
+- `merge_reason`: The exact reviewed commit already matched central HEAD and
+  upstream; the allowed operation was coordination closeout only.
+- `central_files_updated`:
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/workstreams/welcome-audio-send-boundary.md`
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `product_proof`: one current welcome-audio send confirmed with explicit
+  same-thread evidence
+- `privacy_gap`: documentation contract exists; runtime output suppression is
+  not yet proven
+- `active_next_action`:
+  `crm_core_welcome_audio_privacy_output_runtime_hardening_repo_only_v1_20260724`
+- `source_actions_executed`: 0
+- `external_effects_executed`: 0
+- `production_ready`: false
+- `send_allowed`: false
+- `live_authority`: false
+- `next_step`: Execute only a bounded repo-only privacy-output runtime
+  hardening mission with tests and independent review. Do not run another
+  canary under this closeout.

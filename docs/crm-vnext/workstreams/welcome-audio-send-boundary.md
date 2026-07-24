@@ -1228,3 +1228,44 @@
   non-live. One real Stage 2 proof requires a later formal safety finding plus
   fresh exact CEO approval bound to the final integrated commit and contract.
 - `stage_3_and_send_boundary`: Both remain separate, later, and unauthorized.
+
+## 2026-07-24 Canonical Route Consolidation and Canary Ratification
+
+- `source_commit`: `fe3a9fd9a1c59d1b230012f58413ec91a45f909c`
+- `central_state`:
+  `existing_central_commit_formally_ratified_in_place_no_history_rewrite`
+- `artifact_review`: `green_to_commit_later`; full sanitized diff reviewed;
+  no attributable P0-P2 findings
+- `formal_integration_review`: `green_to_self_integrate`;
+  `safe_to_self_integrate_now=true`; `ceo_decision_needed=false`
+- `coordination_closeout`: one serialized Central Integration Lock run; no
+  merge remained because the reviewed commit already matched central HEAD and
+  upstream
+- `hydration_entrypoint`:
+  `docs/crm-vnext/crm-core-codex-profile.md`
+- `route_delta`:
+  `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+- `aggregate_result`:
+  `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
+- `static_contract_test`:
+  `__tests__/crm-vnext-welcome-audio-operator-hydration.spec.ts`
+- `focused_validation`: `5/5` green
+- `empirical_result`: one current welcome-audio send confirmed by a visible
+  sent marker and new audio control in the same bound thread
+- `effects_accounting`: one send attempt, zero retry, zero text, zero
+  follow-back, zero MailerLite, zero CRM, and zero campaign effect
+- `privacy_contract_documented`: true
+- `privacy_output_runtime_proven`: false
+- `technical_foundation`: true
+- `bootstrap_ready`: true
+- `source_qualified`: true for the single confirmed historical canary only
+- `candidate_handoff_ready`: true for that completed one-recipient proof only
+- `send_ready`: false for any future recipient
+- `canary_confirmed`: true
+- `production_ready`: false
+- `standing_live_authority`: false
+- `next_boundary`: one bounded repo-only mission that implements and proves
+  runtime suppression of private browser-derived values and callback state at
+  the tool-output boundary. It must preserve the existing route and create no
+  source, picker, upload, Send, MailerLite, CRM, campaign, or other live
+  authority.
