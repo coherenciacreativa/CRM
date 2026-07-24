@@ -187,6 +187,27 @@ message` may be inspected under either approved exact mode. It does not prove
 current follower-list membership and cannot widen the time bucket, identity,
 owner, dedupe, unread, thread, or mission boundary that admitted the profile.
 
+When the approved historical Proof encounters a provider calendar-date
+presentation instead of a relative label, the relationship-precedence contract
+must qualify it before this adapter may inspect messageability. The adapter
+must not parse, normalize, date-resolve, or infer that presentation itself. It
+must not select, supply, derive, or emit `source_ui_timezone` or
+`observation_civil_date`; those private environment-owned inputs and their
+one-time derivation stay behind the relationship-precedence boundary. The
+adapter accepts only the aggregate result of the closed compatibility lane:
+
+```text
+temporal_presentation=calendar_date
+temporal_precision=calendar_day
+calendar_date_compatibility=accepted
+calendar_day_distance_in_approved_range=true
+```
+
+That result must remain bound to the same exact private row/profile continuity.
+It grants no exact timestamp, current membership, campaign attribution, thread
+authority, picker authority, or Send authority. A blocked or missing
+compatibility result stops before `Options`.
+
 `Options -> Send message` is a bounded fallback on the already-bound exact
 profile. It is not a profile-discovery route. The menu must expose exactly one
 unambiguous `Send message` action. A missing, duplicated, disabled, ambiguous,

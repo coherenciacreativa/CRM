@@ -136,9 +136,80 @@ precision=coarse_week
 
 It never yields an exact day count. Reject zero; 31 or more days; 5 or more
 weeks; unaccented `dia` or `dias`; decimals; signs; inequalities; ranges; mixed
-units; dates; months; `about`; `last week`; generic `weeks ago`; truncation;
-prefixes; suffixes; unenumerated whitespace; missing labels; and every other
-form.
+units; calendar dates outside the exact compatibility lane below; months;
+`about`; `last week`; generic `weeks ago`; truncation; prefixes; suffixes;
+unenumerated whitespace; missing labels; and every other form.
+
+## Calendar-Date Presentation Compatibility
+
+This repo-only amendment is selected by:
+
+```text
+mission_id:
+crm_core_welcome_audio_calendar_date_presentation_compatibility_no_live_v1_20260724
+```
+
+It addresses one empirical UI-presentation mismatch only. The same exact
+started-following rows can age from a relative day/week label into a compact
+calendar-date label while remaining the same notification-to-profile evidence.
+This amendment does not reopen a cohort, select a candidate, observe a profile,
+or create source or Send authority.
+
+The compatibility lane is subordinate to
+`temporary_historical_catchup_1_to_30_days`. It accepts one complete visible
+calendar-date label only when all of these are exact:
+
+- the visible label is preserved byte-for-byte;
+- the visible Instagram UI language is pinned to the exact English
+  `started following you` event phrase by the same environment-owned
+  observation and is not supplied or inferred by the caller;
+- the label matches the closed `instagram_web_en` grammar `MMM D` or `MMM DD`
+  with one ASCII space, one exact case-sensitive month token from `Jan`, `Feb`,
+  `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, or `Dec`, and
+  a valid civil day for that month;
+- a private `source_ui_timezone` is captured by the environment from the same
+  authenticated source observation and is neither selected nor supplied by the
+  caller;
+- the environment derives `observation_civil_date` exactly once from its
+  current instant under that `source_ui_timezone`, in the same private evidence
+  packet and before year resolution;
+- resolving the omitted year against only the observation year and immediately
+  preceding year yields exactly one non-future civil date whose calendar-day
+  distance is `1..30`; and
+- exact notification, profile, owner, ordered-cohort, and private dedupe
+  continuity remain unchanged.
+
+The calendar label, pinned locale, `source_ui_timezone`,
+`observation_civil_date`, candidate years, and resolved calendar-day distance
+remain owner-only. Neither timezone nor civil date may appear in the aggregate
+receipt, which may state only:
+
+```text
+temporal_presentation=calendar_date
+temporal_precision=calendar_day
+calendar_date_compatibility=accepted|blocked
+calendar_day_distance_in_approved_range=true|false
+```
+
+Month resolution uses only the explicit token table above and civil-calendar
+rules; it must not call a system locale parser or accept alternate month names.
+
+The lane blocks on a missing or unsupported UI-language pin; a missing,
+unsupported, caller-selected, caller-supplied, or observation-drifted
+`source_ui_timezone`; inability to derive `observation_civil_date` once from
+the environment's current instant under that same timezone; unallowlisted or
+case-normalized month token; invalid civil date; extra punctuation or
+whitespace; a displayed year; zero-day or future date; more than 30 calendar
+days; two possible year resolutions; caller-supplied clock, locale, timezone,
+date, identity, result, or truth boolean; or any need to trim, case-fold,
+normalize, substring-match, guess, or consult another backend.
+
+Acceptance proves only a bounded calendar-day presentation compatible with the
+temporary Proof. It does not prove an exact event timestamp, elapsed hours,
+current follower-list membership, campaign causality, permission to message,
+or Send authority. The original raw label remains the evidence; the resolved
+civil date is a private deterministic qualification result, never a substitute
+provider timestamp.
 
 ## Bound Message Fallback
 
@@ -183,6 +254,8 @@ follows_owner_confirmed=false
 current_follower_list_membership_claimed=false
 exact_follow_timestamp_claimed=false
 actual_elapsed_age_claimed=false
+exact_calendar_date_claimed=false
+calendar_date_compatibility_runtime_proven=false
 provider_event_id_claimed=false
 campaign_membership_claimed=false
 source_capability_created=false
@@ -212,6 +285,9 @@ families, emitters, bridges, runtimes, or backends.
 - badge absence remains a non-contradiction under exact Mode B;
 - the Options fallback is available under either approved mode;
 - the complete 1-to-30-day and 1-to-4-week grammar is present;
+- the exact calendar-date compatibility lane is locale-pinned,
+  environment-clock bound, uniquely year-resolved, and limited to a `1..30`
+  civil-day distance;
 - one-candidate and non-claim boundaries are explicit;
 - no production or Send authority is created; and
 - focused static tests and independent review are green before integration.
