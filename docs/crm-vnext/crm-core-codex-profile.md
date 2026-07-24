@@ -26,6 +26,56 @@ Use these sources before broad hydration. If the active task only needs a
 specific CRM Core contract, read that contract and its matching tests instead of
 rehydrating the whole repository.
 
+## Welcome-Audio Operator Hydration
+
+For Instagram welcome-audio work, this profile is the canonical entrypoint.
+Do not reconstruct the route from chat memory, historical lane branches, or a
+single result document. After this profile, hydrate the following central
+sources in order:
+
+1. `docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md`
+2. `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+3. `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
+4. `docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md`
+5. `docs/crm-vnext/instagram-computer-use-quality-gate-v0.md`
+6. `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+7. `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
+
+These pointers establish the mandatory boundary order:
+
+```text
+native Notifications
+  -> exact notification-to-profile binding
+  -> current follows-owner evidence
+  -> exact Message action or the bounded Options -> Send message fallback
+  -> exact owner/profile/thread binding
+  -> private dedupe and prior-welcome check
+  -> genuine composer, attachment, and approved-file capability
+  -> durable claim and pending state
+  -> native-picker upload
+  -> exact approved-asset preview in the bound thread
+  -> one Send at most
+  -> same-thread confirmation or terminal unknown/no-retry
+```
+
+The action adapter is authoritative for UI recovery, output privacy, and the
+one-shot effect boundary. The admission contract remains authoritative for
+claim/host ordering. The binding and handoff missions remain authoritative for
+the read-only source-to-profile and profile-to-thread boundaries. The quality
+gate and both controlled-send results are supporting recovery and historical
+evidence; they are never current health, production readiness, or live
+authority.
+
+The historical unmerged Safari upload-hardening lane and its orphaned protocol
+are non-authoritative. Do not cherry-pick or use them as a runtime dependency.
+Only a novel delta that has been reviewed and copied into the central
+authoritative documents may affect an operation.
+
+This hydration section grants no browser access, source read, claim, upload,
+Send, retry, MailerLite action, CRM write, campaign action, or other live
+authority. A lower-effort agent that cannot state this route and its stop
+conditions from the central sources must stop before source use.
+
 ## CRM Core Lane
 
 CRM Core owns the local CRM vNext operating brain:

@@ -114,12 +114,20 @@ The following are design evidence only:
 
 - the historical record of one controlled Safari send in
   `instagram-welcome-audio-first-controlled-send-result-v0.md`;
+- the aggregate record of the July 24 one-recipient canary in
+  `instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`;
 - the no-run Safari upload-route protocol in
   `instagram-welcome-audio-safari-upload-route-hardening-protocol-v0.md`.
 
 Neither item is production proof, standing authorization, a current capability
 probe, or evidence that the route remains healthy today. They informed this v1
 contract but do not authorize its execution.
+
+The upload-route hardening document named above exists only as a historical
+unmerged lane artifact. It is not a central hydration dependency and must not be
+cherry-picked wholesale. A novel rule from that artifact becomes authoritative
+only after it is reviewed and copied explicitly into this adapter or another
+central contract.
 
 For every future Welcome Audio operation, this adapter and
 `instagram-welcome-audio-surface-capability-matrix-v1.md` supersede the v0 route
@@ -150,6 +158,55 @@ Required properties:
 Instagram in-app upload, Chrome, text-only sends, text-plus-audio sends, hybrid
 manual/automated routes, hidden inputs, DOM or JavaScript injection, drag/drop,
 coordinates, and screenshot-coordinate navigation are out of scope.
+
+## Safari UI Delta: Bound-Profile Message Fallback
+
+The notification-to-profile binder remains authoritative for discovery. This
+section adds only the profile-to-thread UI delta and must not be treated as a
+second discovery or operation-order contract.
+
+```text
+already-bound exact profile with current follows-owner evidence
+  -> use the visible exact Message action
+  -> if and only if Message is absent, use Options -> Send message once
+  -> confirm the exact owner/profile/thread binding
+  -> return to the canonical claim/host ordering
+```
+
+`Options -> Send message` is a bounded fallback on the already-bound exact
+profile. It is not a profile-discovery route. The menu must expose exactly one
+unambiguous `Send message` action. A missing, duplicated, disabled, ambiguous,
+or differently labelled action blocks the candidate without substitution. The
+fallback does not permit following, reacting, commenting, changing
+relationship state, browsing profile content, opening another thread, or using
+text instead of audio.
+
+Every click, picker action, and effect-boundary action requires a fresh
+observation of the exact current surface. Element indices, tabs, windows,
+coordinates, accessibility references, screenshots, and inferred state from a
+prior observation are never reusable authority.
+
+## Bounded Safari Recovery
+
+A recoverable Safari UI or accessibility failure before upload may use one
+normal Safari quit/reopen only when the current mission already authorizes that
+exact recovery. After reopening, discard every prior window, tab, element,
+coordinate, accessibility, and screen-state reference and reacquire the
+dedicated standard non-private isolated window from scratch.
+
+The recovery:
+
+- does not create a second recovery budget;
+- does not select another candidate;
+- does not widen source, profile, thread, picker, or Send scope;
+- does not preserve a pre-restart claim, preview, or UI reference as current;
+- does not authorize upload or Send;
+- does not authorize a retry after upload bytes cross the picker boundary or
+  after Send is attempted or becomes ambiguous.
+
+If the isolated window, authentication, exact binding, dedupe, composer,
+attachment control, approved asset, or current mission state cannot be
+revalidated after that one recovery, stop without effect.
 
 ## Exact Operation Contract
 
@@ -756,6 +813,50 @@ Receipt terminal semantics are exact:
 No raw identity, handle, profile or thread reference, URL, message text, asset
 path, asset contents, private digest, screenshot, cookie, credential, or source
 payload may enter tracked documentation or the redacted receipt.
+
+### Browser And Tool Output Privacy Contract
+
+Browser observations may be used privately to make the current bounded
+decision, but browser, terminal, tool, commentary, consultant, and public
+receipt output is `aggregate_allowlist_only`. This gate is separate from the
+owner-only evidence artifact and applies before any observation result is
+emitted or persisted outside that artifact.
+
+This section is a documentation contract, not runtime enforcement. This
+repo-only patch adds no browser-output sanitizer, callback parser, logging
+wrapper, tool adapter, or production source change. Its static regression test
+can prove only that future agents hydrate this fail-closed contract; it cannot
+prove that a browser surface suppresses private values. Therefore
+`privacy_output_runtime_proven` remains `false`.
+
+The output allowlist is limited to:
+
+```yaml
+records_inspected: bounded integer
+candidates_considered: bounded integer
+threads_opened: bounded integer
+send_attempt_count: 0|1
+confirmation_state: not_attempted|confirmed_current_send|terminal_unknown_no_retry
+privacy_output_gate: green|blocked_fail_closed
+blocker_codes: fixed public enums only
+```
+
+Everything else is denied by default. In particular, never emit raw or derived
+profile text, handles, names, labels, account or thread references, URLs,
+redirect or callback values, query strings, fragments, state parameters, DOM,
+selectors, element indices, coordinates, screenshots, OCR, messages, private
+artifacts, or source payloads. URL-like values must be reduced to fixed public
+classification enums before output; removing only the hostname or only one
+parameter is insufficient.
+
+If a tool cannot suppress a private observation from its returned output, do
+not use that read path. If an unexpected value reaches output, mark
+`privacy_output_gate: blocked_fail_closed`, abandon that path, and do not
+continue toward upload or Send. Regression fixtures must include private-looking
+profile text and callback state/query/fragment canaries and must prove that none
+can appear in an implemented allowed-output builder. Until such behavioral
+evidence exists, another live canary remains blocked even when this static
+contract test is green.
 
 ## Stop Conditions
 
