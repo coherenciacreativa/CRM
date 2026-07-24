@@ -55,19 +55,23 @@ compactions, and lower-effort runs. A blocked or missing result stops the
 operator before browser selection. It grants no source read or live authority.
 
 1. `docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md`
-2. `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
-3. `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
-4. `docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md`
-5. `docs/crm-vnext/instagram-computer-use-quality-gate-v0.md`
-6. `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
-7. `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
+2. `docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md`
+3. `docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md`
+4. `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+5. `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
+6. `docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md`
+7. `docs/crm-vnext/instagram-computer-use-quality-gate-v0.md`
+8. `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+9. `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
 
 These pointers establish the mandatory boundary order:
 
 ```text
 native Notifications
   -> exact notification-to-profile binding
-  -> current follows-owner evidence
+  -> one approved exact relationship-evidence mode:
+       current visible follows-owner
+       OR approved bounded recent-event/no-explicit-contradiction
   -> exact Message action or the bounded Options -> Send message fallback
   -> exact owner/profile/thread binding
   -> private dedupe and prior-welcome check
@@ -78,6 +82,16 @@ native Notifications
   -> one Send at most
   -> same-thread confirmation or terminal unknown/no-retry
 ```
+
+Relationship-evidence precedence is fail-closed. The UI-attested follower-source
+contract and the centrally integrated dual-relationship mission are
+authoritative for relationship eligibility and must be hydrated before the
+Safari adapter. They admit either the stronger current-visible mode or an
+explicitly approved bounded recent-event/no-explicit-contradiction mode. The
+mere absence of the current follows-owner badge or the direct Message action is
+not an explicit relationship contradiction. The Safari adapter may mediate
+profile-to-thread UI only after one of those modes is exact; it must not narrow
+eligibility back to the stronger mode.
 
 The action adapter is authoritative for UI recovery, output privacy, and the
 one-shot effect boundary. The admission contract remains authoritative for

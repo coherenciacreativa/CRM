@@ -16,9 +16,23 @@ const canaryResultPath = resolve(
   repoRoot,
   "docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md",
 );
+const followerSourcePath = resolve(
+  repoRoot,
+  "docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md",
+);
+const dualRelationshipPath = resolve(
+  repoRoot,
+  "docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md",
+);
+const precedenceMissionPath = resolve(
+  repoRoot,
+  "docs/crm-vnext/missions/crm-core-welcome-audio-notification-relationship-precedence-no-live-v1.md",
+);
 
 const authoritativeReadOrder = [
   "docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md",
+  "docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md",
+  "docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md",
   "docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md",
   "docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md",
   "docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md",
@@ -128,6 +142,10 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
 
     expect(profile).toContain("native Notifications");
     expect(profile).toContain("exact notification-to-profile binding");
+    expect(profile).toContain("one approved exact relationship-evidence mode");
+    expect(profile).toContain(
+      "approved bounded recent-event/no-explicit-contradiction",
+    );
     expect(profile).toContain(
       "exact Message action or the bounded Options -> Send message fallback",
     );
@@ -158,7 +176,7 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
     const normalizedAdapter = normalizeWhitespace(adapter);
 
     const profileIndex = adapter.indexOf(
-      "already-bound exact profile with current follows-owner evidence",
+      "already-bound exact profile with one approved exact relationship-evidence mode",
     );
     const fallbackIndex = adapter.indexOf(
       "if and only if Message is absent, use Options -> Send message once",
@@ -179,6 +197,67 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
     expect(normalizedAdapter).toContain(
       "does not authorize a retry after upload",
     );
+  });
+
+  test("hydrates dual relationship evidence before the adapter and preserves the proof-only catch-up boundary", async () => {
+    const [profile, adapter, followerSource, dualRelationship, mission] =
+      await Promise.all([
+        readFile(profilePath, "utf8"),
+        readFile(adapterPath, "utf8"),
+        readFile(followerSourcePath, "utf8"),
+        readFile(dualRelationshipPath, "utf8"),
+        readFile(precedenceMissionPath, "utf8"),
+      ]);
+    const normalizedProfile = normalizeWhitespace(profile);
+    const normalizedDualRelationship = normalizeWhitespace(dualRelationship);
+    const normalizedAdapter = normalizeWhitespace(adapter);
+
+    const sourceIndex = profile.indexOf(
+      "`docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md`",
+    );
+    const dualIndex = profile.indexOf(
+      "`docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md`",
+    );
+    const adapterIndex = profile.indexOf(
+      "`docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`",
+      dualIndex,
+    );
+
+    expect(sourceIndex).toBeGreaterThan(-1);
+    expect(dualIndex).toBeGreaterThan(sourceIndex);
+    expect(adapterIndex).toBeGreaterThan(dualIndex);
+    expect(profile).toContain("Relationship-evidence precedence is fail-closed");
+    expect(normalizedProfile).toContain(
+      "must not narrow eligibility back to the stronger mode",
+    );
+
+    expect(followerSource).toContain(
+      "The mere absence of a current follows-owner badge is not conflicting evidence",
+    );
+    expect(normalizedDualRelationship).toContain(
+      "An absent badge is not a contradiction",
+    );
+    expect(normalizedAdapter).toContain(
+      "`Options -> Send message` may be inspected under either approved exact mode",
+    );
+    expect(adapter).not.toContain(
+      "already-bound exact profile with current follows-owner evidence",
+    );
+
+    expect(mission).toContain("temporary_historical_catchup_1_to_30_days");
+    expect(mission).toContain("N=1..30");
+    expect(mission).toContain("W=1..4");
+    expect(mission).toContain("precision=coarse_week");
+    expect(mission).toContain("one_candidate_maximum");
+    expect(mission).toContain(
+      "evaluation_incomplete_due_to_obsolete_badge_only_gate",
+    );
+    expect(mission).toContain("current_follower_list_membership_claimed=false");
+    expect(mission).toContain("exact_follow_timestamp_claimed=false");
+    expect(mission).toContain("send_authority=false");
+    expect(mission).toContain("production_ready=false");
+    expect(mission).not.toContain("production_ready=true");
+    expect(mission).not.toContain("send_authority=true");
   });
 
   test("records a fail-closed aggregate output contract without claiming runtime enforcement", async () => {

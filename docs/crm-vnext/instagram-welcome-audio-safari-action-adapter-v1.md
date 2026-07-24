@@ -166,12 +166,26 @@ section adds only the profile-to-thread UI delta and must not be treated as a
 second discovery or operation-order contract.
 
 ```text
-already-bound exact profile with current follows-owner evidence
+already-bound exact profile with one approved exact relationship-evidence mode
   -> use the visible exact Message action
   -> if and only if Message is absent, use Options -> Send message once
   -> confirm the exact owner/profile/thread binding
   -> return to the canonical claim/host ordering
 ```
+
+The approved relationship-evidence mode is established before this adapter by
+the UI-attested follower-source and dual-relationship contracts. It may be
+either:
+
+- `confirmed` with `explicit_visible_follows_owner_signal`; or
+- `recent_follow_event_no_explicit_contradiction` under the exact bounded
+  proof policy approved for the current mission.
+
+The mere absence of the current follows-owner badge or the direct Message
+action is not explicit contradictory relationship evidence. `Options -> Send
+message` may be inspected under either approved exact mode. It does not prove
+current follower-list membership and cannot widen the time bucket, identity,
+owner, dedupe, unread, thread, or mission boundary that admitted the profile.
 
 `Options -> Send message` is a bounded fallback on the already-bound exact
 profile. It is not a profile-discovery route. The menu must expose exactly one
