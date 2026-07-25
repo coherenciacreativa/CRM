@@ -1,10 +1,8 @@
-import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 const repoRoot = resolve(import.meta.dirname, "..");
-const baseline = "71501f1b699950319ee9829e6ccc530c3331f94f";
 
 const allowedPaths = [
   ".agents/skills/crm-core-mission-operator/SKILL.md",
@@ -149,25 +147,20 @@ const rootKeys = (markdown: string) => {
 };
 
 describe("CRM Core Problem Reality Gate", () => {
-  test("changes exactly the approved nine paths", () => {
-    const tracked = execFileSync(
-      "git",
-      ["diff", "--name-only", baseline],
-      { cwd: repoRoot, encoding: "utf8" },
-    )
-      .trim()
+  test("declares exactly the approved nine paths without freezing future repository diffs", async () => {
+    const mission = await read(
+      "docs/crm-vnext/missions/crm-core-problem-reality-gate-repo-only-v1.md",
+    );
+    const declaredBlock = mission.match(
+      /  exact_changed_file_allowlist:\n([\s\S]*?)\n  deterministic_checks:/,
+    )?.[1];
+    const declaredPaths = (declaredBlock ?? "")
       .split("\n")
-      .filter(Boolean);
-    const untracked = execFileSync(
-      "git",
-      ["ls-files", "--others", "--exclude-standard"],
-      { cwd: repoRoot, encoding: "utf8" },
-    )
-      .trim()
-      .split("\n")
-      .filter(Boolean);
+      .map((line) => line.match(/^    - (.+)$/)?.[1])
+      .filter((path): path is string => Boolean(path))
+      .sort();
 
-    expect([...new Set([...tracked, ...untracked])].sort()).toEqual(allowedPaths);
+    expect(declaredPaths).toEqual(allowedPaths);
     expect(allowedPaths.some((path) => path.endsWith(".toml"))).toBe(false);
   });
 
