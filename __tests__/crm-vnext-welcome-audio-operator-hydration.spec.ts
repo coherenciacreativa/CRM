@@ -33,6 +33,7 @@ const authoritativeReadOrder = [
   "docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md",
   "docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md",
   "docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md",
+  "docs/crm-vnext/missions/crm-core-welcome-audio-notification-relationship-precedence-no-live-v1.md",
   "docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md",
   "docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md",
   "docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md",
@@ -219,14 +220,19 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
     const dualIndex = profile.indexOf(
       "`docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md`",
     );
+    const precedenceIndex = profile.indexOf(
+      "`docs/crm-vnext/missions/crm-core-welcome-audio-notification-relationship-precedence-no-live-v1.md`",
+      dualIndex,
+    );
     const adapterIndex = profile.indexOf(
       "`docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`",
-      dualIndex,
+      precedenceIndex,
     );
 
     expect(sourceIndex).toBeGreaterThan(-1);
     expect(dualIndex).toBeGreaterThan(sourceIndex);
-    expect(adapterIndex).toBeGreaterThan(dualIndex);
+    expect(precedenceIndex).toBeGreaterThan(dualIndex);
+    expect(adapterIndex).toBeGreaterThan(precedenceIndex);
     expect(profile).toContain("Relationship-evidence precedence is fail-closed");
     expect(normalizedProfile).toContain(
       "must not narrow eligibility back to the stronger mode",
@@ -268,6 +274,9 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
     );
     expect(normalizedMission).toContain(
       "caller-supplied clock, locale, timezone, date",
+    );
+    expect(normalizedMission).toContain(
+      "a missing, unsupported, caller-originated, caller-selected, caller-supplied, substituted, observation-drifted, or mismatched `source_ui_timezone`",
     );
     expect(normalizedMission).toContain(
       "exactly one non-future civil date whose calendar-day distance is `1..30`",

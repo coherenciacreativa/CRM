@@ -57,12 +57,13 @@ operator before browser selection. It grants no source read or live authority.
 1. `docs/crm-vnext/missions/crm-core-native-notification-profile-binding-no-live-v1.md`
 2. `docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md`
 3. `docs/crm-vnext/crm-core-welcome-audio-ui-attested-dual-relationship-evidence-no-live-mission-v1.md`
-4. `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
-5. `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
-6. `docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md`
-7. `docs/crm-vnext/instagram-computer-use-quality-gate-v0.md`
-8. `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
-9. `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
+4. `docs/crm-vnext/missions/crm-core-welcome-audio-notification-relationship-precedence-no-live-v1.md`
+5. `docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`
+6. `docs/crm-vnext/instagram-welcome-audio-ui-attested-single-recipient-live-admission-v1.md`
+7. `docs/crm-vnext/missions/crm-core-iab-semantic-source-to-safari-handoff-proof-v1.md`
+8. `docs/crm-vnext/instagram-computer-use-quality-gate-v0.md`
+9. `docs/crm-vnext/instagram-welcome-audio-first-controlled-send-result-v0.md`
+10. `docs/crm-vnext/instagram-welcome-audio-one-recipient-canary-result-2026-07-24.md`
 
 These pointers establish the mandatory boundary order:
 
