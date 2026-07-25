@@ -26,6 +26,35 @@ Use these sources before broad hydration. If the active task only needs a
 specific CRM Core contract, read that contract and its matching tests instead of
 rehydrating the whole repository.
 
+## Problem Reality Gate Hydration
+
+Before designing a new mission, proposing new engineering, or making a tracked
+write in response to a blocker, hydrate:
+
+`docs/crm-vnext/crm-core-problem-reality-gate-v1.md`
+
+The required evidence levels are `codex_claimed`, `repo_verified`,
+`reproduced_no_effect`, `runtime_empirical`, and `product_observed`. The only
+diagnosis verdicts are `verified_problem`, `existing_solution_or_route`, and
+`insufficient_evidence`.
+
+If the gate is missing, incomplete, or unverified, stop before tracked writes.
+`codex_claimed` is HOLD. Search canonical entrypoints and invoke an existing
+component before treating it as missing. If the component exists but was not
+loaded or invoked, return `existing_solution_or_route` and repair hydration or
+the entrypoint before considering new architecture.
+
+`repo_verified` may permit only one bounded repo contradiction repair. Runtime,
+browser, source, and tool claims require `reproduced_no_effect` or
+`runtime_empirical`. A new backend, runtime, source family, capability family,
+or authority also requires `runtime_empirical`, a rejected no-build route,
+causal proof, indispensability, and a Chief Architect ruling. Product readiness
+requires `product_observed`.
+
+Review diagnosis before artifact quality. A technically correct fix for an
+unverified problem remains HOLD. This hydration grants no source, private-read,
+browser, model-routing, build, integration, or live authority.
+
 ## Welcome-Audio Operator Hydration
 
 For Instagram welcome-audio work, this profile is the canonical entrypoint.

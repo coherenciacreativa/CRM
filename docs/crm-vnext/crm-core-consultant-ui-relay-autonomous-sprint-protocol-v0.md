@@ -359,6 +359,33 @@ Every relay packet must include:
 - `required_response_format`
 - `sentinel`
 
+When a packet proposes new engineering because a blocker is allegedly missing
+or broken, it must also include the complete `problem_reality_gate` block from
+the canonical Mission Contract. The block remains nested under
+`approval_gate`; the ordinary packet fields, handshakes, verdict schema, and
+sentinels do not change. A blocker-driven engineering packet without the
+complete block is non-actionable.
+
+The block must use one of the closed evidence levels:
+
+- `codex_claimed`
+- `repo_verified`
+- `reproduced_no_effect`
+- `runtime_empirical`
+- `product_observed`
+
+and one of the closed diagnosis verdicts:
+
+- `verified_problem`
+- `existing_solution_or_route`
+- `insufficient_evidence`
+
+Use path labels, aggregate states, and redacted reproduction results. Never
+include raw private data, source payloads, identities, target URLs, screenshots,
+or giant logs. Inability to find a component is not proof of nonexistence. If an
+existing component is found but was not loaded or invoked, the packet must
+return `existing_solution_or_route`, not request a replacement.
+
 Packet fields must be redacted. Packets must not include private artifacts,
 source data, handles, emails, names, tokens, cookies, headers, env values,
 credentials, screenshots, DMs, or unrelated ChatGPT content.
@@ -392,6 +419,20 @@ Required response fields:
 Responses that omit any required field are non-actionable. If the response is
 ambiguous, the lane must stop or request a compact clarification within the
 bounded recovery rules.
+
+For blocker-driven engineering, review order is mandatory:
+
+1. independent diagnosis review;
+2. only when the diagnosis is `verified_problem`, artifact review.
+
+A technically correct artifact for an unverified problem remains HOLD.
+`codex_claimed` cannot authorize a build. `repo_verified` may authorize only one
+bounded repo contradiction repair. Runtime, browser, source, or tool claims
+without `reproduced_no_effect` or `runtime_empirical` remain
+`insufficient_evidence`. A new backend, runtime, source family, capability
+family, or authority additionally requires `runtime_empirical`, a rejected
+no-build route, causal proof, indispensability, and a Chief Architect ruling.
+Product-readiness claims require `product_observed`.
 
 ## Sentinels
 

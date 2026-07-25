@@ -38,6 +38,40 @@ missing or narrower than the contract, present one compact approval request and
 stop before effects. Approval of planning, investigation, or preflight is not
 execution approval.
 
+## Prove the problem before engineering
+
+Hydrate `docs/crm-vnext/crm-core-problem-reality-gate-v1.md` before designing a
+new mission or making a tracked write in response to a blocker. Complete the
+`problem_reality_gate` nested under `approval_gate` in the Mission Contract.
+
+Evidence levels are closed:
+
+- `codex_claimed`
+- `repo_verified`
+- `reproduced_no_effect`
+- `runtime_empirical`
+- `product_observed`
+
+Diagnosis verdicts are closed:
+
+- `verified_problem`
+- `existing_solution_or_route`
+- `insufficient_evidence`
+
+Treat `codex_claimed` as HOLD. A repo contradiction may use `repo_verified` for
+one bounded repo repair. Runtime, browser, source, and tool claims require
+`reproduced_no_effect` or `runtime_empirical`. Any proposed new backend,
+runtime, source family, capability family, or authority requires
+`runtime_empirical`, a tested and rejected no-build option, a causal link,
+indispensability, and a Chief Architect ruling. Product-readiness claims require
+`product_observed`.
+
+Search the canonical repo and current routes before concluding that something
+is missing. If an existing component is found but was not loaded or invoked,
+return `existing_solution_or_route`; repair hydration or the entrypoint before
+considering new architecture. Review diagnosis before artifact quality. A
+technically correct fix for an unverified problem remains HOLD.
+
 Default to:
 
 - maximum `3` repair cycles;

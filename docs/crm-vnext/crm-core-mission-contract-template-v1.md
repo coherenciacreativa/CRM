@@ -24,6 +24,23 @@ approval_gate:
   contract_version: <version>
   execution_explicitly_approved: false
   exact_targets_sources_private_reads_effects_and_stop_rules: []
+  problem_reality_gate:
+    applicability: required | not_applicable
+    claimed_blocker: <redacted blocker label or none>
+    evidence_level: codex_claimed | repo_verified | reproduced_no_effect | runtime_empirical | product_observed
+    canonical_state_verified: false
+    expected_behavior: <redacted expected behavior>
+    observed_behavior: <redacted observed behavior>
+    first_divergence: <first verified divergence or unknown>
+    existing_solution_search: <paths and aggregate search state>
+    existing_component_loaded_and_invoked: false
+    alternative_explanations_tested: []
+    minimal_reproduction: <redacted no-effect reproduction or not_run>
+    causal_link_to_proposed_fix: <verified link or unproven>
+    no_build_option: <tested route and result>
+    new_engineering_indispensable: false
+    remaining_uncertainty: <redacted uncertainty>
+    diagnosis_verdict: verified_problem | existing_solution_or_route | insufficient_evidence
 
 approved_effects:
   repo_reads: []

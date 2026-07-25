@@ -6,6 +6,41 @@
 - In every new session, assume strict mode is ON unless the user explicitly asks to disable it for that session.
 - Before any credential task, restate: `Strict secret mode ON (no secret output, no env dumps).`
 
+## Problem Reality Gate — Before Engineering
+
+Before any tracked write responding to a blocker, any new artifact or
+engineering surface, or any Chief Architect packet that asks for engineering
+because something is allegedly missing or broken, read:
+
+`docs/crm-vnext/crm-core-problem-reality-gate-v1.md`
+
+The required evidence levels are:
+
+- `codex_claimed`
+- `repo_verified`
+- `reproduced_no_effect`
+- `runtime_empirical`
+- `product_observed`
+
+The only diagnosis verdicts are:
+
+- `verified_problem`
+- `existing_solution_or_route`
+- `insufficient_evidence`
+
+`codex_claimed` can never authorize a build. Failure to find a component is not
+proof that it does not exist. A runtime, browser, source, or tool defect requires
+`reproduced_no_effect` or `runtime_empirical`; a new backend, runtime, source
+family, or capability family additionally requires a rejected no-build route,
+causal proof, indispensability, and a Chief Architect ruling. Product readiness
+requires `product_observed`.
+
+If the gate is required and its diagnosis is not `verified_problem`, stop
+before tracked writes. Search for and invoke existing components before
+proposing new engineering. Review diagnosis first; review an artifact only
+after the diagnosis is verified. A technically correct fix for an unverified
+problem remains HOLD.
+
 ## Chief Architect UI Relay — Initial Gate
 
 Before every ChatGPT Chief Architect consultation, treat this as the mandatory
