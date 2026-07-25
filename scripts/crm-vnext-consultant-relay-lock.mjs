@@ -17,6 +17,55 @@ const RAW_TARGET_URL_PATTERN = new RegExp(`(?:https?://)?(?:${TARGET_HOSTS.map((
 const CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME = 'CRM Core — Chief Architect';
 const CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL = '00 — North Star & Portfolio';
 const CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID = 'chief-architect-integration';
+const CHIEF_ARCHITECT_OPERATING_MODEL_ID = 'chief-architect-operating-model';
+const CHIEF_ARCHITECT_ARCHITECTURE_EXCEPTIONS_ID = 'chief-architect-architecture-exceptions';
+const CHIEF_ARCHITECT_STANDING_TARGETS = new Map([
+  [CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID, {
+    chatLabel: CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL,
+    outputRole: '00',
+    requestClasses: new Set([
+      'portfolio_decision',
+      'next_mission_selection',
+      'integration_review',
+      'final_ceo_brief',
+    ]),
+    legacyRequestClass: 'integration_review',
+  }],
+  [CHIEF_ARCHITECT_OPERATING_MODEL_ID, {
+    chatLabel: '01 — Operating Model & Mission Templates',
+    outputRole: '01',
+    requestClasses: new Set([
+      'operating_model_change',
+      'mission_template_change',
+      'governance_policy_change',
+      'process_retrospective',
+      'CEO_overhead_review',
+    ]),
+  }],
+  [CHIEF_ARCHITECT_ARCHITECTURE_EXCEPTIONS_ID, {
+    chatLabel: '02 — Architecture Exceptions',
+    outputRole: '02',
+    requestClasses: new Set([
+      'architecture_exception',
+      'privacy_boundary_exception',
+      'identity_ambiguity_exception',
+      'irreversible_effect_exception',
+      'repeated_same_cause_exception',
+      'cross_lane_conflict',
+    ]),
+  }],
+]);
+const CHIEF_ARCHITECT_MISSION_REQUEST_CLASSES = new Set([
+  'mission_contract',
+  'mission_artifact_review',
+  'mission_exception_within_envelope',
+  'mission_closeout',
+]);
+const CHIEF_ARCHITECT_REQUEST_CLASSES = new Set([
+  ...[...CHIEF_ARCHITECT_STANDING_TARGETS.values()]
+    .flatMap((target) => [...target.requestClasses]),
+  ...CHIEF_ARCHITECT_MISSION_REQUEST_CLASSES,
+]);
 const CHIEF_ARCHITECT_MISSION_TARGET_ID_PATTERN = /^chief-architect-mission-contract-(\d{4}-\d{2}-\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const CHIEF_ARCHITECT_MISSION_CHAT_LABEL_PATTERN = /^Mission — [^\r\n@]{3,120} — (\d{4}-\d{2}-\d{2})$/u;
 const CHIEF_ARCHITECT_BOOTSTRAP_NOT_BEFORE = Date.parse('2026-07-11T00:00:00.000Z');
@@ -48,6 +97,11 @@ const OUTPUT_METADATA_FIELDS = [
   'chief_architect_static_route_preflight_passed',
   'chief_architect_route_preflight_scope',
   'target_id',
+  'request_class',
+  'request_target_id',
+  'request_target_role',
+  'request_routing_green',
+  'legacy_request_class_defaulted',
 ];
 const REDACTED_UNSAFE_METADATA = '[redacted_unsafe_metadata]';
 const CRITICAL_SECTIONS = new Set([
@@ -149,7 +203,7 @@ const chiefArchitectRouteReceiptPath = (targetId) => {
 };
 
 const chiefArchitectTargetKind = (targetId) => {
-  if (targetId === CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) return 'standing';
+  if (CHIEF_ARCHITECT_STANDING_TARGETS.has(targetId)) return 'standing';
   return CHIEF_ARCHITECT_MISSION_TARGET_ID_PATTERN.test(targetId) ? 'mission' : null;
 };
 
@@ -158,7 +212,7 @@ const assertChiefArchitectTargetLabel = (targetId, chatLabel) => {
   if (!targetKind) throw new Error('chief_architect_target_id_not_allowed');
 
   if (targetKind === 'standing') {
-    if (chatLabel !== CANONICAL_CHIEF_ARCHITECT_CHAT_LABEL) {
+    if (chatLabel !== CHIEF_ARCHITECT_STANDING_TARGETS.get(targetId)?.chatLabel) {
       throw new Error('chief_architect_target_chat_label_not_allowed');
     }
     return targetKind;
@@ -171,6 +225,62 @@ const assertChiefArchitectTargetLabel = (targetId, chatLabel) => {
   }
   assertMetadataValueSafe('target_chat_label', chatLabel);
   return targetKind;
+};
+
+const assertChiefArchitectRequestRouting = (flags, target, targetKind) => {
+  const consultantId = requiredFlag(flags, 'consultant-id');
+  let requestClass = flag(flags, 'request-class');
+  const declaredTargetId = flag(flags, 'request-target-id');
+  const declaredChatLabel = flag(flags, 'request-target-chat-label');
+  let legacyRequestClassDefaulted = false;
+
+  if (!requestClass) {
+    if (declaredTargetId || declaredChatLabel) {
+      throw new Error('chief_architect_request_routing_partial');
+    }
+    if (consultantId === CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
+      requestClass = CHIEF_ARCHITECT_STANDING_TARGETS
+        .get(CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID).legacyRequestClass;
+      legacyRequestClassDefaulted = true;
+    } else if (targetKind === 'mission') {
+      requestClass = 'mission_contract';
+      legacyRequestClassDefaulted = true;
+    } else {
+      throw new Error('chief_architect_request_class_missing');
+    }
+  }
+
+  if (!CHIEF_ARCHITECT_REQUEST_CLASSES.has(requestClass)) {
+    throw new Error('chief_architect_request_class_unknown');
+  }
+
+  if (!legacyRequestClassDefaulted) {
+    if (!declaredTargetId) throw new Error('chief_architect_request_target_id_missing');
+    if (!declaredChatLabel) throw new Error('chief_architect_request_target_chat_label_missing');
+    if (declaredTargetId !== consultantId) {
+      throw new Error('chief_architect_request_target_id_mismatch');
+    }
+    if (declaredChatLabel !== target.target_chat_label) {
+      throw new Error('chief_architect_request_target_chat_label_mismatch');
+    }
+  }
+
+  const allowedRequestClasses = targetKind === 'mission'
+    ? CHIEF_ARCHITECT_MISSION_REQUEST_CLASSES
+    : CHIEF_ARCHITECT_STANDING_TARGETS.get(consultantId)?.requestClasses;
+  if (!allowedRequestClasses?.has(requestClass)) {
+    throw new Error('chief_architect_request_class_wrong_role');
+  }
+
+  return {
+    request_class: requestClass,
+    request_target_id: consultantId,
+    request_target_role: targetKind === 'mission'
+      ? 'mission'
+      : CHIEF_ARCHITECT_STANDING_TARGETS.get(consultantId).outputRole,
+    request_routing_green: true,
+    legacy_request_class_defaulted: legacyRequestClassDefaulted,
+  };
 };
 
 const canonicalInstructionsHash = async () => {
@@ -311,6 +421,32 @@ const assertMissionRouteReceipt = async (target) => {
   if (!valid) throw new Error('chief_architect_mission_route_receipt_mismatch');
 };
 
+const assertStandingRoleRouteReceipt = async (target) => {
+  const receiptPath = chiefArchitectRouteReceiptPath(target.target_id);
+  await assertOwnerOnlyPath(receiptPath, 'chief_architect_standing_role_route_receipt');
+  const receipt = await readJson(
+    receiptPath,
+    'chief_architect_standing_role_route_receipt_unreadable',
+  );
+  const valid = receipt.schema_version === 'crm_core_chief_architect_route_rebind_receipt_v1'
+    && receipt.target_id === target.target_id
+    && receipt.target_kind === 'standing'
+    && receipt.canonical_project_name === CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME
+    && receipt.canonical_project_route_sha256 === target.canonical_project_route_sha256
+    && receipt.canonical_chat_route_sha256 === target.canonical_chat_route_sha256
+    && receipt.project_binding_verified_at === target.project_binding_verified_at
+    && receipt.target_registry_rebound === true
+    && receipt.project_only_memory === true
+    && receipt.private_unshared === true
+    && receipt.instructions_match === true
+    && receipt.sources_count === 13
+    && receipt.required_chats_verified === true
+    && receipt.legacy_project_used === false
+    && receipt.registry_owner_only === true
+    && receipt.raw_target_url_printed === false;
+  if (!valid) throw new Error('chief_architect_standing_role_route_receipt_mismatch');
+};
+
 const assertFreshUiObservation = (flags, expectedChatLabel) => {
   if (requiredFlag(flags, 'observed-project-name') !== CANONICAL_CHIEF_ARCHITECT_PROJECT_NAME) {
     throw new Error('chief_architect_observed_project_mismatch');
@@ -350,7 +486,16 @@ const assertFreshUiObservation = (flags, expectedChatLabel) => {
 const chiefArchitectRoutePreflight = async (flags) => {
   const consultantId = requiredFlag(flags, 'consultant-id');
   const targetKind = chiefArchitectTargetKind(consultantId);
-  if (!targetKind) return null;
+  if (!targetKind) {
+    if (consultantId === 'chief-architect-route-rebind'
+        && requiredFlag(flags, 'critical-section') === 'target_registry_update') {
+      return null;
+    }
+    if (consultantId.startsWith('chief-architect-')) {
+      throw new Error('chief_architect_target_id_not_allowed');
+    }
+    return null;
+  }
 
   const criticalSection = requiredFlag(flags, 'critical-section');
   const requiresUiObservation = criticalSection !== 'direct_target_open';
@@ -365,14 +510,21 @@ const chiefArchitectRoutePreflight = async (flags) => {
       || (target.target_kind && target.target_kind !== targetKind)) {
     throw new Error('chief_architect_target_kind_mismatch');
   }
-  if (targetKind === 'mission') {
+  if (consultantId !== CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
     const standingTarget = registryTarget(registry, CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID);
     await assertCanonicalStandingTarget(standingTarget);
     if (target.canonical_project_route_sha256 !== standingTarget.canonical_project_route_sha256) {
-      throw new Error('chief_architect_mission_project_route_mismatch');
+      throw new Error(targetKind === 'mission'
+        ? 'chief_architect_mission_project_route_mismatch'
+        : 'chief_architect_standing_role_project_route_mismatch');
     }
-    await assertMissionRouteReceipt(target);
+    if (targetKind === 'mission') {
+      await assertMissionRouteReceipt(target);
+    } else {
+      await assertStandingRoleRouteReceipt(target);
+    }
   }
+  const requestRouting = assertChiefArchitectRequestRouting(flags, target, targetKind);
   const uiObservation = requiresUiObservation
     ? assertFreshUiObservation(flags, target.target_chat_label)
     : null;
@@ -412,6 +564,7 @@ const chiefArchitectRoutePreflight = async (flags) => {
   const staticResult = {
     chief_architect_static_route_preflight_passed: true,
     canonical_project_match: true,
+    ...requestRouting,
     chief_architect_route_preflight_scope: requiresUiObservation
       ? 'dynamic_post_open'
       : 'static_open_only',
@@ -841,11 +994,13 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
   if (!registry.targets || typeof registry.targets !== 'object' || Array.isArray(registry.targets)) {
     throw new Error('chief_architect_registry_shape_invalid');
   }
-  if (targetKind === 'mission') {
+  if (targetId !== CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
     const standingTarget = registryTarget(registry, CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID);
     await assertCanonicalStandingTarget(standingTarget);
     if (parsedTarget.projectRouteHash !== standingTarget.canonical_project_route_sha256) {
-      throw new Error('chief_architect_mission_project_route_mismatch');
+      throw new Error(targetKind === 'mission'
+        ? 'chief_architect_mission_project_route_mismatch'
+        : 'chief_architect_standing_role_project_route_mismatch');
     }
   }
 
@@ -882,9 +1037,11 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
         last_handshake_status: 'pending_canonical_handshake',
         last_confirmed_at: null,
         last_confirmed_packet_id: null,
-        source: targetKind === 'standing'
+        source: targetId === CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID
           ? 'canonical_chief_architect_project_rebind_v1'
-          : 'canonical_chief_architect_mission_target_registration_v1',
+          : targetKind === 'standing'
+            ? 'canonical_chief_architect_standing_role_registration_v1'
+            : 'canonical_chief_architect_mission_target_registration_v1',
         updated_at: verifiedAt,
         raw_target_url_printed: false,
       },
@@ -921,14 +1078,14 @@ const registerChiefArchitectTarget = async (lockDir, flags) => {
     raw_target_url_printed: false,
   };
   const routeReceiptPath = chiefArchitectRouteReceiptPath(targetId);
-  if (targetKind === 'mission') {
+  if (targetId !== CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
     await writeJsonAtomically(routeReceiptPath, routeReceipt, 0o600);
   }
   await writeJsonAtomically(registryPath, updatedRegistry, 0o600);
   if (registryPath === DEFAULT_TARGET_REGISTRY_PATH) {
     await chmod(path.dirname(path.dirname(registryPath)), 0o700);
   }
-  if (targetKind === 'standing') {
+  if (targetId === CANONICAL_CHIEF_ARCHITECT_CONSULTANT_ID) {
     await writeJsonAtomically(routeReceiptPath, routeReceipt, 0o600);
   }
 

@@ -48,14 +48,17 @@ first protocol, not as a remembered preference:
 
 1. Work from `/Users/alejandrogomez/CRM-core`, refresh branch/HEAD/status, and
    treat the repo plus central integration records as current truth.
-2. The destination project must be exactly `CRM Core — Chief Architect`.
-   The registered standing target is `00 — North Star & Portfolio`. Never use
-   a Chief Architect chat inside `CRM build`, another project, or another chat
-   without an explicit re-registration.
-   An explicitly approved mission chat must use a separate
-   `chief-architect-mission-contract-YYYY-MM-DD-<slug>` registry target. It may
-   never replace or mutate the standing `chief-architect-integration` entry,
-   and its project-route fingerprint must match the standing target.
+2. Classify the request through
+   `docs/crm-vnext/crm-core-chief-architect-request-routing-v1.md`, then use
+   only the registered target assigned to that closed request class. The
+   destination project must be exactly `CRM Core — Chief Architect`; wrong
+   project, wrong role, wrong declared target, or unregistered target fails
+   before Send. The standing targets are `00 — North Star & Portfolio`,
+   `01 — Operating Model & Mission Templates`, and
+   `02 — Architecture Exceptions`. An approved mission chat uses a separate
+   `chief-architect-mission-contract-YYYY-MM-DD-<slug>` target. No target may
+   replace or mutate `chief-architect-integration`, and every non-00 target's
+   project-route fingerprint must match that canonical anchor.
 3. For `direct_target_open`, acquire
    `scripts/crm-vnext-consultant-relay-lock.mjs` through its static private
    registry preflight, then confirm the visible exact project and chat while

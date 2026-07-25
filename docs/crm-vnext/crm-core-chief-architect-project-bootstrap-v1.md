@@ -217,6 +217,28 @@ efectos irreversibles, fallos repetidos o decisiones que cambien el North Star.
 Devuelve decision memos breves. No uses este chat como gate rutinario.
 ```
 
+## Executable request routing
+
+The chat structure above is enforced by
+`crm-core-chief-architect-request-routing-v1.md`. Each relay packet declares a
+closed `request_class`, exact target id, and exact chat label before any
+post-open lock can be acquired:
+
+- `00` owns portfolio decisions, next-mission selection, integration review,
+  and the final CEO brief;
+- `01` owns operating-model, mission-template, governance-policy, process
+  retrospective, and CEO-overhead review;
+- `02` owns architecture, privacy-boundary, identity-ambiguity, irreversible
+  effect, repeated-same-cause, and cross-lane exceptions;
+- a registered `Mission — <outcome> — YYYY-MM-DD` target owns its mission
+  contract, artifact review, in-envelope exception, and closeout.
+
+The project definition alone does not register or authorize these targets.
+Private registry/UI cutover remains a separate owner-only operation. Existing
+`00` integration packets and registered mission packets retain their legacy
+defaults; new `01`, `02`, and explicit routed packets fail closed without the
+declared class and target binding.
+
 ### `Mission — Active Trigger Correction & First Email Proof — 2026-07-11`
 
 Seed from the final integrated state. Ask for a compact Mission Contract that

@@ -55,6 +55,16 @@ Review diagnosis before artifact quality. A technically correct fix for an
 unverified problem remains HOLD. This hydration grants no source, private-read,
 browser, model-routing, build, integration, or live authority.
 
+## Chief Architect Request Routing
+
+Before preparing any Chief Architect packet, hydrate
+`docs/crm-vnext/crm-core-chief-architect-request-routing-v1.md`. Classify the
+request once, bind its exact registered target id and exact chat label, and run
+the relay static and dynamic preflights. Do not route every request to `00`.
+Wrong-role, unknown-class, cross-mission, or missing target metadata must stop
+before Send. Existing 00 integration and registered mission packets preserve
+their explicitly documented compatibility defaults only.
+
 ## Welcome-Audio Operator Hydration
 
 For Instagram welcome-audio work, this profile is the canonical entrypoint.

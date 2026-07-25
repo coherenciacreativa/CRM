@@ -124,10 +124,11 @@ preferred v0 target route when available.
 
 ### Chief Architect Canonical Project Gate
 
-Every relay whose `consultant_id` is `chief-architect-integration`, or is an
-explicitly registered mission target matching
-`chief-architect-mission-contract-YYYY-MM-DD-<slug>`, uses two fail-closed
-phases built into Consultant Relay Lock v0:
+Every relay whose `consultant_id` is a registered Chief Architect standing
+target (`chief-architect-integration`, `chief-architect-operating-model`, or
+`chief-architect-architecture-exceptions`), or is an explicitly registered
+mission target matching `chief-architect-mission-contract-YYYY-MM-DD-<slug>`,
+uses two fail-closed phases built into Consultant Relay Lock v0:
 
 1. `direct_target_open` first passes the static private-registry gate, opens
    the registered target while holding the lock, and confirms the visible
@@ -139,7 +140,9 @@ The preflight requires all of the following:
 
 - the private registry and its directory are owner-only;
 - the target is bound to project name exactly `CRM Core — Chief Architect`;
-- the standing target chat is exactly `00 — North Star & Portfolio`;
+- a standing target label exactly matches its registered role: `00 — North
+  Star & Portfolio`, `01 — Operating Model & Mission Templates`, or
+  `02 — Architecture Exceptions`;
 - a mission target uses an exact `Mission — <outcome> — YYYY-MM-DD` label whose
   date matches its target id, has its own registry entry and route receipt, and
   leaves the standing target byte-for-byte unchanged;
@@ -160,6 +163,15 @@ The preflight requires all of the following:
 `CRM build` and every other project fail closed. A prior handshake cannot
 override this gate. Preflight output is boolean/redacted and never returns the
 raw target URL or registry contents.
+
+Before Send, explicit routed packets must also provide `--request-class`,
+`--request-target-id`, and `--request-target-chat-label`. The lock utility
+checks the closed routing matrix in
+`crm-core-chief-architect-request-routing-v1.md`; wrong-role, cross-mission,
+unknown, or partially declared packets fail before lock acquisition. Existing
+00 integration and registered mission packets that predate this contract keep
+their narrow legacy defaults. This compatibility does not make 00 a universal
+fallback.
 
 ## Chief Architect Integration Relay
 

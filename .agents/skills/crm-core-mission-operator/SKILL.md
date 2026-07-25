@@ -72,6 +72,24 @@ return `existing_solution_or_route`; repair hydration or the entrypoint before
 considering new architecture. Review diagnosis before artifact quality. A
 technically correct fix for an unverified problem remains HOLD.
 
+## Route Chief Architect requests
+
+Before any Chief Architect relay, read
+`docs/crm-vnext/crm-core-chief-architect-request-routing-v1.md`. Select exactly
+one closed request class and its registered role:
+
+- `00` for portfolio, next mission, integration, or final CEO brief;
+- `01` for operating model, templates, governance, retrospectives, or CEO
+  overhead;
+- `02` for architecture/privacy/identity/irreversibility/repeated-cause or
+  cross-lane exceptions;
+- the exact registered mission chat for that mission's contract, artifact
+  review, in-envelope exception, or closeout.
+
+Bind the class, target id, and chat label before Send. Never use 00 as a
+catch-all, never substitute one mission chat for another, and stop if the
+private registry or visible exact-target preflight is not green.
+
 Default to:
 
 - maximum `3` repair cycles;

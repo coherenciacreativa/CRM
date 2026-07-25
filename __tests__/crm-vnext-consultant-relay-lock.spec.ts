@@ -18,6 +18,10 @@ const unsafeEmailValue = 'unsafe-lock@example.test';
 const fakeOwnerTokenHash = `sha256:${'a'.repeat(64)}`;
 const canonicalChiefArchitectProjectName = 'CRM Core — Chief Architect';
 const canonicalChiefArchitectConsultantId = 'chief-architect-integration';
+const operatingModelConsultantId = 'chief-architect-operating-model';
+const operatingModelChatLabel = '01 — Operating Model & Mission Templates';
+const architectureExceptionsConsultantId = 'chief-architect-architecture-exceptions';
+const architectureExceptionsChatLabel = '02 — Architecture Exceptions';
 const missionChiefArchitectConsultantId = 'chief-architect-mission-contract-2026-07-15-real-e2e-proof';
 const missionChiefArchitectChatLabel = 'Mission — Real New Follower Welcome Proof — 2026-07-15';
 const canonicalProjectRouteToken = `g-p-${'a'.repeat(32)}`;
@@ -26,6 +30,12 @@ const canonicalChatRouteHash = `sha256:${createHash('sha256').update('synthetic-
 const missionChatRouteToken = 'synthetic-private-mission-target';
 const missionChatRouteHash = `sha256:${createHash('sha256').update(missionChatRouteToken).digest('hex')}`;
 const missionProjectRawTargetUrlSample = ['https://chatgpt.com', 'g', `g-p-${'a'.repeat(32)}-crm-core-chief-architect`, 'c', missionChatRouteToken].join('/');
+const operatingModelChatRouteToken = 'synthetic-private-operating-model-target';
+const operatingModelChatRouteHash = `sha256:${createHash('sha256').update(operatingModelChatRouteToken).digest('hex')}`;
+const operatingModelProjectRawTargetUrlSample = ['https://chatgpt.com', 'g', `g-p-${'a'.repeat(32)}-crm-core-chief-architect`, 'c', operatingModelChatRouteToken].join('/');
+const architectureExceptionsChatRouteToken = 'synthetic-private-architecture-exceptions-target';
+const architectureExceptionsChatRouteHash = `sha256:${createHash('sha256').update(architectureExceptionsChatRouteToken).digest('hex')}`;
+const architectureExceptionsProjectRawTargetUrlSample = ['https://chatgpt.com', 'g', `g-p-${'a'.repeat(32)}-crm-core-chief-architect`, 'c', architectureExceptionsChatRouteToken].join('/');
 const differentProjectRouteToken = `g-p-${'b'.repeat(32)}`;
 const differentProjectRouteHash = `sha256:${createHash('sha256').update(differentProjectRouteToken).digest('hex')}`;
 const differentProjectMissionRawTargetUrlSample = ['https://chatgpt.com', 'g', `${differentProjectRouteToken}-crm-core-chief-architect`, 'c', missionChatRouteToken].join('/');
@@ -144,6 +154,121 @@ const createChiefArchitectRegistry = async ({
   await chmod(file, fileMode);
   return file;
 };
+
+const addChiefArchitectTarget = async (
+  registryPath: string,
+  {
+    targetId,
+    chatLabel,
+    chatRouteToken,
+    targetKind,
+  }: {
+    targetId: string;
+    chatLabel: string;
+    chatRouteToken: string;
+    targetKind: 'standing' | 'mission';
+  },
+) => {
+  const registry = JSON.parse(await readFile(registryPath, 'utf8'));
+  const standing = registry.targets[canonicalChiefArchitectConsultantId];
+  const verifiedAt = '2026-07-24T12:00:00.000Z';
+  const target = {
+    ...standing,
+    target_id: targetId,
+    expected_consultant_id: targetId,
+    target_kind: targetKind,
+    target_chat_label: chatLabel,
+    target_url: ['https://chatgpt.com', 'g', `${canonicalProjectRouteToken}-crm-core-chief-architect`, 'c', chatRouteToken].join('/'),
+    canonical_chat_route_sha256: `sha256:${createHash('sha256').update(chatRouteToken).digest('hex')}`,
+    project_binding_verified_at: verifiedAt,
+    updated_at: verifiedAt,
+  };
+  registry.targets[targetId] = target;
+  registry.updated_at = verifiedAt;
+  await writeFile(registryPath, `${JSON.stringify(registry, null, 2)}\n`, { mode: 0o600 });
+  await chmod(registryPath, 0o600);
+  return target;
+};
+
+const createChiefArchitectRouteReceipt = async (target: any) => {
+  const root = await makeTmpRoot();
+  const file = join(root, 'route-receipt.json');
+  await chmod(root, 0o700);
+  await writeFile(file, `${JSON.stringify({
+    schema_version: target.target_kind === 'mission'
+      ? 'crm_core_chief_architect_mission_route_registration_receipt_v1'
+      : 'crm_core_chief_architect_route_rebind_receipt_v1',
+    target_id: target.target_id,
+    target_kind: target.target_kind,
+    canonical_project_name: canonicalChiefArchitectProjectName,
+    canonical_project_route_sha256: target.canonical_project_route_sha256,
+    canonical_chat_route_sha256: target.canonical_chat_route_sha256,
+    project_binding_verified_at: target.project_binding_verified_at,
+    target_registry_rebound: true,
+    project_only_memory: true,
+    private_unshared: true,
+    instructions_match: true,
+    sources_count: 13,
+    required_chats_verified: true,
+    legacy_project_used: false,
+    registry_owner_only: true,
+    raw_target_url_printed: false,
+  }, null, 2)}\n`, { mode: 0o600 });
+  return file;
+};
+
+const routedChiefArchitectAcquireArgs = (
+  lockDir: string,
+  {
+    targetId,
+    chatLabel,
+    chatRouteHash,
+    requestClass,
+    declaredTargetId = targetId,
+    declaredChatLabel = chatLabel,
+    extra = [],
+  }: {
+    targetId: string;
+    chatLabel: string;
+    chatRouteHash: string;
+    requestClass?: string;
+    declaredTargetId?: string;
+    declaredChatLabel?: string;
+    extra?: string[];
+  },
+) => baseAcquireArgs(lockDir, [
+  '--owner-id',
+  targetId,
+  '--consultant-id',
+  targetId,
+  '--observed-project-name',
+  canonicalChiefArchitectProjectName,
+  '--observed-project-only-memory',
+  'true',
+  '--observed-private-unshared',
+  'true',
+  '--observed-instructions-match',
+  'true',
+  '--observed-chat-project-bound',
+  'true',
+  '--observed-chat-label',
+  chatLabel,
+  '--observed-project-route-sha256',
+  canonicalProjectRouteHash,
+  '--observed-chat-route-sha256',
+  chatRouteHash,
+  '--ui-observed-at',
+  new Date().toISOString(),
+  ...(requestClass ? [
+    '--request-class',
+    requestClass,
+    '--request-target-id',
+    declaredTargetId,
+    '--request-target-chat-label',
+    declaredChatLabel,
+  ] : []),
+  ...extra,
+]);
 
 const createBootstrapReceipt = async () => {
   const root = await makeTmpRoot();
@@ -1345,5 +1470,376 @@ describe('crm-vnext Consultant Relay Lock utility', () => {
       '--owner-token',
       holder.json.owner_token,
     ], registryEnv);
+  });
+
+  test('closed request-class matrix accepts every class only on its declared role', async () => {
+    const registryPath = await createChiefArchitectRegistry();
+    const operatingTarget = await addChiefArchitectTarget(registryPath, {
+      targetId: operatingModelConsultantId,
+      chatLabel: operatingModelChatLabel,
+      chatRouteToken: operatingModelChatRouteToken,
+      targetKind: 'standing',
+    });
+    const architectureTarget = await addChiefArchitectTarget(registryPath, {
+      targetId: architectureExceptionsConsultantId,
+      chatLabel: architectureExceptionsChatLabel,
+      chatRouteToken: architectureExceptionsChatRouteToken,
+      targetKind: 'standing',
+    });
+    const missionTarget = await addChiefArchitectTarget(registryPath, {
+      targetId: missionChiefArchitectConsultantId,
+      chatLabel: missionChiefArchitectChatLabel,
+      chatRouteToken: missionChatRouteToken,
+      targetKind: 'mission',
+    });
+    const routes = [
+      {
+        targetId: canonicalChiefArchitectConsultantId,
+        chatLabel: '00 — North Star & Portfolio',
+        chatRouteHash: canonicalChatRouteHash,
+        outputRole: '00',
+        classes: ['portfolio_decision', 'next_mission_selection', 'integration_review', 'final_ceo_brief'],
+        receiptPath: undefined,
+      },
+      {
+        targetId: operatingModelConsultantId,
+        chatLabel: operatingModelChatLabel,
+        chatRouteHash: operatingModelChatRouteHash,
+        outputRole: '01',
+        classes: ['operating_model_change', 'mission_template_change', 'governance_policy_change', 'process_retrospective', 'CEO_overhead_review'],
+        receiptPath: await createChiefArchitectRouteReceipt(operatingTarget),
+      },
+      {
+        targetId: architectureExceptionsConsultantId,
+        chatLabel: architectureExceptionsChatLabel,
+        chatRouteHash: architectureExceptionsChatRouteHash,
+        outputRole: '02',
+        classes: ['architecture_exception', 'privacy_boundary_exception', 'identity_ambiguity_exception', 'irreversible_effect_exception', 'repeated_same_cause_exception', 'cross_lane_conflict'],
+        receiptPath: await createChiefArchitectRouteReceipt(architectureTarget),
+      },
+      {
+        targetId: missionChiefArchitectConsultantId,
+        chatLabel: missionChiefArchitectChatLabel,
+        chatRouteHash: missionChatRouteHash,
+        outputRole: 'mission',
+        classes: ['mission_contract', 'mission_artifact_review', 'mission_exception_within_envelope', 'mission_closeout'],
+        receiptPath: await createChiefArchitectRouteReceipt(missionTarget),
+      },
+    ];
+
+    for (const route of routes) {
+      for (const requestClass of route.classes) {
+        const lockDir = await lockDirFor();
+        const result = await runCli(routedChiefArchitectAcquireArgs(lockDir, {
+          ...route,
+          requestClass,
+        }), {
+          CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+          ...(route.receiptPath
+            ? { CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: route.receiptPath }
+            : {}),
+        });
+        expect(result.json).toMatchObject({
+          request_class: requestClass,
+          request_target_id: route.targetId,
+          request_target_role: route.outputRole,
+          request_routing_green: true,
+          legacy_request_class_defaulted: false,
+          raw_target_url_printed: false,
+        });
+        if (route.outputRole === 'mission') {
+          expect(result.stdout).not.toContain(route.chatLabel);
+        }
+        await runCli([
+          script,
+          'release',
+          '--lock-dir',
+          lockDir,
+          '--owner-token',
+          result.json.owner_token,
+        ]);
+      }
+    }
+  }, 20_000);
+
+  test('every explicit cross-role request-class combination fails before lock creation', async () => {
+    const registryPath = await createChiefArchitectRegistry();
+    const targets = [
+      {
+        target: await addChiefArchitectTarget(registryPath, {
+          targetId: operatingModelConsultantId,
+          chatLabel: operatingModelChatLabel,
+          chatRouteToken: operatingModelChatRouteToken,
+          targetKind: 'standing',
+        }),
+        targetId: operatingModelConsultantId,
+        chatLabel: operatingModelChatLabel,
+        chatRouteHash: operatingModelChatRouteHash,
+        allowed: new Set(['operating_model_change', 'mission_template_change', 'governance_policy_change', 'process_retrospective', 'CEO_overhead_review']),
+      },
+      {
+        target: await addChiefArchitectTarget(registryPath, {
+          targetId: architectureExceptionsConsultantId,
+          chatLabel: architectureExceptionsChatLabel,
+          chatRouteToken: architectureExceptionsChatRouteToken,
+          targetKind: 'standing',
+        }),
+        targetId: architectureExceptionsConsultantId,
+        chatLabel: architectureExceptionsChatLabel,
+        chatRouteHash: architectureExceptionsChatRouteHash,
+        allowed: new Set(['architecture_exception', 'privacy_boundary_exception', 'identity_ambiguity_exception', 'irreversible_effect_exception', 'repeated_same_cause_exception', 'cross_lane_conflict']),
+      },
+      {
+        target: await addChiefArchitectTarget(registryPath, {
+          targetId: missionChiefArchitectConsultantId,
+          chatLabel: missionChiefArchitectChatLabel,
+          chatRouteToken: missionChatRouteToken,
+          targetKind: 'mission',
+        }),
+        targetId: missionChiefArchitectConsultantId,
+        chatLabel: missionChiefArchitectChatLabel,
+        chatRouteHash: missionChatRouteHash,
+        allowed: new Set(['mission_contract', 'mission_artifact_review', 'mission_exception_within_envelope', 'mission_closeout']),
+      },
+    ];
+    const standingTarget = JSON.parse(await readFile(registryPath, 'utf8'))
+      .targets[canonicalChiefArchitectConsultantId];
+    targets.unshift({
+      target: standingTarget,
+      targetId: canonicalChiefArchitectConsultantId,
+      chatLabel: '00 — North Star & Portfolio',
+      chatRouteHash: canonicalChatRouteHash,
+      allowed: new Set(['portfolio_decision', 'next_mission_selection', 'integration_review', 'final_ceo_brief']),
+    });
+    const allClasses = [...new Set(targets.flatMap((target) => [...target.allowed]))];
+    const registryBefore = await readFile(registryPath, 'utf8');
+
+    for (const route of targets) {
+      const receiptPath = route.targetId === canonicalChiefArchitectConsultantId
+        ? undefined
+        : await createChiefArchitectRouteReceipt(route.target);
+      for (const requestClass of allClasses.filter((candidate) => !route.allowed.has(candidate))) {
+        const lockDir = await lockDirFor();
+        const failure = await runCliFail(routedChiefArchitectAcquireArgs(lockDir, {
+          ...route,
+          requestClass,
+        }), {
+          CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+          ...(receiptPath ? { CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: receiptPath } : {}),
+        });
+        expect(failure.json.error).toBe('chief_architect_request_class_wrong_role');
+        expect(failure.json.raw_target_url_printed).toBe(false);
+        await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+      }
+    }
+    expect(await readFile(registryPath, 'utf8')).toBe(registryBefore);
+  }, 30_000);
+
+  test('routing rejects unknown targets, unknown classes, missing metadata, and declared-target drift', async () => {
+    const registryPath = await createChiefArchitectRegistry();
+    const operatingTarget = await addChiefArchitectTarget(registryPath, {
+      targetId: operatingModelConsultantId,
+      chatLabel: operatingModelChatLabel,
+      chatRouteToken: operatingModelChatRouteToken,
+      targetKind: 'standing',
+    });
+    const receiptPath = await createChiefArchitectRouteReceipt(operatingTarget);
+    const env = {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: receiptPath,
+    };
+    const missingTargetIdArgs = routedChiefArchitectAcquireArgs(await lockDirFor(), {
+      targetId: operatingModelConsultantId,
+      chatLabel: operatingModelChatLabel,
+      chatRouteHash: operatingModelChatRouteHash,
+      requestClass: 'operating_model_change',
+    });
+    missingTargetIdArgs.splice(missingTargetIdArgs.indexOf('--request-target-id'), 2);
+    const missingTargetLabelArgs = routedChiefArchitectAcquireArgs(await lockDirFor(), {
+      targetId: operatingModelConsultantId,
+      chatLabel: operatingModelChatLabel,
+      chatRouteHash: operatingModelChatRouteHash,
+      requestClass: 'operating_model_change',
+    });
+    missingTargetLabelArgs.splice(missingTargetLabelArgs.indexOf('--request-target-chat-label'), 2);
+    const partialLegacyTargetIdArgs = baseChiefArchitectAcquireArgs(await lockDirFor(), [
+      '--request-target-id',
+      canonicalChiefArchitectConsultantId,
+    ]);
+    const partialLegacyTargetLabelArgs = baseChiefArchitectAcquireArgs(await lockDirFor(), [
+      '--request-target-chat-label',
+      '00 — North Star & Portfolio',
+    ]);
+    const cases = [
+      {
+        args: routedChiefArchitectAcquireArgs(await lockDirFor(), {
+          targetId: 'chief-architect-unknown-role',
+          chatLabel: 'Unknown role',
+          chatRouteHash: operatingModelChatRouteHash,
+          requestClass: 'operating_model_change',
+        }),
+        error: 'chief_architect_target_id_not_allowed',
+      },
+      {
+        args: routedChiefArchitectAcquireArgs(await lockDirFor(), {
+          targetId: operatingModelConsultantId,
+          chatLabel: operatingModelChatLabel,
+          chatRouteHash: operatingModelChatRouteHash,
+          requestClass: 'unknown_request_class',
+        }),
+        error: 'chief_architect_request_class_unknown',
+      },
+      {
+        args: routedChiefArchitectAcquireArgs(await lockDirFor(), {
+          targetId: operatingModelConsultantId,
+          chatLabel: operatingModelChatLabel,
+          chatRouteHash: operatingModelChatRouteHash,
+        }),
+        error: 'chief_architect_request_class_missing',
+      },
+      {
+        args: missingTargetIdArgs,
+        error: 'chief_architect_request_target_id_missing',
+      },
+      {
+        args: missingTargetLabelArgs,
+        error: 'chief_architect_request_target_chat_label_missing',
+      },
+      {
+        args: partialLegacyTargetIdArgs,
+        error: 'chief_architect_request_routing_partial',
+      },
+      {
+        args: partialLegacyTargetLabelArgs,
+        error: 'chief_architect_request_routing_partial',
+      },
+      {
+        args: routedChiefArchitectAcquireArgs(await lockDirFor(), {
+          targetId: operatingModelConsultantId,
+          chatLabel: operatingModelChatLabel,
+          chatRouteHash: operatingModelChatRouteHash,
+          requestClass: 'operating_model_change',
+          declaredTargetId: architectureExceptionsConsultantId,
+        }),
+        error: 'chief_architect_request_target_id_mismatch',
+      },
+      {
+        args: routedChiefArchitectAcquireArgs(await lockDirFor(), {
+          targetId: operatingModelConsultantId,
+          chatLabel: operatingModelChatLabel,
+          chatRouteHash: operatingModelChatRouteHash,
+          requestClass: 'operating_model_change',
+          declaredChatLabel: architectureExceptionsChatLabel,
+        }),
+        error: 'chief_architect_request_target_chat_label_mismatch',
+      },
+    ];
+
+    for (const testCase of cases) {
+      const lockDir = testCase.args[testCase.args.indexOf('--lock-dir') + 1];
+      const failure = await runCliFail(testCase.args, env);
+      expect(failure.json.error).toBe(testCase.error);
+      expect(failure.json.raw_target_url_printed).toBe(false);
+      await expect(stat(lockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+    }
+
+    const missionTarget = await addChiefArchitectTarget(registryPath, {
+      targetId: missionChiefArchitectConsultantId,
+      chatLabel: missionChiefArchitectChatLabel,
+      chatRouteToken: missionChatRouteToken,
+      targetKind: 'mission',
+    });
+    const missionReceiptPath = await createChiefArchitectRouteReceipt(missionTarget);
+    const missionLockDir = await lockDirFor();
+    const crossMission = await runCliFail(routedChiefArchitectAcquireArgs(missionLockDir, {
+      targetId: missionChiefArchitectConsultantId,
+      chatLabel: missionChiefArchitectChatLabel,
+      chatRouteHash: missionChatRouteHash,
+      requestClass: 'mission_artifact_review',
+      declaredTargetId: 'chief-architect-mission-contract-2026-07-15-another-mission',
+    }), {
+      CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+      CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: missionReceiptPath,
+    });
+    expect(crossMission.json.error).toBe('chief_architect_request_target_id_mismatch');
+    await expect(stat(missionLockDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('registration supports the two standing-role targets without replacing 00', async () => {
+    const registryPath = await createChiefArchitectRegistry();
+    const bootstrapReceiptPath = await createBootstrapReceipt();
+    const standingBefore = JSON.parse(await readFile(registryPath, 'utf8'))
+      .targets[canonicalChiefArchitectConsultantId];
+    const registrations = [
+      {
+        targetId: operatingModelConsultantId,
+        chatLabel: operatingModelChatLabel,
+        chatRouteHash: operatingModelChatRouteHash,
+        targetUrl: operatingModelProjectRawTargetUrlSample,
+      },
+      {
+        targetId: architectureExceptionsConsultantId,
+        chatLabel: architectureExceptionsChatLabel,
+        chatRouteHash: architectureExceptionsChatRouteHash,
+        targetUrl: architectureExceptionsProjectRawTargetUrlSample,
+      },
+    ];
+
+    for (const registration of registrations) {
+      const lockDir = await lockDirFor();
+      const routeReceiptRoot = await makeTmpRoot();
+      const routeReceiptPath = join(routeReceiptRoot, 'standing-role-route-receipt.json');
+      const registryEnv = {
+        CRM_CORE_CONSULTANT_TARGET_REGISTRY_PATH: registryPath,
+        CRM_CORE_CHIEF_ARCHITECT_BOOTSTRAP_RECEIPT_PATH: bootstrapReceiptPath,
+        CRM_CORE_CHIEF_ARCHITECT_ROUTE_RECEIPT_PATH: routeReceiptPath,
+      };
+      const holder = await runCli(
+        registryUpdateAcquireArgs(lockDir, '300000', registration.targetId),
+        registryEnv,
+      );
+      const registered = await runCliWithInput(
+        registryUpdateCommandArgs(lockDir, [
+          '--target-id',
+          registration.targetId,
+          '--target-chat-label',
+          registration.chatLabel,
+          '--observed-chat-label',
+          registration.chatLabel,
+          '--observed-chat-route-sha256',
+          registration.chatRouteHash,
+        ]),
+        registration.targetUrl,
+        {
+          ...registryEnv,
+          CRM_CORE_CONSULTANT_RELAY_LOCK_TOKEN: holder.json.owner_token,
+        },
+      );
+      const registry = JSON.parse(await readFile(registryPath, 'utf8'));
+
+      expect(registered.json).toMatchObject({
+        ok: true,
+        target_id: registration.targetId,
+        target_kind: 'standing',
+        target_registry_rebound: true,
+        raw_target_url_printed: false,
+      });
+      expect(registry.targets[canonicalChiefArchitectConsultantId]).toEqual(standingBefore);
+      expect(registry.targets[registration.targetId]).toMatchObject({
+        target_id: registration.targetId,
+        target_chat_label: registration.chatLabel,
+        target_kind: 'standing',
+        canonical_project_route_sha256: canonicalProjectRouteHash,
+        canonical_chat_route_sha256: registration.chatRouteHash,
+      });
+      await runCli([
+        script,
+        'release',
+        '--lock-dir',
+        lockDir,
+        '--owner-token',
+        holder.json.owner_token,
+      ], registryEnv);
+    }
   });
 });
