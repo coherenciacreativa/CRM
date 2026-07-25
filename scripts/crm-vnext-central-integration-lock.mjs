@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
 import crypto from "node:crypto";
+import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 
 const PROD_ROOT =
   "/Users/alejandrogomez/Documents/CRM-Core-Reports/central-integration";
 const DEFAULT_LOCK_DIR = path.join(PROD_ROOT, ".central-integration-lock");
 const REPO_ROOT = "/Users/alejandrogomez/CRM-core";
+const DEDICATED_CLEAN_CHECKOUT =
+  "/Users/alejandrogomez/CRM-core-central-integration";
 const LEGACY_CRM_ROOT = "/Users/alejandrogomez/CRM";
 const MANTIS_REPORTS = "/Users/alejandrogomez/Documents/Mantis-Reports";
 const MANTIS_PRIVATE =
@@ -20,6 +24,10 @@ const RAW_TARGET_PATTERNS = [
 ];
 const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const SOURCE_SHA_RE = /^[a-f0-9]{40}$/i;
+const CENTRAL_BRANCH = "codex/crm-core-reentry";
+const CANONICAL_WORKTREE_MODE = "canonical_worktree_v0";
+const DEDICATED_CLEAN_CHECKOUT_MODE = "dedicated_clean_checkout_v1";
+const execFileAsync = promisify(execFile);
 const ALLOWED_CRITICAL_SECTIONS = new Set([
   "central_integration_run",
   "central_preflight",
@@ -35,6 +43,8 @@ const SAFE_METADATA_FIELDS = [
   "owner_id",
   "branch",
   "worktree",
+  "worktree_mode",
+  "central_base_sha",
   "integration_packet_id",
   "source_workstream",
   "source_branch",
@@ -95,6 +105,30 @@ function isSamePath(a, b) {
   return normalizeFsPath(a) === normalizeFsPath(b);
 }
 
+function dedicatedCleanCheckoutPath() {
+  if (
+    isTestMode() &&
+    process.env.CRM_CORE_CENTRAL_INTEGRATION_DEDICATED_CHECKOUT
+  ) {
+    return normalizeFsPath(
+      process.env.CRM_CORE_CENTRAL_INTEGRATION_DEDICATED_CHECKOUT,
+    );
+  }
+  return DEDICATED_CLEAN_CHECKOUT;
+}
+
+function canonicalRepoRootForValidation() {
+  if (
+    isTestMode() &&
+    process.env.CRM_CORE_CENTRAL_INTEGRATION_CANONICAL_REPO_ROOT
+  ) {
+    return normalizeFsPath(
+      process.env.CRM_CORE_CENTRAL_INTEGRATION_CANONICAL_REPO_ROOT,
+    );
+  }
+  return REPO_ROOT;
+}
+
 function containsRawTargetPattern(value) {
   const text = String(value || "").toLowerCase();
   return RAW_TARGET_PATTERNS.some((pattern) => text.includes(pattern));
@@ -113,7 +147,13 @@ function containsUnsafeMetadataValue(value) {
   if (text.includes("CRM-Core-Private-Artifacts")) return true;
   if (containsForbiddenFragment(text)) return true;
   if (EMAIL_RE.test(text)) return true;
-  if (text.includes(LEGACY_CRM_ROOT) && text !== REPO_ROOT) return true;
+  if (
+    text.includes(LEGACY_CRM_ROOT) &&
+    text !== REPO_ROOT &&
+    text !== dedicatedCleanCheckoutPath()
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -125,7 +165,11 @@ function assertSafeScalar(value, code = "unsafe_argument_rejected") {
   if (text.includes("Mantis-Private-Source-Artifacts")) throw safeError(code);
   if (text.includes("CRM-Core-Private-Artifacts")) throw safeError(code);
   if (containsForbiddenFragment(text)) throw safeError(code);
-  if (text.includes(LEGACY_CRM_ROOT) && text !== REPO_ROOT) {
+  if (
+    text.includes(LEGACY_CRM_ROOT) &&
+    text !== REPO_ROOT &&
+    text !== dedicatedCleanCheckoutPath()
+  ) {
     throw safeError(code);
   }
 }
@@ -218,11 +262,33 @@ function validateAcquireArgs(args) {
   ];
   for (const key of required) requireArg(args, key);
   validateAllArgumentValues(args);
-  if (args.branch !== "codex/crm-core-reentry") {
+  if (args.branch !== CENTRAL_BRANCH) {
     throw safeError("non_central_branch_rejected");
   }
-  if (args.worktree !== REPO_ROOT) {
+  const worktreeMode = args.worktreeMode || CANONICAL_WORKTREE_MODE;
+  if (
+    ![CANONICAL_WORKTREE_MODE, DEDICATED_CLEAN_CHECKOUT_MODE].includes(
+      worktreeMode,
+    )
+  ) {
+    throw safeError("unknown_worktree_mode_rejected");
+  }
+  if (
+    worktreeMode === CANONICAL_WORKTREE_MODE &&
+    args.worktree !== REPO_ROOT
+  ) {
     throw safeError("non_central_worktree_rejected");
+  }
+  if (worktreeMode === CANONICAL_WORKTREE_MODE && args.centralBaseSha) {
+    throw safeError("canonical_worktree_central_base_sha_rejected");
+  }
+  if (worktreeMode === DEDICATED_CLEAN_CHECKOUT_MODE) {
+    if (args.worktree !== dedicatedCleanCheckoutPath()) {
+      throw safeError("dedicated_checkout_path_rejected");
+    }
+    if (!SOURCE_SHA_RE.test(args.centralBaseSha || "")) {
+      throw safeError("malformed_central_base_sha_rejected");
+    }
   }
   if (!SOURCE_SHA_RE.test(args.sourceCommitSha)) {
     throw safeError("malformed_source_commit_sha_rejected");
@@ -232,6 +298,109 @@ function validateAcquireArgs(args) {
   }
   if (!ALLOWED_CRITICAL_SECTIONS.has(args.criticalSection)) {
     throw safeError("unknown_critical_section_rejected");
+  }
+}
+
+async function gitValue(worktree, gitArgs, errorCode) {
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-C", worktree, ...gitArgs],
+      {
+        encoding: "utf8",
+        env: {
+          PATH: process.env.PATH || "",
+          HOME: process.env.HOME || "",
+        },
+      },
+    );
+    return stdout.trim();
+  } catch {
+    throw safeError(errorCode);
+  }
+}
+
+async function gitCommonDir(worktree) {
+  const raw = await gitValue(
+    worktree,
+    ["rev-parse", "--git-common-dir"],
+    "dedicated_checkout_git_common_dir_unavailable",
+  );
+  try {
+    return await fs.realpath(path.resolve(worktree, raw));
+  } catch {
+    throw safeError("dedicated_checkout_git_common_dir_unavailable");
+  }
+}
+
+async function validateDedicatedCheckout(args) {
+  const worktree = dedicatedCleanCheckoutPath();
+  let worktreeStat;
+  try {
+    worktreeStat = await fs.lstat(worktree);
+  } catch {
+    throw safeError("dedicated_checkout_missing");
+  }
+  if (worktreeStat.isSymbolicLink()) {
+    throw safeError("dedicated_checkout_symlink_rejected");
+  }
+
+  try {
+    await fs.realpath(worktree);
+  } catch {
+    throw safeError("dedicated_checkout_realpath_unavailable");
+  }
+
+  const canonicalRoot = canonicalRepoRootForValidation();
+  const [dedicatedCommonDir, canonicalCommonDir] = await Promise.all([
+    gitCommonDir(worktree),
+    gitCommonDir(canonicalRoot),
+  ]);
+  if (!isSamePath(dedicatedCommonDir, canonicalCommonDir)) {
+    throw safeError("dedicated_checkout_repository_mismatch");
+  }
+
+  const [branch, head, upstreamHead, status] = await Promise.all([
+    gitValue(
+      worktree,
+      ["branch", "--show-current"],
+      "dedicated_checkout_branch_unavailable",
+    ),
+    gitValue(
+      worktree,
+      ["rev-parse", "HEAD"],
+      "dedicated_checkout_head_unavailable",
+    ),
+    gitValue(
+      worktree,
+      ["rev-parse", `refs/remotes/origin/${CENTRAL_BRANCH}`],
+      "dedicated_checkout_upstream_unavailable",
+    ),
+    gitValue(
+      worktree,
+      ["status", "--porcelain=v1", "--untracked-files=all"],
+      "dedicated_checkout_status_unavailable",
+    ),
+  ]);
+
+  if (branch !== "") {
+    throw safeError("dedicated_checkout_not_detached");
+  }
+  if (head !== args.centralBaseSha) {
+    throw safeError("dedicated_checkout_head_mismatch");
+  }
+  if (upstreamHead !== args.centralBaseSha) {
+    throw safeError("dedicated_checkout_upstream_mismatch");
+  }
+  if (status !== "") {
+    throw safeError("dedicated_checkout_not_clean");
+  }
+}
+
+async function validateAcquireEnvironment(args) {
+  const worktreeMode = args.worktreeMode || CANONICAL_WORKTREE_MODE;
+  if (worktreeMode === DEDICATED_CLEAN_CHECKOUT_MODE) {
+    await validateDedicatedCheckout(args);
   }
 }
 
@@ -352,6 +521,7 @@ async function sleep(ms) {
 
 async function acquire(args) {
   validateAcquireArgs(args);
+  await validateAcquireEnvironment(args);
   const lockDir = validateLockDir(resolveLockDir(args));
   const ttlMs = numberArg(args, "ttlMs", 3_600_000);
   const waitMs = numberArg(args, "waitMs", 0);
@@ -370,6 +540,10 @@ async function acquire(args) {
         owner_id: args.ownerId,
         branch: args.branch,
         worktree: args.worktree,
+        worktree_mode: args.worktreeMode || CANONICAL_WORKTREE_MODE,
+        ...(args.centralBaseSha
+          ? { central_base_sha: args.centralBaseSha }
+          : {}),
         integration_packet_id: args.integrationPacketId,
         source_workstream: args.sourceWorkstream,
         source_branch: args.sourceBranch,
@@ -400,6 +574,10 @@ async function acquire(args) {
         owner_id: args.ownerId,
         branch: args.branch,
         worktree: args.worktree,
+        worktree_mode: args.worktreeMode || CANONICAL_WORKTREE_MODE,
+        ...(args.centralBaseSha
+          ? { central_base_sha: args.centralBaseSha }
+          : {}),
         integration_packet_id: args.integrationPacketId,
         source_workstream: args.sourceWorkstream,
         source_branch: args.sourceBranch,

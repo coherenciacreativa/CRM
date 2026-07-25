@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +7,7 @@ import path from "node:path";
 const repoRoot = path.resolve(".");
 const cli = path.join(repoRoot, "scripts/crm-vnext-central-integration-lock.mjs");
 const goodSha = "0123456789abcdef0123456789abcdef01234567";
+const dedicatedMode = "dedicated_clean_checkout_v1";
 
 function tmpDir(label = "crm-core-central-lock-") {
   return fs.mkdtempSync(path.join("/tmp", label));
@@ -36,6 +37,44 @@ function mockedApprovedRoot() {
   );
 }
 
+function runGit(cwd: string, args: string[]) {
+  return execFileSync("git", ["-C", cwd, ...args], {
+    encoding: "utf8",
+    env: baseEnv(),
+  }).trim();
+}
+
+function syntheticDedicatedCheckout() {
+  const root = tmpDir("central-dedicated-checkout-");
+  const canonical = path.join(root, "canonical");
+  const dedicated = path.join(root, "dedicated");
+  fs.mkdirSync(canonical, { recursive: true });
+  runGit(canonical, ["init", "-b", "codex/crm-core-reentry"]);
+  runGit(canonical, ["config", "user.name", "CRM Core Test"]);
+  runGit(canonical, ["config", "user.email", "crm-core-test.invalid"]);
+  fs.writeFileSync(path.join(canonical, "fixture.txt"), "synthetic\n");
+  runGit(canonical, ["add", "fixture.txt"]);
+  runGit(canonical, ["commit", "-m", "synthetic central"]);
+  const centralBaseSha = runGit(canonical, ["rev-parse", "HEAD"]);
+  runGit(canonical, [
+    "update-ref",
+    "refs/remotes/origin/codex/crm-core-reentry",
+    centralBaseSha,
+  ]);
+  runGit(canonical, ["worktree", "add", "--detach", dedicated, centralBaseSha]);
+  return { root, canonical, dedicated, centralBaseSha };
+}
+
+function dedicatedEnv(
+  fixture: ReturnType<typeof syntheticDedicatedCheckout>,
+  dedicatedPath = fixture.dedicated,
+) {
+  return {
+    CRM_CORE_CENTRAL_INTEGRATION_CANONICAL_REPO_ROOT: fixture.canonical,
+    CRM_CORE_CENTRAL_INTEGRATION_DEDICATED_CHECKOUT: dedicatedPath,
+  };
+}
+
 function runCli(
   args: string[],
   extraEnv: Record<string, string | undefined> = {},
@@ -54,7 +93,7 @@ function jsonFrom(result: ReturnType<typeof runCli>) {
 }
 
 function acquireArgs(lockDir: string, overrides: Record<string, string> = {}) {
-  const values = {
+  const values: Record<string, string> = {
     ownerId: "instagram-api-readiness",
     branch: "codex/crm-core-reentry",
     worktree: "/Users/alejandrogomez/CRM-core",
@@ -69,7 +108,7 @@ function acquireArgs(lockDir: string, overrides: Record<string, string> = {}) {
     ttlMs: "3600000",
     ...overrides,
   };
-  return [
+  const args = [
     "acquire",
     "--owner-id",
     values.ownerId,
@@ -96,6 +135,26 @@ function acquireArgs(lockDir: string, overrides: Record<string, string> = {}) {
     "--lock-dir",
     values.lockDir,
   ];
+  if (values.worktreeMode) {
+    args.push("--worktree-mode", values.worktreeMode);
+  }
+  if (values.centralBaseSha) {
+    args.push("--central-base-sha", values.centralBaseSha);
+  }
+  return args;
+}
+
+function dedicatedAcquireArgs(
+  lockDir: string,
+  fixture: ReturnType<typeof syntheticDedicatedCheckout>,
+  overrides: Record<string, string> = {},
+) {
+  return acquireArgs(lockDir, {
+    worktree: fixture.dedicated,
+    worktreeMode: dedicatedMode,
+    centralBaseSha: fixture.centralBaseSha,
+    ...overrides,
+  });
 }
 
 function writeLock(lockDir: string, metadata: Record<string, unknown>) {
@@ -379,6 +438,157 @@ test("acquire rejects non-central branch", () => {
 test("acquire rejects non-central worktree", () => {
   const lockDir = path.join(tmpDir(), ".central-integration-lock");
   expect(runCli(acquireArgs(lockDir, { worktree: "/tmp/not-crm-core" })).status).not.toBe(0);
+});
+
+test("dedicated clean checkout acquires only after environment-owned Git checks", () => {
+  const fixture = syntheticDedicatedCheckout();
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture),
+    dedicatedEnv(fixture),
+  );
+  const payload = jsonFrom(result);
+  expect(result.status).toBe(0);
+  expect(payload.worktree_mode).toBe(dedicatedMode);
+  expect(payload.central_base_sha).toBe(fixture.centralBaseSha);
+  const metadata = JSON.parse(
+    fs.readFileSync(path.join(lockDir, "lock.json"), "utf8"),
+  );
+  expect(metadata.worktree_mode).toBe(dedicatedMode);
+  expect(metadata.central_base_sha).toBe(fixture.centralBaseSha);
+  expect(metadata.owner_token).toBeUndefined();
+});
+
+test("dedicated checkout rejects a non-detached branch", () => {
+  const fixture = syntheticDedicatedCheckout();
+  runGit(fixture.dedicated, ["switch", "-c", "synthetic-not-detached"]);
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture),
+    dedicatedEnv(fixture),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe("dedicated_checkout_not_detached");
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("dedicated checkout rejects dirty or untracked state", () => {
+  const fixture = syntheticDedicatedCheckout();
+  fs.writeFileSync(path.join(fixture.dedicated, "untracked.txt"), "blocked\n");
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture),
+    dedicatedEnv(fixture),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe("dedicated_checkout_not_clean");
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("dedicated checkout rejects central upstream drift", () => {
+  const fixture = syntheticDedicatedCheckout();
+  fs.writeFileSync(path.join(fixture.canonical, "fixture.txt"), "drifted\n");
+  runGit(fixture.canonical, ["add", "fixture.txt"]);
+  runGit(fixture.canonical, ["commit", "-m", "synthetic drift"]);
+  const driftedSha = runGit(fixture.canonical, ["rev-parse", "HEAD"]);
+  runGit(fixture.canonical, [
+    "update-ref",
+    "refs/remotes/origin/codex/crm-core-reentry",
+    driftedSha,
+  ]);
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture),
+    dedicatedEnv(fixture),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe("dedicated_checkout_upstream_mismatch");
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("dedicated checkout rejects a symlinked admission path", () => {
+  const fixture = syntheticDedicatedCheckout();
+  const symlinkPath = path.join(fixture.root, "dedicated-symlink");
+  fs.symlinkSync(fixture.dedicated, symlinkPath);
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture, { worktree: symlinkPath }),
+    dedicatedEnv(fixture, symlinkPath),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe("dedicated_checkout_symlink_rejected");
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("dedicated checkout rejects a different repository", () => {
+  const canonicalFixture = syntheticDedicatedCheckout();
+  const otherFixture = syntheticDedicatedCheckout();
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, otherFixture),
+    {
+      CRM_CORE_CENTRAL_INTEGRATION_CANONICAL_REPO_ROOT:
+        canonicalFixture.canonical,
+      CRM_CORE_CENTRAL_INTEGRATION_DEDICATED_CHECKOUT:
+        otherFixture.dedicated,
+    },
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe(
+    "dedicated_checkout_repository_mismatch",
+  );
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("dedicated checkout rejects malformed central base SHA", () => {
+  const fixture = syntheticDedicatedCheckout();
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture, {
+      centralBaseSha: "not-a-sha",
+    }),
+    dedicatedEnv(fixture),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe(
+    "malformed_central_base_sha_rejected",
+  );
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("dedicated checkout rejects an alternate spelling of the allowlisted path", () => {
+  const fixture = syntheticDedicatedCheckout();
+  const alternatePath = `${fixture.root}/./dedicated`;
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    dedicatedAcquireArgs(lockDir, fixture, { worktree: alternatePath }),
+    dedicatedEnv(fixture),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe("dedicated_checkout_path_rejected");
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("canonical mode rejects dedicated-only central base metadata", () => {
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    acquireArgs(lockDir, { centralBaseSha: goodSha }),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe(
+    "canonical_worktree_central_base_sha_rejected",
+  );
+  expect(fs.existsSync(lockDir)).toBe(false);
+});
+
+test("acquire rejects an unknown worktree mode", () => {
+  const lockDir = path.join(tmpDir(), ".central-integration-lock");
+  const result = runCli(
+    acquireArgs(lockDir, { worktreeMode: "unknown_mode" }),
+  );
+  expect(result.status).not.toBe(0);
+  expect(jsonFrom(result).error).toBe("unknown_worktree_mode_rejected");
+  expect(fs.existsSync(lockDir)).toBe(false);
 });
 
 test("acquire rejects non-green Chief Architect verdict", () => {

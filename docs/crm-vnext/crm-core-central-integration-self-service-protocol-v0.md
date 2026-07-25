@@ -361,6 +361,52 @@ Source/live actions remain separately approval-gated.
 
 Alejandro is required for source/private/action/write boundaries.
 
+## Dedicated clean-checkout admission
+
+The canonical in-place mode remains `canonical_worktree_v0` and continues to
+require `/Users/alejandrogomez/CRM-core`. When that worktree contains preserved
+user-owned changes, it must not be stashed, reset, moved, overwritten, or used
+for central integration.
+
+The only additional production admission is:
+
+```text
+worktree_mode=dedicated_clean_checkout_v1
+worktree=/Users/alejandrogomez/CRM-core-central-integration
+central_base_sha=<exact 40-character central SHA>
+```
+
+This mode is fail-closed. Before creating the lock, the utility itself must
+verify all of the following from Git and the filesystem:
+
+- the supplied central branch remains exactly `codex/crm-core-reentry`;
+- the dedicated path is the one exact allowlisted path, not a glob, alternate,
+  symlink, or caller-selected location;
+- the checkout is detached, clean, and has no staged, unstaged, or untracked
+  paths;
+- its `HEAD` equals `central_base_sha`;
+- `refs/remotes/origin/codex/crm-core-reentry` equals the same
+  `central_base_sha`;
+- its Git common directory is identical to the canonical CRM Core repository's
+  Git common directory; and
+- the already-required source commit SHA, Chief Architect
+  `green_to_self_integrate`, critical-section allowlist, atomic lock, TTL,
+  stale-lock, release-token, and metadata-redaction gates remain green.
+
+Production has no path override. Synthetic tests may override the canonical
+repository and dedicated checkout paths only under `NODE_ENV=test`.
+
+Dedicated-mode lock metadata records only the allowlisted worktree path,
+`worktree_mode`, and `central_base_sha` in addition to the existing redacted
+fields. It must never record a remote URL, repository contents, private
+artifact, credential, owner token, or source payload.
+
+This admission mode does not create correction, integration, source, browser,
+private-artifact, or live authority. The preserved canonical worktree remains
+untouched. After a dedicated integration run, the detached checkout may be
+removed only after lock release; the preserved worktree must not be cleaned or
+rewritten as cleanup.
+
 ## Central Lock Run Pattern
 
 1. Receive lane consultant green.
