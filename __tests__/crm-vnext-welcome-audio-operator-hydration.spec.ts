@@ -211,6 +211,7 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
     const normalizedProfile = normalizeWhitespace(profile);
     const normalizedDualRelationship = normalizeWhitespace(dualRelationship);
     const normalizedAdapter = normalizeWhitespace(adapter);
+    const normalizedMission = normalizeWhitespace(mission);
 
     const sourceIndex = profile.indexOf(
       "`docs/crm-vnext/instagram-welcome-audio-ui-attested-follower-source-v1.md`",
@@ -248,16 +249,58 @@ describe("CRM Core welcome-audio cold-start hydration", () => {
     expect(mission).toContain("N=1..30");
     expect(mission).toContain("W=1..4");
     expect(mission).toContain("precision=coarse_week");
+    expect(mission).toContain(
+      "crm_core_calendar_date_timezone_origin_three_path_correction_no_live_v1_20260724",
+    );
+    expect(mission).toContain("closed `instagram_web_en` grammar");
+    expect(normalizedMission).toContain(
+      "from `Jan`, `Feb`, `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, or `Dec`",
+    );
+    expect(mission).toContain("must not call a system locale parser");
+    expect(normalizedMission).toContain(
+      "the environment captures private `source_ui_timezone` from that same authenticated observation",
+    );
+    expect(normalizedMission).toContain(
+      "the environment derives `observation_civil_date` exactly once from its current instant under that exact `source_ui_timezone`",
+    );
+    expect(normalizedMission).toContain(
+      "the timezone used for `observation_civil_date` is exactly the captured `source_ui_timezone`",
+    );
+    expect(normalizedMission).toContain(
+      "caller-supplied clock, locale, timezone, date",
+    );
+    expect(normalizedMission).toContain(
+      "exactly one non-future civil date whose calendar-day distance is `1..30`",
+    );
+    expect(normalizedMission).toContain(
+      "The aggregate receipt excludes all of those private values",
+    );
+    expect(mission).toContain(
+      "calendar_date_compatibility=accepted|blocked",
+    );
     expect(mission).toContain("one_candidate_maximum");
     expect(mission).toContain(
       "evaluation_incomplete_due_to_obsolete_badge_only_gate",
     );
     expect(mission).toContain("current_follower_list_membership_claimed=false");
     expect(mission).toContain("exact_follow_timestamp_claimed=false");
+    expect(mission).toContain("exact_calendar_date_claimed=false");
+    expect(mission).toContain(
+      "calendar_date_compatibility_runtime_proven=false",
+    );
     expect(mission).toContain("send_authority=false");
     expect(mission).toContain("production_ready=false");
     expect(mission).not.toContain("production_ready=true");
     expect(mission).not.toContain("send_authority=true");
+    expect(normalizedProfile).toContain(
+      "capture the private environment-owned `source_ui_timezone` from that same authenticated observation",
+    );
+    expect(normalizedProfile).toContain(
+      "derive `observation_civil_date` exactly once from the environment's current instant under that exact timezone",
+    );
+    expect(mission).not.toContain(
+      "`docs/crm-vnext/instagram-welcome-audio-safari-action-adapter-v1.md`",
+    );
   });
 
   test("records a fail-closed aggregate output contract without claiming runtime enforcement", async () => {

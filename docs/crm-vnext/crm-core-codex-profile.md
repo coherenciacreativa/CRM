@@ -93,6 +93,24 @@ not an explicit relationship contradiction. The Safari adapter may mediate
 profile-to-thread UI only after one of those modes is exact; it must not narrow
 eligibility back to the stronger mode.
 
+Historical Proof hydration must distinguish event evidence from the provider's
+temporal presentation. Relative `1..30` day and `1..4` coarse-week labels remain
+valid under their closed grammar. If the same exact ordered notification row
+instead exposes a compact calendar-date presentation, use only the
+compatibility lane in the relationship-precedence mission: preserve the label
+byte-for-byte; pin the exact English event phrase; capture the private
+environment-owned `source_ui_timezone` from that same authenticated
+observation; and derive `observation_civil_date` exactly once from the
+environment's current instant under that exact timezone. Neither value may be
+caller-selected, caller-supplied, drifted, substituted, or emitted in the
+aggregate receipt. Accept only the closed `instagram_web_en` month-token table,
+resolve the omitted year uniquely against the observation year or immediately
+preceding year, and require a non-future `1..30` calendar-day distance. A
+missing, unsupported, caller-originated, drifted, or mismatched timezone, or
+any derivation ambiguity, blocks. This compatibility creates no bootstrap,
+source, candidate, thread, timestamp, membership, campaign, message, production,
+or Send claim.
+
 The action adapter is authoritative for UI recovery, output privacy, and the
 one-shot effect boundary. The admission contract remains authoritative for
 claim/host ordering. The binding and handoff missions remain authoritative for
