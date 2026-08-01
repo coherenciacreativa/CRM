@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { chmod, link, mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -13,6 +14,8 @@ const REPLY_ID = 'event-synthetic-reply-001';
 const CONSENT_ID = 'event-synthetic-consent-001';
 const EMAIL_ID = 'event-synthetic-email-001';
 let dirs: string[] = [];
+
+const exactEmailSha256 = (value: string) => createHash('sha256').update(value).digest('hex');
 
 afterEach(async () => {
   await Promise.all(dirs.map((dir) => rm(dir, { recursive: true, force: true })));
@@ -68,7 +71,14 @@ describe('CRM vNext owner-only Community Intake Register', () => {
             source_event_id: CONSENT_ID,
           },
         }),
-      ], [event(FOLLOW_ID, 'follow'), event(EMAIL_ID, 'email_handoff'), event(CONSENT_ID, 'email_consent')]),
+      ], [
+        event(FOLLOW_ID, 'follow'),
+        event(EMAIL_ID, 'email_handoff', {
+          observed_at: NOW,
+          exact_email_sha256: exactEmailSha256(exactEmail),
+        }),
+        event(CONSENT_ID, 'email_consent'),
+      ]),
       existingCards: [],
     }, { now: NOW });
 
@@ -180,6 +190,57 @@ describe('CRM vNext owner-only Community Intake Register', () => {
     }, { now: NOW });
     expect(report.decisions[0].mailerLite).toMatchObject({
       state: 'blocked',
+      blocker: 'email_provenance_event_missing_or_mismatched',
+    });
+  });
+
+  test('blocks stale provenance when the exact email changes or its observation time drifts', async () => {
+    const originalEmail = 'original+notes@example.com';
+    const changedEmail = 'changed+notes@example.com';
+    const staleEvidence = event(EMAIL_ID, 'email_handoff', {
+      observed_at: NOW,
+      exact_email_sha256: exactEmailSha256(originalEmail),
+    });
+    const basePerson = {
+      email: changedEmail,
+      email_provenance: {
+        status: 'voluntarily_provided',
+        observed_at: NOW,
+        source_event_id: EMAIL_ID,
+      },
+      consent: {
+        receive_notes: 'granted',
+        basis: 'explicit',
+        captured_at: NOW,
+        source_event_id: CONSENT_ID,
+      },
+    };
+
+    const changedEmailReport = await buildCrmVNextCommunityIntakeRegister({
+      currentRegister: register([person(basePerson)], [staleEvidence, event(CONSENT_ID, 'email_consent')]),
+    }, { now: NOW });
+    expect(changedEmailReport.decisions[0].mailerLite).toMatchObject({
+      state: 'blocked',
+      candidate: null,
+      blocker: 'email_provenance_event_missing_or_mismatched',
+    });
+
+    const driftedTimeReport = await buildCrmVNextCommunityIntakeRegister({
+      currentRegister: register([
+        person({
+          ...basePerson,
+          email: originalEmail,
+          email_provenance: {
+            status: 'voluntarily_provided',
+            observed_at: '2026-07-31T14:00:01.000Z',
+            source_event_id: EMAIL_ID,
+          },
+        }),
+      ], [staleEvidence, event(CONSENT_ID, 'email_consent')]),
+    }, { now: NOW });
+    expect(driftedTimeReport.decisions[0].mailerLite).toMatchObject({
+      state: 'blocked',
+      candidate: null,
       blocker: 'email_provenance_event_missing_or_mismatched',
     });
   });
@@ -339,8 +400,15 @@ describe('CRM vNext owner-only Community Intake Register', () => {
     expect(broadMode.stderr).toContain('owner_only_input_mode_required');
 
     await chmod(current, 0o600);
+    const { stdout: worktreeList } = await execFileAsync('git', ['worktree', 'list', '--porcelain']);
+    const otherWorktreeRoot = worktreeList
+      .split('\n')
+      .filter((line) => line.startsWith('worktree '))
+      .map((line) => line.slice('worktree '.length))
+      .find((root) => root !== process.cwd());
+    expect(otherWorktreeRoot).toBeTruthy();
     const otherWorktree = await execFileAsync('node', [
-      ...baseArgs, '--current', current, '--out', '/Users/alejandrogomez/CRM-core/private-report.json',
+      ...baseArgs, '--current', current, '--out', join(otherWorktreeRoot!, 'private-report.json'),
     ], { cwd: process.cwd(), env: { ...process.env, NODE_NO_WARNINGS: '1', TS_NODE_TRANSPILE_ONLY: '1' } }).catch((error) => error);
     expect(otherWorktree.stderr).toContain('owner_only_output_must_be_outside_repo');
   });

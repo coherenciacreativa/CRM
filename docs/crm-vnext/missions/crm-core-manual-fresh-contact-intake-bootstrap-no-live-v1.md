@@ -71,6 +71,11 @@ The owner-only register has two logical collections:
   email provenance and `receive_notes` consent evidence;
 - `events`: stable `event_id`, linked `person_record_id`, event kind,
   observation time and required closed `inbound | outbound` direction.
+  An `email_handoff | email_provided` event must also carry the deterministic
+  SHA-256 digest of the exact email bytes represented by that evidence. The
+  builder requires that digest to match the person's current exact email and
+  requires provenance `observed_at` to equal the bound event's observation
+  time; changed email or timestamp drift fails closed.
   Outbound welcome-audio evidence also requires a closed-format asset-version
   label; the adapter derives its durable dedupe key mechanically from person,
   event class and asset version.
@@ -81,7 +86,8 @@ No two person records in one register may claim the same derived handle, email
 or phone identity.
 
 MailerLite candidacy requires two same-person inbound evidence links: an
-`email_handoff | email_provided` event with an observation time, and a separate
+`email_handoff | email_provided` event whose exact-email digest and observation
+time match the current person provenance, and a separate
 `email_consent` event with explicit `receive_notes` consent and capture time.
 Neither evidence link grants mutation authority.
 
