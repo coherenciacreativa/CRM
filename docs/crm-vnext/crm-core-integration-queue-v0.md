@@ -2224,6 +2224,45 @@ No lane outputs in review at creation.
   proof and run one bounded repo-only privacy-output runtime hardening mission
   before considering another canary.
 
+## crm_core_manual_fresh_contact_intake_bootstrap_2026_08_01
+
+- `source_workstream`: `manual-fresh-contact-intake`
+- `source_branch`:
+  `codex/crm-core-manual-fresh-contact-intake-bootstrap-20260731`
+- `commits`:
+  - `ab7adb1d033705dbcd80cd3e10a014073c0d003f`
+  - `5b82f25f4981e5d554df0a84b41ca8460f0be3dd`
+- `files_changed`:
+  - `lib/crm/crm-vnext-community-intake-register.js`
+  - `scripts/crm-vnext-community-intake-register.mjs`
+  - `__tests__/crm-vnext-community-intake-register.spec.ts`
+  - `docs/crm-vnext/missions/crm-core-manual-fresh-contact-intake-bootstrap-no-live-v1.md`
+- `central_coordination_files`:
+  - `docs/crm-vnext/crm-core-next-action.md`
+  - `docs/crm-vnext/crm-core-workstream-board-v0.md`
+  - `docs/crm-vnext/crm-core-integration-queue-v0.md`
+  - `docs/crm-vnext/workstreams/integration.md`
+- `summary`: Adds a fail-closed, owner-only manual fresh-contact intake
+  bootstrap. Email provenance is bound to the current byte-exact email by a
+  deterministic digest and matching observation timestamp; the register emits
+  aggregate-only status.
+- `tests_or_checks`: focused related suite `47/47`; component suite `17/17`;
+  syntax, diff, redaction, and no-positive-authority checks green.
+- `private_artifacts_touched`: false
+- `source_actions_executed`: 0
+- `external_effects`: 0
+- `product_state`:
+  - `bootstrap_ready_manual_intake_only`: true
+  - `source_qualified`: false
+  - `candidate_handoff_ready`: false
+  - `send_ready`: false
+  - `canary_confirmed_manual_intake`: false
+  - `production_ready`: false
+- `decision_needed`: none for integration. The next bounded action is one
+  synthetic owner-only dry run; a real CEO batch remains out of scope.
+- `integration_recommendation`: Centrally integrated repo-only after formal
+  Chief Architect review and lock-compatible dedicated-integration ruling.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.

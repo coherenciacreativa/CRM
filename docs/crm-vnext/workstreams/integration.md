@@ -1385,3 +1385,34 @@
 - `next_step`: Execute only a bounded repo-only privacy-output runtime
   hardening mission with tests and independent review. Do not run another
   canary under this closeout.
+
+## Manual Fresh-Contact Intake Bootstrap Central Integration — 2026-08-01
+
+- `mission_id`:
+  `crm_core_manual_fresh_contact_intake_bootstrap_central_integration_v1_20260801`
+- `source_branch`:
+  `codex/crm-core-manual-fresh-contact-intake-bootstrap-20260731`
+- `source_commits`:
+  `ab7adb1d033705dbcd80cd3e10a014073c0d003f`,
+  `5b82f25f4981e5d554df0a84b41ca8460f0be3dd`
+- `product_paths`: register library, CLI, focused test, and no-live mission
+  contract; exactly four paths.
+- `coordination_paths`: next action, workstream board, integration queue, and
+  this integration record; exactly four paths.
+- `validation`: focused related suite `47/47`; component suite `17/17`;
+  syntax, exact-path, diff, redaction, and no-positive-authority checks green.
+- `chief_architect_ruling`: dedicated central integration green; existing
+  central lock metadata may use `green_to_self_integrate`; no CEO decision
+  required.
+- `source_actions`: 0
+- `external_effects`: 0
+- `product_transition`:
+  - `bootstrap_ready_manual_intake_only`: true
+  - `source_qualified`: false
+  - `candidate_handoff_ready`: false
+  - `send_ready`: false
+  - `canary_confirmed_manual_intake`: false
+  - `production_ready`: false
+- `next_action`: Run one owner-only synthetic dry run with at most ten
+  fictitious persons and at most one `0600` local aggregate report outside all
+  worktrees. Do not prepare a real CEO contact batch yet.

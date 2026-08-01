@@ -7201,3 +7201,31 @@ routing and completion pointer.
   - `send_ready`: false for future recipients
   - `canary_confirmed`: true
   - `production_ready`: false
+
+## Active Next Action — Manual Fresh-Contact Intake Synthetic Dry Run
+
+- `next_action_id`:
+  `crm_core_manual_fresh_contact_intake_owner_only_synthetic_dry_run_v1_20260801`
+- `status`: `active_repo_only_no_source_no_downstream_effects`
+- `central_integration_mission`:
+  `crm_core_manual_fresh_contact_intake_bootstrap_central_integration_v1_20260801`
+- `integrated_source_commit`:
+  `5b82f25f4981e5d554df0a84b41ca8460f0be3dd`
+- `objective`: Run one bounded synthetic owner-only dry run with at most ten
+  fictitious persons and at most one `0600` local report outside every Git
+  worktree. Exercise delta handling, collision rejection, byte-exact email
+  provenance, consent gating, and aggregate-only stdout.
+- `forbidden_scope`: No real contact batch, source read, browser, private
+  source artifact, Instagram, message, MailerLite, CRM write, campaign, Ads,
+  proxy, or other downstream effect.
+- `product_state`:
+  - `technical_foundation`: true
+  - `bootstrap_ready_manual_intake_only`: true
+  - `source_qualified`: false
+  - `candidate_handoff_ready`: false
+  - `send_ready`: false
+  - `canary_confirmed_manual_intake`: false
+  - `production_ready`: false
+- `completion_boundary`: A green synthetic dry run may validate the manual
+  intake bootstrap only. It does not authorize preparing a real CEO contact
+  batch or advancing any source, send, or downstream capability.
