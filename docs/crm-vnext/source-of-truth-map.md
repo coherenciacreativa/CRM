@@ -36,9 +36,37 @@ Everything else has a defined supporting role. This prevents two CRMs from formi
 | ClassBot | Yoga cohort, phone/contact, attendance/recording-delivery clues. | Evidence/signals source. |
 | Shopify / payment providers | Future purchase/order source for digital products, retreats, yoga plans, mentorship, or other offers. | Signal source first; card/customer state only after reviewed projection/write policy. |
 | Bhakti WhatsApp / WhatsApp apps | Future delivery/interaction source for WhatsApp automations and on-demand products. | Signal source first; no outbound or automation mutation from CRM preview. |
-| Telegram/Mantis/human reports | Human reports from Alejandro, assistants, and operations. | Fact/evidence source after parsing and approval. |
+| Owner-supplied structured contact reports / Community Intake Register | Owner-only contact evidence and deterministic delta preparation for batches Alejandro explicitly supplies. Receipts must distinguish Register processing from direct supervised manual evidence. | Evidence/preparation only. The register does not write cards; only approved guarded card-write-apply, with backup and provenance, may change the Person Card Store. |
+| Telegram/Mantis operational reports | Unstructured operational reports from Alejandro, assistants, and operations. | Fact/evidence source after parsing and approval; no direct card authority. |
 | ManyChat LIVE | Existing business-critical onboarding transport. | Keep alive. Do not mutate without explicit approval. |
 | Legacy Supabase CRM | Earlier production-oriented CRM attempt with contacts/interactions/webhooks. | Legacy source/import lane or future backend candidate, not current vNext authority. |
+
+## Dated Manual-Intake Observation Boundary — 2026-08-02
+
+- `owner_only_redacted_receipt`:
+  `crm_core_manual_intake_documentation_evidence_checkpoint_20260802`
+- `evidence_level`: `product_observed`
+- `observed_route`: owner-supplied manual evidence through the pre-existing
+  guarded local card-write path
+- `guarded_local_upserts_observed`: 3
+- `aggregate_state_at_observation`: 943 cards, 320 provenance records, 72
+  card-write ledger entries, and 0 merge-queue items
+- `safety_effect_flags_all_false`: true
+- `community_intake_register_real_end_to_end_observed`: false
+- `product_state`:
+  - `technical_foundation`: true
+  - `bootstrap_ready_manual_intake_only`: true
+  - `manual_evidence_to_local_card_write_product_observed`: true
+  - `community_intake_register_real_end_to_end_observed`: false
+  - `source_qualified`: false
+  - `candidate_handoff_ready`: false
+  - `send_ready`: false
+  - `canary_confirmed_manual_intake`: false
+  - `production_ready`: false
+- `authority_boundary`: This dated checkpoint grants no standing write,
+  source, browser, MailerLite, outbound, or live authority. It does not make
+  owner-supplied reports or the Community Intake Register a second source of
+  card truth.
 
 ## Legacy Boundary
 

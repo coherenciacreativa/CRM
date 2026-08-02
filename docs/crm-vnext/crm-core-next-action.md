@@ -7202,30 +7202,53 @@ routing and completion pointer.
   - `canary_confirmed`: true
   - `production_ready`: false
 
-## Active Next Action — Manual Fresh-Contact Intake Synthetic Dry Run
+## Manual Fresh-Contact Intake — Current Manual Operating Posture
 
-- `next_action_id`:
+- `prior_next_action_id`:
   `crm_core_manual_fresh_contact_intake_owner_only_synthetic_dry_run_v1_20260801`
-- `status`: `active_repo_only_no_source_no_downstream_effects`
-- `central_integration_mission`:
-  `crm_core_manual_fresh_contact_intake_bootstrap_central_integration_v1_20260801`
+- `prior_next_action_status`:
+  `closed_as_active_next_action_after_green_synthetic_dry_run`
+- `current_next_action_id`:
+  `crm_core_await_next_owner_supplied_manual_contact_batch_no_automatic_action_v1_20260802`
+- `status`: `waiting_on_owner_supplied_batch_no_automatic_action`
 - `integrated_source_commit`:
   `5b82f25f4981e5d554df0a84b41ca8460f0be3dd`
-- `objective`: Run one bounded synthetic owner-only dry run with at most ten
-  fictitious persons and at most one `0600` local report outside every Git
-  worktree. Exercise delta handling, collision rejection, byte-exact email
-  provenance, consent gating, and aggregate-only stdout.
-- `forbidden_scope`: No real contact batch, source read, browser, private
-  source artifact, Instagram, message, MailerLite, CRM write, campaign, Ads,
-  proxy, or other downstream effect.
+- `dated_product_observation`:
+  - `observed_at`: `2026-08-02`
+  - `evidence_level`: `product_observed`
+  - `owner_only_redacted_receipt`:
+    `crm_core_manual_intake_documentation_evidence_checkpoint_20260802`
+  - `guarded_local_upserts_observed`: 3
+  - `aggregate_state`: 943 cards, 320 provenance records, 72 card-write
+    ledger entries, and 0 merge-queue items
+  - `safety_effect_flags_all_false`: true
+- `critical_evidence_boundary`: The three recent CEO-confirmed manual identity
+  updates used the pre-existing guarded card-write path. They do not establish
+  that the Community Intake Register processed a real private batch end to
+  end.
+- `current_objective`: Wait for Alejandro to supply the next manual contact
+  batch. On a concrete request, validate and dedupe that supplied evidence,
+  then reuse the existing guarded local card-write path. Do not act on a future
+  batch automatically.
+- `authority_boundary`: This posture creates no standing batch, write, source,
+  browser, MailerLite, outbound, or live authority. A future owner-supplied
+  batch remains evidence until a concrete processing request and the existing
+  guarded write checks are green.
 - `product_state`:
   - `technical_foundation`: true
   - `bootstrap_ready_manual_intake_only`: true
+  - `manual_evidence_to_local_card_write_product_observed`: true
+  - `community_intake_register_real_end_to_end_observed`: false
   - `source_qualified`: false
   - `candidate_handoff_ready`: false
   - `send_ready`: false
   - `canary_confirmed_manual_intake`: false
   - `production_ready`: false
-- `completion_boundary`: A green synthetic dry run may validate the manual
-  intake bootstrap only. It does not authorize preparing a real CEO contact
-  batch or advancing any source, send, or downstream capability.
+  - `standing_write_authority`: false
+  - `source_authority`: false
+  - `live_authority`: false
+- `forbidden_scope`: Automatic ingestion, source/browser reads, Instagram,
+  messages, MailerLite, campaign changes, Ads, proxy, or any external effect.
+- `decision_boundary`: No new product decision is active under this
+  documentation sync. Broader CRM and community-intelligence priorities remain
+  for later CEO discussion.

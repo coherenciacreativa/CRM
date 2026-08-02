@@ -2263,6 +2263,50 @@ No lane outputs in review at creation.
 - `integration_recommendation`: Centrally integrated repo-only after formal
   Chief Architect review and lock-compatible dedicated-integration ruling.
 
+## crm_core_manual_fresh_contact_intake_documentation_sync_2026_08_02
+
+- `coordination_scope`: documentation-only product-observation reconciliation
+- `historical_bootstrap_entry_preserved`: true
+- `historical_mission_contract_preserved`: true
+- `owner_only_redacted_receipt`:
+  `crm_core_manual_intake_documentation_evidence_checkpoint_20260802`
+- `dated_product_observation`:
+  - `observed_at`: `2026-08-02`
+  - `evidence_level`: `product_observed`
+  - `guarded_local_upserts_observed`: 3
+  - `aggregate_state`: 943 cards, 320 provenance records, 72 card-write
+    ledger entries, and 0 merge-queue items
+  - `safety_effect_flags_all_false`: true
+- `route_observed`: Owner-supplied manual evidence was materialized through
+  the pre-existing guarded local card-write path.
+- `critical_non_claim`: The Community Intake Register has not processed a real
+  private batch end to end. This checkpoint does not establish autonomous
+  collection, generalized source qualification, MailerLite verification,
+  relationship intelligence, future-batch authority, or general production
+  readiness.
+- `current_operating_posture`: Wait for the next owner-supplied manual batch.
+  Validate and dedupe it, then process it only after a concrete CEO request
+  through the existing guarded local route; take no automatic action.
+- `product_state`:
+  - `technical_foundation`: true
+  - `bootstrap_ready_manual_intake_only`: true
+  - `manual_evidence_to_local_card_write_product_observed`: true
+  - `community_intake_register_real_end_to_end_observed`: false
+  - `source_qualified`: false
+  - `candidate_handoff_ready`: false
+  - `send_ready`: false
+  - `canary_confirmed_manual_intake`: false
+  - `production_ready`: false
+- `standing_write_authority`: false
+- `source_authority`: false
+- `live_authority`: false
+- `source_actions`: 0
+- `browser_actions_for_product`: 0
+- `external_effects`: 0
+- `mailerlite_effects`: 0
+- `decision_needed`: none now; broader priorities remain for later CEO
+  discussion.
+
 ## Rejected / Needs Rework
 
 No lane outputs rejected at creation.
